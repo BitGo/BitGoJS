@@ -5244,6 +5244,24 @@ export const allCoinsAndTokens = [
     Networks.main.basechain,
     EVM_TOKEN_FEATURES_TRUST_ONLY
   ),
+  erc20Token(
+    'e5da6a40-7c39-445a-b274-dd20f5e5a1d4',
+    'baseeth:tel',
+    'Telcoin',
+    2,
+    '0x09be1692ca16e06f536f0038ff11d1da8524adb1',
+    UnderlyingAsset['baseeth:tel'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    'f4d03f54-5da6-4282-a6f2-47973fe9f27e',
+    'baseeth:svvv',
+    'Staked Venice Token',
+    18,
+    '0x321b7ff75154472b18edb199033ff4d116f340ff',
+    UnderlyingAsset['baseeth:svvv'],
+    Networks.main.basechain
+  ),
 
   // ARC mainnet tokens
   erc20Token(

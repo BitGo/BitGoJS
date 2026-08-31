@@ -7606,6 +7606,34 @@ export const tOfcErc20Coins = [
     'baseeth'
   ),
   ofcerc20(
+    'fa5fa323-5dc0-4e0e-9c3f-46f1622aa9ba',
+    'ofcbaseeth:tel',
+    'Telcoin',
+    2,
+    UnderlyingAsset['baseeth:tel'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
+  ofcerc20(
+    'cffaede1-4e68-47bb-87a4-59a1a5cbefda',
+    'ofcbaseeth:svvv',
+    'Staked Venice Token',
+    18,
+    UnderlyingAsset['baseeth:svvv'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
+  ofcerc20(
     'e5ffd11d-59b4-4c95-a4c7-bebaf57222f0',
     'ofczketh:zk',
     'zkSync',

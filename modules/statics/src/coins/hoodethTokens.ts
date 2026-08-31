@@ -2955,6 +2955,26 @@ export const hoodethTokens = [
     EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20Token(
+    '4f42f640-c589-4852-91d3-0a712a3b032d',
+    'hoodeth:pons',
+    'Pons',
+    18,
+    '0x39dbed3a2bd333467115de45665cc57f813c4571',
+    UnderlyingAsset['hoodeth:pons'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'c4cb14c7-8ee6-4ecb-a9ba-85f1dc99b4a4',
+    'hoodeth:stonkbroker',
+    'StonkBroker',
+    18,
+    '0xe934e36a439c94017b64a3fece66af12099abf50',
+    UnderlyingAsset['hoodeth:stonkbroker'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
     '3493d608-fd3e-45dc-926d-783d54a8fe4d',
     'thoodeth:amzn',
     'Amazon',

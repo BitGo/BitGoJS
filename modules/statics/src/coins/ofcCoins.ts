@@ -4704,6 +4704,13 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['polygon:apepe']
   ),
+  ofcPolygonErc20(
+    '01f75a16-b736-4869-8f6b-d2ac73b46cbe',
+    'ofcpolygon:tel',
+    'Telcoin',
+    2,
+    UnderlyingAsset['polygon:tel']
+  ),
 
   tofcPolygonErc20(
     '62f4329d-11cd-4875-b91b-9ceae66c9439',

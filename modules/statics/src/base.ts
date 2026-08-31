@@ -2308,6 +2308,8 @@ export enum UnderlyingAsset {
   'hoodeth:jbl' = 'hoodeth:jbl',
   'hoodeth:shy' = 'hoodeth:shy',
   'hoodeth:bnd' = 'hoodeth:bnd',
+  'hoodeth:pons' = 'hoodeth:pons',
+  'hoodeth:stonkbroker' = 'hoodeth:stonkbroker',
   'hemieth:hemi' = 'hemieth:hemi',
   'hemieth:hemibtc' = 'hemieth:hemibtc',
   'usdt0:stable' = 'usdt0:stable',
@@ -3345,6 +3347,7 @@ export enum UnderlyingAsset {
   'polygon:seag' = 'polygon:seag',
   'polygon:infra' = 'polygon:infra',
   'polygon:sofid' = 'polygon:sofid',
+  'polygon:tel' = 'polygon:tel',
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',
@@ -4791,6 +4794,8 @@ export enum UnderlyingAsset {
   'baseeth:fai' = 'baseeth:fai',
   'baseeth:roll' = 'baseeth:roll',
   'baseeth:zen' = 'baseeth:zen',
+  'baseeth:tel' = 'baseeth:tel',
+  'baseeth:svvv' = 'baseeth:svvv',
   'arbeth:rain' = 'arbeth:rain',
   'arbeth:mlk' = 'arbeth:mlk',
   'polygon:apepe' = 'polygon:apepe',
