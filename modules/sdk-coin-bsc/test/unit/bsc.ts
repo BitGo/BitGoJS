@@ -3,10 +3,11 @@ import 'should';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TransactionType, Wallet } from '@bitgo/sdk-core';
-import { Transaction as LegacyTransaction } from '@ethereumjs/tx';
+import { FeeMarketEIP1559Transaction, Transaction as LegacyTransaction } from '@ethereumjs/tx';
 import { RLP } from '@ethereumjs/rlp';
 import { bufArrToArr } from 'ethereumjs-util';
 
+import { AbstractEthLikeNewCoins } from '@bitgo/abstract-eth';
 import { Bsc, Tbsc } from '../../src/index';
 import { TransactionBuilder } from '../../src/lib';
 import { getBuilder } from './getBuilder';
@@ -242,15 +243,16 @@ describe('Native BNB', function () {
         return stripHex(tx.toBroadcastFormat());
       }
 
-      function deriveSignableHex(serializedTxHex: string): string {
-        const legacyTx = LegacyTransaction.fromSerializedTx(Buffer.from(serializedTxHex, 'hex'));
+      function deriveSignableHex(serializedTxHex: string, coin: Tbsc): string {
+        const common = AbstractEthLikeNewCoins.getCustomChainCommon(coin.getChainId());
+        const legacyTx = LegacyTransaction.fromSerializedTx(Buffer.from(serializedTxHex, 'hex'), { common });
         return Buffer.from(RLP.encode(bufArrToArr(legacyTx.getMessageToSign(false)))).toString('hex');
       }
 
       it('should pass when signableHex is consistent with serializedTxHex', async function () {
         const coin = bitgo.coin('tbsc') as Tbsc;
         const serializedTxHex = await buildSerializedTxHex(recipientAddress);
-        const signableHex = deriveSignableHex(serializedTxHex);
+        const signableHex = deriveSignableHex(serializedTxHex, coin);
         coin.assertSignableConsistency(serializedTxHex, signableHex);
       });
 
@@ -258,9 +260,27 @@ describe('Native BNB', function () {
         const coin = bitgo.coin('tbsc') as Tbsc;
         const benignSerializedTxHex = await buildSerializedTxHex(recipientAddress);
         const maliciousSerializedTxHex = await buildSerializedTxHex(wrongAddress);
-        const tamperedSignableHex = deriveSignableHex(maliciousSerializedTxHex);
+        const tamperedSignableHex = deriveSignableHex(maliciousSerializedTxHex, coin);
         (() => coin.assertSignableConsistency(benignSerializedTxHex, tamperedSignableHex)).should.throw(
           'signableHex is inconsistent with serializedTxHex: possible server tampering'
+        );
+      });
+
+      it('should reject an EIP-1559 typed tx since BSC is pinned to the petersburg hardfork', function () {
+        const coin = bitgo.coin('tbsc') as Tbsc;
+        const typedTx = FeeMarketEIP1559Transaction.fromTxData(
+          {
+            nonce: 1,
+            maxFeePerGas: 10,
+            maxPriorityFeePerGas: 1,
+            gasLimit: 21000,
+            to: recipientAddress,
+            value: 1000,
+          },
+          { common: AbstractEthLikeNewCoins.getCustomChainCommon(coin.getChainId()) }
+        );
+        (() => coin.assertSignableConsistency(stripHex(typedTx.serialize().toString('hex')), '')).should.throw(
+          /EIP-1559 not enabled on Common/
         );
       });
     });
