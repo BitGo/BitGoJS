@@ -4659,7 +4659,7 @@
     rxjs "^7.8.1"
     tslib "^2.8.1"
 
-"@polkadot/api@14.1.1", "@polkadot/api@16.5.6", "@polkadot/api@^14.0.1":
+"@polkadot/api@16.5.6", "@polkadot/api@^14.0.1":
   version "16.5.6"
   resolved "https://registry.npmjs.org/@polkadot/api/-/api-16.5.6.tgz#a3ae679ec3481ac6fe6b4f79072380a11d1bbd21"
   integrity sha512-5h/X3pY8WpqGk4XTaiIUjKD6Pnk8k4bJ6EIwPKLP8/kfFWKSOenpN6ggZxANr+Qj+RgXrp4TxJVcuhXSiBh9Sg==
@@ -4682,7 +4682,7 @@
     rxjs "^7.8.1"
     tslib "^2.8.1"
 
-"@polkadot/keyring@13.5.6", "@polkadot/keyring@14.0.3", "@polkadot/keyring@^13.1.1", "@polkadot/keyring@^14.0.3":
+"@polkadot/keyring@14.0.3", "@polkadot/keyring@^13.1.1", "@polkadot/keyring@^14.0.3":
   version "14.0.3"
   resolved "https://registry.npmjs.org/@polkadot/keyring/-/keyring-14.0.3.tgz#786e9d7186bb709e7b7d6b6d737c81c437811ee5"
   integrity sha512-ozp1dQwaHCjgX/fpTTORmHjxdUNQnyiTVJszpzUaUpvtH/IGZhSU/mSHXMqNETS/g57vQa7NatIDcWfyR9abyA==
@@ -4800,7 +4800,7 @@
     "@polkadot/util" "^14.0.3"
     tslib "^2.8.1"
 
-"@polkadot/types@14.1.1", "@polkadot/types@16.5.6":
+"@polkadot/types@16.5.6":
   version "16.5.6"
   resolved "https://registry.npmjs.org/@polkadot/types/-/types-16.5.6.tgz#1e7745b1614dbd94b2802a5f4c2fb700690473aa"
   integrity sha512-X/sfMHJS4RkRhnsc4CQqzUy7BM/s2y71TrBFHPYAjs2q/rbZ/BwvBk70SrUiSa0+iRRn3RewbBZm+AB8CbkdKw==
@@ -4814,7 +4814,7 @@
     rxjs "^7.8.1"
     tslib "^2.8.1"
 
-"@polkadot/util-crypto@13.5.6", "@polkadot/util-crypto@14.0.3", "@polkadot/util-crypto@^14.0.3":
+"@polkadot/util-crypto@14.0.3", "@polkadot/util-crypto@^14.0.3":
   version "14.0.3"
   resolved "https://registry.npmjs.org/@polkadot/util-crypto/-/util-crypto-14.0.3.tgz#e76cb4a93305408f707928ded636fd145598fb41"
   integrity sha512-V00BI6XnZLCkrAmV8uN0eSB6fy48CkxdDZT29cgSMSwHPtY6oKUNgd1ST07PGCL5x8XflwjoA7CTlhdbp1Y9gw==
@@ -5752,7 +5752,7 @@
   resolved "https://registry.npmjs.org/@substrate/ss58-registry/-/ss58-registry-1.51.0.tgz"
   integrity sha512-TWDurLiPxndFgKjVavCniytBIw+t4ViOi7TYp9h/D0NMmkEc9klFTo+827eyEJ0lELpqO207Ey7uGxUa+BS1jQ==
 
-"@substrate/txwrapper-core@7.5.2", "@substrate/txwrapper-core@7.5.3", "@substrate/txwrapper-core@^7.5.3":
+"@substrate/txwrapper-core@7.5.3", "@substrate/txwrapper-core@^7.5.3":
   version "7.5.3"
   resolved "https://registry.npmjs.org/@substrate/txwrapper-core/-/txwrapper-core-7.5.3.tgz#30c6a67fa5e76ad1db7b8bbb73d39f04bf79d166"
   integrity sha512-vcb9GaAY8ex330yjJoDCa2w32R2u/KUmEKsD/5DRgTbPEUF1OYiKmmuOJWcD0jHu9HZ8HWlniiV8wxxwo3PVCA==
@@ -5761,7 +5761,7 @@
     "@polkadot/keyring" "^13.1.1"
     memoizee "0.4.17"
 
-"@substrate/txwrapper-polkadot@7.5.2", "@substrate/txwrapper-polkadot@7.5.3":
+"@substrate/txwrapper-polkadot@7.5.3":
   version "7.5.3"
   resolved "https://registry.npmjs.org/@substrate/txwrapper-polkadot/-/txwrapper-polkadot-7.5.3.tgz#51439eed4009ed0e84a945744ce4644395f60c3c"
   integrity sha512-ftjOJ0PfIBxQHckUrF1eeQwH2la5SNvhuZRCoIC5ibX77FHmYI5VpAiKlNCUOXUz8BY8ohaAu2IouL6tj5qzvQ==
@@ -12795,18 +12795,7 @@ html-minifier-terser@^6.0.2:
     tapable "^1.1.3"
     util.promisify "1.0.0"
 
-"html-webpack-plugin-5@npm:html-webpack-plugin@^5":
-  version "5.6.4"
-  resolved "https://registry.npmjs.org/html-webpack-plugin/-/html-webpack-plugin-5.6.4.tgz"
-  integrity sha512-V/PZeWsqhfpE27nKeX9EO2sbR+D17A+tLf6qU+ht66jdUsN0QLKJN27Z+1+gHrVMKgndBahes0PU6rRihDgHTw==
-  dependencies:
-    "@types/html-minifier-terser" "^6.0.0"
-    html-minifier-terser "^6.0.2"
-    lodash "^4.17.21"
-    pretty-error "^4.0.0"
-    tapable "^2.0.0"
-
-html-webpack-plugin@^5.5.0:
+"html-webpack-plugin-5@npm:html-webpack-plugin@^5", html-webpack-plugin@^5.5.0:
   version "5.6.4"
   resolved "https://registry.npmjs.org/html-webpack-plugin/-/html-webpack-plugin-5.6.4.tgz"
   integrity sha512-V/PZeWsqhfpE27nKeX9EO2sbR+D17A+tLf6qU+ht66jdUsN0QLKJN27Z+1+gHrVMKgndBahes0PU6rRihDgHTw==
@@ -21371,16 +21360,7 @@ workerpool@^6.5.1:
   resolved "https://registry.npmjs.org/workerpool/-/workerpool-6.5.1.tgz"
   integrity sha512-Fs4dNYcsdpYSAfVxhnl1L5zTksjvOJxtC5hzMNl+1t9B8hTJTdKDyZ5ju7ztgPy+ft9tBFXoOlDNiOT9WUXZlA==
 
-"wrap-ansi-cjs@npm:wrap-ansi@^7.0.0":
-  version "7.0.0"
-  resolved "https://registry.npmjs.org/wrap-ansi/-/wrap-ansi-7.0.0.tgz"
-  integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
-  dependencies:
-    ansi-styles "^4.0.0"
-    string-width "^4.1.0"
-    strip-ansi "^6.0.0"
-
-wrap-ansi@7.0.0, wrap-ansi@^7.0.0:
+"wrap-ansi-cjs@npm:wrap-ansi@^7.0.0", wrap-ansi@7.0.0, wrap-ansi@^7.0.0:
   version "7.0.0"
   resolved "https://registry.npmjs.org/wrap-ansi/-/wrap-ansi-7.0.0.tgz"
   integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==

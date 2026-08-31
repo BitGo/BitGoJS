@@ -43,9 +43,9 @@
     "@bitgo/abstract-substrate": "^2.2.4",
     "@bitgo/sdk-core": "^38.11.0",
     "@bitgo/statics": "^59.10.0",
-    "@polkadot/api": "14.1.1",
-    "@substrate/txwrapper-core": "7.5.2",
-    "@substrate/txwrapper-polkadot": "7.5.2",
+    "@polkadot/api": "16.5.6",
+    "@substrate/txwrapper-core": "7.5.3",
+    "@substrate/txwrapper-polkadot": "7.5.3",
     "bignumber.js": "^9.0.0"
   },
   "devDependencies": {
