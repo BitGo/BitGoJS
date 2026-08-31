@@ -599,6 +599,7 @@ export const BERA_FEATURES = [
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BULK_TRANSACTION,
+  CoinFeature.ERC20_BULK_TRANSACTION,
 ];
 export const OAS_FEATURES = [
   ...ETH_FEATURES,
@@ -609,6 +610,7 @@ export const OAS_FEATURES = [
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
   CoinFeature.EIP1559,
+  CoinFeature.ERC20_BULK_TRANSACTION,
 ];
 export const COREDAO_FEATURES = [
   ...ETH_FEATURES,
@@ -703,6 +705,7 @@ export const SONEIUM_FEATURES = [
   CoinFeature.MULTISIG_COLD,
   CoinFeature.MULTISIG_SUPPORT_GATED,
   CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
+  CoinFeature.ERC20_BULK_TRANSACTION,
 ];
 
 export const POLYX_FEATURES = [
