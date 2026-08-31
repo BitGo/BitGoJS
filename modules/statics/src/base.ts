@@ -4783,6 +4783,7 @@ export enum UnderlyingAsset {
   'bsc:coai' = 'bsc:coai',
   'bsc:nes' = 'bsc:nes',
   'bsc:mgo' = 'bsc:mgo',
+  'bsc:real' = 'bsc:real',
   'baseeth:awe' = 'baseeth:awe',
   'baseeth:tibbir' = 'baseeth:tibbir',
   'baseeth:kta' = 'baseeth:kta',
