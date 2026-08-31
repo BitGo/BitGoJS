@@ -103,8 +103,8 @@ describe('OFC ERC20 Tokens Configuration:', function () {
         { token: 'ofcmon:wmon', addressCoin: 'mon', chain: 'MON' },
         // HYPE Network token
         { token: 'ofchype:hwhype', addressCoin: 'hype', chain: 'HYPE' },
-        // IP (Story Network) token
-        { token: 'ofcip:aria', addressCoin: 'ip', chain: 'Story' },
+        // IP (Data Network) token
+        { token: 'ofcip:aria', addressCoin: 'ip', chain: 'Data Network' },
       ];
 
       const errors: string[] = [];

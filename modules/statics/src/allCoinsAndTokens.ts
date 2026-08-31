@@ -1943,7 +1943,7 @@ export const allCoinsAndTokens = [
   account(
     'ead0435a-ee3f-4dc5-91fd-8897f1811701',
     'ip',
-    'Story',
+    'Data Network',
     Networks.main.ip,
     18,
     UnderlyingAsset.IP,
@@ -1963,7 +1963,7 @@ export const allCoinsAndTokens = [
   account(
     '86e7b7d6-02db-4ef7-9552-e8aeeeec2d52',
     'tip',
-    'Story Testnet',
+    'Data Network Testnet',
     Networks.test.ip,
     18,
     UnderlyingAsset.IP,
@@ -5523,11 +5523,11 @@ export const allCoinsAndTokens = [
     [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559]
   ),
 
-  // Story testnet tokens
+  // Data Network testnet tokens
   erc20Token(
     'f9a9c36f-8938-4206-bf0d-5016a861c58f',
     'tip:usdc',
-    'Testnet Story USDC',
+    'Testnet Data Network USDC',
     6,
     '0x8c7c52eabb0fcbcaebce2556d9a719d539ea02d8',
     UnderlyingAsset['tip:usdc'],
@@ -5537,14 +5537,14 @@ export const allCoinsAndTokens = [
   erc20Token(
     '9d0e81bc-b049-402b-83ce-3a5dd9680f17',
     'tip:tmt',
-    'Testnet Story TMT',
+    'Testnet Data Network TMT',
     6,
     '0xb283ec8dad644effc5c4c50bb7bb21442ac3c2db',
     UnderlyingAsset['tip:tmt'],
     Networks.test.ip
   ),
 
-  // Story mainnet tokens
+  // Data Network mainnet tokens
   erc20Token(
     '2460e83c-e819-42c3-83c9-3974e08a45c8',
     'ip:aria',

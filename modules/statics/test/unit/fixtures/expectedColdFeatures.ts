@@ -108,7 +108,7 @@ export const expectedColdFeatures = {
     'hoodeth',
     'hppeth',
     'icp',
-    'ip', // Story chain
+    'ip', // Data Network
     'initia',
     'iota',
     'irys',
@@ -210,7 +210,7 @@ export const expectedColdFeatures = {
     'thorchain:rune',
     'tia',
     'ticp',
-    'tip', // Story chain
+    'tip', // Data Network
     'tinitia',
     'tirys',
     'tislm',
