@@ -727,7 +727,11 @@ export class Sol extends BaseCoin {
     }
 
     // For non-consolidate transactions, feePayer must be the wallet's root address
-    if (consolidateId === undefined && transactionJson.feePayer !== walletRootAddress) {
+    if (
+      consolidateId === undefined &&
+      transactionJson.feePayer !== walletRootAddress &&
+      !isCloseAssociatedTokenAccountTx
+    ) {
       throw new Error('Tx fee payer is not the wallet root address');
     }
 
