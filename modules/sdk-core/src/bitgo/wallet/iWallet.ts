@@ -496,6 +496,7 @@ export interface GetPotentialStuckTxsResult {
   isFeeAddress?: boolean;
 }
 
+export interface TransfersOptions extends PaginationOptions {
   txHash?: string;
   allTokens?: boolean;
   searchLabel?: string;
