@@ -26,11 +26,8 @@ import {
  * addresses is out of scope for this SDK.
  *
  * RedPallas MPS DKG completes in the same 2-round shape as EdDSA MPS DKG (round0 local, round1 +
- * round2 online), but round2 additionally requires a `derivationSeed`: a 32-byte value consumed by
- * a subsequent, platform-side-only key derivation step (Zcash Orchard ask/nk/rivk/ivks) that is
- * intentionally not implemented here. The resulting `commonPublicKeychain` is the raw 32-byte
- * RedPallas group public key (64 hex chars) - there is no BIP32-style chain code, unlike EdDSA/ECDSA
- * commonKeychains.
+ * round2 online). The resulting `commonPublicKeychain` is the raw 32-byte RedPallas group public
+ * key (64 hex chars) - there is no BIP32-style chain code, unlike EdDSA/ECDSA commonKeychains.
  */
 export class RedpallasMPCv2Utils extends BaseTssUtils<unknown> {
   constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, wallet?: IWallet) {
