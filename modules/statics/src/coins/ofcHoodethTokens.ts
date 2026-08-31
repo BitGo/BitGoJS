@@ -4162,4 +4162,32 @@ export const ofcHoodethTokens = [
     true,
     'hoodeth'
   ),
+  ofcerc20(
+    '02e35215-1c14-482f-a59f-fffaaa3b7937',
+    'ofchoodeth:pons',
+    'Pons',
+    18,
+    UnderlyingAsset['hoodeth:pons'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'hoodeth'
+  ),
+  ofcerc20(
+    'ab0d939c-e023-42c1-bd55-008d0a614b7c',
+    'ofchoodeth:stonkbroker',
+    'StonkBroker',
+    18,
+    UnderlyingAsset['hoodeth:stonkbroker'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'hoodeth'
+  ),
 ];

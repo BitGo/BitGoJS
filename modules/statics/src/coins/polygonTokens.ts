@@ -1682,6 +1682,15 @@ export const polygonTokens = [
     UnderlyingAsset['polygon:sofid'],
     POLYGON_TOKEN_FEATURES
   ),
+  polygonErc20(
+    'a024c5c7-1333-45bd-b31d-3cc17e830947',
+    'polygon:tel',
+    'Telcoin',
+    2,
+    '0xdf7837de1f2fa4631d716cf2502f8b230f1dcc32',
+    UnderlyingAsset['polygon:tel'],
+    POLYGON_TOKEN_FEATURES
+  ),
   tpolygonErc20(
     '13dd4ab7-2d94-493c-9a61-323f6300f7e5',
     'tpolygon:tusdl',
