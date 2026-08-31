@@ -73,7 +73,6 @@ describe('RedPallas MPCv2 SMC Utils:', function () {
         sessionId,
         bitgoMsg1: fakeSignedMessage('bitgo-1'),
       },
-      derivationSeed: 'a'.repeat(64),
     } as unknown as RedpallasOVC2ToBitgoRound2Payload);
 
   beforeEach(function () {
@@ -190,7 +189,6 @@ describe('RedPallas MPCv2 SMC Utils:', function () {
       assert.strictEqual(senderPayload.sessionId, 'session-xyz');
       assert.deepStrictEqual(senderPayload.userMsg2, payload.ovc[OVCIndexEnum.ONE].ovcMsg2);
       assert.deepStrictEqual(senderPayload.backupMsg2, payload.ovc[OVCIndexEnum.TWO].ovcMsg2);
-      assert.strictEqual(senderPayload.derivationSeed, payload.derivationSeed);
 
       assert.ok(keychainsStub.add.calledOnce);
       assert.deepStrictEqual(keychainsStub.add.firstCall.args[0], {

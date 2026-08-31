@@ -106,7 +106,6 @@ export class RedpallasMPCv2SMCUtils {
       sessionId,
       userMsg2: ovc1.ovcMsg2,
       backupMsg2: ovc2.ovcMsg2,
-      derivationSeed: payload.derivationSeed,
     });
 
     assert.equal(sessionId, result.sessionId, 'Round 1 and round 2 session IDs do not match');
@@ -126,7 +125,6 @@ export class RedpallasMPCv2SMCUtils {
       walletType: payload.walletType,
       coin: payload.coin,
       ovc: payload.ovc,
-      derivationSeed: payload.derivationSeed,
       platform: {
         // sessionId/bitgoMsg1 carried over from payload.platform; safe because the assert
         // above guarantees payload.platform.sessionId equals result.sessionId.

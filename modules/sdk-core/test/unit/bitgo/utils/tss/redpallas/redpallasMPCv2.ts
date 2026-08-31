@@ -44,7 +44,6 @@ describe('RedpallasMPCv2Utils', function () {
         sessionId: 's1',
         userMsg2: { message: 'u2', signature: 'usig' },
         backupMsg2: { message: 'b2', signature: 'bsig' },
-        derivationSeed: 'a'.repeat(64),
       };
 
       const result = await utils.sendKeyGenerationRound2BySender(senderFn as never, payload as never);
