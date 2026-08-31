@@ -5397,6 +5397,7 @@ export const ofcCoins = [
   ofcBscToken('5edc712c-6d22-47c2-9f67-d46d41bcc311', 'ofcbsc:coai', 'ChainOpera AI', 18, UnderlyingAsset['bsc:coai']),
   ofcBscToken('b50fba92-d362-47d1-9a4f-c656b21c778d', 'ofcbsc:nes', 'Nesa', 18, UnderlyingAsset['bsc:nes']),
   ofcBscToken('2d43e6e0-997c-4f2b-bc9a-5f503abe3bc3', 'ofcbsc:mgo', 'Mango Network', 9, UnderlyingAsset['bsc:mgo']),
+  ofcBscToken('04f00c0d-23d9-4a45-9805-e2b12ea8fa2a', 'ofcbsc:real', 'RealLink', 6, UnderlyingAsset['bsc:real']),
   // Ondo Tokens OFC (BSC Mainnet Ungated)
   ofcBscToken(
     'cf2b0030-bd09-427f-b645-e3c0e8ebf42d',
