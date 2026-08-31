@@ -84,6 +84,7 @@ import { kaspa } from './kaspa';
 import {
   ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_EUROPE,
   ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE,
+  ACCOUNT_COIN_DEFAULT_FEATURES_TRUST_ONLY,
   ADA_FEATURES,
   ALGO_FEATURES,
   APT_FEATURES,
@@ -110,6 +111,7 @@ import {
   EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE,
   EVM_FEATURES,
   EVM_NON_EIP1559_FEATURES,
+  EVM_TOKEN_FEATURES_TRUST_ONLY,
   FLR_FEATURES,
   GENERIC_TOKEN_FEATURES,
   HBAR_FEATURES,
@@ -5168,7 +5170,8 @@ export const allCoinsAndTokens = [
     18,
     '0x1b4617734c43f6159f3a70b7e06d883647512778',
     UnderlyingAsset['baseeth:awe'],
-    Networks.main.basechain
+    Networks.main.basechain,
+    EVM_TOKEN_FEATURES_TRUST_ONLY
   ),
   erc20Token(
     '0edc79f9-aa85-4b4c-8f8e-c411399d9517',
@@ -5177,7 +5180,8 @@ export const allCoinsAndTokens = [
     18,
     '0xa4a2e2ca3fbfe21aed83471d28b6f65a233c6e00',
     UnderlyingAsset['baseeth:tibbir'],
-    Networks.main.basechain
+    Networks.main.basechain,
+    EVM_TOKEN_FEATURES_TRUST_ONLY
   ),
   erc20Token(
     '7324ad58-7c81-4a7b-be5e-4a7c9e0dbda7',
@@ -5186,7 +5190,8 @@ export const allCoinsAndTokens = [
     18,
     '0xc0634090f2fe6c6d75e61be2b949464abb498973',
     UnderlyingAsset['baseeth:kta'],
-    Networks.main.basechain
+    Networks.main.basechain,
+    EVM_TOKEN_FEATURES_TRUST_ONLY
   ),
   erc20Token(
     '00dd3e72-b0c4-49a1-86e4-93b0c42cc367',
@@ -5195,7 +5200,8 @@ export const allCoinsAndTokens = [
     18,
     '0xf4d97f2da56e8c3098f3a8d538db630a2606a024',
     UnderlyingAsset['baseeth:diem'],
-    Networks.main.basechain
+    Networks.main.basechain,
+    EVM_TOKEN_FEATURES_TRUST_ONLY
   ),
   erc20Token(
     'ea08b069-74a5-4cfd-8a5e-eb096d409d4e',
@@ -5204,7 +5210,8 @@ export const allCoinsAndTokens = [
     18,
     '0x22af33fe49fd1fa80c7149773dde5890d3c76f3b',
     UnderlyingAsset['baseeth:bnkr'],
-    Networks.main.basechain
+    Networks.main.basechain,
+    EVM_TOKEN_FEATURES_TRUST_ONLY
   ),
   erc20Token(
     '9d1a3d2d-d664-4469-b0be-21a3c47796d9',
@@ -5213,7 +5220,8 @@ export const allCoinsAndTokens = [
     18,
     '0xb33ff54b9f7242ef1593d2c9bcd8f9df46c77935',
     UnderlyingAsset['baseeth:fai'],
-    Networks.main.basechain
+    Networks.main.basechain,
+    EVM_TOKEN_FEATURES_TRUST_ONLY
   ),
   erc20Token(
     '96d6236f-87a1-4919-baf1-597ea24f6926',
@@ -5222,7 +5230,8 @@ export const allCoinsAndTokens = [
     18,
     '0xab6363da0c80cef3ae105bd6241e30872355d021',
     UnderlyingAsset['baseeth:roll'],
-    Networks.main.basechain
+    Networks.main.basechain,
+    EVM_TOKEN_FEATURES_TRUST_ONLY
   ),
   erc20Token(
     '47eb05a5-cd44-432a-8096-a7151a9d0c73',
@@ -5231,7 +5240,8 @@ export const allCoinsAndTokens = [
     18,
     '0xf43eb8de897fbc7f2502483b2bef7bb9ea179229',
     UnderlyingAsset['baseeth:zen'],
-    Networks.main.basechain
+    Networks.main.basechain,
+    EVM_TOKEN_FEATURES_TRUST_ONLY
   ),
 
   // ARC mainnet tokens
@@ -6317,7 +6327,8 @@ export const allCoinsAndTokens = [
     'RealLink',
     6,
     'TGBfBt6Y2Dm3RHdNpZAdqywBsvfdysf834',
-    UnderlyingAsset['trx:real']
+    UnderlyingAsset['trx:real'],
+    ACCOUNT_COIN_DEFAULT_FEATURES_TRUST_ONLY
   ),
   tronToken(
     '888fb35c-1b3d-425d-af65-e6aa7453edce',
@@ -7693,7 +7704,8 @@ export const allCoinsAndTokens = [
     'Rain',
     18,
     '0x25118290e6a5f4139381d072181157035864099d',
-    UnderlyingAsset['arbeth:rain']
+    UnderlyingAsset['arbeth:rain'],
+    EVM_TOKEN_FEATURES_TRUST_ONLY
   ),
   arbethErc20(
     '6f36ac81-eebb-4a83-83cb-efa479d1cd3a',
@@ -7701,7 +7713,8 @@ export const allCoinsAndTokens = [
     'MiL.k Alliance',
     8,
     '0x374c5fb7979d5fdbaad2d95409e235e5cbdfd43c',
-    UnderlyingAsset['arbeth:mlk']
+    UnderlyingAsset['arbeth:mlk'],
+    EVM_TOKEN_FEATURES_TRUST_ONLY
   ),
 
   opethErc20(

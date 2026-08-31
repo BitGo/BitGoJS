@@ -48,6 +48,15 @@ export const ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_EUROPE = ACCOUNT_COIN_DEFAULT
   (feature) => feature !== CoinFeature.CUSTODY_BITGO_EUROPE_APS && feature !== CoinFeature.CUSTODY_BITGO_FRANKFURT
 );
 
+// keeps custody enabled for BitGo Trust only, dropping every other jurisdiction's custody feature
+export const ACCOUNT_COIN_DEFAULT_FEATURES_TRUST_ONLY = ACCOUNT_COIN_DEFAULT_FEATURES.filter(
+  (feature) => feature === CoinFeature.CUSTODY_BITGO_TRUST || !BITGO_CUSTODY_JURISDICTIONS.includes(feature)
+);
+
+// matches the erc20Token/arbethErc20/polygonErc20 default feature set ([...AccountCoin.DEFAULT_FEATURES,
+// CoinFeature.EIP1559]), but scoped to BitGo Trust custody only
+export const EVM_TOKEN_FEATURES_TRUST_ONLY = [...ACCOUNT_COIN_DEFAULT_FEATURES_TRUST_ONLY, CoinFeature.EIP1559];
+
 export const ETH_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
   CoinFeature.SUPPORTS_TOKENS,
@@ -267,6 +276,10 @@ export const POLYGON_FEATURES = [
 ];
 
 export const POLYGON_TOKEN_FEATURES = [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION];
+export const POLYGON_TOKEN_FEATURES_TRUST_ONLY = [
+  ...ACCOUNT_COIN_DEFAULT_FEATURES_TRUST_ONLY,
+  CoinFeature.BULK_TRANSACTION,
+];
 export const POLYGON_TOKEN_FEATURES_EXCLUDE_SINGAPORE = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE,
   CoinFeature.BULK_TRANSACTION,
@@ -342,6 +355,11 @@ export const BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE = [
 ];
 export const BSC_TOKEN_FEATURES_EXCLUDE_MENA_FZE = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_MENA_FZE,
+  CoinFeature.BULK_TRANSACTION,
+  CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX,
+];
+export const BSC_TOKEN_FEATURES_TRUST_ONLY = [
+  ...ACCOUNT_COIN_DEFAULT_FEATURES_TRUST_ONLY,
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX,
 ];
