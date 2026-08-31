@@ -118,7 +118,22 @@ const approval = pendingApprovals.find((pa) => pa.state() === 'pending');
 await approval.approve({ walletPassphrase, otp });
 ```
 
-### 6. Go Account Whitelist List — view policy rules
+### 6. Go Account Get Pending Approval — fetch a single pending approval
+**File:** `examples/ts/go-account/go-account-get-pending-approval.ts`
+
+Fetches the full details of a specific pending approval by ID.
+
+**Best for:**
+- Inspecting a pending approval before deciding to approve or reject
+- Retrieving recipient and amount details for a specific approval
+
+**Example:**
+```typescript
+const pa = await coin.pendingApprovals().get({ id: pendingApprovalId });
+console.log(pa.id(), pa.state(), pa.type());
+```
+
+### 7. Go Account Whitelist List — view policy rules
 **File:** `examples/ts/go-account/go-account-whitelist-list.ts`
 
 Fetches and displays all policy rules on a Go Account wallet, including existing whitelist policy IDs and their entries.
@@ -133,7 +148,7 @@ const wallet = await bitgo.coin('ofc').wallets().get({ id: walletId });
 const rules = wallet._wallet?.admin?.policy?.rules || [];
 ```
 
-### 7. Go Account Whitelist Update — add or remove addresses
+### 8. Go Account Whitelist Update — add or remove addresses
 **File:** `examples/ts/go-account/go-account-whitelist-update.ts`
 
 Adds or removes an address from an existing `advancedWhitelist` policy rule on a Go Account wallet.
@@ -165,7 +180,7 @@ const url = coin.url(`/wallet/${walletId}/policy/rule`);
 const result = await bitgo.put(url).send(body).result();
 ```
 
-### 8. Go Account List Products — view available trading pairs
+### 9. Go Account List Products — view available trading pairs
 **File:** `examples/ts/go-account/go-account-list-products.ts`
 
 Fetches all trading products (pairs) available for a Go Account.
@@ -184,7 +199,7 @@ const response = await (bitgo as any).get(url).result();
 // response.data → array of { id, baseCurrency, quoteCurrency, isTradeDisabled, ... }
 ```
 
-### 9. Go Account Place Order — place a trade order
+### 10. Go Account Place Order — place a trade order
 **File:** `examples/ts/go-account/go-account-place-order.ts`
 
 Places a trade order (market, limit, or TWAP) on a Go Account via the BitGo prime trading API. Assets are reserved until the order completes. In production, orders settle off-chain on weekdays at 12:00 PM EST.
@@ -217,7 +232,7 @@ const url = (bitgo as any).microservicesUrl(
 const order = await (bitgo as any).post(url).send(body).result();
 ```
 
-### 10. Go Account Get Order — check trade order status
+### 11. Go Account Get Order — check trade order status
 **File:** `examples/ts/go-account/go-account-get-order.ts`
 
 Fetches the status and details of a specific trade order by order ID.
@@ -235,7 +250,7 @@ const url = (bitgo as any).microservicesUrl(
 const order = await (bitgo as any).get(url).result();
 ```
 
-### 11. Go Account List Orders — list all trade orders
+### 12. Go Account List Orders — list all trade orders
 **File:** `examples/ts/go-account/go-account-list-orders.ts`
 
 Fetches all trade orders for a Go Account, with optional filtering by status or product symbol.
@@ -253,7 +268,7 @@ const response = await (bitgo as any).get(url).query({ status: 'filled' }).resul
 // response.data → array of orders
 ```
 
-### 12. Sign Transaction — sign only (Step 2 of 3)
+### 13. Sign Transaction — sign only (Step 2 of 3)
 **File:** `examples/ts/go-account/sign-transaction.ts`
 
 Signs a pre-built payload and outputs the hex signature. Use this when the build
@@ -445,6 +460,9 @@ const usdtAddress = await wallet.createAddress({
    # List orders filtered by status or product
    OFC_WALLET_ID=your_wallet_id TRADE_ORDER_STATUS=filled npx tsx go-account-list-orders.ts
    OFC_WALLET_ID=your_wallet_id TRADE_ORDER_PRODUCT=TBTC4-TEUR npx tsx go-account-list-orders.ts
+
+   # Get a specific pending approval by ID
+   PENDING_APPROVAL_ID=your_approval_id npx tsx go-account-get-pending-approval.ts
 
    # List whitelist policy rules on a wallet
    OFC_WALLET_ID=your_wallet_id npx tsx go-account-whitelist-list.ts
