@@ -7,8 +7,10 @@ import { Trx, Ttrx, Utils } from '../../src';
 import { signTxOptions, mockTx } from '../fixtures';
 import {
   baseAddressBalance,
+  baseAddressBalanceWithoutTrc20Field,
   SampleRawTokenSendTxn,
   receiveAddressBalance,
+  receiveAddressBalanceWithoutTrc20Field,
   TestRecoverData,
   TssTestRecoverData,
   creationTransaction,
@@ -442,6 +444,28 @@ describe('TRON:', function () {
         }
       );
     });
+
+    it('should throw if trc20 field absent and token recovery requested (base address)', async function () {
+      mock.method(Trx.prototype as any, 'getAccountBalancesFromNode', (...args) => {
+        if (args.length > 0 && args[0] === TestRecoverData.baseAddress) {
+          return Promise.resolve(baseAddressBalanceWithoutTrc20Field(100000000));
+        }
+        return undefined;
+      });
+
+      await assert.rejects(
+        basecoin.recover({
+          userKey: TestRecoverData.userKey,
+          backupKey: TestRecoverData.backupKey,
+          bitgoKey: TestRecoverData.bitgoKey,
+          tokenContractAddress: 'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs',
+          recoveryDestination: TestRecoverData.recoveryDestination,
+        }),
+        {
+          message: 'Not found token to recover, please check token balance',
+        }
+      );
+    });
   });
 
   describe('Build Unsigned Consolidation Recoveries', () => {
@@ -633,6 +657,34 @@ describe('TRON:', function () {
       assert.equal(Utils.getBase58AddressFromHex(value1.owner_address), TestRecoverData.firstReceiveAddress);
       assert.equal(Utils.getBase58AddressFromHex(value1.to_address), TestRecoverData.baseAddress);
     });
+
+    it('should skip token consolidation when trc20 field absent from account response', async () => {
+      mock.method(Trx.prototype as any, 'getAccountBalancesFromNode', (...args) => {
+        if (args.length > 0 && args[0] === TestRecoverData.firstReceiveAddress) {
+          return Promise.resolve(
+            receiveAddressBalanceWithoutTrc20Field(202100000, TestRecoverData.firstReceiveAddress)
+          );
+        }
+
+        if (args.length > 0 && args[0] === TestRecoverData.secondReceiveAddress) {
+          return Promise.resolve(receiveAddressBalanceWithoutTrc20Field(500, TestRecoverData.secondReceiveAddress));
+        }
+
+        return undefined;
+      });
+
+      const res = await basecoin.recoverConsolidations({
+        userKey: TestRecoverData.userKey,
+        backupKey: TestRecoverData.backupKey,
+        bitgoKey: TestRecoverData.bitgoKey,
+        tokenContractAddress: 'TSdZwNqpHofzP6BsBKGQUWdBeJphLmF6id',
+        startingScanIndex: 1,
+        endingScanIndex: 3,
+      });
+
+      assert.ok(Object.prototype.hasOwnProperty.call(res, 'transactions'));
+      assert.equal(res.transactions.length, 0);
+    });
   });
 
   describe('TSS Recovery', () => {
@@ -808,6 +860,26 @@ describe('TRON:', function () {
     it('should throw if TRC-20 token not found for TSS wallet', async function () {
       mock.method(Trx.prototype as any, 'getAccountBalancesFromNode', () => {
         return Promise.resolve(baseAddressBalance(100000000, []));
+      });
+
+      await assert.rejects(
+        basecoin.recover({
+          userKey: TssTestRecoverData.userKey,
+          backupKey: TssTestRecoverData.backupKey,
+          bitgoKey: TssTestRecoverData.bitgoKey,
+          tokenContractAddress: 'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs',
+          recoveryDestination: TssTestRecoverData.recoveryDestination,
+          isTss: true,
+        }),
+        {
+          message: 'Not found token to recover, please check token balance',
+        }
+      );
+    });
+
+    it('should throw if trc20 field absent for TSS wallet token recovery', async function () {
+      mock.method(Trx.prototype as any, 'getAccountBalancesFromNode', () => {
+        return Promise.resolve(baseAddressBalanceWithoutTrc20Field(100000000));
       });
 
       await assert.rejects(
