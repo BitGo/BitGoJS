@@ -297,6 +297,14 @@ export interface PrebuildTransactionOptions {
    */
   bridgingParams?: BridgingParams;
   /**
+   * ERC-7984 wrap / wrapApprove parameters (`type: 'wrapApprove' | 'wrap'`).
+   * Passed through to WP as tokenName + amount on the intent.
+   */
+  wrapParams?: {
+    tokenName: string;
+    amount: string;
+  };
+  /**
    * Parameters for executing DAML commands on Canton.
    */
   cantonCommandParams?: CantonCommandParams;
@@ -950,6 +958,13 @@ export interface SendManyOptions extends PrebuildAndSignTransactionOptions {
     amount?: string | number;
     actionType?: string;
     operationId?: string;
+  };
+  /**
+   * ERC-7984 wrap / wrapApprove parameters. WP builds approve/wrap calldata from these.
+   */
+  wrapParams?: {
+    tokenName: string;
+    amount: string;
   };
 }
 
