@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [38.12.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.12.0...@bitgo/sdk-core@38.12.1) (2026-09-01)
+
+
+### Bug Fixes
+
+* **sdk-core:** allow encryptionVersion 1 for lightning wallets ([0ffeec6](https://github.com/BitGo/BitGoJS/commit/0ffeec685924872857c923c3e3dab7b51f24bd04))
+
+
+
+
+
 # [38.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.11.0...@bitgo/sdk-core@38.12.0) (2026-09-01)
 
 
