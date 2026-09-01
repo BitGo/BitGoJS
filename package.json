@@ -146,7 +146,7 @@
     "react-router-dom": "6.30.4",
     "webpack": "5.107.2",
     "@babel/core": "^7.29.7",
-    "browserslist": "4.28.4",
+    "browserslist": "4.28.7",
     "enhanced-resolve": "5.24.1",
     "es-module-lexer": "2.1.0",
     "webpack/webpack-sources": "3.5.0",
