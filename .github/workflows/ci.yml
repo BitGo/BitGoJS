@@ -59,7 +59,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [20.x, 22.x, 24.x]
+        node-version: [22.x, 24.x]
 
     steps:
       - uses: socketdev/action@937f824ec476dfd164d4a4d9995751427b0be143 # v1.3.0
@@ -140,10 +140,10 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Setup node 20
+      - name: Setup node 22
         uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
 
       - name: restore lerna dependencies
         id: lerna-cache
@@ -152,7 +152,7 @@ jobs:
           path: |
             node_modules
             modules/*/node_modules
-          key: ${{ runner.os }}-node20-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json') }}-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-node22-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json') }}-${{ hashFiles('**/package.json') }}
 
       - name: Install Packages
         if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
@@ -197,10 +197,10 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Setup node 20
+      - name: Setup node 22
         uses: actions/setup-node@v6
         with:
-          node-version: 20 # this just needs to pass our lock file requirement for compilation
+          node-version: 22 # this just needs to pass our lock file requirement for compilation
 
       - name: Build Info
         run: |
