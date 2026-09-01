@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [8.7.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.7.0...@bitgo/sdk-coin-sol@8.7.1) (2026-09-01)
+
+
+### Bug Fixes
+
+* **sdk-coin-sol:** skip fee payer check for closeATA ([d91084d](https://github.com/BitGo/BitGoJS/commit/d91084dbab40fc9b057ccedc228f34fdb6a5ae62))
+
+
+
+
+
 # [8.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.6.1...@bitgo/sdk-coin-sol@8.7.0) (2026-08-27)
 
 

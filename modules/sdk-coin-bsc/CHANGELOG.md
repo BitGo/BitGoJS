@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [22.12.27](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@22.12.26...@bitgo/sdk-coin-bsc@22.12.27) (2026-09-01)
+
+
+### Bug Fixes
+
+* **abstract-eth,sdk-core:** use coin chain ID when deriving signableHex (WCI-1398) ([3762bc6](https://github.com/BitGo/BitGoJS/commit/3762bc66536bde23eb657c59be48bea53e6dacf5))
+
+
+
+
+
 ## [22.12.26](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@22.12.25...@bitgo/sdk-coin-bsc@22.12.26) (2026-08-27)
 
 

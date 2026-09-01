@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.11.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.11.0...@bitgo/secp256k1@1.11.1) (2026-09-01)
+
+**Note:** Version bump only for package @bitgo/secp256k1
+
+
+
+
+
 # [1.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.10.0...@bitgo/secp256k1@1.11.0) (2026-03-29)
 
 
