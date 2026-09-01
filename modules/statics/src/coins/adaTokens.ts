@@ -35,7 +35,7 @@ export const adaTokens = [
     'USDr',
     'asset1phc5mnwh5p5tsqqxuf2mtvcvpsm6f6vjf8ue08',
     UnderlyingAsset['tada:usdr'],
-    [...ADA_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+    [...ADA_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.STAKING]
   ),
   tadaToken(
     'a84eff6c-4f7e-48b1-a92f-f535dcccc28c',
@@ -178,7 +178,7 @@ export const adaTokens = [
     'USDr',
     'asset19k6sv4ry9cu7pd25lry27k0crt3x3hyc5zgv3g',
     UnderlyingAsset['ada:usdr'],
-    [...ADA_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+    [...ADA_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.STAKING]
   ),
   adaToken(
     'e9d2b3bb-a668-404d-a6bf-bf2dfefed4d2',
