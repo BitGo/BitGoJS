@@ -5014,7 +5014,7 @@ export const allCoinsAndTokens = [
     '0x1e9e47583f15d45a10df48c0b1846e0492c795d7',
     UnderlyingAsset['baseeth:gusdcq'],
     Networks.main.basechain,
-    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559]
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559, CoinFeature.RECEIPT_TOKEN]
   ),
   erc20Token(
     'ee820f5e-580d-4aba-85dc-fae843200be6',
