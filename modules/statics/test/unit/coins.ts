@@ -1413,6 +1413,23 @@ describe('Liquid Staking Features', () => {
   });
 });
 
+describe('ADA RealFi USDr staking', () => {
+  it('should have STAKING feature for stakeable USDr tokens', () => {
+    ['ada:usdr', 'tada:usdr'].forEach((coinName) => {
+      const coin = coins.get(coinName);
+      coin.features.includes(CoinFeature.STAKING).should.eql(true);
+      coin.features.includes(CoinFeature.STABLECOIN).should.eql(true);
+    });
+  });
+
+  it('should not mark sUSDr as stakeable', () => {
+    ['ada:susdr', 'tada:susdr'].forEach((coinName) => {
+      const coin = coins.get(coinName);
+      coin.features.includes(CoinFeature.STAKING).should.eql(false);
+    });
+  });
+});
+
 describe('create token map using config details', () => {
   it('should create a valid token map from AmsTokenConfig', () => {
     const tokenMap = createTokenMapUsingConfigDetails(amsTokenConfig);
