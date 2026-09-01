@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-tempo",
-  "version": "1.15.20",
+  "version": "1.15.21",
   "description": "BitGo SDK coin library for Tempo",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,17 +40,17 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-eth": "^25.3.3",
-    "@bitgo/sdk-core": "^38.11.0",
+    "@bitgo/abstract-eth": "^25.3.4",
+    "@bitgo/sdk-core": "^38.12.0",
     "@bitgo/sdk-lib-mpc": "^10.18.0",
-    "@bitgo/secp256k1": "^1.11.0",
-    "@bitgo/statics": "^59.10.0",
+    "@bitgo/secp256k1": "^1.11.1",
+    "@bitgo/statics": "^59.11.0",
     "@ethereumjs/common": "^2.6.5",
     "ethers": "^5.7.2"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^2.4.2",
-    "@bitgo/sdk-test": "^9.1.71"
+    "@bitgo/sdk-api": "^2.5.0",
+    "@bitgo/sdk-test": "^9.1.72"
   },
   "files": [
     "dist"

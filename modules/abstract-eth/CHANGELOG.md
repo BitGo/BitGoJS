@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [25.3.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@25.3.3...@bitgo/abstract-eth@25.3.4) (2026-09-01)
+
+
+### Bug Fixes
+
+* **abstract-eth,sdk-core:** use coin chain ID when deriving signableHex (WCI-1398) ([3762bc6](https://github.com/BitGo/BitGoJS/commit/3762bc66536bde23eb657c59be48bea53e6dacf5))
+* **abstract-eth:** validate defi calldata ([734c375](https://github.com/BitGo/BitGoJS/commit/734c375baf298d0b165bb8a30f75d235241ced8a))
+
+
+
+
+
 ## [25.3.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@25.3.2...@bitgo/abstract-eth@25.3.3) (2026-08-27)
 
 

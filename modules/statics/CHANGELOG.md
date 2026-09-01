@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.10.0...@bitgo/statics@59.11.0) (2026-09-01)
+
+
+### Bug Fixes
+
+* **statics:** use tofcerc20 for testnet USDC ofc tokens ([5206b3c](https://github.com/BitGo/BitGoJS/commit/5206b3c94c20b43831379bce0646d181e9e279c3))
+
+
+### Features
+
+* **statics:** add bsc:real (RealLink) for CECHO-1941 ([4fc60f3](https://github.com/BitGo/BitGoJS/commit/4fc60f3ae691dc7a8832dc78dec3d7e582c670d3)), closes [BitGoJS#9536](https://github.com/BitGoJS/issues/9536)
+* **statics:** enable ERC20 token batching for bera, oas, soneium, tapechain ([b29e92c](https://github.com/BitGo/BitGoJS/commit/b29e92cd6d2fb2c74a584781c6fef62d9b09b70b))
+* **statics:** enable STAKING on ada:usdr and tada:usdr ([12974fc](https://github.com/BitGo/BitGoJS/commit/12974fc1e51fa89f58136723244d130c529d40af))
+* **statics:** onboard CHALO-1400 tokens ([8ff8cd9](https://github.com/BitGo/BitGoJS/commit/8ff8cd925a8f8cd401c39c23cdeb2670d375e9f2))
+* **statics:** onboard Robinhood EVM stock tokens batch [#3](https://github.com/BitGo/BitGoJS/issues/3) ([5d1a498](https://github.com/BitGo/BitGoJS/commit/5d1a498ccb955e0ab34ec10582ffe6038b6b789d))
+* **statics:** rename Story display name to Data Network ([e89cb65](https://github.com/BitGo/BitGoJS/commit/e89cb65f01dd6955ac229ef11baf8b756883bf09))
+* **statics:** scope CECHO-1941 batch tokens to BitGo Trust only ([a845819](https://github.com/BitGo/BitGoJS/commit/a84581956288cfa11c7e7ee644e18a350d555442)), closes [BitGoJS#9536](https://github.com/BitGoJS/issues/9536)
+
+
+
+
+
 # [59.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.9.0...@bitgo/statics@59.10.0) (2026-08-27)
 
 

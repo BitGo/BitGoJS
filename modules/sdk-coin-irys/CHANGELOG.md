@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-irys@1.2.0...@bitgo/sdk-coin-irys@1.2.1) (2026-09-01)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-irys
+
+
+
+
+
 # [1.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-irys@1.1.0...@bitgo/sdk-coin-irys@1.2.0) (2026-03-29)
 
 

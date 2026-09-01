@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.11.0...@bitgo/sdk-core@38.12.0) (2026-09-01)
+
+
+### Bug Fixes
+
+* **abstract-eth,sdk-core:** use coin chain ID when deriving signableHex (WCI-1398) ([3762bc6](https://github.com/BitGo/BitGoJS/commit/3762bc66536bde23eb657c59be48bea53e6dacf5))
+* **sdk-coin-ada,sdk-coin-iota:** validate precomputed EdDSA signing material ([6d30f56](https://github.com/BitGo/BitGoJS/commit/6d30f56c14e0370be3823e7f5522660921e9e86b))
+* **sdk-core:** temporarily disable assertSignableConsistency call (WCI-1398) ([c67dbe1](https://github.com/BitGo/BitGoJS/commit/c67dbe14d1216634e77cde90705d3b492e4d03b1))
+
+
+### Features
+
+* add derivable ed25519 root pub encode/decode helpers ([fe9f54c](https://github.com/BitGo/BitGoJS/commit/fe9f54c3c58af6de6b7fd948815939eb293918f6))
+* **sdk-api:** extend createEncryptionSession with a v1 shim ([8e6f989](https://github.com/BitGo/BitGoJS/commit/8e6f989ce0d13ca3058f3cceec2b76523c941168))
+* **sdk-core:** forward enterprise on tss/settings and keychain add calls ([9995cb0](https://github.com/BitGo/BitGoJS/commit/9995cb0954f0a2a2444d16eba03fff113539e4fb))
+* **sdk-core:** support preparedTransaction in TSS message signing ([a462e44](https://github.com/BitGo/BitGoJS/commit/a462e44d96b496e35b4cd83f9edb1873f66ad7e8))
+* **sdk-core:** wire wrapApprove sendMany intent ([9c6201f](https://github.com/BitGo/BitGoJS/commit/9c6201fe13d918d94e09c24bdfcebe3300c15aa5))
+* **statics:** rename Story display name to Data Network ([e89cb65](https://github.com/BitGo/BitGoJS/commit/e89cb65f01dd6955ac229ef11baf8b756883bf09))
+
+
+### Performance Improvements
+
+* **sdk-core:** pre-decrypt once in reshareWalletWithSpenders ([b8f4284](https://github.com/BitGo/BitGoJS/commit/b8f4284b2ec6993a31b87930557605619c52a3af))
+* **sdk-core:** use createEncryptionSession in bulkAcceptShare ([9786c49](https://github.com/BitGo/BitGoJS/commit/9786c494300c66b388106c649c0b1fe56d91b824))
+* **sdk-core:** use createEncryptionSession in bulkUpdateWalletShare ([1c4924c](https://github.com/BitGo/BitGoJS/commit/1c4924c684710bd7e063ff27b48ef4d75872e76a))
+
+
+
+
+
 # [38.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.10.0...@bitgo/sdk-core@38.11.0) (2026-08-27)
 
 

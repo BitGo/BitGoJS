@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@2.4.2...@bitgo/sdk-api@2.5.0) (2026-09-01)
+
+
+### Features
+
+* **sdk-api:** decrypt HKDF-only v2 envelopes without emitting them ([0cb4a0d](https://github.com/BitGo/BitGoJS/commit/0cb4a0d9d89f38b9761e0ea6c56fe019f2c56597))
+* **sdk-api:** extend createEncryptionSession with a v1 shim ([8e6f989](https://github.com/BitGo/BitGoJS/commit/8e6f989ce0d13ca3058f3cceec2b76523c941168))
+
+
+
+
+
 ## [2.4.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@2.4.1...@bitgo/sdk-api@2.4.2) (2026-08-27)
 
 

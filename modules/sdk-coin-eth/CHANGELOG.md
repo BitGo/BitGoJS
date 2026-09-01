@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [26.3.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@26.3.1...@bitgo/sdk-coin-eth@26.3.2) (2026-09-01)
+
+
+### Bug Fixes
+
+* **abstract-eth:** validate defi calldata ([734c375](https://github.com/BitGo/BitGoJS/commit/734c375baf298d0b165bb8a30f75d235241ced8a))
+
+
+
+
+
 ## [26.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@26.3.0...@bitgo/sdk-coin-eth@26.3.1) (2026-08-27)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-eth
