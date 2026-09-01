@@ -299,6 +299,12 @@ export interface DefiIntentParams {
   operationId?: string;
 }
 
+/** ERC-7984 wrap / wrapApprove parameters (input container for wrapParams). */
+export interface WrapIntentParams {
+  tokenName: string;
+  amount: string;
+}
+
 export interface IntentOptionsForMessage extends IntentOptionsBase {
   messageRaw: string;
   messageEncoded?: string;
@@ -377,6 +383,8 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
   cantonCommandParams?: CantonCommandParams;
   /** DeFi vault intent fields for defi-approve / defi-deposit intents. */
   defiParams?: DefiIntentParams;
+  /** ERC-7984 wrap / wrapApprove fields flattened onto the WP intent. */
+  wrapParams?: WrapIntentParams;
   /** Canton party ID of the end investor to onboard (cantonEndInvestorOnboardingOffer intent). */
   endInvestorPartyId?: string;
   /** Reason for rejecting the onboarding offer (cantonEndInvestorOnboardingReject intent). */

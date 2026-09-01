@@ -3626,6 +3626,52 @@ describe('V2 Wallet:', function () {
         args[1]!.should.equal('full');
       });
 
+      it('should call prebuildTxWithIntent with the correct params for wrapApprove', async function () {
+        const feeOptions = {
+          maxFeePerGas: 3000000000,
+          maxPriorityFeePerGas: 2000000000,
+        };
+        const wrapParams = { tokenName: 'hteth:cusdt', amount: '1000000' };
+
+        const prebuildTxWithIntent = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequestFull);
+
+        await tssEthWallet.prebuildTransaction({
+          reqId,
+          type: 'wrapApprove',
+          wrapParams,
+          feeOptions,
+        });
+
+        sinon.assert.calledOnce(prebuildTxWithIntent);
+        const args = prebuildTxWithIntent.args[0];
+        args[0]!.should.not.have.property('recipients');
+        args[0]!.intentType.should.equal('wrapApprove');
+        args[0]!.wrapParams!.should.deepEqual(wrapParams);
+        args[0]!.feeOptions!.should.deepEqual(feeOptions);
+        args[1]!.should.equal('full');
+      });
+
+      it('should call prebuildTxWithIntent with the correct params for wrap', async function () {
+        const wrapParams = { tokenName: 'hteth:cusdt', amount: '1000000' };
+
+        const prebuildTxWithIntent = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequestFull);
+
+        await tssEthWallet.prebuildTransaction({
+          reqId,
+          type: 'wrap',
+          wrapParams,
+        });
+
+        sinon.assert.calledOnce(prebuildTxWithIntent);
+        const args = prebuildTxWithIntent.args[0];
+        args[0]!.should.not.have.property('recipients');
+        args[0]!.intentType.should.equal('wrap');
+        args[0]!.wrapParams!.should.deepEqual(wrapParams);
+        args[1]!.should.equal('full');
+      });
+
       it('should call prebuildTxWithIntent with the correct params for eth fillNonce for receive address nonce filling tx', async function () {
         const feeOptions = {
           maxFeePerGas: 3000000000,
@@ -4016,6 +4062,53 @@ describe('V2 Wallet:', function () {
         intent.feeOptions!.should.deepEqual(feeOptions);
         intent.tokenName!.should.equal(tokenName);
         intent.intentType.should.equal('tokenApproval');
+      });
+
+      it('populate intent should return valid eth wrapApprove intent from wrapParams', async function () {
+        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('hteth'));
+        const feeOptions = {
+          maxFeePerGas: 3000000000,
+          maxPriorityFeePerGas: 2000000000,
+        };
+        const wrapParams = { tokenName: 'hteth:cusdt', amount: '1000000' };
+
+        const intent = mpcUtils.populateIntent(bitgo.coin('hteth'), {
+          reqId,
+          intentType: 'wrapApprove',
+          wrapParams,
+          feeOptions,
+        });
+
+        intent.should.have.property('recipients', undefined);
+        intent.feeOptions!.should.deepEqual(feeOptions);
+        intent.tokenName!.should.equal(wrapParams.tokenName);
+        intent.amount!.should.equal(wrapParams.amount);
+        intent.intentType.should.equal('wrapApprove');
+      });
+
+      it('populate intent should return valid eth wrap intent from wrapParams', async function () {
+        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('hteth'));
+        const wrapParams = { tokenName: 'hteth:cusdt', amount: '1000000' };
+
+        const intent = mpcUtils.populateIntent(bitgo.coin('hteth'), {
+          reqId,
+          intentType: 'wrap',
+          wrapParams,
+        });
+
+        intent.should.have.property('recipients', undefined);
+        intent.tokenName!.should.equal(wrapParams.tokenName);
+        intent.amount!.should.equal(wrapParams.amount);
+        intent.intentType.should.equal('wrap');
+      });
+
+      it('populate intent should require wrapParams for wrapApprove', async function () {
+        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('hteth'));
+        (() =>
+          mpcUtils.populateIntent(bitgo.coin('hteth'), {
+            reqId,
+            intentType: 'wrapApprove',
+          })).should.throw(/wrapParams/);
       });
 
       it('should populate intent with custodianTransactionId', async function () {

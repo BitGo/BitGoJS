@@ -161,6 +161,8 @@ export const BuildParams = t.exact(
       // Bridging parameters for cross-chain operations (e.g., BTC to sBTC)
       bridgingParams: t.unknown,
       defiParams: t.unknown,
+      // ERC-7984 wrap / wrapApprove: { tokenName, amount } passthrough to WP
+      wrapParams: t.unknown,
       // WebAuthn attestation for the withdrawal intent (WCN-539) — pass-through only.
       attestation: AttestationPayload,
     }),

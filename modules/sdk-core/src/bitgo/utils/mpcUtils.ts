@@ -222,6 +222,8 @@ export abstract class MpcUtils {
         'defi-approve',
         'defi-deposit',
         'defi-withdraw',
+        'wrapApprove',
+        'wrap',
       ].includes(params.intentType)
     ) {
       assert(params.recipients, `'recipients' is a required parameter for ${params.intentType} intent`);
@@ -332,6 +334,25 @@ export abstract class MpcUtils {
             vaultId: params.defiParams.vaultId,
             // DefiWithdrawIntent uses shareTokenAmount (vault shares, base units)
             shareTokenAmount: params.defiParams.amount,
+          };
+        }
+        case 'wrapApprove':
+        case 'wrap': {
+          assert(params.wrapParams, `'wrapParams' is required for ${params.intentType} intent`);
+          assert(
+            typeof params.wrapParams.tokenName === 'string' && params.wrapParams.tokenName.length > 0,
+            `'wrapParams.tokenName' is required for ${params.intentType} intent`
+          );
+          assert(
+            typeof params.wrapParams.amount === 'string' && /^[1-9]\d*$/.test(params.wrapParams.amount),
+            `'wrapParams.amount' must be a positive integer string for ${params.intentType} intent`
+          );
+          return {
+            ...baseIntent,
+            tokenName: params.wrapParams.tokenName,
+            amount: params.wrapParams.amount,
+            feeOptions: params.feeOptions,
+            feeToken: params.feeToken,
           };
         }
         default:

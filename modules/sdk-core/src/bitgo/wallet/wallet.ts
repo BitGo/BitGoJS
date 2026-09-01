@@ -2642,7 +2642,13 @@ export class Wallet implements IWallet {
       throw error;
     }
 
-    if (params.recipients && (params.type === 'fillNonce' || params.type === 'acceleration')) {
+    if (
+      params.recipients &&
+      (params.type === 'fillNonce' ||
+        params.type === 'acceleration' ||
+        params.type === 'wrapApprove' ||
+        params.type === 'wrap')
+    ) {
       const error: any = new Error(`cannot provide recipients for transaction type ${params.type}`);
       error.code = 'recipients_not_allowed_for_fillnonce_and_acceleration_tx_type';
       throw error;
@@ -4470,6 +4476,20 @@ export class Wallet implements IWallet {
             reqId,
             intentType: 'tokenApproval',
             tokenName: params.tokenName,
+            feeToken: params.feeToken,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      case 'wrapApprove':
+      case 'wrap':
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: params.type === 'wrap' ? 'wrap' : 'wrapApprove',
+            wrapParams: params.wrapParams as { tokenName: string; amount: string },
+            feeOptions,
             feeToken: params.feeToken,
           },
           apiVersion,
