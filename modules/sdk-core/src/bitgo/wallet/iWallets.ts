@@ -287,8 +287,9 @@ export const GenerateLightningWalletOptionsCodec = t.intersection(
     }),
     t.partial({
       lightningProvider: t.union([t.literal('amboss'), t.literal('voltage')]),
-      // Codec intentionally accepts only 2: v1 is the implicit default and never sent on the wire.
-      encryptionVersion: t.literal(2),
+      // 1 is accepted during the v2-decrypt rollout window: some UI/SDK consumers can't
+      // decrypt v2 envelopes yet, so callers may still need to force v1 explicitly.
+      encryptionVersion: t.union([t.literal(1), t.literal(2)]),
     }),
   ],
   'GenerateLightningWalletOptions'
