@@ -679,7 +679,10 @@ export interface IBaseCoin {
   getFamily(): string;
   getFullName(): string;
   valuelessTransferAllowed(): boolean;
-  checkRecipient(recipient: { address: string; amount: string | number }): void;
+  checkRecipient(
+    recipient: { address: string; amount: string | number },
+    options?: { allowZeroAmount?: boolean }
+  ): void;
   sweepWithSendMany(): boolean;
   transactionDataAllowed(): boolean;
   allowsAccountConsolidations(): boolean;

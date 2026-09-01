@@ -4920,6 +4920,92 @@ describe('V2 Wallet:', function () {
         sendMany.should.deepEqual('sendTxResponse');
       });
 
+      it('should allow zero amount recipients for closeAssociatedTokenAccount', async function () {
+        const signedTransaction = {
+          txRequestId: 'txRequestId',
+        };
+        const prebuildAndSignTransaction = sandbox.stub(tssSolWallet, 'prebuildAndSignTransaction');
+        prebuildAndSignTransaction.resolves(signedTransaction);
+        const sendTxRequest = sandbox.stub(TssUtils.prototype, 'sendTxRequest');
+        sendTxRequest.resolves('sendTxResponse');
+
+        const sendMany = await tssSolWallet.sendMany({
+          type: 'closeAssociatedTokenAccount',
+          recipients: [
+            {
+              address: 'ataAddress',
+              amount: '0',
+            },
+            {
+              address: 'ataAddress2',
+              amount: 0,
+            },
+          ],
+        });
+        sendMany.should.deepEqual('sendTxResponse');
+        sinon.assert.calledOnce(prebuildAndSignTransaction);
+      });
+
+      it('should reject zero amount recipients for sol transfers', async function () {
+        await tssSolWallet
+          .sendMany({
+            type: 'transfer',
+            recipients: [
+              {
+                address: 'address',
+                amount: '0',
+              },
+            ],
+          })
+          .should.be.rejectedWith(
+            'invalid argument for amount - positive number greater than zero or numeric string expected'
+          );
+      });
+
+      it('should reject negative amount recipients for closeAssociatedTokenAccount', async function () {
+        await tssSolWallet
+          .sendMany({
+            type: 'closeAssociatedTokenAccount',
+            recipients: [
+              {
+                address: 'ataAddress',
+                amount: '-1',
+              },
+            ],
+          })
+          .should.be.rejectedWith(
+            'invalid argument for amount - positive number greater than zero or numeric string expected'
+          );
+      });
+
+      it('should reject non-zero amount recipients for closeAssociatedTokenAccount', async function () {
+        await tssSolWallet
+          .sendMany({
+            type: 'closeAssociatedTokenAccount',
+            recipients: [
+              {
+                address: 'ataAddress',
+                amount: '1000',
+              },
+            ],
+          })
+          .should.be.rejectedWith("invalid argument for amount - closeAssociatedTokenAccount requires amount '0'");
+      });
+
+      it("should reject amount 'max' recipients for closeAssociatedTokenAccount", async function () {
+        await tssSolWallet
+          .sendMany({
+            type: 'closeAssociatedTokenAccount',
+            recipients: [
+              {
+                address: 'ataAddress',
+                amount: 'max',
+              },
+            ],
+          })
+          .should.be.rejectedWith("invalid argument for amount - closeAssociatedTokenAccount requires amount '0'");
+      });
+
       it('should send many and call setRequestTracer', async function () {
         const signedTransaction = {
           txRequestId: 'txRequestId',
