@@ -35,6 +35,10 @@ describe('wallet options codecs with encryptionVersion', () => {
     assert.ok(isRight(GenerateLightningWalletOptionsCodec.decode(lightningBase)));
   });
 
+  it('GenerateLightningWalletOptionsCodec accepts encryptionVersion: 1 during the v2-decrypt rollout window', () => {
+    assert.ok(isRight(GenerateLightningWalletOptionsCodec.decode({ ...lightningBase, encryptionVersion: 1 })));
+  });
+
   it('GenerateGoAccountWalletOptionsCodec accepts encryptionVersion: 2', () => {
     assert.ok(isRight(GenerateGoAccountWalletOptionsCodec.decode({ ...goAccountBase, encryptionVersion: 2 })));
   });
