@@ -381,11 +381,18 @@ describe('ZAMA staking feature', function () {
   });
 
   it('ERC-7984 ZAMA tokens should not expose STAKING', function () {
-    ['eth:czama', 'eth:cxaut', 'eth:ctgbp', 'eth:cweth', 'eth:cusdt', 'eth:cusdc', 'hteth:ctest1', 'hteth:cusdt'].forEach(
-      (name) => {
-        coins.get(name).features.includes(CoinFeature.STAKING).should.be.false();
-      }
-    );
+    [
+      'eth:czama',
+      'eth:cxaut',
+      'eth:ctgbp',
+      'eth:cweth',
+      'eth:cusdt',
+      'eth:cusdc',
+      'hteth:ctest1',
+      'hteth:cusdt',
+    ].forEach((name) => {
+      coins.get(name).features.includes(CoinFeature.STAKING).should.be.false();
+    });
   });
 
   it('stZAMA LSTs should not expose STAKING', function () {
