@@ -143,7 +143,7 @@ export enum CoinFamily {
   ZKETH = 'zketh',
   ZKSYNCERA = 'zksyncera', // ZkSync Era
   LINEAETH = 'lineaeth',
-  IP = 'ip', // Story Chain
+  IP = 'ip', // Data Network
   SOMI = 'somi', // Somnia Chain
   FLUENTETH = 'fluenteth',
   MORPH = 'morph',
@@ -696,7 +696,7 @@ export enum UnderlyingAsset {
   HPPETH = 'hppeth', // House Party Protocol
   ICP = 'icp',
   INKETH = 'inketh', // INK L2
-  IP = 'ip', // Story Chain
+  IP = 'ip', // Data Network
   INITIA = 'initia',
   INJECTIVE = 'injective',
   IOTA = 'iota',
@@ -3921,11 +3921,11 @@ export enum UnderlyingAsset {
   // X Layer (OKB) testnet tokens
   'tokbxlayer:tzeb' = 'tokbxlayer:tzeb',
 
-  // Story testnet tokens
+  // Data Network testnet tokens
   'tip:usdc' = 'tip:usdc',
   'tip:tmt' = 'tip:tmt',
 
-  // Story mainnet tokens
+  // Data Network mainnet tokens
   'ip:aria' = 'ip:aria',
 
   // MegaEth mainnet tokens

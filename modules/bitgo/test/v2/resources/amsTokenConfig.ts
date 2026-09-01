@@ -24,7 +24,7 @@ export const reducedAmsTokenConfig = {
   'tip:faketoken': [
     {
       id: 'a1b2c3d4-e5f6-4789-8abc-def123456789',
-      fullName: 'Story Testnet Faketoken',
+      fullName: 'Data Network Testnet Faketoken',
       name: 'tip:faketoken',
       prefix: '',
       suffix: 'TIP:FAKETOKEN',

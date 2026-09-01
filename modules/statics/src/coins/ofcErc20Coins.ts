@@ -6847,7 +6847,7 @@ export const tOfcErc20Coins = [
     true,
     'tjovayeth'
   ),
-  // Story Network tokens
+  // Data Network tokens
   ofcerc20(
     '452cc4f6-3c77-4193-a572-4b0d0f838c3c',
     'ofcip:aria',

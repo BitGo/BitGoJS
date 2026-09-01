@@ -195,7 +195,7 @@ export interface VetStakeOptions extends StakeOptions {
 
 export interface StoryStakeOptions extends StakeOptions {
   /**
-   * Story staking period
+   * Data Network staking period
    */
   stakingPeriod?: string;
 }

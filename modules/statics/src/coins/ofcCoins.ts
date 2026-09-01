@@ -551,8 +551,15 @@ export const ofcCoins = [
     UnderlyingAsset.FLUENTETH,
     CoinKind.CRYPTO
   ),
-  ofc('aa7e956f-2d59-4bf6-aba6-2d51bd298150', 'ofcip', 'Story', 18, UnderlyingAsset.IP, CoinKind.CRYPTO),
-  tofc('773b02f6-32ea-493a-bca5-13d93cb0afff', 'ofctip', 'Story Testnet', 18, UnderlyingAsset.IP, CoinKind.CRYPTO),
+  ofc('aa7e956f-2d59-4bf6-aba6-2d51bd298150', 'ofcip', 'Data Network', 18, UnderlyingAsset.IP, CoinKind.CRYPTO),
+  tofc(
+    '773b02f6-32ea-493a-bca5-13d93cb0afff',
+    'ofctip',
+    'Data Network Testnet',
+    18,
+    UnderlyingAsset.IP,
+    CoinKind.CRYPTO
+  ),
   ofc(
     '9fd3e1b0-2e67-46c6-ab3b-a9942533b9d6',
     'ofcbobaeth',

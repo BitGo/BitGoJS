@@ -118,7 +118,7 @@ describe('V2 Keychains', function () {
         n.asset !== UnderlyingAsset.KAIA &&
         n.asset !== UnderlyingAsset.IRYS &&
         n.asset !== UnderlyingAsset.LINEAETH &&
-        n.asset !== UnderlyingAsset.IP && // Story Chain
+        n.asset !== UnderlyingAsset.IP && // Data Network
         n.asset !== UnderlyingAsset.BASEETH &&
         n.asset !== UnderlyingAsset.SOMI &&
         n.asset !== UnderlyingAsset.FLRP &&
