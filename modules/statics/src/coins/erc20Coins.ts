@@ -15001,7 +15001,8 @@ export const erc20Coins = [
     'Zama',
     18,
     '0xa12cc123ba206d4031d1c7f6223d1c2ec249f4f3',
-    UnderlyingAsset['eth:zama']
+    UnderlyingAsset['eth:zama'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.STAKING]
   ),
   erc20(
     '9c99940d-fa25-48cd-bcf5-ef794db4a532',
