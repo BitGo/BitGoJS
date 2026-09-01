@@ -395,10 +395,10 @@ describe('ZAMA staking feature', function () {
     });
   });
 
-  it('stZAMA LSTs should expose STAKING', function () {
+  it('stZAMA LSTs should not expose STAKING', function () {
     ['hteth:stzamakms', 'hteth:stzamadfns', 'hteth:stzamafig', 'hteth:stzamacop', 'hteth:stzamablco'].forEach(
       (name) => {
-        coins.get(name).features.should.containEql(CoinFeature.STAKING);
+        coins.get(name).features.includes(CoinFeature.STAKING).should.be.false();
       }
     );
   });
