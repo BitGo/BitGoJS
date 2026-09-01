@@ -35,22 +35,29 @@ export const GCM_IV_LENGTH = 12;
 export const HKDF_SALT_LENGTH = 32;
 
 /** Fixed HKDF info string for domain separation across BitGo v2 session keys */
-const HKDF_INFO = new TextEncoder().encode('bitgo-v2-session');
+const HKDF_SESSION_INFO = new TextEncoder().encode('bitgo-v2-session');
+
+/** HKDF info for high-entropy IKM (ECDH secrets). Distinct from session info. */
+const HKDF_ONLY_INFO = new TextEncoder().encode('bitgo-v2-hkdf');
 
 // Envelope codec
+//
+// Two valid v2 shapes (presence rule enforced after decode):
+//   - Argon2 / session: m, t, p, salt required; hkdfSalt optional (session)
+//   - HKDF-only: hkdfSalt required; Argon2 params absent
 
 const V2EnvelopeCodec = t.intersection([
   t.type({
     v: t.literal(2),
-    m: boundedInt(1, ARGON2_MAX.memorySize, 'memorySize'),
-    t: boundedInt(1, ARGON2_MAX.iterations, 'iterations'),
-    p: boundedInt(1, ARGON2_MAX.parallelism, 'parallelism'),
-    salt: base64String,
     iv: base64String,
     ct: base64String,
   }),
   t.partial({
-    /** Base64-encoded per-call HKDF salt -- present only in session-produced envelopes */
+    m: boundedInt(1, ARGON2_MAX.memorySize, 'memorySize'),
+    t: boundedInt(1, ARGON2_MAX.iterations, 'iterations'),
+    p: boundedInt(1, ARGON2_MAX.parallelism, 'parallelism'),
+    salt: base64String,
+    /** Base64-encoded HKDF salt -- session envelopes and HKDF-only envelopes */
     hkdfSalt: base64String,
     /** Additional authenticated data for context binding (e.g. transaction hash + derivation path) */
     adata: t.string,
@@ -58,6 +65,25 @@ const V2EnvelopeCodec = t.intersection([
 ]);
 
 export type V2Envelope = t.TypeOf<typeof V2EnvelopeCodec>;
+
+type Argon2Envelope = V2Envelope & { m: number; t: number; p: number; salt: string };
+type HkdfOnlyEnvelope = V2Envelope & { hkdfSalt: string };
+
+function hasArgon2Params(envelope: V2Envelope): envelope is Argon2Envelope {
+  return (
+    envelope.m !== undefined && envelope.t !== undefined && envelope.p !== undefined && envelope.salt !== undefined
+  );
+}
+
+function isHkdfOnlyEnvelope(envelope: V2Envelope): envelope is HkdfOnlyEnvelope {
+  return (
+    envelope.hkdfSalt !== undefined &&
+    envelope.m === undefined &&
+    envelope.t === undefined &&
+    envelope.p === undefined &&
+    envelope.salt === undefined
+  );
+}
 
 // Crypto helpers
 
@@ -95,9 +121,19 @@ export async function argon2ToHkdfKey(
   return subtle.importKey('raw', keyBytes, 'HKDF', false, ['deriveKey']);
 }
 
-export function hkdfDeriveAesKey(hkdfKey: CryptoKey, hkdfSalt: Uint8Array, usage: KeyUsage): Promise<CryptoKey> {
+async function passwordToHkdfKey(password: string): Promise<CryptoKey> {
+  const ikm = new TextEncoder().encode(password);
+  return subtle.importKey('raw', ikm, 'HKDF', false, ['deriveKey']);
+}
+
+export function hkdfDeriveAesKey(
+  hkdfKey: CryptoKey,
+  hkdfSalt: Uint8Array,
+  usage: KeyUsage,
+  info: Uint8Array = HKDF_SESSION_INFO
+): Promise<CryptoKey> {
   return subtle.deriveKey(
-    { name: 'HKDF', hash: 'SHA-256', salt: hkdfSalt, info: HKDF_INFO },
+    { name: 'HKDF', hash: 'SHA-256', salt: hkdfSalt, info },
     hkdfKey,
     { name: 'AES-GCM', length: 256 },
     false,
@@ -136,7 +172,11 @@ export function parseV2Envelope(ciphertext: string): V2Envelope {
   } catch {
     throw new Error('v2 decrypt: invalid JSON envelope');
   }
-  return decodeWithCodec(V2EnvelopeCodec, parsed, 'v2 decrypt: invalid envelope');
+  const envelope = decodeWithCodec(V2EnvelopeCodec, parsed, 'v2 decrypt: invalid envelope');
+  if (!hasArgon2Params(envelope) && !isHkdfOnlyEnvelope(envelope)) {
+    throw new Error('v2 decrypt: invalid envelope');
+  }
+  return envelope;
 }
 
 // Public API
@@ -190,21 +230,32 @@ export async function encryptV2(
 }
 
 /**
- * Decrypt a v2 envelope (Argon2id + AES-256-GCM).
- *
- * Handles both envelope types automatically:
- *   - Standard  (no hkdfSalt): Argon2id -> AES-GCM
- *   - Session   (hkdfSalt present): Argon2id -> HKDF -> AES-GCM
+ * Decrypt a v2 envelope. Auto-detects shape:
+ *   - Standard  (Argon2 params, no hkdfSalt): Argon2id -> AES-GCM
+ *   - Session   (Argon2 params + hkdfSalt): Argon2id -> HKDF -> AES-GCM
+ *   - HKDF-only (hkdfSalt, no Argon2 params): HKDF(password) -> AES-GCM
  *
  * All parameters are stored in the envelope -- no session context required.
  */
 export async function decryptV2(password: string, ciphertext: string): Promise<string> {
   const envelope = parseV2Envelope(ciphertext);
-  const salt = new Uint8Array(Buffer.from(envelope.salt, 'base64'));
   const iv = new Uint8Array(Buffer.from(envelope.iv, 'base64'));
   const ct = new Uint8Array(Buffer.from(envelope.ct, 'base64'));
-  const params = { memorySize: envelope.m, iterations: envelope.t, parallelism: envelope.p };
   const adataBytes = envelope.adata ? new TextEncoder().encode(envelope.adata) : undefined;
+
+  if (isHkdfOnlyEnvelope(envelope)) {
+    const hkdfKey = await passwordToHkdfKey(password);
+    const hkdfSalt = new Uint8Array(Buffer.from(envelope.hkdfSalt, 'base64'));
+    const aesKey = await hkdfDeriveAesKey(hkdfKey, hkdfSalt, 'decrypt', HKDF_ONLY_INFO);
+    return aesGcmDecrypt(aesKey, iv, ct, adataBytes);
+  }
+
+  if (!hasArgon2Params(envelope)) {
+    throw new Error('v2 decrypt: invalid envelope');
+  }
+
+  const salt = new Uint8Array(Buffer.from(envelope.salt, 'base64'));
+  const params = { memorySize: envelope.m, iterations: envelope.t, parallelism: envelope.p };
 
   if (envelope.hkdfSalt) {
     const hkdfKey = await argon2ToHkdfKey(password, salt, params);
