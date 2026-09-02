@@ -3103,9 +3103,14 @@ export class Wallet implements IWallet {
     params.reqId = reqId;
     this.bitgo.setRequestTracer(reqId);
     const coin = this.baseCoin;
-    if (_.isObject(params.recipients)) {
+    if (Array.isArray(params.recipients)) {
+      // Close ATA is a rent reclaim, not a value transfer. Wallet Platform requires amount '0'.
+      const isCloseAssociatedTokenAccount = params.type === 'closeAssociatedTokenAccount';
       params.recipients.forEach(function (recipient) {
-        coin.checkRecipient(recipient);
+        coin.checkRecipient(recipient, { allowZeroAmount: isCloseAssociatedTokenAccount });
+        if (isCloseAssociatedTokenAccount && recipient.amount !== '0' && recipient.amount !== 0) {
+          throw new Error("invalid argument for amount - closeAssociatedTokenAccount requires amount '0'");
+        }
       });
     }
 

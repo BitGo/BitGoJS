@@ -189,6 +189,38 @@ describe('SOL:', function () {
     localBasecoin.should.be.an.instanceof(Sol);
   });
 
+  describe('checkRecipient', function () {
+    const invalidAmountError =
+      /invalid argument for amount - positive number greater than zero or numeric string expected/;
+
+    it('rejects a zero amount by default', function () {
+      assert.throws(() => {
+        basecoin.checkRecipient({ address: 'ataAddress', amount: '0' });
+      }, invalidAmountError);
+    });
+
+    it('allows a zero amount when allowZeroAmount is set', function () {
+      assert.doesNotThrow(() => {
+        basecoin.checkRecipient({ address: 'ataAddress', amount: '0' }, { allowZeroAmount: true });
+      });
+      assert.doesNotThrow(() => {
+        basecoin.checkRecipient({ address: 'ataAddress', amount: 0 }, { allowZeroAmount: true });
+      });
+    });
+
+    it('still rejects negative amounts when allowZeroAmount is set', function () {
+      assert.throws(() => {
+        basecoin.checkRecipient({ address: 'ataAddress', amount: '-1' }, { allowZeroAmount: true });
+      }, invalidAmountError);
+    });
+
+    it('allows amount "max"', function () {
+      assert.doesNotThrow(() => {
+        basecoin.checkRecipient({ address: 'ataAddress', amount: 'max' });
+      });
+    });
+  });
+
   it('should retun the right info', function () {
     basecoin.getChain().should.equal('tsol');
     basecoin.getFamily().should.equal('sol');
