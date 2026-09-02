@@ -25,7 +25,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.tofcerc20(
     'd7c2c0ee-3af7-411d-88a7-9a5e8170f250',
@@ -369,6 +371,18 @@ export const botOfcTokens = [
     undefined,
     undefined
   ),
+  AccountCtors.tofcsolToken(
+    '381342a8-398a-4fff-8afe-79c986dbef22',
+    'ofctsol:thpd',
+    'ofcHookdelegate',
+    9,
+    'tsol:thpd' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
   AccountCtors.ofcerc20(
     '26f46d44-700d-4e32-8845-fb181e6d8027',
     'ofceth:gusdcq',
@@ -379,7 +393,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '336f05ca-6548-495e-9c0b-8deba95ea56b',
@@ -391,7 +407,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '0c881f11-064e-4e54-9fa6-55406e419819',
@@ -403,7 +421,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'f8ffca6e-a6dc-4d14-90d8-500383cdbffe',
@@ -415,7 +435,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '1a446703-1f79-4212-8ee2-5338515708d3',
@@ -427,7 +449,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '6b42cbcb-1eba-4c20-be8b-f94e878f5365',
@@ -439,7 +463,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '186594ec-8433-46db-9756-f071c172fa67',
@@ -451,7 +477,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'b28d8ff5-a32a-44db-b1b1-c3b9f9a949c3',
@@ -463,7 +491,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'bc9074f8-e75b-4daf-9305-1c1d31127264',
@@ -475,7 +505,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '4451adc0-9d86-4518-87bf-fcaaf8fa43e8',
@@ -487,7 +519,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '8cfa782a-c177-4501-9af6-84423eeb2017',
@@ -499,7 +533,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '4b5a115f-534e-4cd7-befc-9e432b6fe3c4',
@@ -511,7 +547,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '4f06be6b-081c-45cd-8d13-77f88e735ebc',
@@ -523,7 +561,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'b8f267b6-9060-4ca8-ae30-11d77a665d88',
@@ -535,7 +575,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'fec0468d-29fa-4dcf-af02-4e63d434c9ad',
@@ -547,7 +589,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '2ff046d0-12bf-4e67-a3e9-b974e99566a5',
@@ -559,7 +603,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'e6c700dc-6313-44e0-b4e9-b482d734f1cb',
@@ -571,7 +617,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'b4472153-1f02-45aa-b1b3-9a5793b2a5ae',
@@ -583,7 +631,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'c9ab646b-209b-418b-8086-7c9a6c078068',
@@ -595,7 +645,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '549fa391-e575-49fc-971d-1ba42b90019f',
@@ -607,7 +659,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'fce95d17-085b-40f5-90a2-6eacb619a112',
@@ -619,7 +673,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'e7fb9bbd-e72d-4863-9aad-a851ac00c7c5',
@@ -631,7 +687,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '33656cee-7e60-424c-930e-6525c6bcbeda',
@@ -643,7 +701,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'f284e63e-381b-48e0-9f7d-dfecebbb8b9e',
@@ -655,7 +715,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '5f4cbbd9-7ced-4ef9-9499-9f8e1203e6e4',
@@ -667,7 +729,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '4ca27260-c918-40c9-a8db-456748ee00e3',
@@ -679,7 +743,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'fdb99096-e2ef-4f9d-8c4d-bac239d0d44d',
@@ -691,7 +757,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'e0e92565-5a91-4c30-908f-4bfed228be1c',
@@ -703,7 +771,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '606d285e-3db2-4751-87a9-6fe32b786443',
@@ -715,7 +785,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'da1197d1-18ca-4e31-9a47-1b76824da25b',
@@ -727,7 +799,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '0cabf96f-edf1-4446-a105-22e701526fdb',
@@ -739,7 +813,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'ef627e15-5103-45b4-85c6-a4cf0a5c5c8a',
@@ -751,7 +827,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '475b65c8-3adc-487b-a03c-b34120802c82',
@@ -763,7 +841,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '0a92edc3-8e12-4a59-b468-ad92af8dd446',
@@ -775,7 +855,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '2fd0fd8c-cca6-4ab5-b631-ba4a7f94181d',
@@ -787,7 +869,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '6e0ed739-dfbb-4392-b965-4c498e7c1bf9',
@@ -799,7 +883,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'a391c3e2-062f-4c7f-b8c1-e3cd5e5a2cb5',
@@ -811,7 +897,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'b439976c-0a40-4278-be3d-1af9b2a8ab93',
@@ -823,7 +911,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'e0793505-584c-4ed8-b447-b369b2dab856',
@@ -835,7 +925,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '4b5af401-31aa-49d5-9e2a-8c85b2778451',
@@ -847,7 +939,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'c0b5974e-6277-4681-862b-d15c984b9a31',
@@ -859,7 +953,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'd0f76e66-4515-4b48-93bd-363c5d40925f',
@@ -871,7 +967,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '30b60616-6342-4512-a340-5c366abf9342',
@@ -883,7 +981,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '736b38fd-28f5-4e21-bbf5-4213db7f85ce',
@@ -895,7 +995,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'c9244669-0d9c-4073-a30d-1cb85a814a6d',
@@ -907,7 +1009,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '25339358-c59d-451f-aa7f-3d6892da9754',
@@ -919,7 +1023,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '31575bfe-5bd5-4f37-9a9d-32b1761fd4c7',
@@ -931,7 +1037,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'ae79108b-7cd4-4ca7-bc72-726b8da29a17',
@@ -943,7 +1051,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '60f9275a-5403-431c-95ae-c29947bbaa2e',
@@ -955,7 +1065,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'aa692cc6-4578-442d-94bc-e7106e7a8489',
@@ -967,7 +1079,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcsolToken(
     'd3ee9998-a84d-48d4-9a18-84e99d7836e6',
@@ -991,7 +1105,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'd2c80021-2a78-46f6-b428-0b50a10a7a0c',
@@ -1003,7 +1119,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '15b3346a-6c6d-4ec9-9199-d4067f4ec819',
@@ -1015,7 +1133,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '7a71eba1-49b3-4630-8e13-1c43bea6f270',
@@ -1027,7 +1147,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'd108b1d9-6560-4732-a1b1-bba63f2d2308',
@@ -1039,7 +1161,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'a612a762-1940-4bd9-85e8-f92999c6ce43',
@@ -1051,7 +1175,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'aed23d74-d469-4f4a-a0a0-8fef5abf8e1c',
@@ -1063,7 +1189,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'c06773ac-7960-4233-9331-857791f6350d',
@@ -1075,7 +1203,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '6103937f-e750-4e35-889c-959347c2da43',
@@ -1087,7 +1217,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'ec6463ad-bb55-41d1-8e3e-4fdfcb5d0e08',
@@ -1099,7 +1231,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'e426e313-98a7-4ed3-a6d9-580ca0b26fc6',
@@ -1111,7 +1245,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '97af5586-cf70-4d8a-a705-ddca10d535b9',
@@ -1123,7 +1259,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'bcb2824c-5eb7-4721-8bd0-13115afd89af',
@@ -1135,7 +1273,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'ea159a52-8738-48f8-8c28-a85168fc8e05',
@@ -1147,7 +1287,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'd19c929c-68ce-4d38-a8ba-485202f688a1',
@@ -1159,7 +1301,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '82693b0f-4a74-4228-af17-e324617f5362',
@@ -1171,7 +1315,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'cd706fc0-6421-4e1d-9d5e-32c473da7fe7',
@@ -1183,7 +1329,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'ff60dc35-cf0d-4e4d-b194-f23f0761ebda',
@@ -1195,7 +1343,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'f7920db4-8a50-4626-8bef-7b5594896720',
@@ -1207,7 +1357,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'c914ee88-189f-488e-b06e-df1def295a4a',
@@ -1219,7 +1371,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '057df2c6-b66d-42eb-aea9-872243094a7e',
@@ -1231,7 +1385,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'e476ddb7-3a7d-4d80-a075-9a02d48e75ec',
@@ -1243,7 +1399,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'b3503c17-4a8a-4142-bf74-05c5abbdee30',
@@ -1255,7 +1413,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '04ba7c8f-256d-48e8-b4b8-5941b89d4ade',
@@ -1267,7 +1427,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'd25fef07-6879-408b-9f5a-40ed6f21f8cb',
@@ -1279,7 +1441,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'a07888bc-7dbb-4681-b90f-75c691fb2de9',
@@ -1291,7 +1455,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '2b5e8396-4066-4d15-a980-ed01c2a408c5',
@@ -1303,7 +1469,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'd7455475-3a21-41be-a098-ab09dd3e8410',
@@ -1315,7 +1483,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'd95af9d6-0c0a-4890-b40b-429cae1e69f6',
@@ -1327,7 +1497,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '6379a10f-34de-4c14-aee3-b4cb4cfe4b55',
@@ -1339,7 +1511,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '69360c9b-166d-4097-b2ff-95b12e228134',
@@ -1351,7 +1525,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '23a1c11c-6678-48a8-a86c-e33011b9524c',
@@ -1363,7 +1539,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '4c27dcab-a399-4a32-916d-2303b6eb280d',
@@ -1375,7 +1553,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'c7938575-df54-4219-93ec-40602f8acac9',
@@ -1387,7 +1567,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '8b7f58bf-73f1-4b59-8c8c-f8934fa43f22',
@@ -1399,7 +1581,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '3f2e4d4f-b9c1-4b51-aeb1-81905067e556',
@@ -1411,7 +1595,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'f4d81589-9617-437b-ada8-fd41390862e8',
@@ -1423,7 +1609,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'b7615b1a-84a6-4957-8b00-a7851681b8a8',
@@ -1435,7 +1623,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '1e371b27-e072-4c22-a43d-ffb5bccb4d9c',
@@ -1447,7 +1637,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'c97832fe-9d5e-4a82-ab01-bf686e4a4280',
@@ -1459,7 +1651,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '6c7fb483-4307-42ee-881e-b3e3e72c0c07',
@@ -1471,7 +1665,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'c288e4bb-e355-4143-9dad-ed256697a8c8',
@@ -1483,7 +1679,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'f5c1751e-b730-4bc9-92b9-1dfbd624bc80',
@@ -1495,7 +1693,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'eb5da44b-14e1-41a9-ace9-d08c24f0a6d4',
@@ -1507,7 +1707,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '8d00a16a-0a30-4dbe-9e73-edb10c210415',
@@ -1519,7 +1721,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '7e5d4fdc-ea87-4567-9a99-a0058614a7a6',
@@ -1531,7 +1735,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '30d6b80e-119f-42f3-8642-04dbcff92118',
@@ -1543,7 +1749,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'd700cca2-d7d8-44c0-b903-fdf069261453',
@@ -1555,7 +1763,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '55bb292d-1761-4162-9e81-451ba353dd97',
@@ -1567,7 +1777,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '67a042ab-d18b-4ee2-a09c-513d46500dc7',
@@ -1579,7 +1791,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'ce480ae0-10ec-4eb9-9741-e7301a86aa77',
@@ -1591,7 +1805,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '005febd8-93a3-4602-8082-6ef898ceab7e',
@@ -1603,7 +1819,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '88c6997b-06a2-45d3-bca7-abf8cf81e1c3',
@@ -1615,7 +1833,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '2a07450e-ec66-43bc-a192-cd3ee3ce355d',
@@ -1627,7 +1847,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'fe8f9fba-5157-4561-ab7f-a85c06a5de44',
@@ -1639,7 +1861,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'c962481e-eb6f-4240-9ce4-e37d9a4a8b16',
@@ -1651,7 +1875,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '25522a3b-1dd9-4d8c-bea1-ddc9650ac827',
@@ -1663,7 +1889,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '9c0ba9f7-f1f1-4c3a-9814-e14c24175383',
@@ -1675,7 +1903,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'bb4d2e4b-a996-456c-8f0b-e4cf11d59d31',
@@ -1687,7 +1917,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '4afe11b8-96e0-46a9-90fb-d4b1f0d937a1',
@@ -1699,7 +1931,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '1b89f5fd-2bd8-4c72-94c7-385f7896419e',
@@ -1711,7 +1945,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcsolToken(
     '6ae7f0ea-b761-45b9-a4b4-0e6fabc0b577',
@@ -1735,7 +1971,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '34f61d4f-85c5-44e2-a954-a7b666c6550a',
@@ -1747,7 +1985,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '4736bb2e-6097-40cc-94b8-44df3311acff',
@@ -1759,7 +1999,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '174cd8b1-5462-4e71-af43-0052d2465bb6',
@@ -1771,7 +2013,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '64cb3c53-ed89-4ce8-9b5c-3cf9de79f4fb',
@@ -1783,7 +2027,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcsolToken(
     'e7ccbb23-f43f-46cf-8c6f-72c42e7dead2',
@@ -1807,7 +2053,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'd8a8adc4-b7b0-4018-9815-6fbcf20a01b0',
@@ -1819,7 +2067,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '0ef44797-e27c-406a-9855-e1c6f5ae4f5a',
@@ -1831,7 +2081,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '2e3f76b8-ec22-4ba3-afa3-f25d0be1965d',
@@ -1843,7 +2095,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '1c638703-f641-41ab-afae-def268a13140',
@@ -1855,7 +2109,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '4d4113b1-adb0-41fe-af13-09c2c8857cae',
@@ -1867,7 +2123,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '78425bb2-567e-4478-8c83-5f731214f621',
@@ -1879,7 +2137,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '42634766-847d-44f7-a541-cca4476f5823',
@@ -1891,7 +2151,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '837b402b-7395-469d-8143-86d0d4d03cab',
@@ -1903,7 +2165,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'bcdd6ba1-645e-4832-b665-8e46bb8d3827',
@@ -1915,7 +2179,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcsolToken(
     '07dd9ce8-e74e-4629-bfaa-2355c9122bef',
@@ -1939,7 +2205,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     '00092ed8-efc5-4c8c-8695-edf15a4406ea',
@@ -1951,7 +2219,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcsolToken(
     '12d2b3f7-979d-472e-814f-926ffad471d0',
@@ -1987,7 +2257,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'beeed9c2-10c5-4aa5-908c-647c629b1dd7',
@@ -1999,7 +2271,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcerc20(
     'c03bd9a0-84a0-4577-bcec-07d0a49ea226',
@@ -2011,7 +2285,9 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined,
-    undefined
+    undefined,
+    undefined,
+    'eth'
   ),
   AccountCtors.ofcsolToken(
     '41cc15bd-d244-4c42-b780-26b7027baf1f',
@@ -2528,5 +2804,495 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined
+  ),
+  AccountCtors.ofcerc20(
+    'd867f1e0-f1eb-4896-bf45-5e57b9efe3c9',
+    'ofceth:anetx',
+    'Arista Networks Inc',
+    18,
+    'eth:anetx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    '5df2859b-ea70-474a-8a83-459fd863997d',
+    'ofceth:apldx',
+    'Applied Digital Corporation',
+    18,
+    'eth:apldx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    'fcb42829-aa02-4e43-8968-f1551243db01',
+    'ofceth:astsx',
+    'AST SpaceMobile',
+    18,
+    'eth:astsx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    '19fa57d0-8208-4f45-8a46-39f06dd50d89',
+    'ofceth:bmnrx',
+    'Bitmine',
+    18,
+    'eth:bmnrx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    '0a07b3d1-5d94-4b9d-a89f-ac2e968ba277',
+    'ofceth:bspx',
+    'Bending Spoons',
+    18,
+    'eth:bspx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    '6b04e87d-959d-4a07-a246-d11e23b84d40',
+    'ofceth:btbtx',
+    'Bit Digital',
+    18,
+    'eth:btbtx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    '499403e3-d423-4d9a-9304-991dfe69491d',
+    'ofceth:btgox',
+    'BitGo',
+    18,
+    'eth:btgox' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    '4bf3d386-fd0e-4cea-9f31-0cb0a8ae1d87',
+    'ofceth:clskx',
+    'CleanSpark',
+    18,
+    'eth:clskx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    '5671348c-77ed-4b0c-8264-03db42aa013e',
+    'ofceth:corzx',
+    'Core Scientific',
+    18,
+    'eth:corzx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    '224c1299-e86f-4130-a6ed-9ab6775c6933',
+    'ofceth:enhax',
+    'Enhanced Group',
+    18,
+    'eth:enhax' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    'a22396dd-26e7-413f-8ead-f438cf17cb48',
+    'ofceth:glxyx',
+    'Galaxy Digital',
+    18,
+    'eth:glxyx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    '1d46fbcb-d6de-4f66-82f9-3e9558359b74',
+    'ofceth:himsx',
+    'Hims & Hers',
+    18,
+    'eth:himsx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    'f976f9ff-892a-444e-8a1e-b5658084c655',
+    'ofceth:hutx',
+    'Hut 8',
+    18,
+    'eth:hutx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    '0076b013-30bf-4f3f-b49a-4bd653bf6382',
+    'ofceth:irenx',
+    'IREN',
+    18,
+    'eth:irenx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    '4e64f56f-e447-41a6-b307-541b370adf35',
+    'ofceth:marax',
+    'MARA Holdings',
+    18,
+    'eth:marax' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    'be685e80-a1dc-4a47-bc2e-0a1000341af0',
+    'ofceth:netx',
+    'Cloudflare',
+    18,
+    'eth:netx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    '51792f75-af15-4236-af78-40a28ddae1d3',
+    'ofceth:oklox',
+    'Oklo',
+    18,
+    'eth:oklox' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    '9c507489-71f3-4df0-a123-0d576a6a6942',
+    'ofceth:ondsx',
+    'Ondas',
+    18,
+    'eth:ondsx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    '1993ef00-a75b-44dc-91fd-6c5d20b2983e',
+    'ofceth:panwx',
+    'Palo Alto Networks',
+    18,
+    'eth:panwx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    '10b2e4d1-da69-4acd-9cc8-20a745aa86ca',
+    'ofceth:plx',
+    'Planet Labs',
+    18,
+    'eth:plx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    'e4c82477-27c4-4bb7-bc39-fa8e18f89e29',
+    'ofceth:rblxx',
+    'Roblox',
+    18,
+    'eth:rblxx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    '7ed66866-233c-4312-aba4-3630b0aacae9',
+    'ofceth:rcatx',
+    'Red Cat',
+    18,
+    'eth:rcatx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    '1dc8c670-a521-4948-963e-742f02c60a70',
+    'ofceth:riotx',
+    'Riot Platforms',
+    18,
+    'eth:riotx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    'db41573b-4285-4be4-aa7f-02635ebaa488',
+    'ofceth:sbetx',
+    'SharpLink Gaming',
+    18,
+    'eth:sbetx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    '269fc6e5-66bc-4b2b-a5f8-a8eb6afec907',
+    'ofceth:smcix',
+    'Super Micro Computer Inc.',
+    18,
+    'eth:smcix' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    'f55e4cf1-236e-432d-b152-beacef4f2cdb',
+    'ofceth:smrx',
+    'NuScale Power Corporation',
+    18,
+    'eth:smrx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    'a2a7cdc4-edda-4499-b222-16c836b9b76c',
+    'ofceth:sndkx',
+    'SanDisk Corporation',
+    18,
+    'eth:sndkx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    'dc25b521-5b4c-407e-affe-29409a7323e7',
+    'ofceth:spcex',
+    'Virgin Galactic',
+    18,
+    'eth:spcex' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    '0ac8145f-85a3-4bf9-be21-936ac1d6e79a',
+    'ofceth:spcxx',
+    'SpaceX',
+    18,
+    'eth:spcxx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    '8f5720a3-bc9f-443b-b685-bed0ad0f67cf',
+    'ofceth:uberx',
+    'Uber',
+    18,
+    'eth:uberx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    'c1de2d09-3dfa-4a46-92cb-374bb5f725a0',
+    'ofceth:usarx',
+    'USA Rare Earth Inc',
+    18,
+    'eth:usarx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    'a060d852-44c4-4361-aab9-a1c043f08f10',
+    'ofceth:uuuux',
+    'Energy Fuels Inc',
+    18,
+    'eth:uuuux' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    'eef2ab7e-151a-47f4-a826-985b65bdf1c4',
+    'ofceth:vidax',
+    'Vida Global',
+    18,
+    'eth:vidax' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    'd1ffdabe-939b-431e-bae4-924b1e2fdb35',
+    'ofceth:wbdx',
+    'Warner Bros. Discovery',
+    18,
+    'eth:wbdx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    '6c1194fa-3de9-441b-9ab2-331e721fdbda',
+    'ofceth:wulfx',
+    'TeraWulf',
+    18,
+    'eth:wulfx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
   ),
 ];
