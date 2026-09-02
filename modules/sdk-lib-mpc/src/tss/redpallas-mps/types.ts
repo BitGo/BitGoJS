@@ -30,6 +30,54 @@ export enum RedPallasDkgState {
   Complete = 'Complete',
 }
 
+/**
+ * Represents the state of a RedPallas DSG (Distributed Sign Generation) session.
+ *
+ * Mirrors the EdDSA MPS `DsgState`, except `redpallas_dsg_round0_process` does not take a
+ * derivation path: RedPallas key derivation (ask/nk/rivk/ivks) happens separately, upstream,
+ * as part of DKG (see `RedPallasDkgState`); the DSG round functions only ever operate on an
+ * already-derived (or root) `Keyshare`.
+ */
+export enum RedPallasDsgState {
+  /** DSG session has not been initialized */
+  Uninitialized = 'Uninitialized',
+  /** initDsg() has been called; ready for getFirstMessage() */
+  Init = 'Init',
+  /** R0 broadcast emitted; waiting for counterpart's R0 broadcast (SignMsg1) */
+  WaitMsg1 = 'WaitMsg1',
+  /** R1 broadcast emitted; waiting for counterpart's R1 broadcast (SignMsg2) */
+  WaitMsg2 = 'WaitMsg2',
+  /** R2 broadcast emitted; waiting for counterpart's R2 broadcast (SignMsg3, the partial sig) */
+  WaitMsg3 = 'WaitMsg3',
+  /** Final RedPallas signature (signature/rk/alpha) is available via getSignature() */
+  Complete = 'Complete',
+}
+
+/**
+ * The final output of a RedPallas DSG session.
+ *
+ * - `signature` is the 64-byte raw Schnorr (RedPallas) signature.
+ * - `rk` is the randomized verification key that the signature must be verified against
+ *   (i.e. `redpallas_verify(rk, signature, message)`), not the original DKG public key.
+ * - `alpha` is the 32-byte randomizer scalar used to re-randomize the DKG public key into
+ *   `rk` (`rk = pk + [alpha]G`). Callers that need to independently re-derive/verify `rk`
+ *   from the DKG public key can use `alpha` to do so.
+ */
+export interface RedPallasSignatureResult {
+  signature: Buffer;
+  rk: Buffer;
+  alpha: Buffer;
+}
+
+/** A PGP detached-signed message by a party.
+ * `message` is the raw payload encoded as base64.
+ * `signature` is an armored PGP detached signature over those bytes.
+ */
+export interface MPSSignedMessage {
+  message: string;
+  signature: string;
+}
+
 export interface Message<T> {
   payload: T;
   from: number;

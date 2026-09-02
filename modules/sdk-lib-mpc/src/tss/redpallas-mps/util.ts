@@ -2,6 +2,8 @@ import crypto from 'crypto';
 import assert from 'assert';
 import { x25519 } from '@noble/curves/ed25519';
 import { RedPallasDKG } from './dkg';
+import { RedPallasDSG } from './dsg';
+import { DeserializedMessages, RedPallasSignatureResult } from './types';
 
 function generateX25519Keypair(seed?: Buffer): { privKey: Buffer; pubKey: Buffer } {
   const privKey = seed ? seed.subarray(0, 32) : crypto.randomBytes(32);
@@ -70,4 +72,78 @@ export async function generateRedPallasDKGKeyShares(
   bitgo.handleIncomingMessages(r2Messages, derivationSeed);
 
   return [user, backup, bitgo];
+}
+
+/**
+ * Initializes two RedPallas DSG parties and drives them through the protocol until the
+ * specified round. Mirrors `executeTillRound` in `../eddsa-mps/util.ts`, minus the
+ * derivation path (RedPallas DSG operates on an already-(root-or-derived) keyshare; there
+ * is no per-signing-session derivation path).
+ *
+ * @param round - Round to execute until (1–3). Returns intermediate message arrays for 1–2,
+ *   or the final `RedPallasSignatureResult` (signature/rk/alpha) for 3.
+ * @param party1Dsg - First DSG party (`new RedPallasDSG(partyIdx)`), not yet initialized.
+ * @param party2Dsg - Second DSG party (`new RedPallasDSG(partyIdx)`), not yet initialized.
+ * @param keyShare1 - Key share for the first party.
+ * @param keyShare2 - Key share for the second party.
+ * @param message - Raw message bytes to sign.
+ */
+export async function executeTillRound(
+  round: number,
+  party1Dsg: RedPallasDSG,
+  party2Dsg: RedPallasDSG,
+  keyShare1: Buffer,
+  keyShare2: Buffer,
+  message: Buffer
+): Promise<DeserializedMessages[] | RedPallasSignatureResult> {
+  if (round < 1 || round > 3) {
+    throw Error('Invalid round number');
+  }
+  await party1Dsg.initDsg(keyShare1, message, party2Dsg.getPartyIdx());
+  await party2Dsg.initDsg(keyShare2, message, party1Dsg.getPartyIdx());
+  const party1Round0Message = party1Dsg.getFirstMessage();
+  const party2Round0Message = party2Dsg.getFirstMessage();
+
+  const [party2Round1Messages] = party2Dsg.handleIncomingMessages([party1Round0Message, party2Round0Message]);
+  const [party1Round1Messages] = party1Dsg.handleIncomingMessages([party1Round0Message, party2Round0Message]);
+  if (round === 1) return [[party1Round1Messages], [party2Round1Messages]];
+
+  const [party1Round2Messages] = party1Dsg.handleIncomingMessages([party1Round1Messages, party2Round1Messages]);
+  const [party2Round2Messages] = party2Dsg.handleIncomingMessages([party1Round1Messages, party2Round1Messages]);
+  if (round === 2) return [[party1Round2Messages], [party2Round2Messages]];
+
+  party1Dsg.handleIncomingMessages([party1Round2Messages, party2Round2Messages]);
+  party2Dsg.handleIncomingMessages([party1Round2Messages, party2Round2Messages]);
+
+  const sig1 = party1Dsg.getSignature();
+  const sig2 = party2Dsg.getSignature();
+  assert(sig1.signature.toString('hex') === sig2.signature.toString('hex'));
+  assert(sig1.rk.toString('hex') === sig2.rk.toString('hex'));
+  assert(sig1.alpha.toString('hex') === sig2.alpha.toString('hex'));
+  return sig1;
+}
+
+/**
+ * Verifies a `RedPallasSignatureResult` against the raw message.
+ *
+ * IMPORTANT: unlike EdDSA, RedPallas signatures must be verified against `rk` — the
+ * randomized verification key produced alongside the signature by DSG round3 — and NOT
+ * against the DKG (or derived) public key directly. `rk = pk + [alpha]G`; `alpha` is
+ * included in `RedPallasSignatureResult` for callers that need to independently confirm
+ * the relationship between `rk` and a known `pk`, but is not required to verify the
+ * signature itself.
+ */
+export async function verifyRedPallasSignature(
+  signatureResult: RedPallasSignatureResult,
+  message: Buffer
+): Promise<boolean> {
+  const wasm =
+    typeof window !== 'undefined' && !window.process && !window.process?.['type']
+      ? // eslint-disable-next-line import/no-internal-modules -- @bitgo/wasm-mps exposes environment-specific subpath exports.
+        await import('@bitgo/wasm-mps/web').then(async (webWasm) => {
+          await webWasm.default();
+          return webWasm;
+        })
+      : await import('@bitgo/wasm-mps');
+  return wasm.redpallas_verify(signatureResult.rk, signatureResult.signature, message);
 }

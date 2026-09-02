@@ -1,3 +1,7 @@
-// Re-export the production helper so tests can resolve via './util'
+// Re-export the production helpers so tests can resolve via './util'
 // without a separate, drifting copy.
-export { generateRedPallasDKGKeyShares } from '../../../../src/tss/redpallas-mps/util';
+export {
+  generateRedPallasDKGKeyShares,
+  executeTillRound,
+  verifyRedPallasSignature,
+} from '../../../../src/tss/redpallas-mps/util';
