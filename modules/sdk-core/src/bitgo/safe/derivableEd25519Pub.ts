@@ -11,15 +11,20 @@
  * new field — the same shape BitGo already uses for the MPC slots, whose `commonKeychain` is
  * `pub || chaincode`.
  *
- *   pub = <StrKey ed25519 public key> || <chainCode, 64 lowercase hex>
- *          exactly 56 chars, 'G…'         exactly 64 chars
- *   total length exactly 120
+ *   pub = <StrKey ed25519 public key> || <chainCode, 52 base32 chars>
+ *          exactly 56 chars, 'G…'         exactly 52 chars
+ *   total length exactly 108
+ *
+ * Both halves use the SAME encoding — RFC 4648 base32 over the alphabet StrKey itself uses — so the
+ * composite is one uniform string rather than a base32 pub with a hex tail bolted on.
  *
  * StrKey ed25519 public keys are always exactly 56 characters, so the split is a fixed offset. That
  * offset is a CROSS-REPO contract shared with wallet-platform, `modules/key-card` and WRW; four
  * independent implementations drifting produces unrecoverable wallets. Every call site — here and in
  * the other repos — MUST go through these helpers rather than slicing inline.
  */
+
+import { randomBytes } from 'crypto';
 
 /**
  * The fixed character offset at which a composite slot-④ pub splits into (StrKey pub, chain code).
@@ -32,19 +37,24 @@
  */
 export const DERIVABLE_ED25519_PUB_SPLIT_OFFSET = 56;
 
-/** Length of the hex-encoded chain code half (32 bytes). */
-export const DERIVABLE_ED25519_CHAIN_CODE_LENGTH = 64;
+/** Raw length of a chain code before encoding. */
+export const DERIVABLE_ED25519_CHAIN_CODE_BYTES = 32;
+
+/** Length of the base32-encoded chain code half: ceil(32 bytes * 8 / 5) = 52 characters. */
+export const DERIVABLE_ED25519_CHAIN_CODE_LENGTH = 52;
 
 /** Total length of a well-formed composite pub. */
 export const DERIVABLE_ED25519_PUB_LENGTH = DERIVABLE_ED25519_PUB_SPLIT_OFFSET + DERIVABLE_ED25519_CHAIN_CODE_LENGTH;
 
 /**
- * Chain codes are serialized as LOWERCASE hex only. Uppercase and mixed-case are rejected rather
- * than normalized: accepting both casings would make the composite pub non-canonical, so the same
- * key could be stored under two distinct strings and equality against a previously-persisted pub
- * would spuriously fail.
+ * Chain codes are serialized as unpadded RFC 4648 base32, the same encoding and alphabet StrKey
+ * uses, so the composite pub is base32 end to end.
+ *
+ * The alphabet is uppercase-only and lowercase is rejected rather than normalized: accepting both
+ * casings would make the composite non-canonical, so the same key could be stored under two
+ * distinct strings and equality against a previously-persisted pub would spuriously fail.
  */
-const CHAIN_CODE_REGEX = /^[0-9a-f]{64}$/;
+const CHAIN_CODE_REGEX = /^[A-Z2-7]{52}$/;
 
 /** StrKey version byte for an ed25519 public key (`G…`). */
 const STRKEY_VERSION_BYTE_ED25519_PUBLIC_KEY = 6 << 3;
@@ -56,12 +66,12 @@ const BASE32_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 const STRKEY_ED25519_PUBLIC_KEY_REGEX = /^G[A-Z2-7]{55}$/;
 
 /**
- * Decode an unpadded RFC 4648 base32 string. The caller guarantees the input matched
- * {@link STRKEY_ED25519_PUBLIC_KEY_REGEX}, so 56 chars × 5 bits = 280 bits = exactly 35 bytes with
- * no leftover bits — the encoding is unambiguously canonical.
+ * Decode an unpadded RFC 4648 base32 string. Callers guarantee the input already matched one of the
+ * alphabet regexes below. Any bits left over past the last whole byte are dropped, so a decode alone
+ * does NOT prove the input was canonical — see {@link isValidEd25519ChainCode}, which re-encodes.
  */
 function base32Decode(input: string): Buffer {
-  const out = Buffer.alloc((input.length * 5) / 8);
+  const out = Buffer.alloc(Math.floor((input.length * 5) / 8));
   let bits = 0;
   let value = 0;
   let index = 0;
@@ -72,6 +82,25 @@ function base32Decode(input: string): Buffer {
       bits -= 8;
       out[index++] = (value >>> bits) & 0xff;
     }
+  }
+  return out;
+}
+
+/** Encode to unpadded RFC 4648 base32. Trailing bits of the final character are zero-filled. */
+function base32Encode(data: Buffer): string {
+  let bits = 0;
+  let value = 0;
+  let out = '';
+  for (const byte of data) {
+    value = (value << 8) | byte;
+    bits += 8;
+    while (bits >= 5) {
+      bits -= 5;
+      out += BASE32_ALPHABET[(value >>> bits) & 0x1f];
+    }
+  }
+  if (bits > 0) {
+    out += BASE32_ALPHABET[(value << (5 - bits)) & 0x1f];
   }
   return out;
 }
@@ -108,9 +137,31 @@ export function isValidEd25519StrKeyPublicKey(pub: string): boolean {
   );
 }
 
-/** Returns true iff `chainCode` is exactly 64 lowercase hex characters. */
+/**
+ * Returns true iff `chainCode` is the canonical base32 encoding of exactly 32 bytes.
+ *
+ * The length check alone is not sufficient. 52 base32 characters carry 260 bits but a chain code is
+ * only 256, so the final character has 4 unused low bits — 16 distinct strings decode to the same 32
+ * bytes. Only the one whose trailing bits are zero is accepted, which the re-encode enforces. Were
+ * non-canonical spellings allowed, one key could be persisted under several different composite pubs
+ * and equality against a stored pub would spuriously fail.
+ */
 export function isValidEd25519ChainCode(chainCode: string): boolean {
-  return CHAIN_CODE_REGEX.test(chainCode);
+  if (!CHAIN_CODE_REGEX.test(chainCode)) {
+    return false;
+  }
+  return base32Encode(base32Decode(chainCode)) === chainCode;
+}
+
+/**
+ * Mint a fresh chain code for a derivable slot-④ root, base32-encoded.
+ *
+ * The chain code is independent randomness (TDD Part II-3 D1) — it is NOT derived from the seed, so
+ * it can be generated wherever the composite pub is assembled. Encoding 32 bytes always yields the
+ * canonical form, so the result satisfies {@link isValidEd25519ChainCode} by construction.
+ */
+export function generateEd25519ChainCodeBase32(): string {
+  return base32Encode(randomBytes(DERIVABLE_ED25519_CHAIN_CODE_BYTES));
 }
 
 /**
@@ -124,7 +175,7 @@ export function encodeDerivableEd25519Pub(pub: string, chainCode: string): strin
     throw new Error('Invalid derivable ed25519 pub: pub half is not a valid ed25519 public key');
   }
   if (!isValidEd25519ChainCode(chainCode)) {
-    throw new Error('Invalid derivable ed25519 pub: chainCode must be 64 lowercase hex characters');
+    throw new Error('Invalid derivable ed25519 pub: chainCode must be 52 canonical base32 characters');
   }
   return `${pub}${chainCode}`;
 }
@@ -148,7 +199,7 @@ export function decodeDerivableEd25519Pub(composite: string): { pub: string; cha
     throw new Error('Invalid derivable ed25519 pub: pub half is not a valid ed25519 public key');
   }
   if (!isValidEd25519ChainCode(chainCode)) {
-    throw new Error('Invalid derivable ed25519 pub: chainCode must be 64 lowercase hex characters');
+    throw new Error('Invalid derivable ed25519 pub: chainCode must be 52 canonical base32 characters');
   }
   return { pub, chainCode };
 }

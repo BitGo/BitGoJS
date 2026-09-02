@@ -5,6 +5,11 @@ import * as common from '../../common';
 import { IBaseCoin, KeychainsTriplet, KeyPair } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { SafeMpcCeremonyUnsupportedError } from '../errors';
+import {
+  encodeDerivableEd25519Pub,
+  generateEd25519ChainCodeBase32,
+  isValidEd25519StrKeyPublicKey,
+} from '../safe/derivableEd25519Pub';
 import { decodeOrElse, ECDSAUtils, EDDSAUtils, generateRandomPassword, RequestTracer } from '../utils';
 import {
   AddKeychainOptions,
@@ -344,6 +349,19 @@ export class Keychains implements IKeychains {
           }),
         });
       }
+    }
+
+    // Wallet Safes v1 slot ④ (`ed25519Multisig`): make the backup root soft-derivable by folding a
+    // fresh chain code into `pub`. Nothing else on the wire changes — the chain code has no field of
+    // its own, and callers recover it with `decodeDerivableEd25519Pub` on the returned pub.
+    //
+    // The slot is identified from the generated pub itself: `safeId` marks it as a safe root, and a
+    // StrKey ed25519 pub narrows it to slot ④. That is exact — slot ① roots are secp256k1 (an xpub,
+    // which already carries its own chain code) and slots ②③ are MPC, which run through `createMpc`
+    // and never reach here.
+    const withKey = params as CreateBackupOptions & { pub?: string };
+    if (params.safeId !== undefined && withKey.pub !== undefined && isValidEd25519StrKeyPublicKey(withKey.pub)) {
+      withKey.pub = encodeDerivableEd25519Pub(withKey.pub, generateEd25519ChainCodeBase32());
     }
 
     const serverResponse = await this.add(params);

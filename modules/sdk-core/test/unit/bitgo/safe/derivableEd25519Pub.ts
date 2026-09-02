@@ -8,6 +8,7 @@ import {
   isDerivableEd25519Pub,
   isValidEd25519ChainCode,
   isValidEd25519StrKeyPublicKey,
+  generateEd25519ChainCodeBase32,
 } from '../../../../src';
 
 // Cross-repo fixture: byte-identical to
@@ -69,17 +70,35 @@ describe('derivableEd25519Pub', function () {
   describe('isValidEd25519ChainCode', function () {
     const { chainCode } = fixture.valid[3];
 
-    it('accepts 64 lowercase hex characters', function () {
+    it('accepts 52 canonical base32 characters', function () {
       isValidEd25519ChainCode(chainCode).should.equal(true);
     });
 
-    it('rejects uppercase hex', function () {
-      isValidEd25519ChainCode(chainCode.toUpperCase()).should.equal(false);
+    it('rejects lowercase', function () {
+      isValidEd25519ChainCode(chainCode.toLowerCase()).should.equal(false);
     });
 
     it('rejects a chain code of the wrong length', function () {
-      isValidEd25519ChainCode(chainCode.slice(0, 63)).should.equal(false);
-      isValidEd25519ChainCode(chainCode + '0').should.equal(false);
+      isValidEd25519ChainCode(chainCode.slice(0, 51)).should.equal(false);
+      isValidEd25519ChainCode(chainCode + 'A').should.equal(false);
+    });
+
+    it('rejects a character outside the base32 alphabet', function () {
+      // 0, 1, 8 and 9 are absent from the RFC 4648 alphabet.
+      isValidEd25519ChainCode('0' + chainCode.slice(1)).should.equal(false);
+    });
+
+    it('rejects a non-canonical spelling whose padding bits are set', function () {
+      // The 52nd character holds 1 significant bit and 4 padding bits, so 16 strings decode to the
+      // same 32 bytes. Only the zero-padded one is the chain code.
+      const BASE32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+      const bumped = chainCode.slice(0, 51) + BASE32[BASE32.indexOf(chainCode[51]) + 1];
+      bumped.should.not.equal(chainCode);
+      isValidEd25519ChainCode(bumped).should.equal(false);
+    });
+
+    it('accepts what the generator mints', function () {
+      isValidEd25519ChainCode(generateEd25519ChainCodeBase32()).should.equal(true);
     });
   });
 
