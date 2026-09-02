@@ -1,543 +1,191 @@
-# Go Account Workflows
+# Go Account Examples
 
-This guide covers the full Go Account (trading wallet) lifecycle using the BitGo SDK directly, without requiring BitGo Express.
+TypeScript examples for managing Go Account (OFC) wallets using the BitGo SDK directly — no BitGo Express required.
 
-## Overview
+## Prerequisites
 
-**BitGo Express is optional middleware** - you can interact directly with the BitGo platform using the SDK. This approach gives you:
-- Direct API communication with BitGo
-- No need to run a separate Express server
-- Full control over the wallet creation process
-- Production-ready code with proper error handling
+```bash
+# Install dependencies from the repo root
+yarn install
 
-## Available Scripts
-
-### 1. SDK Approach (Recommended)
-**File:** `examples/ts/go-account/create-go-account.ts`
-
-Uses the high-level `generateWallet()` method which handles keychain creation, encryption, and wallet setup automatically.
-
-**Best for:**
-- Most production use cases
-- Quick integration
-- Users who don't need manual key management
-
-**Example:**
-```typescript
-const bitgo = new BitGoAPI({
-  accessToken: process.env.TESTNET_ACCESS_TOKEN,
-  env: 'test',
-});
-
-const coin = 'ofc';
-bitgo.register(coin, coins.Ofc.createInstance);
-
-const response = await bitgo.coin(coin).wallets().generateWallet({
-  label: 'My Go Account',
-  passphrase: 'wallet_passphrase',
-  passcodeEncryptionCode: 'encryption_code',
-  enterprise: 'your_enterprise_id',
-  type: 'trading', // Required for Go Accounts
-});
-
-const { wallet, userKeychain, encryptedWalletPassphrase } = response;
+# Copy and fill in your credentials
+cp examples/.env.example examples/.env
 ```
 
-### 2. Advanced SDK Approach
-**File:** `examples/ts/go-account/create-go-account-advanced.ts`
+Required `.env` variables:
 
-Provides manual control over keychain creation and wallet setup using SDK methods.
+| Variable | Description |
+|---|---|
+| `TESTNET_ACCESS_TOKEN` | BitGo access token |
+| `OFC_WALLET_ID` | Go Account wallet ID |
+| `OFC_WALLET_PASSPHRASE` | Wallet passphrase |
 
-**Best for:**
-- Advanced users needing custom key management
-- Integration with custom key storage systems
-- Understanding the internals of Go Account creation
-- Testing and debugging
+---
 
-### 3. Creating Addresses for Existing Wallets
-**File:** `examples/ts/go-account/create-go-account-address.ts`
+## Scripts
 
-Demonstrates how to create additional addresses for an existing Go Account wallet.
+### Wallet Setup
 
-**Best for:**
-- Adding new addresses to existing wallets
-- Creating addresses for different tokens
-- Managing multiple receiving addresses
+| Script | Description |
+|---|---|
+| `create-go-account.ts` | Create a wallet using `generateWallet()` — recommended |
+| `create-go-account-advanced.ts` | Create a wallet with manual keychain management |
+| `create-go-account-address.ts` | Create a token address on an existing wallet |
 
-**Example:**
-```typescript
-const wallet = await bitgo.coin('ofc').wallets().get({ id: walletId });
+**Note:** The `onToken` parameter is **required** when creating addresses on OFC wallets. There is no default address — every address must be tied to a specific token (e.g. `ofctsol:usdc`).
 
-const address = await wallet.createAddress({
-  label: 'My New Address',
-  onToken: 'ofctsol:usdc' // Required for OFC wallets
-});
+---
+
+### Withdrawals & Approvals
+
+| Script | Description |
+|---|---|
+| `go-account-withdrawal.ts` | Build, sign, and submit a withdrawal in one command |
+| `sign-transaction.ts` | Sign a pre-built payload only (Step 2 of 3, for split workflows) |
+| `go-account-approve.ts` | Approve a pending withdrawal as a second admin |
+| `go-account-get-pending-approval.ts` | Fetch details of a specific pending approval by ID |
+
+**Withdrawal flow:**
+```
+Step 1: wallet.prebuildTransaction({ recipients })              → prebuild
+Step 2: tradingAccount.signPayload({ payload, passphrase })    → signature
+Step 3: POST /tx/send { halfSigned: { payload, signature } }   → txid or pendingApproval
 ```
 
-### 4. Go Account Withdrawal — complete flow
-**File:** `examples/ts/go-account/go-account-withdrawal.ts`
+If your enterprise has an approval policy, Step 3 returns a pending approval instead of a txid. A **different** admin must then run `go-account-approve.ts` to approve it — you cannot approve your own transaction.
 
-Runs all three withdrawal steps in a single script: build → sign → submit.
+Approvals may be wallet-scoped or enterprise-scoped depending on how the policy was configured. `go-account-approve.ts` queries both.
 
-**Best for:**
-- End-to-end withdrawal from a Go Account (OFC) wallet in one command
-- Quick integration and testing
+---
 
-**Flow:**
-```
-Step 1: wallet.prebuildTransaction({ recipients: [...] })                        → prebuild
-Step 2: tradingAccount.signPayload({ payload: prebuild.payload, walletPassphrase }) → signature
-Step 3: POST /tx/send { halfSigned: { payload, signature } }                     → txid/pendingApproval
-```
+### Whitelist Management
 
-> **Note:** If your enterprise has an approval policy configured, Step 3 returns a
-> pending approval instead of a txid. Run `go-account-approve.ts` from a second
-> admin account to approve it.
+| Script | Description |
+|---|---|
+| `go-account-whitelist-list.ts` | View all policy rules and whitelisted addresses on a wallet |
+| `go-account-whitelist-update.ts` | Add or remove an address from an `advancedWhitelist` policy rule |
 
-### 5. Go Account Approval — approve a pending withdrawal
-**File:** `examples/ts/go-account/go-account-approve.ts`
+Run `go-account-whitelist-list.ts` first to find the correct policy ID before updating.
 
-Approves a pending withdrawal that was held for review by an approval policy.
+---
 
-**Best for:**
-- Enterprises that require a second admin to approve withdrawals
-- Auditing or reviewing pending transactions before they are broadcast
+### Trading
 
-**Important:** You cannot approve your own transaction — a **different** admin must run this script.
+| Script | Description |
+|---|---|
+| `go-account-list-products.ts` | List available trading pairs for a Go Account |
+| `go-account-place-order.ts` | Place a market, limit, or TWAP trade order |
+| `go-account-get-order.ts` | Fetch status and details of a specific order |
+| `go-account-list-orders.ts` | List all orders, with optional status/product filters |
 
-**Flow:**
-```
-Step 1: coin.pendingApprovals().list({ walletId })     → find pending approval
-Step 2: pendingApproval.approve({ walletPassphrase })  → PUT /pendingapprovals/{id}
-```
+**Note:** Testnet orders confirm but do not settle. Use `env: 'production'` for actual settlement.
 
-**Example:**
-```typescript
-const { pendingApprovals } = await coin.pendingApprovals().list({ walletId });
-const approval = pendingApprovals.find((pa) => pa.state() === 'pending');
-await approval.approve({ walletPassphrase, otp });
-```
+---
 
-### 6. Go Account Get Pending Approval — fetch a single pending approval
-**File:** `examples/ts/go-account/go-account-get-pending-approval.ts`
+## Run Commands
 
-Fetches the full details of a specific pending approval by ID.
+```bash
+cd examples/ts/go-account
 
-**Best for:**
-- Inspecting a pending approval before deciding to approve or reject
-- Retrieving recipient and amount details for a specific approval
+# --- Wallet Setup ---
 
-**Example:**
-```typescript
-const pa = await coin.pendingApprovals().get({ id: pendingApprovalId });
-console.log(pa.id(), pa.state(), pa.type());
-```
+npx tsx create-go-account.ts
+npx tsx create-go-account-advanced.ts
+npx tsx create-go-account-address.ts
 
-### 7. Go Account Whitelist List — view policy rules
-**File:** `examples/ts/go-account/go-account-whitelist-list.ts`
+# --- Withdrawals & Approvals ---
 
-Fetches and displays all policy rules on a Go Account wallet, including existing whitelist policy IDs and their entries.
+# Full withdrawal (build + sign + submit)
+OFC_WALLET_ID=your_wallet_id OFC_WALLET_PASSPHRASE=your_passphrase npx tsx go-account-withdrawal.ts
 
-**Best for:**
-- Discovering the correct policy ID before running the update script
-- Auditing which addresses are currently whitelisted
+# Sign only (Step 2 of 3)
+OFC_WALLET_ID=your_wallet_id OFC_WALLET_PASSPHRASE=your_passphrase OFC_PREBUILD_PAYLOAD='{"..."}' npx tsx sign-transaction.ts
 
-**Example:**
-```typescript
-const wallet = await bitgo.coin('ofc').wallets().get({ id: walletId });
-const rules = wallet._wallet?.admin?.policy?.rules || [];
-```
+# Approve a pending withdrawal (run as a DIFFERENT admin)
+TESTNET_ACCESS_TOKEN=approver_token OFC_WALLET_ID=your_wallet_id OFC_WALLET_PASSPHRASE=approver_passphrase npx tsx go-account-approve.ts
 
-### 8. Go Account Whitelist Update — add or remove addresses
-**File:** `examples/ts/go-account/go-account-whitelist-update.ts`
+# Approve a specific pending approval by ID
+TESTNET_ACCESS_TOKEN=approver_token PENDING_APPROVAL_ID=your_approval_id OFC_WALLET_PASSPHRASE=approver_passphrase npx tsx go-account-approve.ts
 
-Adds or removes an address from an existing `advancedWhitelist` policy rule on a Go Account wallet.
+# Get details of a specific pending approval
+PENDING_APPROVAL_ID=your_approval_id npx tsx go-account-get-pending-approval.ts
 
-**Best for:**
-- Managing which destination addresses are permitted for withdrawals
-- Automating whitelist maintenance via the BitGo API
+# --- Whitelist Management ---
 
-**Flow:**
-```
-PUT /api/v2/ofc/wallet/{walletId}/policy/rule
-  → immediate: update applied
-  → approval required: pendingApproval ID returned
-```
+OFC_WALLET_ID=your_wallet_id npx tsx go-account-whitelist-list.ts
 
-> **Note:** If approval is required, a second administrator must approve the pending change. Use `go-account-approve.ts` or the BitGo portal.
+OFC_WALLET_ID=your_wallet_id WHITELIST_ITEM=your_address WHITELIST_OPERATION=add npx tsx go-account-whitelist-update.ts
+OFC_WALLET_ID=your_wallet_id WHITELIST_ITEM=your_address WHITELIST_OPERATION=remove npx tsx go-account-whitelist-update.ts
 
-**Example:**
-```typescript
-const body = {
-  id: 'Offchain Wallet Whitelist',
-  type: 'advancedWhitelist',
-  condition: {
-    add: { type: 'address', item: '0xabc...' },
-  },
-  action: { type: 'deny' },
-};
-const url = coin.url(`/wallet/${walletId}/policy/rule`);
-const result = await bitgo.put(url).send(body).result();
-```
+# Add a wallet ID instead of an address
+OFC_WALLET_ID=your_wallet_id WHITELIST_ITEM=target_wallet_id WHITELIST_ITEM_TYPE=walletId WHITELIST_OPERATION=add npx tsx go-account-whitelist-update.ts
 
-### 9. Go Account List Products — view available trading pairs
-**File:** `examples/ts/go-account/go-account-list-products.ts`
+# --- Trading ---
 
-Fetches all trading products (pairs) available for a Go Account.
-Use this before placing an order to find valid product symbols.
+OFC_WALLET_ID=your_wallet_id npx tsx go-account-list-products.ts
 
-**Best for:**
-- Discovering which trading pairs are enabled for your account
-- Validating product symbols before placing an order
+# Place a market order
+OFC_WALLET_ID=your_wallet_id npx tsx go-account-place-order.ts
 
-**Example:**
-```typescript
-const url = (bitgo as any).microservicesUrl(
-  `/api/prime/trading/v1/accounts/${accountId}/products`
-);
-const response = await (bitgo as any).get(url).result();
-// response.data → array of { id, baseCurrency, quoteCurrency, isTradeDisabled, ... }
-```
+# Place a limit order
+OFC_WALLET_ID=your_wallet_id TRADE_TYPE=limit TRADE_PRODUCT=TBTC4-TEUR TRADE_SIDE=buy TRADE_QUANTITY=6 TRADE_QUANTITY_CURRENCY=TEUR TRADE_LIMIT_PRICE=95000 TRADE_DURATION=3600 npx tsx go-account-place-order.ts
 
-### 10. Go Account Place Order — place a trade order
-**File:** `examples/ts/go-account/go-account-place-order.ts`
+OFC_WALLET_ID=your_wallet_id TRADE_ORDER_ID=your_order_id npx tsx go-account-get-order.ts
 
-Places a trade order (market, limit, or TWAP) on a Go Account via the BitGo prime trading API. Assets are reserved until the order completes. In production, orders settle off-chain on weekdays at 12:00 PM EST.
-
-**Best for:**
-- Programmatically executing trades on a Go Account
-- All order types: market, limit, TWAP (with optional time-slicing)
-
-**Flow:**
-```
-POST /api/prime/trading/v1/accounts/{accountId}/orders
-  → response: { id, status, filledQuantity, averagePrice, settleDate, ... }
-```
-
-> **Note:** Testnet orders confirm but do not settle. Use `env: 'production'` for actual settlement.
-
-**Example:**
-```typescript
-const body = {
-  clientOrderId: 'unique-id',
-  type: 'market',          // 'market' | 'limit' | 'twap'
-  product: 'TBTC-TUSD*',  // from go-account-list-products.ts
-  side: 'buy',             // 'buy' | 'sell'
-  quantity: '0.001',
-  quantityCurrency: 'TBTC',
-};
-const url = (bitgo as any).microservicesUrl(
-  `/api/prime/trading/v1/accounts/${accountId}/orders`
-);
-const order = await (bitgo as any).post(url).send(body).result();
-```
-
-### 11. Go Account Get Order — check trade order status
-**File:** `examples/ts/go-account/go-account-get-order.ts`
-
-Fetches the status and details of a specific trade order by order ID.
-Use this to monitor execution after placing an order.
-
-**Best for:**
-- Checking whether an order has been filled
-- Retrieving the average execution price after fill
-
-**Example:**
-```typescript
-const url = (bitgo as any).microservicesUrl(
-  `/api/prime/trading/v1/accounts/${accountId}/orders/${orderId}`
-);
-const order = await (bitgo as any).get(url).result();
-```
-
-### 12. Go Account List Orders — list all trade orders
-**File:** `examples/ts/go-account/go-account-list-orders.ts`
-
-Fetches all trade orders for a Go Account, with optional filtering by status or product symbol.
-
-**Best for:**
-- Reviewing order history
-- Filtering open or filled orders for a specific trading pair
-
-**Example:**
-```typescript
-const url = (bitgo as any).microservicesUrl(
-  `/api/prime/trading/v1/accounts/${accountId}/orders`
-);
-const response = await (bitgo as any).get(url).query({ status: 'filled' }).result();
-// response.data → array of orders
-```
-
-### 13. Sign Transaction — sign only (Step 2 of 3)
-**File:** `examples/ts/go-account/sign-transaction.ts`
-
-Signs a pre-built payload and outputs the hex signature. Use this when the build
-step (Step 1) happens in a separate process and you only need to sign offline.
-
-**Best for:**
-- Architectures where build and sign happen in different services/environments
-- Auditing or debugging the signing step in isolation
-
-**Example:**
-```typescript
-const tradingAccount = wallet.toTradingAccount();
-const signature = await tradingAccount.signPayload({
-  payload: prebuildPayload, // stringified JSON from Step 1
-  walletPassphrase: 'your_wallet_passphrase',
-});
-// → pass signature + payload to Step 3 (submitTransaction)
+OFC_WALLET_ID=your_wallet_id npx tsx go-account-list-orders.ts
+OFC_WALLET_ID=your_wallet_id TRADE_ORDER_STATUS=filled npx tsx go-account-list-orders.ts
+OFC_WALLET_ID=your_wallet_id TRADE_ORDER_PRODUCT=TBTC4-TEUR npx tsx go-account-list-orders.ts
 ```
 
 ---
 
-## Detailed Examples
-
-### SDK Approach Example
-```typescript
-// Step 1: Create keychain locally
-const keychain = bitgo.coin('ofc').keychains().create();
-
-// Step 2: Encrypt private key
-const encryptedPrv = bitgo.encrypt({
-  password: passphrase,
-  input: keychain.prv
-});
-
-// Step 3: Add keychain to BitGo
-const addedKeychain = await bitgo.coin('ofc').keychains().add({
-  pub: keychain.pub,
-  encryptedPrv: encryptedPrv,
-  originalPasscodeEncryptionCode: passcodeEncryptionCode,
-  keyType: 'independent',
-  source: 'user',
-  enterprise: enterpriseId,
-});
-
-// Step 4: Create wallet
-const walletResponse = await bitgo.coin('ofc').wallets().add({
-  label: 'My Go Account',
-  m: 1,
-  n: 1,
-  keys: [addedKeychain.id],
-  type: 'trading',
-  enterprise: enterpriseId,
-});
-```
-
-## Complete Workflow
-
-Both examples demonstrate the complete Go Account creation flow:
-
-### 1. Create Wallet
-```typescript
-// SDK generates keychain and wallet in one call
-const response = await bitgo.coin('ofc').wallets().generateWallet({...});
-```
-
-### 2. Wait for Initialization
-Go Accounts require system initialization, which may take a few seconds:
-
-```typescript
-async function waitForWalletInitialization(wallet, maxRetries = 30, delayMs = 2000) {
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    const walletData = await bitgo.coin('ofc').wallets().get({ id: wallet.id() });
-    const coinSpecific = walletData._wallet.coinSpecific;
-
-    if (!coinSpecific.pendingSystemInitialization) {
-      return; // Wallet ready
-    }
-
-    await sleep(delayMs);
-  }
-}
-```
-
-### 3. Create Addresses
-**IMPORTANT:** For Go Account (OFC) wallets, the `onToken` parameter is **always required** when creating addresses. There is no "default" address - every address must be associated with a specific token.
-
-```typescript
-// Create a token-specific address (onToken is mandatory)
-const tokenAddress = await wallet.createAddress({
-  label: 'USDC Address',
-  onToken: 'ofctsol:usdc'  // Required for OFC wallets
-});
-
-// Create addresses for different tokens
-const usdtAddress = await wallet.createAddress({
-  label: 'USDT Address',
-  onToken: 'ofcttrx:usdt'
-});
-```
-
-## Key Differences from Express Approach
-
-| Aspect | Express | Direct SDK |
-|--------|---------|------------|
-| **Server Required** | Yes (Express server) | No |
-| **API Calls** | HTTP to Express → Express to BitGo | Direct SDK → BitGo |
-| **Setup** | More complex (server + SDK) | Simple (SDK only) |
-| **Security** | Keys never leave Express server | Keys managed in your application |
-| **Performance** | Extra network hop | Direct communication |
-| **Use Case** | Shared signing server | Embedded integration |
-
-## Security Best Practices
-
-1. **Backup Critical Information:**
-   - Encrypted private key (`userKeychain.encryptedPrv`)
-   - Keychain ID (`userKeychain.id`)
-   - Encrypted wallet passphrase (`encryptedWalletPassphrase`)
-   - Passphrase encryption code (stored separately)
-
-2. **Secure Storage:**
-   - Store encrypted keys in secure database
-   - Never log unencrypted private keys
-   - Use environment variables for sensitive config
-
-3. **Access Control:**
-   - Limit access token permissions
-   - Use enterprise-scoped tokens
-   - Implement proper authentication
-
-## Running the Examples
-
-1. Install dependencies:
-   ```bash
-   cd /path/to/BitGoJS
-   yarn install
-   ```
-
-2. Set up environment:
-   ```bash
-   cp examples/.env.example examples/.env
-   # Edit .env with your access token and enterprise ID
-   ```
-
-3. Update script configuration:
-   - Set your `enterprise` ID
-   - Choose wallet `label` and `passphrase`
-   - Optional: Set `token` for specific crypto assets
-
-4. Run the script:
-   ```bash
-   cd examples/ts/go-account
-
-   # Create a new Go Account wallet (recommended)
-   npx tsx create-go-account.ts
-
-   # Create a new Go Account wallet (advanced approach)
-   npx tsx create-go-account-advanced.ts
-
-   # Create an address for an existing wallet
-   npx tsx create-go-account-address.ts
-
-   # Full withdrawal: build + sign + submit in one command
-   OFC_WALLET_ID=your_wallet_id OFC_WALLET_PASSPHRASE=your_passphrase npx tsx go-account-withdrawal.ts
-
-   # Approve a pending withdrawal (run as a DIFFERENT admin)
-   TESTNET_ACCESS_TOKEN=approver_token OFC_WALLET_ID=your_wallet_id OFC_WALLET_PASSPHRASE=approver_passphrase npx tsx go-account-approve.ts
-
-   # Approve a specific pending approval by ID
-   TESTNET_ACCESS_TOKEN=approver_token PENDING_APPROVAL_ID=your_approval_id OFC_WALLET_PASSPHRASE=approver_passphrase npx tsx go-account-approve.ts
-
-   # Sign only: sign a pre-built payload (Step 2 of 3)
-   OFC_WALLET_ID=your_wallet_id OFC_WALLET_PASSPHRASE=your_passphrase OFC_PREBUILD_PAYLOAD='{"..."}' npx tsx sign-transaction.ts
-
-   # List available trading pairs for a Go Account
-   OFC_WALLET_ID=your_wallet_id npx tsx go-account-list-products.ts
-
-   # Place a market order
-   OFC_WALLET_ID=your_wallet_id npx tsx go-account-place-order.ts
-
-   # Place a limit order
-   OFC_WALLET_ID=your_wallet_id TRADE_TYPE=limit TRADE_PRODUCT=TBTC4-TEUR TRADE_SIDE=buy TRADE_QUANTITY=6 TRADE_QUANTITY_CURRENCY=TEUR TRADE_LIMIT_PRICE=95000 TRADE_DURATION=3600 npx tsx go-account-place-order.ts
-
-   # Get a specific order's status
-   OFC_WALLET_ID=your_wallet_id TRADE_ORDER_ID=your_order_id npx tsx go-account-get-order.ts
-
-   # List all orders
-   OFC_WALLET_ID=your_wallet_id npx tsx go-account-list-orders.ts
-
-   # List orders filtered by status or product
-   OFC_WALLET_ID=your_wallet_id TRADE_ORDER_STATUS=filled npx tsx go-account-list-orders.ts
-   OFC_WALLET_ID=your_wallet_id TRADE_ORDER_PRODUCT=TBTC4-TEUR npx tsx go-account-list-orders.ts
-
-   # Get a specific pending approval by ID
-   PENDING_APPROVAL_ID=your_approval_id npx tsx go-account-get-pending-approval.ts
-
-   # List whitelist policy rules on a wallet
-   OFC_WALLET_ID=your_wallet_id npx tsx go-account-whitelist-list.ts
-
-   # Add an address to the whitelist
-   OFC_WALLET_ID=your_wallet_id WHITELIST_ITEM=your_address WHITELIST_OPERATION=add npx tsx go-account-whitelist-update.ts
-
-   # Add a wallet ID to the whitelist
-   OFC_WALLET_ID=your_wallet_id WHITELIST_ITEM=your_target_wallet_id WHITELIST_ITEM_TYPE=walletId WHITELIST_OPERATION=add npx tsx go-account-whitelist-update.ts
-
-   # Remove an entry from the whitelist
-   OFC_WALLET_ID=your_wallet_id WHITELIST_ITEM=your_address WHITELIST_OPERATION=remove npx tsx go-account-whitelist-update.ts
-   ```
-
 ## Supported Tokens
 
-Common tokens for Go Accounts (use with `onToken` parameter):
+Token names follow the format `ofc[network]:[token]` (e.g. `ofcsol:usdc`) for chain-specific tokens, or `ofc[coin]` (e.g. `ofcbtc`) for native coins.
 
-### Testnet Tokens
-Stablecoins:
-- `ofctsol:usdc` - USD Coin on Solana testnet
-- `ofctsol:usdt` - USD Tether on Solana testnet
-- `ofcttrx:usdt` - USDT on Tron testnet
+### Testnet
 
-Native/Wrapped Tokens:
-- `ofcbtc` - Bitcoin
-- `ofceth` - Ethereum
-- `ofctsol:wsol` - Wrapped SOL on Solana testnet
-- `ofctsol:ray` - Raydium on Solana testnet
-- `ofctsol:srm` - Serum on Solana testnet
+| Token | Description |
+|---|---|
+| `ofctsol:usdc` | USD Coin on Solana |
+| `ofctsol:usdt` | USD Tether on Solana |
+| `ofcttrx:usdt` | USDT on Tron |
+| `ofctsol:wsol` | Wrapped SOL on Solana |
+| `ofcbtc` | Bitcoin |
+| `ofceth` | Ethereum |
 
-### Mainnet Tokens (use when `env: 'production'`)
-Stablecoins:
-- `ofcsol:usdc` - USD Coin on Solana
-- `ofcsol:usdt` - USD Tether on Solana
-- `ofcpolygon:usdc` - USD Coin on Polygon
-- `ofcarbeth:usdc` - USD Coin on Arbitrum
-- `ofcbsc:usdc` - USD Coin on BSC
+### Mainnet (`env: 'production'`)
 
-Native/Wrapped Tokens:
-- `ofcbtc` - Bitcoin
-- `ofceth` - Ethereum
-- `ofcsol:wsol` - Wrapped SOL on Solana
-- `ofcpolygon:matic` - MATIC on Polygon
+| Token | Description |
+|---|---|
+| `ofcsol:usdc` | USD Coin on Solana |
+| `ofcsol:usdt` | USD Tether on Solana |
+| `ofcpolygon:usdc` | USD Coin on Polygon |
+| `ofcarbeth:usdc` | USD Coin on Arbitrum |
+| `ofcbsc:usdc` | USD Coin on BSC |
+| `ofcbtc` | Bitcoin |
+| `ofceth` | Ethereum |
 
-**Note:** Token names use the format `ofc[network]:[token]` (e.g., `ofcsol:usdc`) for chain-specific tokens, or just `ofc[coin]` (e.g., `ofcbtc`) for native coins.
+---
 
 ## Troubleshooting
 
-### Wallet initialization timeout
-**Issue:** Wallet stuck in `pendingSystemInitialization`
+**Wallet stuck in `pendingSystemInitialization`**
+Increase the retry count and delay in `waitForWalletInitialization()`.
 
-**Solution:** Increase the retry count and delay in `waitForWalletInitialization()`.
+**Error: "onToken is a mandatory parameter for OFC wallets"**
+Always pass `onToken` when calling `wallet.createAddress()` on an OFC wallet.
 
-### Token address creation fails
-**Issue:** Error "onToken is a mandatory parameter for OFC wallets"
+**Error: "Coin unsupported: [token]"**
+Check that the token name is correct, the token is enabled for your enterprise, and you're using testnet tokens (`ofct...`) with `env: 'test'` and mainnet tokens with `env: 'production'`.
 
-**Solution:** Always include the `onToken` parameter when creating addresses for Go Account wallets. There is no default address - every address must specify a token.
+**Pending approvals not showing up**
+Approvals created by enterprise-level policies are enterprise-scoped and won't appear in a wallet-only query. `go-account-approve.ts` queries both scopes automatically.
 
-**Issue:** Error "Coin unsupported: [token]"
+---
 
-**Solution:**
-- Verify the token name format is correct (e.g., `ofctsol:usdc` for testnet, `ofcsol:usdc` for mainnet)
-- Check that the token is enabled for your enterprise
-- Ensure you're using testnet tokens (`ofct...`) with `env: 'test'` and mainnet tokens (`ofc...`) with `env: 'production'`
-
-## Additional Resources
+## Resources
 
 - [BitGo API Documentation](https://developers.bitgo.com/)
 - [Go Accounts Overview](https://developers.bitgo.com/docs/crypto-as-a-service-go-accounts)
-- [SDK Reference](https://github.com/BitGo/BitGoJS)
-
-## Support
-
-For questions or issues:
-1. Check the [BitGo Developer Documentation](https://developers.bitgo.com/)
-2. Open an issue on [GitHub](https://github.com/BitGo/BitGoJS/issues)
-3. Contact BitGo support
+- [BitGoJS on GitHub](https://github.com/BitGo/BitGoJS)
