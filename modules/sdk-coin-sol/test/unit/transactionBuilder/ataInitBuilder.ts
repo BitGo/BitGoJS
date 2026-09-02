@@ -47,6 +47,7 @@ describe('Sol Associated Token Account Builder', () => {
   const mint = testData.associatedTokenAccounts.mint;
   const recentBlockHash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
   const rentAmount = '30000';
+  const token2022ProgramId = 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb';
 
   // for diff owner case
   const accountOwner = new KeyPair(testData.associatedTokenAccounts.accounts[1]).getKeys();
@@ -307,6 +308,44 @@ describe('Sol Associated Token Account Builder', () => {
         const rawTx = tx.toBroadcastFormat();
 
         should.equal(rawTx, testData.MULTI_ATA_INIT_UNSIGNED_TX_WITH_MEMO_OPTIONAL_PARAM);
+      });
+
+      it('bundles permissionless thaw after Token-2022 ATA creation', async () => {
+        const t22Name = testData.sol2022TokenTransfers.name;
+        const t22Mint = testData.sol2022TokenTransfers.mint;
+        const tokenAccount = '98wFF5MpMjMQbfDF2MPzo8LCGX37unZR1ohRA1mU9GmJ';
+        const thawParams = {
+          authority: account.pub,
+          mint: t22Mint,
+          tokenAccount,
+          tokenAccountOwner: ownerPubkeys.pubkey,
+          gatingProgram: 'GbQ8ZiEFzGGTeYoXwtZtcoxwPcMyUcmZDduMVNdUPKpX',
+          flagAccount: '48n7YGEww7fKMfJ5gJ3sQC3rM6RWGjpUsghqVfXVkR5A',
+          mintConfig: '9sQhAH7vV3RKTCK13VY4EiNjs3qBq1srSYxdNufdAAXm',
+          extraAccounts: [{ pubkey: nonceAccount.pub, isSigner: false, isWritable: false }],
+        };
+        const txBuilder = factory.getAtaInitializationBuilder();
+        txBuilder.nonce(recentBlockHash);
+        txBuilder.sender(account.pub);
+        txBuilder.rentExemptAmount(rentAmount);
+        txBuilder.enableToken({
+          ownerAddress: ownerPubkeys.pubkey,
+          tokenName: t22Name,
+          tokenAddress: t22Mint,
+          programId: token2022ProgramId,
+          ataAddress: tokenAccount,
+        });
+        txBuilder.permissionlessThaw(thawParams);
+
+        const tx = await txBuilder.build();
+        const instructions = tx.toJson().instructionsData;
+        instructions
+          .map((i) => i.type)
+          .should.deepEqual(['CreateAssociatedTokenAccount', 'PermissionlessThawIdempotent']);
+        instructions[1].params.tokenAccount.should.equal(tokenAccount);
+        instructions[1].params.gatingProgram.should.equal(thawParams.gatingProgram);
+        instructions[1].params.extraAccounts.should.deepEqual(thawParams.extraAccounts);
+        should.equal(Utils.isValidRawTransaction(tx.toBroadcastFormat()), true);
       });
 
       it('build an associated token account init tx for multiple recipients signed', async () => {

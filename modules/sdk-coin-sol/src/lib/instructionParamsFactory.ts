@@ -1076,8 +1076,8 @@ function parseAtaInitInstructions(
   instructions: TransactionInstruction[],
   instructionMetadata?: InstructionParams[],
   _useTokenAddressTokenName?: boolean
-): Array<AtaInit | Memo | Nonce> {
-  const instructionData: Array<AtaInit | Memo | Nonce> = [];
+): Array<AtaInit | PermissionlessThawIdempotent | Memo | Nonce> {
+  const instructionData: Array<AtaInit | PermissionlessThawIdempotent | Memo | Nonce> = [];
   let memo: Memo | undefined;
 
   for (const instruction of instructions) {
@@ -1116,6 +1116,29 @@ function parseAtaInitInstructions(
           },
         };
         instructionData.push(ataInit);
+        break;
+      case ValidInstructionTypesEnum.PermissionlessThawIdempotent:
+        const thawExtraAccounts: ExtraAccountMeta[] = instruction.keys.slice(9).map((key) => ({
+          pubkey: key.pubkey.toString(),
+          isSigner: key.isSigner,
+          isWritable: key.isWritable,
+        }));
+        const permissionlessThaw: PermissionlessThawIdempotent = {
+          type: InstructionBuilderTypes.PermissionlessThawIdempotent,
+          params: {
+            authority: instruction.keys[0].pubkey.toString(),
+            mint: instruction.keys[1].pubkey.toString(),
+            tokenAccount: instruction.keys[2].pubkey.toString(),
+            flagAccount: instruction.keys[3].pubkey.toString(),
+            tokenAccountOwner: instruction.keys[4].pubkey.toString(),
+            mintConfig: instruction.keys[5].pubkey.toString(),
+            tokenProgram: instruction.keys[6].pubkey.toString(),
+            systemProgram: instruction.keys[7].pubkey.toString(),
+            gatingProgram: instruction.keys[8].pubkey.toString(),
+            extraAccounts: thawExtraAccounts,
+          },
+        };
+        instructionData.push(permissionlessThaw);
         break;
       case ValidInstructionTypesEnum.DepositSol:
         // AtaInit is a part of spl-stake-pool's depositSol process
