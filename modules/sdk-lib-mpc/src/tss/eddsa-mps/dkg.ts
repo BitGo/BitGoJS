@@ -1,4 +1,6 @@
 import type { MsgState, Share } from '@bitgo/wasm-mps';
+import type { VrfKeygenSession as EddsaVrfKeygenSession } from '@silencelaboratories/eddsa-wasm-node';
+import type { VrfKeygenSession as EddsaVrfWebKeygenSession } from '@silencelaboratories/eddsa-wasm-web';
 import { encode } from 'cbor-x';
 import crypto from 'crypto';
 import { DeserializedMessage, DeserializedMessages, DkgState, EddsaReducedKeyShare, EddsaRetrofitData } from './types';
@@ -6,6 +8,7 @@ import { DeserializedMessage, DeserializedMessages, DkgState, EddsaReducedKeySha
 type NodeWasmer = typeof import('@bitgo/wasm-mps');
 type WebWasmer = typeof import('@bitgo/wasm-mps/web');
 type WasmMps = NodeWasmer | WebWasmer;
+export type { EddsaVrfKeygenSession, EddsaVrfWebKeygenSession };
 
 /**
  * EdDSA Distributed Key Generation (DKG) implementation using @bitgo/wasm-mps.

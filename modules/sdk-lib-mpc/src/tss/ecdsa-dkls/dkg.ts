@@ -1,4 +1,6 @@
 import type { KeygenSession, Keyshare, Message } from '@silencelaboratories/dkls-wasm-ll-node';
+import type { VrfKeygenSession as DklsVrfKeygenSession } from '@silencelaboratories/dkls-wasm-ll-vrf-node';
+import type { VrfKeygenSession as DklsVrfWebKeygenSession } from '@silencelaboratories/dkls-wasm-ll-vrf-web';
 import { decode, encode } from 'cbor-x';
 import { createHash } from 'crypto';
 import { Secp256k1Curve } from '../../curves';
@@ -10,6 +12,7 @@ type WebWasmer = typeof import('@silencelaboratories/dkls-wasm-ll-web');
 type BundlerWasmer = typeof import('@silencelaboratories/dkls-wasm-ll-bundler');
 
 type DklsWasm = NodeWasmer | WebWasmer | BundlerWasmer;
+export type { DklsVrfKeygenSession, DklsVrfWebKeygenSession };
 
 export interface DkgSessionData {
   dkgSessionBytes: Uint8Array;
