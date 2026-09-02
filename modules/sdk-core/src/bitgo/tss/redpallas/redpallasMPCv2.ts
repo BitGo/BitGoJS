@@ -25,12 +25,8 @@ function partyIdToSignatureShareType(partyId: MPCv2PartiesEnum): SignatureShareT
 }
 
 /**
- * RedPallas MPS DSG signature-share helpers.
+ * RedPallas MPCv2 DSG round-message helpers.
  *
- * Groundwork for a future custodial/cold (SMC/OVC) DSG signing flow - not yet wired up to any
- * caller in this SDK. Mirrors `../eddsa/eddsaMPCv2.ts` (same 3-round shape, same PGP-signed-
- * message envelope), but kept as an independent copy - built on `RedPallasMPSComms` - so
- * RedPallas MPS never depends on the EdDSA MPS module, and vice versa.
  */
 
 /**
