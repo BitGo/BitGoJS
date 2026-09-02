@@ -307,6 +307,51 @@ jobs:
         env:
           NPM_CONFIG_PROVENANCE: true
 
+      # WCN-2091: fail the release BEFORE bitgo publishes if the shrinkwrap it
+      # would ship pins any transitive that violates our declared engines (Node
+      # >=20). Runs after pass 1 because the shrinkwrap generator resolves
+      # newly-published siblings from the registry. Pack + install here, not
+      # --package-lock-only, so `engine-strict=true` actually validates every
+      # frozen entry's engines. If this fails, siblings are already on npm but
+      # bitgo isn't — fix the shrinkwrap issue and re-run in recovery-mode.
+      - name: Pre-publish shrinkwrap check — pack bitgo tarball
+        if: inputs.dry-run == false
+        env:
+          BITGO_GENERATE_SHRINKWRAP: true
+        run: |
+          mkdir -p "$RUNNER_TEMP/tarballs"
+          (cd modules/bitgo && npm pack --pack-destination "$RUNNER_TEMP/tarballs/")
+          tarball="$(ls "$RUNNER_TEMP/tarballs"/*.tgz | head -1)"
+          echo "PREPUB_TARBALL=$tarball" >> "$GITHUB_ENV"
+          echo "Packed: $tarball"
+
+      - name: Pre-publish shrinkwrap check — setup Node 20
+        if: inputs.dry-run == false
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20.x'
+
+      - name: Pre-publish shrinkwrap check — install tarball on Node 20 with engine-strict
+        if: inputs.dry-run == false
+        run: |
+          workdir="$(mktemp -d)"
+          cd "$workdir"
+          echo "engine-strict=true" > .npmrc
+          npm init -y >/dev/null
+          echo "Verifying $PREPUB_TARBALL installs on $(node --version) with engine-strict=true"
+          if ! npm install "$PREPUB_TARBALL" --no-audit --no-fund --ignore-scripts 2>install.log; then
+            echo "::error::Pre-publish shrinkwrap check FAILED — bitgo tarball cannot be installed on Node 20 with engine-strict. Fix before publishing."
+            cat install.log
+            exit 1
+          fi
+          echo "✅ bitgo tarball installs cleanly on $(node --version) with engine-strict."
+
+      - name: Pre-publish shrinkwrap check — restore release Node version
+        if: inputs.dry-run == false
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+
       - name: Publish bitgo (pass 2)
         if: inputs.dry-run == false
         run: |
