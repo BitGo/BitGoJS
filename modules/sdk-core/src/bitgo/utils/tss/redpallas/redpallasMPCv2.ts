@@ -22,8 +22,12 @@ import {
  * This currently only exposes the BitGo-platform round1/round2 dispatch used by the custodial
  * SMC/OVC ceremony (see `RedpallasMPCv2SMCUtils` in `./SMC/utils.ts`) - there is no self-custody
  * (direct, non-OVC) key-generation entrypoint here, since nothing in this SDK constructs one
- * today. There is also no signing (DSG) support - transaction signing for Zcash shielded
- * addresses is out of scope for this SDK.
+ * today.
+ *
+ * Signing (DSG) round-message helpers now exist (see `../../../tss/redpallas/redpallasMPCv2.ts`,
+ * mirroring `../../../tss/eddsa/eddsaMPCv2.ts`), but there is no wallet-level orchestration
+ * (offline round shares, external-signer flow, TxRequest wiring, etc.) here yet - transaction
+ * signing for Zcash shielded addresses is not yet wired end-to-end in this SDK.
  *
  * RedPallas MPS DKG completes in the same 2-round shape as EdDSA MPS DKG (round0 local, round1 +
  * round2 online). The resulting `commonPublicKeychain` is the raw 32-byte RedPallas group public
