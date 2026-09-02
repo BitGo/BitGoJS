@@ -36,7 +36,7 @@
     ]
   },
   "dependencies": {
-    "@bitgo/wasm-mps": "1.13.0",
+    "@bitgo/wasm-mps": "1.14.0",
     "@noble/curves": "1.8.1",
     "@silencelaboratories/dkls-wasm-ll-node": "1.2.0-pre.4",
     "@silencelaboratories/dkls-wasm-ll-vrf-node": "1.0.0-pre.9",
