@@ -570,6 +570,8 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ],
     KeyCurve.Secp256k1,
     '',
@@ -593,6 +595,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.SUPPORTS_ERC20,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ],
     KeyCurve.Secp256k1,
     '',
@@ -1068,6 +1071,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.SUPPORTS_ERC20,
       CoinFeature.STAKING,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   account(
@@ -1132,6 +1136,8 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.STAKING,
+      CoinFeature.SUPPORTS_ERC20,
+      CoinFeature.ERC20_BULK_TRANSACTION,
     ]
   ),
   account(

@@ -1589,6 +1589,7 @@ class ZkSyncEra extends Mainnet implements EthereumNetwork {
   chainId = 324;
   nativeCoinOperationHashPrefix = '324';
   tokenOperationHashPrefix = '324-ERC20';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class ZkSyncEraTestnet extends Testnet implements EthereumNetwork {
@@ -1599,6 +1600,7 @@ class ZkSyncEraTestnet extends Testnet implements EthereumNetwork {
   chainId = 300;
   nativeCoinOperationHashPrefix = '300';
   tokenOperationHashPrefix = '300-ERC20';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
   forwarderFactoryAddress = '0xdd498702f44c4da08eb9e08d3f015eefe5cb71fc';
   forwarderImplementationAddress = '0xbe69cae311191fb45e648ed20847f06fad2dbab4';
   walletV4ForwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
@@ -2322,6 +2324,7 @@ class SeiEvm extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://seiscan.io/address/';
   chainId = 1329;
   nativeCoinOperationHashPrefix = '1329';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class SeiEvmTestnet extends Testnet implements EthereumNetwork {
@@ -2499,6 +2502,7 @@ class BaseChainTestnet extends Testnet implements EthereumNetwork {
   forwarderImplementationAddress = '0xbe69cae311191fb45e648ed20847f06fad2dbab4';
   walletFactoryAddress = '0x4550e1e7616d3364877fc6c9324938dab678621a';
   walletImplementationAddress = '0x92db2759d1dca129a0d9d46877f361be819184c4';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class BaseChain extends Mainnet implements EthereumNetwork {
@@ -2514,6 +2518,7 @@ class BaseChain extends Mainnet implements EthereumNetwork {
   forwarderImplementationAddress = '0xbe69cae311191fb45e648ed20847f06fad2dbab4';
   walletFactoryAddress = '0x4550e1e7616d3364877fc6c9324938dab678621a';
   walletImplementationAddress = '0x92db2759d1dca129a0d9d46877f361be819184c4';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class Polymesh extends Mainnet implements PolyxNetwork {
