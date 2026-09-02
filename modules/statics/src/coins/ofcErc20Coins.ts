@@ -6424,7 +6424,7 @@ export const tOfcErc20Coins = [
   ofcerc20(
     'bb6992c2-b07b-416f-8fd2-d88567584c2b',
     'ofcbaseeth:jvhhusdc',
-    'jvhhVault',
+    'Bitwise Liquid Prime USDC',
     18,
     UnderlyingAsset['baseeth:jvhhusdc'],
     undefined,
