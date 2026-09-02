@@ -1021,10 +1021,10 @@
     "@scure/base" "1.1.5"
     micro-eth-signer "0.7.2"
 
-"@bitgo/public-types@6.64.1":
-  version "6.64.1"
-  resolved "https://registry.npmjs.org/@bitgo/public-types/-/public-types-6.64.1.tgz#85c529e968a2393784373a611eca188a3b5e2832"
-  integrity sha512-+3Y+9gJDDy8YorytnfqcR5IXjb35BloZilaEjwAnJYOqWO+wD+fLHvhc5eIAYnFJKNFE2gie4JBfdQ2055HVOw==
+"@bitgo/public-types@6.66.0":
+  version "6.66.0"
+  resolved "https://registry.npmjs.org/@bitgo/public-types/-/public-types-6.66.0.tgz#d8ea3da33c22403d9258fe1c760163d18c8d763d"
+  integrity sha512-7WsFUX7aIB9yTHCP18iLZThp8O1BsMrQUiwzuEgcBApqDlv/9OnGv87ytLNG2jPTyH3soYjjBWziTQJQFEaPXw==
   dependencies:
     fp-ts "^2.0.0"
     io-ts "npm:@bitgo-forks/io-ts@2.1.4"
@@ -1052,10 +1052,10 @@
   resolved "https://registry.npmjs.org/@bitgo/wasm-ton/-/wasm-ton-1.1.1.tgz"
   integrity sha512-Y4x2V2ZcYWlmx42v7dlrKDtT2DuUt8smk8E98mh7RhpiifJhLk2v5RmXDwBl0A3v9TzUOU6qMOnSS/iZ8Pq52w==
 
-"@bitgo/wasm-utxo@^4.39.0":
-  version "4.39.0"
-  resolved "https://registry.npmjs.org/@bitgo/wasm-utxo/-/wasm-utxo-4.39.0.tgz#8364942bc6381c841d13078c959b7c18c197d87c"
-  integrity sha512-FKZlT4i3NqQjVszf7elO7KRv0zFm2WZY2a9oTp9acWEmPLyQfwRepkzcGHuGDJtDPNSi8kMO2Yl8vO+OAuURlA==
+"@bitgo/wasm-utxo@^4.40.0":
+  version "4.40.0"
+  resolved "https://registry.npmjs.org/@bitgo/wasm-utxo/-/wasm-utxo-4.40.0.tgz#bcd38b7235b8c9ce38490c82a91a2a078e20b511"
+  integrity sha512-1ah+RLAR/ssMTUSOC9qVvnTk/W0oqAUlnExe8PfB5ElJAAkPSFzR2pUItdtDlJ6wfSBM2neCRJzEoC4mNPBPeQ==
 
 "@brandonblack/musig@^0.0.1-alpha.0":
   version "0.0.1-alpha.1"
@@ -7890,7 +7890,7 @@ base64id@2.0.0, base64id@~2.0.0:
   resolved "https://registry.npmjs.org/base64id/-/base64id-2.0.0.tgz"
   integrity sha512-lGe34o6EHj9y3Kts9R4ZYs/Gr+6N7MCaMlIFA3F1R2O5/m7K06AxfSeO5530PEERE6/WyEg3lsuyw4GHlPZHog==
 
-baseline-browser-mapping@2.10.40, baseline-browser-mapping@^2.10.38:
+baseline-browser-mapping@2.10.40, baseline-browser-mapping@^2.10.44:
   version "2.10.40"
   resolved "https://registry.npmjs.org/baseline-browser-mapping/-/baseline-browser-mapping-2.10.40.tgz#f372c8eb36ff4ad0b5e7ae467014abef124554ba"
   integrity sha512-BSSLZ9/Cjjv7Gtj5B68ZzXcXUg8iOf3fme+FCuh8rC/Go+Kmh8cox7M3A8dolou16s64QjLPOSdngh7GxXvkSw==
@@ -8710,7 +8710,7 @@ camelize@^1.0.0:
   resolved "https://registry.npmjs.org/camelize/-/camelize-1.0.1.tgz"
   integrity sha512-dU+Tx2fsypxTgtLoE36npi3UqcjSSMNYfkqgmoEhtZrraP5VWq0K7FkWVTYa8eMPtnU/G2txVsfdCJTn9uzpuQ==
 
-caniuse-lite@1.0.30001799, caniuse-lite@^1.0.30001702, caniuse-lite@^1.0.30001799:
+caniuse-lite@1.0.30001799, caniuse-lite@^1.0.30001702, caniuse-lite@^1.0.30001806:
   version "1.0.30001799"
   resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001799.tgz#5c909138c27f1a61219d3e092071c1cc7d32dc55"
   integrity sha512-hG1bReV+OUU+MOqK4t/ZWI0tZOyz3rqS9XuhOUz1cIcbwBKjOyJEJuw9ER5JuNyqxNk8u/JUVbGibBOL1yrjFw==
@@ -10541,7 +10541,7 @@ ejs@^3.1.7, ejs@^3.1.8:
   dependencies:
     jake "^10.8.5"
 
-electron-to-chromium@1.5.380, electron-to-chromium@^1.5.376:
+electron-to-chromium@1.5.380, electron-to-chromium@^1.5.393:
   version "1.5.380"
   resolved "https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.5.380.tgz#6dbe112f22b35ccdf627f894ad7515cdd35f6388"
   integrity sha512-W6d5AbuEoRayO447cqrg6lKJIlscgRnnxOZl/08kfV71BQDoEBC7Wwis68z87LjyK6f4kWyTaubuDbhHKrZkbA==
@@ -15880,10 +15880,10 @@ node-preload@^0.2.1:
   dependencies:
     process-on-spawn "^1.0.0"
 
-node-releases@^2.0.48:
-  version "2.0.50"
-  resolved "https://registry.npmjs.org/node-releases/-/node-releases-2.0.50.tgz#597197a852071ce42fc2550e58e223242bcba969"
-  integrity sha512-J6l92tKHX6w8Jy5nO1Vuc01NoIiRGi/d6qBKVxh+IQ8Cr3b6HbVNfKiF8ZpFKufTwpwxMmce2W3iQZ861ZRyTg==
+node-releases@2.0.52, node-releases@^2.0.51:
+  version "2.0.52"
+  resolved "https://registry.npmjs.org/node-releases/-/node-releases-2.0.52.tgz#d8283ba25e577a4d9756d5b45eca353ba5500300"
+  integrity sha512-MRlTqhAfoMx/4mhEbPo3Hi02g9LJZaJkka69V6h67Cb1gjrAG0jsTE4CZX1eptNx+VCAwJmfpnDIF4P0Nh1A7A==
 
 nofilter@^3.0.2, nofilter@^3.1.0:
   version "3.1.0"
