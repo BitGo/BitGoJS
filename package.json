@@ -160,7 +160,8 @@
     "ip-address": "10.4.0",
     "socket.io-parser": "4.2.7",
     "nanoid": "3.3.18",
-    "sanitize-html": "2.17.5"
+    "sanitize-html": "2.17.5",
+    "node-releases": "2.0.52"
   },
   "overrides": {
     "qs": "6.15.2",
