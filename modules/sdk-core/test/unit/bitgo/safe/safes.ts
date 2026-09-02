@@ -3,6 +3,10 @@ import 'should';
 import { InitializeSafeResponse } from '@bitgo/public-types';
 import { Enterprise, Safe, SafeKeys, Safes } from '../../../../src';
 
+/** A derivable slot-④ backup root pub: 56-char StrKey || 52-char base32 chain code. */
+const COMPOSITE_BACKUP_PUB =
+  'GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYH' + 'TIHTY7I6LMUEMCXT3EWG5ANXAU72JQXJRUL3MBKDUL6I4GOXWBDA';
+
 describe('Safes', function () {
   let safes: Safes;
   let mockBitGo: any;
@@ -67,7 +71,12 @@ describe('Safes', function () {
       return {
         create: sinon.stub().returns({ pub: `${coin}-pub`, prv: `${coin}-prv` }),
         add: sinon.stub().resolves({ id: `${coin}-user` }),
-        createBackup: sinon.stub().resolves({ id: `${coin}-backup` }),
+        // txlm is the ed25519Multisig root coin, so its backup pub comes back composite —
+        // createMultisigRoot asserts that before returning the triplet.
+        createBackup: sinon.stub().resolves({
+          id: `${coin}-backup`,
+          ...(coin === 'txlm' || coin === 'xlm' ? { pub: COMPOSITE_BACKUP_PUB } : {}),
+        }),
         createBitGo: sinon.stub().resolves({ id: `${coin}-bitgo` }),
         createMpc: sinon.stub().resolves({
           userKeychain: { id: `${coin}-user` },
@@ -102,6 +111,29 @@ describe('Safes', function () {
           },
         },
       });
+    });
+
+    it('rejects an ed25519Multisig backup root that came back non-derivable', async function () {
+      // createBackup infers slot ④ from the generated pub's shape; if that inference ever misses,
+      // the root is silently non-derivable and the wallets minted from it are unrecoverable.
+      keychainsByCoin['txlm'] = makeKeychains('txlm');
+      // A bare 56-char StrKey: the pub createBackup would post if it failed to recognise slot ④.
+      keychainsByCoin['txlm'].createBackup.resolves({
+        id: 'txlm-backup',
+        pub: 'GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYH',
+      });
+
+      await safes
+        .createSafeKeys({ label: 'my safe', passphrase: 'pw', safeId: 'safe-1' })
+        .should.be.rejectedWith(/ed25519Multisig backup root is not derivable/);
+    });
+
+    it('does not apply the derivable check to the secp256k1Multisig slot', async function () {
+      // Slot ① backup roots are xpubs, which already carry a chain code and are never composed.
+      keychainsByCoin['tbtc'] = makeKeychains('tbtc');
+      keychainsByCoin['tbtc'].createBackup.resolves({ id: 'tbtc-backup' });
+
+      await safes.createSafeKeys({ label: 'my safe', passphrase: 'pw', safeId: 'safe-1' }).should.be.fulfilled();
     });
 
     it('tags every multisig key registration with safeId and the correct source', async function () {
