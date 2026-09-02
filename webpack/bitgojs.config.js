@@ -61,6 +61,14 @@ module.exports = {
       /\@silencelaboratories\/dkls-wasm-ll-node/,
       '@silencelaboratories/dkls-wasm-ll-web'
     ),
+    new webpack.NormalModuleReplacementPlugin(
+      /\@silencelaboratories\/dkls-wasm-ll-vrf-node/,
+      '@silencelaboratories/dkls-wasm-ll-vrf-web'
+    ),
+    new webpack.NormalModuleReplacementPlugin(
+      /\@silencelaboratories\/eddsa-wasm-node/,
+      '@silencelaboratories/eddsa-wasm-web'
+    ),
 
     new webpack.ContextReplacementPlugin(/cardano-serialization-lib-browser/),
   ],

@@ -39,7 +39,11 @@
     "@bitgo/wasm-mps": "1.13.0",
     "@noble/curves": "1.8.1",
     "@silencelaboratories/dkls-wasm-ll-node": "1.2.0-pre.4",
+    "@silencelaboratories/dkls-wasm-ll-vrf-node": "1.0.0-pre.9",
+    "@silencelaboratories/dkls-wasm-ll-vrf-web": "1.0.0-pre.9",
     "@silencelaboratories/dkls-wasm-ll-web": "1.2.0-pre.4",
+    "@silencelaboratories/eddsa-wasm-node": "1.0.0-pre.9",
+    "@silencelaboratories/eddsa-wasm-web": "1.0.0-pre.9",
     "@types/superagent": "4.1.15",
     "@wasmer/wasi": "^1.2.2",
     "bigint-crypto-utils": "3.1.4",
@@ -56,15 +60,25 @@
     "@bitgo/sdk-opensslbytes": "^2.1.0",
     "@bitgo/sjcl": "^1.1.0",
     "@silencelaboratories/dkls-wasm-ll-bundler": "1.2.0-pre.4",
+    "@silencelaboratories/dkls-wasm-ll-vrf-bundler": "1.0.0-pre.9",
+    "@silencelaboratories/eddsa-wasm-bundler": "1.0.0-pre.9",
     "@types/lodash": "^4.14.151",
     "@types/node": "^24.10.9",
     "nyc": "^15.0.0"
   },
   "peerDependencies": {
-    "@silencelaboratories/dkls-wasm-ll-bundler": "1.2.0-pre.4"
+    "@silencelaboratories/dkls-wasm-ll-bundler": "1.2.0-pre.4",
+    "@silencelaboratories/dkls-wasm-ll-vrf-bundler": "1.0.0-pre.9",
+    "@silencelaboratories/eddsa-wasm-bundler": "1.0.0-pre.9"
   },
   "peerDependenciesMeta": {
     "@silencelaboratories/dkls-wasm-ll-bundler": {
+      "optional": true
+    },
+    "@silencelaboratories/dkls-wasm-ll-vrf-bundler": {
+      "optional": true
+    },
+    "@silencelaboratories/eddsa-wasm-bundler": {
       "optional": true
     }
   },
