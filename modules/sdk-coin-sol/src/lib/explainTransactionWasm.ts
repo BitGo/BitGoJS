@@ -1,8 +1,14 @@
 import { ITokenEnablement } from '@bitgo/sdk-core';
 import { Transaction, parseTransaction, type ParsedTransaction, type InstructionParams } from '@bitgo/wasm-solana';
-import { UNAVAILABLE_TEXT } from './constants';
+import {
+  UNAVAILABLE_TEXT,
+  ZK_ELGAMAL_PROOF_PROGRAM_ID,
+  CT_EXT_DISCRIMINATOR,
+  CT_SUB_DISCRIMINATORS,
+} from './constants';
 import { StakingAuthorizeParams, TransactionExplanation as SolLibTransactionExplanation } from './iface';
 import { findTokenName } from './instructionParamsFactory';
+import bs58 from 'bs58';
 
 export interface ExplainTransactionWasmOptions {
   txBase64: string;
@@ -25,6 +31,7 @@ enum TransactionType {
   WalletInitialization = 'WalletInitialization',
   AssociatedTokenAccountInitialization = 'AssociatedTokenAccountInitialization',
   CustomTx = 'CustomTx',
+  ConfidentialTransfer = 'ConfidentialTransfer',
 }
 
 // =============================================================================
@@ -85,6 +92,31 @@ function detectCombinedPattern(instructions: InstructionParams[]): CombinedPatte
 
 const BOILERPLATE_TYPES = new Set(['NonceAdvance', 'Memo', 'SetComputeUnitLimit', 'SetPriorityFee']);
 
+/**
+ * Returns true if a WASM-parsed Unknown instruction is a confidential transfer instruction
+ * (Token-2022 CT extension or zk-elgamal-proof program).
+ *
+ * CT extension: byte 0 = CT_EXT_DISCRIMINATOR, byte 1 ∈ CT_SUB_DISCRIMINATORS
+ * zk-elgamal-proof: any instruction from the zk-elgamal-proof program
+ */
+function isWasmConfidentialTransferInstruction(instr: InstructionParams): boolean {
+  if (instr.type !== 'Unknown') return false;
+  const programId = instr.programId;
+  // zk-elgamal-proof program instructions are always CT proof verifications
+  if (programId === ZK_ELGAMAL_PROOF_PROGRAM_ID) {
+    return true;
+  }
+  // Token-2022 CT extension: byte 0 = CT_EXT_DISCRIMINATOR, byte 1 ∈ CT_SUB_DISCRIMINATORS
+  const TOKEN_2022_PROGRAM_ID = 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb';
+  if (programId === TOKEN_2022_PROGRAM_ID) {
+    const dataBytes = bs58.decode(instr.data);
+    if (dataBytes.length >= 2) {
+      return dataBytes[0] === CT_EXT_DISCRIMINATOR && CT_SUB_DISCRIMINATORS.has(dataBytes[1]);
+    }
+  }
+  return false;
+}
+
 function deriveTransactionType(
   instructions: InstructionParams[],
   combined: CombinedPattern | null,
@@ -110,6 +142,9 @@ function deriveTransactionType(
   if (staking) return TransactionType[staking.type as keyof typeof TransactionType];
 
   // Unknown instructions indicate a custom/unrecognized transaction
+  if (instructions.some((i) => i.type === 'Unknown' && isWasmConfidentialTransferInstruction(i))) {
+    return TransactionType.ConfidentialTransfer;
+  }
   if (instructions.some((i) => i.type === 'Unknown')) return TransactionType.CustomTx;
 
   // Send requires an explicit Transfer or TokenTransfer instruction.

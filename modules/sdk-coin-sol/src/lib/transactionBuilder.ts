@@ -51,6 +51,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _memo?: string;
   protected _feePayer?: string;
   protected _priorityFee: number;
+  /** Optional override for the zk-elgamal-proof program id (used by CT instruction builders) */
+  protected _zkProofProgramId?: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -176,7 +178,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       tx.recentBlockhash = this._recentBlockhash;
     }
     for (const instruction of this._instructionsData) {
-      tx.add(...solInstructionFactory(instruction));
+      tx.add(...solInstructionFactory(instruction, this._zkProofProgramId));
     }
 
     if (this._memo) {

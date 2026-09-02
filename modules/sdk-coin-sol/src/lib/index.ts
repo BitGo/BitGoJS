@@ -3,6 +3,7 @@ import * as Utils from './utils';
 
 export { AtaInitializationBuilder } from './ataInitializationBuilder';
 export { CloseAtaBuilder } from './closeAtaBuilder';
+export { ConfidentialTransferBuilder } from './confidentialTransferBuilder';
 export { CustomInstructionBuilder } from './customInstructionBuilder';
 export { KeyPair } from './keyPair';
 export { StakingActivateBuilder } from './stakingActivateBuilder';

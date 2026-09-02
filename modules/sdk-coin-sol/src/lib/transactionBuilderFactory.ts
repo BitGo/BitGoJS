@@ -2,6 +2,7 @@ import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { AtaInitializationBuilder } from './ataInitializationBuilder';
 import { CloseAtaBuilder } from './closeAtaBuilder';
+import { ConfidentialTransferBuilder } from './confidentialTransferBuilder';
 import { RecoverNestedAtaBuilder } from './recoverNestedAtaBuilder';
 import { CustomInstructionBuilder } from './customInstructionBuilder';
 import { StakingActivateBuilder } from './stakingActivateBuilder';
@@ -62,6 +63,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           return this.getCloseAtaInitializationBuilder(tx);
         case TransactionType.CustomTx:
           return this.getCustomInstructionBuilder(tx);
+        case TransactionType.ConfidentialTransfer:
+          return this.getConfidentialTransferBuilder(tx);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
@@ -191,6 +194,17 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    */
   getCustomInstructionBuilder(tx?: Transaction): CustomInstructionBuilder {
     return this.initializeBuilder(tx, new CustomInstructionBuilder(this._coinConfig));
+  }
+
+  /**
+   * Returns the builder to create Token-2022 confidential transfer transactions.
+   *
+   * Supports Phase 1a CT instructions: ConfigureAccount, ApplyPendingBalance,
+   * Deposit, Withdraw, Transfer, and all verify-proof instructions.
+   * Instruction builders are v0/v1-agnostic.
+   */
+  getConfidentialTransferBuilder(tx?: Transaction): ConfidentialTransferBuilder {
+    return this.initializeBuilder(tx, new ConfidentialTransferBuilder(this._coinConfig));
   }
 
   /**

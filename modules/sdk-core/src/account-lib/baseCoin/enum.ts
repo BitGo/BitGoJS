@@ -167,6 +167,8 @@ export enum TransactionType {
   UnwrapERC7984,
   // Finalize unwrap (unshield phase-2) via finalizeUnwrap(requestId, cleartextAmount, decryptionProof)
   FinalizeUnwrapERC7984,
+  // Solana Token-2022 confidential transfer (deposits, transfers, conversions)
+  ConfidentialTransfer,
 }
 
 /**

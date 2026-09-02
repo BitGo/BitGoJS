@@ -59,6 +59,9 @@ import {
   jitoStakingDeactivateInstructionsIndexes,
   jitoStakingActivateWithATAInstructionsIndexes,
   TOKEN_ACL_PROGRAM_ID,
+  ZK_ELGAMAL_PROOF_PROGRAM_ID,
+  CT_EXT_DISCRIMINATOR,
+  CT_SUB_DISCRIMINATORS,
 } from './constants';
 import { ValidInstructionTypes } from './iface';
 import { STAKE_POOL_INSTRUCTION_LAYOUTS, STAKE_POOL_PROGRAM_ID } from '@solana/spl-stake-pool';
@@ -318,6 +321,26 @@ export function matchTransactionTypeByInstructionsOrder(
 }
 
 /**
+ * Returns true if the instruction is a confidential transfer instruction
+ * (Token-2022 CT extension or zk-elgamal-proof program).
+ *
+ * CT extension: byte 0 = 27 (ConfidentialTransferExtension), byte 1 ∈ {2, 5, 6, 7, 8}
+ * zk-elgamal-proof: any instruction from the zk-elgamal-proof program
+ */
+function isConfidentialTransferRawInstruction(instruction: TransactionInstruction): boolean {
+  const programId = instruction.programId.toString();
+  // zk-elgamal-proof program instructions are always CT proof verifications
+  if (programId === ZK_ELGAMAL_PROOF_PROGRAM_ID) {
+    return true;
+  }
+  // Token-2022 CT extension: byte 0 = CT_EXT_DISCRIMINATOR, byte 1 ∈ CT_SUB_DISCRIMINATORS
+  if (programId === TOKEN_2022_PROGRAM_ID.toString() && instruction.data.length >= 2) {
+    return instruction.data[0] === CT_EXT_DISCRIMINATOR && CT_SUB_DISCRIMINATORS.has(instruction.data[1]);
+  }
+  return false;
+}
+
+/**
  * Returns the transaction Type based on the  transaction instructions.
  * Wallet initialization, Transfer and Staking transactions are supported.
  *
@@ -388,6 +411,8 @@ export function getTransactionType(transaction: SolTransaction): TransactionType
     return TransactionType.CloseAssociatedTokenAccount;
   } else if (matchTransactionTypeByInstructionsOrder(instructions, ataRecoverNestedInstructionIndexes)) {
     return TransactionType.CloseAssociatedTokenAccount;
+  } else if (instructions.some(isConfidentialTransferRawInstruction)) {
+    return TransactionType.ConfidentialTransfer;
   } else {
     return TransactionType.CustomTx;
   }
