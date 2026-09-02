@@ -39,6 +39,7 @@ export interface GetWalletOptions {
 
 export interface GenerateBaseMpcWalletOptions {
   multisigType: 'tss';
+  isShielded?: boolean;
   label: string;
   enterprise: string;
   walletVersion?: number;
@@ -250,6 +251,8 @@ export interface GenerateWalletOptions {
   coldDerivationSeed?: string;
   rootPrivateKey?: string;
   multisigType?: 'onchain' | 'tss' | 'blsdkg';
+  // Used for zec shielded custodial wallets
+  isShielded?: boolean;
   isDistributedCustody?: boolean;
   bitgoKeyId?: string;
   commonKeychain?: string;
