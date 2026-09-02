@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.11.0...@bitgo/statics@59.12.0) (2026-09-01)
+
+
+### Features
+
+* add new tokens from AMS API ([9f76f42](https://github.com/BitGo/BitGoJS/commit/9f76f424f5f9c59bbc5ddb7666978422fc0057cc))
+* add new tokens from AMS API ([69ec064](https://github.com/BitGo/BitGoJS/commit/69ec0641588ad612e65c852ae3da81da369f096f))
+* add new tokens from AMS API ([98b72f6](https://github.com/BitGo/BitGoJS/commit/98b72f6e9cb0ff4e4cc56792f043a126992867c0))
+* add new tokens from AMS API ([536aad8](https://github.com/BitGo/BitGoJS/commit/536aad819625ea330d855a40aff4e26bc59733b0))
+
+
+
+
+
 # [59.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.10.0...@bitgo/statics@59.11.0) (2026-09-01)
 
 
