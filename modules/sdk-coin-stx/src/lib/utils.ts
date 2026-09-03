@@ -34,7 +34,13 @@ import { InvalidTransactionError, isValidXprv, isValidXpub, SigningError, UtilsE
 import { AddressDetails, SendParams, TokenTransferParams } from './iface';
 import { KeyPair } from '.';
 import { coins, Sip10Token, StacksNetwork as BitgoStacksNetwork } from '@bitgo/statics';
-import { VALID_CONTRACT_FUNCTION_NAMES } from './constants';
+import {
+  CONTRACT_NAME_SENDMANY,
+  CONTRACT_NAME_STAKING,
+  CONTRACT_NAME_STAKING_POX5,
+  VALID_CONTRACT_FUNCTION_NAMES,
+  VALID_POX5_CONTRACT_FUNCTION_NAMES,
+} from './constants';
 
 /**
  * Encodes a buffer as a "0x" prefixed lower-case hex string.
@@ -255,7 +261,13 @@ export function isValidContractAddress(addr: string, network: BitgoStacksNetwork
  * @param {string} name - function name
  * @returns {boolean} - validation result
  */
-export function isValidContractFunctionName(name: string): boolean {
+export function isValidContractFunctionName(name: string, contractName?: string): boolean {
+  if (contractName === CONTRACT_NAME_STAKING_POX5) {
+    return VALID_POX5_CONTRACT_FUNCTION_NAMES.includes(name);
+  }
+  if (contractName === CONTRACT_NAME_STAKING || contractName === CONTRACT_NAME_SENDMANY) {
+    return VALID_CONTRACT_FUNCTION_NAMES.includes(name) && !VALID_POX5_CONTRACT_FUNCTION_NAMES.includes(name);
+  }
   return VALID_CONTRACT_FUNCTION_NAMES.includes(name);
 }
 

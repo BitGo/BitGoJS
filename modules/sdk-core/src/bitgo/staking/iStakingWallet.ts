@@ -33,6 +33,15 @@ export type BabylonParams = {
   rewardAddress: string;
 };
 
+export interface Pox5StakeOptions extends StakeOptions {
+  subType?: 'pox5-bond';
+  bondIndex: number;
+  signerManager: string;
+  numCycles?: string;
+  startBurnHt?: string;
+  signerCalldata?: string;
+}
+
 /**
  * Represents the options for staking.
  * @typedef {Object} StakeOptions
@@ -49,7 +58,7 @@ export type BabylonParams = {
  * @property {DelegationRequest[]} [delegationRequests] - The delegation requests
  * TODO: remove support to this contract version after STX fork
  * https://bitgoinc.atlassian.net/browse/EA-3482
- * @property {string} [contractName] - stx contract name: valid names are pox-3 and pox-4 only, used only for backward compatibility during nakamoto fork
+ * @property {string} [contractName] - stx contract name: valid names are pox-3, pox-4 and pox-5 only, used only for backward compatibility during pox contract forks
 
  */
 export interface StakeOptions {
@@ -112,9 +121,9 @@ export interface StakeOptions {
   // TODO: remove support to this contract version after STX fork
   // https://bitgoinc.atlassian.net/browse/EA-3482
   /**
-   * pox-contract name (valid values are pox-3 and pox-4)
+   * pox-contract name (valid values are pox-3, pox-4 and pox-5)
    */
-  contractName?: 'pox-3' | 'pox-4';
+  contractName?: 'pox-3' | 'pox-4' | 'pox-5';
 
   /**
    * btc staking expire time
@@ -325,7 +334,14 @@ export interface IStakingWallet {
   readonly walletId: string;
   readonly coin: string;
   stake(
-    options: StakeOptions | TronStakeOptions | TaoStakeOptions | VetStakeOptions | StoryStakeOptions | XdcStakeOptions
+    options:
+      | StakeOptions
+      | Pox5StakeOptions
+      | TronStakeOptions
+      | TaoStakeOptions
+      | VetStakeOptions
+      | StoryStakeOptions
+      | XdcStakeOptions
   ): Promise<StakingRequest>;
   unstake(options: UnstakeOptions | EthUnstakeOptions): Promise<StakingRequest>;
   switchValidator(
