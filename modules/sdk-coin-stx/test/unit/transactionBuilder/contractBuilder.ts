@@ -144,6 +144,30 @@ describe('Stacks: Contract Builder', function () {
         tx.inputs[0].value.should.equal('0');
       });
 
+      it('an unsigned PoX-5 register-for-bond contract call transaction', async () => {
+        const builder = factory.getContractBuilder();
+        builder.fee({ fee: '180' });
+        builder.nonce(0);
+        builder.contractAddress(testData.CONTRACT_ADDRESS);
+        builder.contractName('pox-5');
+        builder.functionName('register-for-bond');
+        builder.functionArgs([
+          { type: 'uint128', val: '210' },
+          { type: 'principal', val: 'STDE7Y8HV3RX8VBM2TZVWJTS7ZA1XB0SSC3NEVH0.signer-manager' },
+          { type: 'uint128', val: '1005000' },
+          { type: 'optional' },
+          { type: 'optional' },
+        ]);
+        builder.fromPubKey(testData.TX_SENDER.pub);
+        builder.numberSignatures(1);
+
+        const tx = await builder.build();
+        const txJson = tx.toJson();
+        should.deepEqual(txJson.payload.contractName, 'pox-5');
+        should.deepEqual(txJson.payload.functionName, 'register-for-bond');
+        txJson.payload.functionArgs.length.should.equal(5);
+      });
+
       it('a signed contract call with args', async () => {
         const builder = initTxBuilder();
         builder.functionArgs([
@@ -408,17 +432,62 @@ describe('Stacks: Contract Builder', function () {
         });
         it('a contract call with an invalid contract name pox-2', () => {
           const builder = initTxBuilder();
-          assert.throws(() => builder.contractName('pox-2'), /Only pox-4 and send-many-memo contracts supported/);
+          assert.throws(
+            () => builder.contractName('pox-2'),
+            /Only pox-4, pox-5, and send-many-memo contracts supported/
+          );
         });
         it('a contract call with an invalid contract name pox-3', () => {
           const builder = initTxBuilder();
-          assert.throws(() => builder.contractName('pox-3'), /Only pox-4 and send-many-memo contracts supported/);
+          assert.throws(
+            () => builder.contractName('pox-3'),
+            /Only pox-4, pox-5, and send-many-memo contracts supported/
+          );
         });
         it('a contract call with an invalid contract function name', () => {
           const builder = initTxBuilder();
           assert.throws(
             () => builder.functionName('test-function'),
             new RegExp('test-function is not supported contract function name')
+          );
+        });
+        it('rejects a PoX-4 function on a PoX-5 contract', () => {
+          const builder = factory.getContractBuilder();
+          builder.contractName('pox-5');
+          assert.throws(
+            () => builder.functionName('stack-stx'),
+            new RegExp('stack-stx is not supported contract function name')
+          );
+        });
+        it('rejects a PoX-5 function before a contract is selected', () => {
+          const builder = factory.getContractBuilder();
+          assert.throws(
+            () => builder.functionName('register-for-bond'),
+            new RegExp('register-for-bond is not supported contract function name')
+          );
+        });
+        it('revalidates the function when changing the contract', () => {
+          const builder = initTxBuilder();
+          assert.throws(
+            () => builder.contractName('pox-5'),
+            new RegExp('stack-stx is not supported contract function name')
+          );
+        });
+        it('rejects malformed principal and nested Clarity values', () => {
+          const builder = initTxBuilder();
+          assert.throws(
+            () => builder.functionArgs([{ type: 'contract-principal', val: 'no-dot' }]),
+            /address.contract-name format/
+          );
+          assert.throws(
+            () => builder.functionArgs([{ type: 'standard-principal', val: 'invalid-address' }]),
+            /must be a valid standard principal/
+          );
+          assert.throws(() => builder.functionArgs([{ type: 'list', val: 'not-an-array' }]), /list requires Array val/);
+          assert.throws(
+            () =>
+              builder.functionArgs([{ type: 'response', val: { type: 'maybe', val: { type: 'uint128', val: '1' } } }]),
+            /response requires \{ type: ok\|err, val \}/
           );
         });
       });

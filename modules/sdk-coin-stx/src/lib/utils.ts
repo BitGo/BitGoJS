@@ -11,6 +11,7 @@ import {
   BufferReader,
   ClarityType,
   ClarityValue,
+  contractPrincipalCV,
   createAddress,
   createMemoString,
   createMessageSignature,
@@ -30,11 +31,45 @@ import {
 } from '@stacks/transactions';
 import { secp256k1 } from '@noble/curves/secp256k1';
 import * as _ from 'lodash';
-import { InvalidTransactionError, isValidXprv, isValidXpub, SigningError, UtilsError } from '@bitgo/sdk-core';
+import {
+  InvalidParameterValueError,
+  InvalidTransactionError,
+  isValidXprv,
+  isValidXpub,
+  SigningError,
+  UtilsError,
+} from '@bitgo/sdk-core';
 import { AddressDetails, SendParams, TokenTransferParams } from './iface';
 import { KeyPair } from '.';
 import { coins, Sip10Token, StacksNetwork as BitgoStacksNetwork } from '@bitgo/statics';
-import { VALID_CONTRACT_FUNCTION_NAMES } from './constants';
+import {
+  CONTRACT_NAME_SENDMANY,
+  CONTRACT_NAME_STAKING,
+  CONTRACT_NAME_POX5,
+  VALID_CONTRACT_FUNCTION_NAMES,
+  VALID_POX5_CONTRACT_FUNCTION_NAMES,
+} from './constants';
+
+/** Convert a contract principal string to a Clarity value with normalized validation errors. */
+export function contractPrincipalCVFromString(value: string): ClarityValue {
+  const separator = value.indexOf('.');
+  if (separator <= 0 || separator === value.length - 1 || value.indexOf('.', separator + 1) !== -1) {
+    throw new InvalidParameterValueError(`${value} must have address.contract-name format`);
+  }
+  const address = value.slice(0, separator);
+  if (!isValidAddress(address)) {
+    throw new InvalidParameterValueError(`${value} must contain a valid address`);
+  }
+  return contractPrincipalCV(address, value.slice(separator + 1));
+}
+
+/** Convert a standard principal string to a Clarity value with a normalized validation error. */
+export function standardPrincipalCVFromString(value: string): ClarityValue {
+  if (!isValidAddress(value)) {
+    throw new InvalidParameterValueError(`${value} must be a valid standard principal`);
+  }
+  return standardPrincipalCV(value);
+}
 
 /**
  * Encodes a buffer as a "0x" prefixed lower-case hex string.
@@ -255,7 +290,13 @@ export function isValidContractAddress(addr: string, network: BitgoStacksNetwork
  * @param {string} name - function name
  * @returns {boolean} - validation result
  */
-export function isValidContractFunctionName(name: string): boolean {
+export function isValidContractFunctionName(name: string, contractName?: string): boolean {
+  if (contractName === CONTRACT_NAME_POX5) {
+    return VALID_POX5_CONTRACT_FUNCTION_NAMES.includes(name);
+  }
+  if (contractName === CONTRACT_NAME_STAKING || contractName === CONTRACT_NAME_SENDMANY) {
+    return VALID_CONTRACT_FUNCTION_NAMES.includes(name) && !VALID_POX5_CONTRACT_FUNCTION_NAMES.includes(name);
+  }
   return VALID_CONTRACT_FUNCTION_NAMES.includes(name);
 }
 
