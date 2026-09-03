@@ -62,6 +62,34 @@ export function isBase58Address(address: string): boolean {
 }
 
 /**
+ * Detects hex representations of a TRON address: the 20-byte EVM-style form
+ * (bare or 0x-prefixed) and the 21-byte form with the 0x41 version prefix.
+ * These encode the same 21-byte address as the base58 form.
+ *
+ * @param address
+ */
+export function isHexAddress(address: string): boolean {
+  const bare = address.toLowerCase().replace(/^0x/, '');
+  return /^[0-9a-f]{40}$/.test(bare) || /^41[0-9a-f]{40}$/.test(bare);
+}
+
+/**
+ * Converts any valid TRON address representation (base58, 0x-prefixed hex,
+ * or 41-prefixed hex) to the canonical base58 form.
+ *
+ * @param address
+ */
+export function getBase58AddressFromHexAddress(address: string): string {
+  if (isBase58Address(address)) {
+    return address;
+  }
+  const bare = address.toLowerCase().replace(/^0x/, '');
+  // The 20-byte EVM-style form lacks the 0x41 TRON version prefix.
+  const hex = bare.length === 40 ? '41' + bare : bare;
+  return getBase58AddressFromHex(hex);
+}
+
+/**
  * @param str
  */
 export function getByteArrayFromHexAddress(str: string): ByteArray {
@@ -73,6 +101,20 @@ export function getByteArrayFromHexAddress(str: string): ByteArray {
  */
 export function getHexAddressFromByteArray(arr: ByteArray): string {
   return tronweb.utils.code.byteArray2hexStr(arr);
+}
+
+export function getHexAddressFromBase58Address(base58: string): string {
+  // pulled from: https://github.com/TRON-US/tronweb/blob/dcb8efa36a5ebb65c4dab3626e90256a453f3b0d/src/utils/help.js#L17
+  // but they don't surface this call in index.js
+  // canonicalizes hex-form inputs (0x... / 41...) to base58 first, so all builders
+  // accept every valid representation of a TRON address (COINS-1575)
+  const canonical = getBase58AddressFromHexAddress(base58);
+  const bytes = tronweb.utils.crypto.decodeBase58Address(canonical);
+  // Ensure bytes is a ByteArray (number[])
+  if (Array.isArray(bytes)) {
+    return getHexAddressFromByteArray(bytes);
+  }
+  throw new UtilsError('Failed to decode base58 address to byte array');
 }
 
 /**
@@ -100,20 +142,6 @@ export function verifySignature(
   }
 
   return tronweb.Trx.verifySignature(messageToVerify, base58Address, sigHex, useTronHeader);
-}
-
-/**
- * @param base58
- */
-export function getHexAddressFromBase58Address(base58: string): string {
-  // pulled from: https://github.com/TRON-US/tronweb/blob/dcb8efa36a5ebb65c4dab3626e90256a453f3b0d/src/utils/help.js#L17
-  // but they don't surface this call in index.js
-  const bytes = tronweb.utils.crypto.decodeBase58Address(base58);
-  // Ensure bytes is a ByteArray (number[])
-  if (Array.isArray(bytes)) {
-    return getHexAddressFromByteArray(bytes);
-  }
-  throw new UtilsError('Failed to decode base58 address to byte array');
 }
 /**
  * @param privateKey

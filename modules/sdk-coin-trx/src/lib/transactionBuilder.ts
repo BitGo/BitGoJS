@@ -18,6 +18,7 @@ import { Address } from './address';
 import {
   signTransaction,
   isBase58Address,
+  isHexAddress,
   decodeTransaction,
   VALID_RESOURCE_TYPES,
   getHexAddressFromBase58Address,
@@ -205,8 +206,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateAddress(address: Address): void {
-    // assumes a base 58 address for our addresses
-    if (!isBase58Address(address.address)) {
+    // TRON addresses are accepted in base58 (T...) or hex (0x... / 41...) form;
+    // they are alternative encodings of the same 21-byte address.
+    if (!isBase58Address(address.address) && !isHexAddress(address.address)) {
       throw new Error(address.address + ' is not a valid base58 address.');
     }
   }

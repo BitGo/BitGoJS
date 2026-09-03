@@ -22,21 +22,21 @@ describe('Trx Contract call Builder', () => {
       );
     });
 
-    it('a hex address', () => {
-      assert.throws(
-        () => {
-          builder.validateAddress({ address: '4173a5993cd182ae152adad8203163f780c65a8aa5' });
-        },
-        (e: any) => e.message === '4173a5993cd182ae152adad8203163f780c65a8aa5 is not a valid base58 address.'
-      );
+    // hex (0x-prefixed / 41-prefixed) and base58 are encodings of the same TRON address
+    it('a hex address (0x-prefixed)', () => {
+      assert.doesNotThrow(() => builder.validateAddress({ address: '0x73a5993cd182ae152adad8203163f780c65a8aa5' }));
     });
 
-    it('a hex address', () => {
+    it('a hex address (41-prefixed)', () => {
+      assert.doesNotThrow(() => builder.validateAddress({ address: '4173a5993cd182ae152adad8203163f780c65a8aa5' }));
+    });
+
+    it('an address that is neither base58 nor hex', () => {
       assert.throws(
         () => {
-          builder.validateAddress({ address: '4173a5993cd182ae152adad8203163f780c65a8aa5' });
+          builder.validateAddress({ address: 'zz73a5993cd182ae152adad8203163f780c65a8aa5' });
         },
-        (e: any) => e.message === '4173a5993cd182ae152adad8203163f780c65a8aa5 is not a valid base58 address.'
+        (e: any) => e.message === 'zz73a5993cd182ae152adad8203163f780c65a8aa5 is not a valid base58 address.'
       );
     });
 
