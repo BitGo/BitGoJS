@@ -374,3 +374,32 @@ describe('Tokenized Equity CoinFeatures', function () {
     errorMessage.should.containEql('tokenized-equity');
   });
 });
+describe('ZAMA staking feature', function () {
+  it('eth:zama should expose STAKING', function () {
+    const coin = coins.get('eth:zama');
+    coin.features.should.containEql(CoinFeature.STAKING);
+  });
+
+  it('ERC-7984 ZAMA tokens should not expose STAKING', function () {
+    [
+      'eth:czama',
+      'eth:cxaut',
+      'eth:ctgbp',
+      'eth:cweth',
+      'eth:cusdt',
+      'eth:cusdc',
+      'hteth:ctest1',
+      'hteth:cusdt',
+    ].forEach((name) => {
+      coins.get(name).features.includes(CoinFeature.STAKING).should.be.false();
+    });
+  });
+
+  it('stZAMA LSTs should not expose STAKING', function () {
+    ['hteth:stzamakms', 'hteth:stzamadfns', 'hteth:stzamafig', 'hteth:stzamacop', 'hteth:stzamablco'].forEach(
+      (name) => {
+        coins.get(name).features.includes(CoinFeature.STAKING).should.be.false();
+      }
+    );
+  });
+});
