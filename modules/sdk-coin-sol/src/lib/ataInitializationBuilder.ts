@@ -2,7 +2,7 @@ import { TransactionBuilder } from './transactionBuilder';
 import { BuildTransactionError, DuplicateMethodError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { Transaction } from './transaction';
-import { AtaInit, TokenAssociateRecipient } from './iface';
+import { AtaInit, PermissionlessThawIdempotent, TokenAssociateRecipient } from './iface';
 import { InstructionBuilderTypes } from './constants';
 import {
   getAssociatedTokenAccountAddress,
@@ -21,10 +21,12 @@ export class AtaInitializationBuilder extends TransactionBuilder {
   // @deprecated - Use the _tokenAssociateRecipients field instead
   private _owner: string;
   private _tokenAssociateRecipients: TokenAssociateRecipient[];
+  private _permissionlessThawParams: PermissionlessThawIdempotent['params'][];
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this._transaction = new Transaction(_coinConfig);
+    this._permissionlessThawParams = [];
     this._tokenAssociateRecipients = [];
   }
 
@@ -35,6 +37,7 @@ export class AtaInitializationBuilder extends TransactionBuilder {
   /** @inheritDoc */
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
+    this._permissionlessThawParams = [];
     this._tokenAssociateRecipients = [];
     for (const instruction of this._instructionsData) {
       if (instruction.type === InstructionBuilderTypes.CreateAssociatedTokenAccount) {
@@ -45,6 +48,8 @@ export class AtaInitializationBuilder extends TransactionBuilder {
           tokenAddress: ataInitInstruction.params.mintAddress,
           programId: ataInitInstruction.params.programId,
         });
+      } else if (instruction.type === InstructionBuilderTypes.PermissionlessThawIdempotent) {
+        this._permissionlessThawParams.push((instruction as PermissionlessThawIdempotent).params);
       }
     }
   }
@@ -133,6 +138,20 @@ export class AtaInitializationBuilder extends TransactionBuilder {
     return this;
   }
 
+  /**
+   * Set a resolved sRFC-37 Token ACL permissionless-thaw instruction for an ATA enablement.
+   *
+   * The builder remains offline; callers resolve gating accounts live and pass fully materialized
+   * params. Multiple Token-2022 ATA enablements may each add one thaw instruction.
+   *
+   * @param {PermissionlessThawIdempotent['params']} params - resolved thaw params
+   * @returns {AtaInitializationBuilder} This transaction builder
+   */
+  permissionlessThaw(params: PermissionlessThawIdempotent['params']): this {
+    this._permissionlessThawParams.push(params);
+    return this;
+  }
+
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     assert(this._sender, 'Sender must be set before building the transaction');
@@ -183,6 +202,15 @@ export class AtaInitializationBuilder extends TransactionBuilder {
           },
         });
       })
+    );
+
+    this._instructionsData.push(
+      ...this._permissionlessThawParams.map(
+        (params): PermissionlessThawIdempotent => ({
+          type: InstructionBuilderTypes.PermissionlessThawIdempotent,
+          params,
+        })
+      )
     );
 
     return await super.buildImplementation();
