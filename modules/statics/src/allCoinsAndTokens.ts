@@ -5163,7 +5163,7 @@ export const allCoinsAndTokens = [
   erc20Token(
     '731ff716-7b6d-4541-b929-3cddbd87b195',
     'baseeth:jvhhusdc',
-    'jvhhVault',
+    'Bitwise Liquid Prime USDC',
     18,
     '0x5e03f8965e2957291b3c6990c6cb9023c36d3d30',
     UnderlyingAsset['baseeth:jvhhusdc'],
