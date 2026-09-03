@@ -1,6 +1,7 @@
 import sinon from 'sinon';
 import assert from 'assert';
 import 'should';
+import { CoinFeature } from '@bitgo/statics';
 import { VaultProtocol } from '@bitgo/public-types';
 import { ActiveOperationExistsError, DefiVault, Wallet } from '../../../../src';
 
@@ -73,6 +74,7 @@ describe('DefiVault', function () {
 
     mockBaseCoin = {
       getFamily: sinon.stub().returns('eth'),
+      getConfig: sinon.stub().returns({ features: [CoinFeature.EVM_COIN] }),
       url: sinon.stub(),
       keychains: sinon.stub(),
       supportsTss: sinon.stub().returns(true),
@@ -713,6 +715,216 @@ describe('DefiVault', function () {
             }),
           /defiWithdraw\.defiParams/
         );
+      });
+    });
+  });
+
+  // wrap and unwrap are the same orchestrator with a different sendMany type, so
+  // the suite is generated over both to keep the two from drifting apart.
+  (
+    [
+      ['wrap', 'wrapNative'],
+      ['unwrap', 'unwrapNative'],
+    ] as const
+  ).forEach(function ([method, sendManyType]) {
+    describe(method, function () {
+      it(`should call sendMany once with ${sendManyType} type and return txRequestId`, async function () {
+        const sendManyStub = sinon.stub(wallet, 'sendMany');
+        sendManyStub.resolves({ txRequest: { txRequestId: `txreq-${method}-1` } });
+
+        const result = await defiVault[method]({
+          vaultId: 'vlt-galaxy-weth',
+          amount: '1000000000000000000',
+        });
+
+        result.txRequestId.should.equal(`txreq-${method}-1`);
+
+        sendManyStub.calledOnce.should.be.true();
+        const args: any = sendManyStub.firstCall.args[0];
+        args.type.should.equal(sendManyType);
+        args.defiParams.should.deepEqual({
+          vaultId: 'vlt-galaxy-weth',
+          amount: '1000000000000000000',
+        });
+      });
+
+      it('should extract txRequestId from the lite sendMany response shape', async function () {
+        const sendManyStub = sinon.stub(wallet, 'sendMany');
+        sendManyStub.resolves({ txRequestId: `txreq-${method}-lite` });
+
+        const result = await defiVault[method]({ vaultId: 'vlt-galaxy-weth', amount: '5000' });
+
+        result.txRequestId.should.equal(`txreq-${method}-lite`);
+      });
+
+      it('should throw when txRequestId is absent from the sendMany response', async function () {
+        const sendManyStub = sinon.stub(wallet, 'sendMany');
+        sendManyStub.resolves({ txRequest: {} });
+
+        await assert.rejects(() => defiVault[method]({ vaultId: 'vlt-galaxy-weth', amount: '5000' }), {
+          message: 'txRequestId not found in sendMany response',
+        });
+      });
+
+      it('should leave operationId undefined in v1', async function () {
+        // No operation is minted for wrap/unwrap until M5. Assert it stays absent
+        // even when the response happens to carry one, so nobody "fixes" this by
+        // wiring up extractOperationId.
+        const sendManyStub = sinon.stub(wallet, 'sendMany');
+        sendManyStub.resolves({
+          txRequest: {
+            txRequestId: `txreq-${method}-noop`,
+            transactions: [{ unsignedTx: { coinSpecific: { operationId: 'op-should-be-ignored' } } }],
+          },
+        });
+
+        const result = await defiVault[method]({ vaultId: 'vlt-galaxy-weth', amount: '5000' });
+
+        assert.strictEqual(result.operationId, undefined);
+      });
+
+      it('should forward walletPassphrase when provided', async function () {
+        const sendManyStub = sinon.stub(wallet, 'sendMany');
+        sendManyStub.resolves({ txRequest: { txRequestId: `txreq-${method}-hot` } });
+
+        await defiVault[method]({
+          vaultId: 'vlt-galaxy-weth',
+          amount: '5000',
+          walletPassphrase: 'test-passphrase',
+        });
+
+        const args: any = sendManyStub.firstCall.args[0];
+        args.walletPassphrase.should.equal('test-passphrase');
+      });
+
+      it('should omit walletPassphrase entirely when absent (custody path)', async function () {
+        const sendManyStub = sinon.stub(wallet, 'sendMany');
+        sendManyStub.resolves({ txRequest: { txRequestId: `txreq-${method}-custody` } });
+
+        await defiVault[method]({ vaultId: 'vlt-galaxy-weth', amount: '5000' });
+
+        const args: any = sendManyStub.firstCall.args[0];
+        args.should.not.have.property('walletPassphrase');
+      });
+
+      it('should throw if vaultId is missing, without any network call', async function () {
+        const sendManyStub = sinon.stub(wallet, 'sendMany');
+
+        await assert.rejects(() => defiVault[method]({ vaultId: '', amount: '5000' }), {
+          message: 'vaultId is required',
+        });
+        sendManyStub.called.should.be.false();
+      });
+
+      it('should throw if amount is missing, without any network call', async function () {
+        const sendManyStub = sinon.stub(wallet, 'sendMany');
+
+        await assert.rejects(() => defiVault[method]({ vaultId: 'vlt-galaxy-weth', amount: '' }), {
+          message: 'amount must be a positive unsigned decimal integer string',
+        });
+        sendManyStub.called.should.be.false();
+      });
+
+      describe('amount boundary validation', function () {
+        // The downstream BigIntFromString codec accepts all of these via JS's BigInt() constructor,
+        // so the client-side guard is the only thing standing between a malformed/malicious amount
+        // and a value-moving WETH9 deposit()/withdraw() call.
+        const rejectedAmounts = [
+          ['-1', 'negative'],
+          ['0', 'zero'],
+          ['0xabc', 'hexadecimal'],
+          ['1.5', 'decimal point'],
+          ['1e18', 'scientific notation'],
+          ['+100', 'explicit sign'],
+          [' 100', 'leading whitespace'],
+          ['100 ', 'trailing whitespace'],
+          ['abc', 'non-numeric'],
+        ] as const;
+        rejectedAmounts.forEach(([amount, why]) => {
+          it(`should reject a ${why} amount (${JSON.stringify(amount)}), without any network call`, async function () {
+            const sendManyStub = sinon.stub(wallet, 'sendMany');
+
+            await assert.rejects(() => defiVault[method]({ vaultId: 'vlt-galaxy-weth', amount }), {
+              message: 'amount must be a positive unsigned decimal integer string',
+            });
+            sendManyStub.called.should.be.false();
+          });
+        });
+
+        ['1', '1000000000000000000', '007'].forEach((amount) => {
+          it(`should accept amount ${JSON.stringify(amount)} and forward it verbatim`, async function () {
+            const sendManyStub = sinon.stub(wallet, 'sendMany');
+            sendManyStub.resolves({ txRequest: { txRequestId: 'txreq-boundary' } });
+
+            await defiVault[method]({ vaultId: 'vlt-galaxy-weth', amount });
+
+            const args: any = sendManyStub.firstCall.args[0];
+            args.defiParams.amount.should.equal(amount);
+          });
+        });
+      });
+
+      describe('vaultId trimming', function () {
+        it('should throw for a whitespace-only vaultId, without any network call', async function () {
+          const sendManyStub = sinon.stub(wallet, 'sendMany');
+
+          await assert.rejects(() => defiVault[method]({ vaultId: '   ', amount: '5000' }), {
+            message: 'vaultId is required',
+          });
+          sendManyStub.called.should.be.false();
+        });
+
+        it('should trim surrounding whitespace from vaultId before calling sendMany', async function () {
+          const sendManyStub = sinon.stub(wallet, 'sendMany');
+          sendManyStub.resolves({ txRequest: { txRequestId: 'txreq-trim' } });
+
+          await defiVault[method]({ vaultId: '  vlt-galaxy-weth  ', amount: '5000' });
+
+          const args: any = sendManyStub.firstCall.args[0];
+          args.defiParams.vaultId.should.equal('vlt-galaxy-weth');
+        });
+      });
+
+      it('should throw a clear client-side error for a non-EVM coin, without any network call', async function () {
+        mockBaseCoin.getFamily.returns('btc');
+        mockBaseCoin.getConfig.returns({ features: [] });
+        const sendManyStub = sinon.stub(wallet, 'sendMany');
+
+        await assert.rejects(() => defiVault[method]({ vaultId: 'vlt-galaxy-weth', amount: '5000' }), {
+          message: 'wrap/unwrap is not supported for btc wallets',
+        });
+        sendManyStub.called.should.be.false();
+      });
+
+      describe(`prebuildTransactionTxRequests ${sendManyType} defiParams validation`, function () {
+        it('should throw when defiParams is missing', async function () {
+          await assert.rejects(
+            () => (wallet as any).prebuildTransactionTxRequests({ type: sendManyType }),
+            new RegExp(`${sendManyType}\\.defiParams`)
+          );
+        });
+
+        it('should throw when vaultId is not a string', async function () {
+          await assert.rejects(
+            () =>
+              (wallet as any).prebuildTransactionTxRequests({
+                type: sendManyType,
+                defiParams: { vaultId: 123, amount: '5000' },
+              }),
+            new RegExp(`${sendManyType}\\.defiParams`)
+          );
+        });
+
+        it('should throw when amount is not a numeric string', async function () {
+          await assert.rejects(
+            () =>
+              (wallet as any).prebuildTransactionTxRequests({
+                type: sendManyType,
+                defiParams: { vaultId: 'vlt-1', amount: 5000 },
+              }),
+            new RegExp(`${sendManyType}\\.defiParams`)
+          );
+        });
       });
     });
   });

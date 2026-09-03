@@ -31,6 +31,18 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
   'defiApprove',
   'defiDeposit',
   'defiWithdraw',
+  // Native wrap/unwrap (WETH9 deposit()/withdraw()) — calldata and the WETH9
+  // address are resolved server-side from the vault binding, so no recipients.
+  // Registered in BOTH spellings on purpose: this set is matched against
+  // txParams.type, which is buildParams.type (camelCase, from wallet.sendMany),
+  // AND against intent.intentType (kebab-case, as WP persists it). Signing paths
+  // that carry no txParams — notably pendingApproval.approve() →
+  // recreateTxRequest() → signTxRequest() with no txParams — only ever see the
+  // kebab-case spelling.
+  'wrapNative',
+  'wrap-native',
+  'unwrapNative',
+  'unwrap-native',
   // ERC-7984 shielding: approve/wrap calldata is built server-side from the wrap intent
   'wrapApprove',
   'wrap',

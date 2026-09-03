@@ -30,6 +30,11 @@ describe('recipientUtils', function () {
         'defiApprove',
         'defiDeposit',
         'defiWithdraw',
+        // Native wrap/unwrap — registered in both spellings on purpose
+        'wrapNative',
+        'wrap-native',
+        'unwrapNative',
+        'unwrap-native',
         'wrapApprove',
         'wrap',
         'contractCall',
@@ -155,6 +160,36 @@ describe('recipientUtils', function () {
         const txRequest = makeTxRequest({ intent: { intentType } as any });
         assert.doesNotThrow(() => resolveEffectiveTxParams(txRequest, {}));
       }
+    });
+
+    describe('native wrap/unwrap intents', function () {
+      // Regression test for the camelCase/kebab-case asymmetry. This set is matched
+      // against BOTH txParams.type (buildParams.type — camelCase, from wallet.sendMany)
+      // and intent.intentType (kebab-case, as WP persists it). Signing paths that carry
+      // no txParams — pendingApproval.approve() → recreateTxRequest() → signTxRequest()
+      // — only ever see the kebab-case spelling, so both must be registered.
+      it('does not throw when the type comes from buildParams.type (camelCase)', function () {
+        for (const txType of ['wrapNative', 'unwrapNative']) {
+          const txRequest = makeTxRequest();
+          assert.doesNotThrow(() => resolveEffectiveTxParams(txRequest, { type: txType }));
+        }
+      });
+
+      it('does not throw when the type comes only from intent.intentType (kebab-case)', function () {
+        for (const intentType of ['wrap-native', 'unwrap-native']) {
+          const txRequest = makeTxRequest({ intent: { intentType } as any });
+          const result = resolveEffectiveTxParams(txRequest, {});
+          assert.strictEqual(result.type, intentType);
+          assert.strictEqual(result.recipients, undefined);
+        }
+      });
+
+      it('does not throw when txParams is undefined entirely (pendingApproval re-sign path)', function () {
+        for (const intentType of ['wrap-native', 'unwrap-native']) {
+          const txRequest = makeTxRequest({ intent: { intentType, vaultId: 'vlt-weth-1', amount: '10' } as any });
+          assert.doesNotThrow(() => resolveEffectiveTxParams(txRequest, undefined));
+        }
+      });
     });
 
     it('does not throw when buildParams.type is PascalCase but intent.intentType is lowercase', function () {

@@ -80,6 +80,21 @@ export interface WithdrawResult {
   txRequestId: string;
 }
 
+export interface WrapOptions {
+  /** DeFi-service vault identifier — required in v1, see note below */
+  vaultId: string;
+  /** Amount in base units (18dp for ETH/WETH) */
+  amount: string;
+  /** Wallet passphrase — required for hot wallets, omit for custody */
+  walletPassphrase?: string;
+}
+
+export interface WrapResult {
+  txRequestId: string;
+  /** Reserved — populated from milestone M5 onward, absent in v1 */
+  operationId?: string;
+}
+
 export interface IDefiVault {
   depositToVault(params: DepositToVaultOptions): Promise<DepositResult>;
   resumeDeposit(params: ResumeDepositOptions): Promise<DepositResult>;
@@ -88,4 +103,6 @@ export interface IDefiVault {
   getVaultConfig(params: GetVaultConfigOptions): Promise<GetVaultResponse>;
   getVaultProtocol(params: GetVaultConfigOptions): Promise<VaultProtocol>;
   withdrawFromVault(params: WithdrawFromVaultOptions): Promise<WithdrawResult>;
+  wrap(params: WrapOptions): Promise<WrapResult>;
+  unwrap(params: WrapOptions): Promise<WrapResult>;
 }

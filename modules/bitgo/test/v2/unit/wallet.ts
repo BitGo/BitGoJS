@@ -3883,6 +3883,29 @@ describe('V2 Wallet:', function () {
         intent.feeOptions!.should.not.have.property('feeToken');
       });
 
+      ['wrap-native', 'unwrap-native'].forEach(function (intentType) {
+        it(`populate intent should return a valid ${intentType} intent without recipients`, async function () {
+          const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('hteth'));
+
+          // Two independent sites in populateIntent must know about this intentType:
+          // the recipients-required exemption list, and the EVM intent-shape switch.
+          // Missing the first makes this call throw on the recipients assertion
+          // before the switch is ever reached.
+          const intent = mpcUtils.populateIntent(bitgo.coin('hteth'), {
+            reqId,
+            intentType,
+            defiParams: { vaultId: 'hteth-weth-test', amount: '1000000000000000000' },
+          });
+
+          intent.intentType.should.equal(intentType);
+          intent.should.have.property('recipients', undefined);
+          intent.vaultId!.should.equal('hteth-weth-test');
+          // A plain `amount`, not the `shareTokenAmount` defi-withdraw uses for shares.
+          intent.amount!.should.equal('1000000000000000000');
+          intent.should.not.have.property('shareTokenAmount');
+        });
+      });
+
       it('populate intent should return valid coredao acceleration intent', async function () {
         const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('coredao'));
 

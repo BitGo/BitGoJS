@@ -4808,6 +4808,26 @@ export class Wallet implements IWallet {
         );
         break;
       }
+      case 'wrapNative':
+      case 'unwrapNative': {
+        // WETH9 amounts are 18dp and exceed Number.MAX_SAFE_INTEGER, so amount is
+        // decoded as a numeric string and handed on as a string, never a number.
+        const wrapNativeParams = decodeWithCodec(
+          t.type({ vaultId: t.string, amount: BigIntFromString }),
+          params.defiParams,
+          `${params.type}.defiParams`
+        );
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: params.type === 'wrapNative' ? 'wrap-native' : 'unwrap-native',
+            defiParams: { ...wrapNativeParams, amount: wrapNativeParams.amount.toString() },
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      }
       default:
         throw new Error(`transaction type not supported: ${params.type}`);
     }
