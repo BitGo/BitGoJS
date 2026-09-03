@@ -1,7 +1,7 @@
 import * as sjcl from '@bitgo/sjcl';
 import { randomBytes } from 'crypto';
 
-import { decryptV1 } from './decryptV1';
+import { decryptV1, parseV1Envelope } from './decryptV1';
 import { decryptV2, encryptV2 } from './encryptV2';
 
 /**
@@ -77,6 +77,15 @@ function isIterCapViolation(err: unknown): boolean {
 }
 
 /**
+ * True in window and worker runtimes. Used to route browser v1 decrypt
+ * straight to SJCL instead of through the Node-oriented `native` path, whose
+ * `crypto-browserify` AES-CCM has been reported not to work in a real browser.
+ */
+function isBrowserRuntime(): boolean {
+  return typeof window !== 'undefined' || typeof self !== 'undefined';
+}
+
+/**
  * v1 decrypt with an SJCL safety net.
  *
  * Design intent during rollout: zero false negatives. Any native failure
@@ -98,6 +107,15 @@ export async function decryptV1WithFallback(
   ciphertext: string,
   native: (pw: string, ct: string) => Promise<string> = decryptV1
 ): Promise<string> {
+  if (isBrowserRuntime()) {
+    try {
+      parseV1Envelope(ciphertext);
+    } catch (parseErr) {
+      if (isIterCapViolation(parseErr)) throw parseErr;
+      // Any other parse rejection (e.g. absent `v`) is a shape SJCL still accepts.
+    }
+    return sjcl.decrypt(password, ciphertext);
+  }
   try {
     return await native(password, ciphertext);
   } catch (nativeErr) {
