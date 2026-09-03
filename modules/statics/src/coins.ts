@@ -35,7 +35,7 @@ import { BaseCoin, CoinFeature, DynamicCoin } from './base';
 import { AmsNetworkConfigMap, AmsTokenConfig, TrimmedAmsTokenConfig } from './tokenConfig';
 import { CoinMap } from './map';
 import { BaseNetwork, getNetwork, getNetworksMap, NetworkType } from './networks';
-import { getNetworkFeatures } from './networkFeatureMapForTokens';
+import { getNetworkFeatures, registerErc20FamilyChecker } from './networkFeatureMapForTokens';
 import { ofcErc20Coins, tOfcErc20Coins } from './coins/ofcErc20Coins';
 import { ofcHoodethTokens } from './coins/ofcHoodethTokens';
 import { ofcCoins } from './coins/ofcCoins';
@@ -75,6 +75,11 @@ allCoinsAndTokens.forEach((coin) => {
     erc721ChainToNameMap[coin.family] = coin.name;
   }
 });
+
+// Let getNetworkFeatures() (in networkFeatureMapForTokens.ts) fall back to EVM_TOKEN_FEATURES for any
+// family whose base coin supports ERC20, so AMS token onboarding doesn't require hand-maintaining that
+// map for every new EVM family (see erc20ChainToNameMap above, built from the same statics data).
+registerErc20FamilyChecker((family) => family in erc20ChainToNameMap);
 
 export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefined {
   if (!token.isToken) {

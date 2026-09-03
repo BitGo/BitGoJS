@@ -14,8 +14,10 @@ import {
   EosCoin,
   Erc20Coin,
   EthereumNetwork,
+  EVM_TOKEN_FEATURES,
   getFormattedTokenConfigForCoin,
   getFormattedTokens,
+  getNetworkFeatures,
   HederaToken,
   KeyCurve,
   Networks,
@@ -1665,6 +1667,30 @@ describe('create token map using config details', () => {
       should(coinName).not.be.undefined();
       // Note: This may return 'tzketh' due to legacy mapping - verify expected behavior
     });
+  });
+});
+
+describe('getNetworkFeatures EVM fallback (drift guard)', () => {
+  it('should return EVM_TOKEN_FEATURES for every mainnet family that supports ERC20 but has no explicit entry in networkFeatureMapForTokens', () => {
+    const erc20Families = new Set(
+      allCoinsAndTokens
+        .filter(
+          (coin) =>
+            !coin.isToken &&
+            coin.network.type === NetworkType.MAINNET &&
+            coin.features.includes(CoinFeature.SUPPORTS_ERC20)
+        )
+        .map((coin) => coin.family)
+    );
+
+    erc20Families.forEach((family) => {
+      const features = getNetworkFeatures(family);
+      features?.should.not.be.undefined();
+    });
+
+    // baseeth is the concrete gap this fallback closes: it has no hand-written entry in
+    // networkFeatureMapForTokens, but its base coin supports ERC20.
+    getNetworkFeatures('baseeth')?.should.deepEqual(EVM_TOKEN_FEATURES);
   });
 });
 
