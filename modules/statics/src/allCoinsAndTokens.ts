@@ -4411,6 +4411,16 @@ export const allCoinsAndTokens = [
     [...AccountCoin.DEFAULT_FEATURES, CoinFeature.EIP1559, CoinFeature.RECEIPT_TOKEN]
   ),
   erc20Token(
+    'e354c3b7-397c-436c-b756-1b266c3d79dc',
+    'tbaseeth:waBasSepLidUSDC',
+    'Wrapped Aave Base Sepolia USDC',
+    6,
+    '0xf430cb6e2b85f99222fbfa6dfea18ff60fa6b32a',
+    UnderlyingAsset['tbaseeth:waBasSepLidUSDC'],
+    Networks.test.basechain,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.EIP1559, CoinFeature.RECEIPT_TOKEN]
+  ),
+  erc20Token(
     '79fcac64-cad2-4c17-b8fc-2930b7022384',
     'tbaseeth:tpdd',
     'MarketplacePDD ALPACA',
