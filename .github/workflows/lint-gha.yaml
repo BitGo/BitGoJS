@@ -1,0 +1,205 @@
+name: Lint GitHub Actions Files
+
+# This workflow is required to pass org-wide for public repositories
+# via a GitHub organization ruleset "required_workflows" rule. GitHub
+# runs it against pull requests opened in the repositories the ruleset
+# targets, checking out and scanning THAT repository's workflows, not
+# BitGoJS's own.
+#
+# Required workflows only support these events; see
+# https://docs.github.com/en/enterprise-cloud@latest/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets#require-workflows-to-pass-before-merging
+on:
+  pull_request:
+  merge_group:
+
+permissions:
+  contents: read
+
+jobs:
+  zizmor:
+    name: Run Zizmor
+    runs-on: ${{ vars.BUILD_SYSTEM_MEDIUM_RUNNER || 'ubuntu-latest' }}
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      # Checks out the CALLING repo (the one the PR was opened against),
+      # not BitGoJS -- this is standard ruleset-required-workflow
+      # behavior: github.repository/actions/checkout resolve to the
+      # target repo's PR head, exactly as if this workflow were defined
+      # directly in that repo.
+      - name: Checkout target repository
+        uses: actions/checkout@v7
+
+      # zizmor's default config discovery only looks in the repo it's
+      # scanning (the one just checked out above), and the target
+      # repo's own policy, if any, is not ours. The policy is therefore
+      # inlined here and written to a file that --config points at.
+      #
+      # Policy:
+      #   - GitHub-owned (actions/*, github/*) and the docker/* and
+      #     aws-actions/* orgs are exempt from hash-pinning --
+      #     ref-pinning (a tag or branch) is enough; hash-pinning them
+      #     adds SHA-churn maintenance with no security benefit.
+      #   - The grandfathered lists came from a 2026-09-03 scan of
+      #     every non-archived public repository in the BitGo org for
+      #     uses: references not pinned to a full-length commit SHA
+      #     (INF-3420). Both lists are shrink-only: remove an entry
+      #     once every public-repository workflow that references it
+      #     pins it to a commit SHA -- do not add new entries.
+      #   - Everything else defaults to hash-pin ("*": hash-pin), so
+      #     new third-party actions must be pinned to a commit SHA
+      #     from day one.
+      - name: Write zizmor policy
+        env:
+          ENABLE_ALL_GHA_LINT_CHECKS: ${{ vars.ENABLE_ALL_GHA_LINT_CHECKS }}
+        run: |
+          policy="${GITHUB_WORKSPACE}/.zizmor-ci-policy.yml"
+          if [ "$ENABLE_ALL_GHA_LINT_CHECKS" = 'true' ]; then
+            disabled_dest=/dev/null
+          else
+            disabled_dest="$policy"
+          fi
+          echo "rules:" > "$policy"
+          cat >> "$disabled_dest" <<'DISABLED'
+            adhoc-packages:
+              disable: true
+            anonymous-definition:
+              disable: true
+            archived-uses:
+              disable: true
+            artipacked:
+              disable: true
+            bot-conditions:
+              disable: true
+            cache-poisoning:
+              disable: true
+            concurrency-limits:
+              disable: true
+            dangerous-triggers:
+              disable: true
+            dependabot-cooldown:
+              disable: true
+            dependabot-execution:
+              disable: true
+            excessive-permissions:
+              disable: true
+            forbidden-uses:
+              disable: true
+            github-app:
+              disable: true
+            github-env:
+              disable: true
+            hardcoded-container-credentials:
+              disable: true
+            impostor-commit:
+              disable: true
+            insecure-commands:
+              disable: true
+            insecure-url-scheme:
+              disable: true
+            known-vulnerable-actions:
+              disable: true
+            misfeature:
+              disable: true
+            obfuscation:
+              disable: true
+            overprovisioned-secrets:
+              disable: true
+            ref-confusion:
+              disable: true
+            ref-version-mismatch:
+              disable: true
+            secrets-inherit:
+              disable: true
+            secrets-outside-env:
+              disable: true
+            self-hosted-runner:
+              disable: true
+            self-repository:
+              disable: true
+            stale-action-refs:
+              disable: true
+            superfluous-actions:
+              disable: true
+            template-injection:
+              disable: true
+            typosquat-uses:
+              disable: true
+            undocumented-permissions:
+              disable: true
+            unpinned-images:
+              disable: true
+            unpinned-tools:
+              disable: true
+            unredacted-secrets:
+              disable: true
+            unsound-condition:
+              disable: true
+            unsound-contains:
+              disable: true
+            unsound-ternary:
+              disable: true
+            use-trusted-publishing:
+              disable: true
+          DISABLED
+          cat >> "$policy" <<'PINNING'
+            unpinned-uses:
+              config:
+                policies:
+                  # Trusted orgs -- ref-pinning (a tag or branch) is
+                  # enough. Mirrors the org-level policy: GitHub-owned
+                  # (actions/*, github/*) and the docker/* and
+                  # aws-actions/* orgs.
+                  "actions/*": ref-pin
+                  "github/*": ref-pin
+                  "docker/*": ref-pin
+                  "aws-actions/*": ref-pin
+
+                  # Grandfathered internal (BitGo-owned) actions and
+                  # reusable workflows still referenced by a floating
+                  # tag/branch by at least one public repository as of
+                  # the INF-3420 scan.
+                  "BitGo/gha-renovate-bot/*": ref-pin
+                  "BitGo/install-github-release-binary/*": ref-pin
+                  "BitGo/semantic-release-github-actions/*": ref-pin
+
+                  # Grandfathered external third-party actions still
+                  # referenced by a floating tag/branch by at least one
+                  # public repository as of the INF-3420 scan.
+                  "actions-rs/toolchain": ref-pin
+                  "azure/setup-helm": ref-pin
+                  "codecov/codecov-action": ref-pin
+                  "dtolnay/rust-toolchain": ref-pin
+                  "helm/chart-releaser-action": ref-pin
+                  "ilammy/msvc-dev-cmd": ref-pin
+                  "ludeeus/action-shellcheck": ref-pin
+                  "peter-evans/create-pull-request": ref-pin
+                  "xresloader/upload-to-github-release": ref-pin
+
+                  # Everything else: every other action (including new
+                  # third-party actions, subpaths of grandfathered
+                  # third-party repos, and internal actions in repos
+                  # not listed above) must be pinned to a full commit
+                  # SHA.
+                  "*": hash-pin
+          PINNING
+
+      - name: Run zizmor
+        uses: zizmorcore/zizmor-action@70fb788f84895a7701f5643d103d587e460b5c99 # v0.6.3
+        with:
+          config: .zizmor-ci-policy.yml
+          # Online audits (e.g. ref-confusion) call the GitHub API to
+          # inspect OTHER repos referenced by uses: clauses. The default
+          # github.token is only scoped to the checked-out repo, so
+          # those lookups fail fatally for any repo the token cannot
+          # read. unpinned-uses (the only audit this policy relies on)
+          # is fully offline-capable.
+          online-audits: "false"
+          # Advanced Security (SARIF + code scanning upload) needs a
+          # paid feature target repos may not have; use plain
+          # annotations so this works uniformly across every repository
+          # the ruleset targets.
+          advanced-security: "false"
+          annotations: "true"
+          fail-on-no-inputs: "false"
