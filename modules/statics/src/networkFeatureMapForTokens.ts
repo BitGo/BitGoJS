@@ -32,29 +32,28 @@ export const EVM_TOKEN_FEATURES: CoinFeature[] = [
   CoinFeature.SUPPORTS_ERC20,
 ];
 
-// Set by coins.ts (which has access to the full coin map) so getNetworkFeatures() can fall back to
-// EVM_TOKEN_FEATURES for any family whose base coin supports ERC20, without this module needing to
-// import the coin map itself (that would create a circular import: coins.ts -> networkFeatureMapForTokens.ts
-// -> allCoinsAndTokens.ts -> coins/botTokens.ts -> networkFeatureMapForTokens.ts).
-let isErc20SupportedFamily: ((family: string) => boolean) | undefined;
-
-/** Register a predicate used to detect whether a family's base coin carries CoinFeature.SUPPORTS_ERC20. */
-export function registerErc20FamilyChecker(checker: (family: string) => boolean): void {
-  isErc20SupportedFamily = checker;
+/**
+ * Populate networkFeatureMapForTokens with EVM_TOKEN_FEATURES for every family whose base coin
+ * carries CoinFeature.SUPPORTS_ERC20 and isn't already explicitly listed below. Called once from
+ * coins.ts (which has access to the full coin map) so this module doesn't need to import it
+ * directly (that would create a circular import: coins.ts -> networkFeatureMapForTokens.ts ->
+ * allCoinsAndTokens.ts -> coins/botTokens.ts -> networkFeatureMapForTokens.ts).
+ */
+export function registerErc20Families(families: Iterable<string>): void {
+  for (const family of families) {
+    if (!(family in networkFeatureMapForTokens)) {
+      networkFeatureMapForTokens[family as CoinFamily] = EVM_TOKEN_FEATURES;
+    }
+  }
 }
 
 /**
  * Look up token features for a family.
- * Checks the static map first, then the dynamic map, then falls back to EVM_TOKEN_FEATURES for any
- * family whose base coin supports ERC20 (see registerErc20FamilyChecker). Returns undefined if the
- * family isn't recognized by any of the three.
+ * Checks the static map first (including entries backfilled by registerErc20Families), then the
+ * dynamic map. Returns undefined if the family isn't recognized by either.
  */
 export function getNetworkFeatures(family: string): CoinFeature[] | undefined {
-  return (
-    networkFeatureMapForTokens[family as CoinFamily] ??
-    dynamicNetworkFeaturesMap.get(family) ??
-    (isErc20SupportedFamily?.(family) ? EVM_TOKEN_FEATURES : undefined)
-  );
+  return networkFeatureMapForTokens[family as CoinFamily] ?? dynamicNetworkFeaturesMap.get(family);
 }
 
 /**
