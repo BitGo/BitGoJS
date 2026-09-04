@@ -12,6 +12,7 @@ import {
   EddsaSigningMaterial,
   Environments,
   getEddsaSigningMaterial as sharedGetEddsaSigningMaterial,
+  isEddsaSigningMaterial,
   KeyPair,
   MPCAlgorithm,
   MPCRecoveryOptions,
@@ -695,8 +696,9 @@ export class Sui extends BaseCoin {
     const backupKey = params.backupKey.replace(/\s/g, '');
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
 
-    const signingMaterial =
-      precomputedMaterial ?? (await this.getEddsaSigningMaterial(userKey, params.walletPassphrase));
+    const signingMaterial = isEddsaSigningMaterial(precomputedMaterial)
+      ? precomputedMaterial
+      : await this.getEddsaSigningMaterial(userKey, params.walletPassphrase);
 
     if (signingMaterial.version === 'v2') {
       const signature = await this.signSuiMpcV2Recovery({
