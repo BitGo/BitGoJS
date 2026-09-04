@@ -21,10 +21,44 @@ export function registerNetworkFeatures(family: string, features: CoinFeature[])
   dynamicNetworkFeaturesMap.set(family, features);
 }
 
+/** Default token feature set shared by "plain" EVM-compatible chain families (no bespoke features). */
+export const EVM_TOKEN_FEATURES: CoinFeature[] = [
+  ...EVM_FEATURES,
+  CoinFeature.SHARED_EVM_SIGNING,
+  CoinFeature.SHARED_EVM_SDK,
+  CoinFeature.EVM_COMPATIBLE_IMS,
+  CoinFeature.EVM_COMPATIBLE_UI,
+  CoinFeature.EVM_COMPATIBLE_WP,
+  CoinFeature.SUPPORTS_ERC20,
+];
+
+/** Same as EVM_TOKEN_FEATURES, minus EIP1559, for EVM-compatible families that don't support it (e.g. xdc). */
+export const EVM_TOKEN_FEATURES_NON_EIP1559: CoinFeature[] = EVM_TOKEN_FEATURES.filter(
+  (feature) => feature !== CoinFeature.EIP1559
+);
+
+/**
+ * Populate networkFeatureMapForTokens for every family whose base coin carries
+ * CoinFeature.SUPPORTS_ERC20 and isn't already explicitly listed below, using EVM_TOKEN_FEATURES
+ * (or its non-EIP1559 variant, mirroring the base coin's own EIP1559 support). Called once from
+ * coins.ts (which has access to the full coin map) so this module doesn't need to import it
+ * directly (that would create a circular import: coins.ts -> networkFeatureMapForTokens.ts ->
+ * allCoinsAndTokens.ts -> coins/botTokens.ts -> networkFeatureMapForTokens.ts).
+ */
+export function registerErc20Families(families: Iterable<[family: string, supportsEip1559: boolean]>): void {
+  for (const [family, supportsEip1559] of families) {
+    if (!(family in networkFeatureMapForTokens)) {
+      networkFeatureMapForTokens[family as CoinFamily] = supportsEip1559
+        ? EVM_TOKEN_FEATURES
+        : EVM_TOKEN_FEATURES_NON_EIP1559;
+    }
+  }
+}
+
 /**
  * Look up token features for a family.
- * Checks static map first, then falls back to dynamic map.
- * Returns undefined if the family is not registered in either map.
+ * Checks the static map first (including entries backfilled by registerErc20Families), then the
+ * dynamic map. Returns undefined if the family isn't recognized by either.
  */
 export function getNetworkFeatures(family: string): CoinFeature[] | undefined {
   return networkFeatureMapForTokens[family as CoinFamily] ?? dynamicNetworkFeaturesMap.get(family);
@@ -56,36 +90,12 @@ export const networkFeatureMapForTokens: Partial<Record<CoinFamily, CoinFeature[
   celo: AccountCoin.DEFAULT_FEATURES,
   eth: AccountCoin.DEFAULT_FEATURES,
   eos: AccountCoin.DEFAULT_FEATURES,
-  gasevm: [
-    ...EVM_FEATURES,
-    CoinFeature.SHARED_EVM_SIGNING,
-    CoinFeature.SHARED_EVM_SDK,
-    CoinFeature.EVM_COMPATIBLE_IMS,
-    CoinFeature.EVM_COMPATIBLE_UI,
-    CoinFeature.EVM_COMPATIBLE_WP,
-    CoinFeature.SUPPORTS_ERC20,
-  ],
+  gasevm: EVM_TOKEN_FEATURES,
   hbar: AccountCoin.DEFAULT_FEATURES,
   opeth: [...AccountCoin.DEFAULT_FEATURES, CoinFeature.EIP1559],
-  katanaeth: [
-    ...EVM_FEATURES,
-    CoinFeature.SHARED_EVM_SIGNING,
-    CoinFeature.SHARED_EVM_SDK,
-    CoinFeature.EVM_COMPATIBLE_IMS,
-    CoinFeature.EVM_COMPATIBLE_UI,
-    CoinFeature.EVM_COMPATIBLE_WP,
-    CoinFeature.SUPPORTS_ERC20,
-  ],
+  katanaeth: EVM_TOKEN_FEATURES,
   polygon: POLYGON_TOKEN_FEATURES,
-  scrolleth: [
-    ...EVM_FEATURES,
-    CoinFeature.SHARED_EVM_SIGNING,
-    CoinFeature.SHARED_EVM_SDK,
-    CoinFeature.EVM_COMPATIBLE_IMS,
-    CoinFeature.EVM_COMPATIBLE_UI,
-    CoinFeature.EVM_COMPATIBLE_WP,
-    CoinFeature.SUPPORTS_ERC20,
-  ],
+  scrolleth: EVM_TOKEN_FEATURES,
   sol: SOL_TOKEN_FEATURES,
   stx: STX_TOKEN_FEATURES,
   sui: SUI_TOKEN_FEATURES,
