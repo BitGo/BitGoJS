@@ -57,7 +57,7 @@ function validateParams(params: Pox5LockupDescriptorParams): void {
  * Build the canonical PoX-5 P2WSH descriptor. The post-CLTV and early-exit
  * paths share BitGo's standard 2-of-3 compressed-key multisig tail.
  */
-export function createPox5LockupDescriptor(params: Pox5LockupDescriptorParams): string {
+export function createPox5LockupDescriptor(params: Pox5LockupDescriptorParams): Descriptor {
   validateParams(params);
   const stakerKeys = params.stakerKeys.map((key, index) => asDescriptorKey(key, `stakerKeys[${index}]`));
   const miniscript: ast.MiniscriptNode = {
@@ -76,18 +76,17 @@ export function createPox5LockupDescriptor(params: Pox5LockupDescriptorParams): 
       { multi: [2, ...stakerKeys] },
     ],
   };
-  return ast.formatNode({ wsh: miniscript });
+  const descriptorString = ast.formatNode({ wsh: miniscript });
+  return Descriptor.fromString(descriptorString, isBip32Triple(params.stakerKeys) ? 'derivable' : 'definite');
 }
 
 /** Compile the PoX-5 P2WSH scriptPubKey at a BIP32 derivation index. */
 export function createPox5LockupScriptPubKey(params: Pox5LockupDescriptorParams, derivationIndex = 0): Buffer {
   const descriptor = createPox5LockupDescriptor(params);
   if (isBip32Triple(params.stakerKeys)) {
-    return Buffer.from(
-      Descriptor.fromString(descriptor, 'derivable').atDerivationIndex(derivationIndex).scriptPubkey()
-    );
+    return Buffer.from(descriptor.atDerivationIndex(derivationIndex).scriptPubkey());
   }
-  return Buffer.from(Descriptor.fromString(descriptor, 'definite').scriptPubkey());
+  return Buffer.from(descriptor.scriptPubkey());
 }
 
 /** Derive the compressed staker keys needed to prepare a witness at an index. */

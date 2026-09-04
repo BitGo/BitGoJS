@@ -93,8 +93,7 @@ describe('PoX-5 lockup descriptors', function () {
       0
     );
     const definite = { ...derivable, stakerKeys };
-    const descriptorString = createPox5LockupDescriptor(definite);
-    const descriptor = Descriptor.fromString(descriptorString, 'definite');
+    const descriptor = createPox5LockupDescriptor(definite);
     const localWitnessScript = asmToScript(descriptor.toAsmString());
     const unlockBytes = encodeTwoOfThreeUnlock(stakerKeys);
     const earlyUnlockBytes = buildUnlockScript(definite.earlyExitKey);
@@ -137,7 +136,7 @@ describe('PoX-5 lockup descriptors', function () {
 
   it('supports derivation and preserves wildcard keys until an index is selected', function () {
     const value = params();
-    const descriptor = Descriptor.fromString(createPox5LockupDescriptor(value), 'derivable');
+    const descriptor = createPox5LockupDescriptor(value);
     const wildcard = parsePox5LockupDescriptor(descriptor);
     const derived = parsePox5LockupDescriptor(descriptor.atDerivationIndex(4));
 
@@ -162,6 +161,6 @@ describe('PoX-5 lockup descriptors', function () {
       )
     );
     const validKey = params().earlyExitKey.toString('hex');
-    assert.strictEqual(parsePox5LockupDescriptor(Descriptor.fromString(`wsh(pk(${validKey}))`, 'definite')), null);
+    assert.strictEqual(parsePox5LockupDescriptor(Descriptor.fromString(`wsh(pk(${validKey}))`, 'definite')), undefined);
   });
 });
