@@ -383,6 +383,20 @@ export const botOfcTokens = [
     undefined,
     undefined
   ),
+  AccountCtors.tofcerc20(
+    '16a6b6a3-5620-449e-b251-08df398c9814',
+    'ofchteth:zamamock',
+    'ZAMAMock',
+    18,
+    'hteth:zamamock' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
   AccountCtors.ofcerc20(
     '26f46d44-700d-4e32-8845-fb181e6d8027',
     'ofceth:gusdcq',

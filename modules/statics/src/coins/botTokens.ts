@@ -447,6 +447,24 @@ export const botTokens = [
     undefined,
     Networks.test.sol
   ),
+  AccountCtors.terc20(
+    'a6e02801-edbe-441f-a965-dd469e0580ba',
+    'hteth:zamamock',
+    'ZAMAMock',
+    18,
+    '0x58713eca04e01114480b30be8ca0d8838f342a55',
+    'hteth:zamamock' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-switzerland' as CoinFeature,
+      'custody-bitgo-sister-trust-one' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
   AccountCtors.erc20(
     '4161ed06-c331-4e21-8791-eaca5151e869',
     'eth:abtx',
