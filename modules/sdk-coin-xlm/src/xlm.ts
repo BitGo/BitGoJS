@@ -432,7 +432,7 @@ export class Xlm extends BaseCoin {
    * @returns minimum balance in stroops
    */
   async getMinimumReserve(): Promise<number> {
-    const server = new stellar.Server(this.getHorizonUrl());
+    const server = new stellar.Horizon.Server(this.getHorizonUrl());
 
     const horizonLedgerInfo = await server.ledgers().order('desc').limit(1).call();
 
@@ -451,7 +451,7 @@ export class Xlm extends BaseCoin {
    * @returns transaction fee in stroops
    */
   async getBaseTransactionFee(): Promise<number> {
-    const server = new stellar.Server(this.getHorizonUrl());
+    const server = new stellar.Horizon.Server(this.getHorizonUrl());
 
     const horizonLedgerInfo = await server.ledgers().order('desc').limit(1).call();
 
@@ -599,11 +599,11 @@ export class Xlm extends BaseCoin {
    *
    * @returns instance of BitGo Federation Server
    */
-  getBitGoFederationServer(): stellar.FederationServer {
+  getBitGoFederationServer(): stellar.Federation.Server {
     // Identify the URI scheme in case we need to allow connecting to HTTP server.
     const isNonSecureEnv = !_.startsWith(common.Environments[this.bitgo.env].uri, 'https');
     const federationServerOptions = { allowHttp: isNonSecureEnv };
-    return new stellar.FederationServer(this.getFederationServerUrl(), 'bitgo.com', federationServerOptions);
+    return new stellar.Federation.Server(this.getFederationServerUrl(), 'bitgo.com', federationServerOptions);
   }
 
   /**
@@ -619,7 +619,7 @@ export class Xlm extends BaseCoin {
   }: {
     address?: string;
     accountId?: string;
-  }): Promise<stellar.FederationServer.Record> {
+  }): Promise<stellar.Federation.Api.Record> {
     try {
       const federationServer = this.getBitGoFederationServer();
       if (address) {
@@ -644,7 +644,7 @@ export class Xlm extends BaseCoin {
    *
    * @param {String} address - stellar address to look for
    */
-  async federationLookupByName(address: string): Promise<stellar.FederationServer.Record> {
+  async federationLookupByName(address: string): Promise<stellar.Federation.Api.Record> {
     if (!address) {
       throw new Error('invalid Stellar address');
     }
@@ -658,7 +658,7 @@ export class Xlm extends BaseCoin {
    *
    * @param {String} accountId - stellar account id
    */
-  async federationLookupByAccountId(accountId: string): Promise<stellar.FederationServer.Record> {
+  async federationLookupByAccountId(accountId: string): Promise<stellar.Federation.Api.Record> {
     if (!accountId) {
       throw new Error('invalid Stellar account');
     }
