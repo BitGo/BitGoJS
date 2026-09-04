@@ -61,6 +61,7 @@ import { buildParamKeys, BuildParams } from './BuildParams';
 import {
   fetchRootKeychainForSafeChild,
   isSafeChildPublicOnlyKeychain,
+  resolveSafeChildPrvForSharing,
   resolveSafeOwnerSigningPrv,
 } from './safeKeychain';
 import {
@@ -1760,6 +1761,18 @@ export class Wallet implements IWallet {
     return tryKeyChain(0);
   }
 
+  private async getSafeOwnerChildKeychain(): Promise<(Keychain & { parent: string }) | undefined> {
+    if (!this.safeId()) {
+      return undefined;
+    }
+    const userKeyId = this._wallet.keys?.[KeyIndices.USER];
+    if (!userKeyId) {
+      return undefined;
+    }
+    const keychain = await this.baseCoin.keychains().get({ id: userKeyId });
+    return isSafeChildPublicOnlyKeychain(this.safeId(), keychain) ? keychain : undefined;
+  }
+
   /**
    * Gets the unencrypted private key for this wallet (be careful!)
    * Requires wallet passphrase
@@ -1866,11 +1879,8 @@ export class Wallet implements IWallet {
       try {
         decryptedKeychain = await this.getDecryptedKeychainForSharing(params.walletPassphrase);
       } catch (e) {
-        if (e instanceof MissingEncryptedKeychainError) {
-          decryptedKeychain = undefined;
-        } else {
-          throw e;
-        }
+        this.rethrowUnlessColdWalletShare(e);
+        decryptedKeychain = undefined;
       }
     }
 
@@ -1961,6 +1971,28 @@ export class Wallet implements IWallet {
   async getDecryptedKeychainForSharing(
     walletPassphrase: string | undefined
   ): Promise<DecryptedKeychainData | undefined> {
+    /**
+     * For Safe owners: detect child safes first and derive the child private key from the root keychain if present.
+     * Skip `lnbtc` as it uses the user auth key instead
+     */
+    if (this.baseCoin.getFamily() !== 'lnbtc') {
+      const safeChildKeychain = await this.getSafeOwnerChildKeychain();
+      if (safeChildKeychain) {
+        if (!walletPassphrase) {
+          throw new Error('Missing walletPassphrase argument');
+        }
+        return resolveSafeChildPrvForSharing({
+          bitgo: this.bitgo,
+          keychains: this.baseCoin.keychains(),
+          walletId: this._wallet.id,
+          multisigType: this._wallet.multisigType,
+          coinFamily: this.baseCoin.getFamily(),
+          childKeychain: safeChildKeychain,
+          walletPassphrase,
+        });
+      }
+    }
+
     const keychain = await this.getEncryptedWalletKeychainForWalletSharing();
 
     if (!keychain.encryptedPrv) {
@@ -2031,6 +2063,18 @@ export class Wallet implements IWallet {
     return keychain;
   }
 
+  private rethrowUnlessColdWalletShare(e: unknown): void {
+    if (!(e instanceof MissingEncryptedKeychainError)) {
+      throw e;
+    }
+    if (this.safeId()) {
+      throw new MissingEncryptedKeychainError(
+        `Safe wallet ${this._wallet.id}: no keychain with an encryptedPrv and the safe child ` +
+          `could not be resolved; refusing to create a spend share without key material.`
+      );
+    }
+  }
+
   /**
    * Prepares a keychain for sharing with another user.
    * Fetches the wallet keychain, decrypts it, and encrypts it for the recipient.
@@ -2056,11 +2100,9 @@ export class Wallet implements IWallet {
       }
       return await this.encryptPrvForUser(keychain.prv, keychain.pub, pubkey, path, encryptionVersion);
     } catch (e) {
-      if (e instanceof MissingEncryptedKeychainError) {
-        // ignore this error because this looks like a cold wallet
-        return {};
-      }
-      throw e;
+      this.rethrowUnlessColdWalletShare(e);
+      // ignore this error because this looks like a cold wallet
+      return {};
     }
   }
 
