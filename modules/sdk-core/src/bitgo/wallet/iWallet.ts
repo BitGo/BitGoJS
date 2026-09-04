@@ -475,6 +475,35 @@ export interface GetTransactionOptions extends PaginationOptions {
   includeRbf?: boolean;
 }
 
+export interface GetPotentialStuckTxsOptions {
+  /** Only return transactions unconfirmed longer than this many minutes. */
+  minUnconfirmedMinutes?: number;
+  /** Only return transactions unconfirmed longer than this many blocks. */
+  minUnconfirmedBlocks?: number;
+  expandSendTransferMetadata?: boolean;
+  txid?: string;
+}
+
+export interface GetPotentialStuckTxsResult {
+  txId?: string;
+  cause?: string;
+  message?: string;
+  nonce?: number;
+  txHex?: string;
+  txType?: string;
+  sendTransfer?: Record<string, unknown>;
+  gasAccelerationFee?: {
+    gasPrice?: string;
+    maxFeePerGas?: string;
+    maxPriorityFeePerGas?: string;
+  };
+  userActionDisabled?: boolean;
+  rbf?: boolean;
+  coin?: string;
+  wallet?: string;
+  isFeeAddress?: boolean;
+}
+
 export interface TransfersOptions extends PaginationOptions {
   txHash?: string;
   allTokens?: boolean;
@@ -1220,6 +1249,7 @@ export interface IWallet {
   pendingApprovals(): IPendingApproval[];
   refresh(params?: Record<string, never>): Promise<IWallet>;
   transactions(params?: PaginationOptions): Promise<any>;
+  getPotentialStuckTxs(params?: GetPotentialStuckTxsOptions): Promise<GetPotentialStuckTxsResult[]>;
   getTransaction(params?: GetTransactionOptions): Promise<any>;
   transfers(params?: TransfersOptions): Promise<any>;
   getTransfer(params?: GetTransferOptions): Promise<any>;
