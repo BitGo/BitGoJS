@@ -1,0 +1,89 @@
+name: Lint CODEOWNERS
+
+on:
+  pull_request:
+  merge_group:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint CODEOWNERS
+    runs-on: ${{ vars.BUILD_SYSTEM_MEDIUM_RUNNER || 'ubuntu-latest' }}
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Locate CODEOWNERS
+        id: codeowners
+        run: |
+          for candidate in CODEOWNERS .github/CODEOWNERS docs/CODEOWNERS; do
+            if [ -f "$candidate" ]; then
+              echo "path=$candidate" >> "$GITHUB_OUTPUT"
+              echo "Using CODEOWNERS file: $candidate"
+              exit 0
+            fi
+          done
+          echo "Error: No CODEOWNERS file found in root, .github/, or docs/" >&2
+          exit 1
+
+      - name: Wildcard assignment check
+        env:
+          CODEOWNERS: ${{ steps.codeowners.outputs.path }}
+        run: |
+          # `|| true` prevents grep's exit code 1 (no matches) from failing the step.
+          wildcard_count=$(grep -cE '^\*[[:space:]]' "$CODEOWNERS" || true)
+
+          if [ "$wildcard_count" -eq 0 ]; then
+            echo "Error: No wildcard (*) assignment found in CODEOWNERS" >&2
+            exit 1
+          fi
+
+          if [ "$wildcard_count" -gt 1 ]; then
+            echo "Error: Multiple wildcard (*) assignments found in CODEOWNERS:" >&2
+            grep -E '^\*[[:space:]]' "$CODEOWNERS" >&2
+            exit 1
+          fi
+
+          wildcard_line=$(grep -E '^\*[[:space:]]' "$CODEOWNERS")
+          owner_count=$(echo "$wildcard_line" | awk '{print NF - 1}')
+
+          if [ "$owner_count" -ne 1 ]; then
+            echo "Error: Wildcard (*) must be assigned to exactly one team, found $owner_count: $wildcard_line" >&2
+            exit 1
+          fi
+
+          echo "Wildcard assignment check passed: $wildcard_line"
+
+      - name: Kustomize ownership check
+        env:
+          CODEOWNERS: ${{ steps.codeowners.outputs.path }}
+        run: |
+          if [ ! -d "kustomize" ]; then
+            echo "No kustomize directory found, skipping check."
+            exit 0
+          fi
+
+          kustomize_line=$(grep -E '^/?kustomize(/|[[:space:]])' "$CODEOWNERS" || true)
+
+          if [ -z "$kustomize_line" ]; then
+            echo "Error: kustomize directory exists but has no CODEOWNERS entry" >&2
+            exit 1
+          fi
+
+          if ! echo "$kustomize_line" | grep -q '@BitGo/production'; then
+            echo "Error: kustomize entry must include @BitGo/production as an owner: $kustomize_line" >&2
+            exit 1
+          fi
+
+          owner_count=$(echo "$kustomize_line" | awk '{print NF - 1}')
+          if [ "$owner_count" -lt 2 ]; then
+            echo "Error: kustomize entry must be co-owned by at least one other team alongside @BitGo/production: $kustomize_line" >&2
+            exit 1
+          fi
+
+          echo "Kustomize ownership check passed: $kustomize_line"
