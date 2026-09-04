@@ -20,12 +20,30 @@ export const generateMPCv2KeyRequestBody = t.union([
   MPCv2KeyGenRound3Request,
 ]);
 
-export type GenerateMPCv2KeyRequestBody = t.TypeOf<typeof generateMPCv2KeyRequestBody>;
-
 export const generateMPCv2KeyRequestResponse = t.union([
   MPCv2KeyGenRound1Response,
   MPCv2KeyGenRound2Response,
   MPCv2KeyGenRound3Response,
 ]);
 
-export type GenerateMPCv2KeyRequestResponse = t.TypeOf<typeof generateMPCv2KeyRequestResponse>;
+/**
+ * Optional VRF DKG message fields carried on the MPCv2-R1/R2 keygen round payloads as
+ * opaque base64 blobs. Only set when the ceremony runs the VRF DKG alongside the
+ * signing DKG (safe root keys); ordinary TSS wallet creation payloads are unchanged.
+ */
+export type MpcV2VrfKeyGenRequestFields = {
+  userVrfMsg1?: string;
+  backupVrfMsg1?: string;
+  userVrfMsg2?: string;
+  backupVrfMsg2?: string;
+};
+
+export type MpcV2VrfKeyGenResponseFields = {
+  bitgoVrfMsg1?: string;
+  bitgoVrfMsg2?: string;
+};
+
+export type GenerateMPCv2KeyRequestBody = t.TypeOf<typeof generateMPCv2KeyRequestBody> & MpcV2VrfKeyGenRequestFields;
+
+export type GenerateMPCv2KeyRequestResponse = t.TypeOf<typeof generateMPCv2KeyRequestResponse> &
+  MpcV2VrfKeyGenResponseFields;
