@@ -209,7 +209,43 @@ export type TokenConfig =
   | Tip20TokenConfig
   | Erc7984TokenConfig;
 
-export interface TokenNetwork {
+/** Default bucket shape for a "plain" EVM-compatible family (ERC20 tokens only, no NFTs/confidential tokens). */
+export type EvmTokenBucket = { tokens: EthLikeTokenConfig[] };
+
+/** Families with a non-generic bucket shape (NFTs, confidential tokens, MPT tokens, or a non-EVM token config type). */
+type TokenNetworkExplicitFamily =
+  | CoinFamily.ETH
+  | CoinFamily.XLM
+  | CoinFamily.ALGO
+  | CoinFamily.OFC
+  | CoinFamily.CELO
+  | CoinFamily.EOS
+  | CoinFamily.AVAXC
+  | CoinFamily.SOL
+  | CoinFamily.HBAR
+  | CoinFamily.ADA
+  | CoinFamily.TRX
+  | CoinFamily.XRP
+  | CoinFamily.SUI
+  | CoinFamily.TAO
+  | CoinFamily.POLYX
+  | CoinFamily.APT
+  | CoinFamily.STX
+  | CoinFamily.NEAR
+  | CoinFamily.VET
+  | CoinFamily.TON
+  | CoinFamily.TEMPO
+  | CoinFamily.CANTON;
+
+/**
+ * Explicitly-shaped families above, intersected with a `Partial<Record<..., EvmTokenBucket>>` covering
+ * every other family so that any EVM family not listed here (current or future, e.g.
+ * gasevm/katanaeth/scrolleth/zksyncera/mantle/...) still type-checks — `getFormattedTokensByNetwork`
+ * already populates a bucket for every family whose base coin carries `CoinFeature.SUPPORTS_ERC20`/
+ * `SUPPORTS_ERC721` via `getEthLikeTokens`, so the type should not require hand-enumerating every such
+ * family either.
+ */
+export type TokenNetwork = {
   eth: {
     tokens: Erc20TokenConfig[];
     nfts: EthLikeTokenConfig[];
@@ -221,33 +257,14 @@ export interface TokenNetwork {
   celo: { tokens: CeloTokenConfig[] };
   eos: { tokens: EosTokenConfig[] };
   avaxc: { tokens: AvaxcTokenConfig[] };
-  polygon: { tokens: EthLikeTokenConfig[] };
-  soneium: { tokens: EthLikeTokenConfig[] };
-  bsc: { tokens: EthLikeTokenConfig[] };
-  arbeth: { tokens: EthLikeTokenConfig[] };
-  opeth: { tokens: EthLikeTokenConfig[] };
-  baseeth: { tokens: EthLikeTokenConfig[] };
-  og: { tokens: EthLikeTokenConfig[] };
-  flow: { tokens: EthLikeTokenConfig[] };
-  lineaeth: { tokens: EthLikeTokenConfig[] };
-  seievm: { tokens: EthLikeTokenConfig[] };
-  coredao: { tokens: EthLikeTokenConfig[] };
-  world: { tokens: EthLikeTokenConfig[] };
-  flr: { tokens: EthLikeTokenConfig[] };
   sol: { tokens: SolTokenConfig[] };
   hbar: { tokens: HbarTokenConfig[] };
   ada: { tokens: AdaTokenConfig[] };
   trx: { tokens: TrxTokenConfig[] };
   xrp: { tokens: XrpTokenConfig[]; mptTokens: XrpMptTokenConfig[] };
-  zketh: { tokens: EthLikeTokenConfig[] };
   sui: { tokens: SuiTokenConfig[] };
   tao: { tokens: TaoTokenConfig[] };
   polyx: { tokens: PolyxTokenConfig[] };
-  bera: { tokens: EthLikeTokenConfig[] };
-  mon: { tokens: EthLikeTokenConfig[] };
-  xdc: { tokens: EthLikeTokenConfig[] };
-  hypeevm: { tokens: EthLikeTokenConfig[] };
-  ip: { tokens: EthLikeTokenConfig[] };
   apt: {
     tokens: AptTokenConfig[];
     nftCollections: AptNFTCollectionConfig[];
@@ -262,7 +279,7 @@ export interface TokenNetwork {
   ton: { tokens: JettonTokenConfig[] };
   tempo: { tokens: Tip20TokenConfig[] };
   canton: { tokens: CantonTokenConfig[] };
-}
+} & Partial<Record<Exclude<CoinFamily, TokenNetworkExplicitFamily>, EvmTokenBucket>>;
 
 export interface Tokens {
   bitcoin: TokenNetwork;
