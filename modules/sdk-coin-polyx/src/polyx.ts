@@ -108,7 +108,7 @@ export class Polyx extends SubstrateCoin {
 
   protected async getFee(destAddr: string, srcAddr: string, amount: number): Promise<number> {
     const api = await this.getInitializedNodeAPI();
-    const info = await api.tx.balances.transfer(destAddr, amount).paymentInfo(srcAddr);
+    const info = await api.tx.balances.transferAllowDeath(destAddr, amount).paymentInfo(srcAddr);
     return info.partialFee.toNumber();
   }
 
@@ -195,7 +195,6 @@ export class Polyx extends SubstrateCoin {
       assert(params.walletPassphrase, 'missing wallet passphrase');
 
       const signingMaterial = await this.getEddsaSigningMaterial(params.userKey, params.walletPassphrase);
-      const ED25519_PREFIX = 0x00;
       const substrateKeyPair = new SubstrateKeyPair({ pub: accountId });
       if (signingMaterial.version === 'v2') {
         const rawSig = await this.signSubstrateMpcV2Recovery({
@@ -207,10 +206,7 @@ export class Polyx extends SubstrateCoin {
           derivationPath: currPath,
           bitgo: this.bitgo,
         });
-        txBuilder.addSignature(
-          { pub: substrateKeyPair.getKeys().pub },
-          Buffer.concat([Buffer.from([ED25519_PREFIX]), rawSig])
-        );
+        txBuilder.addSignature({ pub: substrateKeyPair.getKeys().pub }, rawSig);
       } else {
         const userSigningMaterial = JSON.parse(signingMaterial.userPrv) as EDDSAMethodTypes.UserSigningMaterial;
         const backupPrv = await this.bitgo.decrypt({
