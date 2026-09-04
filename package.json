@@ -72,6 +72,7 @@
     "**/sha.js": ">=2.4.12",
     "**/serialize-javascript": "7.0.5",
     "jspdf": ">=4.2.1",
+    "fflate": "0.8.3",
     "@ethereumjs/util": "8.0.3",
     "@types/keyv": "3.1.4",
     "@types/react": "17.0.24",
@@ -259,12 +260,6 @@
     },
     "express": {
       "path-to-regexp": "0.1.13"
-    },
-    "stellar-sdk": {
-      "bignumber.js": "4.1.0"
-    },
-    "stellar-base": {
-      "bignumber.js": "4.1.0"
     },
     "avalanche": {
       "ws": "8.18.3",
