@@ -254,6 +254,12 @@ export interface TransactionParams extends BaseTransactionParams {
   /** Parameters for bridging intents (e.g. BTC -> sBTC peg-in), present when `type === 'bridging'`. */
   bridgingParams?: BridgingParams;
   qr?: boolean;
+  /**
+   * Zcash-only: how to resolve a Unified Address recipient. `'shielded'` resolves it to its
+   * Orchard/Ironwood receiver (a shielded output); any other value (or omission) resolves it to
+   * its transparent receiver. Ignored for non-Zcash coins and for non-Unified-Address recipients.
+   */
+  unifiedRecipientPreference?: string;
 }
 
 export interface ParseTransactionOptions<TNumber extends number | bigint = number> extends BaseParseTransactionOptions {
@@ -542,6 +548,16 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
     if (recipient.address && !isScriptRecipient(recipient.address)) {
       super.checkRecipient({ address: recipient.address, amount: recipient.amount });
     }
+  }
+
+  /**
+   * Resolve a transaction-address (not a raw scriptPubKey) to its output script. Base
+   * implementation defers to wasm-utxo's coin-agnostic address decoding. Overridable by coins
+   * whose address space needs additional context to resolve — e.g. Zcash Unified Addresses,
+   * which resolve differently depending on `unifiedRecipientPreference`.
+   */
+  resolveOutputScript(address: string, unifiedRecipientPreference?: string): Uint8Array {
+    return wasmAddress.toOutputScriptWithCoin(address, this.name);
   }
 
   /**
