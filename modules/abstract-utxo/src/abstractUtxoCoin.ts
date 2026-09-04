@@ -262,6 +262,17 @@ export interface TransactionParams extends BaseTransactionParams {
   unifiedRecipientPreference?: string;
 }
 
+/**
+ * The slice of transaction params that Unified-Address preference inference (see
+ * AbstractUtxoCoin.getUnifiedRecipientPreference) needs. Deliberately wider than
+ * `ITransactionRecipient`: recipients may carry `script` instead of `address` (OP_RETURN / raw
+ * script recipients), and UTXO amounts may be bigint.
+ */
+export interface UnifiedRecipientPreferenceTxParams {
+  recipients?: { address?: string; script?: string; amount: number | bigint | string }[];
+  unifiedRecipientPreference?: string;
+}
+
 export interface ParseTransactionOptions<TNumber extends number | bigint = number> extends BaseParseTransactionOptions {
   txParams: TransactionParams;
   txPrebuild: TransactionPrebuild<TNumber>;
@@ -558,6 +569,15 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
    */
   resolveOutputScript(address: string, unifiedRecipientPreference?: string): Uint8Array {
     return wasmAddress.toOutputScriptWithCoin(address, this.name);
+  }
+
+  /**
+   * The effective Unified-Address recipient preference for a transaction. Coins without
+   * Unified Addresses just pass the caller's value through; coins that accept Unified
+   * Addresses may infer it from the recipients (see Zec).
+   */
+  getUnifiedRecipientPreference(txParams: UnifiedRecipientPreferenceTxParams): string | undefined {
+    return txParams.unifiedRecipientPreference;
   }
 
   /**
