@@ -173,7 +173,13 @@ export async function parseTransaction<TNumber extends bigint | number>(
     throw new Error('missing required txPrebuild property txHex');
   }
 
-  const expectedOutputs = toExpectedOutputs(coin, txParams);
+  // Coins with Unified Addresses may infer the recipient preference from the recipients when
+  // the caller did not pass one (see Zec.getUnifiedRecipientPreference).
+  const effectiveTxParams = {
+    ...txParams,
+    unifiedRecipientPreference: coin.getUnifiedRecipientPreference(txParams),
+  };
+  const expectedOutputs = toExpectedOutputs(coin, effectiveTxParams);
 
   // get the keychains from the custom change wallet if needed
   let customChange: CustomChangeOptions | undefined;
@@ -235,7 +241,7 @@ export async function parseTransaction<TNumber extends bigint | number>(
         txParams: {
           recipients: txParams.recipients ?? [],
           changeAddress: txParams.changeAddress,
-          unifiedRecipientPreference: txParams.unifiedRecipientPreference,
+          unifiedRecipientPreference: effectiveTxParams.unifiedRecipientPreference,
         },
         customChange,
         reqId,
@@ -252,7 +258,7 @@ export async function parseTransaction<TNumber extends bigint | number>(
   function toComparableOutputsWithExternal(outputs: Output[]): ComparableOutputWithExternal<bigint | 'max'>[] {
     return outputs.map((output) => ({
       script: fromExtendedAddressFormatToScript(output.address, coin.name, (address) =>
-        coin.resolveOutputScript(address, txParams.unifiedRecipientPreference)
+        coin.resolveOutputScript(address, effectiveTxParams.unifiedRecipientPreference)
       ),
       value: output.amount === 'max' ? 'max' : (BigInt(output.amount) as bigint | 'max'),
       external: output.external,

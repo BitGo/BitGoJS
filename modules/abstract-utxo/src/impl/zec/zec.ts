@@ -1,16 +1,10 @@
 /**
  * @prettier
  */
-import {
-  address as wasmAddress,
-  fixedScriptWallet,
-  hasPsbtMagic,
-  isWasmUtxoError,
-  zcashAddress as wasmZcashAddress,
-} from '@bitgo/wasm-utxo';
+import { fixedScriptWallet, hasPsbtMagic, isWasmUtxoError, zcashAddress as wasmZcashAddress } from '@bitgo/wasm-utxo';
 import { BitGoBase, ExtraPrebuildParamsOptions, Wallet } from '@bitgo/sdk-core';
 
-import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
+import { AbstractUtxoCoin, UnifiedRecipientPreferenceTxParams } from '../../abstractUtxoCoin';
 import { stringToBufferTryFormats } from '../../transaction/decode';
 import { UtxoCoinName } from '../../names';
 
@@ -77,15 +71,81 @@ export class Zec extends AbstractUtxoCoin {
   /**
    * Resolve `address` to an output script. For a Unified Address, `unifiedRecipientPreference ===
    * 'shielded'` resolves to the raw 43-byte Orchard/Ironwood receiver (a shielded output, no
-   * scriptPubKey) instead of the default transparent scriptPubKey. Non-Unified addresses and any
-   * other `unifiedRecipientPreference` value are unaffected and resolve exactly as the base
-   * implementation would.
+   * scriptPubKey); any other value resolves the Unified Address's transparent receiver (a plain
+   * transparent address decodes exactly as the base implementation would). A Unified Address
+   * without a transparent receiver cannot resolve transparently and throws.
    */
   override resolveOutputScript(address: string, unifiedRecipientPreference?: string): Uint8Array {
     if (unifiedRecipientPreference === 'shielded') {
       return wasmZcashAddress.toShieldedReceiverWithCoin(address, this.name);
     }
-    return wasmAddress.toOutputScriptWithCoin(address, this.name);
+    return wasmZcashAddress.toTransparentReceiverWithCoin(address, this.name);
+  }
+
+  /**
+   * Infer the Unified-Address recipient preference from the recipients when the caller did not
+   * pass one — mirroring wallet-platform's utxo-core `buildTransaction` (`inferIsShielded` +
+   * `classifyRecipientShieldedness`): a Unified Address carrying only an Orchard receiver can
+   * only be spent shielded, one carrying only a transparent receiver only transparently, one
+   * carrying both is ambiguous, and a mix of shielded and transparent recipients is rejected.
+   */
+  override getUnifiedRecipientPreference(txParams: UnifiedRecipientPreferenceTxParams): string | undefined {
+    const preference = txParams.unifiedRecipientPreference;
+    if (preference !== undefined) {
+      // Indexer parity (utxo-core buildTransaction): a shielded build requires every recipient
+      // to be shielded-capable — a plain transparent address mixed in is rejected rather than
+      // silently routed through the transparent builder.
+      if (preference === 'shielded') {
+        for (const recipient of txParams.recipients ?? []) {
+          if (!this.isShieldedCapable(recipient.address)) {
+            throw new Error('Mixed shielded and transparent recipients are not supported');
+          }
+        }
+      }
+      return preference;
+    }
+    const shieldedness = (txParams.recipients ?? []).map((recipient) => {
+      if (recipient.address === undefined) {
+        // Raw script and OP_RETURN recipients are inherently transparent.
+        return 'transparent' as const;
+      }
+      const unified = tryParseUnifiedAddress(recipient.address, this.name as 'zec' | 'tzec');
+      if (!unified) {
+        // Not a unified address: the ordinary transparent address-decoding path handles it.
+        return 'transparent' as const;
+      }
+      if (unified.hasOrchardReceiver && unified.hasTransparentReceiver) {
+        throw new Error(
+          `Unified address ${recipient.address} carries both transparent and Orchard receivers; specify unifiedRecipientPreference: "shielded" or "transparent"`
+        );
+      }
+      if (unified.hasTransparentReceiver) {
+        return 'transparent' as const;
+      }
+      if (unified.hasOrchardReceiver) {
+        return 'shielded' as const;
+      }
+      throw new Error(`Unified address ${recipient.address} carries no transparent or Orchard receiver`);
+    });
+    const hasShielded = shieldedness.includes('shielded');
+    const hasTransparent = shieldedness.includes('transparent');
+    if (hasShielded && hasTransparent) {
+      throw new Error('Mixed shielded and transparent recipients are not supported');
+    }
+    return hasShielded ? 'shielded' : undefined;
+  }
+
+  /**
+   * Whether `address` can be spent through the shielded (Orchard PCZT) path: a Unified Address
+   * carrying an Orchard/Ironwood receiver. Raw scripts, plain transparent addresses, and
+   * transparent-only Unified Addresses cannot.
+   */
+  private isShieldedCapable(address?: string): boolean {
+    if (address === undefined) {
+      return false;
+    }
+    const unified = tryParseUnifiedAddress(address, this.name as 'zec' | 'tzec');
+    return unified !== undefined && unified.hasOrchardReceiver;
   }
 
   /**

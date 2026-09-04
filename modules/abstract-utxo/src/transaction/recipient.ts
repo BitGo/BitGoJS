@@ -1,6 +1,6 @@
-import { address } from '@bitgo/wasm-utxo';
+import { address, fixedScriptWallet } from '@bitgo/wasm-utxo';
 
-import { UtxoCoinName } from '../names';
+import { isZcashCoin, UtxoCoinName } from '../names';
 
 const ScriptRecipientPrefix = 'scriptPubKey:';
 
@@ -59,15 +59,44 @@ export function toOutputScript(
 const OP_RETURN = 0x6a;
 
 /**
+ * Encode raw Orchard/Ironwood shielded-receiver bytes as a single-receiver ZIP-316 Unified
+ * Address, or return `undefined` when the bytes are not a valid receiver — `encodeOrchardReceiver`
+ * throws for anything that is not one, so the try/catch doubles as the receiver-validity check.
+ */
+function encodeShieldedReceiver(script: Buffer, coinName: 'zec' | 'tzec'): string | undefined {
+  try {
+    return fixedScriptWallet.ZcashUnifiedAddress.encodeOrchardReceiver(new Uint8Array(script), coinName);
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Zcash extended-address format: a script is either a raw Orchard/Ironwood shielded receiver —
+ * which is not a scriptPubKey at all and can only be represented as a Unified Address — or an
+ * ordinary transparent scriptPubKey.
+ */
+function zcashToExtendedAddressFormat(script: Buffer, coinName: 'zec' | 'tzec'): string {
+  return encodeShieldedReceiver(script, coinName) ?? address.fromOutputScriptWithCoin(script, coinName);
+}
+
+/**
  * Convert a script or address to the extended address format.
  * @param script
  * @param coinName
- * @returns if the script is an OP_RETURN script, then it will be prefixed with `scriptPubKey:`, otherwise it will be converted to an address.
+ * @returns if the script is an OP_RETURN script, then it will be prefixed with `scriptPubKey:`; if
+ * it is a Zcash shielded receiver (a raw Orchard/Ironwood receiver, which is not a scriptPubKey at
+ * all), it will be encoded as a single-receiver ZIP-316 Unified Address; otherwise it will be
+ * converted to an address.
  */
 export function toExtendedAddressFormat(script: Buffer, coinName: UtxoCoinName): string {
-  return script[0] === OP_RETURN
-    ? `${ScriptRecipientPrefix}${script.toString('hex')}`
-    : address.fromOutputScriptWithCoin(script, coinName);
+  if (script[0] === OP_RETURN) {
+    return `${ScriptRecipientPrefix}${script.toString('hex')}`;
+  }
+  if (isZcashCoin(coinName)) {
+    return zcashToExtendedAddressFormat(script, coinName);
+  }
+  return address.fromOutputScriptWithCoin(script, coinName);
 }
 
 export function assertValidTransactionRecipient(output: { amount: bigint | number | string; address?: string }): void {

@@ -96,3 +96,7 @@ export function isTestnetCoin(coinName: UtxoCoinName): boolean {
 export function isMainnetCoin(coinName: UtxoCoinName): boolean {
   return isUtxoCoinNameMainnet(coinName);
 }
+
+export function isZcashCoin(coinName: UtxoCoinName): coinName is 'zec' | 'tzec' {
+  return coinName === 'zec' || coinName === 'tzec';
+}
