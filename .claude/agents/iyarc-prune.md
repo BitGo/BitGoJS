@@ -45,10 +45,22 @@ over an unsafe or unverified bump.
 
 ## Early exit (do this first)
 
-If an open PR already exists on a branch matching `osv-scanner-prune/*`, stop and
-report — do not open a second:
+Only an OPEN pull request whose head branch matches `osv-scanner-prune/*` blocks
+this run. A merged or closed PR does NOT block — proceed with the rest of this
+run even if such a PR, or the stale `osv-scanner-prune/*` branch it leaves
+behind, still exists.
 
-    gh pr list --state open --search "head:osv-scanner-prune/"
+Run this check and decide on the parsed state, never on "a PR row exists":
+
+    gh pr list --state open --json number,state,headRefName --jq '.[] | select(.headRefName | startswith("osv-scanner-prune/"))'
+
+- Non-empty output: an open prune PR exists — stop and report — do not open a
+  second. Name the open PR number(s) and head branch(es) in the report.
+- Empty output: no open prune PR — continue with the rest of this run.
+
+Do not use `--state all` / `--state merged` for this check, and do not infer an
+open PR from the mere existence of an `osv-scanner-prune/*` branch: branches
+from merged prune PRs linger until deleted and must not trigger this early exit.
 
 ## Read context first
 
