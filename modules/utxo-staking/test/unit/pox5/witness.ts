@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import { createHash } from 'crypto';
 
 import { pox5 } from '@bitgo/utxo-descriptors';
-import { Descriptor, Psbt } from '@bitgo/wasm-utxo';
+import { Psbt, type Descriptor } from '@bitgo/wasm-utxo';
 import { getKey, getKeyTriple } from '@bitgo/wasm-utxo/testutils';
 
 import { finalizePox5EarlyExitPath, finalizePox5LocktimePath, Pox5FinalizerParams } from '../../../src/pox5';
@@ -30,15 +30,12 @@ function createPox5Psbt(
     Buffer
   ];
   const params: Pox5FinalizerParams = {
-    descriptor: Descriptor.fromString(
-      pox5.createPox5LockupDescriptor({
-        unlockHeight: UNLOCK_HEIGHT,
-        stakerCommitment: sha256(principalPreimage),
-        earlyExitKey: Buffer.from(earlyExit.publicKey),
-        stakerKeys,
-      }),
-      'definite'
-    ),
+    descriptor: pox5.createPox5LockupDescriptor({
+      unlockHeight: UNLOCK_HEIGHT,
+      stakerCommitment: sha256(principalPreimage),
+      earlyExitKey: Buffer.from(earlyExit.publicKey),
+      stakerKeys,
+    }),
     stakerKeys,
   };
   const descriptor = params.descriptor as Descriptor;
