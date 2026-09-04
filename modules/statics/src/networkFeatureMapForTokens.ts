@@ -32,17 +32,25 @@ export const EVM_TOKEN_FEATURES: CoinFeature[] = [
   CoinFeature.SUPPORTS_ERC20,
 ];
 
+/** Same as EVM_TOKEN_FEATURES, minus EIP1559, for EVM-compatible families that don't support it (e.g. xdc). */
+export const EVM_TOKEN_FEATURES_NON_EIP1559: CoinFeature[] = EVM_TOKEN_FEATURES.filter(
+  (feature) => feature !== CoinFeature.EIP1559
+);
+
 /**
- * Populate networkFeatureMapForTokens with EVM_TOKEN_FEATURES for every family whose base coin
- * carries CoinFeature.SUPPORTS_ERC20 and isn't already explicitly listed below. Called once from
+ * Populate networkFeatureMapForTokens for every family whose base coin carries
+ * CoinFeature.SUPPORTS_ERC20 and isn't already explicitly listed below, using EVM_TOKEN_FEATURES
+ * (or its non-EIP1559 variant, mirroring the base coin's own EIP1559 support). Called once from
  * coins.ts (which has access to the full coin map) so this module doesn't need to import it
  * directly (that would create a circular import: coins.ts -> networkFeatureMapForTokens.ts ->
  * allCoinsAndTokens.ts -> coins/botTokens.ts -> networkFeatureMapForTokens.ts).
  */
-export function registerErc20Families(families: Iterable<string>): void {
-  for (const family of families) {
+export function registerErc20Families(families: Iterable<[family: string, supportsEip1559: boolean]>): void {
+  for (const [family, supportsEip1559] of families) {
     if (!(family in networkFeatureMapForTokens)) {
-      networkFeatureMapForTokens[family as CoinFamily] = EVM_TOKEN_FEATURES;
+      networkFeatureMapForTokens[family as CoinFamily] = supportsEip1559
+        ? EVM_TOKEN_FEATURES
+        : EVM_TOKEN_FEATURES_NON_EIP1559;
     }
   }
 }

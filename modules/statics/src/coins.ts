@@ -54,6 +54,8 @@ export const coins = CoinMap.fromCoins([
 // Build a map of ERC20-supporting chain family names to their mainnet coin names
 // Maps family -> coin name (e.g., 'ip' -> 'ip')
 const erc20ChainToNameMap: Record<string, string> = {};
+// Tracks whether each ERC20-supporting family's base coin also supports EIP1559 (e.g. xdc does not).
+const erc20FamilySupportsEip1559 = new Map<string, boolean>();
 
 allCoinsAndTokens.forEach((coin) => {
   if (
@@ -62,6 +64,7 @@ allCoinsAndTokens.forEach((coin) => {
     !coin.isToken
   ) {
     erc20ChainToNameMap[coin.family] = coin.name;
+    erc20FamilySupportsEip1559.set(coin.family, coin.features.includes(CoinFeature.EIP1559));
   }
 });
 
@@ -79,7 +82,7 @@ allCoinsAndTokens.forEach((coin) => {
 // Backfill networkFeatureMapForTokens with EVM_TOKEN_FEATURES for any family whose base coin
 // supports ERC20 (see erc20ChainToNameMap above, built from the same statics data), so AMS token
 // onboarding doesn't require hand-maintaining that map for every new EVM family.
-registerErc20Families(Object.keys(erc20ChainToNameMap));
+registerErc20Families(erc20FamilySupportsEip1559);
 
 export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefined {
   if (!token.isToken) {
