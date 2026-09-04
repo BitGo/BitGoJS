@@ -53,7 +53,16 @@ export type InstructionParams =
   | Approve
   | CustomInstruction
   | VersionedCustomInstruction
-  | PermissionlessThawIdempotent;
+  | PermissionlessThawIdempotent
+  | ConfigureConfidentialTransferAccount
+  | ApplyPendingBalance
+  | ConfidentialDeposit
+  | ConfidentialWithdraw
+  | ConfidentialTransfer
+  | VerifyPubkeyValidity
+  | VerifyEqualityProof
+  | VerifyValidityProof
+  | VerifyRangeProof;
 
 export interface Memo {
   type: InstructionBuilderTypes.Memo;
@@ -311,7 +320,16 @@ export type ValidInstructionTypes =
   | 'Burn'
   | 'Approve'
   | 'CustomInstruction'
-  | 'PermissionlessThawIdempotent';
+  | 'PermissionlessThawIdempotent'
+  | 'ConfigureConfidentialTransferAccount'
+  | 'ApplyPendingBalance'
+  | 'ConfidentialDeposit'
+  | 'ConfidentialWithdraw'
+  | 'ConfidentialTransfer'
+  | 'VerifyPubkeyValidity'
+  | 'VerifyEqualityProof'
+  | 'VerifyValidityProof'
+  | 'VerifyRangeProof';
 
 export type StakingAuthorizeParams = {
   stakingAddress: string;
@@ -367,6 +385,222 @@ export interface TransactionExplanation extends BaseTransactionExplanation {
   inputs?: { address: string; value: string; coin?: string }[];
   feePayer?: string;
   ataOwnerMap?: Record<string, string>;
+}
+
+// ─── Confidential Transfer interfaces (Token-2022 CT extension) ────────────
+
+/**
+ * Configures a token account for confidential transfers.
+ *
+ * Layout: [27][2] + decryptable_zero_balance(36) + maximum_pending_balance_credit_counter(u64) + proof_instruction_offset(i8) = 47 bytes
+ *
+ * Accounts: [token(writable), mint, instructionsSysvar|contextState, authority(signer)]
+ */
+export interface ConfigureConfidentialTransferAccount {
+  type: InstructionBuilderTypes.ConfigureConfidentialTransferAccount;
+  params: {
+    tokenAddress: string;
+    mintAddress: string;
+    authorityAddress: string;
+    /** Instructions sysvar (inline proof) or context state account (pre-verified proof). Defaults to instructions sysvar. */
+    instructionsSysvarOrContextStateAddress?: string;
+    /** AES-encrypted zero balance (36 bytes hex). */
+    decryptableZeroBalance: string;
+    /** Maximum deposits + transfers before ApplyPendingBalance is required. */
+    maximumPendingBalanceCreditCounter: string;
+    /** Relative offset to the VerifyPubkeyValidity proof instruction (i8, signed). 0 = use context state account. */
+    proofInstructionOffset: number;
+  };
+}
+
+/**
+ * Applies pending balance to available balance.
+ *
+ * Layout: [27][8] + expected_pending_balance_credit_counter(u64) + new_decryptable_available_balance(36) = 46 bytes
+ *
+ * Accounts: [token(writable), authority(signer)]
+ */
+export interface ApplyPendingBalance {
+  type: InstructionBuilderTypes.ApplyPendingBalance;
+  params: {
+    tokenAddress: string;
+    authorityAddress: string;
+    /** Expected number of pending balance credits since last ApplyPendingBalance. */
+    expectedPendingBalanceCreditCounter: string;
+    /** AES-encrypted new available balance (36 bytes hex). */
+    newDecryptableAvailableBalance: string;
+  };
+}
+
+/**
+ * Deposits public SPL tokens into confidential pending balance.
+ *
+ * Layout: [27][5] + amount(u64) + decimals(u8) = 11 bytes
+ *
+ * Accounts: [token(writable), mint, authority(signer)]
+ */
+export interface ConfidentialDeposit {
+  type: InstructionBuilderTypes.ConfidentialDeposit;
+  params: {
+    tokenAddress: string;
+    mintAddress: string;
+    authorityAddress: string;
+    /** Amount to deposit in base units. */
+    amount: string;
+    /** Number of decimals for the token. */
+    decimals: number;
+  };
+}
+
+/**
+ * Withdraws tokens from confidential available balance to public balance.
+ *
+ * Layout: [27][6] + amount(u64) + decimals(u8) + new_decryptable_available_balance(36) + equality_proof_offset(i8) + range_proof_offset(i8) = 49 bytes
+ *
+ * Accounts: [token(writable), mint, instructionsSysvar?, equalityContextState?, rangeContextState?, authority(signer)]
+ */
+export interface ConfidentialWithdraw {
+  type: InstructionBuilderTypes.ConfidentialWithdraw;
+  params: {
+    tokenAddress: string;
+    mintAddress: string;
+    authorityAddress: string;
+    /** Instructions sysvar address (if proofs are inline). Omit if using context state accounts. */
+    instructionsSysvarAddress?: string;
+    /** Equality proof context state account (if pre-verified). Omit if using inline proof. */
+    equalityProofContextStateAddress?: string;
+    /** Range proof context state account (if pre-verified). Omit if using inline proof. */
+    rangeProofContextStateAddress?: string;
+    /** Amount to withdraw in base units. */
+    amount: string;
+    /** Number of decimals for the token. */
+    decimals: number;
+    /** AES-encrypted new available balance after withdrawal (36 bytes hex). */
+    newDecryptableAvailableBalance: string;
+    /** Relative offset to VerifyCiphertextCommitmentEquality proof (i8). 0 = use context state. */
+    equalityProofInstructionOffset: number;
+    /** Relative offset to VerifyBatchedRangeProofU64 proof (i8). 0 = use context state. */
+    rangeProofInstructionOffset: number;
+  };
+}
+
+/**
+ * Transfers tokens confidentially between two accounts.
+ *
+ * Layout: [27][7] + new_source_decryptable(36) + auditor_ct_lo(64) + auditor_ct_hi(64) + eq_offset(i8) + validity_offset(i8) + range_offset(i8) = 169 bytes
+ *
+ * Accounts: [source(writable), mint, dest(writable), instructionsSysvar?, eqCtx?, validityCtx?, rangeCtx?, authority(signer)]
+ */
+export interface ConfidentialTransfer {
+  type: InstructionBuilderTypes.ConfidentialTransfer;
+  params: {
+    sourceTokenAddress: string;
+    mintAddress: string;
+    destinationTokenAddress: string;
+    authorityAddress: string;
+    /** Instructions sysvar address (if proofs are inline). Omit if using context state accounts. */
+    instructionsSysvarAddress?: string;
+    /** Equality proof context state account (if pre-verified). Omit if using inline proof. */
+    equalityProofContextStateAddress?: string;
+    /** Ciphertext validity proof context state account (if pre-verified). Omit if using inline proof. */
+    ciphertextValidityProofContextStateAddress?: string;
+    /** Range proof context state account (if pre-verified). Omit if using inline proof. */
+    rangeProofContextStateAddress?: string;
+    /** AES-encrypted new source decryptable balance (36 bytes hex). */
+    newSourceDecryptableAvailableBalance: string;
+    /** Auditor ElGamal ciphertext for transfer amount low 16 bits (64 bytes hex). */
+    transferAmountAuditorCiphertextLo: string;
+    /** Auditor ElGamal ciphertext for transfer amount high bits (64 bytes hex). */
+    transferAmountAuditorCiphertextHi: string;
+    /** Relative offset to VerifyCiphertextCommitmentEquality proof (i8). 0 = use context state. */
+    equalityProofInstructionOffset: number;
+    /** Relative offset to VerifyBatchedGroupedCiphertext3HandlesValidity proof (i8). 0 = use context state. */
+    ciphertextValidityProofInstructionOffset: number;
+    /** Relative offset to VerifyBatchedRangeProofU128 proof (i8). 0 = use context state. */
+    rangeProofInstructionOffset: number;
+  };
+}
+
+// ─── zk-elgamal-proof verification interfaces ──────────────────────────────
+
+/**
+ * Verifies the validity of an ElGamal pubkey (used with ConfigureAccount).
+ *
+ * Discriminator: [4] + proof_data
+ * Program: zk-elgamal-proof
+ * Accounts: [] (inline proof) or [contextState(writable), authority] (context state)
+ */
+export interface VerifyPubkeyValidity {
+  type: InstructionBuilderTypes.VerifyPubkeyValidity;
+  params: {
+    /** Proof data as hex string (inline proof). If omitted, uses context state account + offset. */
+    proofData?: string;
+    /** Context state account address (if pre-verified proof). */
+    contextStateAccountAddress?: string;
+    /** Context state authority address (if pre-verified proof). */
+    contextStateAuthorityAddress?: string;
+  };
+}
+
+/**
+ * Verifies ciphertext-commitment equality proof (used with Transfer and Withdraw).
+ *
+ * Discriminator: [3] + proof_data or [3] + offset(u32)
+ * Program: zk-elgamal-proof
+ */
+export interface VerifyEqualityProof {
+  type: InstructionBuilderTypes.VerifyEqualityProof;
+  params: {
+    /** Proof data as hex string (inline proof). If omitted, uses context state account + offset. */
+    proofData?: string;
+    /** Context state account address (if pre-verified proof). */
+    contextStateAccountAddress?: string;
+    /** Context state authority address (if pre-verified proof). */
+    contextStateAuthorityAddress?: string;
+    /** Offset into context state account (if using context state). */
+    offset?: number;
+  };
+}
+
+/**
+ * Verifies batched grouped ciphertext 3-handles validity proof (used with Transfer).
+ *
+ * Discriminator: [12] + proof_data or [12] + offset(u32)
+ * Program: zk-elgamal-proof
+ */
+export interface VerifyValidityProof {
+  type: InstructionBuilderTypes.VerifyValidityProof;
+  params: {
+    /** Proof data as hex string (inline proof). If omitted, uses context state account + offset. */
+    proofData?: string;
+    /** Context state account address (if pre-verified proof). */
+    contextStateAccountAddress?: string;
+    /** Context state authority address (if pre-verified proof). */
+    contextStateAuthorityAddress?: string;
+    /** Offset into context state account (if using context state). */
+    offset?: number;
+  };
+}
+
+/**
+ * Verifies batched range proof U128 (used with Transfer).
+ *
+ * Discriminator: [7] + proof_data or [7] + offset(i32)
+ * Program: zk-elgamal-proof
+ * Accounts: [] (inline proof) or [contextState(writable), authority] (context state)
+ */
+export interface VerifyRangeProof {
+  type: InstructionBuilderTypes.VerifyRangeProof;
+  params: {
+    /** Proof data as hex string (inline proof). If omitted, uses context state account + offset. */
+    proofData?: string;
+    /** Context state account address (if pre-verified proof). */
+    contextStateAccountAddress?: string;
+    /** Context state authority address (if pre-verified proof). */
+    contextStateAuthorityAddress?: string;
+    /** Offset into context state account (if using context state). */
+    offset?: number;
+  };
 }
 
 export class TokenAssociateRecipient {

@@ -11,6 +11,7 @@ import {
   TOKEN_2022_PROGRAM_ID,
   createApproveInstruction,
 } from '@solana/spl-token';
+import { struct, u8, s8, blob } from '@solana/buffer-layout';
 import {
   AccountMeta,
   Authorized,
@@ -26,15 +27,23 @@ import {
 import assert from 'assert';
 import BigNumber from 'bignumber.js';
 import {
+  INSTRUCTIONS_SYSVAR_ADDRESS,
   InstructionBuilderTypes,
   MEMO_PROGRAM_PK,
   THAW_PERMISSIONLESS_IDEMPOTENT_DISCRIMINATOR,
   TOKEN_ACL_PROGRAM_ID,
+  ZK_ELGAMAL_PROOF_PROGRAM_ID,
+  CT_EXT_DISCRIMINATOR,
 } from './constants';
 import {
+  ApplyPendingBalance,
   AtaClose,
   AtaInit,
   AtaRecoverNested,
+  ConfidentialDeposit,
+  ConfidentialTransfer,
+  ConfidentialWithdraw,
+  ConfigureConfidentialTransferAccount,
   ExtraAccountMeta,
   InstructionParams,
   Memo,
@@ -49,6 +58,10 @@ import {
   StakingWithdraw,
   TokenTransfer,
   Transfer,
+  VerifyEqualityProof,
+  VerifyPubkeyValidity,
+  VerifyRangeProof,
+  VerifyValidityProof,
   WalletInit,
   SetComputeUnitLimit,
   SetPriorityFee,
@@ -64,7 +77,10 @@ import { depositSolInstructions, withdrawStakeInstructions } from './jitoStakePo
  * @param {InstructionParams} instructionToBuild - the data containing the instruction params
  * @returns {TransactionInstruction[]} An array containing supported Solana instructions
  */
-export function solInstructionFactory(instructionToBuild: InstructionParams): TransactionInstruction[] {
+export function solInstructionFactory(
+  instructionToBuild: InstructionParams,
+  zkProofProgramId?: string
+): TransactionInstruction[] {
   switch (instructionToBuild.type) {
     case InstructionBuilderTypes.NonceAdvance:
       return advanceNonceInstruction(instructionToBuild);
@@ -106,6 +122,24 @@ export function solInstructionFactory(instructionToBuild: InstructionParams): Tr
       return customInstruction(instructionToBuild);
     case InstructionBuilderTypes.PermissionlessThawIdempotent:
       return permissionlessThawIdempotentInstruction(instructionToBuild);
+    case InstructionBuilderTypes.ConfigureConfidentialTransferAccount:
+      return configureConfidentialTransferAccountInstruction(instructionToBuild);
+    case InstructionBuilderTypes.ApplyPendingBalance:
+      return applyPendingBalanceInstruction(instructionToBuild);
+    case InstructionBuilderTypes.ConfidentialDeposit:
+      return confidentialDepositInstruction(instructionToBuild);
+    case InstructionBuilderTypes.ConfidentialWithdraw:
+      return confidentialWithdrawInstruction(instructionToBuild);
+    case InstructionBuilderTypes.ConfidentialTransfer:
+      return confidentialTransferInstruction(instructionToBuild);
+    case InstructionBuilderTypes.VerifyPubkeyValidity:
+      return verifyPubkeyValidityInstruction(instructionToBuild, zkProofProgramId);
+    case InstructionBuilderTypes.VerifyEqualityProof:
+      return verifyEqualityProofInstruction(instructionToBuild, zkProofProgramId);
+    case InstructionBuilderTypes.VerifyValidityProof:
+      return verifyValidityProofInstruction(instructionToBuild, zkProofProgramId);
+    case InstructionBuilderTypes.VerifyRangeProof:
+      return verifyRangeProofInstruction(instructionToBuild, zkProofProgramId);
     default:
       throw new Error(`Invalid instruction type or not supported`);
   }
@@ -859,4 +893,613 @@ function addTransferHookAccounts(instruction: TransactionInstruction, extraAccou
   for (const meta of extraMetas) {
     upsertAccountMeta(instruction.keys, meta);
   }
+}
+
+// ─── Confidential Transfer instruction builders ────────────────────────────
+//
+// All layouts verified against canonical Rust source:
+// solana-program/token-2022 `interface/src/extension/confidential_transfer/instruction.rs`
+//
+// Instruction builders are v0/v1-agnostic: they produce instruction data and
+// account metas only. The caller (Wallet Platform) assembles them into v1
+// transactions in the correct order.
+
+// Token-2022 CT sub-instruction discriminators (byte 1 after CT_EXT_DISCRIMINATOR)
+const CT_CONFIGURE_ACCOUNT_DISCRIMINATOR = 2;
+const CT_DEPOSIT_DISCRIMINATOR = 5;
+const CT_WITHDRAW_DISCRIMINATOR = 6;
+const CT_TRANSFER_DISCRIMINATOR = 7;
+const CT_APPLY_PENDING_BALANCE_DISCRIMINATOR = 8;
+
+// zk-elgamal-proof instruction discriminators
+const PROOF_VERIFY_PUBKEY_VALIDITY = 4;
+const PROOF_VERIFY_EQUALITY = 3;
+const PROOF_VERIFY_VALIDITY_3HANDLES = 12;
+const PROOF_VERIFY_RANGE_U128 = 7;
+
+/**
+ * Validates that a string can be safely converted to BigInt.
+ * Accepts non-negative integer strings (e.g. "1000000", "0").
+ * Also rejects values that would overflow u64 (2^64 - 1).
+ */
+function assertValidAmountString(value: string, fieldName: string): void {
+  assert(value, `Missing ${fieldName} param`);
+  if (!/^\d+$/.test(value)) {
+    throw new Error(`Invalid ${fieldName}: expected non-negative integer string, got "${value}"`);
+  }
+  if (BigInt(value) > 0xffffffffffffffffn) {
+    throw new Error(`Invalid ${fieldName}: value exceeds u64 max (18446744073709551615), got "${value}"`);
+  }
+}
+
+/**
+ * Validates that a number fits in a u8 (0-255).
+ */
+function assertValidU8(value: number, fieldName: string): void {
+  if (!Number.isInteger(value) || value < 0 || value > 255) {
+    throw new Error(`Invalid ${fieldName}: expected u8 (0-255), got ${value}`);
+  }
+}
+
+/**
+ * Validates that a number fits in a signed i8 (-128 to 127).
+ */
+function assertValidI8(value: number, fieldName: string): void {
+  if (!Number.isInteger(value) || value < -128 || value > 127) {
+    throw new Error(`Invalid ${fieldName}: expected i8 (-128 to 127), got ${value}`);
+  }
+}
+
+// Buffer layouts for CT instructions with multi-byte fields
+const configureAccountDataLayout = struct<{
+  instruction: number;
+  confidentialTransferInstruction: number;
+  decryptableZeroBalance: Uint8Array;
+  maximumPendingBalanceCreditCounter: Uint8Array;
+  proofInstructionOffset: number;
+}>([
+  u8('instruction'), // 27
+  u8('confidentialTransferInstruction'), // 2
+  blob(36, 'decryptableZeroBalance'),
+  blob(8, 'maximumPendingBalanceCreditCounter'),
+  s8('proofInstructionOffset'), // i8 — signed: negative = proof is before this instruction
+]); // span = 47
+
+const applyPendingBalanceDataLayout = struct<{
+  instruction: number;
+  confidentialTransferInstruction: number;
+  expectedPendingBalanceCreditCounter: Uint8Array;
+  newDecryptableAvailableBalance: Uint8Array;
+}>([
+  u8('instruction'), // 27
+  u8('confidentialTransferInstruction'), // 8
+  blob(8, 'expectedPendingBalanceCreditCounter'),
+  blob(36, 'newDecryptableAvailableBalance'),
+]); // span = 46
+
+const withdrawDataLayout = struct<{
+  instruction: number;
+  confidentialTransferInstruction: number;
+  amount: Uint8Array;
+  decimals: number;
+  newDecryptableAvailableBalance: Uint8Array;
+  equalityProofInstructionOffset: number;
+  rangeProofInstructionOffset: number;
+}>([
+  u8('instruction'), // 27
+  u8('confidentialTransferInstruction'), // 6
+  blob(8, 'amount'),
+  u8('decimals'),
+  blob(36, 'newDecryptableAvailableBalance'),
+  s8('equalityProofInstructionOffset'), // i8
+  s8('rangeProofInstructionOffset'), // i8
+]); // span = 49
+
+const transferDataLayout = struct<{
+  instruction: number;
+  confidentialTransferInstruction: number;
+  newSourceDecryptableAvailableBalance: Uint8Array;
+  transferAmountAuditorCiphertextLo: Uint8Array;
+  transferAmountAuditorCiphertextHi: Uint8Array;
+  equalityProofInstructionOffset: number;
+  ciphertextValidityProofInstructionOffset: number;
+  rangeProofInstructionOffset: number;
+}>([
+  u8('instruction'), // 27
+  u8('confidentialTransferInstruction'), // 7
+  blob(36, 'newSourceDecryptableAvailableBalance'),
+  blob(64, 'transferAmountAuditorCiphertextLo'),
+  blob(64, 'transferAmountAuditorCiphertextHi'),
+  s8('equalityProofInstructionOffset'), // i8
+  s8('ciphertextValidityProofInstructionOffset'), // i8
+  s8('rangeProofInstructionOffset'), // i8
+]); // span = 169
+
+/**
+ * Build a ConfigureAccount instruction for Token-2022 confidential transfers.
+ *
+ * Registers an ElGamal pubkey + AES zero ciphertext on a token account so it
+ * can send and receive confidential transfers. Must be accompanied by a
+ * VerifyPubkeyValidity proof instruction (inline or context state).
+ */
+function configureConfidentialTransferAccountInstruction(
+  data: ConfigureConfidentialTransferAccount
+): TransactionInstruction[] {
+  const {
+    params: {
+      tokenAddress,
+      mintAddress,
+      authorityAddress,
+      instructionsSysvarOrContextStateAddress,
+      decryptableZeroBalance,
+      maximumPendingBalanceCreditCounter,
+      proofInstructionOffset,
+    },
+  } = data;
+  assert(tokenAddress, 'Missing tokenAddress param');
+  assert(mintAddress, 'Missing mintAddress param');
+  assert(authorityAddress, 'Missing authorityAddress param');
+  assert(decryptableZeroBalance, 'Missing decryptableZeroBalance param');
+  assertValidAmountString(maximumPendingBalanceCreditCounter, 'maximumPendingBalanceCreditCounter');
+  assertValidI8(proofInstructionOffset, 'proofInstructionOffset');
+
+  const keys: AccountMeta[] = [
+    { pubkey: new PublicKey(tokenAddress), isSigner: false, isWritable: true },
+    { pubkey: new PublicKey(mintAddress), isSigner: false, isWritable: false },
+    {
+      pubkey: new PublicKey(instructionsSysvarOrContextStateAddress || INSTRUCTIONS_SYSVAR_ADDRESS),
+      isSigner: false,
+      isWritable: false,
+    },
+    { pubkey: new PublicKey(authorityAddress), isSigner: true, isWritable: false },
+  ];
+
+  const decryptableBytes = Buffer.from(decryptableZeroBalance, 'hex');
+  assert(decryptableBytes.length === 36, 'decryptableZeroBalance must be 36 bytes');
+
+  const dataBuffer = Buffer.alloc(configureAccountDataLayout.span);
+  const counterBuffer = Buffer.alloc(8);
+  counterBuffer.writeBigUInt64LE(BigInt(maximumPendingBalanceCreditCounter));
+
+  configureAccountDataLayout.encode(
+    {
+      instruction: CT_EXT_DISCRIMINATOR,
+      confidentialTransferInstruction: CT_CONFIGURE_ACCOUNT_DISCRIMINATOR,
+      decryptableZeroBalance: decryptableBytes,
+      maximumPendingBalanceCreditCounter: counterBuffer,
+      proofInstructionOffset,
+    },
+    dataBuffer
+  );
+
+  return [new TransactionInstruction({ keys, programId: TOKEN_2022_PROGRAM_ID, data: dataBuffer })];
+}
+
+/**
+ * Build an ApplyPendingBalance instruction.
+ *
+ * Credits pending balance into available balance. Idempotent — no-op if 0
+ * pending. In v1 transactions, always instruction #1.
+ */
+function applyPendingBalanceInstruction(data: ApplyPendingBalance): TransactionInstruction[] {
+  const {
+    params: { tokenAddress, authorityAddress, expectedPendingBalanceCreditCounter, newDecryptableAvailableBalance },
+  } = data;
+  assert(tokenAddress, 'Missing tokenAddress param');
+  assert(authorityAddress, 'Missing authorityAddress param');
+  assertValidAmountString(expectedPendingBalanceCreditCounter, 'expectedPendingBalanceCreditCounter');
+  assert(newDecryptableAvailableBalance, 'Missing newDecryptableAvailableBalance param');
+
+  const keys: AccountMeta[] = [
+    { pubkey: new PublicKey(tokenAddress), isSigner: false, isWritable: true },
+    { pubkey: new PublicKey(authorityAddress), isSigner: true, isWritable: false },
+  ];
+
+  const decryptableBytes = Buffer.from(newDecryptableAvailableBalance, 'hex');
+  assert(decryptableBytes.length === 36, 'newDecryptableAvailableBalance must be 36 bytes');
+
+  const dataBuffer = Buffer.alloc(applyPendingBalanceDataLayout.span);
+  const counterBuffer = Buffer.alloc(8);
+  counterBuffer.writeBigUInt64LE(BigInt(expectedPendingBalanceCreditCounter));
+
+  applyPendingBalanceDataLayout.encode(
+    {
+      instruction: CT_EXT_DISCRIMINATOR,
+      confidentialTransferInstruction: CT_APPLY_PENDING_BALANCE_DISCRIMINATOR,
+      expectedPendingBalanceCreditCounter: counterBuffer,
+      newDecryptableAvailableBalance: decryptableBytes,
+    },
+    dataBuffer
+  );
+
+  return [new TransactionInstruction({ keys, programId: TOKEN_2022_PROGRAM_ID, data: dataBuffer })];
+}
+
+/**
+ * Build a Deposit instruction (public → confidential conversion).
+ *
+ * Moves public SPL token balance into confidential pending balance.
+ * No proof required — the amount is public.
+ */
+function confidentialDepositInstruction(data: ConfidentialDeposit): TransactionInstruction[] {
+  const {
+    params: { tokenAddress, mintAddress, authorityAddress, amount, decimals },
+  } = data;
+  assert(tokenAddress, 'Missing tokenAddress param');
+  assert(mintAddress, 'Missing mintAddress param');
+  assert(authorityAddress, 'Missing authorityAddress param');
+  assertValidAmountString(amount, 'amount');
+  assertValidU8(decimals, 'decimals');
+
+  const keys: AccountMeta[] = [
+    { pubkey: new PublicKey(tokenAddress), isSigner: false, isWritable: true },
+    { pubkey: new PublicKey(mintAddress), isSigner: false, isWritable: false },
+    { pubkey: new PublicKey(authorityAddress), isSigner: true, isWritable: false },
+  ];
+
+  // Layout: [27][5] + amount(u64) + decimals(u8) = 11 bytes
+  const dataBuffer = Buffer.alloc(11);
+  dataBuffer.writeUInt8(CT_EXT_DISCRIMINATOR, 0);
+  dataBuffer.writeUInt8(CT_DEPOSIT_DISCRIMINATOR, 1);
+  dataBuffer.writeBigUInt64LE(BigInt(amount), 2);
+  dataBuffer.writeUInt8(decimals, 10);
+
+  return [new TransactionInstruction({ keys, programId: TOKEN_2022_PROGRAM_ID, data: dataBuffer })];
+}
+
+/**
+ * Build a Withdraw instruction (confidential → public conversion).
+ *
+ * Requires equality + range proof verification (inline or context state).
+ */
+function confidentialWithdrawInstruction(data: ConfidentialWithdraw): TransactionInstruction[] {
+  const {
+    params: {
+      tokenAddress,
+      mintAddress,
+      authorityAddress,
+      instructionsSysvarAddress,
+      equalityProofContextStateAddress,
+      rangeProofContextStateAddress,
+      amount,
+      decimals,
+      newDecryptableAvailableBalance,
+      equalityProofInstructionOffset,
+      rangeProofInstructionOffset,
+    },
+  } = data;
+  assert(tokenAddress, 'Missing tokenAddress param');
+  assert(mintAddress, 'Missing mintAddress param');
+  assert(authorityAddress, 'Missing authorityAddress param');
+  assertValidAmountString(amount, 'amount');
+  assertValidU8(decimals, 'decimals');
+  assertValidI8(equalityProofInstructionOffset, 'equalityProofInstructionOffset');
+  assertValidI8(rangeProofInstructionOffset, 'rangeProofInstructionOffset');
+  assert(newDecryptableAvailableBalance, 'Missing newDecryptableAvailableBalance param');
+
+  // Assert context state addresses are provided when offset == 0 (context state mode)
+  if (equalityProofInstructionOffset === 0) {
+    assert(
+      equalityProofContextStateAddress,
+      'equalityProofContextStateAddress is required when equalityProofInstructionOffset is 0 (context state mode)'
+    );
+  }
+  if (rangeProofInstructionOffset === 0) {
+    assert(
+      rangeProofContextStateAddress,
+      'rangeProofContextStateAddress is required when rangeProofInstructionOffset is 0 (context state mode)'
+    );
+  }
+
+  const keys: AccountMeta[] = [
+    { pubkey: new PublicKey(tokenAddress), isSigner: false, isWritable: true },
+    { pubkey: new PublicKey(mintAddress), isSigner: false, isWritable: false },
+  ];
+
+  // Add instructions sysvar if any proof is inline (offset != 0)
+  const hasInlineProof = equalityProofInstructionOffset !== 0 || rangeProofInstructionOffset !== 0;
+  if (hasInlineProof || instructionsSysvarAddress) {
+    keys.push({
+      pubkey: new PublicKey(instructionsSysvarAddress || INSTRUCTIONS_SYSVAR_ADDRESS),
+      isSigner: false,
+      isWritable: false,
+    });
+  }
+
+  // Add context state accounts for pre-verified proofs (offset == 0)
+  if (equalityProofInstructionOffset === 0 && equalityProofContextStateAddress) {
+    keys.push({ pubkey: new PublicKey(equalityProofContextStateAddress), isSigner: false, isWritable: false });
+  }
+  if (rangeProofInstructionOffset === 0 && rangeProofContextStateAddress) {
+    keys.push({ pubkey: new PublicKey(rangeProofContextStateAddress), isSigner: false, isWritable: false });
+  }
+
+  keys.push({ pubkey: new PublicKey(authorityAddress), isSigner: true, isWritable: false });
+
+  const decryptableBytes = Buffer.from(newDecryptableAvailableBalance, 'hex');
+  assert(decryptableBytes.length === 36, 'newDecryptableAvailableBalance must be 36 bytes');
+
+  const dataBuffer = Buffer.alloc(withdrawDataLayout.span);
+  const amountBuffer = Buffer.alloc(8);
+  amountBuffer.writeBigUInt64LE(BigInt(amount));
+
+  withdrawDataLayout.encode(
+    {
+      instruction: CT_EXT_DISCRIMINATOR,
+      confidentialTransferInstruction: CT_WITHDRAW_DISCRIMINATOR,
+      amount: amountBuffer,
+      decimals,
+      newDecryptableAvailableBalance: decryptableBytes,
+      equalityProofInstructionOffset,
+      rangeProofInstructionOffset,
+    },
+    dataBuffer
+  );
+
+  return [new TransactionInstruction({ keys, programId: TOKEN_2022_PROGRAM_ID, data: dataBuffer })];
+}
+
+/**
+ * Build a confidential Transfer instruction.
+ *
+ * Requires equality + ciphertext validity + range proof verification (inline or context state).
+ */
+function confidentialTransferInstruction(data: ConfidentialTransfer): TransactionInstruction[] {
+  const {
+    params: {
+      sourceTokenAddress,
+      mintAddress,
+      destinationTokenAddress,
+      authorityAddress,
+      instructionsSysvarAddress,
+      equalityProofContextStateAddress,
+      ciphertextValidityProofContextStateAddress,
+      rangeProofContextStateAddress,
+      newSourceDecryptableAvailableBalance,
+      transferAmountAuditorCiphertextLo,
+      transferAmountAuditorCiphertextHi,
+      equalityProofInstructionOffset,
+      ciphertextValidityProofInstructionOffset,
+      rangeProofInstructionOffset,
+    },
+  } = data;
+  assert(sourceTokenAddress, 'Missing sourceTokenAddress param');
+  assert(mintAddress, 'Missing mintAddress param');
+  assert(destinationTokenAddress, 'Missing destinationTokenAddress param');
+  assert(authorityAddress, 'Missing authorityAddress param');
+  assert(newSourceDecryptableAvailableBalance, 'Missing newSourceDecryptableAvailableBalance param');
+  assert(transferAmountAuditorCiphertextLo, 'Missing transferAmountAuditorCiphertextLo param');
+  assert(transferAmountAuditorCiphertextHi, 'Missing transferAmountAuditorCiphertextHi param');
+  assertValidI8(equalityProofInstructionOffset, 'equalityProofInstructionOffset');
+  assertValidI8(ciphertextValidityProofInstructionOffset, 'ciphertextValidityProofInstructionOffset');
+  assertValidI8(rangeProofInstructionOffset, 'rangeProofInstructionOffset');
+
+  // Assert context state addresses are provided when offset == 0 (context state mode)
+  if (equalityProofInstructionOffset === 0) {
+    assert(
+      equalityProofContextStateAddress,
+      'equalityProofContextStateAddress is required when equalityProofInstructionOffset is 0 (context state mode)'
+    );
+  }
+  if (ciphertextValidityProofInstructionOffset === 0) {
+    assert(
+      ciphertextValidityProofContextStateAddress,
+      'ciphertextValidityProofContextStateAddress is required when ciphertextValidityProofInstructionOffset is 0 (context state mode)'
+    );
+  }
+  if (rangeProofInstructionOffset === 0) {
+    assert(
+      rangeProofContextStateAddress,
+      'rangeProofContextStateAddress is required when rangeProofInstructionOffset is 0 (context state mode)'
+    );
+  }
+
+  const keys: AccountMeta[] = [
+    { pubkey: new PublicKey(sourceTokenAddress), isSigner: false, isWritable: true },
+    { pubkey: new PublicKey(mintAddress), isSigner: false, isWritable: false },
+    { pubkey: new PublicKey(destinationTokenAddress), isSigner: false, isWritable: true },
+  ];
+
+  // Add instructions sysvar if any proof is inline (offset != 0)
+  const hasInlineProof =
+    equalityProofInstructionOffset !== 0 ||
+    ciphertextValidityProofInstructionOffset !== 0 ||
+    rangeProofInstructionOffset !== 0;
+  if (hasInlineProof || instructionsSysvarAddress) {
+    keys.push({
+      pubkey: new PublicKey(instructionsSysvarAddress || INSTRUCTIONS_SYSVAR_ADDRESS),
+      isSigner: false,
+      isWritable: false,
+    });
+  }
+
+  // Add context state accounts for pre-verified proofs (offset == 0)
+  if (equalityProofInstructionOffset === 0 && equalityProofContextStateAddress) {
+    keys.push({ pubkey: new PublicKey(equalityProofContextStateAddress), isSigner: false, isWritable: false });
+  }
+  if (ciphertextValidityProofInstructionOffset === 0 && ciphertextValidityProofContextStateAddress) {
+    keys.push({
+      pubkey: new PublicKey(ciphertextValidityProofContextStateAddress),
+      isSigner: false,
+      isWritable: false,
+    });
+  }
+  if (rangeProofInstructionOffset === 0 && rangeProofContextStateAddress) {
+    keys.push({ pubkey: new PublicKey(rangeProofContextStateAddress), isSigner: false, isWritable: false });
+  }
+
+  keys.push({ pubkey: new PublicKey(authorityAddress), isSigner: true, isWritable: false });
+
+  const decryptableBytes = Buffer.from(newSourceDecryptableAvailableBalance, 'hex');
+  assert(decryptableBytes.length === 36, 'newSourceDecryptableAvailableBalance must be 36 bytes');
+  const auditorLoBytes = Buffer.from(transferAmountAuditorCiphertextLo, 'hex');
+  assert(auditorLoBytes.length === 64, 'transferAmountAuditorCiphertextLo must be 64 bytes');
+  const auditorHiBytes = Buffer.from(transferAmountAuditorCiphertextHi, 'hex');
+  assert(auditorHiBytes.length === 64, 'transferAmountAuditorCiphertextHi must be 64 bytes');
+
+  const dataBuffer = Buffer.alloc(transferDataLayout.span);
+
+  transferDataLayout.encode(
+    {
+      instruction: CT_EXT_DISCRIMINATOR,
+      confidentialTransferInstruction: CT_TRANSFER_DISCRIMINATOR,
+      newSourceDecryptableAvailableBalance: decryptableBytes,
+      transferAmountAuditorCiphertextLo: auditorLoBytes,
+      transferAmountAuditorCiphertextHi: auditorHiBytes,
+      equalityProofInstructionOffset,
+      ciphertextValidityProofInstructionOffset,
+      rangeProofInstructionOffset,
+    },
+    dataBuffer
+  );
+
+  return [new TransactionInstruction({ keys, programId: TOKEN_2022_PROGRAM_ID, data: dataBuffer })];
+}
+
+// ─── zk-elgamal-proof verification instruction builders ────────────────────
+
+/**
+ * Build a VerifyPubkeyValidity proof instruction.
+ *
+ * Used with ConfigureAccount to prove knowledge of the ElGamal secret key.
+ * Discriminator: [4]
+ */
+function verifyPubkeyValidityInstruction(
+  data: VerifyPubkeyValidity,
+  zkProofProgramId?: string
+): TransactionInstruction[] {
+  const {
+    params: { proofData, contextStateAccountAddress, contextStateAuthorityAddress },
+  } = data;
+
+  const keys: AccountMeta[] = [];
+  if (contextStateAccountAddress && contextStateAuthorityAddress) {
+    keys.push({ pubkey: new PublicKey(contextStateAccountAddress), isSigner: false, isWritable: true });
+    keys.push({ pubkey: new PublicKey(contextStateAuthorityAddress), isSigner: false, isWritable: false });
+  }
+
+  // Use buildProofDataOrOffsetBuffer to support both inline proof and context state offset
+  const dataBuffer = buildProofDataOrOffsetBuffer(PROOF_VERIFY_PUBKEY_VALIDITY, proofData, undefined, true);
+  return [
+    new TransactionInstruction({
+      keys,
+      programId: new PublicKey(zkProofProgramId || ZK_ELGAMAL_PROOF_PROGRAM_ID),
+      data: dataBuffer,
+    }),
+  ];
+}
+
+/**
+ * Build a VerifyCiphertextCommitmentEquality proof instruction.
+ *
+ * Used with Transfer and Withdraw. Discriminator: [3]
+ */
+function verifyEqualityProofInstruction(
+  data: VerifyEqualityProof,
+  zkProofProgramId?: string
+): TransactionInstruction[] {
+  const {
+    params: { proofData, contextStateAccountAddress, contextStateAuthorityAddress, offset },
+  } = data;
+
+  const keys: AccountMeta[] = [];
+  if (contextStateAccountAddress && contextStateAuthorityAddress) {
+    keys.push({ pubkey: new PublicKey(contextStateAccountAddress), isSigner: false, isWritable: true });
+    keys.push({ pubkey: new PublicKey(contextStateAuthorityAddress), isSigner: false, isWritable: false });
+  }
+
+  const dataBuffer = buildProofDataOrOffsetBuffer(PROOF_VERIFY_EQUALITY, proofData, offset, true);
+  return [
+    new TransactionInstruction({
+      keys,
+      programId: new PublicKey(zkProofProgramId || ZK_ELGAMAL_PROOF_PROGRAM_ID),
+      data: dataBuffer,
+    }),
+  ];
+}
+
+/**
+ * Build a VerifyBatchedGroupedCiphertext3HandlesValidity proof instruction.
+ *
+ * Used with Transfer. Discriminator: [12]
+ */
+function verifyValidityProofInstruction(
+  data: VerifyValidityProof,
+  zkProofProgramId?: string
+): TransactionInstruction[] {
+  const {
+    params: { proofData, contextStateAccountAddress, contextStateAuthorityAddress, offset },
+  } = data;
+
+  const keys: AccountMeta[] = [];
+  if (contextStateAccountAddress && contextStateAuthorityAddress) {
+    keys.push({ pubkey: new PublicKey(contextStateAccountAddress), isSigner: false, isWritable: true });
+    keys.push({ pubkey: new PublicKey(contextStateAuthorityAddress), isSigner: false, isWritable: false });
+  }
+
+  const dataBuffer = buildProofDataOrOffsetBuffer(PROOF_VERIFY_VALIDITY_3HANDLES, proofData, offset, true);
+  return [
+    new TransactionInstruction({
+      keys,
+      programId: new PublicKey(zkProofProgramId || ZK_ELGAMAL_PROOF_PROGRAM_ID),
+      data: dataBuffer,
+    }),
+  ];
+}
+
+/**
+ * Build a VerifyBatchedRangeProofU128 proof instruction.
+ *
+ * Used with Transfer. Discriminator: [7]
+ * Note: range proofs do not use a context state account in the same way as
+ * equality/validity proofs — the proof is either inline or read from a
+ * record account at the given offset.
+ */
+function verifyRangeProofInstruction(data: VerifyRangeProof, zkProofProgramId?: string): TransactionInstruction[] {
+  const {
+    params: { proofData, contextStateAccountAddress, contextStateAuthorityAddress, offset },
+  } = data;
+
+  const keys: AccountMeta[] = [];
+  if (contextStateAccountAddress && contextStateAuthorityAddress) {
+    keys.push({ pubkey: new PublicKey(contextStateAccountAddress), isSigner: false, isWritable: true });
+    keys.push({ pubkey: new PublicKey(contextStateAuthorityAddress), isSigner: false, isWritable: false });
+  }
+
+  const dataBuffer = buildProofDataOrOffsetBuffer(PROOF_VERIFY_RANGE_U128, proofData, offset, false);
+  return [
+    new TransactionInstruction({
+      keys,
+      programId: new PublicKey(zkProofProgramId || ZK_ELGAMAL_PROOF_PROGRAM_ID),
+      data: dataBuffer,
+    }),
+  ];
+}
+
+/**
+ * Build proof instruction data from either inline proof bytes or a context
+ * state account offset.
+ *
+ * If proofData is provided: [discriminator: u8] + [proof_data: variable]
+ * If offset is provided: [discriminator: u8] + [offset: u32 LE]
+ *
+ * @param useUInt32 - true for equality/validity (writeUInt32LE), false for range (writeInt32LE)
+ */
+function buildProofDataOrOffsetBuffer(
+  discriminator: number,
+  proofData?: string,
+  offset?: number,
+  useUInt32 = true
+): Buffer {
+  if (proofData) {
+    const proofBytes = Buffer.from(proofData, 'hex');
+    return Buffer.concat([Buffer.from([discriminator]), proofBytes]);
+  }
+  const offsetBuffer = Buffer.alloc(4);
+  if (useUInt32) {
+    offsetBuffer.writeUInt32LE(offset ?? 0, 0);
+  } else {
+    offsetBuffer.writeInt32LE(offset ?? 0, 0);
+  }
+  return Buffer.concat([Buffer.from([discriminator]), offsetBuffer]);
 }

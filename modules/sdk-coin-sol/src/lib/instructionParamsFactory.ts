@@ -97,6 +97,8 @@ export function instructionParamsFactory(
       return parseStakingDelegateInstructions(instructions);
     case TransactionType.CustomTx:
       return parseCustomInstructions(instructions, instructionMetadata);
+    case TransactionType.ConfidentialTransfer:
+      return parseConfidentialTransferInstructions(instructions, instructionMetadata);
     default:
       throw new NotSupported('Invalid transaction, transaction type not supported: ' + type);
   }
@@ -1314,6 +1316,27 @@ function parseStakingAuthorizeRawInstructions(instructions: TransactionInstructi
 }
 
 /**
+ * Returns true if the instruction type is a confidential transfer instruction
+ * (Token-2022 CT extension or zk-elgamal-proof program).
+ */
+function isConfidentialTransferInstruction(type: InstructionBuilderTypes): boolean {
+  switch (type) {
+    case InstructionBuilderTypes.ConfigureConfidentialTransferAccount:
+    case InstructionBuilderTypes.ApplyPendingBalance:
+    case InstructionBuilderTypes.ConfidentialDeposit:
+    case InstructionBuilderTypes.ConfidentialWithdraw:
+    case InstructionBuilderTypes.ConfidentialTransfer:
+    case InstructionBuilderTypes.VerifyPubkeyValidity:
+    case InstructionBuilderTypes.VerifyEqualityProof:
+    case InstructionBuilderTypes.VerifyValidityProof:
+    case InstructionBuilderTypes.VerifyRangeProof:
+      return true;
+    default:
+      return false;
+  }
+}
+
+/**
  * Parses Solana instructions to custom instruction params
  *
  * @param {TransactionInstruction[]} instructions - containing custom solana instructions
@@ -1352,6 +1375,61 @@ function parseCustomInstructions(
       };
       instructionData.push(customInstruction);
     }
+  }
+
+  return instructionData;
+}
+
+/**
+ * Parses Solana instructions to confidential transfer instruction params.
+ *
+ * Iterates raw instructions in order, checking metadata at each position:
+ * - CT instruction metadata is preserved as-is (CT instructions cannot be
+ *   decoded by @solana/spl-token or @solana/web3.js).
+ * - CustomInstruction metadata is preserved as-is.
+ * - All other instructions fall back to CustomInstruction format with raw
+ *   programId/keys/data.
+ *
+ * This single-pass approach preserves original instruction order so that
+ * round-trip reconstruction is faithful.
+ *
+ * @param {TransactionInstruction[]} instructions - containing CT solana instructions
+ * @param {InstructionParams[]} instructionMetadata - the instruction metadata for the transaction
+ * @returns {InstructionParams[]} An array containing instruction params in original order
+ */
+function parseConfidentialTransferInstructions(
+  instructions: TransactionInstruction[],
+  instructionMetadata?: InstructionParams[]
+): InstructionParams[] {
+  const instructionData: InstructionParams[] = [];
+
+  for (let i = 0; i < instructions.length; i++) {
+    const instruction = instructions[i];
+
+    // Check if we have metadata for this instruction position
+    if (instructionMetadata && instructionMetadata[i]) {
+      const metaType = instructionMetadata[i].type;
+      // Preserve confidential transfer and custom instruction metadata as-is
+      if (isConfidentialTransferInstruction(metaType) || metaType === InstructionBuilderTypes.CustomInstruction) {
+        instructionData.push(instructionMetadata[i]);
+        continue;
+      }
+    }
+
+    // Convert the raw instruction to CustomInstruction format
+    const customInstruction: CustomInstruction = {
+      type: InstructionBuilderTypes.CustomInstruction,
+      params: {
+        programId: instruction.programId.toString(),
+        keys: instruction.keys.map((key) => ({
+          pubkey: key.pubkey.toString(),
+          isSigner: key.isSigner,
+          isWritable: key.isWritable,
+        })),
+        data: instruction.data.toString('base64'),
+      },
+    };
+    instructionData.push(customInstruction);
   }
 
   return instructionData;

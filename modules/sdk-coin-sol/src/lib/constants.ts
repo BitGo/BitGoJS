@@ -10,6 +10,41 @@ export const STAKE_ACCOUNT_RENT_EXEMPT_AMOUNT = 2282880;
 export const UNAVAILABLE_TEXT = 'UNAVAILABLE';
 
 /**
+ * Sysvar instructions account address — used by Token-2022 confidential transfer
+ * instructions to locate inline proof verification instructions in the same transaction.
+ */
+export const INSTRUCTIONS_SYSVAR_ADDRESS = 'Sysvar1nstructions1111111111111111111111111';
+
+/**
+ * Canonical on-chain program id of the zk-elgamal-proof program.
+ *
+ * This is the same across mainnet, devnet, and testnet — it is a native
+ * built-in program. Callers can override via ConfidentialTransferBuilder
+ * .zkProofProgramId() if targeting a custom deployment.
+ *
+ * Note: The deprecated zk-token-proof program id is
+ * `ZkTokenProof1111111111111111111111111111111`.
+ */
+export const ZK_ELGAMAL_PROOF_PROGRAM_ID = 'ZkE1Gama1Proof11111111111111111111111111111';
+
+/**
+ * Token-2022 confidential transfer extension discriminator (byte 0 of instruction data).
+ */
+export const CT_EXT_DISCRIMINATOR = 27;
+
+/**
+ * Valid CT sub-instruction discriminators (byte 1 after CT_EXT_DISCRIMINATOR).
+ * Used for transaction type detection (getTransactionType / deriveTransactionType).
+ */
+export const CT_SUB_DISCRIMINATORS = new Set<number>([
+  2, // ConfigureAccount
+  5, // Deposit
+  6, // Withdraw
+  7, // Transfer
+  8, // ApplyPendingBalance
+]);
+
+/**
  * Maximum over-the-wire size of a Solana transaction (in bytes)
  *
  * Source: https://github.com/anza-xyz/agave/blob/v2.1.13/sdk/packet/src/lib.rs#L27-L29
@@ -83,6 +118,16 @@ export enum ValidInstructionTypesEnum {
   Approve = 'Approve',
   CustomInstruction = 'CustomInstruction',
   PermissionlessThawIdempotent = 'PermissionlessThawIdempotent',
+  // Confidential Transfer instruction types (Token-2022 CT extension + zk-elgamal-proof)
+  ConfigureConfidentialTransferAccount = 'ConfigureConfidentialTransferAccount',
+  ApplyPendingBalance = 'ApplyPendingBalance',
+  ConfidentialDeposit = 'ConfidentialDeposit',
+  ConfidentialWithdraw = 'ConfidentialWithdraw',
+  ConfidentialTransfer = 'ConfidentialTransfer',
+  VerifyPubkeyValidity = 'VerifyPubkeyValidity',
+  VerifyEqualityProof = 'VerifyEqualityProof',
+  VerifyValidityProof = 'VerifyValidityProof',
+  VerifyRangeProof = 'VerifyRangeProof',
 }
 
 // Internal instructions types
@@ -109,6 +154,16 @@ export enum InstructionBuilderTypes {
   Approve = 'Approve',
   WithdrawStake = 'WithdrawStake',
   PermissionlessThawIdempotent = 'PermissionlessThawIdempotent',
+  // Confidential Transfer instruction types (Token-2022 CT extension + zk-elgamal-proof)
+  ConfigureConfidentialTransferAccount = 'ConfigureConfidentialTransferAccount',
+  ApplyPendingBalance = 'ApplyPendingBalance',
+  ConfidentialDeposit = 'ConfidentialDeposit',
+  ConfidentialWithdraw = 'ConfidentialWithdraw',
+  ConfidentialTransfer = 'ConfidentialTransfer',
+  VerifyPubkeyValidity = 'VerifyPubkeyValidity',
+  VerifyEqualityProof = 'VerifyEqualityProof',
+  VerifyValidityProof = 'VerifyValidityProof',
+  VerifyRangeProof = 'VerifyRangeProof',
 }
 
 export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [

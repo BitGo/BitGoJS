@@ -322,6 +322,9 @@ export class Transaction extends BaseTransaction {
         case TransactionType.CustomTx:
           this.setTransactionType(TransactionType.CustomTx);
           break;
+        case TransactionType.ConfidentialTransfer:
+          this.setTransactionType(TransactionType.ConfidentialTransfer);
+          break;
       }
       if (transactionType !== TransactionType.StakingAuthorizeRaw) {
         this.loadInputsAndOutputs();
