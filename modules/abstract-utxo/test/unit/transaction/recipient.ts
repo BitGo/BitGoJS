@@ -1,5 +1,6 @@
 import assert from 'assert';
 
+import { toOutputScript, fromExtendedAddressFormatToScript } from '../../../src/transaction/recipient';
 import { getUtxoCoin } from '../util/utxoCoins';
 
 describe('AbstractUtxoCoin.preprocessBuildParams', function () {
@@ -51,5 +52,78 @@ describe('AbstractUtxoCoin.checkRecipient', function () {
     assert.throws(() => {
       coin.checkRecipient({ address: 'scriptPubKey:6a0c68656c6c6f20776f726c64', amount: '500' });
     }, /Only zero amounts allowed for non-encodeable scriptPubkeys/);
+  });
+});
+
+describe('toOutputScript / fromExtendedAddressFormatToScript resolveScript override', function () {
+  const coin = getUtxoCoin('btc');
+  const address = '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa';
+  const defaultScript = fromExtendedAddressFormatToScript(address, coin.name);
+
+  it('fromExtendedAddressFormatToScript uses the default wasm-utxo resolver when none is supplied', function () {
+    assert.deepStrictEqual(fromExtendedAddressFormatToScript(address, coin.name), defaultScript);
+  });
+
+  it('fromExtendedAddressFormatToScript defers to a supplied resolveScript callback', function () {
+    const fakeScript = Buffer.from('deadbeef', 'hex');
+    let calledWith: [string, string] | undefined;
+    const script = fromExtendedAddressFormatToScript(address, coin.name, (a, c) => {
+      calledWith = [a, c];
+      return fakeScript;
+    });
+    assert.deepStrictEqual(script, fakeScript);
+    assert.deepStrictEqual(calledWith, [address, coin.name]);
+  });
+
+  it('fromExtendedAddressFormatToScript never invokes resolveScript for a scriptPubKey: recipient', function () {
+    let called = false;
+    const script = fromExtendedAddressFormatToScript('scriptPubKey:deadbeef', coin.name, () => {
+      called = true;
+      return Buffer.from('');
+    });
+    assert.strictEqual(called, false);
+    assert.deepStrictEqual(script, Buffer.from('deadbeef', 'hex'));
+  });
+
+  it('toOutputScript forwards resolveScript through for a string address', function () {
+    const fakeScript = Buffer.from('cafebabe', 'hex');
+    const script = toOutputScript(address, coin.name, () => fakeScript);
+    assert.deepStrictEqual(script, fakeScript);
+  });
+
+  it('toOutputScript forwards resolveScript through for an { address } object', function () {
+    const fakeScript = Buffer.from('cafebabe', 'hex');
+    const script = toOutputScript({ address }, coin.name, () => fakeScript);
+    assert.deepStrictEqual(script, fakeScript);
+  });
+
+  it('toOutputScript never invokes resolveScript for a { script } object', function () {
+    let called = false;
+    const script = toOutputScript({ script: 'deadbeef' }, coin.name, () => {
+      called = true;
+      return Buffer.from('');
+    });
+    assert.strictEqual(called, false);
+    assert.deepStrictEqual(script, Buffer.from('deadbeef', 'hex'));
+  });
+});
+
+describe('AbstractUtxoCoin.resolveOutputScript', function () {
+  it('defaults to the coin-agnostic wasm-utxo address decoder', function () {
+    const coin = getUtxoCoin('btc');
+    const address = '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa';
+    assert.deepStrictEqual(
+      Buffer.from(coin.resolveOutputScript(address)),
+      fromExtendedAddressFormatToScript(address, coin.name)
+    );
+  });
+
+  it('ignores an unrecognized unifiedRecipientPreference for a non-Zcash coin', function () {
+    const coin = getUtxoCoin('btc');
+    const address = '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa';
+    assert.deepStrictEqual(
+      Buffer.from(coin.resolveOutputScript(address, 'shielded')),
+      fromExtendedAddressFormatToScript(address, coin.name)
+    );
   });
 });

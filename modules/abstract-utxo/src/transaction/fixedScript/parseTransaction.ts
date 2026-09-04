@@ -84,8 +84,11 @@ function toExpectedOutputs(
     recipients?: ITransactionRecipient[];
     allowExternalChangeAddress?: boolean;
     changeAddress?: string;
+    unifiedRecipientPreference?: string;
   }
 ): ExpectedOutput[] {
+  const resolveScript = (address: string): Uint8Array =>
+    coin.resolveOutputScript(address, txParams.unifiedRecipientPreference);
   // verify that each recipient from txParams has their own output
   const expectedOutputs: ExpectedOutput[] = (txParams.recipients ?? []).flatMap((output) => {
     if (output.address === undefined) {
@@ -95,21 +98,21 @@ function toExpectedOutputs(
       }
       return [
         {
-          script: toOutputScript(output, coin.name),
+          script: toOutputScript(output, coin.name, resolveScript),
           value: output.amount === 'max' ? 'max' : BigInt(output.amount),
         },
       ];
     }
     return [
       {
-        script: fromExtendedAddressFormatToScript(output.address, coin.name),
+        script: fromExtendedAddressFormatToScript(output.address, coin.name, resolveScript),
         value: output.amount === 'max' ? 'max' : BigInt(output.amount),
       },
     ];
   });
   if (txParams.allowExternalChangeAddress && txParams.changeAddress) {
     expectedOutputs.push({
-      script: toOutputScript(txParams.changeAddress, coin.name),
+      script: toOutputScript(txParams.changeAddress, coin.name, resolveScript),
       // When an external change address is explicitly specified, count all outputs going towards that
       // address in the expected outputs (regardless of the output amount)
       value: 'max',
@@ -232,6 +235,7 @@ export async function parseTransaction<TNumber extends bigint | number>(
         txParams: {
           recipients: txParams.recipients ?? [],
           changeAddress: txParams.changeAddress,
+          unifiedRecipientPreference: txParams.unifiedRecipientPreference,
         },
         customChange,
         reqId,
@@ -247,7 +251,9 @@ export async function parseTransaction<TNumber extends bigint | number>(
 
   function toComparableOutputsWithExternal(outputs: Output[]): ComparableOutputWithExternal<bigint | 'max'>[] {
     return outputs.map((output) => ({
-      script: fromExtendedAddressFormatToScript(output.address, coin.name),
+      script: fromExtendedAddressFormatToScript(output.address, coin.name, (address) =>
+        coin.resolveOutputScript(address, txParams.unifiedRecipientPreference)
+      ),
       value: output.amount === 'max' ? 'max' : (BigInt(output.amount) as bigint | 'max'),
       external: output.external,
     }));
