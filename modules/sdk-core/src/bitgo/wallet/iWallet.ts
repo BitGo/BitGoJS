@@ -231,6 +231,12 @@ export interface PrebuildTransactionOptions {
    */
   txFormat?: 'legacy' | 'psbt' | 'psbt-lite';
   /**
+   * Zcash-only: how to resolve a Unified Address recipient. `'shielded'` resolves it to its
+   * Orchard/Ironwood receiver (a shielded output); any other value (or omission) resolves it to
+   * its transparent receiver.
+   */
+  unifiedRecipientPreference?: string;
+  /**
    * Custom Solana instructions to include in the transaction.
    * Each instruction contains a program ID, accounts array, and data buffer.
    */
