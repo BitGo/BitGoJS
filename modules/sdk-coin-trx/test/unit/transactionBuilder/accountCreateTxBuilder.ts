@@ -306,7 +306,8 @@ describe('Tron AccountCreate builder', function () {
       const txBuilder = (getBuilder('ttrx') as WrappedBuilder).getAccountCreateTxBuilder();
       assert.throws(
         () => {
-          txBuilder.setAccountAddress({ address: '4173a5993cd182ae152adad8203163f780c65a8aa5' });
+          // neither base58 nor hex (contains non-hex characters)
+          txBuilder.setAccountAddress({ address: 'zz73a5993cd182ae152adad8203163f780c65a8aa5' });
         },
         (e: any) => e.message.includes('is not a valid base58 address')
       );

@@ -64,6 +64,42 @@ describe('TRX Token Transfer Builder', () => {
         const rawData = txJson.raw_data;
         assert.deepStrictEqual(rawData.contract, TOKEN_TX_CONTRACT_2);
       });
+
+      // Hex and base58 are alternative encodings of the same TRON address, so every accepted
+      // form must produce identical transaction data — this is the COINS-1575 regression.
+      it('accepts a 0x-prefixed hex recipient and encodes the same data as the base58 form', async () => {
+        const buildData = async (recipient: string) => {
+          const txBuilder = initTxBuilder();
+          txBuilder.tokenTransferData(recipient, '1000000000').sign({ key: PARTICIPANTS.custodian.pk });
+          const tx = await txBuilder.build();
+          return tx.toJson().raw_data.contract[0].parameter.value.data;
+        };
+        const fromBase58 = await buildData(TOKEN_TRANSFER_RECIPIENT);
+        // 0x-form of TOKEN_TRANSFER_RECIPIENT (TGai5uHgBcoLERrzDXMepqZB8Et7D8nV8K)
+        const fromHex = await buildData('0x4887974f42a789ef6d4dfc7ba28b1583219434b3');
+        assert.equal(fromHex, fromBase58);
+      });
+
+      it('accepts a 41-prefixed hex recipient and encodes the same data as the base58 form', async () => {
+        const buildData = async (recipient: string) => {
+          const txBuilder = initTxBuilder();
+          txBuilder.tokenTransferData(recipient, '1000000000').sign({ key: PARTICIPANTS.custodian.pk });
+          const tx = await txBuilder.build();
+          return tx.toJson().raw_data.contract[0].parameter.value.data;
+        };
+        const fromBase58 = await buildData(TOKEN_TRANSFER_RECIPIENT);
+        // 41-prefixed hex of TOKEN_TRANSFER_RECIPIENT
+        const fromHex = await buildData('414887974f42a789ef6d4dfc7ba28b1583219434b3');
+        assert.equal(fromHex, fromBase58);
+      });
+
+      it('still rejects addresses in neither base58 nor hex form with the same error', () => {
+        const txBuilder = initTxBuilder();
+        assert.throws(
+          () => txBuilder.tokenTransferData('not-an-address', '1000000000'),
+          (e: unknown) => e instanceof Error && e.message === 'not-an-address is not a valid base58 address.'
+        );
+      });
     });
   });
 });

@@ -2,7 +2,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseKey } from '@bitgo/sdk-core';
 import { ContractCallBuilder } from './contractCallBuilder';
 import { Transaction } from './transaction';
-import { getHexAddressFromBase58Address, encodeDataParams } from './utils';
+import { getHexAddressFromBase58Address, getBase58AddressFromHexAddress, encodeDataParams } from './utils';
 
 // the first 4 bytes of the Keccak-256 encoded function selector used in token transfers, 'transfer(address,uint256)'
 // this must be concatenated with the encoded parameters, recipientAddress and amount
@@ -29,7 +29,9 @@ export class TokenTransferBuilder extends ContractCallBuilder {
    */
   tokenTransferData(recipientAddress: string, amount: string): this {
     this.validateAddress({ address: recipientAddress });
-    const recipientHex = getHexAddressFromBase58Address(recipientAddress);
+    // accept base58 or hex form — hex inputs must be canonicalized before base58 decoding
+    const recipientBase58 = getBase58AddressFromHexAddress(recipientAddress);
+    const recipientHex = getHexAddressFromBase58Address(recipientBase58);
 
     const types = ['address', 'uint256'];
     const values = [recipientHex, amount];
