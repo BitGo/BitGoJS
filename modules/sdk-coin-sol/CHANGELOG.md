@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.7.2...@bitgo/sdk-coin-sol@8.8.0) (2026-09-04)
+
+
+### Bug Fixes
+
+* **sdk-core:** allow zero amount closeATA sendMany TICKET: CHALO-1343 ([a679451](https://github.com/BitGo/BitGoJS/commit/a6794511574986056c3b17afd8f893e09bafa19e))
+
+
+### Features
+
+* **sdk-coin-sol:** add Token-2022 confidential transfer instruction builders (Phase 1a) ([5979b65](https://github.com/BitGo/BitGoJS/commit/5979b65348847bc7f80fa642ec19fd1e5909f925))
+* **sdk-coin-sol:** support permissionless thaw in ATA init ([f557b37](https://github.com/BitGo/BitGoJS/commit/f557b372ec5be753b79da7233b038fac59d6fced))
+
+
+
+
+
 ## [8.7.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.7.1...@bitgo/sdk-coin-sol@8.7.2) (2026-09-01)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

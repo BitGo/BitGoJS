@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.0.17](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@4.0.16...@bitgo/sdk-coin-trx@4.0.17) (2026-09-04)
+
+
+### Bug Fixes
+
+* **sdk-coin-trx:** accept hex-form TRON addresses in tx builders ([a23b5e8](https://github.com/BitGo/BitGoJS/commit/a23b5e87d07eeb080c90942c3631a122dc125f75))
+
+
+
+
+
 ## [4.0.16](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@4.0.15...@bitgo/sdk-coin-trx@4.0.16) (2026-09-01)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-trx
