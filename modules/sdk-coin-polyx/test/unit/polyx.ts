@@ -234,11 +234,11 @@ describe('Polyx:', function () {
         (result.serializedTx as string).should.be.a.String().and.not.be.empty();
         sandBox.assert.notCalled(getTSSSignatureSpy);
 
-        // Substrate MultiSignature Ed25519 discriminant (0x00) must prefix the 64-byte signature.
         sandBox.assert.calledOnce(addSignatureSpy);
         const signature: Buffer = addSignatureSpy.firstCall.args[1];
-        signature.length.should.equal(65);
-        signature[0].should.equal(0x00);
+        // constructSignedPayload prepends the 0x00 Ed25519 discriminant internally;
+        // recover() must pass the raw 64-byte signature unchanged.
+        signature.length.should.equal(64);
       });
 
       it('should produce a cryptographically valid Ed25519 signature', async function () {
@@ -330,6 +330,26 @@ describe('Polyx:', function () {
       it('should throw missing wallet passphrase when userKey and backupKey are present but walletPassphrase is not', async function () {
         const paramsWithoutPassphrase = { ...mpcV2RecoverParams, walletPassphrase: undefined };
         await baseCoin.recover(paramsWithoutPassphrase).should.be.rejectedWith('missing wallet passphrase');
+      });
+
+      it('should pass the raw 64-byte signature to addSignature on MPCv2 path', async function () {
+        // Regression: previously wrapped rawSig with a manual Ed25519 discriminant (0x00)
+        // before addSignature. constructSignedPayload already prepends that discriminant,
+        // so wrapping here caused a double prefix that shifted the on-wire signature by
+        // one byte, dropping the last byte of sigma and producing
+        // `1010: Bad signature` on-chain.
+        const rawSig = Buffer.alloc(64, 0xab);
+        sandBox
+          .stub(baseCoin as unknown as { signSubstrateMpcV2Recovery: unknown }, 'signSubstrateMpcV2Recovery')
+          .resolves(rawSig);
+        const addSignatureSpy = sandBox.spy(TransferBuilder.prototype, 'addSignature');
+
+        await baseCoin.recover(mpcV2RecoverParams);
+
+        sandBox.assert.calledOnce(addSignatureSpy);
+        const sig: Buffer = addSignatureSpy.firstCall.args[1];
+        sig.length.should.equal(64);
+        sig.should.deepEqual(rawSig);
       });
     });
   });
