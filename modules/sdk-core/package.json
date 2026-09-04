@@ -44,6 +44,7 @@
     "@bitgo/sdk-lib-mpc": "^10.18.0",
     "@bitgo/secp256k1": "^1.11.1",
     "@bitgo/sjcl": "^1.1.0",
+    "cbor-x": "1.5.9",
     "@bitgo/statics": "^59.12.0",
     "@bitgo/utxo-lib": "^11.24.4",
     "@noble/curves": "1.8.1",
