@@ -24,23 +24,34 @@ export function fromExtendedAddressFormat(extendedAddress: string): { address: s
   return { address: extendedAddress };
 }
 
-export function fromExtendedAddressFormatToScript(extendedAddress: string, coinName: UtxoCoinName): Buffer {
+export function fromExtendedAddressFormatToScript(
+  extendedAddress: string,
+  coinName: UtxoCoinName,
+  resolveScript?: (address: string, coinName: UtxoCoinName) => Uint8Array
+): Buffer {
   const result = fromExtendedAddressFormat(extendedAddress);
   if ('script' in result) {
     return Buffer.from(result.script, 'hex');
   }
-  return Buffer.from(address.toOutputScriptWithCoin(result.address, coinName));
+  const script = resolveScript
+    ? resolveScript(result.address, coinName)
+    : address.toOutputScriptWithCoin(result.address, coinName);
+  return Buffer.from(script);
 }
 
-export function toOutputScript(v: string | { address: string } | { script: string }, coinName: UtxoCoinName): Buffer {
+export function toOutputScript(
+  v: string | { address: string } | { script: string },
+  coinName: UtxoCoinName,
+  resolveScript?: (address: string, coinName: UtxoCoinName) => Uint8Array
+): Buffer {
   if (typeof v === 'string') {
-    return fromExtendedAddressFormatToScript(v, coinName);
+    return fromExtendedAddressFormatToScript(v, coinName, resolveScript);
   }
   if ('script' in v) {
     return Buffer.from(v.script, 'hex');
   }
   if ('address' in v) {
-    return fromExtendedAddressFormatToScript(v.address, coinName);
+    return fromExtendedAddressFormatToScript(v.address, coinName, resolveScript);
   }
   throw new Error('invalid input');
 }

@@ -1,0 +1,8 @@
+{
+  "_note": "ZIP-316 unified-address test vector for tzec (testnet), derived from wallet-data/testnet-wallet-full.json in the Ironwood reference sandbox. See @bitgo/wasm-utxo test/fixtures/zcash/unified_address.json (testnetWallet).",
+  "network": "tzec",
+  "unified": "utest1w5m0qcnp8egl8qa296n70n8nvj0tqnzk90p7f48v7mjhhdrdqs8vgqydslg5plmzefawefnpmgmlm6hcy38m972erwxs04s02cq2prhguz8kqly75m6zjy56m08d5jnycgtpqtjeprte576gkmrxyszepgx76yzuwhh7m4lfz9jaq7unjk0x5ant46juxz73hsc6q4v3dqtzww00vps",
+  "transparentAddress": "tmM4DvLVJKXZt5ydn1tqYTHvahpKSwgjuRk",
+  "ironwoodReceiverHex": "d632c28aa0831d671be17709a42c9627e2eb687a1b2a55768ea470c9bae7499cd0bd3d0eb0484e307236b5",
+  "transparentPubkeyHashHex": "7c6b843a25873c036aff575516e3802bcc47f634"
+}

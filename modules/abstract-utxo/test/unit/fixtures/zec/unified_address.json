@@ -1,0 +1,7 @@
+{
+  "_note": "ZIP-316 unified-address test vector for zec (mainnet), from the official zcash-test-vectors (unified_address.py). See @bitgo/wasm-utxo test/fixtures/zcash/unified_address.json (zip316Mainnet).",
+  "network": "zec",
+  "unified": "u1pg2aaph7jp8rpf6yhsza25722sg5fcn3vaca6ze27hqjw7jvvhhuxkpcg0ge9xh6drsgdkda8qjq5chpehkcpxf87rnjryjqwymdheptpvnljqqrjqzjwkc2ma6hcq666kgwfytxwac8eyex6ndgr6ezte66706e3vaqrd25dzvzkc69kw0jgywtd0cmq52q5lkw6uh7hyvzjse8ksx",
+  "orchardReceiverHex": "cecbe5e689a453a3fe10ccf7617e6c1fb382819d7fc9200a1f42092ac84a30378f8c1fb90dff71a6d5042d",
+  "transparentPubkeyHashHex": "cad268758c5e71493066446b98e71df9d1d6a5ca"
+}
