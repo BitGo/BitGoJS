@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.12.0...@bitgo/statics@59.13.0) (2026-09-04)
+
+
+### Bug Fixes
+
+* **statics:** rename jvhhVault token to Bitwise Liquid Prime USDC ([9477ce1](https://github.com/BitGo/BitGoJS/commit/9477ce15618c52b8cfb1d7902d68abed2f6a62c5))
+
+
+### Features
+
+* add new tokens from AMS API ([ad20ce8](https://github.com/BitGo/BitGoJS/commit/ad20ce886b71bac5f8498f82ac4196ad71d22e28))
+* add new tokens from AMS API ([d1d581f](https://github.com/BitGo/BitGoJS/commit/d1d581f023ddb60b886f1da1115dbe8ccabad76f))
+* add new tokens from AMS API ([a6b66fa](https://github.com/BitGo/BitGoJS/commit/a6b66fad2e710cb6a85f3d6b2840686b2ca98107))
+* **statics:** enable ERC20 token batching for baseeth, seievm, zksyncera ([f1d4874](https://github.com/BitGo/BitGoJS/commit/f1d48744f312ac2929341c570f211c89fe433f3a))
+* **statics:** onboard tbaseeth:wabaseusdc stata token on base-sepolia ([b395955](https://github.com/BitGo/BitGoJS/commit/b3959553d87a770c7041c044373af9c86601fa27))
+
+
+
+
+
 # [59.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.11.0...@bitgo/statics@59.12.0) (2026-09-01)
 
 
