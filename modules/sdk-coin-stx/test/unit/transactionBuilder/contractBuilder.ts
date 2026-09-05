@@ -144,6 +144,30 @@ describe('Stacks: Contract Builder', function () {
         tx.inputs[0].value.should.equal('0');
       });
 
+      it('an unsigned PoX-5 register-for-bond contract call transaction', async () => {
+        const builder = factory.getContractBuilder();
+        builder.fee({ fee: '180' });
+        builder.nonce(0);
+        builder.contractAddress(testData.CONTRACT_ADDRESS);
+        builder.contractName('pox-5');
+        builder.functionName('register-for-bond');
+        builder.functionArgs([
+          { type: 'uint128', val: '210' },
+          { type: 'principal', val: 'STDE7Y8HV3RX8VBM2TZVWJTS7ZA1XB0SSC3NEVH0.signer-manager' },
+          { type: 'uint128', val: '1005000' },
+          { type: 'optional' },
+          { type: 'optional' },
+        ]);
+        builder.fromPubKey(testData.TX_SENDER.pub);
+        builder.numberSignatures(1);
+
+        const tx = await builder.build();
+        const txJson = tx.toJson();
+        should.deepEqual(txJson.payload.contractName, 'pox-5');
+        should.deepEqual(txJson.payload.functionName, 'register-for-bond');
+        txJson.payload.functionArgs.length.should.equal(5);
+      });
+
       it('a signed contract call with args', async () => {
         const builder = initTxBuilder();
         builder.functionArgs([
@@ -408,17 +432,31 @@ describe('Stacks: Contract Builder', function () {
         });
         it('a contract call with an invalid contract name pox-2', () => {
           const builder = initTxBuilder();
-          assert.throws(() => builder.contractName('pox-2'), /Only pox-4 and send-many-memo contracts supported/);
+          assert.throws(
+            () => builder.contractName('pox-2'),
+            /Only pox-4, pox-5, and send-many-memo contracts supported/
+          );
         });
         it('a contract call with an invalid contract name pox-3', () => {
           const builder = initTxBuilder();
-          assert.throws(() => builder.contractName('pox-3'), /Only pox-4 and send-many-memo contracts supported/);
+          assert.throws(
+            () => builder.contractName('pox-3'),
+            /Only pox-4, pox-5, and send-many-memo contracts supported/
+          );
         });
         it('a contract call with an invalid contract function name', () => {
           const builder = initTxBuilder();
           assert.throws(
             () => builder.functionName('test-function'),
             new RegExp('test-function is not supported contract function name')
+          );
+        });
+        it('rejects a PoX-4 function on a PoX-5 contract', () => {
+          const builder = initTxBuilder();
+          builder.contractName('pox-5');
+          assert.throws(
+            () => builder.functionName('stack-stx'),
+            new RegExp('stack-stx is not supported contract function name')
           );
         });
       });

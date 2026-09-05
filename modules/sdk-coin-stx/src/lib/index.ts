@@ -4,5 +4,7 @@ export * from './transaction';
 export * from './transactionBuilderFactory';
 export * from './sbtcWithdrawBuilder';
 export * from './btcAddressUtils';
+export * from './pox5Builder';
+export * from './constants';
 export * from './iface';
 export * as Utils from './utils';

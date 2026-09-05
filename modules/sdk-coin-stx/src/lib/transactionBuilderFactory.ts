@@ -14,6 +14,7 @@ import { Utils } from '.';
 import { SendmanyBuilder } from './sendmanyBuilder';
 import { SbtcWithdrawBuilder } from './sbtcWithdrawBuilder';
 import { FungibleTokenTransferBuilder } from './fungibleTokenTransferBuilder';
+import { Pox5Builder } from './pox5Builder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -37,6 +38,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           }
           if (FungibleTokenTransferBuilder.isFungibleTokenTransferContractCall(tx.stxTransaction.payload)) {
             return this.getFungibleTokenTransferBuilder(tx);
+          }
+          if (Pox5Builder.isValidContractCall(tx.stxTransaction.payload)) {
+            return this.getPox5Builder(tx);
           }
           return this.getContractBuilder(tx);
         default:
@@ -81,6 +85,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getFungibleTokenTransferBuilder(tx?: Transaction): FungibleTokenTransferBuilder {
     return TransactionBuilderFactory.initializeBuilder(new FungibleTokenTransferBuilder(this._coinConfig), tx);
+  }
+
+  getPox5Builder(tx?: Transaction): Pox5Builder {
+    return TransactionBuilderFactory.initializeBuilder(new Pox5Builder(this._coinConfig), tx);
   }
 
   /**
