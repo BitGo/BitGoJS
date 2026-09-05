@@ -280,7 +280,13 @@ export interface AtaInit {
 
 export interface AtaClose {
   type: InstructionBuilderTypes.CloseAssociatedTokenAccount;
-  params: { accountAddress: string; destinationAddress: string; authorityAddress: string };
+  params: {
+    accountAddress: string;
+    destinationAddress: string;
+    authorityAddress: string;
+    /** SPL token program owning the ATA; omitted for legacy Token Program. */
+    programId?: string;
+  };
 }
 
 export interface AtaRecoverNested {
