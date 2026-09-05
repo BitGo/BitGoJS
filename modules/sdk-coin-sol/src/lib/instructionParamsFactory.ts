@@ -314,6 +314,9 @@ function parseSendInstructions(
             accountAddress,
             destinationAddress,
             authorityAddress,
+            ...(instruction.programId.equals(TOKEN_2022_PROGRAM_ID)
+              ? { programId: instruction.programId.toString() }
+              : {}),
           },
         };
         instructionData.push(ataClose);
@@ -1201,6 +1204,9 @@ function parseAtaCloseInstructions(instructions: TransactionInstruction[]): Arra
             accountAddress: instruction.keys[ataCloseInstructionKeysIndexes.AccountAddress].pubkey.toString(),
             destinationAddress: instruction.keys[ataCloseInstructionKeysIndexes.DestinationAddress].pubkey.toString(),
             authorityAddress: instruction.keys[ataCloseInstructionKeysIndexes.AuthorityAddress].pubkey.toString(),
+            ...(instruction.programId.equals(TOKEN_2022_PROGRAM_ID)
+              ? { programId: instruction.programId.toString() }
+              : {}),
           },
         };
         instructionData.push(ataClose);
