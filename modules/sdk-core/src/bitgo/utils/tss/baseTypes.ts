@@ -381,7 +381,7 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
   feeToken?: string;
   /** Canton-specific params for the cantonCommand intent. */
   cantonCommandParams?: CantonCommandParams;
-  /** DeFi vault intent fields for defi-approve / defi-deposit intents. */
+  /** DeFi vault intent fields for defi-* and wrap-native / unwrap-native intents. */
   defiParams?: DefiIntentParams;
   /** ERC-7984 wrap / wrapApprove fields flattened onto the WP intent. */
   wrapParams?: WrapIntentParams;
