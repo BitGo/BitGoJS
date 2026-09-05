@@ -2,10 +2,12 @@ import * as assert from 'assert';
 import { createHash } from 'crypto';
 
 import { pox5 } from '@bitgo/utxo-descriptors';
-import { Descriptor, Psbt } from '@bitgo/wasm-utxo';
+import { Psbt, type Descriptor } from '@bitgo/wasm-utxo';
 import { getKey, getKeyTriple } from '@bitgo/wasm-utxo/testutils';
 
-import { finalizePox5EarlyExitPath, finalizePox5LocktimePath, Pox5FinalizerParams } from '../../../src/pox5';
+import { finalizePox5EarlyExitPath, finalizePox5LocktimePath, type Pox5FinalizerParams } from '../../../src/pox5';
+
+type Pox5InputMatch = pox5.Pox5InputMatch;
 
 const UNLOCK_HEIGHT = 840_000;
 
@@ -29,24 +31,22 @@ function createPox5Psbt(
     Buffer,
     Buffer
   ];
-  const params: Pox5FinalizerParams = {
-    descriptor: Descriptor.fromString(
-      pox5.createPox5LockupDescriptor({
-        unlockHeight: UNLOCK_HEIGHT,
-        stakerCommitment: sha256(principalPreimage),
-        earlyExitKey: Buffer.from(earlyExit.publicKey),
-        stakerKeys,
-      }),
-      'definite'
-    ),
+  const descriptor = pox5.createPox5LockupDescriptor({
+    unlockHeight: UNLOCK_HEIGHT,
+    stakerCommitment: sha256(principalPreimage),
+    earlyExitKey: Buffer.from(earlyExit.publicKey),
     stakerKeys,
-  };
-  const descriptor = params.descriptor as Descriptor;
-  const scriptPubKey = descriptor.scriptPubkey();
+  });
+  const paramsDescriptor = descriptor as Descriptor;
+  const scriptPubKey = paramsDescriptor.scriptPubkey();
   const psbt = Psbt.create(2, lockTime);
   psbt.addInput('01'.repeat(32), 0, 100_000n, scriptPubKey, 0xfffffffe);
   psbt.addOutput(scriptPubKey, 90_000n);
-  psbt.updateInputWithDescriptor(0, descriptor);
+  psbt.updateInputWithDescriptor(0, paramsDescriptor);
+
+  const match = pox5.matchPox5Input(psbt, 0, new Map([['pox5', paramsDescriptor]]));
+  assert.ok(match);
+  const params: Pox5FinalizerParams = { match: match as Pox5InputMatch };
 
   for (const key of includeEarlyExitSignature ? [user, backup, earlyExit] : [user, backup]) {
     assert.ok(key.privateKey, 'test key must include private key material');

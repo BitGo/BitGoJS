@@ -1,7 +1,8 @@
-import { BIP32, Descriptor, ast } from '@bitgo/wasm-utxo';
-import { Pattern, PatternMatcher } from '@bitgo/utxo-core/descriptor';
+import { BIP32, Descriptor, ast, descriptorWallet } from '@bitgo/wasm-utxo';
 
-export type ParsedPox5LockupDescriptor = {
+type Pattern = descriptorWallet.Pattern;
+
+export type Pox5DescriptorInfo = {
   unlockHeight: number;
   stakerCommitment: Buffer;
   earlyExitKey: Buffer;
@@ -9,6 +10,9 @@ export type ParsedPox5LockupDescriptor = {
   stakerKeys: [Buffer, Buffer, Buffer] | undefined;
   miniscriptNode: ast.MiniscriptNode;
 };
+
+/** @deprecated Use Pox5DescriptorInfo instead. */
+export type ParsedPox5LockupDescriptor = Pox5DescriptorInfo;
 
 const COMPRESSED_KEY = /^(02|03)[0-9a-fA-F]{64}$/;
 const XPUB_WITH_INDEX = /^([1-9A-HJ-NP-Za-km-z]+)\/(\d+)$/;
@@ -53,17 +57,15 @@ function resolveStakerKey(value: string): Buffer | undefined {
 
 /**
  * Parse only the canonical PoX-5 descriptor template. Other descriptors return
- * null; malformed fields within the template throw so callers cannot finalize
+ * undefined; malformed fields within the template throw so callers cannot finalize
  * a script under an ambiguous policy.
  */
-export function parsePox5LockupDescriptor(
-  descriptor: Descriptor | ast.DescriptorNode
-): ParsedPox5LockupDescriptor | null {
-  const matcher = new PatternMatcher();
+export function parsePox5LockupDescriptor(descriptor: Descriptor | ast.DescriptorNode): Pox5DescriptorInfo | undefined {
+  const matcher = new descriptorWallet.PatternMatcher();
   const descriptorNode = descriptor instanceof Descriptor ? ast.fromDescriptor(descriptor) : descriptor;
   const matched = matcher.match(descriptorNode, { wsh: { $var: 'miniscript' } });
   if (!matched) {
-    return null;
+    return undefined;
   }
 
   const miniscriptNode = matched.miniscript as ast.MiniscriptNode;
@@ -80,7 +82,7 @@ export function parsePox5LockupDescriptor(
   };
   const fields = matcher.match(miniscriptNode, pattern);
   if (!fields) {
-    return null;
+    return undefined;
   }
 
   const unlockHeight = asNumber(fields.unlockHeight, 'after argument');
