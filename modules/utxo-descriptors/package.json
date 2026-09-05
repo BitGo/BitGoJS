@@ -60,7 +60,7 @@
   },
   "dependencies": {
     "@bitgo/utxo-core": "^1.41.2",
-    "@bitgo/wasm-utxo": "^5.0.0"
+    "@bitgo/wasm-utxo": "^5.1.0"
   },
   "devDependencies": {
     "@stacks/bitcoin-staking": "7.6.0"
