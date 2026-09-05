@@ -205,10 +205,10 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Setup node 22
+      - name: Setup node from .nvmrc
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version-file: .nvmrc
 
       - name: restore lerna dependencies
         id: lerna-cache
@@ -217,7 +217,7 @@ jobs:
           path: |
             node_modules
             modules/*/node_modules
-          key: ${{ runner.os }}-node22-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json') }}-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-node${{ hashFiles('.nvmrc') }}-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json') }}-${{ hashFiles('**/package.json') }}
 
       - name: Install Packages
         if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
@@ -262,10 +262,10 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Setup node 22
+      - name: Setup node from .nvmrc
         uses: actions/setup-node@v6
         with:
-          node-version: 22 # this just needs to pass our lock file requirement for compilation
+          node-version-file: .nvmrc
 
       - name: Build Info
         run: |
@@ -458,10 +458,10 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Setup node 22
+      - name: Setup node from .nvmrc
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version-file: .nvmrc
 
       - name: restore lerna dependencies
         id: lerna-cache
@@ -470,7 +470,7 @@ jobs:
           path: |
             node_modules
             modules/*/node_modules
-          key: ${{ runner.os }}-node22-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json')}}-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-node${{ hashFiles('.nvmrc') }}-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json')}}-${{ hashFiles('**/package.json') }}
 
       - name: Install Packages
         if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
