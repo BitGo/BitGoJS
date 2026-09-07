@@ -109,7 +109,7 @@ type ResolveSafeKeyMaterialParams = SafeKeyMaterialBaseParams & {
  * Shared core that resolves safe key material for a pub-only safe child. Returns the CHILD
  * `{prv, pub}` only — never the root — so the root can never leak into a share document.
  *
- * Onchain secp256k1: decrypt root, hardened-derive at `derivedFromParentWithHardenedPath`
+ * Onchain secp256k1: decrypt root, hardened-derive at `derivedFromParentWithPath`
  * (`m/<n>'`), and verify the registered pub. TSS and ed25519 onchain throw via
  * `makeNotImplementedError` — the caller constructs its own error class + message, so the
  * guard set stays shared while signing/sharing report their own errors.
@@ -142,13 +142,13 @@ async function resolveSafeKeyMaterial(params: ResolveSafeKeyMaterialParams): Pro
   if (!childKeychain.pub) {
     throw new Error(`Safe wallet ${walletId}: child keychain is missing pub for pre-sign verification`);
   }
-  if (childKeychain.derivedFromParentWithHardenedPath === undefined) {
-    throw new Error(`Safe wallet ${walletId}: child keychain is missing derivedFromParentWithHardenedPath`);
+  if (childKeychain.derivedFromParentWithPath === undefined) {
+    throw new Error(`Safe wallet ${walletId}: child keychain is missing derivedFromParentWithPath`);
   }
 
   const derived = deriveSafeChildHardenedFromXprv(
     rootPrv,
-    parseDerivedFromParentWithHardenedPath(childKeychain.derivedFromParentWithHardenedPath)
+    parseDerivedFromParentWithHardenedPath(childKeychain.derivedFromParentWithPath)
   );
   if (derived.pub !== childKeychain.pub) {
     throw new SafeDerivedPublicKeyMismatchError(walletId, childKeychain.pub, derived.pub);
@@ -163,7 +163,7 @@ async function resolveSafeKeyMaterial(params: ResolveSafeKeyMaterialParams): Pro
 /**
  * Resolve signing material for a safe owner (child key has no encryptedPrv).
  *
- * Onchain secp256k1: decrypt root, hardened-derive at `derivedFromParentWithHardenedPath`
+ * Onchain secp256k1: decrypt root, hardened-derive at `derivedFromParentWithPath`
  * (`m/<n>'`), and verify the registered pub.
  * TSS and ed25519 onchain: throw — do not return root material or BIP32-derive the wrong curve.
  *
@@ -205,7 +205,7 @@ function safeShareSlotDetail(slot: SafeKeyMaterialSlot, params: ResolveSafeChild
 /**
  * Resolve sharing material for a safe owner (child key has no encryptedPrv).
  *
- * Onchain secp256k1: decrypt root, hardened-derive at `derivedFromParentWithHardenedPath`
+ * Onchain secp256k1: decrypt root, hardened-derive at `derivedFromParentWithPath`
  * (`m/<n>'`), verify the registered pub, and return the CHILD `{prv, pub}` — never the root.
  * TSS and ed25519 onchain: throw `SafeShareNotImplementedError` naming the slot + blocker.
  *

@@ -192,7 +192,7 @@ describe('Safe', function () {
         keyType: 'independent',
         parent: 'user-root-id',
         safeId: 'test-safe-id',
-        derivedFromParentWithHardenedPath: "m/0'",
+        derivedFromParentWithPath: "m/0'",
       });
       addArgs.should.not.have.property('encryptedPrv');
       addArgs.should.not.have.property('derivedFromParentWithSeed');
@@ -214,7 +214,7 @@ describe('Safe', function () {
       mintedSafeId.should.equal('test-safe-id');
     });
 
-    it('registers the child with derivedFromParentWithHardenedPath at a non-zero mint index', async function () {
+    it('registers the child with derivedFromParentWithPath at a non-zero mint index', async function () {
       derivationQuery.returns({
         result: sinon.stub().resolves({ slot: 'secp256k1Multisig', index: 7 }),
       });
@@ -224,7 +224,7 @@ describe('Safe', function () {
 
       const addArgs = keychainsAdd.firstCall.args[0];
       addArgs.pub.should.equal(childAt7.pub);
-      addArgs.derivedFromParentWithHardenedPath.should.equal("m/7'");
+      addArgs.derivedFromParentWithPath.should.equal("m/7'");
       addArgs.should.not.have.property('path');
       addArgs.should.not.have.property('derivedFromParentWithSeed');
     });
