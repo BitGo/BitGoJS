@@ -13,6 +13,7 @@ package-lock.json
 lab/
 .vscode/
 .env
+.env.test
 .yarn
 modules/**/dist/
 modules/**/pack-scoped/

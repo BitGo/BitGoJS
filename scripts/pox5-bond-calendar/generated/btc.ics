@@ -1,0 +1,275 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//BitGo//pox5-bond-calendar//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:PoX-5 Bond Calendar — btc
+BEGIN:VEVENT
+UID:pox5-btc-reward-cycle-972830@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261025T203218Z
+DTEND:20261025T203218Z
+SUMMARY:btc — reward cycle 6 starts
+DESCRIPTION:burn heights 972830-974929 (prepare phase from 974830)\; estim
+ ated date for start: 2026-10-25T20:32:18.000Z [height 972830\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-btc-reward-cycle-974930@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261109T103218Z
+DTEND:20261109T103218Z
+SUMMARY:btc — reward cycle 7 starts
+DESCRIPTION:burn heights 974930-977029 (prepare phase from 976930)\; estim
+ ated date for start: 2026-11-09T10:32:18.000Z [height 974930\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-btc-mainnet-smoke-registration-window-962330@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260813T223218Z
+DTEND:20260813T223218Z
+SUMMARY:btc mainnet-smoke (1000000) — register-for-bond window
+DESCRIPTION:first pox-5 reward cycle that can credit the lockup\; burn hei
+ ghts 962330-964429 (prepare phase from 964330)\; estimated date for start:
+  2026-08-13T22:32:18.000Z [height 962330\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-btc-mainnet-smoke-reward-cycle-960230@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260730T083218Z
+DTEND:20260730T083218Z
+SUMMARY:btc mainnet-smoke (1000000) — reward cycle 0
+DESCRIPTION:burn heights 960230-962329 (prepare phase from 962230)\; estim
+ ated date for start: 2026-07-30T08:32:18.000Z [height 960230\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-btc-mainnet-smoke-reward-cycle-962330@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260813T223218Z
+DTEND:20260813T223218Z
+SUMMARY:btc mainnet-smoke (1000000) — reward cycle 1
+DESCRIPTION:burn heights 962330-964429 (prepare phase from 964330)\; estim
+ ated date for start: 2026-08-13T22:32:18.000Z [height 962330\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-btc-mainnet-smoke-reward-cycle-964430@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260828T123218Z
+DTEND:20260828T123218Z
+SUMMARY:btc mainnet-smoke (1000000) — reward cycle 2
+DESCRIPTION:burn heights 964430-966529 (prepare phase from 966430)\; estim
+ ated date for start: 2026-08-28T12:32:18.000Z [height 964430\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-btc-mainnet-smoke-reward-cycle-966530@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260912T023218Z
+DTEND:20260912T023218Z
+SUMMARY:btc mainnet-smoke (1000000) — reward cycle 3
+DESCRIPTION:burn heights 966530-968629 (prepare phase from 968530)\; estim
+ ated date for start: 2026-09-12T02:32:18.000Z [height 966530\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-btc-mainnet-smoke-reward-cycle-968630@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260926T163218Z
+DTEND:20260926T163218Z
+SUMMARY:btc mainnet-smoke (1000000) — reward cycle 4
+DESCRIPTION:burn heights 968630-970729 (prepare phase from 970630)\; estim
+ ated date for start: 2026-09-26T16:32:18.000Z [height 968630\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-btc-mainnet-smoke-reward-cycle-970730@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261011T063218Z
+DTEND:20261011T063218Z
+SUMMARY:btc mainnet-smoke (1000000) — reward cycle 5
+DESCRIPTION:burn heights 970730-972829 (prepare phase from 972730)\; estim
+ ated date for start: 2026-10-11T06:32:18.000Z [height 970730\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-btc-mainnet-smoke-reward-cycle-972830@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261025T203218Z
+DTEND:20261025T203218Z
+SUMMARY:btc mainnet-smoke (1000000) — reward cycle 6
+DESCRIPTION:burn heights 972830-974929 (prepare phase from 974830)\; estim
+ ated date for start: 2026-10-25T20:32:18.000Z [height 972830\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-btc-mainnet-smoke-reward-cycle-974930@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261109T103218Z
+DTEND:20261109T103218Z
+SUMMARY:btc mainnet-smoke (1000000) — reward cycle 7
+DESCRIPTION:burn heights 974930-977029 (prepare phase from 976930)\; estim
+ ated date for start: 2026-11-09T10:32:18.000Z [height 974930\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-btc-mainnet-smoke-reward-cycle-977030@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261124T003218Z
+DTEND:20261124T003218Z
+SUMMARY:btc mainnet-smoke (1000000) — reward cycle 8
+DESCRIPTION:burn heights 977030-979129 (prepare phase from 979030)\; estim
+ ated date for start: 2026-11-24T00:32:18.000Z [height 977030\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-btc-mainnet-smoke-reward-cycle-979130@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261208T143218Z
+DTEND:20261208T143218Z
+SUMMARY:btc mainnet-smoke (1000000) — reward cycle 9
+DESCRIPTION:burn heights 979130-981229 (prepare phase from 981130)\; estim
+ ated date for start: 2026-12-08T14:32:18.000Z [height 979130\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-btc-mainnet-smoke-reward-cycle-981230@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261223T043218Z
+DTEND:20261223T043218Z
+SUMMARY:btc mainnet-smoke (1000000) — reward cycle 10
+DESCRIPTION:burn heights 981230-983329 (prepare phase from 983230)\; estim
+ ated date for start: 2026-12-23T04:32:18.000Z [height 981230\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-btc-mainnet-smoke-reward-cycle-983330@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20270106T183218Z
+DTEND:20270106T183218Z
+SUMMARY:btc mainnet-smoke (1000000) — reward cycle 11
+DESCRIPTION:burn heights 983330-985429 (prepare phase from 985330)\; estim
+ ated date for start: 2027-01-06T18:32:18.000Z [height 983330\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-btc-mainnet-smoke-reward-cycle-985430@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20270121T083218Z
+DTEND:20270121T083218Z
+SUMMARY:btc mainnet-smoke (1000000) — reward cycle 12
+DESCRIPTION:burn heights 985430-987529 (prepare phase from 987430)\; estim
+ ated date for start: 2027-01-21T08:32:18.000Z [height 985430\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-btc-mainnet-smoke-reward-cycle-987530@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20270204T223218Z
+DTEND:20270204T223218Z
+SUMMARY:btc mainnet-smoke (1000000) — reward cycle 13
+DESCRIPTION:burn heights 987530-989629 (prepare phase from 989530)\; estim
+ ated date for start: 2027-02-04T22:32:18.000Z [height 987530\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-btc-mainnet-smoke-reward-cycle-989630@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20270219T123218Z
+DTEND:20270219T123218Z
+SUMMARY:btc mainnet-smoke (1000000) — reward cycle 14
+DESCRIPTION:burn heights 989630-991729 (prepare phase from 991630)\; estim
+ ated date for start: 2027-02-19T12:32:18.000Z [height 989630\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-btc-mainnet-smoke-reward-cycle-991730@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20270306T023218Z
+DTEND:20270306T023218Z
+SUMMARY:btc mainnet-smoke (1000000) — reward cycle 15
+DESCRIPTION:burn heights 991730-993829 (prepare phase from 993730)\; estim
+ ated date for start: 2027-03-06T02:32:18.000Z [height 991730\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-btc-mainnet-smoke-reward-cycle-993830@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20270320T163218Z
+DTEND:20270320T163218Z
+SUMMARY:btc mainnet-smoke (1000000) — reward cycle 16
+DESCRIPTION:burn heights 993830-995929 (prepare phase from 995830)\; estim
+ ated date for start: 2027-03-20T16:32:18.000Z [height 993830\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-btc-mainnet-smoke-reward-cycle-995930@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20270404T063218Z
+DTEND:20270404T063218Z
+SUMMARY:btc mainnet-smoke (1000000) — reward cycle 17
+DESCRIPTION:burn heights 995930-998029 (prepare phase from 997930)\; estim
+ ated date for start: 2027-04-04T06:32:18.000Z [height 995930\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-btc-mainnet-smoke-reward-cycle-998030@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20270418T203218Z
+DTEND:20270418T203218Z
+SUMMARY:btc mainnet-smoke (1000000) — reward cycle 18
+DESCRIPTION:burn heights 998030-1000129 (prepare phase from 1000030)\; est
+ imated date for start: 2027-04-18T20:32:18.000Z [height 998030\; estimated
+ ]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-btc-mainnet-smoke-reward-cycle-1000130@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20270503T103218Z
+DTEND:20270503T103218Z
+SUMMARY:btc mainnet-smoke (1000000) — reward cycle 19
+DESCRIPTION:burn heights 1000130-1002229 (prepare phase from 1002130)\; es
+ timated date for start: 2027-05-03T10:32:18.000Z [height 1000130\; estimat
+ ed]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-btc-mainnet-smoke-reward-cycle-1002230@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20270518T003218Z
+DTEND:20270518T003218Z
+SUMMARY:btc mainnet-smoke (1000000) — reward cycle 20
+DESCRIPTION:burn heights 1002230-1004329 (prepare phase from 1004230)\; es
+ timated date for start: 2027-05-18T00:32:18.000Z [height 1002230\; estimat
+ ed]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-btc-mainnet-smoke-reward-cycle-1004330@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20270601T143218Z
+DTEND:20270601T143218Z
+SUMMARY:btc mainnet-smoke (1000000) — reward cycle 21
+DESCRIPTION:burn heights 1004330-1006429 (prepare phase from 1006330)\; es
+ timated date for start: 2027-06-01T14:32:18.000Z [height 1004330\; estimat
+ ed]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-btc-mainnet-smoke-reward-cycle-1006430@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20270616T043218Z
+DTEND:20270616T043218Z
+SUMMARY:btc mainnet-smoke (1000000) — reward cycle 22
+DESCRIPTION:burn heights 1006430-1008529 (prepare phase from 1008430)\; es
+ timated date for start: 2027-06-16T04:32:18.000Z [height 1006430\; estimat
+ ed]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-btc-mainnet-smoke-reward-cycle-1008530@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20270630T183218Z
+DTEND:20270630T183218Z
+SUMMARY:btc mainnet-smoke (1000000) — reward cycle 23
+DESCRIPTION:burn heights 1008530-1010629 (prepare phase from 1010530)\; es
+ timated date for start: 2027-06-30T18:32:18.000Z [height 1008530\; estimat
+ ed]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-btc-mainnet-smoke-cltv-unlock-1050000@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20280413T181218Z
+DTEND:20280413T181218Z
+SUMMARY:btc mainnet-smoke (1000000) — CLTV unlock
+DESCRIPTION:BTC timelock expires at burn height 1050000\; lockup becomes s
+ pendable [height 1050000\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-btc-mainnet-smoke-post-cltv-recovery-1050006@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20280413T191218Z
+DTEND:20280413T191218Z
+SUMMARY:btc mainnet-smoke (1000000) — post-CLTV recovery (earliest)
+DESCRIPTION:earliest estimated recovery spend (6-block safety margin after
+  CLTV unlock) [height 1050006\; estimated]
+END:VEVENT
+END:VCALENDAR

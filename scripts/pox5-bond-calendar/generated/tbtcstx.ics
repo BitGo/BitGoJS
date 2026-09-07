@@ -1,0 +1,182 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//BitGo//pox5-bond-calendar//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:PoX-5 Bond Calendar — tbtcstx
+BEGIN:VEVENT
+UID:pox5-tbtcstx-reward-cycle-27902@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261015T080727Z
+DTEND:20261015T080727Z
+SUMMARY:tbtcstx — reward cycle 28 starts
+DESCRIPTION:burn heights 27902-28801 (prepare phase from 28702)\; estimate
+ d date for start: 2026-10-15T08:07:27.000Z [height 27902\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcstx-reward-cycle-28802@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261016T140727Z
+DTEND:20261016T140727Z
+SUMMARY:tbtcstx — reward cycle 29 starts
+DESCRIPTION:burn heights 28802-29701 (prepare phase from 29602)\; estimate
+ d date for start: 2026-10-16T14:07:27.000Z [height 28802\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcstx-public-testnet-smoke-registration-window-3602@pox5-bond-c
+ alendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260911T140727Z
+DTEND:20260911T140727Z
+SUMMARY:tbtcstx public-testnet-smoke (50000) — register-for-bond window
+DESCRIPTION:first pox-5 reward cycle that can credit the lockup\; burn hei
+ ghts 3602-4501 (prepare phase from 4402)\; estimated date for start: 2026-
+ 09-11T14:07:27.000Z [height 3602\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcstx-public-testnet-smoke-reward-cycle-27902@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261015T080727Z
+DTEND:20261015T080727Z
+SUMMARY:tbtcstx public-testnet-smoke (50000) — reward cycle 28
+DESCRIPTION:burn heights 27902-28801 (prepare phase from 28702)\; estimate
+ d date for start: 2026-10-15T08:07:27.000Z [height 27902\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcstx-public-testnet-smoke-reward-cycle-28802@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261016T140727Z
+DTEND:20261016T140727Z
+SUMMARY:tbtcstx public-testnet-smoke (50000) — reward cycle 29
+DESCRIPTION:burn heights 28802-29701 (prepare phase from 29602)\; estimate
+ d date for start: 2026-10-16T14:07:27.000Z [height 28802\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcstx-public-testnet-smoke-reward-cycle-29702@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261017T200727Z
+DTEND:20261017T200727Z
+SUMMARY:tbtcstx public-testnet-smoke (50000) — reward cycle 30
+DESCRIPTION:burn heights 29702-30601 (prepare phase from 30502)\; estimate
+ d date for start: 2026-10-17T20:07:27.000Z [height 29702\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcstx-public-testnet-smoke-reward-cycle-30602@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261019T020727Z
+DTEND:20261019T020727Z
+SUMMARY:tbtcstx public-testnet-smoke (50000) — reward cycle 31
+DESCRIPTION:burn heights 30602-31501 (prepare phase from 31402)\; estimate
+ d date for start: 2026-10-19T02:07:27.000Z [height 30602\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcstx-public-testnet-smoke-reward-cycle-31502@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261020T080727Z
+DTEND:20261020T080727Z
+SUMMARY:tbtcstx public-testnet-smoke (50000) — reward cycle 32
+DESCRIPTION:burn heights 31502-32401 (prepare phase from 32302)\; estimate
+ d date for start: 2026-10-20T08:07:27.000Z [height 31502\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcstx-public-testnet-smoke-reward-cycle-32402@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261021T140727Z
+DTEND:20261021T140727Z
+SUMMARY:tbtcstx public-testnet-smoke (50000) — reward cycle 33
+DESCRIPTION:burn heights 32402-33301 (prepare phase from 33202)\; estimate
+ d date for start: 2026-10-21T14:07:27.000Z [height 32402\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcstx-public-testnet-smoke-reward-cycle-33302@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261022T200727Z
+DTEND:20261022T200727Z
+SUMMARY:tbtcstx public-testnet-smoke (50000) — reward cycle 34
+DESCRIPTION:burn heights 33302-34201 (prepare phase from 34102)\; estimate
+ d date for start: 2026-10-22T20:07:27.000Z [height 33302\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcstx-public-testnet-smoke-reward-cycle-34202@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261024T020727Z
+DTEND:20261024T020727Z
+SUMMARY:tbtcstx public-testnet-smoke (50000) — reward cycle 35
+DESCRIPTION:burn heights 34202-35101 (prepare phase from 35002)\; estimate
+ d date for start: 2026-10-24T02:07:27.000Z [height 34202\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcstx-public-testnet-smoke-reward-cycle-35102@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261025T080727Z
+DTEND:20261025T080727Z
+SUMMARY:tbtcstx public-testnet-smoke (50000) — reward cycle 36
+DESCRIPTION:burn heights 35102-36001 (prepare phase from 35902)\; estimate
+ d date for start: 2026-10-25T08:07:27.000Z [height 35102\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcstx-public-testnet-smoke-reward-cycle-36002@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261026T140727Z
+DTEND:20261026T140727Z
+SUMMARY:tbtcstx public-testnet-smoke (50000) — reward cycle 37
+DESCRIPTION:burn heights 36002-36901 (prepare phase from 36802)\; estimate
+ d date for start: 2026-10-26T14:07:27.000Z [height 36002\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcstx-public-testnet-smoke-reward-cycle-36902@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261027T200727Z
+DTEND:20261027T200727Z
+SUMMARY:tbtcstx public-testnet-smoke (50000) — reward cycle 38
+DESCRIPTION:burn heights 36902-37801 (prepare phase from 37702)\; estimate
+ d date for start: 2026-10-27T20:07:27.000Z [height 36902\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcstx-public-testnet-smoke-reward-cycle-37802@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261029T020727Z
+DTEND:20261029T020727Z
+SUMMARY:tbtcstx public-testnet-smoke (50000) — reward cycle 39
+DESCRIPTION:burn heights 37802-38701 (prepare phase from 38602)\; estimate
+ d date for start: 2026-10-29T02:07:27.000Z [height 37802\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcstx-public-testnet-smoke-reward-cycle-38702@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261030T080727Z
+DTEND:20261030T080727Z
+SUMMARY:tbtcstx public-testnet-smoke (50000) — reward cycle 40
+DESCRIPTION:burn heights 38702-39601 (prepare phase from 39502)\; estimate
+ d date for start: 2026-10-30T08:07:27.000Z [height 38702\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcstx-public-testnet-smoke-reward-cycle-39602@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261031T140727Z
+DTEND:20261031T140727Z
+SUMMARY:tbtcstx public-testnet-smoke (50000) — reward cycle 41
+DESCRIPTION:burn heights 39602-40501 (prepare phase from 40402)\; estimate
+ d date for start: 2026-10-31T14:07:27.000Z [height 39602\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcstx-public-testnet-smoke-cltv-unlock-40000@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261101T032327Z
+DTEND:20261101T032327Z
+SUMMARY:tbtcstx public-testnet-smoke (50000) — CLTV unlock
+DESCRIPTION:BTC timelock expires at burn height 40000\; lockup becomes spe
+ ndable [height 40000\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcstx-public-testnet-smoke-post-cltv-recovery-40006@pox5-bond-c
+ alendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261101T033527Z
+DTEND:20261101T033527Z
+SUMMARY:tbtcstx public-testnet-smoke (50000) — post-CLTV recovery (earli
+ est)
+DESCRIPTION:earliest estimated recovery spend (6-block safety margin after
+  CLTV unlock) [height 40006\; estimated]
+END:VEVENT
+END:VCALENDAR

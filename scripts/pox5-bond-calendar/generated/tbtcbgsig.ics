@@ -1,0 +1,269 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//BitGo//pox5-bond-calendar//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:PoX-5 Bond Calendar — tbtcbgsig
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-reward-cycle-41180@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261014T160000Z
+DTEND:20261014T160000Z
+SUMMARY:tbtcbgsig — reward cycle 4118 starts
+DESCRIPTION:burn heights 41180-41189 (prepare phase from 41187)\; estimate
+ d date for start: 2026-10-14T16:00:00.000Z [height 41180\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-reward-cycle-41190@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261014T174000Z
+DTEND:20261014T174000Z
+SUMMARY:tbtcbgsig — reward cycle 4119 starts
+DESCRIPTION:burn heights 41190-41199 (prepare phase from 41197)\; estimate
+ d date for start: 2026-10-14T17:40:00.000Z [height 41190\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-bgsig-smoke-registration-window-10@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260101T182000Z
+DTEND:20260101T182000Z
+SUMMARY:tbtcbgsig bgsig-smoke (250000) — register-for-bond window
+DESCRIPTION:first pox-5 reward cycle that can credit the lockup\; burn hei
+ ghts 10-19 (prepare phase from 17)\; estimated date for start: 2026-01-01T
+ 18:20:00.000Z [height 10\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-bgsig-smoke-reward-cycle-0@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260101T164000Z
+DTEND:20260101T164000Z
+SUMMARY:tbtcbgsig bgsig-smoke (250000) — reward cycle 0
+DESCRIPTION:burn heights 0-9 (prepare phase from 7)\; estimated date for s
+ tart: 2026-01-01T16:40:00.000Z [height 0\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-bgsig-smoke-reward-cycle-10@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260101T182000Z
+DTEND:20260101T182000Z
+SUMMARY:tbtcbgsig bgsig-smoke (250000) — reward cycle 1
+DESCRIPTION:burn heights 10-19 (prepare phase from 17)\; estimated date fo
+ r start: 2026-01-01T18:20:00.000Z [height 10\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-bgsig-smoke-reward-cycle-20@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260101T200000Z
+DTEND:20260101T200000Z
+SUMMARY:tbtcbgsig bgsig-smoke (250000) — reward cycle 2
+DESCRIPTION:burn heights 20-29 (prepare phase from 27)\; estimated date fo
+ r start: 2026-01-01T20:00:00.000Z [height 20\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-bgsig-smoke-reward-cycle-30@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260101T214000Z
+DTEND:20260101T214000Z
+SUMMARY:tbtcbgsig bgsig-smoke (250000) — reward cycle 3
+DESCRIPTION:burn heights 30-39 (prepare phase from 37)\; estimated date fo
+ r start: 2026-01-01T21:40:00.000Z [height 30\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-bgsig-smoke-reward-cycle-40@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260101T232000Z
+DTEND:20260101T232000Z
+SUMMARY:tbtcbgsig bgsig-smoke (250000) — reward cycle 4
+DESCRIPTION:burn heights 40-49 (prepare phase from 47)\; estimated date fo
+ r start: 2026-01-01T23:20:00.000Z [height 40\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-bgsig-smoke-reward-cycle-50@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260102T010000Z
+DTEND:20260102T010000Z
+SUMMARY:tbtcbgsig bgsig-smoke (250000) — reward cycle 5
+DESCRIPTION:burn heights 50-59 (prepare phase from 57)\; estimated date fo
+ r start: 2026-01-02T01:00:00.000Z [height 50\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-bgsig-smoke-reward-cycle-60@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260102T024000Z
+DTEND:20260102T024000Z
+SUMMARY:tbtcbgsig bgsig-smoke (250000) — reward cycle 6
+DESCRIPTION:burn heights 60-69 (prepare phase from 67)\; estimated date fo
+ r start: 2026-01-02T02:40:00.000Z [height 60\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-bgsig-smoke-reward-cycle-70@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260102T042000Z
+DTEND:20260102T042000Z
+SUMMARY:tbtcbgsig bgsig-smoke (250000) — reward cycle 7
+DESCRIPTION:burn heights 70-79 (prepare phase from 77)\; estimated date fo
+ r start: 2026-01-02T04:20:00.000Z [height 70\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-bgsig-smoke-reward-cycle-80@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260102T060000Z
+DTEND:20260102T060000Z
+SUMMARY:tbtcbgsig bgsig-smoke (250000) — reward cycle 8
+DESCRIPTION:burn heights 80-89 (prepare phase from 87)\; estimated date fo
+ r start: 2026-01-02T06:00:00.000Z [height 80\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-bgsig-smoke-reward-cycle-90@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260102T074000Z
+DTEND:20260102T074000Z
+SUMMARY:tbtcbgsig bgsig-smoke (250000) — reward cycle 9
+DESCRIPTION:burn heights 90-99 (prepare phase from 97)\; estimated date fo
+ r start: 2026-01-02T07:40:00.000Z [height 90\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-bgsig-smoke-reward-cycle-100@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260102T092000Z
+DTEND:20260102T092000Z
+SUMMARY:tbtcbgsig bgsig-smoke (250000) — reward cycle 10
+DESCRIPTION:burn heights 100-109 (prepare phase from 107)\; estimated date
+  for start: 2026-01-02T09:20:00.000Z [height 100\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-bgsig-smoke-reward-cycle-110@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260102T110000Z
+DTEND:20260102T110000Z
+SUMMARY:tbtcbgsig bgsig-smoke (250000) — reward cycle 11
+DESCRIPTION:burn heights 110-119 (prepare phase from 117)\; estimated date
+  for start: 2026-01-02T11:00:00.000Z [height 110\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-bgsig-smoke-reward-cycle-120@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260102T124000Z
+DTEND:20260102T124000Z
+SUMMARY:tbtcbgsig bgsig-smoke (250000) — reward cycle 12
+DESCRIPTION:burn heights 120-129 (prepare phase from 127)\; estimated date
+  for start: 2026-01-02T12:40:00.000Z [height 120\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-bgsig-smoke-reward-cycle-130@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260102T142000Z
+DTEND:20260102T142000Z
+SUMMARY:tbtcbgsig bgsig-smoke (250000) — reward cycle 13
+DESCRIPTION:burn heights 130-139 (prepare phase from 137)\; estimated date
+  for start: 2026-01-02T14:20:00.000Z [height 130\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-bgsig-smoke-reward-cycle-140@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260102T160000Z
+DTEND:20260102T160000Z
+SUMMARY:tbtcbgsig bgsig-smoke (250000) — reward cycle 14
+DESCRIPTION:burn heights 140-149 (prepare phase from 147)\; estimated date
+  for start: 2026-01-02T16:00:00.000Z [height 140\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-bgsig-smoke-reward-cycle-150@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260102T174000Z
+DTEND:20260102T174000Z
+SUMMARY:tbtcbgsig bgsig-smoke (250000) — reward cycle 15
+DESCRIPTION:burn heights 150-159 (prepare phase from 157)\; estimated date
+  for start: 2026-01-02T17:40:00.000Z [height 150\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-bgsig-smoke-reward-cycle-160@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260102T192000Z
+DTEND:20260102T192000Z
+SUMMARY:tbtcbgsig bgsig-smoke (250000) — reward cycle 16
+DESCRIPTION:burn heights 160-169 (prepare phase from 167)\; estimated date
+  for start: 2026-01-02T19:20:00.000Z [height 160\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-bgsig-smoke-reward-cycle-170@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260102T210000Z
+DTEND:20260102T210000Z
+SUMMARY:tbtcbgsig bgsig-smoke (250000) — reward cycle 17
+DESCRIPTION:burn heights 170-179 (prepare phase from 177)\; estimated date
+  for start: 2026-01-02T21:00:00.000Z [height 170\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-bgsig-smoke-reward-cycle-180@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260102T224000Z
+DTEND:20260102T224000Z
+SUMMARY:tbtcbgsig bgsig-smoke (250000) — reward cycle 18
+DESCRIPTION:burn heights 180-189 (prepare phase from 187)\; estimated date
+  for start: 2026-01-02T22:40:00.000Z [height 180\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-bgsig-smoke-reward-cycle-190@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260103T002000Z
+DTEND:20260103T002000Z
+SUMMARY:tbtcbgsig bgsig-smoke (250000) — reward cycle 19
+DESCRIPTION:burn heights 190-199 (prepare phase from 197)\; estimated date
+  for start: 2026-01-03T00:20:00.000Z [height 190\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-bgsig-smoke-reward-cycle-200@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260103T020000Z
+DTEND:20260103T020000Z
+SUMMARY:tbtcbgsig bgsig-smoke (250000) — reward cycle 20
+DESCRIPTION:burn heights 200-209 (prepare phase from 207)\; estimated date
+  for start: 2026-01-03T02:00:00.000Z [height 200\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-bgsig-smoke-reward-cycle-210@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260103T034000Z
+DTEND:20260103T034000Z
+SUMMARY:tbtcbgsig bgsig-smoke (250000) — reward cycle 21
+DESCRIPTION:burn heights 210-219 (prepare phase from 217)\; estimated date
+  for start: 2026-01-03T03:40:00.000Z [height 210\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-bgsig-smoke-reward-cycle-220@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260103T052000Z
+DTEND:20260103T052000Z
+SUMMARY:tbtcbgsig bgsig-smoke (250000) — reward cycle 22
+DESCRIPTION:burn heights 220-229 (prepare phase from 227)\; estimated date
+  for start: 2026-01-03T05:20:00.000Z [height 220\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-bgsig-smoke-reward-cycle-230@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20260103T070000Z
+DTEND:20260103T070000Z
+SUMMARY:tbtcbgsig bgsig-smoke (250000) — reward cycle 23
+DESCRIPTION:burn heights 230-239 (prepare phase from 237)\; estimated date
+  for start: 2026-01-03T07:00:00.000Z [height 230\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-bgsig-smoke-cltv-unlock-42000@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261020T084000Z
+DTEND:20261020T084000Z
+SUMMARY:tbtcbgsig bgsig-smoke (250000) — CLTV unlock
+DESCRIPTION:BTC timelock expires at burn height 42000\; lockup becomes spe
+ ndable [height 42000\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tbtcbgsig-bgsig-smoke-post-cltv-recovery-42006@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261020T094000Z
+DTEND:20261020T094000Z
+SUMMARY:tbtcbgsig bgsig-smoke (250000) — post-CLTV recovery (earliest)
+DESCRIPTION:earliest estimated recovery spend (6-block safety margin after
+  CLTV unlock) [height 42006\; estimated]
+END:VEVENT
+END:VCALENDAR

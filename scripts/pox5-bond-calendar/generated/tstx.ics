@@ -1,0 +1,79 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//BitGo//pox5-bond-calendar//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:PoX-5 Bond Calendar — tstx
+BEGIN:VEVENT
+UID:pox5-tstx-reward-cycle-27902@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261015T080727Z
+DTEND:20261015T080727Z
+SUMMARY:tstx — reward cycle 28 starts
+DESCRIPTION:burn heights 27902-28801 (prepare phase from 28702)\; estimate
+ d date for start: 2026-10-15T08:07:27.000Z [height 27902\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tstx-reward-cycle-28802@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261016T140727Z
+DTEND:20261016T140727Z
+SUMMARY:tstx — reward cycle 29 starts
+DESCRIPTION:burn heights 28802-29701 (prepare phase from 29602)\; estimate
+ d date for start: 2026-10-16T14:07:27.000Z [height 28802\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tstx-stx-only-testnet-registration-window-28000@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261015T112327Z
+DTEND:20261015T112327Z
+SUMMARY:tstx stx-only-testnet — STX stake start
+DESCRIPTION:burn heights 27902-28801 (prepare phase from 28702)\; estimate
+ d date for start: 2026-10-15T08:07:27.000Z [height 28000\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tstx-stx-only-testnet-reward-cycle-27902@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261015T080727Z
+DTEND:20261015T080727Z
+SUMMARY:tstx stx-only-testnet — reward cycle 28
+DESCRIPTION:burn heights 27902-28801 (prepare phase from 28702)\; estimate
+ d date for start: 2026-10-15T08:07:27.000Z [height 27902\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tstx-stx-only-testnet-reward-cycle-28802@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261016T140727Z
+DTEND:20261016T140727Z
+SUMMARY:tstx stx-only-testnet — reward cycle 29
+DESCRIPTION:burn heights 28802-29701 (prepare phase from 29602)\; estimate
+ d date for start: 2026-10-16T14:07:27.000Z [height 28802\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tstx-stx-only-testnet-reward-cycle-29702@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261017T200727Z
+DTEND:20261017T200727Z
+SUMMARY:tstx stx-only-testnet — reward cycle 30
+DESCRIPTION:burn heights 29702-30601 (prepare phase from 30502)\; estimate
+ d date for start: 2026-10-17T20:07:27.000Z [height 29702\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tstx-stx-only-testnet-reward-cycle-30602@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261019T020727Z
+DTEND:20261019T020727Z
+SUMMARY:tstx stx-only-testnet — reward cycle 31
+DESCRIPTION:burn heights 30602-31501 (prepare phase from 31402)\; estimate
+ d date for start: 2026-10-19T02:07:27.000Z [height 30602\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tstx-stx-only-testnet-stx-lock-end-31502@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261020T080727Z
+DTEND:20261020T080727Z
+SUMMARY:tstx stx-only-testnet — STX lock end
+DESCRIPTION:stake of 4 cycles ends at burn height 31502 [height 31502\; es
+ timated]
+END:VEVENT
+END:VCALENDAR

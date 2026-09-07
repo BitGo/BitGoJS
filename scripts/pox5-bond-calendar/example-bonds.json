@@ -1,0 +1,8 @@
+[
+  { "network": "btc", "label": "mainnet-smoke", "amount": "1000000", "unlockBurnHeight": 1050000 },
+  { "network": "tbtcstx", "label": "public-testnet-smoke", "amount": "50000", "unlockBurnHeight": 40000, "startBurnHt": 28000 },
+  { "network": "tstx", "label": "stx-only-testnet", "startBurnHt": 28000, "numCycles": 4 },
+  { "network": "tbtcstxsignet", "label": "private-signet-smoke", "amount": "30000", "unlockBurnHeight": 795, "startBurnHt": 660 },
+  { "network": "tbtcbgsig", "label": "bgsig-smoke", "amount": "250000", "unlockBurnHeight": 42000 },
+  { "network": "tstxsignet", "label": "foundation-signet-stake", "startBurnHt": 500, "numCycles": 6 }
+]

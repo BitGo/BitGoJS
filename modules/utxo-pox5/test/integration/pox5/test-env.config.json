@@ -1,0 +1,53 @@
+{
+  "$comment": "PoX-5 custodial e2e fixture for BitGo TEST env. Non-secret identifiers only. Passwords are read from the named env vars; sessions are stored by `bitgo-http login` under sessionDir.",
+  "environment": "test",
+  "coin": "tbtcstxsignet",
+  "enterprise": {
+    "id": "62f290357776000008c345b42f96de70",
+    "name": "HBAR CustodialTesting",
+    "bitgoOrg": "BitGo Trust",
+    "umsEnabled": false,
+    "canCreateCustodialWallet": true
+  },
+  "users": {
+    "initiator": {
+      "username": "test-user+1@test.bitgo.com",
+      "userId": "5dfb235da9381f210026b47bc7596fda",
+      "enterpriseRole": "admin"
+    },
+    "approver": {
+      "username": "test-user+2@test.bitgo.com",
+      "userId": "5e3a9458bbd9092100928bb0c036134a",
+      "bitgoAdmin": false,
+      "enterpriseRole": "member-no-permissions"
+    },
+    "custodyadmin": {
+      "username": "custodyadmin@test.bitgo.com",
+      "userId": "5e7a717299c3cb2100e867f6b844dc5a",
+      "bitgoAdmin": true,
+      "note": "uploads the OVC half-signed transaction; must be distinct from the policy approver (one resolution per user)"
+    }
+  },
+  "wallets": {
+    "custodialStake": {
+      "label": "pox5-live-test-tbtcstxsignet-custodial-stake",
+      "id": "6ace1a6befbbfdedb4beed60c493aed4",
+      "createdBy": "initiator",
+      "approverShare": {
+        "permissions": "admin,view",
+        "keychain": false,
+        "state": "accepted"
+      }
+    }
+  },
+  "staker": {
+    "address": "STB44HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6",
+    "fixture": "public stacks.js-pox5 regtest account5 key",
+    "allowlistedOnSignet": true
+  },
+  "bond": {
+    "index": "discover",
+    "discoveryOnly": "set POX5_LIVE_BOND_INDEX_TBTCSTXSIGNET to pin"
+  },
+  "sessionDir": "~/.local/state/bitgo-http/sessions"
+}

@@ -1,0 +1,105 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//BitGo//pox5-bond-calendar//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:PoX-5 Bond Calendar — tstxsignet
+BEGIN:VEVENT
+UID:pox5-tstxsignet-reward-cycle-630@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261014T160000Z
+DTEND:20261014T160000Z
+SUMMARY:tstxsignet — reward cycle 63 starts
+DESCRIPTION:burn heights 630-639 (prepare phase from 637)\; estimated date
+  for start: 2026-10-14T16:00:00.000Z [height 630\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tstxsignet-reward-cycle-640@pox5-bond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261014T174000Z
+DTEND:20261014T174000Z
+SUMMARY:tstxsignet — reward cycle 64 starts
+DESCRIPTION:burn heights 640-649 (prepare phase from 647)\; estimated date
+  for start: 2026-10-14T17:40:00.000Z [height 640\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tstxsignet-foundation-signet-stake-registration-window-500@pox5-b
+ ond-calendar
+DTSTAMP:20261014T151854Z
+DTSTART:20261013T182000Z
+DTEND:20261013T182000Z
+SUMMARY:tstxsignet foundation-signet-stake — STX stake start
+DESCRIPTION:burn heights 500-509 (prepare phase from 507)\; estimated date
+  for start: 2026-10-13T18:20:00.000Z [height 500\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tstxsignet-foundation-signet-stake-reward-cycle-500@pox5-bond-cal
+ endar
+DTSTAMP:20261014T151854Z
+DTSTART:20261013T182000Z
+DTEND:20261013T182000Z
+SUMMARY:tstxsignet foundation-signet-stake — reward cycle 50
+DESCRIPTION:burn heights 500-509 (prepare phase from 507)\; estimated date
+  for start: 2026-10-13T18:20:00.000Z [height 500\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tstxsignet-foundation-signet-stake-reward-cycle-510@pox5-bond-cal
+ endar
+DTSTAMP:20261014T151854Z
+DTSTART:20261013T200000Z
+DTEND:20261013T200000Z
+SUMMARY:tstxsignet foundation-signet-stake — reward cycle 51
+DESCRIPTION:burn heights 510-519 (prepare phase from 517)\; estimated date
+  for start: 2026-10-13T20:00:00.000Z [height 510\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tstxsignet-foundation-signet-stake-reward-cycle-520@pox5-bond-cal
+ endar
+DTSTAMP:20261014T151854Z
+DTSTART:20261013T214000Z
+DTEND:20261013T214000Z
+SUMMARY:tstxsignet foundation-signet-stake — reward cycle 52
+DESCRIPTION:burn heights 520-529 (prepare phase from 527)\; estimated date
+  for start: 2026-10-13T21:40:00.000Z [height 520\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tstxsignet-foundation-signet-stake-reward-cycle-530@pox5-bond-cal
+ endar
+DTSTAMP:20261014T151854Z
+DTSTART:20261013T232000Z
+DTEND:20261013T232000Z
+SUMMARY:tstxsignet foundation-signet-stake — reward cycle 53
+DESCRIPTION:burn heights 530-539 (prepare phase from 537)\; estimated date
+  for start: 2026-10-13T23:20:00.000Z [height 530\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tstxsignet-foundation-signet-stake-reward-cycle-540@pox5-bond-cal
+ endar
+DTSTAMP:20261014T151854Z
+DTSTART:20261014T010000Z
+DTEND:20261014T010000Z
+SUMMARY:tstxsignet foundation-signet-stake — reward cycle 54
+DESCRIPTION:burn heights 540-549 (prepare phase from 547)\; estimated date
+  for start: 2026-10-14T01:00:00.000Z [height 540\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tstxsignet-foundation-signet-stake-reward-cycle-550@pox5-bond-cal
+ endar
+DTSTAMP:20261014T151854Z
+DTSTART:20261014T024000Z
+DTEND:20261014T024000Z
+SUMMARY:tstxsignet foundation-signet-stake — reward cycle 55
+DESCRIPTION:burn heights 550-559 (prepare phase from 557)\; estimated date
+  for start: 2026-10-14T02:40:00.000Z [height 550\; estimated]
+END:VEVENT
+BEGIN:VEVENT
+UID:pox5-tstxsignet-foundation-signet-stake-stx-lock-end-560@pox5-bond-cal
+ endar
+DTSTAMP:20261014T151854Z
+DTSTART:20261014T042000Z
+DTEND:20261014T042000Z
+SUMMARY:tstxsignet foundation-signet-stake — STX lock end
+DESCRIPTION:stake of 6 cycles ends at burn height 560 [height 560\; estima
+ ted]
+END:VEVENT
+END:VCALENDAR

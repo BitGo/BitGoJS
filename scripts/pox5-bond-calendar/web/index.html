@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PoX-5 Bond Calendar</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: ui-sans-serif, system-ui, sans-serif; margin: 0 auto; max-width: 60rem; padding: 1rem 1.25rem 3rem; line-height: 1.45; }
+  h1 { font-size: 1.35rem; margin: 0 0 .25rem; }
+  h2 { font-size: 1.05rem; margin: 1.25rem 0 .4rem; }
+  p.muted { color: #777; margin: .2rem 0 1rem; font-size: .9rem; }
+  fieldset { border: 1px solid #8884; border-radius: .5rem; margin: 0 0 1rem; padding: .75rem 1rem; }
+  legend { font-weight: 600; font-size: .9rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: .6rem .9rem; }
+  label { display: flex; flex-direction: column; gap: .15rem; font-size: .8rem; }
+  input, select, textarea { font: inherit; padding: .3rem .45rem; border: 1px solid #8886; border-radius: .35rem; background: transparent; color: inherit; width: 100%; box-sizing: border-box; }
+  textarea { font-family: ui-monospace, monospace; font-size: .8rem; min-height: 6rem; }
+  .row { display: flex; gap: .6rem; flex-wrap: wrap; align-items: end; margin-top: .6rem; }
+  button { font: inherit; padding: .35rem .8rem; border-radius: .35rem; border: 1px solid #8886; background: transparent; color: inherit; cursor: pointer; }
+  button.primary { background: #4a7dff22; border-color: #4a7dff88; font-weight: 600; }
+  table { border-collapse: collapse; width: 100%; font-size: .85rem; }
+  th, td { border: 1px solid #8884; padding: .3rem .5rem; text-align: left; }
+  th { background: #8881; }
+  .kind { font-family: ui-monospace, monospace; font-size: .78rem; }
+  .error { color: #d33; font-weight: 600; }
+  .note { font-size: .8rem; color: #777; }
+  details { margin: .5rem 0; }
+  ul.sources { font-size: .78rem; color: #777; columns: 2; margin: .2rem 0; }
+</style>
+</head>
+<body>
+<h1>PoX-5 Bond Calendar</h1>
+<p class="muted">Bond lifecycle events across PoX-5 networks. All dates are estimates derived from each network anchor and its average block interval. Mirrors <code>scripts/pox5-bond-calendar</code>.</p>
+
+<fieldset>
+  <legend>Network</legend>
+  <div class="grid">
+    <label>Network <select id="network"></select></label>
+    <label>Anchor height (optional override) <input id="anchorHeight" type="number" min="0" placeholder="default" /></label>
+    <label>Anchor date (optional override) <input id="anchorDate" type="datetime-local" /></label>
+    <label>Live anchor provider <select id="liveProvider"><option value="">default / none</option><option value="blockstream">blockstream</option><option value="hiro">hiro</option></select></label>
+    <label>Live base URL (optional) <input id="liveBaseUrl" placeholder="provider default" /></label>
+  </div>
+  <div class="row">
+    <button id="fetchLive">Fetch live anchor</button>
+    <span id="anchorInfo" class="note"></span>
+  </div>
+  <div id="networkInfo" class="note" style="margin-top:.4rem"></div>
+</fieldset>
+
+<fieldset>
+  <legend>Bond</legend>
+  <div class="grid">
+    <label>Label <input id="label" placeholder="smoke-1" /></label>
+    <label>Amount (sats / uSTX) <input id="amount" placeholder="1000000" /></label>
+    <label>Unlock burn height (BTC-backed) <input id="unlockBurnHeight" type="number" min="1" /></label>
+    <label>Lock height (optional) <input id="lockHeight" type="number" min="0" /></label>
+    <label>Start burn height (optional) <input id="startBurnHt" type="number" min="0" /></label>
+    <label>Number of cycles (optional) <input id="numCycles" type="number" min="1" /></label>
+    <label>Safety margin (blocks) <input id="safetyMargin" type="number" min="0" value="6" /></label>
+    <label>Upcoming cycles to show <input id="upcomingCycles" type="number" min="0" value="2" /></label>
+  </div>
+  <details>
+    <summary class="note">Advanced: bonds JSON (overrides the form)</summary>
+    <textarea id="bondsJson" placeholder='[{"network":"tbtcstxsignet","label":"smoke-1","amount":"250000","unlockBurnHeight":42000}]'></textarea>
+  </details>
+  <div class="row">
+    <button id="compute" class="primary">Compute calendar</button>
+    <button id="downloadIcs">Download .ics</button>
+  </div>
+  <div id="formError" class="error"></div>
+</fieldset>
+
+<div id="output"></div>
+
+<script>
+'use strict';
+
+const SIP045 = {
+  bondingPeriod: 25200, distribution: 1050, signerCycle: 2100, periodSpacing: 4200, relockWindow: 1050,
+};
+
+const NETWORKS = {
+  btc: {
+    coin: 'btc', burnChain: 'bitcoin-mainnet', stacksOnly: false,
+    activationBurnHeight: 960230, rewardCycleBlocks: 2100, preparePhaseBlocks: 100, avgBlockSeconds: 600,
+    anchor: { height: 960230, isoDate: '2026-07-30T08:32:18Z' },
+    liveProvider: 'blockstream', liveBaseUrl: 'https://blockstream.info',
+    sources: [
+      'SIP-045 section 3.1.2 (bond timing)',
+      'stacks-core stacks-common/src/types/mod.rs BITCOIN_MAINNET_STACKS_40_BURN_HEIGHT',
+      'stacks-core stackslib/src/core/mod.rs POX_REWARD_CYCLE_LENGTH / POX_PREPARE_WINDOW_LENGTH',
+      'Linear WAL-2149 (pox-5 activated at burn height 960230)',
+      'blockstream.info block 960230 timestamp (verified 2026-10-14)',
+    ],
+  },
+  tbtcstx: {
+    coin: 'tbtcstx', burnChain: 'stacks-public-testnet', stacksOnly: false,
+    activationBurnHeight: 2702, rewardCycleBlocks: 900, preparePhaseBlocks: 100, avgBlockSeconds: 120,
+    anchor: { height: 27300, isoDate: '2026-10-14T12:03:27Z' },
+    liveProvider: 'hiro', liveBaseUrl: 'https://api.testnet.hiro.so',
+    sources: [
+      'SIP-045 section 3.1.2 (bond timing)',
+      'stacks-core stackslib/src/burnchains/mod.rs nakamoto_testnet_default()',
+      'Linear SI-1143 (testnet pox-5 activation height 2702)',
+      'Hiro api.testnet.hiro.so network_block_times + burn block 27300 (fetched 2026-10-14)',
+    ],
+  },
+  tstx: {
+    coin: 'tstx', burnChain: 'stacks-public-testnet', stacksOnly: true,
+    activationBurnHeight: 2702, rewardCycleBlocks: 900, preparePhaseBlocks: 100, avgBlockSeconds: 120,
+    anchor: { height: 27300, isoDate: '2026-10-14T12:03:27Z' },
+    liveProvider: 'hiro', liveBaseUrl: 'https://api.testnet.hiro.so',
+    sources: [
+      'SIP-045 section 3.1.2 (bond timing)',
+      'stacks-core stackslib/src/burnchains/mod.rs nakamoto_testnet_default()',
+      'Linear SI-1143 (testnet pox-5 activation height 2702)',
+      'Hiro api.testnet.hiro.so network_block_times + burn block 27300 (fetched 2026-10-14)',
+    ],
+  },
+  tbtcstxsignet: {
+    coin: 'tbtcstxsignet', burnChain: 'bitgo-private-signet', stacksOnly: false,
+    activationBurnHeight: 0, rewardCycleBlocks: 10, preparePhaseBlocks: 3, avgBlockSeconds: 600,
+    anchor: null, liveProvider: null, liveBaseUrl: null,
+    sources: [
+      'SIP-045 section 3.1.2 (bond timing)',
+      'stacks-core stackslib/src/burnchains/burnchain.rs ("bitcoin","signet") => signet_default()',
+      'stacks-core stackslib/src/burnchains/mod.rs signet_default() (reward 10 / prepare 3)',
+    ],
+  },
+  tbtcbgsig: {
+    coin: 'tbtcbgsig', burnChain: 'bitgo-private-signet', stacksOnly: false,
+    activationBurnHeight: 0, rewardCycleBlocks: 10, preparePhaseBlocks: 3, avgBlockSeconds: 600,
+    anchor: null, liveProvider: null, liveBaseUrl: null,
+    sources: [
+      'SIP-045 section 3.1.2 (bond timing)',
+      'stacks-core stackslib/src/burnchains/burnchain.rs ("bitcoin","signet") => signet_default()',
+      'stacks-core stackslib/src/burnchains/mod.rs signet_default() (reward 10 / prepare 3)',
+      'bitgo-microservices wallet-platform app/base/utxo/staking/pox5/README.md',
+    ],
+  },
+  tstxsignet: {
+    coin: 'tstxsignet', burnChain: 'stacks-foundation-private-signet', stacksOnly: true,
+    activationBurnHeight: 0, rewardCycleBlocks: 10, preparePhaseBlocks: 3, avgBlockSeconds: 600,
+    anchor: null, liveProvider: null, liveBaseUrl: null,
+    sources: [
+      'SIP-045 section 3.1.2 (bond timing)',
+      'stacks-core stackslib/src/burnchains/burnchain.rs ("bitcoin","signet") => signet_default()',
+      'stacks-core stackslib/src/burnchains/mod.rs signet_default() (reward 10 / prepare 3)',
+      'bitgo-workspace modules/statics/src/networks.ts StxSignet (chain ID 1280)',
+    ],
+  },
+};
+
+function el(id) { return document.getElementById(id); }
+
+function resolvedNetwork() {
+  const net = NETWORKS[el('network').value];
+  const overrideHeight = el('anchorHeight').value.trim();
+  const overrideDate = el('anchorDate').value;
+  const liveProvider = el('liveProvider').value;
+  const liveBaseUrl = el('liveBaseUrl').value.trim();
+  let anchor = null;
+  let anchorSource = 'default';
+  if (overrideHeight !== '' && overrideDate !== '') {
+    const height = Number(overrideHeight);
+    const iso = new Date(overrideDate).toISOString();
+    if (!Number.isInteger(height) || height < 0) throw new Error('anchor height must be a non-negative integer');
+    if (Number.isNaN(new Date(iso).getTime())) throw new Error('anchor date is not valid');
+    anchor = { height, isoDate: iso };
+    anchorSource = 'override';
+  } else if ((overrideHeight !== '') !== (overrideDate !== '')) {
+    throw new Error('anchor override needs both height and date');
+  } else if (liveProvider !== '') {
+    anchor = window.__liveAnchor || null;
+    anchorSource = 'live';
+    if (!anchor) throw new Error('no live anchor fetched yet; click "Fetch live anchor" first');
+  } else if (net.anchor) {
+    anchor = { ...net.anchor };
+  }
+  if (!anchor) {
+    throw new Error(`network ${net.coin} has no default anchor (private networks publish none); enter an anchor override or fetch a live anchor`);
+  }
+  if (anchor.height < net.activationBurnHeight) {
+    throw new Error(`network ${net.coin}: anchor height ${anchor.height} precedes pox-5 activation height ${net.activationBurnHeight}`);
+  }
+  return { ...net, anchor, anchorSource };
+}
+
+function heightToDate(net, height) {
+  const anchorDate = new Date(net.anchor.isoDate);
+  return new Date(anchorDate.getTime() + (height - net.anchor.height) * net.avgBlockSeconds * 1000);
+}
+
+function currentHeightAt(net, now) {
+  return Math.floor(net.anchor.height + (now.getTime() - new Date(net.anchor.isoDate).getTime()) / (net.avgBlockSeconds * 1000));
+}
+
+function cycleIndexAt(net, height) {
+  if (height < net.activationBurnHeight) throw new Error(`network ${net.coin}: burn height ${height} precedes pox-5 activation height ${net.activationBurnHeight}`);
+  return Math.floor((height - net.activationBurnHeight) / net.rewardCycleBlocks);
+}
+
+function cycleStart(net, index) { return net.activationBurnHeight + index * net.rewardCycleBlocks; }
+function cycleEnd(net, index) { return cycleStart(net, index + 1); }
+function cyclePrepareStart(net, index) { return cycleEnd(net, index) - net.preparePhaseBlocks; }
+
+function nextCycleStart(net, height) {
+  if (height < net.activationBurnHeight) return net.activationBurnHeight;
+  return cycleStart(net, cycleIndexAt(net, height) + 1);
+}
+
+function firstTermCycleIndex(net, bond) {
+  if (bond.startBurnHt !== undefined) return cycleIndexAt(net, bond.startBurnHt);
+  const ref = Math.max(bond.lockHeight ?? 0, net.activationBurnHeight);
+  if (ref === net.activationBurnHeight) return 0;
+  return cycleIndexAt(net, ref) + 1;
+}
+
+function bondCycleIndices(net, bond) {
+  const first = firstTermCycleIndex(net, bond);
+  const indices = [];
+  const unlock = bond.unlockBurnHeight;
+  const maxCycles = bond.numCycles ?? 24; // SIP-045 3.1.2: 24 distributions per bonding period
+  for (let index = first; ; index++) {
+    if (indices.length >= maxCycles) break;
+    if (unlock !== undefined && cycleStart(net, index) >= unlock) break;
+    indices.push(index);
+    if (indices.length > 10000) throw new Error(`network ${net.coin}: reward-cycle range exceeds 10,000 cycles; check bond inputs`);
+  }
+  return indices;
+}
+
+function describeCycle(net, index) {
+  return `burn heights ${cycleStart(net, index)}-${cycleEnd(net, index) - 1} (prepare phase from ${cyclePrepareStart(net, index)}); estimated date for start: ${heightToDate(net, cycleStart(net, index)).toISOString()}`;
+}
+
+function bondTitle(net, bond) {
+  return `${net.coin}${bond.label ? ' ' + bond.label : ''}${bond.amount !== undefined ? ` (${bond.amount})` : ''}`;
+}
+
+function buildBondEvents(net, bond, safetyMarginBlocks) {
+  const events = [];
+  const push = (kind, height, summary, description) => {
+    events.push({ kind, height, date: heightToDate(net, height), summary, description });
+  };
+  if (net.stacksOnly) {
+    if (bond.startBurnHt === undefined || bond.numCycles === undefined) throw new Error(`network ${net.coin} is STX-only: startBurnHt and numCycles are required to schedule a stake`);
+    if (bond.startBurnHt < net.activationBurnHeight) throw new Error(`network ${net.coin}: startBurnHt ${bond.startBurnHt} precedes pox-5 activation height ${net.activationBurnHeight}`);
+    const title = bondTitle(net, bond);
+    push('registration-window', bond.startBurnHt, `${title} — STX stake start`, describeCycle(net, cycleIndexAt(net, bond.startBurnHt)));
+    for (const index of bondCycleIndices(net, bond)) push('reward-cycle', cycleStart(net, index), `${title} — reward cycle ${index}`, describeCycle(net, index));
+    const lockEnd = cycleStart(net, cycleIndexAt(net, bond.startBurnHt) + bond.numCycles);
+    push('stx-lock-end', lockEnd, `${title} — STX lock end`, `stake of ${bond.numCycles} cycles ends at burn height ${lockEnd}`);
+    return events;
+  }
+  if (bond.unlockBurnHeight === undefined) throw new Error(`network ${net.coin}: unlockBurnHeight is required for a BTC-backed bond`);
+  if (bond.unlockBurnHeight < net.activationBurnHeight) throw new Error(`network ${net.coin}: unlockBurnHeight ${bond.unlockBurnHeight} precedes pox-5 activation height ${net.activationBurnHeight}`);
+  const title = bondTitle(net, bond);
+  if (bond.lockHeight !== undefined) push('lockup-funding', bond.lockHeight, `${title} — BTC lockup funding`, `lockup UTXO confirmed at burn height ${bond.lockHeight}`);
+  const registration = nextCycleStart(net, Math.max(bond.lockHeight ?? 0, net.activationBurnHeight));
+  push('registration-window', registration, `${title} — register-for-bond window`, `first pox-5 reward cycle that can credit the lockup; ${describeCycle(net, cycleIndexAt(net, registration))}`);
+  for (const index of bondCycleIndices(net, bond)) push('reward-cycle', cycleStart(net, index), `${title} — reward cycle ${index}`, describeCycle(net, index));
+  push('cltv-unlock', bond.unlockBurnHeight, `${title} — CLTV unlock`, `BTC timelock expires at burn height ${bond.unlockBurnHeight}; lockup becomes spendable`);
+  push('post-cltv-recovery', bond.unlockBurnHeight + safetyMarginBlocks, `${title} — post-CLTV recovery (earliest)`, `earliest estimated recovery spend (${safetyMarginBlocks}-block safety margin after CLTV unlock)`);
+  return events;
+}
+
+function buildUpcomingCycleEvents(net, count, fromHeight) {
+  const events = [];
+  let index = cycleIndexAt(net, Math.max(fromHeight, net.activationBurnHeight));
+  if (fromHeight >= net.activationBurnHeight) index += 1;
+  for (let emitted = 0; emitted < count; emitted++, index++) {
+    const start = cycleStart(net, index);
+    events.push({ kind: 'reward-cycle', height: start, date: heightToDate(net, start), summary: `${net.coin} — reward cycle ${index} starts`, description: describeCycle(net, index) });
+  }
+  return events;
+}
+
+async function fetchLiveAnchor(provider, baseUrl) {
+  const j = async (url) => {
+    const res = await fetch(url, { headers: { accept: 'application/json' } });
+    if (!res.ok) throw new Error(`GET ${url} failed: HTTP ${res.status}`);
+    return res.json();
+  };
+  const t = async (url) => {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`GET ${url} failed: HTTP ${res.status}`);
+    return res.text();
+  };
+  if (provider === 'blockstream') {
+    const height = Number((await t(`${baseUrl}/api/blocks/tip/height`)).trim());
+    if (!Number.isInteger(height)) throw new Error('blockstream tip height is not an integer');
+    const hash = (await t(`${baseUrl}/api/block-height/${height}`)).trim();
+    const block = await j(`${baseUrl}/api/block/${hash}`);
+    if (typeof block.timestamp !== 'number') throw new Error('blockstream block has no timestamp');
+    return { height, isoDate: new Date(block.timestamp * 1000).toISOString() };
+  }
+  const info = await j(`${baseUrl}/v2/info`);
+  if (typeof info.burn_block_height !== 'number') throw new Error('hiro /v2/info has no burn_block_height');
+  const block = await j(`${baseUrl}/extended/v1/block/by_burn_block_height/${info.burn_block_height}`);
+  if (typeof block.burn_block_time !== 'number') throw new Error('hiro block has no burn_block_time');
+  return { height: info.burn_block_height, isoDate: new Date(block.burn_block_time * 1000).toISOString() };
+}
+
+function escapeIcsText(value) {
+  return value.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+}
+
+function icsDateTime(date) {
+  return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+}
+
+function foldIcsLine(line) {
+  if (line.length <= 75) return line;
+  const chunks = [];
+  for (let i = 0; i < line.length; i += 74) {
+    chunks.push((i === 0 ? '' : ' ') + line.slice(i, i + 74));
+  }
+  return chunks.join('\r\n');
+}
+
+function renderIcs(events, calendarName, now) {
+  const lines = [
+    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//BitGo//pox5-bond-calendar//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
+    `X-WR-CALNAME:${escapeIcsText(calendarName)}`,
+  ];
+  for (const event of events) {
+    lines.push(
+      'BEGIN:VEVENT',
+      `UID:${escapeIcsText(event.uid)}`,
+      `DTSTAMP:${icsDateTime(now)}`,
+      `DTSTART:${icsDateTime(event.date)}`,
+      `DTEND:${icsDateTime(event.date)}`,
+      `SUMMARY:${escapeIcsText(event.summary)}`,
+      `DESCRIPTION:${escapeIcsText(`${event.description} [height ${event.height}; estimated]`)}`,
+      'END:VEVENT'
+    );
+  }
+  lines.push('END:VCALENDAR');
+  return lines.map(foldIcsLine).join('\r\n') + '\r\n';
+}
+
+let lastEvents = [];
+
+function formatDate(date) {
+  return `${date.toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '')}Z`;
+}
+
+function eventTable(events) {
+  const rows = events.map((event) => `<tr><td class="kind">${event.kind}</td><td>${event.height}</td><td>${formatDate(event.date)}</td><td>${escapeIcsText(event.summary)}</td></tr>`).join('');
+  return `<table><thead><tr><th>Event</th><th>Burn height</th><th>Estimated UTC date</th><th>Summary</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function updateNetworkInfo() {
+  const net = NETWORKS[el('network').value];
+  el('networkInfo').innerHTML =
+    `pox-5 activation: burn height ${net.activationBurnHeight} · reward cycle: ${net.rewardCycleBlocks} burn blocks (prepare: last ${net.preparePhaseBlocks}) · avg block: ${net.avgBlockSeconds}s · ` +
+    (net.anchor ? `default anchor ${net.anchor.height} @ ${net.anchor.isoDate}` : 'no default anchor (private network) — anchor override or live fetch required') +
+    `<ul class="sources">${net.sources.map((s) => `<li>${s}</li>`).join('')}</ul>`;
+  if (!net.anchor) {
+    el('anchorHeight').placeholder = 'required';
+    el('anchorDate').placeholder = 'required';
+  }
+}
+
+async function doFetchLive() {
+  const error = el('formError');
+  error.textContent = '';
+  try {
+    const provider = el('liveProvider').value || NETWORKS[el('network').value].liveProvider;
+    const baseUrl = el('liveBaseUrl').value.trim() || NETWORKS[el('network').value].liveBaseUrl;
+    if (!provider || !baseUrl) throw new Error('this network has no built-in live provider; pick blockstream or hiro and set a base URL');
+    window.__liveAnchor = await fetchLiveAnchor(provider, baseUrl);
+    el('anchorInfo').textContent = `live anchor: ${window.__liveAnchor.height} @ ${window.__liveAnchor.isoDate}`;
+  } catch (err) {
+    window.__liveAnchor = null;
+    error.textContent = `error: ${err.message}`;
+  }
+}
+
+function readBond() {
+  const json = el('bondsJson').value.trim();
+  if (json !== '') return JSON.parse(json);
+  const num = (id, { required = false, min = 1 } = {}) => {
+    const raw = el(id).value.trim();
+    if (raw === '') {
+      if (required) throw new Error(`${id} is required`);
+      return undefined;
+    }
+    if (!/^\d+$/.test(raw) || Number(raw) < min) throw new Error(`${id} must be an integer >= ${min}`);
+    return Number(raw);
+  };
+  const amountRaw = el('amount').value.trim();
+  const bond = {
+    network: el('network').value,
+    label: el('label').value.trim() || undefined,
+    amount: amountRaw === '' ? undefined : ( /^\d+$/.test(amountRaw) ? amountRaw : (() => { throw new Error('amount must be a decimal string'); })() ),
+    unlockBurnHeight: num('unlockBurnHeight', { min: 1 }),
+    lockHeight: num('lockHeight', { min: 0 }),
+    startBurnHt: num('startBurnHt', { min: 0 }),
+    numCycles: num('numCycles', { min: 1 }),
+  };
+  return bond;
+}
+
+function compute() {
+  const error = el('formError');
+  error.textContent = '';
+  el('output').innerHTML = '';
+  try {
+    const net = resolvedNetwork();
+    const safetyMargin = Number(el('safetyMargin').value || 6);
+    const upcomingCycles = Number(el('upcomingCycles').value || 0);
+    const now = new Date();
+    const input = readBond();
+    const bonds = Array.isArray(input) ? input : [input];
+    for (const bond of bonds) {
+      if (bond.network !== net.coin) throw new Error(`bond network "${bond.network}" does not match selected network "${net.coin}"`);
+      if (!net.stacksOnly && bond.unlockBurnHeight === undefined) throw new Error(`network ${net.coin}: unlockBurnHeight is required for a BTC-backed bond`);
+      if (net.stacksOnly && bond.unlockBurnHeight !== undefined) throw new Error(`network ${net.coin} is STX-only and does not take unlockBurnHeight`);
+    }
+    const cycleEvents = upcomingCycles > 0 ? buildUpcomingCycleEvents(net, upcomingCycles, currentHeightAt(net, now)) : [];
+    const bondEventGroups = bonds.map((bond) => buildBondEvents(net, bond, safetyMargin));
+    lastEvents = [...cycleEvents, ...bondEventGroups.flat()].map((event, i) => ({ ...event, uid: `pox5-${net.coin}-${event.kind}-${event.height}-${i}@pox5-bond-calendar` }));
+    const anchorDate = new Date(net.anchor.isoDate);
+    const blocksSince = Math.floor((now.getTime() - anchorDate.getTime()) / (net.avgBlockSeconds * 1000));
+    el('output').innerHTML = `
+      <h2>${net.coin} (${net.burnChain}${net.stacksOnly ? ', STX-only' : ', BTC-backed'})</h2>
+      <p class="note">pox-5 activation: burn height ${net.activationBurnHeight} · reward cycle: ${net.rewardCycleBlocks} blocks (prepare: last ${net.preparePhaseBlocks}) · avg block: ${net.avgBlockSeconds}s · anchor ${net.anchor.height} @ ${net.anchor.isoDate} (${net.anchorSource}) · ~${blocksSince} blocks since anchor · SIP-045: the L1 timelock normally expires ${SIP045.relockWindow} blocks before the bonding period ends (renewal window)</p>
+      ${cycleEvents.length ? `<h2>Upcoming reward cycles</h2>${eventTable(cycleEvents)}` : ''}
+      ${bondEventGroups.map((events, i) => `<h2>Bond ${bonds[i].label ?? 'bond-' + (i + 1)}</h2>${eventTable(events)}`).join('')}
+      <p class="note">Safety margin for post-CLTV recovery: ${safetyMargin} burn blocks.</p>`;
+  } catch (err) {
+    error.textContent = `error: ${err.message}`;
+  }
+}
+
+function downloadIcs() {
+  if (lastEvents.length === 0) {
+    el('formError').textContent = 'error: compute a calendar first';
+    return;
+  }
+  const blob = new Blob([renderIcs(lastEvents, `PoX-5 Bond Calendar — ${el('network').value}`, new Date())], { type: 'text/calendar' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${el('network').value}.ics`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+el('network').innerHTML = Object.keys(NETWORKS).map((coin) => `<option value="${coin}">${coin}</option>`).join('');
+el('network').addEventListener('change', () => { window.__liveAnchor = null; el('anchorInfo').textContent = ''; updateNetworkInfo(); });
+el('fetchLive').addEventListener('click', doFetchLive);
+el('compute').addEventListener('click', compute);
+el('downloadIcs').addEventListener('click', downloadIcs);
+updateNetworkInfo();
+</script>
+</body>
+</html>
