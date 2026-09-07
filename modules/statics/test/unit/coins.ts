@@ -14,8 +14,11 @@ import {
   EosCoin,
   Erc20Coin,
   EthereumNetwork,
+  EVM_TOKEN_FEATURES,
+  EVM_TOKEN_FEATURES_NON_EIP1559,
   getFormattedTokenConfigForCoin,
   getFormattedTokens,
+  getNetworkFeatures,
   HederaToken,
   KeyCurve,
   Networks,
@@ -24,6 +27,7 @@ import {
   SolCoin,
   SuiCoin,
   tokens,
+  TrimmedAmsTokenConfig,
   UnderlyingAsset,
   UtxoCoin,
   XrpCoin,
@@ -1665,6 +1669,80 @@ describe('create token map using config details', () => {
       should(coinName).not.be.undefined();
       // Note: This may return 'tzketh' due to legacy mapping - verify expected behavior
     });
+  });
+});
+
+describe('getNetworkFeatures EVM fallback (drift guard)', () => {
+  it('should return EVM_TOKEN_FEATURES for every mainnet family that supports ERC20 but has no explicit entry in networkFeatureMapForTokens', () => {
+    const erc20Families = new Set(
+      allCoinsAndTokens
+        .filter(
+          (coin) =>
+            !coin.isToken &&
+            coin.network.type === NetworkType.MAINNET &&
+            coin.features.includes(CoinFeature.SUPPORTS_ERC20)
+        )
+        .map((coin) => coin.family)
+    );
+
+    erc20Families.forEach((family) => {
+      const features = getNetworkFeatures(family);
+      features?.should.not.be.undefined();
+    });
+
+    // baseeth is the concrete gap this fallback closes: it has no hand-written entry in
+    // networkFeatureMapForTokens, but its base coin supports ERC20.
+    getNetworkFeatures('baseeth')?.should.deepEqual(EVM_TOKEN_FEATURES);
+  });
+});
+
+describe('AMS token feature composition for EVM fallback families (drift guard)', () => {
+  function trimmedConfigFor(family: string, networkName: string): TrimmedAmsTokenConfig {
+    return {
+      id: 'f1a6f7d2-5c1e-4b9a-8f0d-1e2a3b4c5d6f',
+      fullName: `${family} Faketoken`,
+      name: `t${family}:faketoken`,
+      prefix: '',
+      suffix: `T${family.toUpperCase()}:FAKETOKEN`,
+      baseUnit: 'wei',
+      kind: 'crypto',
+      family,
+      isToken: true,
+      decimalPlaces: 18,
+      asset: `t${family}:faketoken`,
+      primaryKeyCurve: 'secp256k1',
+      contractAddress: '0x1234567890abcdef1234567890abcdef12345678',
+      network: { name: networkName },
+      additionalFeatures: [CoinFeature.STAKING],
+      excludedFeatures: [CoinFeature.SHARED_EVM_SDK],
+    };
+  }
+
+  it('should compose EVM_TOKEN_FEATURES + additionalFeatures - excludedFeatures for baseeth (EIP1559-supporting fallback family)', () => {
+    const token = createTokenUsingTrimmedConfigDetails(trimmedConfigFor('baseeth', 'BaseChainTestnet'));
+    token?.should.not.be.undefined();
+
+    const expectedFeatures = new Set(EVM_TOKEN_FEATURES);
+    expectedFeatures.add(CoinFeature.STAKING);
+    expectedFeatures.delete(CoinFeature.SHARED_EVM_SDK);
+
+    token?.features.should.have.length(expectedFeatures.size);
+    expectedFeatures.forEach((feature) => token?.features.should.containEql(feature));
+    token?.features.should.not.containEql(CoinFeature.SHARED_EVM_SDK);
+  });
+
+  it('should compose EVM_TOKEN_FEATURES_NON_EIP1559 + additionalFeatures - excludedFeatures for prividiumeth (non-EIP1559 fallback family)', () => {
+    const token = createTokenUsingTrimmedConfigDetails(trimmedConfigFor('prividiumeth', 'Prividium Ethereum Testnet'));
+    token?.should.not.be.undefined();
+
+    const expectedFeatures = new Set(EVM_TOKEN_FEATURES_NON_EIP1559);
+    expectedFeatures.add(CoinFeature.STAKING);
+    expectedFeatures.delete(CoinFeature.SHARED_EVM_SDK);
+
+    token?.features.should.have.length(expectedFeatures.size);
+    expectedFeatures.forEach((feature) => token?.features.should.containEql(feature));
+    token?.features.should.not.containEql(CoinFeature.EIP1559);
+    token?.features.should.not.containEql(CoinFeature.SHARED_EVM_SDK);
   });
 });
 

@@ -1232,4 +1232,28 @@ export const reducedTokenConfigForAllChains = {
       excludedFeatures: [],
     },
   ],
+  // 'baseeth' has no explicit entry in networkFeatureMapForTokens; this exercises the
+  // SUPPORTS_ERC20-derived EVM_TOKEN_FEATURES fallback in getNetworkFeatures().
+  'tbaseeth:faketoken': [
+    {
+      id: 'b3a6f7d2-5c1e-4b9a-8f0d-1e2a3b4c5d6e',
+      fullName: 'Base Testnet Faketoken',
+      name: 'tbaseeth:faketoken',
+      prefix: '',
+      suffix: 'TBASEETH:FAKETOKEN',
+      baseUnit: 'wei',
+      kind: 'crypto',
+      family: 'baseeth',
+      isToken: true,
+      decimalPlaces: 18,
+      asset: 'tbaseeth:faketoken',
+      primaryKeyCurve: 'secp256k1',
+      contractAddress: '0x1234567890abcdef1234567890abcdef12345678',
+      network: {
+        name: 'BaseChainTestnet',
+      },
+      additionalFeatures: [],
+      excludedFeatures: [],
+    },
+  ],
 };

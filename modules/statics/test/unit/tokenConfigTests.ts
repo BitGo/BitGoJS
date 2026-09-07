@@ -22,6 +22,8 @@ import {
   BaseContractAddressConfig,
 } from '../../src/tokenConfig';
 import { EthLikeERC20Token } from '../../src/account';
+import { allCoinsAndTokens } from '../../src/allCoinsAndTokens';
+import { NetworkType } from '../../src/networks';
 
 describe('EthLike Token Config Functions', function () {
   describe('getEthLikeTokenConfig', function () {
@@ -760,5 +762,37 @@ describe('EthLike Token Config Functions', function () {
         verifyTokens(formattedTokens.testnet.xlm.tokens);
       }).should.not.throw();
     });
+  });
+});
+
+describe('getFormattedTokensByNetwork EVM family coverage (drift guard)', () => {
+  it('should emit a bucket for every mainnet family that supports ERC20, even without a hand-written entry', () => {
+    const erc20Families = new Set(
+      allCoinsAndTokens
+        .filter(
+          (coin) =>
+            !coin.isToken &&
+            coin.network.type === NetworkType.MAINNET &&
+            coin.features.includes(CoinFeature.SUPPORTS_ERC20)
+        )
+        .map((coin) => coin.family)
+    );
+
+    const formattedTokens = getFormattedTokens();
+    // TokenNetwork only declares explicit keys for known families; cast to a dynamic
+    // lookup here since this test intentionally probes it with an arbitrary family string.
+    const bitcoinTokensByFamily = formattedTokens.bitcoin as unknown as Record<
+      string,
+      { tokens: unknown[] } | undefined
+    >;
+
+    erc20Families.forEach((family) => {
+      should(bitcoinTokensByFamily[family]).not.be.undefined();
+      should(bitcoinTokensByFamily[family]?.tokens).be.an.Array();
+    });
+
+    // baseeth is the concrete gap this closes: it has no hand-written entry in
+    // getFormattedTokensByNetwork's returned object, but its base coin supports ERC20.
+    should(formattedTokens.bitcoin.baseeth).not.be.undefined();
   });
 });
