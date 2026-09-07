@@ -147,6 +147,7 @@ export const BuildParams = t.exact(
       stakingParams: t.unknown,
       stakingOptions: t.unknown,
       unstakingOptions: t.unknown,
+      unstakingParams: t.unknown,
       eip1559: t.unknown,
       keyregTxBase64: t.unknown,
       closeRemainderTo: t.unknown,

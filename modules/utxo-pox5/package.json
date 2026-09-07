@@ -1,0 +1,57 @@
+{
+  "name": "@bitgo/utxo-pox5",
+  "version": "0.0.0",
+  "private": true,
+  "description": "PoX-5 local protocol and Wallet Platform integration harness",
+  "scripts": {
+    "build": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check '**/*.{ts,js,json,md,html,css}'",
+    "lint": "eslint --quiet .",
+    "unit-test": "mocha --recursive 'test/**/*.test.ts'",
+    "integration-test:pox5": "tsx test/integration/pox5/run.ts test",
+    "integration-test:pox5:bitgo-api:fund": "mocha test/integration/pox5/bitgo-api.fund.integration.ts",
+    "integration-test:pox5:bitgo-api:fake-stake": "mocha test/integration/pox5/bitgo-api.fake-stake.integration.ts",
+    "integration-test:pox5:bitgo-api:wp-sign": "mocha test/integration/pox5/bitgo-api.wp-sign.integration.ts",
+    "integration-test:pox5:up": "tsx test/integration/pox5/run.ts up",
+    "integration-test:pox5:down": "tsx test/integration/pox5/run.ts down",
+    "integration-test:pox5:offline": "tsx test/integration/pox5/run.ts offline",
+    "integration-test:pox5:fund": "tsx test/integration/pox5/run.ts fund",
+    "integration-test:pox5:register": "tsx test/integration/pox5/run.ts register",
+    "pox5-debug": "tsx test/integration/pox5/cli.ts",
+    "pox5-dashboard": "tsx test/integration/pox5/dashboard.ts",
+    "test:pox5-local": "tsx test/integration/pox5/run.ts run",
+    "test:pox5-local:mine": "tsx test/integration/pox5/run.ts mine",
+    "test:pox5-local:status": "tsx test/integration/pox5/run.ts status"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/utxo-pox5"
+  },
+  "dependencies": {
+    "@bitgo/sdk-api": "^3.0.2",
+    "@bitgo/sdk-coin-btc": "^2.14.2",
+    "@bitgo/sdk-core": "^38.18.0",
+    "@bitgo/utxo-core": "^1.41.2",
+    "@bitgo/utxo-descriptors": "^1.5.2",
+    "@bitgo/utxo-lib": "^11.24.4",
+    "@bitgo/utxo-staking": "^1.43.2",
+    "@bitgo/wasm-utxo": "^5.1.0",
+    "bip39": "^3.0.4"
+  },
+  "devDependencies": {
+    "@stacks/network": "1.2.2",
+    "@stacks/transactions": "2.0.1",
+    "yargs": "^17.7.2"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  }
+}

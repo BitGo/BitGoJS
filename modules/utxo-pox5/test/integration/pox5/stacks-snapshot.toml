@@ -1,0 +1,132 @@
+[node]
+name = "bitgo-regtest-snapshot"
+working_dir = "/chainstate/stacks-blockchain-miner-data"
+rpc_bind = "0.0.0.0:20443"
+p2p_bind = "0.0.0.0:20444"
+p2p_address = "127.0.0.1:20443"
+data_url = "http://127.0.0.1:20443"
+seed = "$MINER_SEED"
+local_peer_seed = "$MINER_SEED"
+miner = true
+stacker = false
+mine_microblocks = false
+wait_time_for_blocks = 0
+wait_time_for_microblocks = 0
+pox_sync_sample_secs = 0
+use_test_genesis_chainstate = true
+txindex = true
+
+[miner]
+first_attempt_time_ms = 1000
+subsequent_attempt_time_ms = 1000
+microblock_attempt_time_ms = 10
+mining_key = "19ec1c3e31d139c989a23a27eac60d1abfad5277d3ae9604242514c738258efa01"
+
+[connection_options]
+disable_block_download = true
+disable_inbound_handshakes = false
+disable_inbound_walks = false
+public_ip_address = "1.1.1.1:1234"
+
+[burnchain]
+chain = "bitcoin"
+mode = "krypton"
+peer_host = "$BITCOIN_PEER_HOST"
+peer_port = $BITCOIN_PEER_PORT
+rpc_port = $BITCOIN_RPC_PORT
+username = "$BITCOIN_RPC_USER"
+password = "$BITCOIN_RPC_PASS"
+wallet_name = "stx_miner_0"
+poll_time_secs = 1
+pox_prepare_length = 3
+pox_reward_length = 10
+burn_fee_cap = 20000
+chain_id = 0x80000000
+
+[[burnchain.epochs]]
+epoch_name = "1.0"
+start_height = 0
+
+[[burnchain.epochs]]
+epoch_name = "2.0"
+start_height = 0
+
+[[burnchain.epochs]]
+epoch_name = "2.05"
+start_height = 1
+
+[[burnchain.epochs]]
+epoch_name = "2.1"
+start_height = 3
+
+[[burnchain.epochs]]
+epoch_name = "2.2"
+start_height = 4
+
+[[burnchain.epochs]]
+epoch_name = "2.3"
+start_height = 5
+
+[[burnchain.epochs]]
+epoch_name = "2.4"
+start_height = 6
+
+[[burnchain.epochs]]
+epoch_name = "2.5"
+start_height = 108
+
+[[burnchain.epochs]]
+epoch_name = "3.0"
+start_height = 203
+
+[[burnchain.epochs]]
+epoch_name = "3.1"
+start_height = 204
+
+[[burnchain.epochs]]
+epoch_name = "3.2"
+start_height = 205
+
+[[burnchain.epochs]]
+epoch_name = "3.3"
+start_height = 206
+
+[[burnchain.epochs]]
+epoch_name = "3.4"
+start_height = 207
+
+[[burnchain.epochs]]
+epoch_name = "4.0"
+start_height = 223
+
+[[burnchain.epochs]]
+epoch_name = "4.1"
+start_height = 224
+
+[[ustx_balance]]
+address = "STB44HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6"
+amount = 10000000000000000
+
+[[ustx_balance]]
+address = "ST319CF5WV77KYR1H3GT0GZ7B8Q4AQPY42ETP1VPF"
+amount = 10000000000000000
+
+[[ustx_balance]]
+address = "ST221Z6TDTC5E0BYR2V624Q2ST6R0Q71T78WTAX6H"
+amount = 10000000000000000
+
+[[ustx_balance]]
+address = "ST2TFVBMRPS5SSNP98DQKQ5JNB2B6NZM91C4K3P7B"
+amount = 10000000000000000
+
+[[ustx_balance]]
+address = "ST3AM1A56AK2C1XAFJ4115ZSV26EB49BVQ10MGCS0"
+amount = 10000000000000000
+
+[[ustx_balance]]
+address = "ST3PF13W7Z0RRM42A8VZRVFQ75SV1K26RXEP8YGKJ"
+amount = 10000000000000000
+
+[[ustx_balance]]
+address = "ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP"
+amount = 10000000000000000

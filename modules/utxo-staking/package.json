@@ -71,8 +71,5 @@
     "fp-ts": "^2.16.2",
     "io-ts": "npm:@bitgo-forks/io-ts@2.1.4",
     "io-ts-types": "^0.5.19"
-  },
-  "devDependencies": {
-    "yargs": "^17.7.2"
   }
 }

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PoX-5 Workbench</title>
+    <link rel="icon" href="/favicon.svg" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <div class="dashboard-area">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">UTXO-POX5 / LOCAL OPERATOR CONSOLE</p>
+            <h1>PoX-5 Workbench</h1>
+          </div>
+          <nav aria-label="Workbench pages">
+            <a href="#/nodes" data-route="nodes">Nodes &amp; network</a>
+            <a href="#/wallets" data-route="wallets">Wallets</a>
+            <a href="#/bitgo-api" data-route="bitgo-api">BitGo API</a>
+            <a href="#/staked-funds" data-route="staked-funds">Staked funds</a>
+          </nav>
+        </header>
+
+        <section id="message" class="message" aria-live="polite">Select a page to begin.</section>
+
+        <section class="page" data-page="nodes">
+          <div class="page-heading">
+            <div>
+              <p class="eyebrow">01 / INFRASTRUCTURE</p>
+              <h2>Nodes &amp; network</h2>
+            </div>
+            <button data-refresh="nodes" class="quiet">Refresh</button>
+          </div>
+          <div class="configuration page-configuration">
+            <label
+              >Network<select id="network">
+                <option value="tbtcstx">tbtcstx / public testnet</option>
+                <option value="tbtcstxprivate1" selected>tbtcstxprivate1 / private testnet</option>
+              </select></label
+            >
+            <label
+              >Fullnode mode<select id="fullnodeMode">
+                <option value="direct" selected>Direct RPC / no indexer-utxo</option>
+                <option value="indexer">indexer-utxo Compose</option>
+              </select></label
+            >
+            <p class="notice">Choose which shared testnet and fullnode orchestration mode this workbench controls.</p>
+          </div>
+          <p class="lede">
+            Start the selected localhost Bitcoin Core service and inspect its direct RPC state alongside the Stacks
+            network.
+          </p>
+          <div class="actions">
+            <button data-action="up">Start fullnode</button
+            ><button data-action="down" class="quiet">Stop fullnode</button>
+          </div>
+          <div class="stats">
+            <article>
+              <h3>Bitcoin Core</h3>
+              <pre id="nodeBitcoin">Waiting for status</pre>
+            </article>
+            <article>
+              <h3>Stacks node</h3>
+              <pre id="nodeStacks">Waiting for status</pre>
+            </article>
+            <article>
+              <h3>Endpoints</h3>
+              <pre id="nodeEndpoints">Waiting for status</pre>
+            </article>
+          </div>
+        </section>
+
+        <section class="page" data-page="wallets" hidden>
+          <div class="page-heading">
+            <div>
+              <p class="eyebrow">02 / WALLETS</p>
+              <h2>BTC + STX wallets</h2>
+            </div>
+            <button data-refresh="wallets" class="quiet">Refresh</button>
+          </div>
+          <div class="configuration page-configuration wallet-configuration">
+            <label
+              >Account source<select id="accountPreset">
+                <option value="phrase">Seed phrase</option>
+                <option value="private1-account5" selected>Private-1 public fixture / account5</option>
+              </select></label
+            >
+            <label
+              >Development seed phrase<input
+                id="seedPhrase"
+                type="password"
+                value="too many secrets"
+                autocomplete="off"
+            /></label>
+            <p class="notice">
+              The phrase is request-scoped and any text is deterministically translated to BIP39 for development. Clear
+              it to use POX5_STACKS_STAKER_ADDRESS and POX5_STACKS_PRIVATE_KEY from the server environment.
+            </p>
+          </div>
+          <div class="wallet-summary">
+            <article>
+              <h3>BTC address</h3>
+              <code id="btcAddress">Waiting for wallet</code>
+            </article>
+            <article>
+              <h3>BTC balance</h3>
+              <pre id="btcBalance">Waiting for wallet</pre>
+            </article>
+            <article>
+              <h3>STX address</h3>
+              <code id="stxAddress">Waiting for wallet</code>
+            </article>
+            <article>
+              <h3>STX account</h3>
+              <pre id="stxBalance">Waiting for wallet</pre>
+            </article>
+          </div>
+          <div class="actions"><button data-action="faucet">Request BTC faucet funds</button></div>
+          <div class="wallet-tables">
+            <article class="table-card">
+              <h3>BTC transactions</h3>
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Category</th>
+                      <th>Amount BTC</th>
+                      <th>Confirmations</th>
+                      <th>Address</th>
+                      <th>Txid</th>
+                    </tr>
+                  </thead>
+                  <tbody id="btcTransactions">
+                    <tr>
+                      <td colspan="5">Waiting for wallet</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </article>
+            <article class="table-card">
+              <h3>STX transactions</h3>
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Type</th>
+                      <th>Status</th>
+                      <th>Block</th>
+                      <th>Fee</th>
+                      <th>Txid</th>
+                    </tr>
+                  </thead>
+                  <tbody id="stxTransactions">
+                    <tr>
+                      <td colspan="5">Waiting for wallet</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="page" data-page="bitgo-api" hidden>
+          <div class="page-heading">
+            <div>
+              <p class="eyebrow">03 / REMOTE WALLET PLATFORM</p>
+              <h2>BitGo API</h2>
+            </div>
+            <button data-refresh="bitgo-api" class="quiet">Refresh API state</button>
+          </div>
+          <p class="lede">
+            Exercise staging or test wallets separately from the local fullnode harness. API tokens stay in the
+            dashboard server environment; wallet passphrases are sent only for the requested create or sign action.
+          </p>
+          <div class="configuration page-configuration bitgo-configuration">
+            <label
+              >BitGo environment<select id="bitgoEnvironment">
+                <option value="staging" selected>Staging</option>
+                <option value="test">Test</option>
+              </select></label
+            >
+            <label
+              >Coin<select id="bitgoCoin">
+                <option value="tbtcstxprivate1" selected>tbtcstxprivate1 / private testnet</option>
+                <option value="tbtcstx">tbtcstx / public testnet</option>
+              </select></label
+            >
+            <article class="bitgo-connection">
+              <h3>API authentication</h3>
+              <pre id="bitgoConnectionStatus">Not checked</pre>
+            </article>
+            <p class="notice">
+              Only test and staging environments are available here. Creating wallets and submitting transactions
+              changes remote testnet state. The paired PoX-5 wallet is created while preparing a deposit.
+            </p>
+          </div>
+
+          <article class="table-card">
+            <h3>Fixed-script and paired staking wallets</h3>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Label</th>
+                    <th>Wallet ID</th>
+                    <th>Balance sats</th>
+                    <th>Type</th>
+                    <th>Paired wallet</th>
+                  </tr>
+                </thead>
+                <tbody id="bitgoWalletRows">
+                  <tr>
+                    <td colspan="5">Refresh to discover BitGo wallets</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+
+          <div class="bitgo-operations">
+            <article class="bitgo-card">
+              <h3>Create fixed-script wallet</h3>
+              <div class="bitgo-form">
+                <label>Wallet label<input id="bitgoWalletLabel" maxlength="80" value="pox5-private1-test" /> </label>
+                <label
+                  >Wallet passphrase<input
+                    id="bitgoCreatePassphrase"
+                    type="password"
+                    autocomplete="new-password"
+                    maxlength="256"
+                  />
+                </label>
+                <button data-bitgo-action="create-wallet">Create on-chain wallet</button>
+              </div>
+              <p class="notice">Creates a hot, on-chain multisig wallet for the selected test coin.</p>
+              <pre id="bitgoCreateResult">No wallet created</pre>
+            </article>
+
+            <article class="bitgo-card">
+              <h3>Deposit into PoX-5 timelock</h3>
+              <div class="bitgo-form">
+                <label>Funding wallet<select id="bitgoDepositWallet"></select></label>
+                <label
+                  >Deposit sats<input id="bitgoDepositAmount" type="number" min="1" step="1" value="30000"
+                /></label>
+                <label>Signer manager<input id="bitgoSignerManager" autocomplete="off" /></label>
+                <label>Bond index<input id="bitgoBondIndex" type="number" min="0" step="1" /></label>
+                <label>Number of cycles (optional)<input id="bitgoNumCycles" type="number" min="1" step="1" /></label>
+                <label
+                  >Start burn height (optional)<input id="bitgoStartBurnHt" type="number" min="1" step="1"
+                /></label>
+                <button data-bitgo-action="prepare-deposit">Prepare deposit</button>
+              </div>
+              <p class="notice">
+                Preparing builds and reviews an unsigned PoX-5 transaction; wallet-platform creates its paired staking
+                wallet during that build. Nothing is broadcast until the separate confirmation below.
+              </p>
+              <pre id="bitgoDepositReview">No deposit prepared</pre>
+              <div class="bitgo-form bitgo-sign-form">
+                <label
+                  >Wallet passphrase<input
+                    id="bitgoDepositPassphrase"
+                    type="password"
+                    autocomplete="current-password"
+                    maxlength="256"
+                  />
+                </label>
+                <button data-bitgo-action="send-deposit" class="warn" disabled>Sign and send deposit</button>
+              </div>
+            </article>
+
+            <article class="bitgo-card">
+              <h3>Withdraw after timelock</h3>
+              <div class="bitgo-form">
+                <label>Funding wallet<select id="bitgoWithdrawalWallet"></select></label>
+                <label>Active delegation<select id="bitgoDelegation"></select></label>
+                <label>Withdrawal sats<input id="bitgoWithdrawalAmount" type="number" min="1" step="1" /></label>
+                <button data-bitgo-action="prepare-withdrawal">Prepare withdrawal</button>
+              </div>
+              <p class="notice">
+                Uses the PoX-5 paired descriptor wallet and returns funds to the main wallet. The regular timelock
+                recovery path must be mature; early-exit recovery is not supported by this API flow.
+              </p>
+              <pre id="bitgoWithdrawalReview">No withdrawal prepared</pre>
+              <div class="bitgo-form bitgo-sign-form">
+                <label
+                  >Wallet passphrase<input
+                    id="bitgoWithdrawalPassphrase"
+                    type="password"
+                    autocomplete="current-password"
+                    maxlength="256"
+                  />
+                </label>
+                <button data-bitgo-action="send-withdrawal" class="warn" disabled>Sign and send withdrawal</button>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="page" data-page="staked-funds" hidden>
+          <div class="page-heading">
+            <div>
+              <p class="eyebrow">04 / POX-5</p>
+              <h2>Staked funds</h2>
+            </div>
+            <button data-refresh="staked-funds" class="quiet">Refresh</button>
+          </div>
+          <div class="configuration page-configuration stake-configuration">
+            <label>Stake sats<input id="amountSats" type="number" min="1000" value="30000" /></label>
+            <label
+              >Signer manager<input
+                id="signerManager"
+                value="ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP.signer-manager"
+                autocomplete="off"
+            /></label>
+            <label>Bond index<input id="bondIndex" type="number" min="0" placeholder="auto-discover" /></label>
+            <p class="notice">
+              Leave Bond index blank to discover an allowlisted bond. Change Signer manager for another deployment.
+            </p>
+          </div>
+          <p class="lede">
+            Inspect membership for the Stacks address derived from the wallet phrase and run the PoX-5 lifecycle
+            actions.
+          </p>
+          <div class="actions">
+            <button data-action="stake">Initiate stake</button
+            ><button data-action="early-exit" class="warn">Early exit</button
+            ><button data-action="late-exit" class="warn">Late exit</button>
+          </div>
+          <article>
+            <h3>Staker</h3>
+            <code id="stakeAddress">Waiting for stake state</code>
+            <pre id="stakeMembership">Waiting for stake state</pre>
+          </article>
+        </section>
+      </div>
+      <section class="log-panel" aria-label="Trace log">
+        <div class="log-heading">
+          <div>
+            <p class="eyebrow">TRACE / LIVE REQUEST LOG</p>
+            <h2>Call trace</h2>
+          </div>
+          <div class="log-actions">
+            <label class="log-toggle"><input id="autoScroll" type="checkbox" checked /> Auto-scroll</label>
+            <button id="clearLogs" class="quiet">Clear</button>
+          </div>
+        </div>
+        <pre id="logOutput" class="log-output">Waiting for trace events...</pre>
+      </section>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+</html>

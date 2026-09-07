@@ -1,0 +1,27 @@
+{
+  "stacksCore": {
+    "repository": "https://github.com/stacks-network/stacks-core.git",
+    "commit": "3035f03393676ec5e139271101f63de27d3f4d78",
+    "trackedPatchSha256": "9a4a75670c0204bb9ffeca1ac917123ec63c8953733532b2e3940c9bbd5842ba",
+    "requiredFiles": [
+      "stackslib/src/chainstate/stacks/boot/pox-5.clar",
+      "stackslib/src/config/mod.rs",
+      "stacks-node/src/tests/pox_5_integrations.rs"
+    ],
+    "dirtyWorktree": true
+  },
+  "stacksRegtestEnv": {
+    "repository": "https://github.com/hirosystems/stacks-regtest-env.git",
+    "commit": "95ad44ae9a55bea0c78c579c2a121b0e0b739f1d",
+    "composeFile": "docker-compose.yml"
+  },
+  "stacksApi": {
+    "image": "hirosystems/stacks-blockchain-api:8.13.4",
+    "sourceCommit": "7ee1adbddac269d0c03567677013470a62e92f99"
+  },
+  "stacksJs": {
+    "repository": "https://github.com/stx-labs/stacks.js.git",
+    "commit": "6101c99efe5a9616ce7e16cef68e28fd10676e7e",
+    "requiredExports": ["buildLockScript", "buildLockAddress"]
+  }
+}

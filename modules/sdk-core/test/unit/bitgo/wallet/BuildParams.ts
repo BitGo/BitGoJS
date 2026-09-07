@@ -134,6 +134,19 @@ describe('BuildParams', function () {
     assert.ok(buildParamKeys.includes('unwrapParams'), 'buildParamKeys must include unwrapParams');
   });
 
+  it('should preserve PoX-5 unstakingParams when building wallet transactions', function () {
+    const unstakingParams = {
+      pox5: {
+        branch: 'early-exit',
+        principalPreimage: 'ab'.repeat(32),
+      },
+    };
+    assert.deepStrictEqual(BuildParams.encode({ unstakingParams, unknownField: 'should be stripped' } as any), {
+      unstakingParams,
+    });
+    assert.ok(buildParamKeys.includes('unstakingParams'), 'buildParamKeys must include unstakingParams');
+  });
+
   it('AttestationPayload codec requires all four fields', function () {
     const valid = {
       signature: 'sig',

@@ -1,0 +1,44 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": ".",
+    "typeRoots": ["./node_modules/@types", "../../node_modules/@types"],
+    "allowJs": false,
+    "strict": true,
+    "useUnknownInCatchVariables": false,
+    "moduleResolution": "node16",
+    "module": "node16",
+    "paths": {
+      "@bitgo/utxo-descriptors": ["modules/utxo-descriptors/src"],
+      "@bitgo/utxo-staking": ["modules/utxo-staking/src"]
+    },
+    "esModuleInterop": true,
+    "noEmit": false
+  },
+  "include": ["test/**/*"],
+  "exclude": ["node_modules", "dist"],
+  "references": [
+    {
+      "path": "../sdk-core"
+    },
+    {
+      "path": "../sdk-api"
+    },
+    {
+      "path": "../sdk-coin-btc"
+    },
+    {
+      "path": "../utxo-lib"
+    },
+    {
+      "path": "../utxo-core"
+    },
+    {
+      "path": "../utxo-descriptors"
+    },
+    {
+      "path": "../utxo-staking"
+    }
+  ]
+}

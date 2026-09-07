@@ -1,0 +1,54 @@
+services:
+  tbtcstx-bitcoin:
+    image: bitcoin/bitcoin:31.1
+    command:
+      - -printtoconsole
+      - -regtest=1
+      - -server=1
+      - -disablewallet=0
+      - -txindex=1
+      - -rpcuser=btcuser
+      - -rpcpassword=btcpass
+      - -rpcbind=0.0.0.0
+      - -rpcallowip=0.0.0.0/0
+      - -rpcport=18443
+      - -port=18444
+      - -bind=0.0.0.0:18444
+      - -addnode=bitcoin.regtest.hiro.so:18444
+      - -dbcache=512
+      - -rpcthreads=256
+      - -rpcworkqueue=256
+    ports:
+      - 18443:18443
+      - 18444:18444
+    volumes:
+      - tbtcstx-bitcoin-data:/home/bitcoin/.bitcoin
+
+  tbtcstxprivate1-bitcoin:
+    image: bitcoin/bitcoin:31.1
+    command:
+      - -printtoconsole
+      - -regtest=1
+      - -server=1
+      - -disablewallet=0
+      - -txindex=1
+      - -rpcuser=btcuser
+      - -rpcpassword=btcpass
+      - -rpcbind=0.0.0.0
+      - -rpcallowip=0.0.0.0/0
+      - -rpcport=40443
+      - -port=40444
+      - -bind=0.0.0.0:40444
+      - -addnode=bitcoin.private-1.hiro.so:40444
+      - -dbcache=512
+      - -rpcthreads=256
+      - -rpcworkqueue=256
+    ports:
+      - 40443:40443
+      - 40444:40444
+    volumes:
+      - tbtcstxprivate1-bitcoin-data:/home/bitcoin/.bitcoin
+
+volumes:
+  tbtcstx-bitcoin-data:
+  tbtcstxprivate1-bitcoin-data:

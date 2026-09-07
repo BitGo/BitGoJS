@@ -1,0 +1,193 @@
+services:
+  snapshot-init:
+    profiles: [snapshot-init]
+    image: ${POX5_STACKS_CORE_IMAGE:-bitgo/pox5-stacks-core:local}
+    build:
+      context: ${STACKS_CORE_ROOT:?Set STACKS_CORE_ROOT to the local PoX-5 Stacks Core checkout}
+      dockerfile: ${POX5_STACKS_NODE_DOCKERFILE:?The runner must provide the Stacks Core Dockerfile}
+      args:
+        STACKS_CORE_COMMIT: ${POX5_STACKS_CORE_COMMIT:?Set POX5_STACKS_CORE_COMMIT to the pinned Stacks Core revision}
+    volumes:
+      - ${POX5_BITCOIN_CONF:?The runner must provide bitcoin.conf}:/root/.bitcoin/bitcoin.conf:ro
+      - ${POX5_SNAPSHOT_CONFIG:?The runner must provide the snapshot Stacks config}:/root/config.toml.in:ro
+      - ${POX5_INIT_DATA_ROOT:?The runner must provide the snapshot output directory}:/init-data
+      - chainstate:/chainstate
+    environment:
+      DATA_DIR: /chainstate/stacks-blockchain-miner-data
+      BITCOIN_PEER_HOST: 127.0.0.1
+      BITCOIN_PEER_PORT: '18444'
+      BITCOIN_RPC_PORT: '18443'
+      BITCOIN_RPC_USER: btc
+      BITCOIN_RPC_PASS: btc
+      MINER_SEED: 9e446f6b0c6a96cf2190e54bcd5a8569c3e386f091605499464389b8d4e0bfc201
+      BTC_ADDR: miEJtNKa3ASpA19v5ZhvbKTEieYjLpzCYT
+      BTC_WIF: cStMQXkK5yTFGP3KbNXYQ3sJf2qwQiKrZwR9QJnksp32eKzef1za
+      INIT_BLOCKS: '101'
+      STACKS_20_HEIGHT: '0'
+      STACKS_2_05_HEIGHT: '1'
+      STACKS_21_HEIGHT: '3'
+      STACKS_POX2_HEIGHT: '4'
+      STACKS_22_HEIGHT: '5'
+      STACKS_23_HEIGHT: '6'
+      STACKS_24_HEIGHT: '7'
+      STACKS_25_HEIGHT: '108'
+      POX_PREPARE_LENGTH: '3'
+      POX_REWARD_LENGTH: '10'
+    entrypoint:
+      - /bin/bash
+      - -c
+      - |
+        set -e
+        rm -rf /chainstate/bitcoin-data/* /chainstate/stacks-blockchain-miner-data/*
+        mkdir -p /chainstate/bitcoin-data /chainstate/stacks-blockchain-miner-data
+        bitcoind --conf=/root/.bitcoin/bitcoin.conf &
+        bitcoin_pid=$$!
+        bitcoin-cli -rpcconnect=127.0.0.1 -rpcwait getmininginfo
+        bitcoin-cli -rpcconnect=127.0.0.1 -named createwallet wallet_name=stx_miner_0 descriptors=false
+        bitcoin-cli -rpcconnect=127.0.0.1 -rpcwallet=stx_miner_0 importprivkey "$${BTC_WIF}" snapshot false
+        bitcoin-cli -rpcconnect=127.0.0.1 generatetoaddress "$${INIT_BLOCKS}" "$${BTC_ADDR}"
+        envsubst < /root/config.toml.in > /root/config.toml
+        stacks-node start --config /root/config.toml >/tmp/stacks-snapshot.log 2>&1 &
+        stacks_pid=$$!
+        while true; do
+          if ! kill -0 "$$stacks_pid" 2>/dev/null; then
+            cat /tmp/stacks-snapshot.log
+            exit 1
+          fi
+          info=$$(curl -fsS http://127.0.0.1:20443/v2/info || true)
+          burn_height=$$(printf '%s' "$$info" | jq -r '.burn_block_height // empty')
+          if [ "$$burn_height" = "$${INIT_BLOCKS}" ]; then
+            break
+          fi
+          sleep 1
+        done
+        kill "$$stacks_pid" || true
+        wait "$$stacks_pid" || true
+        bitcoin-cli -rpcconnect=127.0.0.1 stop || true
+        wait "$$bitcoin_pid" || true
+        rm -f /init-data/bitcoind.tar.gz /init-data/stacks-blockchain-miner-data.tar.gz
+        tar -C /chainstate/bitcoin-data -czf /init-data/bitcoind.tar.gz ./
+        tar -C /chainstate/stacks-blockchain-miner-data -czf /init-data/stacks-blockchain-miner-data.tar.gz ./
+
+  bitcoind:
+    volumes:
+      - ${POX5_INIT_DATA_ROOT:?The runner must provide the snapshot output directory}:/init-data
+    entrypoint:
+      - /bin/bash
+      - -c
+      - |
+        set -e
+        mkdir -p /chainstate/bitcoin-data
+        if [ -z "$$(ls -A /chainstate/bitcoin-data)" ] && [ -f /init-data/bitcoind.tar.gz ]; then
+          tar -xzf /init-data/bitcoind.tar.gz -C /chainstate/bitcoin-data
+        fi
+        exec bitcoind
+
+  bitcoind-miner:
+    entrypoint:
+      - /bin/bash
+      - -c
+      - |
+        set -e
+        bitcoin-cli -rpcconnect=bitcoind -rpcwait getmininginfo
+        sleep 30
+        while true; do
+          bitcoin-cli -rpcconnect=bitcoind generatetoaddress 1 "$${BTC_ADDR}"
+          sleep "$${MINE_INTERVAL}"
+        done
+    environment:
+      BTC_ADDR: miEJtNKa3ASpA19v5ZhvbKTEieYjLpzCYT
+      MINE_INTERVAL: 1s
+      STACKS_25_HEIGHT: '108'
+      STACKS_30_HEIGHT: '203'
+
+  stacks-api:
+    image: hirosystems/stacks-blockchain-api:8.13.4
+    build: null
+    environment:
+      SKIP_STACKS_CHAIN_ID_CHECK: 'true'
+
+  stacks-node:
+    image: ${POX5_STACKS_CORE_IMAGE:-bitgo/pox5-stacks-core:local}
+    build:
+      context: ${STACKS_CORE_ROOT:?Set STACKS_CORE_ROOT to the local PoX-5 Stacks Core checkout}
+      dockerfile: ${POX5_STACKS_NODE_DOCKERFILE:?The runner must provide the Stacks Core Dockerfile}
+      args:
+        STACKS_CORE_COMMIT: ${POX5_STACKS_CORE_COMMIT:?Set POX5_STACKS_CORE_COMMIT to the pinned Stacks Core revision}
+    volumes:
+      - ${POX5_STACKS_NODE_CONFIG:?The runner must provide the local Stacks config}:/root/config.toml.in:ro
+      - ${POX5_INIT_DATA_ROOT:?The runner must provide the snapshot output directory}:/init-data
+      - chainstate:/chainstate
+    environment:
+      DATA_DIR: /chainstate/stacks-blockchain-miner-data
+      BITCOIN_PEER_HOST: bitcoind
+      BITCOIN_PEER_PORT: '18444'
+      BITCOIN_RPC_PORT: '18443'
+      BITCOIN_RPC_USER: btc
+      BITCOIN_RPC_PASS: btc
+      MINER_SEED: 9e446f6b0c6a96cf2190e54bcd5a8569c3e386f091605499464389b8d4e0bfc201
+      STACKS_CHAIN_ID: '0x80000000'
+      REWARD_RECIPIENT: ''
+      STACKS_20_HEIGHT: '0'
+      STACKS_2_05_HEIGHT: '1'
+      STACKS_21_HEIGHT: '3'
+      STACKS_POX2_HEIGHT: '4'
+      STACKS_22_HEIGHT: '5'
+      STACKS_23_HEIGHT: '6'
+      STACKS_24_HEIGHT: '7'
+      STACKS_25_HEIGHT: '8'
+      STACKS_30_HEIGHT: '203'
+      STACKS_31_HEIGHT: '204'
+      STACKS_32_HEIGHT: '205'
+      STACKS_33_HEIGHT: '206'
+      POX_PREPARE_LENGTH: '3'
+      POX_REWARD_LENGTH: '10'
+    entrypoint:
+      - /bin/bash
+      - -c
+      - |
+        set -e
+        mkdir -p "$${DATA_DIR}"
+        if [ -z "$$(ls -A "$${DATA_DIR}")" ] && [ -f /init-data/stacks-blockchain-miner-data.tar.gz ]; then
+          tar -xzf /init-data/stacks-blockchain-miner-data.tar.gz -C "$${DATA_DIR}"
+        fi
+        envsubst < /root/config.toml.in > /root/config.toml
+        bitcoin-cli -rpcconnect=bitcoind -rpcwait getmininginfo
+        exec stacks-node start --config /root/config.toml
+
+  stacks-signer-1:
+    image: ${POX5_STACKS_CORE_IMAGE:-bitgo/pox5-stacks-core:local}
+    build:
+      context: ${STACKS_CORE_ROOT:?Set STACKS_CORE_ROOT to the local PoX-5 Stacks Core checkout}
+      dockerfile: ${POX5_STACKS_NODE_DOCKERFILE:?The runner must provide the Stacks Core Dockerfile}
+      args:
+        STACKS_CORE_COMMIT: ${POX5_STACKS_CORE_COMMIT:?Set POX5_STACKS_CORE_COMMIT to the pinned Stacks Core revision}
+
+  stacks-signer-2:
+    image: ${POX5_STACKS_CORE_IMAGE:-bitgo/pox5-stacks-core:local}
+    build:
+      context: ${STACKS_CORE_ROOT:?Set STACKS_CORE_ROOT to the local PoX-5 Stacks Core checkout}
+      dockerfile: ${POX5_STACKS_NODE_DOCKERFILE:?The runner must provide the Stacks Core Dockerfile}
+      args:
+        STACKS_CORE_COMMIT: ${POX5_STACKS_CORE_COMMIT:?Set POX5_STACKS_CORE_COMMIT to the pinned Stacks Core revision}
+
+  stacks-signer-3:
+    image: ${POX5_STACKS_CORE_IMAGE:-bitgo/pox5-stacks-core:local}
+    build:
+      context: ${STACKS_CORE_ROOT:?Set STACKS_CORE_ROOT to the local PoX-5 Stacks Core checkout}
+      dockerfile: ${POX5_STACKS_NODE_DOCKERFILE:?The runner must provide the Stacks Core Dockerfile}
+      args:
+        STACKS_CORE_COMMIT: ${POX5_STACKS_CORE_COMMIT:?Set POX5_STACKS_CORE_COMMIT to the pinned Stacks Core revision}
+
+  stacker:
+    environment:
+      POX_PREPARE_LENGTH: '3'
+      POX_REWARD_LENGTH: '10'
+      STACKS_25_HEIGHT: '108'
+      STACKS_30_HEIGHT: '203'
+
+  monitor:
+    profiles: [disabled]
+
+  tx-broadcaster:
+    profiles: [disabled]

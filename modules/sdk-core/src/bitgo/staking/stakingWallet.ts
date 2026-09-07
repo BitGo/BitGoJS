@@ -2,6 +2,7 @@
  * @prettier
  */
 import { CoinFamily } from '@bitgo/statics';
+import debug from 'debug';
 import isEqual from 'lodash/isEqual';
 
 import {
@@ -34,8 +35,9 @@ import { IWallet, PrebuildTransactionResult } from '../wallet';
 import { ITssUtils, RequestTracer, TssUtils } from '../utils';
 import assert from 'assert';
 import { transactionRecipientsMatch } from '../utils/transactionUtils';
-import debug from 'debug';
 import { TransactionType } from '../../account-lib';
+
+const stakingDebug = debug('bitgo:v2:stakingWallet');
 
 export class StakingWallet implements IStakingWallet {
   private readonly bitgo: BitGoBase;
@@ -177,15 +179,21 @@ export class StakingWallet implements IStakingWallet {
         },
       };
     } else {
+      stakingDebug('Staking transaction %s: expanding build params', transaction.id);
       transaction = await this.expandBuildParams(transaction);
+      stakingDebug('Staking transaction %s: build params expanded', transaction.id);
       if (!transaction.buildParams) {
         throw Error(`Staking transaction ${transaction.id} build params not expanded`);
       }
       const wallet = await this.extractWallet(transaction);
+      stakingDebug('Staking transaction %s: build wallet resolved', transaction.id);
 
+      stakingDebug('Staking transaction %s: requesting wallet prebuild', transaction.id);
+      const result = await wallet.prebuildTransaction(transaction.buildParams);
+      stakingDebug('Staking transaction %s: wallet prebuild completed', transaction.id);
       return {
         transaction: transaction,
-        result: await wallet.prebuildTransaction(transaction.buildParams),
+        result,
       };
     }
   }
@@ -223,21 +231,32 @@ export class StakingWallet implements IStakingWallet {
     const isBtcUndelegate =
       this.wallet.baseCoin.getFamily() === 'btc' &&
       stakingPrebuildTransaction.transaction.transactionType.toLowerCase() === 'undelegate_withdraw';
+    stakingDebug('Staking transaction %s: resolving signing wallet', stakingPrebuildTransaction.transaction.id);
     const wallet = isBtcUndelegate
       ? await this.getDescriptorWallet(stakingPrebuildTransaction.transaction)
       : await this.getWalletForBuildingAndSigning();
 
+    stakingDebug('Staking transaction %s: fetching signing keychain', stakingPrebuildTransaction.transaction.id);
     const keychain = await wallet.baseCoin.keychains().getKeysForSigning({
       wallet: this.wallet,
       reqId: reqId,
     });
+    stakingDebug('Staking transaction %s: calling wallet signTransaction', stakingPrebuildTransaction.transaction.id);
+    stakingDebug(
+      'Staking transaction %s: sign prebuild payload: %O',
+      stakingPrebuildTransaction.transaction.id,
+      stakingPrebuildTransaction.result
+    );
+    const signed = await wallet.signTransaction({
+      txPrebuild: stakingPrebuildTransaction.result,
+      walletPassphrase: signOptions.walletPassphrase,
+      keychain: keychain[0],
+    });
+    stakingDebug('Staking transaction %s: wallet signing completed', stakingPrebuildTransaction.transaction.id);
+    stakingDebug('Staking transaction %s: signed payload: %O', stakingPrebuildTransaction.transaction.id, signed);
     return {
       transaction: stakingPrebuildTransaction.transaction,
-      signed: await wallet.signTransaction({
-        txPrebuild: stakingPrebuildTransaction.result,
-        walletPassphrase: signOptions.walletPassphrase,
-        keychain: keychain[0],
-      }),
+      signed,
     };
   }
 
@@ -303,7 +322,9 @@ export class StakingWallet implements IStakingWallet {
     signOptions: StakingSignOptions,
     transaction: StakingTransaction
   ): Promise<StakingSignedTransaction> {
+    stakingDebug('Staking transaction %s: starting build', transaction.id);
     const builtTx = await this.build(transaction);
+    stakingDebug('Staking transaction %s: build completed', transaction.id);
     // default to verifying a transaction unless explicitly skipped
     // skipping the verification for btc undelegate because it is just single sig
     // TODO: SC-3183 (add trx staking verification)
@@ -314,10 +335,23 @@ export class StakingWallet implements IStakingWallet {
         this.isTrxStaking(transaction) ||
         this.isStx()) ??
       false;
-    if (!isStakingTxRequestPrebuildResult(builtTx.result) && !skipVerification) {
+    const isTxRequest = isStakingTxRequestPrebuildResult(builtTx.result);
+    if (!isTxRequest && !skipVerification) {
+      stakingDebug('Staking transaction %s: validating built transaction', transaction.id);
       await this.validateBuiltStakingTransaction(builtTx.transaction, builtTx);
+      stakingDebug('Staking transaction %s: built transaction validation completed', transaction.id);
+    } else {
+      stakingDebug(
+        'Staking transaction %s: built transaction validation skipped (txRequest=%s, skipVerification=%s)',
+        transaction.id,
+        isTxRequest,
+        skipVerification
+      );
     }
-    return await this.sign(signOptions, builtTx);
+    stakingDebug('Staking transaction %s: starting sign phase', transaction.id);
+    const signed = await this.sign(signOptions, builtTx);
+    stakingDebug('Staking transaction %s: sign phase completed', transaction.id);
+    return signed;
   }
 
   private async expandBuildParams(stakingTransaction: StakingTransaction): Promise<StakingTransaction> {
@@ -414,14 +448,16 @@ export class StakingWallet implements IStakingWallet {
     const { buildParams } = transaction;
     const { result } = prebuiltStakingTransaction;
     const coin = this.wallet.baseCoin;
-    debug(`Validating staking transaction ${transaction.stakingRequestId} with prebuilt transaction`);
+    stakingDebug(`Validating staking transaction ${transaction.stakingRequestId} with prebuilt transaction`);
 
     if (!('txHex' in result) || !result.txHex) {
-      debug(`Skipping validation for staking transaction ${transaction.stakingRequestId} - txHex is undefined`);
+      stakingDebug(`Skipping validation for staking transaction ${transaction.stakingRequestId} - txHex is undefined`);
       return;
     }
 
+    stakingDebug('Staking transaction %s: explaining prebuilt transaction', transaction.id);
     const explainedTransaction = await coin.explainTransaction(result, this.wallet);
+    stakingDebug('Staking transaction %s: prebuilt transaction explained', transaction.id);
     const mismatchErrors: string[] = [];
 
     if (buildParams?.recipients && buildParams.recipients.length > 0) {
@@ -497,12 +533,12 @@ export class StakingWallet implements IStakingWallet {
 
     if (mismatchErrors.length > 0) {
       const errorMessage = `Staking transaction validation failed before signing: ${mismatchErrors.join('; ')}`;
-      debug(errorMessage);
+      stakingDebug(errorMessage);
       throw new Error(errorMessage);
     }
 
     if (!buildParams) {
-      debug(
+      stakingDebug(
         `Cannot perform deep validation for staking transaction ${transaction.stakingRequestId} without specified build params`
       );
     }
