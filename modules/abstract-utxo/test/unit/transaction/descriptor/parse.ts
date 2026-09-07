@@ -13,8 +13,10 @@ import {
   ErrorImplicitExternalOutputs,
   ErrorMissingOutputs,
 } from '../../../../src/transaction/descriptor/verifyTransaction';
+import { AddressCodec } from '../../../../src/transaction/recipient';
 import { toAmountType } from '../../../../src/transaction/descriptor/parseToAmountType';
 import { BaseOutput } from '../../../../src/transaction/types';
+import { getUtxoCoin } from '../../util';
 
 import { getFixtureRoot } from './fixtures.utils';
 
@@ -72,7 +74,7 @@ describe('parse', function () {
       psbt,
       getDescriptorMap('Wsh2Of3', getDefaultXPubs('a')),
       recipients.map(toBaseOutputString),
-      'btc'
+      new AddressCodec(getUtxoCoin('btc').name)
     );
   }
 

@@ -62,14 +62,8 @@ import {
 } from './recovery';
 import { getReplayProtectionPubkeys, isReplayProtectionUnspent } from './transaction/fixedScript/replayProtection';
 import { supportedCrossChainRecoveries } from './config';
-import {
-  assertValidTransactionRecipient,
-  explainTx,
-  fromExtendedAddressFormat,
-  isScriptRecipient,
-  parseTransaction,
-  verifyTransaction,
-} from './transaction';
+import { explainTx, parseTransaction, verifyTransaction } from './transaction';
+import { AddressCodec } from './transaction/recipient';
 import type { TransactionExplanation } from './transaction/fixedScript/explainTransaction';
 import { Musig2Participant } from './transaction/fixedScript/musig2';
 import {
@@ -523,7 +517,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
               if (address === undefined) {
                 return recipient; // Already { script, amount } — pass through unchanged
               }
-              return { ...rest, ...fromExtendedAddressFormat(address) };
+              return { ...rest, ...AddressCodec.fromExtendedAddressFormat(address) };
             })
           : params.recipients;
     }
@@ -544,8 +538,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
   }
 
   checkRecipient(recipient: { address?: string; amount: number | string }): void {
-    assertValidTransactionRecipient(recipient);
-    if (recipient.address && !isScriptRecipient(recipient.address)) {
+    AddressCodec.assertValidTransactionRecipient(recipient);
+    if (recipient.address && !AddressCodec.isScriptRecipient(recipient.address)) {
       super.checkRecipient({ address: recipient.address, amount: recipient.amount });
     }
   }
@@ -618,7 +612,14 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
   async parseTransaction<TNumber extends number | bigint = number>(
     params: ParseTransactionOptions<TNumber>
   ): Promise<ParsedTransaction<TNumber>> {
-    return parseTransaction(this, params);
+    return this.parseTransactionWithAddressCodec(params, new AddressCodec(this.name));
+  }
+
+  protected parseTransactionWithAddressCodec<TNumber extends number | bigint>(
+    params: ParseTransactionOptions<TNumber>,
+    addressCodec: AddressCodec
+  ): Promise<ParsedTransaction<TNumber>> {
+    return parseTransaction(this, params, addressCodec);
   }
 
   /**
@@ -654,8 +655,15 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
   async verifyTransaction<TNumber extends number | bigint = number>(
     params: VerifyTransactionOptions<TNumber>
   ): Promise<boolean> {
+    return this.verifyTransactionWithAddressCodec(params, new AddressCodec(this.name));
+  }
+
+  protected async verifyTransactionWithAddressCodec<TNumber extends number | bigint>(
+    params: VerifyTransactionOptions<TNumber>,
+    addressCodec: AddressCodec
+  ): Promise<boolean> {
     try {
-      return await verifyTransaction(this, this.bitgo, params);
+      return await verifyTransaction(this, this.bitgo, params, addressCodec);
     } catch (error) {
       if (error instanceof AggregateValidationError) {
         const txExplanation = await TxIntentMismatchError.tryGetTxExplanation(

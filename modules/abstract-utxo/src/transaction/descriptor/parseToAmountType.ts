@@ -1,6 +1,7 @@
 import { AbstractUtxoCoin, ParseTransactionOptions } from '../../abstractUtxoCoin';
 import { BaseOutput, BaseParsedTransaction } from '../types';
 import { IDescriptorWallet } from '../../descriptor/descriptorWallet';
+import { AddressCodec } from '../recipient';
 
 import { parse, ParsedDescriptorTransaction } from './parse';
 
@@ -76,9 +77,10 @@ export function parsedDescriptorTransactionToTNumber<TAmount extends number | bi
 export function parseToAmountType<TAmount extends number | bigint>(
   coin: AbstractUtxoCoin,
   wallet: IDescriptorWallet,
-  params: ParseTransactionOptions<TAmount>
+  params: ParseTransactionOptions<TAmount>,
+  addressCodec: AddressCodec = new AddressCodec(coin.name)
 ): BaseParsedTransaction<TAmount, BaseOutput<string>> {
-  return parsedDescriptorTransactionToTNumber<TAmount, BaseOutput<string>>(parse(coin, wallet, params), {
+  return parsedDescriptorTransactionToTNumber<TAmount, BaseOutput<string>>(parse(coin, wallet, params, addressCodec), {
     amountTypeAggregate: coin.amountType,
     amountTypeBaseOutput: 'string',
   });
