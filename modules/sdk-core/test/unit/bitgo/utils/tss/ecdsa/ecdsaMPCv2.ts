@@ -748,6 +748,86 @@ describe('ECDSA MPC v2', async () => {
     );
   });
 
+  // Regression test for CGD-1815 / DEFI-661: resolveEffectiveTxParams() special-cases wrap-native
+  // and unwrap-native so the no-recipients guard in verifyTssTransaction doesn't reject them. That
+  // bypass is security-sensitive (it's what lets a DeFi vault wrap/unwrap tx skip recipient
+  // verification), so pin it through the real signRequestBase() -> resolveEffectiveTxParams() ->
+  // verifyTransaction() wiring instead of only unit-testing resolveEffectiveTxParams() in isolation.
+  // pendingApproval.approve() -> recreateTxRequest() -> signTxRequest() carries no txParams at all,
+  // so intentType is the ONLY source of the type here — exactly the path that only ever sees the
+  // kebab-case spelling ('wrap-native' / 'unwrap-native'), never the camelCase 'wrapNative'/'unwrapNative'.
+  ['wrap-native', 'unwrap-native'].forEach((intentType) => {
+    it(`signRequestBase should verify a no-txParams ${intentType} intent without requiring recipients`, async () => {
+      const serializedTxHex = 'f86c808504a817c80082520894' + '00'.repeat(20) + '80808080';
+      const signableHex = serializedTxHex;
+      const derivationPath = 'm/0';
+
+      const mockBgWithPost = {} as BitGoBase;
+      mockBgWithPost.getEnv = sinon.stub().returns('test');
+      mockBgWithPost.setRequestTracer = sinon.stub();
+      mockBgWithPost.encrypt = sinon.stub().resolves('encrypted');
+      mockBgWithPost.decrypt = sinon.stub().resolves('decrypted');
+      mockBgWithPost.post = sinon.stub().returns({
+        send: sinon.stub().returnsThis(),
+        set: sinon.stub().returnsThis(),
+        result: sinon.stub().rejects(new Error('mock: HTTP not available')),
+      });
+
+      const verifyTransactionSpy = sinon.stub().resolves(true);
+      const mockCoinForWrap = {
+        getHashFunction: sinon.stub().callsFake(() => createKeccakHash('keccak256') as Hash),
+        verifyTransaction: verifyTransactionSpy,
+        getMPCAlgorithm: sinon.stub().returns('ecdsa'),
+        getConfig: sinon.stub().returns({ family: 'hteth' }),
+      } as unknown as IBaseCoin;
+
+      const mockWallet = {
+        id: sinon.stub().returns(walletID),
+        multisigType: sinon.stub().returns('tss'),
+        multisigTypeVersion: sinon.stub().returns('MPCv2'),
+      };
+
+      const wrapUtils = new EcdsaMPCv2Utils(mockBgWithPost, mockCoinForWrap, mockWallet as any);
+      sinon.stub(wrapUtils as any, 'pickBitgoPubGpgKeyForSigning').resolves(bitgoGpgKey.public);
+
+      // No recipients anywhere (neither txParams.recipients nor intent.recipients) — the wrap-native/
+      // unwrap-native calldata is built server-side from defiParams, per DefiVault.sendWrapIntent.
+      const txRequest = {
+        txRequestId: `wrap-native-test-${intentType}`,
+        apiVersion: 'full',
+        walletId: walletID,
+        intent: { intentType, defiParams: { vaultId: 'vlt-galaxy-weth', amount: '1000000000000000000' } },
+        transactions: [
+          {
+            unsignedTx: { derivationPath, signableHex, serializedTxHex },
+            signatureShares: [],
+          },
+        ],
+      } as unknown as TxRequest;
+
+      try {
+        await wrapUtils.signTxRequest({
+          txRequest,
+          // No txParams at all — mirrors pendingApproval.approve() -> recreateTxRequest() ->
+          // signTxRequest(), the one signing path that only ever sees the kebab-case intentType.
+          txParams: undefined,
+          prv: userShare.toString('base64'),
+          reqId: { inc: sinon.stub(), toString: sinon.stub().returns('test-req') } as any,
+        });
+      } catch (e) {}
+
+      assert.strictEqual(
+        verifyTransactionSpy.callCount,
+        1,
+        'verifyTransaction must be reached: resolveEffectiveTxParams must not throw for a no-recipients ' +
+          `${intentType} intent`
+      );
+      const verifyCallArgs = verifyTransactionSpy.firstCall.args[0];
+      assert.strictEqual(verifyCallArgs.txParams.type, intentType);
+      assert.strictEqual(verifyCallArgs.txParams.recipients, undefined);
+    });
+  });
+
   it('should still apply keccak256 for regular FLR EVM transactions', async () => {
     // Regular EVM transaction on FLR (e.g. token transfer, not cross-chain).
     // serializedTxHex starts with 'f8' (RLP prefix), NOT '0000'.

@@ -2,6 +2,7 @@
  * @prettier
  */
 import * as t from 'io-ts';
+import { CoinFeature } from '@bitgo/statics';
 import { GetVaultResponse, VaultProtocol, VaultProtocolType } from '@bitgo/public-types';
 import {
   ConcreteDepositResult,
@@ -17,6 +18,8 @@ import {
   ResumeDepositOptions,
   WithdrawFromVaultOptions,
   WithdrawResult,
+  WrapOptions,
+  WrapResult,
 } from './iDefiVault';
 import { IWallet } from '../wallet';
 import { BitGoBase } from '../bitgoBase';
@@ -323,7 +326,77 @@ export class DefiVault implements IDefiVault {
     return { operationId, txRequestId };
   }
 
+  /**
+   * Wrap native currency into its canonical wrapped-native ERC-20
+   * (ETH → WETH via the WETH9 `deposit()` call).
+   *
+   * A thin orchestrator over a single sendMany, like {@link withdrawFromVault}.
+   * WP builds the calldata and resolves the WETH9 address server-side from the
+   * vault binding; the SDK only forwards vaultId and amount.
+   *
+   * @param params.vaultId - DeFi-service vault identifier. Required in v1: binding
+   *   the wrap to a vault is what supplies the per-enterprise authorization gate
+   *   and the address-whitelist path server-side (TDD §3.6). M7 makes it optional,
+   *   which is backward-compatible.
+   * @param params.amount - amount in base units of the native coin (18dp for ETH)
+   * @param params.walletPassphrase - required for hot wallets, omit for custody
+   */
+  async wrap(params: WrapOptions): Promise<WrapResult> {
+    return this.sendWrapIntent('wrapNative', params);
+  }
+
+  /**
+   * Unwrap the canonical wrapped-native ERC-20 back to native currency
+   * (WETH → ETH via the WETH9 `withdraw(uint256)` call).
+   *
+   * @param params.vaultId - DeFi-service vault identifier (see {@link wrap})
+   * @param params.amount - amount in base units of the wrapped token (18dp for WETH)
+   * @param params.walletPassphrase - required for hot wallets, omit for custody
+   */
+  async unwrap(params: WrapOptions): Promise<WrapResult> {
+    return this.sendWrapIntent('unwrapNative', params);
+  }
+
   // ── Internal helpers ────────────────────────────────────────────────
+
+  /**
+   * Shared body of {@link wrap} and {@link unwrap} — the two differ only in the
+   * sendMany type they issue.
+   *
+   * Deliberately does not call {@link extractOperationId}: no operation is minted
+   * for wrap/unwrap in v1, so it would only ever return undefined. Operation
+   * tracking arrives in milestone M5.
+   */
+  private async sendWrapIntent(type: 'wrapNative' | 'unwrapNative', params: WrapOptions): Promise<WrapResult> {
+    const vaultId = params.vaultId?.trim();
+    if (!vaultId) {
+      throw new Error('vaultId is required');
+    }
+    // The downstream BigIntFromString codec (wallet.ts) accepts anything JS's BigInt() constructor
+    // does - negative amounts, hex strings like '0xabc', and zero - and this amount forwards
+    // straight into a value-moving WETH9 deposit()/withdraw() call. Require a positive unsigned
+    // decimal integer string here; zero is deliberately rejected too, since a zero-amount wrap/
+    // unwrap has no on-chain effect but would still spend gas.
+    if (!params.amount || !/^\d+$/.test(params.amount) || BigInt(params.amount) === 0n) {
+      throw new Error('amount must be a positive unsigned decimal integer string');
+    }
+    // Wrapped-native vaults (WETH9 deposit()/withdraw()) only exist on EVM chains. Fail fast here
+    // instead of letting an unsupported coin reach wallet-platform and return an opaque prebuild error.
+    if (!this.wallet.baseCoin.getConfig().features.includes(CoinFeature.EVM_COIN)) {
+      throw new Error(`wrap/unwrap is not supported for ${this.wallet.baseCoin.getFamily()} wallets`);
+    }
+
+    const result = await this.wallet.sendMany({
+      type,
+      defiParams: {
+        vaultId,
+        amount: params.amount,
+      },
+      ...(params.walletPassphrase ? { walletPassphrase: params.walletPassphrase } : {}),
+    });
+
+    return { txRequestId: this.extractTxRequestId(result) };
+  }
 
   /**
    * Extract txRequestId from a sendMany result.
