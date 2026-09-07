@@ -779,10 +779,16 @@ describe('getFormattedTokensByNetwork EVM family coverage (drift guard)', () => 
     );
 
     const formattedTokens = getFormattedTokens();
+    // TokenNetwork only declares explicit keys for known families; cast to a dynamic
+    // lookup here since this test intentionally probes it with an arbitrary family string.
+    const bitcoinTokensByFamily = formattedTokens.bitcoin as unknown as Record<
+      string,
+      { tokens: unknown[] } | undefined
+    >;
 
     erc20Families.forEach((family) => {
-      should(formattedTokens.bitcoin[family]).not.be.undefined();
-      should(formattedTokens.bitcoin[family]?.tokens).be.an.Array();
+      should(bitcoinTokensByFamily[family]).not.be.undefined();
+      should(bitcoinTokensByFamily[family]?.tokens).be.an.Array();
     });
 
     // baseeth is the concrete gap this closes: it has no hand-written entry in
