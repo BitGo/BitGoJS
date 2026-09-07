@@ -202,6 +202,7 @@ export interface ParseOutputOptions {
   txParams: {
     recipients: ITransactionRecipient[];
     changeAddress?: string;
+    unifiedRecipientPreference?: string;
   };
   customChange?: CustomChangeOptions;
   reqId?: IRequestTracer;
@@ -279,9 +280,11 @@ export async function parseOutput({
      * recipient list is > 1000 This is not always a valid assumption and could lead greater apparent spend (but never lower)
      */
     if (txParams.recipients !== undefined && txParams.recipients.length > RECIPIENT_THRESHOLD) {
+      const resolveScript = (address: string): Uint8Array =>
+        coin.resolveOutputScript(address, txParams.unifiedRecipientPreference);
       const isCurrentAddressInRecipients = txParams.recipients.some((recipient) =>
-        fromExtendedAddressFormatToScript(recipient.address, coin.name).equals(
-          fromExtendedAddressFormatToScript(currentAddress, coin.name)
+        fromExtendedAddressFormatToScript(recipient.address, coin.name, resolveScript).equals(
+          fromExtendedAddressFormatToScript(currentAddress, coin.name, resolveScript)
         )
       );
 
