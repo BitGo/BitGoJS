@@ -73,9 +73,22 @@ describe('Zec Unified Address support', function () {
       assert.strictEqual(Buffer.from(script).toString('hex'), MAINNET_UA.orchardReceiverHex);
     });
 
-    it('throws for a unified address when preference is not shielded (transparent UA resolution is not supported)', function () {
-      assert.throws(() => tzec.resolveOutputScript(TESTNET_UA.unified));
-      assert.throws(() => tzec.resolveOutputScript(TESTNET_UA.unified, 'transparent'));
+    it("resolves a unified address's transparent receiver when preference is not shielded", function () {
+      const expectedScript = `76a914${TESTNET_UA.transparentPubkeyHashHex}88ac`;
+      assert.strictEqual(Buffer.from(tzec.resolveOutputScript(TESTNET_UA.unified)).toString('hex'), expectedScript);
+      assert.strictEqual(
+        Buffer.from(tzec.resolveOutputScript(TESTNET_UA.unified, 'transparent')).toString('hex'),
+        expectedScript
+      );
+    });
+
+    it('throws when a shielded-only unified address is resolved without the shielded preference', function () {
+      const orchardOnlyUa = fixedScriptWallet.ZcashUnifiedAddress.encodeOrchardReceiver(
+        Buffer.from(TESTNET_UA.ironwoodReceiverHex as string, 'hex'),
+        'tzec'
+      );
+      assert.throws(() => tzec.resolveOutputScript(orchardOnlyUa), /Could not decode|no transparent receiver/);
+      assert.throws(() => tzec.resolveOutputScript(orchardOnlyUa, 'transparent'));
     });
 
     it('resolves an ordinary transparent address regardless of preference', function () {

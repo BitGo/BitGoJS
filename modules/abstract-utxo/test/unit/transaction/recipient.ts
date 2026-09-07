@@ -1,6 +1,10 @@
 import assert from 'assert';
 
-import { toOutputScript, fromExtendedAddressFormatToScript } from '../../../src/transaction/recipient';
+import {
+  toOutputScript,
+  fromExtendedAddressFormatToScript,
+  toExtendedAddressFormat,
+} from '../../../src/transaction/recipient';
 import { getUtxoCoin } from '../util/utxoCoins';
 
 describe('AbstractUtxoCoin.preprocessBuildParams', function () {
@@ -125,5 +129,36 @@ describe('AbstractUtxoCoin.resolveOutputScript', function () {
       Buffer.from(coin.resolveOutputScript(address, 'shielded')),
       fromExtendedAddressFormatToScript(address, coin.name)
     );
+  });
+});
+
+describe('toExtendedAddressFormat', function () {
+  const zec = getUtxoCoin('zec');
+  const orchardReceiver = Buffer.from(
+    'd632c28aa0831d671be17709a42c9627e2eb687a1b2a55768ea470c9bae7499cd0bd3d0eb0484e307236b5',
+    'hex'
+  );
+
+  it('encodes a shielded receiver as a single-receiver unified address for zec', function () {
+    const extendedAddress = toExtendedAddressFormat(orchardReceiver, 'zec');
+    assert.strictEqual(
+      Buffer.from(zec.resolveOutputScript(extendedAddress, 'shielded')).toString('hex'),
+      orchardReceiver.toString('hex')
+    );
+  });
+
+  it('decodes ordinary transparent scripts for tzec without the unified-address path', function () {
+    const tzec = getUtxoCoin('tzec');
+    const p2pkhScript = tzec.resolveOutputScript('tmM4DvLVJKXZt5ydn1tqYTHvahpKSwgjuRk');
+    assert.strictEqual(
+      toExtendedAddressFormat(Buffer.from(p2pkhScript), 'tzec'),
+      'tmM4DvLVJKXZt5ydn1tqYTHvahpKSwgjuRk'
+    );
+  });
+
+  it('never takes the unified-address path for non-zcash coins', function () {
+    // a 43-byte script is not a valid transparent scriptPubKey anywhere — for non-zcash coins
+    // the UA encoder must not run, so decoding throws the ordinary decoder error
+    assert.throws(() => toExtendedAddressFormat(orchardReceiver, 'btc'), /Invalid address|script/i);
   });
 });
