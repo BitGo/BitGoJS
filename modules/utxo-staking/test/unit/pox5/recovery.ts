@@ -8,6 +8,7 @@ import { getKey, getKeyTriple } from '@bitgo/wasm-utxo/testutils';
 import {
   assertPox5EarlyExitSpend,
   assertPox5LocktimeSpend,
+  classifyPox5Spend,
   POX5_MAX_UNLOCK_HEIGHT,
   preparePox5EarlyExit,
 } from '../../../src/pox5';
@@ -58,6 +59,15 @@ describe('PoX-5 spend policy', function () {
     assert.doesNotThrow(() => assertPox5EarlyExitSpend(locktimeSpend.psbt, locktimeSpend.match));
     assert.doesNotThrow(() => assertPox5EarlyExitSpend(earlyExitSpend.psbt, earlyExitSpend.match));
     assert.doesNotThrow(() => assertPox5EarlyExitSpend(timestampLocktime.psbt, timestampLocktime.match));
+  });
+
+  it('classifies the spend from native principal-preimage metadata', function () {
+    const locktimeSpend = createPox5RecoveryPsbt(UNLOCK_HEIGHT);
+    assert.equal(classifyPox5Spend(locktimeSpend.psbt, locktimeSpend.match), 'locktime');
+
+    const earlyExitSpend = createPox5RecoveryPsbt(0);
+    preparePox5EarlyExit(earlyExitSpend.psbt, 0, earlyExitSpend.match, earlyExitSpend.principalPreimage);
+    assert.equal(classifyPox5Spend(earlyExitSpend.psbt, earlyExitSpend.match), 'early-exit');
   });
 
   it('enforces the block-height and unlock-height boundaries', function () {
