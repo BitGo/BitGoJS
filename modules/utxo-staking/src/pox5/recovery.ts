@@ -58,6 +58,17 @@ export function assertPox5EarlyExitSpend(psbt: Psbt, input: pox5.Pox5InputMatch)
   getMatchedTransactionInput(psbt, input);
 }
 
+export type Pox5SpendBranch = 'locktime' | 'early-exit';
+
+/** Classify a PoX-5 spend from native principal-preimage metadata. */
+export function classifyPox5Spend(psbt: Psbt, input: pox5.Pox5InputMatch): Pox5SpendBranch {
+  getMatchedTransactionInput(psbt, input);
+  const hasPrincipalPreimage = psbt
+    .getInputKeyValues(input.inputIndex)
+    .some((record) => record.type === 'known' && record.key === 'PSBT_IN_SHA256');
+  return hasPrincipalPreimage ? 'early-exit' : 'locktime';
+}
+
 /** Add validated principal-preimage metadata for an early-exit spend. */
 export function preparePox5EarlyExit(
   psbt: Psbt,
