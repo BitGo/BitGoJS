@@ -3,7 +3,7 @@ import type { Psbt, descriptorWallet } from '@bitgo/wasm-utxo';
 
 import { AbstractUtxoCoin, VerifyTransactionOptions } from '../../abstractUtxoCoin';
 import { BaseOutput, BaseParsedTransactionOutputs } from '../types';
-import { UtxoCoinName } from '../../names';
+import { AddressCodec } from '../recipient';
 import { decodeDescriptorPsbt } from '../decode';
 
 import { toBaseParsedTransactionOutputsFromPsbt } from './parse';
@@ -54,9 +54,9 @@ export function assertValidTransaction(
   psbt: Psbt | Uint8Array,
   descriptors: descriptorWallet.DescriptorMap,
   recipients: ITransactionRecipient[],
-  coinName: UtxoCoinName
+  addressCodec: AddressCodec
 ): void {
-  assertExpectedOutputDifference(toBaseParsedTransactionOutputsFromPsbt(psbt, descriptors, recipients, coinName));
+  assertExpectedOutputDifference(toBaseParsedTransactionOutputsFromPsbt(psbt, descriptors, recipients, addressCodec));
 }
 
 /**
@@ -74,7 +74,8 @@ export function assertValidTransaction(
 export async function verifyTransaction<TNumber extends number | bigint>(
   coin: AbstractUtxoCoin,
   params: VerifyTransactionOptions<TNumber>,
-  descriptorMap: descriptorWallet.DescriptorMap
+  descriptorMap: descriptorWallet.DescriptorMap,
+  addressCodec: AddressCodec = new AddressCodec(coin.name)
 ): Promise<boolean> {
   let psbt: Psbt;
   try {
@@ -94,13 +95,13 @@ export async function verifyTransaction<TNumber extends number | bigint>(
     );
   }
 
-  assertValidTransaction(psbt, descriptorMap, params.txParams.recipients ?? [], coin.name);
+  assertValidTransaction(psbt, descriptorMap, params.txParams.recipients ?? [], addressCodec);
 
   const parsedOutputs = toBaseParsedTransactionOutputsFromPsbt(
     psbt,
     descriptorMap,
     params.txParams.recipients ?? [],
-    coin.name
+    addressCodec
   );
 
   if (params.txParams.qr) {

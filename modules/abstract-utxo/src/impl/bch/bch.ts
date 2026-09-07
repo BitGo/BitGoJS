@@ -3,7 +3,7 @@ import { address as wasmAddress } from '@bitgo/wasm-utxo';
 
 import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
 import { UtxoCoinName } from '../../names';
-import { isScriptRecipient } from '../../transaction';
+import { AddressCodec } from '../../transaction';
 
 export class Bch extends AbstractUtxoCoin {
   readonly name: UtxoCoinName = 'bch';
@@ -29,7 +29,7 @@ export class Bch extends AbstractUtxoCoin {
    * @returns {*} address string
    */
   canonicalAddress(address: string, version: unknown = 'base58'): string {
-    if (isScriptRecipient(address)) {
+    if (AddressCodec.isScriptRecipient(address)) {
       return address;
     }
 

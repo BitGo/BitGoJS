@@ -1,17 +1,19 @@
 import { AbstractUtxoCoin, ParseTransactionOptions } from '../abstractUtxoCoin';
 import { isDescriptorWallet } from '../descriptor';
 
+import { AddressCodec } from './recipient';
 import { ParsedTransaction } from './types';
 import * as descriptor from './descriptor';
 import * as fixedScript from './fixedScript';
 
 export async function parseTransaction<TNumber extends bigint | number>(
   coin: AbstractUtxoCoin,
-  params: ParseTransactionOptions<TNumber>
+  params: ParseTransactionOptions<TNumber>,
+  addressCodec: AddressCodec = new AddressCodec(coin.name)
 ): Promise<ParsedTransaction<TNumber>> {
   if (isDescriptorWallet(params.wallet)) {
-    return descriptor.parseToAmountType(coin, params.wallet, params);
+    return descriptor.parseToAmountType(coin, params.wallet, params, addressCodec);
   } else {
-    return fixedScript.parseTransaction(coin, params);
+    return fixedScript.parseTransaction(coin, params, addressCodec);
   }
 }
