@@ -8,6 +8,7 @@ import { ExtraPrebuildParamsOptions, Wallet } from '@bitgo/sdk-core';
 
 import { getUtxoCoin, defaultBitGo, getDefaultWasmWalletKeys } from '../../util';
 import { Zec } from '../../../../src/impl/zec';
+import { ZcashAddressCodec } from '../../../../src/impl/zec/addressCodec';
 
 type UaVector = {
   network: 'zec' | 'tzec';
@@ -61,31 +62,40 @@ describe('Zec Unified Address support', function () {
     });
   });
 
-  describe('resolveOutputScript', function () {
+  describe('ZcashAddressCodec', function () {
     it("resolves a unified address's Orchard/Ironwood receiver when preference is 'shielded'", function () {
-      const script = tzec.resolveOutputScript(TESTNET_UA.unified, 'shielded');
+      const script = new ZcashAddressCodec('tzec', 'shielded').decode(TESTNET_UA.unified);
       assert.strictEqual(Buffer.from(script).toString('hex'), TESTNET_UA.ironwoodReceiverHex);
       assert.strictEqual(script.length, 43);
     });
 
     it("resolves a mainnet unified address's Orchard receiver when preference is 'shielded'", function () {
-      const script = zec.resolveOutputScript(MAINNET_UA.unified, 'shielded');
+      const script = new ZcashAddressCodec('zec', 'shielded').decode(MAINNET_UA.unified);
       assert.strictEqual(Buffer.from(script).toString('hex'), MAINNET_UA.orchardReceiverHex);
     });
 
-    it('throws for a unified address when preference is not shielded (transparent UA resolution is not supported)', function () {
-      assert.throws(() => tzec.resolveOutputScript(TESTNET_UA.unified));
-      assert.throws(() => tzec.resolveOutputScript(TESTNET_UA.unified, 'transparent'));
+    it("resolves a unified address's transparent receiver by default and with 'transparent'", function () {
+      const expectedScript = `76a914${TESTNET_UA.transparentPubkeyHashHex}88ac`;
+      assert.strictEqual(
+        Buffer.from(new ZcashAddressCodec('tzec').decode(TESTNET_UA.unified)).toString('hex'),
+        expectedScript
+      );
+      assert.strictEqual(
+        Buffer.from(new ZcashAddressCodec('tzec', 'transparent').decode(TESTNET_UA.unified)).toString('hex'),
+        expectedScript
+      );
     });
 
     it('resolves an ordinary transparent address regardless of preference', function () {
       const expectedScript = `76a914${TESTNET_UA.transparentPubkeyHashHex}88ac`;
       assert.strictEqual(
-        Buffer.from(tzec.resolveOutputScript(TESTNET_UA.transparentAddress as string)).toString('hex'),
+        Buffer.from(new ZcashAddressCodec('tzec').decode(TESTNET_UA.transparentAddress as string)).toString('hex'),
         expectedScript
       );
       assert.strictEqual(
-        Buffer.from(tzec.resolveOutputScript(TESTNET_UA.transparentAddress as string, 'shielded')).toString('hex'),
+        Buffer.from(new ZcashAddressCodec('tzec', 'shielded').decode(TESTNET_UA.transparentAddress as string)).toString(
+          'hex'
+        ),
         expectedScript
       );
     });
@@ -221,7 +231,7 @@ describe('Zec Unified Address support', function () {
         scriptId: { chain: 0, index: 1 },
       });
       psbt.addWalletOutput(walletKeys, { chain: 1, index: 0, value: 100000n });
-      const externalScript = tzec.resolveOutputScript(TESTNET_UA.transparentAddress as string);
+      const externalScript = new ZcashAddressCodec('tzec').decode(TESTNET_UA.transparentAddress as string);
       psbt.addTransparentOutput(externalScript, 12345n, unifiedAddress);
       return psbt;
     }
@@ -236,7 +246,7 @@ describe('Zec Unified Address support', function () {
       assert.ok(parsed.transparentScript);
       assert.strictEqual(
         Buffer.from(parsed.transparentScript).toString('hex'),
-        Buffer.from(zec.resolveOutputScript(TESTNET_UA.transparentAddress as string)).toString('hex')
+        Buffer.from(new ZcashAddressCodec('tzec').decode(TESTNET_UA.transparentAddress as string)).toString('hex')
       );
     }
     const tzecCoin = tzec as Zec;

@@ -1,34 +1,26 @@
 /**
  * @prettier
  */
-import {
-  address as wasmAddress,
-  fixedScriptWallet,
-  hasPsbtMagic,
-  isWasmUtxoError,
-  zcashAddress as wasmZcashAddress,
-} from '@bitgo/wasm-utxo';
+import { fixedScriptWallet, hasPsbtMagic, isWasmUtxoError } from '@bitgo/wasm-utxo';
 import { BitGoBase, ExtraPrebuildParamsOptions, Wallet } from '@bitgo/sdk-core';
 
-import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
+import { AbstractUtxoCoin, ParseTransactionOptions, VerifyTransactionOptions } from '../../abstractUtxoCoin';
 import { stringToBufferTryFormats } from '../../transaction/decode';
+import type { UnifiedRecipientPreference } from '../../transaction/recipient';
+import type { ParsedTransaction } from '../../transaction/types';
 import { UtxoCoinName } from '../../names';
 
+import { ZcashAddressCodec, tryParseUnifiedAddress } from './addressCodec';
 import { resolvePsbtRecipients, ResolvePsbtRecipientsOptions, PsbtRecipient } from './recipients';
 
-/**
- * Parse `address` as a ZIP-316 Unified Address for `network`, or return `undefined` if it isn't
- * one (malformed, wrong network, or not bech32m-shaped at all).
- */
-function tryParseUnifiedAddress(
-  address: string,
-  network: 'zec' | 'tzec'
-): fixedScriptWallet.ZcashUnifiedAddress | undefined {
-  try {
-    return fixedScriptWallet.ZcashUnifiedAddress.parse(address, network);
-  } catch (e) {
-    return undefined;
-  }
+function getUnifiedRecipientPreference<TNumber extends number | bigint>(
+  txParams: ParseTransactionOptions<TNumber>['txParams']
+): UnifiedRecipientPreference | undefined {
+  return (
+    txParams as ParseTransactionOptions<TNumber>['txParams'] & {
+      unifiedRecipientPreference?: UnifiedRecipientPreference;
+    }
+  ).unifiedRecipientPreference;
 }
 
 export class Zec extends AbstractUtxoCoin {
@@ -50,7 +42,7 @@ export class Zec extends AbstractUtxoCoin {
    */
   override async getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions & { wallet: Wallet }) {
     const extraParams = await super.getExtraPrebuildParams(buildParams);
-    const unifiedRecipientPreference = buildParams.unifiedRecipientPreference as string | undefined;
+    const unifiedRecipientPreference = buildParams.unifiedRecipientPreference as UnifiedRecipientPreference | undefined;
     if (unifiedRecipientPreference === undefined) {
       return extraParams;
     }
@@ -74,18 +66,22 @@ export class Zec extends AbstractUtxoCoin {
     return super.isValidAddress(address, param);
   }
 
-  /**
-   * Resolve `address` to an output script. For a Unified Address, `unifiedRecipientPreference ===
-   * 'shielded'` resolves to the raw 43-byte Orchard/Ironwood receiver (a shielded output, no
-   * scriptPubKey) instead of the default transparent scriptPubKey. Non-Unified addresses and any
-   * other `unifiedRecipientPreference` value are unaffected and resolve exactly as the base
-   * implementation would.
-   */
-  override resolveOutputScript(address: string, unifiedRecipientPreference?: string): Uint8Array {
-    if (unifiedRecipientPreference === 'shielded') {
-      return wasmZcashAddress.toShieldedReceiverWithCoin(address, this.name);
-    }
-    return wasmAddress.toOutputScriptWithCoin(address, this.name);
+  override parseTransaction<TNumber extends number | bigint = number>(
+    params: ParseTransactionOptions<TNumber>
+  ): Promise<ParsedTransaction<TNumber>> {
+    return this.parseTransactionWithAddressCodec(
+      params,
+      new ZcashAddressCodec(this.name as 'zec' | 'tzec', getUnifiedRecipientPreference(params.txParams))
+    );
+  }
+
+  override verifyTransaction<TNumber extends number | bigint = number>(
+    params: VerifyTransactionOptions<TNumber>
+  ): Promise<boolean> {
+    return this.verifyTransactionWithAddressCodec(
+      params,
+      new ZcashAddressCodec(this.name as 'zec' | 'tzec', getUnifiedRecipientPreference(params.txParams))
+    );
   }
 
   /**

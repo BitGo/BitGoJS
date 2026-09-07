@@ -1,4 +1,6 @@
 import assert from 'assert';
+import * as fs from 'fs';
+import * as path from 'path';
 
 import * as sinon from 'sinon';
 import { Wallet, UnexpectedAddressError, VerificationOptions } from '@bitgo/sdk-core';
@@ -11,6 +13,10 @@ import { getUtxoCoin } from './util';
 
 describe('Parse Transaction', function () {
   const coin = getUtxoCoin('tbtc');
+  const zec = getUtxoCoin('tzec');
+  const testnetUnifiedAddress = JSON.parse(
+    fs.readFileSync(path.join(__dirname, 'fixtures/tzec/unified_address.json'), 'utf8')
+  ).unified as string;
 
   /*
    * mock objects which get passed into parse transaction.
@@ -124,6 +130,58 @@ describe('Parse Transaction', function () {
       recipients: [{ address: externalAddress, amount: outputAmount }],
     });
   });
+
+  it('preserves script recipients through the transaction path', async function () {
+    const scriptRecipient = 'scriptPubKey:6a0c3230323651312d6175646974';
+    stubExplainTransaction = sinon.stub(coin, 'explainTransaction').resolves({
+      outputs: [{ address: scriptRecipient, amount: '0', external: false }],
+      changeOutputs: [],
+    } as unknown as TransactionExplanation);
+
+    const parsedTransaction = await coin.parseTransaction({
+      txParams: { recipients: [{ address: scriptRecipient, amount: '0' }] },
+      txPrebuild: { txHex: '' },
+      wallet: wallet as unknown as UtxoWallet,
+      verification,
+    });
+
+    assert.deepStrictEqual(parsedTransaction.outputs[0], {
+      address: scriptRecipient,
+      amount: '0',
+      external: false,
+    });
+  });
+
+  for (const unifiedRecipientPreference of ['transparent', 'shielded'] as const) {
+    it(`uses the ${unifiedRecipientPreference} Zcash address codec in the transaction path`, async function () {
+      stubExplainTransaction = sinon.stub(zec, 'explainTransaction').resolves({
+        outputs: [
+          {
+            address: testnetUnifiedAddress,
+            amount: outputAmount,
+            external: false,
+          },
+        ],
+        changeOutputs: [],
+      } as unknown as TransactionExplanation);
+
+      const parsedTransaction = await zec.parseTransaction({
+        txParams: {
+          recipients: [{ address: testnetUnifiedAddress, amount: outputAmount }],
+          unifiedRecipientPreference,
+        },
+        txPrebuild: { txHex: '' },
+        wallet: wallet as unknown as UtxoWallet,
+        verification,
+      });
+
+      assert.deepStrictEqual(parsedTransaction.outputs[0], {
+        address: testnetUnifiedAddress,
+        amount: outputAmount,
+        external: false,
+      });
+    });
+  }
 
   describe('txHexPsbt (pending approval flow)', function () {
     it('should pass txHexPsbt to explainTransaction when both txHex and txHexPsbt are present', async function () {

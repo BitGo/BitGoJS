@@ -235,7 +235,7 @@ export interface PrebuildTransactionOptions {
    * Orchard/Ironwood receiver (a shielded output); any other value (or omission) resolves it to
    * its transparent receiver.
    */
-  unifiedRecipientPreference?: string;
+  unifiedRecipientPreference?: 'transparent' | 'shielded';
   /**
    * Custom Solana instructions to include in the transaction.
    * Each instruction contains a program ID, accounts array, and data buffer.
