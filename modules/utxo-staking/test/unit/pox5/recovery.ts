@@ -8,7 +8,6 @@ import { getKey, getKeyTriple } from '@bitgo/wasm-utxo/testutils';
 import {
   assertPox5EarlyExitSpend,
   assertPox5LocktimeSpend,
-  classifyPox5Spend,
   POX5_MAX_UNLOCK_HEIGHT,
   preparePox5EarlyExit,
 } from '../../../src/pox5';
@@ -51,15 +50,14 @@ function createPox5RecoveryPsbt(
 }
 
 describe('PoX-5 spend policy', function () {
-  it('classifies locktime and early-exit branches from native transaction data', function () {
+  it('allows the early-exit branch regardless of nLockTime', function () {
     const locktimeSpend = createPox5RecoveryPsbt(UNLOCK_HEIGHT);
     const earlyExitSpend = createPox5RecoveryPsbt(0);
+    const timestampLocktime = createPox5RecoveryPsbt(POX5_MAX_UNLOCK_HEIGHT);
 
-    assert.equal(classifyPox5Spend(locktimeSpend.psbt, locktimeSpend.match), 'locktime');
-    assert.equal(classifyPox5Spend(earlyExitSpend.psbt, earlyExitSpend.match), 'early-exit');
-    assert.doesNotThrow(() => assertPox5LocktimeSpend(locktimeSpend.psbt, [locktimeSpend.match]));
+    assert.doesNotThrow(() => assertPox5EarlyExitSpend(locktimeSpend.psbt, locktimeSpend.match));
     assert.doesNotThrow(() => assertPox5EarlyExitSpend(earlyExitSpend.psbt, earlyExitSpend.match));
-    assert.throws(() => assertPox5EarlyExitSpend(locktimeSpend.psbt, locktimeSpend.match), /not an early-exit spend/);
+    assert.doesNotThrow(() => assertPox5EarlyExitSpend(timestampLocktime.psbt, timestampLocktime.match));
   });
 
   it('enforces the block-height and unlock-height boundaries', function () {
@@ -81,8 +79,21 @@ describe('PoX-5 spend policy', function () {
     const final = createPox5RecoveryPsbt(UNLOCK_HEIGHT, 0xffffffff);
     const nonFinal = createPox5RecoveryPsbt(UNLOCK_HEIGHT, 0xfffffffe);
 
-    assert.throws(() => assertPox5LocktimeSpend(final.psbt, [final.match]), /non-final sequences/);
+    assert.throws(() => assertPox5LocktimeSpend(final.psbt, [final.match]), /non-final sequence/);
     assert.doesNotThrow(() => assertPox5LocktimeSpend(nonFinal.psbt, [nonFinal.match]));
+  });
+
+  it('allows final sequences on unrelated transaction inputs', function () {
+    const { psbt, match } = createPox5RecoveryPsbt(UNLOCK_HEIGHT);
+    psbt.addInput('02'.repeat(32), 0, 10_000n, new Uint8Array([0x51]), 0xffffffff);
+
+    assert.doesNotThrow(() => assertPox5LocktimeSpend(psbt, [match]));
+  });
+
+  it('requires an input match to remain bound to its original PSBT input', function () {
+    const { psbt, match, principalPreimage } = createPox5RecoveryPsbt(0);
+
+    assert.throws(() => preparePox5EarlyExit(psbt, 1, match, principalPreimage), /belongs to PSBT input/);
   });
 
   it('adds a validated principal preimage through the native PSBT API', function () {

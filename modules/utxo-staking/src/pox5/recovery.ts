@@ -3,14 +3,6 @@ import { pox5 } from '@bitgo/utxo-descriptors';
 
 export const POX5_MAX_UNLOCK_HEIGHT = 500_000_000;
 
-export type Pox5SpendBranch = 'locktime' | 'early-exit';
-
-export type Pox5SpendInput = pox5.Pox5InputMatch | pox5.Pox5DescriptorInfo;
-
-function getPox5DescriptorInfo(input: Pox5SpendInput): pox5.Pox5DescriptorInfo {
-  return 'info' in input ? input.info : input;
-}
-
 function assertPox5UnlockHeight(unlockHeight: number): void {
   if (!Number.isSafeInteger(unlockHeight) || unlockHeight <= 0 || unlockHeight >= POX5_MAX_UNLOCK_HEIGHT) {
     throw new Error(`PoX-5 unlock height must be a positive block height below ${POX5_MAX_UNLOCK_HEIGHT}`);
@@ -23,29 +15,28 @@ function assertPox5BlockHeightLocktime(lockTime: number): void {
   }
 }
 
-function hasFinalInput(psbt: Psbt): boolean {
-  return Transaction.fromBytes(psbt.getUnsignedTx())
-    .getInputs()
-    .some((input) => input.sequence === 0xffffffff);
-}
-
-/** Classify a canonical PoX-5 input by the transaction branch it can spend. */
-export function classifyPox5Spend(psbt: Psbt, input: pox5.Pox5InputMatch): Pox5SpendBranch {
-  const { unlockHeight } = input.info;
-  assertPox5UnlockHeight(unlockHeight);
-  const lockTime = psbt.lockTime();
-  assertPox5BlockHeightLocktime(lockTime);
-  return lockTime >= unlockHeight ? 'locktime' : 'early-exit';
+function getMatchedTransactionInput(psbt: Psbt, match: pox5.Pox5InputMatch) {
+  const psbtInput = psbt.getInputs()[match.inputIndex];
+  const transactionInput = Transaction.fromBytes(psbt.getUnsignedTx()).getInputs()[match.inputIndex];
+  const descriptorScript = Buffer.from(match.descriptor.scriptPubkey());
+  if (
+    !psbtInput?.witnessUtxo ||
+    !transactionInput ||
+    !Buffer.from(psbtInput.witnessUtxo.script).equals(descriptorScript)
+  ) {
+    throw new Error(`PoX-5 descriptor match does not match PSBT input ${match.inputIndex}`);
+  }
+  return transactionInput;
 }
 
 /** Validate the post-CLTV policy for all canonical PoX-5 inputs in a recovery PSBT. */
-export function assertPox5LocktimeSpend(psbt: Psbt, inputs: readonly Pox5SpendInput[]): void {
+export function assertPox5LocktimeSpend(psbt: Psbt, inputs: readonly pox5.Pox5InputMatch[]): void {
   if (inputs.length === 0) {
     throw new Error('PoX-5 lockup descriptor match is required');
   }
 
   const unlockHeights = inputs.map((input) => {
-    const { unlockHeight } = getPox5DescriptorInfo(input);
+    const { unlockHeight } = input.info;
     assertPox5UnlockHeight(unlockHeight);
     return unlockHeight;
   });
@@ -55,16 +46,16 @@ export function assertPox5LocktimeSpend(psbt: Psbt, inputs: readonly Pox5SpendIn
   if (lockTime < requiredLockTime) {
     throw new Error(`PoX-5 nLockTime must be at least ${requiredLockTime}`);
   }
-  if (hasFinalInput(psbt)) {
-    throw new Error('PoX-5 locktime spend inputs must use non-final sequences');
+  for (const input of inputs) {
+    if (getMatchedTransactionInput(psbt, input).sequence === 0xffffffff) {
+      throw new Error(`PoX-5 locktime spend input ${input.inputIndex} must use a non-final sequence`);
+    }
   }
 }
 
-/** Validate that a canonical PoX-5 input uses the principal-preimage branch. */
+/** Validate that a canonical PoX-5 input can use the principal-preimage branch. */
 export function assertPox5EarlyExitSpend(psbt: Psbt, input: pox5.Pox5InputMatch): void {
-  if (classifyPox5Spend(psbt, input) !== 'early-exit') {
-    throw new Error('PoX-5 input is not an early-exit spend');
-  }
+  getMatchedTransactionInput(psbt, input);
 }
 
 /** Add validated principal-preimage metadata for an early-exit spend. */
@@ -74,6 +65,9 @@ export function preparePox5EarlyExit(
   input: pox5.Pox5InputMatch,
   principalPreimage: Uint8Array
 ): void {
+  if (inputIndex !== input.inputIndex) {
+    throw new Error(`PoX-5 descriptor match belongs to PSBT input ${input.inputIndex}, not ${inputIndex}`);
+  }
   assertPox5EarlyExitSpend(psbt, input);
   pox5.assertPox5PrincipalPreimage(input.info, principalPreimage);
   psbt.addSha256Preimage(inputIndex, principalPreimage);

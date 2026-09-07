@@ -6,12 +6,17 @@ type ResolvedPox5DescriptorInfo = Pox5DescriptorInfo & {
   stakerKeys: [Buffer, Buffer, Buffer];
 };
 
-export type Pox5InputMatch = {
+export type Pox5DescriptorMatch = {
   /** The concrete descriptor whose script matches the input. */
   descriptor: Descriptor;
   /** The derivation index used for a wildcard descriptor, if any. */
   index: number | undefined;
   info: ResolvedPox5DescriptorInfo;
+};
+
+/** A canonical PoX-5 descriptor match bound to a native PSBT input. */
+export type Pox5InputMatch = Pox5DescriptorMatch & {
+  inputIndex: number;
 };
 
 function getConcreteDescriptor(descriptor: Descriptor, index: number | undefined): Descriptor {
@@ -28,7 +33,7 @@ function getConcreteDescriptor(descriptor: Descriptor, index: number | undefined
 export function findPox5DescriptorForInput(
   input: descriptorWallet.PsbtInput,
   descriptors: descriptorWallet.DescriptorMap
-): Pox5InputMatch | undefined {
+): Pox5DescriptorMatch | undefined {
   try {
     const matched = descriptorWallet.findDescriptorForInput(input, descriptors);
     if (!matched) {
@@ -59,5 +64,6 @@ export function matchPox5Input(
   descriptors: descriptorWallet.DescriptorMap
 ): Pox5InputMatch | undefined {
   const input = psbt.getInputs()[inputIndex];
-  return input ? findPox5DescriptorForInput(input, descriptors) : undefined;
+  const match = input ? findPox5DescriptorForInput(input, descriptors) : undefined;
+  return match ? { ...match, inputIndex } : undefined;
 }

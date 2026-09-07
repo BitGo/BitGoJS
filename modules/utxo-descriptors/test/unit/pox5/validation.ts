@@ -38,27 +38,36 @@ function createPsbt(): Psbt {
 }
 
 describe('PoX-5 principal preimage validation', function () {
-  it('extracts and validates the unique native SHA256 record', function () {
+  it('extracts and validates the descriptor-committed SHA256 record', function () {
     const preimage = Buffer.alloc(32, 0x42);
+    const descriptor = createPox5LockupDescriptor(getParams(sha256(preimage)));
     const psbt = createPsbt();
     psbt.addSha256Preimage(0, preimage);
 
-    assert.deepStrictEqual(getPox5PrincipalPreimage(psbt, 0), preimage);
+    assert.deepStrictEqual(getPox5PrincipalPreimage(psbt, 0, descriptor), preimage);
   });
 
-  it('rejects missing and duplicate SHA256 records', function () {
-    assert.throws(() => getPox5PrincipalPreimage(createPsbt(), 0), /exactly one/);
+  it('ignores unrelated SHA256 records and rejects a missing committed preimage', function () {
+    const preimage = Buffer.alloc(32, 0x42);
+    const descriptor = createPox5LockupDescriptor(getParams(sha256(preimage)));
+    assert.throws(() => getPox5PrincipalPreimage(createPsbt(), 0, descriptor), /matching the descriptor commitment/);
 
     const psbt = createPsbt();
-    psbt.addSha256Preimage(0, Buffer.alloc(32, 0x42));
+    psbt.addSha256Preimage(0, preimage);
     psbt.addSha256Preimage(0, Buffer.alloc(32, 0x43));
-    assert.throws(() => getPox5PrincipalPreimage(psbt, 0), /exactly one/);
+    assert.deepStrictEqual(getPox5PrincipalPreimage(psbt, 0, descriptor), preimage);
+
+    const unmatchedPsbt = createPsbt();
+    unmatchedPsbt.addSha256Preimage(0, Buffer.alloc(32, 0x43));
+    assert.throws(() => getPox5PrincipalPreimage(unmatchedPsbt, 0, descriptor), /matching the descriptor commitment/);
   });
 
   it('rejects malformed SHA256 digest and preimage values', function () {
+    const preimage = Buffer.alloc(32, 0x42);
+    const descriptor = createPox5LockupDescriptor(getParams(sha256(preimage)));
     const psbt = createPsbt();
-    psbt.setInputKV(0, { type: 'unknown', keyType: 0x0b, data: new Uint8Array(32) }, new Uint8Array(31));
-    assert.throws(() => getPox5PrincipalPreimage(psbt, 0), /preimage must be 32 bytes/);
+    psbt.setInputKV(0, { type: 'unknown', keyType: 0x0b, data: sha256(preimage) }, new Uint8Array(31));
+    assert.throws(() => getPox5PrincipalPreimage(psbt, 0, descriptor), /preimage must be 32 bytes/);
   });
 
   it('checks the principal preimage against the descriptor commitment', function () {

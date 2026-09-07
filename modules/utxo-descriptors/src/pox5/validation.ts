@@ -13,13 +13,23 @@ function isSha256InputKeyValue(keyValue: PsbtInputKeyValue): keyValue is Sha256I
 }
 
 /**
- * Read and validate the unique PoX-5 principal preimage from a native PSBT input.
- * The PSBT_IN_SHA256 key data is the digest and its value is the preimage.
+ * Read the principal preimage committed by a canonical PoX-5 descriptor from a
+ * native PSBT input. The PSBT_IN_SHA256 key data is the descriptor commitment.
  */
-export function getPox5PrincipalPreimage(psbt: Psbt, inputIndex: number): Buffer {
-  const records = psbt.getInputKeyValues(inputIndex).filter(isSha256InputKeyValue);
+export function getPox5PrincipalPreimage(
+  psbt: Psbt,
+  inputIndex: number,
+  descriptor: Pox5DescriptorInfo | Descriptor | import('@bitgo/wasm-utxo').ast.DescriptorNode
+): Buffer {
+  const info = getPox5DescriptorInfo(descriptor);
+  const records = psbt
+    .getInputKeyValues(inputIndex)
+    .filter(isSha256InputKeyValue)
+    .filter((record) => Buffer.from(record.keyData).equals(info.stakerCommitment));
   if (records.length !== 1) {
-    throw new Error(`expected exactly one ${SHA256_INPUT_KEY} record, found ${records.length}`);
+    throw new Error(
+      `expected exactly one ${SHA256_INPUT_KEY} record matching the descriptor commitment, found ${records.length}`
+    );
   }
 
   const [record] = records;
