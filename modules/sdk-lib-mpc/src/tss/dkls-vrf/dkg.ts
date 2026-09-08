@@ -194,8 +194,8 @@ export class VrfDkg {
         .filter((m) => m.to_id === undefined)
         .map((m) => ({ payload: new Uint8Array(m.payload), from: m.from_id }));
       nextRoundDeserializedMessages.p2pMessages = nextRoundMessages
-        .filter((m) => m.to_id !== undefined)
-        .map((m) => ({ payload: new Uint8Array(m.payload), from: m.from_id, to: m.to_id! }));
+        .filter((m): m is VrfWasmMessage & { to_id: number } => m.to_id !== undefined)
+        .map((m) => ({ payload: new Uint8Array(m.payload), from: m.from_id, to: m.to_id }));
       return nextRoundDeserializedMessages;
     } catch (e) {
       throw Error(`Error while creating VRF messages from party ${this.partyIdx}, state ${this.vrfState}: ${e}`);
