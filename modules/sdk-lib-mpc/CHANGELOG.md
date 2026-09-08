@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.18.0...@bitgo/sdk-lib-mpc@10.19.0) (2026-09-04)
+
+
+### Features
+
+* **sdk-lib-mpc:** add RedPallas MPS DSG rounds and PGP helpers ([268c5de](https://github.com/BitGo/BitGoJS/commit/268c5de42547592a4b76dd6a483791b18bfcae65))
+* **sdk-lib-mpc:** add VrfDkg wrapper for DKLS VRF keygen ([2994152](https://github.com/BitGo/BitGoJS/commit/29941524d719897c7df222e6d1a47b064ef2eadd))
+
+
+
+
+
 # [10.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.17.0...@bitgo/sdk-lib-mpc@10.18.0) (2026-08-27)
 
 

@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [52.11.0](https://github.com/BitGo/BitGoJS/compare/bitgo@52.10.1...bitgo@52.11.0) (2026-09-04)
+
+
+### Bug Fixes
+
+* **sdk-core:** allow zero amount closeATA sendMany TICKET: CHALO-1343 ([a679451](https://github.com/BitGo/BitGoJS/commit/a6794511574986056c3b17afd8f893e09bafa19e))
+
+
+### Features
+
+* **sdk-coin-zec:** add shielded wallet creation support to BitGoJS SDK ([a7c59b9](https://github.com/BitGo/BitGoJS/commit/a7c59b9694ed67fe4198591c640a7a329cfd2569))
+
+
+
+
+
 ## [52.10.1](https://github.com/BitGo/BitGoJS/compare/bitgo@52.10.0...bitgo@52.10.1) (2026-09-01)
 
 **Note:** Version bump only for package bitgo

@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-sol",
-  "version": "8.7.2",
+  "version": "8.8.0",
   "description": "BitGo SDK coin library for Sol",
   "main": "./dist/cjs/src/index.js",
   "module": "./dist/esm/index.js",
@@ -58,9 +58,9 @@
   "dependencies": {
     "@bitgo/logger": "^1.4.0",
     "@bitgo/public-types": "6.66.0",
-    "@bitgo/sdk-core": "^38.12.1",
-    "@bitgo/sdk-lib-mpc": "^10.18.0",
-    "@bitgo/statics": "^59.12.0",
+    "@bitgo/sdk-core": "^38.13.0",
+    "@bitgo/sdk-lib-mpc": "^10.19.0",
+    "@bitgo/statics": "^59.13.0",
     "@bitgo/wasm-solana": "^2.6.0",
     "@solana/buffer-layout": "^4.0.1",
     "@solana/spl-stake-pool": "1.1.8",
@@ -73,8 +73,8 @@
     "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^2.5.1",
-    "@bitgo/sdk-test": "^9.1.73",
+    "@bitgo/sdk-api": "^2.5.2",
+    "@bitgo/sdk-test": "^9.1.74",
     "@types/lodash": "^4.14.121"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",

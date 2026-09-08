@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.12.1...@bitgo/sdk-core@38.13.0) (2026-09-04)
+
+
+### Bug Fixes
+
+* encode ed25519 root pub chain code as base32 ([f132c0c](https://github.com/BitGo/BitGoJS/commit/f132c0c492fdd9eafb1567de27188018206af76f))
+* **sdk-core:** allow zero amount closeATA sendMany TICKET: CHALO-1343 ([a679451](https://github.com/BitGo/BitGoJS/commit/a6794511574986056c3b17afd8f893e09bafa19e))
+* **sdk-core:** restore transfer options declaration ([3013248](https://github.com/BitGo/BitGoJS/commit/30132483730e69dd2538d9d184770b0b9aa8ea13))
+
+
+### Features
+
+* assert safe ed25519 backup root came back derivable ([a5040c8](https://github.com/BitGo/BitGoJS/commit/a5040c86cc580f90c2f90467458adee520af1410))
+* createBackup composes a derivable ed25519 root pub ([ac7fa4f](https://github.com/BitGo/BitGoJS/commit/ac7fa4f5260d23992d865e2a1a6e9573bfa1adb5))
+* **sdk-coin-sol:** add Token-2022 confidential transfer instruction builders (Phase 1a) ([5979b65](https://github.com/BitGo/BitGoJS/commit/5979b65348847bc7f80fa642ec19fd1e5909f925))
+* **sdk-coin-zec:** add shielded wallet creation support to BitGoJS SDK ([a7c59b9](https://github.com/BitGo/BitGoJS/commit/a7c59b9694ed67fe4198591c640a7a329cfd2569))
+* **sdk-core:** support stuck transaction age filters ([490936f](https://github.com/BitGo/BitGoJS/commit/490936f81186d53ee701b2e176ff5bd6f8bf409c))
+
+
+
+
+
 ## [38.12.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.12.0...@bitgo/sdk-core@38.12.1) (2026-09-01)
 
 

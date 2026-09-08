@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@6.4.3...@bitgo/sdk-coin-sui@6.4.4) (2026-09-04)
+
+
+### Bug Fixes
+
+* **sdk-coin-sui:** guard precomputedMaterial shape in signRecoveryTx ([f508e14](https://github.com/BitGo/BitGoJS/commit/f508e14deab6cd9902f96b01ed6d02c80bfa5c6a))
+
+
+
+
+
 ## [6.4.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@6.4.2...@bitgo/sdk-coin-sui@6.4.3) (2026-09-01)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sui
