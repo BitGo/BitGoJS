@@ -414,7 +414,14 @@ export class Keychains implements IKeychains {
     if (this.baseCoin.getMPCAlgorithm() === 'eddsa') {
       MpcUtils = isMPCv2 ? EDDSAUtils.EddsaMPCv2Utils : EDDSAUtils.default;
     } else {
-      MpcUtils = isMPCv2 ? ECDSAUtils.EcdsaMPCv2Utils : ECDSAUtils.EcdsaUtils;
+      // A safeId on a keygen ceremony selects the VRF variant, which additionally runs the
+      // VRF DKG alongside the signing DKG. Ordinary TSS wallet creation never sets safeId
+      // and keeps the plain MPCv2 flow.
+      MpcUtils = isMPCv2
+        ? params.safeId
+          ? ECDSAUtils.EcdsaVrfMPCv2Utils
+          : ECDSAUtils.EcdsaMPCv2Utils
+        : ECDSAUtils.EcdsaUtils;
     }
 
     const mpcUtils = new MpcUtils(this.bitgo, this.baseCoin);
