@@ -460,6 +460,7 @@ export const botTokens = [
       'custody-bitgo-switzerland' as CoinFeature,
       'custody-bitgo-sister-trust-one' as CoinFeature,
       'custody-bitgo-korea' as CoinFeature,
+      CoinFeature.STAKING,
     ]),
     undefined,
     undefined,
