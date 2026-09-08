@@ -131,6 +131,65 @@ describe('TRON Verify Transaction:', function () {
         assert.strictEqual(result, true);
       });
 
+      it('should validate TransferContract when recipient is 0x-prefixed hex (COINS-1575)', async function () {
+        const timestamp = Date.now();
+        const toAddressHex = '41d6cd6a2c0ff35a319e6abb5b9503ba0278679882';
+        const transferContract = {
+          parameter: {
+            value: {
+              amount: 1000000,
+              owner_address: '4173a5993cd182ae152adad8203163f780c65a8aa5',
+              to_address: toAddressHex,
+            },
+            type_url: 'type.googleapis.com/protocol.TransferContract',
+          },
+          type: 'TransferContract',
+        };
+
+        const rawData = {
+          contract: [transferContract],
+          ref_block_bytes: 'c8cf',
+          ref_block_hash: '89177fd84c5d9196',
+          expiration: timestamp + 3600000,
+          timestamp: timestamp,
+          fee_limit: 150000000,
+        };
+
+        const transformedRawData = {
+          contract: rawData.contract as any,
+          refBlockBytes: rawData.ref_block_bytes,
+          refBlockHash: rawData.ref_block_hash,
+          expiration: rawData.expiration,
+          timestamp: rawData.timestamp,
+          feeLimit: rawData.fee_limit,
+        };
+
+        const rawDataHex = Utils.generateRawDataHex(transformedRawData);
+        const txID = createHash('sha256').update(Buffer.from(rawDataHex, 'hex')).digest('hex');
+
+        const params = {
+          txParams: {
+            recipients: [
+              {
+                address: '0x' + toAddressHex.slice(2),
+                amount: '1000000',
+              },
+            ],
+          },
+          txPrebuild: {
+            txHex: JSON.stringify({
+              txID,
+              raw_data: rawData,
+              raw_data_hex: rawDataHex,
+            }),
+          },
+          wallet: {},
+        };
+
+        const result = await basecoin.verifyTransaction(params);
+        assert.strictEqual(result, true);
+      });
+
       it('should fail with missing owner address', async function () {
         const timestamp = Date.now();
         const txID = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
