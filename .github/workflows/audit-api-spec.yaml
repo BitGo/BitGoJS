@@ -245,7 +245,7 @@ jobs:
             static-analysis
 
       - name: Install BitGo/static-analysis/static-analysis@v1
-        uses: BitGo/install-github-release-binary@v2
+        uses: BitGo/install-github-release-binary@19d8a93a38855263266267f82b669997d755e437 # v2
         with:
           targets: BitGo/static-analysis/static-analysis@v1
           token: ${{ steps.generate-github-app-token.outputs.token }}
