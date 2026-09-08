@@ -56,6 +56,7 @@ import { decodeWithCodec } from '../utils/codecs';
 import { postWithCodec } from '../utils/postWithCodec';
 import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
 import EddsaUtils, { EddsaMPCv2Utils } from '../utils/tss/eddsa';
+import { RedpallasMPCv2Utils } from '../utils/tss/redpallas';
 import { getTxRequestApiVersion, validateTxRequestApiVersion } from '../utils/txRequest';
 import { buildParamKeys, BuildParams } from './BuildParams';
 import {
@@ -239,7 +240,13 @@ export class Wallet implements IWallet {
   public readonly baseCoin: IBaseCoin;
   public _wallet: WalletData;
   private _defi?: DefiVault;
-  private readonly tssUtils: EcdsaUtils | EcdsaMPCv2Utils | EddsaUtils | EddsaMPCv2Utils | undefined;
+  private readonly tssUtils:
+    | EcdsaUtils
+    | EcdsaMPCv2Utils
+    | EddsaUtils
+    | EddsaMPCv2Utils
+    | RedpallasMPCv2Utils
+    | undefined;
   private readonly _permissions?: string[];
   /** Root keychain from passphrase preflight; consumed by getUserPrv to avoid a second GET. */
   private validatedSafeRootKeychain?: KeychainWithEncryptedPrv;
@@ -268,6 +275,10 @@ export class Wallet implements IWallet {
           } else {
             this.tssUtils = new EddsaUtils(bitgo, baseCoin, this);
           }
+          break;
+        case 'redpallas':
+          // RedPallas (Zcash Orchard shielded pool) is MPCv2-only; there is no MPCv1 variant.
+          this.tssUtils = new RedpallasMPCv2Utils(bitgo, baseCoin, this);
           break;
         default:
           this.tssUtils = undefined;
