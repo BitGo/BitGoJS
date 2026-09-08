@@ -158,6 +158,8 @@ export async function sendSignatureShareV2(
     type = 'ecdsaMpcV2';
   } else if (multisigTypeVersion === 'MPCv2' && mpcAlgorithm === 'eddsa') {
     type = 'eddsaMpcV2';
+  } else if (multisigTypeVersion === 'MPCv2' && mpcAlgorithm === 'redpallas') {
+    type = 'redpallasMpcV2';
   } else if (multisigTypeVersion === undefined && mpcAlgorithm === 'eddsa') {
     type = 'eddsaMpcV1';
   }

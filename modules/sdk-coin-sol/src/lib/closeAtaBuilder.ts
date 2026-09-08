@@ -14,7 +14,12 @@ const MIX_API_ERROR_MESSAGE =
 
 export class CloseAtaBuilder extends TransactionBuilder {
   // Unified storage for all close entries (single or bulk)
-  protected _closeAtaEntries: { accountAddress: string; destinationAddress: string; authorityAddress: string }[] = [];
+  protected _closeAtaEntries: {
+    accountAddress: string;
+    destinationAddress: string;
+    authorityAddress: string;
+    programId?: string;
+  }[] = [];
 
   // Which API has been used on this builder instance. Locks in on first call so we can
   // reject attempts to mix the legacy single-ATA setters with the bulk addCloseAtaInstruction().
@@ -71,6 +76,16 @@ export class CloseAtaBuilder extends TransactionBuilder {
     return this;
   }
 
+  /** Sets the SPL token program used by the close instruction. */
+  programId(programId: string): this {
+    this._assertSingleAtaApiUsable();
+    validateAddress(programId, 'programId');
+    this._apiMode = 'single';
+    this._ensureSingleEntry();
+    this._closeAtaEntries[0].programId = programId;
+    return this;
+  }
+
   /**
    * Throws if the bulk-ATA API has already been used on this builder.
    */
@@ -93,11 +108,17 @@ export class CloseAtaBuilder extends TransactionBuilder {
    * Add an ATA to close in this transaction (for bulk closure).
    * Cannot be mixed with the single-ATA API (accountAddress/destinationAddress/authorityAddress).
    *
-   * @param {string} accountAddress - the ATA address to close
-   * @param {string} destinationAddress - where rent SOL goes (root wallet address)
-   * @param {string} authorityAddress - ATA owner who must sign
+   * @param accountAddress - the ATA address to close
+   * @param destinationAddress - where rent SOL goes (root wallet address)
+   * @param authorityAddress - ATA owner who must sign
+   * @param programId - SPL token program owning the ATA; omitted for legacy SPL
    */
-  addCloseAtaInstruction(accountAddress: string, destinationAddress: string, authorityAddress: string): this {
+  addCloseAtaInstruction(
+    accountAddress: string,
+    destinationAddress: string,
+    authorityAddress: string,
+    programId?: string
+  ): this {
     if (this._apiMode === 'single') {
       throw new BuildTransactionError(MIX_API_ERROR_MESSAGE);
     }
@@ -105,6 +126,9 @@ export class CloseAtaBuilder extends TransactionBuilder {
     validateAddress(accountAddress, 'accountAddress');
     validateAddress(destinationAddress, 'destinationAddress');
     validateAddress(authorityAddress, 'authorityAddress');
+    if (programId) {
+      validateAddress(programId, 'programId');
+    }
 
     if (accountAddress === destinationAddress) {
       throw new BuildTransactionError('Account address to close cannot be the same as the destination address');
@@ -115,7 +139,7 @@ export class CloseAtaBuilder extends TransactionBuilder {
     }
 
     this._apiMode = 'bulk';
-    this._closeAtaEntries.push({ accountAddress, destinationAddress, authorityAddress });
+    this._closeAtaEntries.push({ accountAddress, destinationAddress, authorityAddress, programId });
     return this;
   }
 
@@ -129,6 +153,7 @@ export class CloseAtaBuilder extends TransactionBuilder {
           accountAddress: ataCloseInstruction.params.accountAddress,
           destinationAddress: ataCloseInstruction.params.destinationAddress,
           authorityAddress: ataCloseInstruction.params.authorityAddress,
+          programId: ataCloseInstruction.params.programId,
         });
       }
     }
@@ -158,6 +183,7 @@ export class CloseAtaBuilder extends TransactionBuilder {
           accountAddress: entry.accountAddress,
           destinationAddress: entry.destinationAddress,
           authorityAddress: entry.authorityAddress,
+          ...(entry.programId ? { programId: entry.programId } : {}),
         },
       })
     );

@@ -121,7 +121,7 @@ describe('WCN-1200 safe child getUserPrv root-fetch detour', function () {
       hardened.prv.should.not.eql(softDerivedPrv);
     });
 
-    it('parses derivedFromParentWithHardenedPath as m/<n> primed', function () {
+    it('parses the hardened derivation path as m/<n> primed', function () {
       parseDerivedFromParentWithHardenedPath("m/0'").should.eql(0);
       parseDerivedFromParentWithHardenedPath("m/123'").should.eql(123);
       (() => parseDerivedFromParentWithHardenedPath('m/0')).should.throw(/derivedFromParentWithHardenedPath/);
@@ -256,7 +256,7 @@ describe('WCN-1200 safe child getUserPrv root-fetch detour', function () {
           pub: hardened.pub,
           type: 'independent',
           parent: rootKeyId,
-          derivedFromParentWithHardenedPath: "m/123'",
+          derivedFromParentWithPath: "m/123'",
         },
         walletPassphrase: passphrase,
       });
@@ -267,7 +267,7 @@ describe('WCN-1200 safe child getUserPrv root-fetch detour', function () {
       mockBaseCoin.deriveKeyWithSeed.notCalled.should.be.true();
     });
 
-    it('requires derivedFromParentWithHardenedPath on the child keychain', async function () {
+    it('requires derivedFromParentWithPath on the child keychain', async function () {
       const wallet = makeWallet({ safe: 'safe-id-1' });
       keychainsGetStub.resolves({
         id: rootKeyId,
@@ -287,10 +287,10 @@ describe('WCN-1200 safe child getUserPrv root-fetch detour', function () {
           },
           walletPassphrase: passphrase,
         })
-        .should.be.rejectedWith(/missing derivedFromParentWithHardenedPath/);
+        .should.be.rejectedWith(/missing derivedFromParentWithPath/);
     });
 
-    it('fails closed when derivedFromParentWithHardenedPath does not match the registered pub', async function () {
+    it('fails closed when derivedFromParentWithPath does not match the registered pub', async function () {
       const wallet = makeWallet({ safe: 'safe-id-1' });
       keychainsGetStub.resolves({
         id: rootKeyId,
@@ -307,14 +307,14 @@ describe('WCN-1200 safe child getUserPrv root-fetch detour', function () {
             pub: hardened.pub,
             type: 'independent',
             parent: rootKeyId,
-            derivedFromParentWithHardenedPath: "m/0'",
+            derivedFromParentWithPath: "m/0'",
           },
           walletPassphrase: passphrase,
         })
         .should.be.rejectedWith(SafeDerivedPublicKeyMismatchError);
     });
 
-    it('rejects a malformed derivedFromParentWithHardenedPath', async function () {
+    it('rejects a malformed derivedFromParentWithPath', async function () {
       const wallet = makeWallet({ safe: 'safe-id-1' });
       keychainsGetStub.resolves({
         id: rootKeyId,
@@ -331,7 +331,7 @@ describe('WCN-1200 safe child getUserPrv root-fetch detour', function () {
             pub: hardened.pub,
             type: 'independent',
             parent: rootKeyId,
-            derivedFromParentWithHardenedPath: "not-a-path'",
+            derivedFromParentWithPath: "not-a-path'",
           },
           walletPassphrase: passphrase,
         })
@@ -395,7 +395,7 @@ describe('WCN-1200 safe child getUserPrv root-fetch detour', function () {
             pub: 'xpub-wrong-registered-key',
             type: 'independent',
             parent: rootKeyId,
-            derivedFromParentWithHardenedPath: "m/123'",
+            derivedFromParentWithPath: "m/123'",
           },
           walletPassphrase: passphrase,
         })

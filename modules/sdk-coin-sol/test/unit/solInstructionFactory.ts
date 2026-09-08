@@ -39,6 +39,20 @@ describe('Instruction Builder Tests: ', function () {
       ]);
     });
 
+    it('Close ATA uses Token-2022 program when specified', () => {
+      const result = solInstructionFactory({
+        type: InstructionBuilderTypes.CloseAssociatedTokenAccount,
+        params: {
+          accountAddress: testData.authAccount.pub,
+          destinationAddress: testData.authAccount2.pub,
+          authorityAddress: testData.authAccount.pub,
+          programId: TOKEN_2022_PROGRAM_ID.toString(),
+        },
+      });
+
+      result[0].programId.equals(TOKEN_2022_PROGRAM_ID).should.be.true();
+    });
+
     it('Transfer', () => {
       const fromAddress = testData.authAccount.pub;
       const toAddress = testData.nonceAccount.pub;
