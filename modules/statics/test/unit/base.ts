@@ -1,4 +1,4 @@
-import { CoinFamily, CoinFeature, coins } from '../../src';
+import { CoinFamily, CoinFeature, Networks, coins } from '../../src';
 
 const should = require('should');
 const { UnderlyingAsset } = require('../../src/base');
@@ -372,5 +372,43 @@ describe('Tokenized Equity CoinFeatures', function () {
     threw.should.be.true();
     errorType.should.equal('MissingRequiredCoinFeatureError');
     errorMessage.should.containEql('tokenized-equity');
+  });
+});
+describe('ZAMA staking feature', function () {
+  it('eth:zama should not expose STAKING', function () {
+    const coin = coins.get('eth:zama');
+    coin.features.includes(CoinFeature.STAKING).should.be.false();
+  });
+
+  it('hteth:zamamock should expose correct staking metadata', function () {
+    const coin = coins.get('hteth:zamamock');
+    coin.fullName.should.equal('ZAMAMock');
+    coin.decimalPlaces.should.equal(18);
+    coin.contractAddress.should.equal('0x58713eca04e01114480b30be8ca0d8838f342a55');
+    coin.network.name.should.equal(Networks.test.hoodi.name);
+    coin.features.should.containEql(CoinFeature.STAKING);
+  });
+
+  it('ERC-7984 ZAMA tokens should not expose STAKING', function () {
+    [
+      'eth:czama',
+      'eth:cxaut',
+      'eth:ctgbp',
+      'eth:cweth',
+      'eth:cusdt',
+      'eth:cusdc',
+      'hteth:ctest1',
+      'hteth:cusdt',
+    ].forEach((name) => {
+      coins.get(name).features.includes(CoinFeature.STAKING).should.be.false();
+    });
+  });
+
+  it('stZAMA LSTs should not expose STAKING', function () {
+    ['hteth:stzamakms', 'hteth:stzamadfns', 'hteth:stzamafig', 'hteth:stzamacop', 'hteth:stzamablco'].forEach(
+      (name) => {
+        coins.get(name).features.includes(CoinFeature.STAKING).should.be.false();
+      }
+    );
   });
 });

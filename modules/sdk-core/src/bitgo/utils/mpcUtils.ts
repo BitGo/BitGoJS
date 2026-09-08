@@ -222,6 +222,8 @@ export abstract class MpcUtils {
         'defi-approve',
         'defi-deposit',
         'defi-withdraw',
+        'wrap-native',
+        'unwrap-native',
         'wrapApprove',
         'wrap',
       ].includes(params.intentType)
@@ -334,6 +336,18 @@ export abstract class MpcUtils {
             vaultId: params.defiParams.vaultId,
             // DefiWithdrawIntent uses shareTokenAmount (vault shares, base units)
             shareTokenAmount: params.defiParams.amount,
+          };
+        }
+        case 'wrap-native':
+        case 'unwrap-native': {
+          assert(params.defiParams, `'defiParams' is required for ${params.intentType} intent`);
+          // WrapNativeIntent / UnwrapNativeIntent carry a plain `amount` (base units
+          // of the native coin when wrapping, of the wrapped token when unwrapping),
+          // not the `shareTokenAmount` that defi-withdraw uses for vault shares.
+          return {
+            ...baseIntent,
+            vaultId: params.defiParams.vaultId,
+            amount: params.defiParams.amount,
           };
         }
         case 'wrapApprove':

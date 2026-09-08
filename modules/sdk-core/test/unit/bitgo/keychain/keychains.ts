@@ -43,6 +43,25 @@ describe('Keychains.createBackup', function () {
     keychains = buildKeychains();
   });
 
+  describe('safe child key registration', function () {
+    it('serializes the hardened derivation path', async function () {
+      await keychains.add({
+        pub: XPUB,
+        source: 'user',
+        keyType: 'independent',
+        parent: 'user-root-id',
+        safeId: SAFE_ID,
+        derivedFromParentWithPath: "m/7'",
+      });
+
+      const derivedPath = sentBody().derivedFromParentWithPath;
+      if (typeof derivedPath !== 'string') {
+        throw new Error('expected derivedFromParentWithPath to be serialized');
+      }
+      derivedPath.should.equal("m/7'");
+    });
+  });
+
   describe('safe ed25519Multisig root (slot ④)', function () {
     it('posts a 108-char composite pub built from the generated key', async function () {
       await keychains.createBackup({ passphrase: 'pw', safeId: SAFE_ID });

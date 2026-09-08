@@ -8,6 +8,7 @@ import { IPendingApprovals } from '../pendingApproval';
 import { InitiateRecoveryOptions } from '../recovery';
 import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
 import EddsaUtils, { EddsaMPCv2Utils, PrebuildTransactionWithIntentOptions, TxRequest } from '../utils/tss/eddsa';
+import { RedpallasMPCv2Utils } from '../utils/tss/redpallas';
 import { CreateAddressFormat, CustomSigningFunction, IWallet, IWallets, Memo, Wallet, WalletData } from '../wallet';
 
 import { TokenEnablement } from '@bitgo/public-types';
@@ -364,7 +365,7 @@ export interface ExtraPrebuildParamsOptions {
 export interface PresignTransactionOptions {
   txPrebuild?: TransactionPrebuild;
   walletData: WalletData;
-  tssUtils: EcdsaUtils | EcdsaMPCv2Utils | EddsaUtils | EddsaMPCv2Utils | undefined;
+  tssUtils: EcdsaUtils | EcdsaMPCv2Utils | EddsaUtils | EddsaMPCv2Utils | RedpallasMPCv2Utils | undefined;
   [index: string]: unknown;
 }
 
@@ -628,11 +629,14 @@ export interface MessagePrep {
 }
 
 /**
- * 'redpallas' is a DKG-only MPC algorithm (no signing support in this SDK) used for the
- * Zcash Orchard shielded pool. It is additive: existing coins never return it from
- * `getMPCAlgorithm()` unless explicitly implemented to do so, so this does not change
- * behavior for any existing ECDSA/EdDSA coin or for ZEC's existing transparent
- * (secp256k1) multisig/TSS flows.
+ * 'redpallas' is the MPC algorithm used for the Zcash Orchard shielded pool (RedPallas /
+ * "Ironwood"). Today it only supports DKG (key generation) via MPCv2 in this SDK - there is no
+ * online self-custody DSG (transaction signing) entrypoint yet, though the underlying
+ * signature-share primitives (`bitgo/tss/redpallas`) and the `sendSignatureShareV2` MPCv2
+ * request type exist as groundwork for a future custodial/cold (SMC/OVC) DSG signing flow.
+ * It is additive: existing coins never return it from `getMPCAlgorithm()` unless explicitly
+ * implemented to do so, so this does not change behavior for any existing ECDSA/EdDSA coin or
+ * for ZEC's existing transparent (secp256k1) multisig/TSS flows.
  */
 export type MPCAlgorithm = 'ecdsa' | 'eddsa' | 'redpallas';
 

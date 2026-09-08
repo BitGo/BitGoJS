@@ -220,6 +220,23 @@ describe('Sol Close ATA Builder', () => {
           instruction.params.destinationAddress.should.equal(destinationAddress);
         }
       });
+
+      it('builds mixed legacy SPL and Token-2022 close instructions', async () => {
+        const txBuilder = closeAtaBuilder();
+        txBuilder.addCloseAtaInstruction(ataAddress1, destinationAddress, account.pub);
+        txBuilder.addCloseAtaInstruction(
+          ataAddress2,
+          destinationAddress,
+          account.pub,
+          'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb'
+        );
+
+        const tx = await txBuilder.build();
+        const instructions = tx.toJson().instructionsData;
+        instructions.length.should.equal(2);
+        should.not.exist(instructions[0].params.programId);
+        instructions[1].params.programId.should.equal('TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb');
+      });
     });
 
     describe('Fail', () => {

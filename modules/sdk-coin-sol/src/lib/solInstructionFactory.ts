@@ -9,6 +9,7 @@ import {
   createTransferCheckedInstruction,
   createTransferCheckedWithFeeInstruction,
   TOKEN_2022_PROGRAM_ID,
+  TOKEN_PROGRAM_ID,
   createApproveInstruction,
 } from '@solana/spl-token';
 import { struct, u8, s8, blob } from '@solana/buffer-layout';
@@ -608,16 +609,19 @@ function createATAInstruction(data: AtaInit): TransactionInstruction[] {
  */
 function closeATAInstruction(data: AtaClose): TransactionInstruction[] {
   const {
-    params: { accountAddress, destinationAddress, authorityAddress },
+    params: { accountAddress, destinationAddress, authorityAddress, programId },
   } = data;
   assert(accountAddress, 'Missing accountAddress param');
   assert(destinationAddress, 'Missing destinationAddress param');
   assert(authorityAddress, 'Missing authorityAddress param');
 
+  const tokenProgramId = programId ? new PublicKey(programId) : TOKEN_PROGRAM_ID;
   const closeAssociatedTokenAccountInstruction = createCloseAccountInstruction(
     new PublicKey(accountAddress),
     new PublicKey(destinationAddress),
-    new PublicKey(authorityAddress)
+    new PublicKey(authorityAddress),
+    [],
+    tokenProgramId
   );
   return [closeAssociatedTokenAccountInstruction];
 }
