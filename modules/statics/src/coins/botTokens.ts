@@ -4861,4 +4861,38 @@ export const botTokens = [
     undefined,
     undefined
   ),
+  AccountCtors.solToken(
+    '11d8f84d-4549-4f02-ae34-6859ce79ce29',
+    'sol:stonk',
+    'STONK',
+    9,
+    '6GmAFSYs4gk3FDao5FzzySQpPZaWsa4rUJHacpMpUNgx',
+    '6GmAFSYs4gk3FDao5FzzySQpPZaWsa4rUJHacpMpUNgx',
+    'sol:stonk' as unknown as UnderlyingAsset,
+    getTokenFeatures('sol', ['custody-bitgo-germany' as CoinFeature, 'custody-bitgo-korea' as CoinFeature]),
+    AccountCtors.ProgramID.TokenProgramId,
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.solToken(
+    'da2fed8a-81f3-4979-a47b-d5ca5a3da371',
+    'sol:hsdt',
+    'Solana Company',
+    6,
+    'HZBEgyBzXBTiJ9B3uaUmNWXmkNhZz5jzwwA6Et4L326J',
+    'HZBEgyBzXBTiJ9B3uaUmNWXmkNhZz5jzwwA6Et4L326J',
+    'sol:hsdt' as unknown as UnderlyingAsset,
+    getTokenFeatures('sol', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-switzerland' as CoinFeature,
+      'custody-bitgo-sister-trust-one' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    AccountCtors.ProgramID.Token2022ProgramId,
+    undefined,
+    undefined,
+    undefined
+  ),
 ];
