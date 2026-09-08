@@ -10,7 +10,7 @@ import { IBaseCoin } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { IncorrectPasswordError } from '../errors';
 import { decryptKeychainPrivateKey } from '../keychain';
-import { ECDSAUtils } from '../utils';
+import { ECDSAUtils, parseSafeMpcKeyEnvelopes } from '../utils';
 import { boundedInt, decodeWithCodec } from '../utils/codecs';
 import { postWithCodec } from '../utils/postWithCodec';
 import { Wallet } from '../wallet';
@@ -226,7 +226,7 @@ export class Safe implements ISafe {
     if (!userRootPrv) {
       throw new IncorrectPasswordError();
     }
-    const userRootMaterial = ECDSAUtils.parseVrfKeyEnvelopes(userRootPrv);
+    const userRootMaterial = parseSafeMpcKeyEnvelopes(userRootPrv);
 
     const tssUtils = new ECDSAUtils.EcdsaVrfMPCv2Utils(this.bitgo, coin);
     const { userKeychain, backupKeychain, bitgoKeychain } = await tssUtils.createSafeChildKeychains({

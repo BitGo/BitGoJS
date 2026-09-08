@@ -4,6 +4,7 @@ import { SafeData } from '@bitgo/public-types';
 import {
   ECDSAUtils,
   IncorrectPasswordError,
+  buildSafeMpcKeyEnvelopes,
   Safe,
   deriveSafeChildEd25519Hardened,
   deriveSafeChildHardenedFromXprv,
@@ -275,7 +276,7 @@ describe('Safe', function () {
     it('mints a TSS wallet via the user/BitGo derive ceremony', async function () {
       stubCoin('hteth', { getDefaultMultisigType: 'tss' });
       // Real VRF key envelope: `{version: 1, prvKeyShare, vrf}`.
-      const userBlob = ECDSAUtils.buildVrfKeyEnvelopes(
+      const userBlob = buildSafeMpcKeyEnvelopes(
         Buffer.from('signing-1'),
         Buffer.from('reduced-1'),
         Buffer.from('vrf-1')

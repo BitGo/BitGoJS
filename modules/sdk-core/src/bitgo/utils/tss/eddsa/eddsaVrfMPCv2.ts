@@ -4,7 +4,6 @@ import {
   type EddsaMPCv2KeyGenRound1Response,
   type EddsaMPCv2KeyGenRound2Response,
 } from '@bitgo/public-types';
-import { encode } from 'cbor-x';
 import assert from 'assert';
 import * as t from 'io-ts';
 import * as pgp from 'openpgp';
@@ -21,8 +20,7 @@ import { EddsaMPCv2Utils } from './eddsaMPCv2';
 import { KeyGenSenderForEnterprise } from './eddsaMPCv2KeyGenSender';
 import type { EddsaMPCv2VrfKeyGenResponseFields } from './typesEddsaMPCv2';
 import { MPCv2PartiesEnum } from '../ecdsa/typesMPCv2';
-
-const VRF_KEY_ENVELOPE_VERSION = 1;
+import { buildSafeMpcKeyEnvelopes } from '../keyShareEnvelope';
 
 const VrfPartyId = boundedInt(0, 2, 'VrfPartyId');
 const VrfMessageTransferCodec = t.intersection([
@@ -76,28 +74,6 @@ export function deserializeVrfMessages(blob: string, forParty: number): DklsType
         payload: new Uint8Array(Buffer.from(message.payload, 'base64')),
       })),
   };
-}
-
-/**
- * Combines the signing keyshare with the VRF keyshare in the CBOR envelope used
- * by safe MPC roots. The reduced envelope is used for reducedEncryptedPrv.
- */
-export function buildVrfKeyEnvelopes(
-  privateMaterial: Buffer,
-  reducedPrivateMaterial: Buffer,
-  vrfKeyShare: Buffer
-): { envelope: Buffer; reducedEnvelope: Buffer } {
-  const envelope = encode({
-    version: VRF_KEY_ENVELOPE_VERSION,
-    prvKeyShare: new Uint8Array(privateMaterial),
-    vrf: new Uint8Array(vrfKeyShare),
-  });
-  const reducedEnvelope = encode({
-    version: VRF_KEY_ENVELOPE_VERSION,
-    prvKeyShare: new Uint8Array(reducedPrivateMaterial),
-    vrf: new Uint8Array(vrfKeyShare),
-  });
-  return { envelope: Buffer.from(envelope), reducedEnvelope: Buffer.from(reducedEnvelope) };
 }
 
 /**
@@ -270,12 +246,12 @@ export class EddsaVrfMPCv2Utils extends EddsaMPCv2Utils {
       'Backup computed keychain does not match BitGo common keychain'
     );
 
-    const { envelope: userEnvelope, reducedEnvelope: userReducedEnvelope } = buildVrfKeyEnvelopes(
+    const { envelope: userEnvelope, reducedEnvelope: userReducedEnvelope } = buildSafeMpcKeyEnvelopes(
       userDkg.getKeyShare(),
       userDkg.getReducedKeyShare(),
       userVrfSession.getKeyShare()
     );
-    const { envelope: backupEnvelope, reducedEnvelope: backupReducedEnvelope } = buildVrfKeyEnvelopes(
+    const { envelope: backupEnvelope, reducedEnvelope: backupReducedEnvelope } = buildSafeMpcKeyEnvelopes(
       backupDkg.getKeyShare(),
       backupDkg.getReducedKeyShare(),
       backupVrfSession.getKeyShare()

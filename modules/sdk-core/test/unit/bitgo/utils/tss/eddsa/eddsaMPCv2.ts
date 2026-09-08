@@ -1,3 +1,4 @@
+import { encode } from 'cbor-x';
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import * as pgp from 'openpgp';
@@ -408,6 +409,34 @@ describe('getEddsaMPCv2RecoveryKeyShares', () => {
     assert.deepStrictEqual(result.userKeyShare, userDkg.getKeyShare());
     assert.deepStrictEqual(result.backupKeyShare, backupDkg.getKeyShare());
     assert.strictEqual(result.commonKeyChain, userDkg.getCommonKeychain());
+  });
+
+  it('should unwrap versioned safe-root envelopes and return VRF keyshares', async () => {
+    const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+    const userVrfKeyShare = Buffer.from('user-vrf-keyshare');
+    const backupVrfKeyShare = Buffer.from('backup-vrf-keyshare');
+    const encodeEnvelope = (reducedKeyShare: Buffer, vrfKeyShare: Buffer): Buffer =>
+      Buffer.from(
+        encode({
+          version: 1,
+          prvKeyShare: new Uint8Array(reducedKeyShare),
+          vrf: new Uint8Array(vrfKeyShare),
+        })
+      );
+
+    const result = await EDDSAUtils.getEddsaMpcV2RecoveryKeySharesFromReducedKey(
+      encryptKey(encodeEnvelope(userDkg.getReducedKeyShare(), userVrfKeyShare)),
+      encryptKey(encodeEnvelope(backupDkg.getReducedKeyShare(), backupVrfKeyShare)),
+      walletPassphrase
+    );
+
+    assert.strictEqual(Buffer.compare(result.userKeyShare, userDkg.getKeyShare()), 0);
+    assert.strictEqual(Buffer.compare(result.backupKeyShare, backupDkg.getKeyShare()), 0);
+    assert.strictEqual(result.commonKeyChain, userDkg.getCommonKeychain());
+    assert.ok(result.userVrfKeyShare);
+    assert.ok(result.backupVrfKeyShare);
+    assert.strictEqual(Buffer.compare(result.userVrfKeyShare, userVrfKeyShare), 0);
+    assert.strictEqual(Buffer.compare(result.backupVrfKeyShare, backupVrfKeyShare), 0);
   });
 
   it('should route decryption through bitgo.decrypt when a bitgo instance is provided', async () => {

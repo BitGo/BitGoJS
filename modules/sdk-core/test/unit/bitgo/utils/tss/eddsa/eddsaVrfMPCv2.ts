@@ -4,8 +4,8 @@ import * as t from 'io-ts';
 
 import { EddsaMPCv2Utils, BitGoBase, IBaseCoin, Keychain } from '../../../../../../src';
 import { decodeWithCodec } from '../../../../../../src/bitgo/utils/codecs';
+import { buildSafeMpcKeyEnvelopes } from '../../../../../../src/bitgo/utils/tss/keyShareEnvelope';
 import {
-  buildVrfKeyEnvelopes,
   deserializeVrfMessages,
   serializeVrfMessages,
 } from '../../../../../../src/bitgo/utils/tss/eddsa/eddsaVrfMPCv2';
@@ -40,7 +40,11 @@ describe('EdDSA MPCv2 VRF root material', function () {
     const reducedPrivateMaterial = Buffer.from('reduced-signing-share');
     const vrfKeyShare = Buffer.from('vrf-share');
 
-    const { envelope, reducedEnvelope } = buildVrfKeyEnvelopes(privateMaterial, reducedPrivateMaterial, vrfKeyShare);
+    const { envelope, reducedEnvelope } = buildSafeMpcKeyEnvelopes(
+      privateMaterial,
+      reducedPrivateMaterial,
+      vrfKeyShare
+    );
     const decodedEnvelope = decodeVrfEnvelope(envelope);
     const decodedReducedEnvelope = decodeVrfEnvelope(reducedEnvelope);
 
@@ -107,7 +111,7 @@ describe('EdDSA MPCv2 VRF root material', function () {
       keychains: () => keychains,
     } as unknown as IBaseCoin;
     const utils = new EddsaMPCv2Utils(bitgo, baseCoin);
-    const { envelope, reducedEnvelope } = buildVrfKeyEnvelopes(
+    const { envelope, reducedEnvelope } = buildSafeMpcKeyEnvelopes(
       Buffer.from('signing-share'),
       Buffer.from('reduced-signing-share'),
       Buffer.from('vrf-share')

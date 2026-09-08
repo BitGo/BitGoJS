@@ -18,4 +18,5 @@ export * from './baseTypes';
 export * from './addressVerification';
 export * from './preHashedSignable';
 export * from './recipientUtils';
+export * from './keyShareEnvelope';
 export * from './signableConsistency';

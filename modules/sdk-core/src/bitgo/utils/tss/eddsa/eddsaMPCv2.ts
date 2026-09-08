@@ -56,6 +56,7 @@ import { BaseEddsaUtils } from './base';
 import { resolveEffectiveTxParams } from '../recipientUtils';
 import { EddsaMPCv2KeyGenSendFn, KeyGenSenderForEnterprise } from './eddsaMPCv2KeyGenSender';
 import { EddsaMPCv2RecoveryKeyShares } from './types';
+import { parseMpcV2KeyShareEnvelope } from '../keyShareEnvelope';
 import { SigningMaterial } from '../../../tss';
 
 export class EddsaMPCv2Utils extends BaseEddsaUtils {
@@ -1211,8 +1212,10 @@ export async function isEddsaMpcV1SigningMaterial(
  * Get EdDSA MPCv2 recovery key shares from encrypted reduced user and backup keys.
  *
  * The encrypted inputs are the `reducedEncryptedPrv` values stored on EdDSA MPCv2
- * key cards. They decrypt to CBOR-encoded reduced shares that contain the opaque
- * MPS signing key-share bytes plus the common public keychain material.
+ * key cards. They decrypt either to CBOR-encoded reduced shares (legacy cards) or to
+ * the versioned safe-root envelope `{ version: 1, prvKeyShare, vrf }`, where the signing
+ * share stays reduced and `vrf` is the complete serialized VRF keyshare. Legacy cards
+ * have no VRF material and recover as before.
  *
  * @param encryptedUserKey encrypted EdDSA MPCv2 reduced user key
  * @param encryptedBackupKey encrypted EdDSA MPCv2 reduced backup key
@@ -1225,13 +1228,16 @@ export async function getEddsaMpcV2RecoveryKeySharesFromReducedKey(
   walletPassphrase?: string,
   bitgo?: BitGoBase
 ): Promise<EddsaMPCv2RecoveryKeyShares> {
-  const decodeKey = async (encryptedKey: string): Promise<MPSTypes.EddsaReducedKeyShare> => {
+  const decodeKey = async (
+    encryptedKey: string
+  ): Promise<{ reduced: MPSTypes.EddsaReducedKeyShare; vrfKeyShare?: Buffer }> => {
     const decrypted = bitgo
       ? await bitgo.decrypt({ input: encryptedKey, password: walletPassphrase })
       : sjcl.decrypt(walletPassphrase, encryptedKey);
+    const parsed = parseMpcV2KeyShareEnvelope(decrypted);
     let reduced: MPSTypes.EddsaReducedKeyShare;
     try {
-      reduced = MPSTypes.getDecodedReducedKeyShare(Buffer.from(decrypted, 'base64'));
+      reduced = MPSTypes.getDecodedReducedKeyShare(parsed.signingKeyShare);
     } catch {
       throw new Error(
         'EdDSA MPCv2 recovery: unable to decode reduced key share from keycard material. The encrypted key may be corrupted, malformed, or not an EdDSA MPCv2 reduced key.'
@@ -1242,10 +1248,12 @@ export async function getEddsaMpcV2RecoveryKeySharesFromReducedKey(
         'EdDSA MPCv2 recovery: reduced key share is missing keyShare, pub, or rootChainCode. This keycard may be public-only and cannot be used for recovery.'
       );
     }
-    return reduced;
+    return { reduced, vrfKeyShare: parsed.vrfKeyShare };
   };
 
-  const [userReduced, backupReduced] = await Promise.all([decodeKey(encryptedUserKey), decodeKey(encryptedBackupKey)]);
+  const [userDecoded, backupDecoded] = await Promise.all([decodeKey(encryptedUserKey), decodeKey(encryptedBackupKey)]);
+  const userReduced = userDecoded.reduced;
+  const backupReduced = backupDecoded.reduced;
 
   const userPub = Buffer.from(userReduced.pub).toString('hex');
   const backupPub = Buffer.from(backupReduced.pub).toString('hex');
@@ -1259,10 +1267,19 @@ export async function getEddsaMpcV2RecoveryKeySharesFromReducedKey(
     throw new Error('EdDSA MPCv2 recovery: user and backup rootChainCodes do not match');
   }
 
+  const hasUserVrf = userDecoded.vrfKeyShare !== undefined;
+  const hasBackupVrf = backupDecoded.vrfKeyShare !== undefined;
+  if (hasUserVrf !== hasBackupVrf) {
+    throw new Error(
+      'EdDSA MPCv2 recovery: keyshare envelopes must either both contain VRF keyshares or both omit them'
+    );
+  }
   return {
     userKeyShare: Buffer.from(userReduced.keyShare),
     backupKeyShare: Buffer.from(backupReduced.keyShare),
     commonKeyChain: userPub + userChainCode,
+    userVrfKeyShare: userDecoded.vrfKeyShare,
+    backupVrfKeyShare: backupDecoded.vrfKeyShare,
   };
 }
 

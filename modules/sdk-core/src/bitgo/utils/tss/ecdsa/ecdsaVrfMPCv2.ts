@@ -1,5 +1,4 @@
 import { DklsComms, DklsDkg, DklsDrv, DklsTypes, DklsVrf } from '@bitgo/sdk-lib-mpc';
-import { decode, encode } from 'cbor-x';
 import assert from 'assert';
 import { NonEmptyString } from 'io-ts-types';
 import {
@@ -18,6 +17,7 @@ import { EncryptionVersion } from '../../../../api';
 import { generateGPGKeyPair } from '../../opengpgUtils';
 import { WebauthnKeyEncryptionInfo } from '../../../keychain';
 import { envRequiresBitgoPubGpgKeyConfig, isBitgoMpcPubKey } from '../../../tss/bitgoPubKeys';
+import { buildSafeMpcKeyEnvelopes } from '../keyShareEnvelope';
 import { EcdsaMPCv2Utils } from './ecdsaMPCv2';
 import {
   EcdsaMPCv2DeriveKeySendFn,
@@ -25,23 +25,6 @@ import {
   KeyGenSenderForSafeChild,
 } from './ecdsaMPCv2KeyGenSender';
 import { MPCv2PartiesEnum, MpcV2VrfKeyGenResponseFields } from './typesMPCv2';
-
-/**
- * Version field of the `encryptedPrv` envelope used when a ceremony produces both a
- * signing keyshare and a VRF keyshare. The plaintext handed to encrypt() is
- * `base64(cborEncode(envelope))`, keeping it a single opaque base64 token exactly as
- * the ordinary MPCv2 format does.
- */
-const VRF_KEY_ENVELOPE_VERSION = 1;
-type VrfKeyEnvelope = {
-  version: unknown;
-  prvKeyShare: unknown;
-  vrf: unknown;
-};
-
-function isVrfKeyEnvelope(value: unknown): value is VrfKeyEnvelope {
-  return typeof value === 'object' && value !== null && 'version' in value && 'prvKeyShare' in value && 'vrf' in value;
-}
 
 /**
  * Wire format for VRF DKG messages riding the MPCv2-R1/R2 payloads: an opaque blob,
@@ -78,59 +61,6 @@ function deserializeVrfMessages(blob: string, forParty: number): DklsTypes.Deser
       .filter((t): t is VrfMessageTransfer & { to: number } => t.to === forParty)
       .map((t) => ({ from: t.from, to: t.to, payload: new Uint8Array(Buffer.from(t.payload, 'base64')) })),
   };
-}
-
-/**
- * Combines the signing keyshare with the VRF keyshare into the `encryptedPrv` envelope
- * (`base64(cborEncode({version, prvKeyShare, vrf}))` once the caller base64-encodes the
- * returned buffers). The same container wraps the reduced signing share for
- * `reducedEncryptedPrv`.
- */
-export function buildVrfKeyEnvelopes(
-  privateMaterial: Buffer,
-  reducedPrivateMaterial: Buffer,
-  vrfKeyShare: Buffer
-): { envelope: Buffer; reducedEnvelope: Buffer } {
-  const envelope = encode({
-    version: VRF_KEY_ENVELOPE_VERSION,
-    prvKeyShare: new Uint8Array(privateMaterial),
-    vrf: new Uint8Array(vrfKeyShare),
-  });
-  const reducedEnvelope = encode({
-    version: VRF_KEY_ENVELOPE_VERSION,
-    prvKeyShare: new Uint8Array(reducedPrivateMaterial),
-    vrf: new Uint8Array(vrfKeyShare),
-  });
-  return { envelope: Buffer.from(envelope), reducedEnvelope: Buffer.from(reducedEnvelope) };
-}
-
-/**
- * Parses a decrypted root blob produced by {@link buildVrfKeyEnvelopes}: a CBOR
- * envelope `{version: 1, prvKeyShare, vrf}`. Returns the signing and VRF keyshares
- * as Buffers. Throws if the blob is not a valid VRF key envelope.
- */
-export function parseVrfKeyEnvelopes(decryptedBlob: string): { signing: Buffer; vrf: Buffer } {
-  let envelope: unknown;
-  try {
-    envelope = decode(Buffer.from(decryptedBlob, 'base64'));
-  } catch (e) {
-    const message = e instanceof Error ? e.message : String(e);
-    throw new Error(`Failed to decode safe MPC root key envelope: ${message}`);
-  }
-  if (!isVrfKeyEnvelope(envelope)) {
-    throw new Error('Invalid safe MPC root key envelope: expected version, signing keyshare, and VRF keyshare');
-  }
-  const { version, prvKeyShare, vrf } = envelope;
-  if (version !== VRF_KEY_ENVELOPE_VERSION) {
-    throw new Error(`Unsupported safe MPC root key envelope version: ${String(version)}`);
-  }
-  if (!(prvKeyShare instanceof Uint8Array) || prvKeyShare.length === 0) {
-    throw new Error('Safe MPC root key envelope is missing a signing keyshare');
-  }
-  if (!(vrf instanceof Uint8Array) || vrf.length === 0) {
-    throw new Error('Safe MPC root key envelope is missing a VRF keyshare');
-  }
-  return { signing: Buffer.from(prvKeyShare), vrf: Buffer.from(vrf) };
 }
 
 /**
@@ -520,12 +450,12 @@ export class EcdsaVrfMPCv2Utils extends EcdsaMPCv2Utils {
     assert.equal(bitgoCommonKeychain, userCommonKeychain, 'User and Bitgo Common keychains do not match');
     assert.equal(bitgoCommonKeychain, backupCommonKeychain, 'Backup and Bitgo Common keychains do not match');
 
-    const { envelope: userEnvelope, reducedEnvelope: userReducedEnvelope } = buildVrfKeyEnvelopes(
+    const { envelope: userEnvelope, reducedEnvelope: userReducedEnvelope } = buildSafeMpcKeyEnvelopes(
       userPrivateMaterial,
       userReducedPrivateMaterial,
       userVrfKeyShare
     );
-    const { envelope: backupEnvelope, reducedEnvelope: backupReducedEnvelope } = buildVrfKeyEnvelopes(
+    const { envelope: backupEnvelope, reducedEnvelope: backupReducedEnvelope } = buildSafeMpcKeyEnvelopes(
       backupPrivateMaterial,
       backupReducedPrivateMaterial,
       backupVrfKeyShare
