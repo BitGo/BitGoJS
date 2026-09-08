@@ -3477,4 +3477,28 @@ export const botOfcTokens = [
     undefined,
     undefined
   ),
+  AccountCtors.ofcsolToken(
+    '53592c71-cc8b-4824-94e1-727a803153b8',
+    'ofcsol:stonk',
+    'ofcSTONK',
+    9,
+    'sol:stonk' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.ofcsolToken(
+    'becf513a-f605-4276-80c4-091ecb284a3f',
+    'ofcsol:hsdt',
+    'ofcSolana Company',
+    6,
+    'sol:hsdt' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
 ];
