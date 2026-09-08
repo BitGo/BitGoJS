@@ -2,7 +2,7 @@ import 'should';
 import * as assert from 'assert';
 import { decrypt, encrypt } from '@bitgo/sdk-api';
 import { coins } from '@bitgo/statics';
-import { Keychain, KeychainsTriplet, KeyType } from '@bitgo/sdk-core';
+import { ECDSAUtils, Keychain, KeychainsTriplet, KeyType } from '@bitgo/sdk-core';
 import { generateSafeQrData } from '../../src/generateQrData';
 import { splitKeys } from '../../src/utils';
 import { QRBinaryMaxLength } from '../../src/drawKeycard';
@@ -117,6 +117,51 @@ describe('generateSafeQrData', function () {
       (await decrypt(passphrase, backupBox[slot])).should.equal(plaintexts[slot].backup);
       bitgoBox[slot].should.equal(bitgoPubs[slot]);
     }
+  });
+
+  it('preserves the versioned VRF envelope in the MPC root card blob', async function () {
+    const { roots } = await buildRoots();
+    const { reducedEnvelope } = ECDSAUtils.buildVrfKeyEnvelopes(
+      Buffer.from('full-signing-share'),
+      Buffer.from('reduced-signing-share'),
+      Buffer.alloc(32, 7)
+    );
+    roots.ecdsaMpc.userKeychain.reducedEncryptedPrv = await encrypt(passphrase, reducedEnvelope.toString('base64'));
+
+    const qrData = await generateSafeQrData({ coin: coins.get('btc'), roots });
+    const userBox = parseSafeKeycardBox(qrData.user.data);
+    const decoded = ECDSAUtils.parseMpcV2KeyShareEnvelope(await decrypt(passphrase, userBox.ecdsaMpc));
+
+    decoded.signingKeyShare.toString().should.equal('reduced-signing-share');
+    assert.ok(decoded.vrfKeyShare);
+    decoded.vrfKeyShare.length.should.equal(32);
+  });
+
+  it('keeps a realistic versioned DKLS+VRF box within EC-L QR fragments', async function () {
+    const { roots } = await buildRoots();
+    // Measured ranges from the DKLS DKG tests: the reduced signing share is about
+    // 606 bytes and a serialized VRF keyshare is 600–700 bytes before encryption.
+    const { reducedEnvelope } = ECDSAUtils.buildVrfKeyEnvelopes(
+      Buffer.alloc(1200, 1),
+      Buffer.alloc(606, 2),
+      Buffer.alloc(650, 3)
+    );
+    roots.ecdsaMpc.userKeychain.reducedEncryptedPrv = await encrypt(
+      passphrase,
+      reducedEnvelope.toString('base64')
+    );
+
+    const qrData = await generateSafeQrData({ coin: coins.get('btc'), roots });
+    const fragments = splitKeys(qrData.user.data, QRBinaryMaxLength);
+    assert.ok(fragments.length > 1, 'realistic safe root data must use multiple QR fragments');
+    fragments.every((fragment) => fragment.length <= QRBinaryMaxLength).should.equal(true);
+
+    const parsed = ECDSAUtils.parseMpcV2KeyShareEnvelope(
+      await decrypt(passphrase, parseSafeKeycardBox(reassemble(qrData.user.data)).ecdsaMpc)
+    );
+    parsed.signingKeyShare.length.should.equal(606);
+    assert.ok(parsed.vrfKeyShare);
+    parsed.vrfKeyShare.length.should.equal(650);
   });
 
   it('uses reducedEncryptedPrv for MPC roots and encryptedPrv for multisig roots', async function () {

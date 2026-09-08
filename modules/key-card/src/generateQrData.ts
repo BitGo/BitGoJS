@@ -224,7 +224,8 @@ export async function generateLightningQrData(params: GenerateLightningQrDataPar
 }
 
 function selectRootPrivateKey(keychain: Keychain, slot: SafeRootKeyType, role: 'user' | 'backup'): string {
-  // Prefer the compact MPCv2 reduced share; fall back to encryptedPrv (e.g. multisig roots).
+  // Prefer the compact MPCv2 reduced envelope; safe MPC envelopes carry the serialized
+  // VRF keyshare alongside the reduced signing share. Fall back to encryptedPrv (e.g. multisig roots).
   const data = keychain.reducedEncryptedPrv ?? keychain.encryptedPrv;
   assert.ok(data, `Safe ${role} root ${slot} is missing encrypted private key material`);
   return data;
