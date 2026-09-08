@@ -43,25 +43,25 @@ describe('V2 Keychains', function () {
       scope.done();
     });
 
-    it('should add a safe child keychain with derivedFromParentWithHardenedPath', async function () {
+    it('should add a safe child keychain with derivedFromParentWithPath', async function () {
       const scope = nock(bgUrl)
         .post('/api/v2/tltc/key', function (body) {
           body.pub.should.equal('pub');
           body.parent.should.equal('parent-key-id');
           body.safeId.should.equal('safe-id');
-          body.derivedFromParentWithHardenedPath.should.equal("m/7'");
+          body.derivedFromParentWithPath.should.equal("m/7'");
           should.equal(body.path, undefined);
           should.equal(body.derivedFromParentWithSeed, undefined);
           return true;
         })
-        .reply(200, { id: 'child-key-id', derivedFromParentWithHardenedPath: "m/7'", path: '/0/0' });
+        .reply(200, { id: 'child-key-id', derivedFromParentWithPath: "m/7'", path: '/0/0' });
       const result = await keychains.add({
         pub: 'pub',
         parent: 'parent-key-id',
         safeId: 'safe-id',
-        derivedFromParentWithHardenedPath: "m/7'",
+        derivedFromParentWithPath: "m/7'",
       });
-      result.derivedFromParentWithHardenedPath.should.equal("m/7'");
+      result.derivedFromParentWithPath.should.equal("m/7'");
       scope.done();
     });
   });

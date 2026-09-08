@@ -157,7 +157,7 @@ export class Safe implements ISafe {
       keyType: 'independent',
       parent: userRootId,
       safeId: this.id(),
-      derivedFromParentWithHardenedPath,
+      derivedFromParentWithPath: derivedFromParentWithHardenedPath,
     });
     const childId = child.id;
     if (childId.length === 0) {

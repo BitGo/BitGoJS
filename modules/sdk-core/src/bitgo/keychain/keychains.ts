@@ -267,7 +267,7 @@ export class Keychains implements IKeychains {
         'originalPasscodeEncryptionCode',
         'enterprise',
         'derivedFromParentWithSeed',
-        'derivedFromParentWithHardenedPath',
+        'derivedFromParentWithPath',
         'parent',
         'safeId',
       ]
@@ -297,7 +297,7 @@ export class Keychains implements IKeychains {
         originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
         enterprise: params.enterprise,
         derivedFromParentWithSeed: params.derivedFromParentWithSeed,
-        derivedFromParentWithHardenedPath: params.derivedFromParentWithHardenedPath,
+        derivedFromParentWithPath: params.derivedFromParentWithPath,
         parent: params.parent,
         disableKRSEmail: params.disableKRSEmail,
         krsSpecific: params.krsSpecific,

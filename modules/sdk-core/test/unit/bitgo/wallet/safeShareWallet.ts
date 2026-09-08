@@ -50,7 +50,7 @@ describe('Safe wallet spend sharing', function () {
     pub: hardened.pub,
     type: 'independent' as const,
     parent: rootKeyId,
-    derivedFromParentWithHardenedPath: "m/123'",
+    derivedFromParentWithPath: "m/123'",
   });
   const publicOnlyKeychain = (id: string) => ({ id, pub: 'pub-' + id, type: 'independent' as const });
   const rootKeychain = {
@@ -189,7 +189,7 @@ describe('Safe wallet spend sharing', function () {
           id === rootKeyId
             ? rootKeychain
             : id === 'user-key'
-            ? { ...childKeychain(id), pub: 'wrong-child-pub', derivedFromParentWithHardenedPath: "m/123'" }
+            ? { ...childKeychain(id), pub: 'wrong-child-pub', derivedFromParentWithPath: "m/123'" }
             : publicOnlyKeychain(id)
         )
       );
