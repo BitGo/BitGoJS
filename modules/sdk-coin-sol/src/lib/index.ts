@@ -24,7 +24,6 @@ export { MessageBuilderFactory } from './messages';
 export { explainSolTransaction, ExplainTransactionWasmOptions } from './explainTransactionWasm';
 export {
   MintExtensionReadResult,
-  assertExtensionCompatibility,
   extensionTypeNames,
   mapModeledExtensions,
   parseMintExtensions,
