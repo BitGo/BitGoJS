@@ -36,8 +36,6 @@ const EXTENSION_NAME_MAP: Readonly<Record<string, SolTokenExtensionType>> = {
   ScaledUiAmountConfig: SolTokenExtensionType.ScaledUiAmount,
 };
 
-const CONFIDENTIAL_TRANSFER_NAMES = ['ConfidentialTransferMint', 'ConfidentialTransferFeeConfig'];
-
 /** Human-readable names of every extension type present on the mint. */
 export function extensionTypeNames(mintInfo: Mint): string[] {
   if (mintInfo.tlvData.length === 0) {
@@ -58,17 +56,13 @@ export function mapModeledExtensions(detectedTypeNames: readonly string[]): SolT
   return modeled;
 }
 
-/**
- * Enforce the protocol-level incompatibility: Transfer Hook and Confidential
- * Transfer cannot coexist on the same mint. Pure — unit-testable without chain data.
- */
-export function assertExtensionCompatibility(detectedTypeNames: readonly string[]): void {
-  const hasHook = detectedTypeNames.includes('TransferHook');
-  const hasConfidential = detectedTypeNames.some((n) => CONFIDENTIAL_TRANSFER_NAMES.includes(n));
-  if (hasHook && hasConfidential) {
-    throw new Error('Mint declares both Transfer Hook and Confidential Transfer, which cannot coexist');
-  }
-}
+// No SDK-level extension-combination assert: the on-chain program already
+// enforces its own invalid-combination rules at extension init
+// (`check_for_invalid_mint_extension_combinations` in token-2022), and it does
+// NOT forbid TransferHook + ConfidentialTransferMint. A previous assert here
+// rejected that legal pair and blocked onboarding of real mints. Custody
+// policy on which combinations BitGo will serve belongs to consumers
+// (statics `getUnsupportedSolTokenExtensions`, the AMS onboarding gate).
 
 function toBase58(key: PublicKey | null): string | undefined {
   return key ? key.toBase58() : undefined;
@@ -80,7 +74,6 @@ function toBase58(key: PublicKey | null): string | undefined {
  */
 export function parseMintExtensions(mintInfo: Mint): MintExtensionReadResult {
   const detectedTypeNames = extensionTypeNames(mintInfo);
-  assertExtensionCompatibility(detectedTypeNames);
 
   const extensions: SolTokenExtensions = { detected: mapModeledExtensions(detectedTypeNames) };
   const authorities: NonNullable<SolTokenExtensions['authorities']> = {
