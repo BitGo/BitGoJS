@@ -17,6 +17,7 @@ export interface TxData {
   sub_wallet_id: number;
   signature: string;
   bounceable: boolean;
+  memoId?: string;
 }
 
 export type TransactionExplanation = ITransactionExplanation<TransactionFee>;

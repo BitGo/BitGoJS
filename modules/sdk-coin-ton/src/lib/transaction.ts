@@ -53,7 +53,7 @@ export class Transaction extends BaseTransaction {
       true,
       !new TonWeb.Address(this.recipient.address).isBounceable
     );
-    return {
+    const result: TxData = {
       id: this._id as string,
       sender: this.sender,
       destination: this.recipient.address,
@@ -67,6 +67,10 @@ export class Transaction extends BaseTransaction {
       signature: this._signatures[0],
       bounceable: this.bounceable,
     };
+    if (this.message && typeof this.message === 'string' && this._type === TransactionType.Send) {
+      result.memoId = this.message;
+    }
+    return result;
   }
 
   get signablePayload(): Buffer {
