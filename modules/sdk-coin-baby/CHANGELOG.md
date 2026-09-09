@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.10.40](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-baby@1.10.39...@bitgo/sdk-coin-baby@1.10.40) (2026-09-09)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-baby
+
+
+
+
+
 ## [1.10.39](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-baby@1.10.38...@bitgo/sdk-coin-baby@1.10.39) (2026-09-04)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-baby

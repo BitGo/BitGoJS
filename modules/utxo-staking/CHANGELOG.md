@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.43.3...@bitgo/utxo-staking@2.0.0) (2026-09-09)
+
+
+### Bug Fixes
+
+* **utxo-staking:** correct PoX-5 recovery policy ([7890a48](https://github.com/BitGo/BitGoJS/commit/7890a48d85efce444a222af1234d97e3707beacd))
+
+
+### Features
+
+* **utxo-descriptors:** add PoX-5 primitives ([5794974](https://github.com/BitGo/BitGoJS/commit/5794974e14dddf826a0c5533610255aa9657e35d))
+* **utxo-staking:** add PoX-5 recovery policy ([b33f151](https://github.com/BitGo/BitGoJS/commit/b33f151a25454190c9bb6a2ca5f99601ec8e988c))
+
+
+### BREAKING CHANGES
+
+* **utxo-staking:** Pox5FinalizerParams now requires an input-bound Pox5InputMatch.
+
+Refs: WAL-2022
+* **utxo-descriptors:** PoX-5 descriptor APIs now return native descriptors and undefined for non-matches.
+
+Refs: WAL-2025
+
+
+
+
+
 ## [1.43.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.43.2...@bitgo/utxo-staking@1.43.3) (2026-09-04)
 
 **Note:** Version bump only for package @bitgo/utxo-staking

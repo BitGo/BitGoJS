@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [12.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@12.4.4...@bitgo/abstract-utxo@12.5.0) (2026-09-09)
+
+
+### Features
+
+* **abstract-utxo:** add zec recipient resolution ([b95dcdc](https://github.com/BitGo/BitGoJS/commit/b95dcdcc09d6d4e8931142d5672d6d97d8bdae99))
+* **abstract-utxo:** recognize ZIP-316 shielded zcash addresses ([7eec2da](https://github.com/BitGo/BitGoJS/commit/7eec2da786f302db81c263b23e6d02de9a023acd))
+
+
+
+
+
 ## [12.4.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@12.4.3...@bitgo/abstract-utxo@12.4.4) (2026-09-04)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

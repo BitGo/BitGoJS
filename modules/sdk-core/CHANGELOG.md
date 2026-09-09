@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.13.0...@bitgo/sdk-core@38.14.0) (2026-09-09)
+
+
+### Bug Fixes
+
+* align child derivation path field with WP ([f9b64ca](https://github.com/BitGo/BitGoJS/commit/f9b64cab837abaa89e0ef9c439901b9ebe0d8376))
+* derive safe child key for spend sharing ([8a81acf](https://github.com/BitGo/BitGoJS/commit/8a81acf001bec8553a844a2b31c6174281c36ef9))
+
+
+### Features
+
+* **sdk-core:** add wrap() and unwrap() to DefiVault ([61ea5a0](https://github.com/BitGo/BitGoJS/commit/61ea5a0cba522849fe0051c9ea792df3eee0c97a))
+* **sdk-core:** integrate DKLS VRF DKG into createKeychains for safe roots ([223e3c4](https://github.com/BitGo/BitGoJS/commit/223e3c4f057e3d0e71efd31dfdd066ad0e0dd79b))
+* **sdk-core:** wire RedPallas MPCv2 into MPC dispatch ([29d050f](https://github.com/BitGo/BitGoJS/commit/29d050f674d471f25b4c27b66e68d81b3fb8fbe4))
+
+
+
+
+
 # [38.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.12.1...@bitgo/sdk-core@38.13.0) (2026-09-04)
 
 
