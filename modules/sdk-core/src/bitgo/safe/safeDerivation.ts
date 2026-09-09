@@ -10,8 +10,11 @@
  * that is the custody hashed path and cannot reproduce a safe child.
  */
 import * as t from 'io-ts';
+import * as nacl from 'tweetnacl';
 import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
+import { Ed25519KeyDeriver } from '../../account-lib/util/ed25519KeyDeriver';
 import { decodeWithCodec } from '../utils/codecs';
+import { decodeEd25519StrKeySecretSeed, encodeEd25519StrKeyPublicKey } from './derivableEd25519Pub';
 
 const MAX_BIP32_INDEX = 0x7fffffff;
 export const DERIVED_FROM_PARENT_WITH_HARDENED_PATH = /^m\/(\d+)'$/;
@@ -99,4 +102,30 @@ export function deriveAndSelfCheckSafeChildHardened(rootXprv: string, index: str
     throw new Error(`Safe child self-check failed at ${first.derivationPath}: derivation was not deterministic`);
   }
   return first;
+}
+
+/**
+ * SLIP-0010 hardened derivation of a safe user child from an ed25519 root secret seed.
+ *
+ * `rootPrv` is a Stellar StrKey `S…` secret seed (what slot-④ `ed25519Multisig` user roots store).
+ * The derivation reuses the existing SLIP-0010 implementation {@link Ed25519KeyDeriver.derivePath}
+ * (hardened-only CKDPriv over the `ed25519 seed` HMAC master), then expands the resulting 32-byte
+ * child seed into a keypair with `nacl`. The child `pub` is a bare StrKey `G…`; the `prv` is the
+ * raw 32-byte child seed as hex (the seed input a signer needs).
+ *
+ * Unlike the secp256k1 path, ed25519 hardened derivation needs no chain code — the composite
+ * `pub‖chainCode` form is only for SOFT co-signer derivation and is not used here.
+ */
+export function deriveSafeChildEd25519Hardened(rootPrv: string, index: string | number): SafeHardenedChildKey {
+  const idx = parseSafeDerivationIndex(index);
+  const derivationPath = getSafeHardenedDerivationPath(idx);
+  const rawSeedHex = decodeEd25519StrKeySecretSeed(rootPrv).toString('hex');
+  const childSeed = Ed25519KeyDeriver.derivePath(derivationPath, rawSeedHex).key;
+  const keyPair = nacl.sign.keyPair.fromSeed(Uint8Array.from(childSeed));
+  const pub = encodeEd25519StrKeyPublicKey(Buffer.from(keyPair.publicKey));
+  return {
+    prv: Buffer.from(childSeed).toString('hex'),
+    pub,
+    derivationPath,
+  };
 }

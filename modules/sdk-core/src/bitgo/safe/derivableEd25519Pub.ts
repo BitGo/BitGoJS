@@ -1,27 +1,34 @@
 /**
  * @prettier
  *
- * @experimental Encode/decode helpers for the *derivable* form of a safe slot-④
- * (`ed25519Multisig`) root public key.
+ * @experimental StrKey ed25519 codecs for the safe slot-④ (`ed25519Multisig`) root key.
  *
- * Wallet Safes v1 soft-derives the backup and BitGo co-signer keys of every minted wallet from the
- * safe's root public keys, and soft derivation needs a chain code. The secp256k1 slot gets one for
- * free (a BIP32 xpub is `point || chaincode`); a bare Stellar StrKey `G…` has nowhere to put one.
- * Per TDD Part II-3 §1.3 we therefore concatenate the chain code onto `pub` rather than introduce a
- * new field — the same shape BitGo already uses for the MPC slots, whose `commonKeychain` is
- * `pub || chaincode`.
+ * Two related concerns live here:
  *
- *   pub = <StrKey ed25519 public key> || <chainCode, 52 base32 chars>
- *          exactly 56 chars, 'G…'         exactly 52 chars
- *   total length exactly 108
+ * 1. The *derivable* form of the slot-④ root public key. Wallet Safes v1 soft-derives the backup
+ *    and BitGo co-signer keys of every minted wallet from the safe's root public keys, and soft
+ *    derivation needs a chain code. The secp256k1 slot gets one for free (a BIP32 xpub is
+ *    `point || chaincode`); a bare Stellar StrKey `G…` has nowhere to put one. Per TDD Part II-3
+ *    §1.3 we therefore concatenate the chain code onto `pub` rather than introduce a new field —
+ *    the same shape BitGo already uses for the MPC slots, whose `commonKeychain` is `pub ||
+ *    chaincode`.
  *
- * Both halves use the SAME encoding — RFC 4648 base32 over the alphabet StrKey itself uses — so the
- * composite is one uniform string rather than a base32 pub with a hex tail bolted on.
+ *      pub = <StrKey ed25519 public key> || <chainCode, 52 base32 chars>
+ *             exactly 56 chars, 'G…'         exactly 52 chars
+ *      total length exactly 108
  *
- * StrKey ed25519 public keys are always exactly 56 characters, so the split is a fixed offset. That
- * offset is a CROSS-REPO contract shared with wallet-platform, `modules/key-card` and WRW; four
- * independent implementations drifting produces unrecoverable wallets. Every call site — here and in
- * the other repos — MUST go through these helpers rather than slicing inline.
+ * 2. Plain StrKey codecs for the hardened user-key path (see {@link ./safeDerivation}): the user
+ *    root is generated as an XLM keychain, so its private material is a StrKey secret seed (`S…`)
+ *    and its hardened children are registered as bare StrKey public keys (`G…`).
+ *
+ * All StrKey plumbing (base32, CRC16-XModem) is implemented here rather than pulled from
+ * `stellar-sdk` because `sdk-core` must not depend on a coin module (`@bitgo/sdk-coin-xlm` /
+ * `stellar-sdk`).
+ *
+ * StrKey ed25519 public keys are always exactly 56 characters, so the composite split is a fixed
+ * offset. That offset is a CROSS-REPO contract shared with wallet-platform, `modules/key-card` and
+ * WRW; four independent implementations drifting produces unrecoverable wallets. Every call site —
+ * here and in the other repos — MUST go through these helpers rather than slicing inline.
  */
 
 import { randomBytes } from 'crypto';
@@ -59,11 +66,15 @@ const CHAIN_CODE_REGEX = /^[A-Z2-7]{52}$/;
 /** StrKey version byte for an ed25519 public key (`G…`). */
 const STRKEY_VERSION_BYTE_ED25519_PUBLIC_KEY = 6 << 3;
 
+/** StrKey version byte for an ed25519 secret seed (`S…`). */
+const STRKEY_VERSION_BYTE_ED25519_SECRET_SEED = 18 << 3;
+
 /** Decoded StrKey payload: 1 version byte + 32-byte key + 2-byte checksum. */
 const STRKEY_DECODED_LENGTH = 35;
 
 const BASE32_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 const STRKEY_ED25519_PUBLIC_KEY_REGEX = /^G[A-Z2-7]{55}$/;
+const STRKEY_ED25519_SECRET_SEED_REGEX = /^S[A-Z2-7]{55}$/;
 
 /**
  * Decode an unpadded RFC 4648 base32 string. Callers guarantee the input already matched one of the
@@ -212,4 +223,43 @@ export function isDerivableEd25519Pub(composite: string): boolean {
   } catch {
     return false;
   }
+}
+
+/**
+ * Decode a Stellar StrKey ed25519 secret seed (`S…`) to its 32 raw seed bytes.
+ *
+ * This is the hardened user-root input: the safe stores the slot-④ user root as an XLM keychain,
+ * whose prv is a StrKey secret seed (see {@link ./safeDerivation}).
+ *
+ * Validated by length, alphabet, version byte, and CRC16 checksum, so a corrupted seed is rejected
+ * rather than silently producing the wrong derivation input.
+ */
+export function decodeEd25519StrKeySecretSeed(seed: string): Buffer {
+  if (!STRKEY_ED25519_SECRET_SEED_REGEX.test(seed)) {
+    throw new Error('Invalid ed25519 StrKey secret seed');
+  }
+  const decoded = base32Decode(seed);
+  if (decoded.length !== STRKEY_DECODED_LENGTH || decoded[0] !== STRKEY_VERSION_BYTE_ED25519_SECRET_SEED) {
+    throw new Error('Invalid ed25519 StrKey secret seed');
+  }
+  if (crc16Xmodem(decoded.subarray(0, STRKEY_DECODED_LENGTH - 2)) !== decoded.readUInt16LE(STRKEY_DECODED_LENGTH - 2)) {
+    throw new Error('Invalid ed25519 StrKey secret seed: checksum mismatch');
+  }
+  return decoded.subarray(1, 33);
+}
+
+/**
+ * Encode 32 raw ed25519 public-key bytes to a Stellar StrKey public key (`G…`).
+ *
+ * Hardened derivation (see {@link ./safeDerivation}) produces a bare 32-byte public key that must
+ * be re-encoded before it is registered with wallet-platform.
+ */
+export function encodeEd25519StrKeyPublicKey(rawPub: Buffer): string {
+  if (rawPub.length !== 32) {
+    throw new Error('ed25519 public key must be 32 bytes');
+  }
+  const payload = Buffer.concat([Buffer.from([STRKEY_VERSION_BYTE_ED25519_PUBLIC_KEY]), rawPub]);
+  const checksum = Buffer.alloc(2);
+  checksum.writeUInt16LE(crc16Xmodem(payload), 0);
+  return base32Encode(Buffer.concat([payload, checksum]));
 }
