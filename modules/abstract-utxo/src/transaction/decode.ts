@@ -1,6 +1,6 @@
 import { fixedScriptWallet, hasPsbtMagic, Psbt as WasmPsbt } from '@bitgo/wasm-utxo';
 
-import { UtxoCoinName } from '../names';
+import { UtxoCoinName, WasmUtxoCoinName } from '../names';
 
 import { BitGoPsbt } from './types';
 
@@ -21,11 +21,11 @@ export function stringToBufferTryFormats(input: string, formats: BufferEncoding[
   throw new Error('input must be a valid hex or base64 string');
 }
 
-export function decodePsbt(psbt: string | Buffer, coinName: UtxoCoinName): BitGoPsbt {
+export function decodePsbt(psbt: string | Buffer, coinName: UtxoCoinName | WasmUtxoCoinName): BitGoPsbt {
   if (typeof psbt === 'string') {
     psbt = Buffer.from(psbt, 'hex');
   }
-  return fixedScriptWallet.BitGoPsbt.fromBytes(psbt, coinName);
+  return fixedScriptWallet.BitGoPsbt.fromBytes(psbt, coinName as WasmUtxoCoinName);
 }
 
 export type PrebuildLike = {

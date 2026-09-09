@@ -4,7 +4,7 @@ import { isTriple, IWallet, Triple } from '@bitgo/sdk-core';
 import { getDescriptorMapFromWallet, isDescriptorWallet } from '../descriptor';
 import { toBip32Triple } from '../keychains';
 import { getPolicyForEnv } from '../descriptor/validatePolicy';
-import { UtxoCoinName } from '../names';
+import { UtxoCoinName, WasmUtxoCoinName } from '../names';
 import type { Unspent } from '../unspent';
 
 import { getReplayProtectionPubkeys } from './fixedScript/replayProtection';
@@ -24,7 +24,7 @@ export function explainTx<TNumber extends number | bigint>(
     customChangeXpubs?: Triple<string>;
     txInfo?: { unspents?: Unspent<TNumber>[] };
   },
-  coinName: UtxoCoinName
+  coinName: UtxoCoinName | WasmUtxoCoinName
 ): TransactionExplanationUtxolibPsbt | TransactionExplanationWasm {
   if (params.wallet && isDescriptorWallet(params.wallet)) {
     if (!(tx instanceof WasmPsbt)) {

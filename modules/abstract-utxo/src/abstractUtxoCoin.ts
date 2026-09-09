@@ -565,7 +565,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
     if (!hasPsbtMagic(buffer)) {
       throw new ErrorDeprecatedTxFormat('legacy');
     }
-    return decodePsbt(buffer, this.name);
+    return decodePsbt(buffer, this.wasmName);
   }
 
   decodeTransactionAsPsbt(input: Buffer | string): fixedScriptWallet.BitGoPsbt {
@@ -593,7 +593,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
   async parseTransaction<TNumber extends number | bigint = number>(
     params: ParseTransactionOptions<TNumber>
   ): Promise<ParsedTransaction<TNumber>> {
-    return this.parseTransactionWithAddressCodec(params, new AddressCodec(this.name));
+    return this.parseTransactionWithAddressCodec(params, this.addressCodec);
   }
 
   protected parseTransactionWithAddressCodec<TNumber extends number | bigint>(
@@ -636,7 +636,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
   async verifyTransaction<TNumber extends number | bigint = number>(
     params: VerifyTransactionOptions<TNumber>
   ): Promise<boolean> {
-    return this.verifyTransactionWithAddressCodec(params, new AddressCodec(this.name));
+    return this.verifyTransactionWithAddressCodec(params, this.addressCodec);
   }
 
   protected async verifyTransactionWithAddressCodec<TNumber extends number | bigint>(
@@ -690,7 +690,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
         throw new Error('keychains must be a triple');
       }
       assertDescriptorWalletAddress(
-        this.name,
+        this.addressCodec,
         params,
         getDescriptorMapFromWallet(wallet, toBip32Triple(keychains), getPolicyForEnv(this.bitgo.env))
       );
@@ -786,7 +786,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
       .post(this.url('/wallet/' + walletId + '/tx/signpsbt'))
       .send({ psbt: buffer.toString('hex') })
       .result();
-    return decodePsbt(response.psbt, this.name);
+    return decodePsbt(response.psbt, this.wasmName);
   }
 
   /**
@@ -904,9 +904,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
     if (wallet && isDescriptorWallet(wallet)) {
       // Descriptor wallets decode prebuild bytes straight into the wasm-utxo
       // descriptor Psbt, skipping the fixedScriptWallet.BitGoPsbt intermediate.
-      return explainTx(decodeDescriptorPsbt(params), { ...params, wallet }, this.name);
+      return explainTx(decodeDescriptorPsbt(params), { ...params, wallet }, this.wasmName);
     }
-    return explainTx(this.decodeTransactionFromPrebuild(params), { ...params, wallet }, this.name);
+    return explainTx(this.decodeTransactionFromPrebuild(params), { ...params, wallet }, this.wasmName);
   }
 
   /**

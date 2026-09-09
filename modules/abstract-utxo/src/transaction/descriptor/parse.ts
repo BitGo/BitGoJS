@@ -41,7 +41,7 @@ function parseOutputsWithPsbt(
   recipientOutputs: RecipientOutput[],
   addressCodec: AddressCodec
 ): ParsedOutputs {
-  const parsed = descriptorWallet.parse(psbt, descriptorMap, addressCodec.coinName);
+  const parsed = descriptorWallet.parse(psbt, descriptorMap, addressCodec.wasmName);
   const outputs: ParsedOutput[] = parsed.outputs.map((output) => ({
     ...output,
     script: Buffer.from(output.script),
@@ -116,7 +116,7 @@ export function parse(
   coin: AbstractUtxoCoin,
   wallet: IDescriptorWallet,
   params: ParseTransactionOptions<number | bigint>,
-  addressCodec: AddressCodec = new AddressCodec(coin.name)
+  addressCodec: AddressCodec = coin.addressCodec
 ): ParsedDescriptorTransaction<bigint> {
   if (params.txParams.allowExternalChangeAddress) {
     throw new Error('allowExternalChangeAddress is not supported for descriptor wallets');

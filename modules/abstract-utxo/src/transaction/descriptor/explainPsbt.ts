@@ -2,13 +2,13 @@ import { ITransactionRecipient } from '@bitgo/sdk-core';
 import { Psbt, descriptorWallet } from '@bitgo/wasm-utxo';
 
 import type { TransactionExplanationDescriptor } from '../fixedScript/explainTransaction';
-import { UtxoCoinName } from '../../names';
+import { UtxoCoinName, WasmUtxoCoinName } from '../../names';
 
 function sumValues(arr: { value: bigint }[]): bigint {
   return arr.reduce((sum, e) => sum + e.value, 0n);
 }
 
-function toRecipient(output: descriptorWallet.ParsedOutput, coinName: UtxoCoinName): ITransactionRecipient {
+function toRecipient(output: descriptorWallet.ParsedOutput): ITransactionRecipient {
   const address = output.address ?? `scriptPubKey:${Buffer.from(output.script).toString('hex')}`;
   return {
     address,
@@ -34,9 +34,9 @@ function getInputSignatures(psbt: Psbt): number[] {
 export function explainPsbt(
   psbt: Psbt,
   descriptors: descriptorWallet.DescriptorMap,
-  coinName: UtxoCoinName
+  coinName: UtxoCoinName | WasmUtxoCoinName
 ): TransactionExplanationDescriptor {
-  const parsedTransaction = descriptorWallet.parse(psbt, descriptors, coinName);
+  const parsedTransaction = descriptorWallet.parse(psbt, descriptors, coinName as WasmUtxoCoinName);
   const { inputs, outputs } = parsedTransaction;
   const externalOutputs = outputs.filter((o) => o.scriptId === undefined);
   const changeOutputs = outputs.filter((o) => o.scriptId !== undefined);
@@ -47,9 +47,9 @@ export function explainPsbt(
     signatures: inputSignatures.reduce((a, b) => Math.min(a, b), Infinity),
     locktime: psbt.lockTime(),
     id: psbt.unsignedTxId(),
-    outputs: externalOutputs.map((o) => toRecipient(o, coinName)),
+    outputs: externalOutputs.map(toRecipient),
     outputAmount: sumValues(externalOutputs).toString(),
-    changeOutputs: changeOutputs.map((o) => toRecipient(o, coinName)),
+    changeOutputs: changeOutputs.map(toRecipient),
     changeAmount: sumValues(changeOutputs).toString(),
     fee: fee.toString(),
   };

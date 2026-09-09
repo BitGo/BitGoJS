@@ -12,7 +12,7 @@ export async function verifyTransaction<TNumber extends bigint | number>(
   coin: AbstractUtxoCoin,
   bitgo: BitGoBase,
   params: VerifyTransactionOptions<TNumber>,
-  addressCodec: AddressCodec = new AddressCodec(coin.name)
+  addressCodec: AddressCodec = coin.addressCodec
 ): Promise<boolean> {
   if (isDescriptorWallet(params.wallet)) {
     const walletKeys = toBip32Triple(await fetchKeychains(coin, params.wallet));

@@ -75,7 +75,7 @@ export async function verifyTransaction<TNumber extends number | bigint>(
   coin: AbstractUtxoCoin,
   params: VerifyTransactionOptions<TNumber>,
   descriptorMap: descriptorWallet.DescriptorMap,
-  addressCodec: AddressCodec = new AddressCodec(coin.name)
+  addressCodec: AddressCodec = coin.addressCodec
 ): Promise<boolean> {
   let psbt: Psbt;
   try {
