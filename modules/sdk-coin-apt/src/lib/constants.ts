@@ -4,6 +4,18 @@ export const APT_BLOCK_ID_LENGTH = 64;
 export const APT_SIGNATURE_LENGTH = 128;
 export const UNAVAILABLE_TEXT = 'UNAVAILABLE';
 export const DEFAULT_GAS_UNIT_PRICE = 100;
+/**
+ * Aptos validators currently reject transactions whose max gas amount is below
+ * the network minimum. Keep this conservative value independent of the SDK's
+ * lower default so every transaction type (including delegation) is safe.
+ *
+ * Dynamic estimation is opt-in because simulation adds a network request and
+ * can fail for offline or newly-created accounts; callers always retain this
+ * safe fallback.
+ */
+export const DEFAULT_MAX_GAS_AMOUNT = 20_000;
+export const SIMULATION_MAX_GAS_AMOUNT = 200_000;
+export const SIMULATION_GAS_BUFFER = 1.2;
 export const SECONDS_PER_WEEK = 7 * 24 * 60 * 60; // Days * Hours * Minutes * Seconds
 export const ADDRESS_BYTES_LENGTH = 32;
 export const AMOUNT_BYTES_LENGTH = 8;

@@ -2,12 +2,77 @@ import { coins } from '@bitgo/statics';
 import { TransactionBuilderFactory, TransferTransaction } from '../../../src';
 import * as testData from '../../resources/apt';
 import { TransactionType } from '@bitgo/sdk-core';
+import { Aptos, RawTransaction } from '@aptos-labs/ts-sdk';
 import should from 'should';
+import sinon from 'sinon';
 
 describe('Apt Transfer Transaction', () => {
   const factory = new TransactionBuilderFactory(coins.get('tapt'));
 
   describe('Aptos Coin Transfer Transaction', () => {
+    describe('Dynamic gas estimation', () => {
+      function setup(simulation: Promise<unknown> | undefined) {
+        const transaction = new TransferTransaction(coins.get('tapt'));
+        const txBuilder = factory.getTransferBuilder(transaction);
+        txBuilder.sender(testData.sender2.address);
+        txBuilder.recipients(testData.recipients);
+        txBuilder.sequenceNumber(14);
+        txBuilder.expirationTime(1736246155);
+
+        const build = sinon.stub().callsFake(async (args: { options: { maxGasAmount: number } }) => ({
+          rawTransaction: {} as RawTransaction,
+          options: args.options,
+        }));
+        const simulate = sinon.stub();
+        if (simulation) {
+          simulate.returns(simulation);
+        }
+        const aptos = {
+          transaction: { build: { simple: build }, simulate: { simple: simulate } },
+        };
+        sinon.stub(transaction, 'createAptos').returns(aptos as unknown as Aptos);
+        sinon.stub(transaction as unknown as { generateTxnId: () => void }, 'generateTxnId');
+        return { transaction, txBuilder, build, simulate };
+      }
+
+      it('uses one build and no simulation when the flag is off', async function () {
+        const { txBuilder, build, simulate } = setup(undefined);
+        await txBuilder.build();
+        build.callCount.should.equal(1);
+        simulate.called.should.equal(false);
+      });
+
+      it('simulates with a high limit and rebuilds using the buffered estimate', async function () {
+        const { transaction, txBuilder, build, simulate } = setup(Promise.resolve([{ gas_used: '16667' }]));
+        txBuilder.setDynamicGasEstimation();
+        await txBuilder.build();
+        build.firstCall.args[0].options.maxGasAmount.should.equal(200000);
+        build.secondCall.args[0].options.maxGasAmount.should.equal(20001);
+        simulate.calledOnce.should.equal(true);
+        simulate.firstCall.args[0].transaction.should.equal(await build.firstCall.returnValue);
+        transaction.maxGasAmount.should.equal(20001);
+      });
+
+      it('falls back to the safe default when simulation rejects', async function () {
+        const { txBuilder, build, simulate } = setup(Promise.reject(new Error('offline')));
+        txBuilder.setDynamicGasEstimation();
+        await txBuilder.build();
+        build.firstCall.args[0].options.maxGasAmount.should.equal(200000);
+        build.secondCall.args[0].options.maxGasAmount.should.equal(20000);
+        simulate.calledOnce.should.equal(true);
+      });
+
+      it('does not simulate when explicit gas data is provided', async function () {
+        const { txBuilder, build, simulate } = setup(Promise.resolve([{ gas_used: '16667' }]));
+        txBuilder.setDynamicGasEstimation();
+        txBuilder.gasData({ maxGasAmount: 12345, gasUnitPrice: 100 });
+        await txBuilder.build();
+        build.callCount.should.equal(1);
+        build.firstCall.args[0].options.maxGasAmount.should.equal(12345);
+        simulate.called.should.equal(false);
+      });
+    });
+
     describe('Succeed', () => {
       it('should build a transfer tx', async function () {
         const transaction = new TransferTransaction(coins.get('tapt'));

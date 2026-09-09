@@ -20,6 +20,7 @@ import {
 import utils from '../../src/lib/utils';
 import { AptCoin, coins, GasTankAccountCoin } from '@bitgo/statics';
 import { DelegationPoolAddStakeTransaction } from '../../src/lib/transaction/delegationPoolAddStakeTransaction';
+import { calculateDynamicMaxGasAmount } from '../../src/lib/transaction/transaction';
 
 describe('APT:', function () {
   let bitgo: TestBitGoAPI;
@@ -337,6 +338,26 @@ describe('APT:', function () {
       await assert.rejects(async () => basecoin.isWalletAddress(params), {
         message: `invalid address: ${wrongAddress}`,
       });
+    });
+  });
+
+  describe('Gas configuration', () => {
+    it('rounds simulated gas up with a 20 percent safety buffer', function () {
+      calculateDynamicMaxGasAmount(16667).should.equal(20001);
+      calculateDynamicMaxGasAmount(1).should.equal(20000);
+    });
+
+    it('rejects invalid simulation results', function () {
+      (() => calculateDynamicMaxGasAmount(Number.NaN)).should.throw('Invalid gas estimate');
+      (() => calculateDynamicMaxGasAmount(-1)).should.throw('Invalid gas estimate');
+    });
+
+    it('uses a validator-safe max gas amount for every transaction type', function () {
+      const transfer = new TransferTransaction(coins.get('tapt'));
+      const delegation = new DelegationPoolAddStakeTransaction(coins.get('tapt'));
+
+      transfer.maxGasAmount.should.equal(20000);
+      delegation.maxGasAmount.should.equal(20000);
     });
   });
 
