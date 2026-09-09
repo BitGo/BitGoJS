@@ -3,9 +3,9 @@ import 'should';
 import { InitializeSafeResponse } from '@bitgo/public-types';
 import { Enterprise, Safe, SafeKeys, Safes } from '../../../../src';
 
-/** A derivable slot-④ backup root pub: 56-char StrKey || 52-char base32 chain code. */
+/** A derivable slot-④ root: raw 32-byte public key plus raw 32-byte chain code in base32. */
 const COMPOSITE_BACKUP_PUB =
-  'GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYH' + 'TIHTY7I6LMUEMCXT3EWG5ANXAU72JQXJRUL3MBKDUL6I4GOXWBDA';
+  'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKXK5LVOV2XKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
 
 describe('Safes', function () {
   let safes: Safes;
@@ -71,13 +71,15 @@ describe('Safes', function () {
       return {
         create: sinon.stub().returns({ pub: `${coin}-pub`, prv: `${coin}-prv` }),
         add: sinon.stub().resolves({ id: `${coin}-user` }),
-        // txlm is the ed25519Multisig root coin, so its backup pub comes back composite —
-        // createMultisigRoot asserts that before returning the triplet.
+        // txlm is the ed25519Multisig root coin, so its backup pub is neutral raw derivation material.
         createBackup: sinon.stub().resolves({
           id: `${coin}-backup`,
           ...(coin === 'txlm' || coin === 'xlm' ? { pub: COMPOSITE_BACKUP_PUB } : {}),
         }),
-        createBitGo: sinon.stub().resolves({ id: `${coin}-bitgo` }),
+        createBitGo: sinon.stub().resolves({
+          id: `${coin}-bitgo`,
+          ...(coin === 'txlm' || coin === 'xlm' ? { pub: COMPOSITE_BACKUP_PUB } : {}),
+        }),
         createMpc: sinon.stub().resolves({
           userKeychain: { id: `${coin}-user` },
           backupKeychain: { id: `${coin}-backup` },
@@ -114,10 +116,8 @@ describe('Safes', function () {
     });
 
     it('rejects an ed25519Multisig backup root that came back non-derivable', async function () {
-      // createBackup infers slot ④ from the generated pub's shape; if that inference ever misses,
-      // the root is silently non-derivable and the wallets minted from it are unrecoverable.
+      // A bare Stellar StrKey is not the neutral raw root format.
       keychainsByCoin['txlm'] = makeKeychains('txlm');
-      // A bare 56-char StrKey: the pub createBackup would post if it failed to recognise slot ④.
       keychainsByCoin['txlm'].createBackup.resolves({
         id: 'txlm-backup',
         pub: 'GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYH',
@@ -125,7 +125,7 @@ describe('Safes', function () {
 
       await safes
         .createSafeKeys({ label: 'my safe', passphrase: 'pw', safeId: 'safe-1' })
-        .should.be.rejectedWith(/ed25519Multisig backup root is not derivable/);
+        .should.be.rejectedWith(/ed25519Multisig roots are not derivable/);
     });
 
     it('does not apply the derivable check to the secp256k1Multisig slot', async function () {
@@ -196,7 +196,7 @@ describe('Safes', function () {
       keychainsByCoin['tbtc'] = makeKeychains('tbtc');
       keychainsByCoin['tbtc'].createBitGo = gated({ id: 'tbtc-bitgo' });
       keychainsByCoin['txlm'] = makeKeychains('txlm');
-      keychainsByCoin['txlm'].createBitGo = gated({ id: 'txlm-bitgo' });
+      keychainsByCoin['txlm'].createBitGo = gated({ id: 'txlm-bitgo', pub: COMPOSITE_BACKUP_PUB });
       keychainsByCoin['hteth'] = makeKeychains('hteth');
       keychainsByCoin['hteth'].createMpc = gated({
         userKeychain: { id: 'hteth-user' },

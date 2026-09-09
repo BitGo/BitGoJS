@@ -1,197 +1,30 @@
 {
-  "$comment": "Shared cross-repo fixture for the derivable slot-4 (ed25519Multisig) root pub format: composite = <56-char Stellar StrKey ed25519 public key> || <52-char base32 chain code>. BASE32 END TO END: both halves use RFC 4648 unpadded base32 over the alphabet StrKey itself uses, so the composite is one uniform string. A chain code is 32 bytes = 52 base32 characters, whose final character carries 1 significant bit and 4 zero padding bits, so 16 spellings decode to the same bytes and only the zero-padded one is valid — validators must re-encode, not just match the alphabet. Plain JSON with no repo-specific imports so wallet-platform, BitGoJS sdk-core, BitGoJS modules/key-card and WRW can all consume this identical file. Append new vectors rather than editing existing ones in place.",
-  "$detectedBy": "Which check rejects an invalid vector. format = the coin-agnostic codec (length, StrKey shape, canonical base32 chain code) rejects it, so encode/decode catch it. coin = the codec accepts it and only the coin-aware gate (StrKey checksum via coin.isValidPub) rejects it; an implementation without a coin instance MUST NOT be expected to catch these. An implementation whose codec verifies the StrKey checksum itself (e.g. BitGoJS sdk-core) rejects the coin vectors too — detectedBy is a floor, not a ceiling.",
-  "splitOffset": 56,
-  "chainCodeLength": 52,
-  "compositeLength": 108,
+  "$comment": "Shared cross-repo fixture: raw 32-byte public key || raw 32-byte chain code encoded together as canonical unpadded RFC 4648 base32.",
+  "publicKeyBytes": 32,
+  "chainCodeBytes": 32,
+  "rootPubBase32Length": 103,
   "valid": [
     {
-      "name": "all-zero pub with all-zero chain code",
-      "pub": "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF",
-      "chainCode": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-      "composite": "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      "name": "zero public key and repeated chain code",
+      "pub": "0000000000000000000000000000000000000000000000000000000000000000",
+      "chainCode": "abababababababababababababababababababababababababababababababab",
+      "composite": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKXK5LVOV2XKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
     },
     {
-      "name": "all-ones pub with all-ones chain code",
-      "pub": "GD7777777777777777777777777777777777777777777777777773DB",
-      "chainCode": "777777777777777777777777777777777777777777777777777Q",
-      "composite": "GD7777777777777777777777777777777777777777777777777773DB777777777777777777777777777777777777777777777777777Q"
-    },
-    {
-      "name": "low-order pub with a near-zero chain code",
-      "pub": "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC6PV",
-      "chainCode": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQ",
-      "composite": "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC6PVAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQ"
-    },
-    {
-      "name": "typical pub with a mixed alphanumeric chain code",
-      "pub": "GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYH",
-      "chainCode": "TIHTY7I6LMUEMCXT3EWG5ANXAU72JQXJRUL3MBKDUL6I4GOXWBDA",
-      "composite": "GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYHTIHTY7I6LMUEMCXT3EWG5ANXAU72JQXJRUL3MBKDUL6I4GOXWBDA"
-    },
-    {
-      "name": "typical pub with a repeating chain code",
-      "pub": "GDD7GGYPJUX3BNVA6OPIXUFXYOY2FVHF6YDRQKJ2JNOG27UPSAJDJCMV",
-      "chainCode": "CI2FM6EQCI2FM6EQCI2FM6EQCI2FM6EQCI2FM6EQCI2FM6EQCI2A",
-      "composite": "GDD7GGYPJUX3BNVA6OPIXUFXYOY2FVHF6YDRQKJ2JNOG27UPSAJDJCMVCI2FM6EQCI2FM6EQCI2FM6EQCI2FM6EQCI2FM6EQCI2FM6EQCI2A"
+      "name": "mixed public key and chain code",
+      "pub": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "chainCode": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
+      "composite": "AERUKZ4JVPG7AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
     }
+  ],
+  "invalid": [
+    { "name": "lowercase", "composite": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaakxk5lvov2xkaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" },
+    { "name": "short", "composite": "AA" },
+    { "name": "non-canonical trailing bits", "composite": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKXK5LVOV2XKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB" }
   ],
   "invalidComposite": [
-    {
-      "name": "empty string",
-      "composite": "",
-      "reason": "length",
-      "detectedBy": "format"
-    },
-    {
-      "name": "bare 56-char pub with no chain code",
-      "composite": "GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYH",
-      "reason": "length",
-      "detectedBy": "format"
-    },
-    {
-      "name": "bare chain code with no pub",
-      "composite": "TIHTY7I6LMUEMCXT3EWG5ANXAU72JQXJRUL3MBKDUL6I4GOXWBDA",
-      "reason": "length",
-      "detectedBy": "format"
-    },
-    {
-      "name": "chain code one character short",
-      "composite": "GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYHTIHTY7I6LMUEMCXT3EWG5ANXAU72JQXJRUL3MBKDUL6I4GOXWBD",
-      "reason": "length",
-      "detectedBy": "format"
-    },
-    {
-      "name": "chain code one character long",
-      "composite": "GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYHTIHTY7I6LMUEMCXT3EWG5ANXAU72JQXJRUL3MBKDUL6I4GOXWBDAA",
-      "reason": "length",
-      "detectedBy": "format"
-    },
-    {
-      "name": "lowercase chain code",
-      "composite": "GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYHtihty7i6lmuemcxt3ewg5anxau72jqxjrul3mbkdul6i4goxwbda",
-      "reason": "chainCode",
-      "detectedBy": "format"
-    },
-    {
-      "name": "mixed-case chain code",
-      "composite": "GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYHTihty7i6lmuemcxt3ewg5anxau72jqxjrul3mbkdul6i4goxwbda",
-      "reason": "chainCode",
-      "detectedBy": "format"
-    },
-    {
-      "name": "chain code with a character outside the base32 alphabet",
-      "composite": "GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYH0IHTY7I6LMUEMCXT3EWG5ANXAU72JQXJRUL3MBKDUL6I4GOXWBDA",
-      "reason": "chainCode",
-      "detectedBy": "format"
-    },
-    {
-      "name": "non-canonical chain code with padding bits set",
-      "composite": "GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYHTIHTY7I6LMUEMCXT3EWG5ANXAU72JQXJRUL3MBKDUL6I4GOXWBDB",
-      "reason": "chainCode",
-      "detectedBy": "format"
-    },
-    {
-      "name": "pub half is a secret seed (S...) not a public key",
-      "composite": "SA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYHTIHTY7I6LMUEMCXT3EWG5ANXAU72JQXJRUL3MBKDUL6I4GOXWBDA",
-      "reason": "pub",
-      "detectedBy": "format"
-    },
-    {
-      "name": "pub half contains a lowercase character",
-      "composite": "Ga5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYHTIHTY7I6LMUEMCXT3EWG5ANXAU72JQXJRUL3MBKDUL6I4GOXWBDA",
-      "reason": "pub",
-      "detectedBy": "format"
-    },
-    {
-      "name": "pub half contains 0 and 1, which are not in the base32 alphabet",
-      "composite": "G01WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYHTIHTY7I6LMUEMCXT3EWG5ANXAU72JQXJRUL3MBKDUL6I4GOXWBDA",
-      "reason": "pub",
-      "detectedBy": "format"
-    },
-    {
-      "name": "halves swapped",
-      "composite": "TIHTY7I6LMUEMCXT3EWG5ANXAU72JQXJRUL3MBKDUL6I4GOXWBDAGA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYH",
-      "reason": "pub",
-      "detectedBy": "format"
-    },
-    {
-      "name": "pub half has a bad StrKey checksum",
-      "composite": "GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYATIHTY7I6LMUEMCXT3EWG5ANXAU72JQXJRUL3MBKDUL6I4GOXWBDA",
-      "reason": "pub",
-      "detectedBy": "coin"
-    }
-  ],
-  "invalidEncodeInputs": [
-    {
-      "name": "empty pub",
-      "pub": "",
-      "chainCode": "TIHTY7I6LMUEMCXT3EWG5ANXAU72JQXJRUL3MBKDUL6I4GOXWBDA",
-      "reason": "pub",
-      "detectedBy": "format"
-    },
-    {
-      "name": "composite passed as the pub half",
-      "pub": "GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYHTIHTY7I6LMUEMCXT3EWG5ANXAU72JQXJRUL3MBKDUL6I4GOXWBDA",
-      "chainCode": "TIHTY7I6LMUEMCXT3EWG5ANXAU72JQXJRUL3MBKDUL6I4GOXWBDA",
-      "reason": "pub",
-      "detectedBy": "format"
-    },
-    {
-      "name": "pub half is a secret seed (S...)",
-      "pub": "SA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYH",
-      "chainCode": "TIHTY7I6LMUEMCXT3EWG5ANXAU72JQXJRUL3MBKDUL6I4GOXWBDA",
-      "reason": "pub",
-      "detectedBy": "format"
-    },
-    {
-      "name": "empty chain code",
-      "pub": "GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYH",
-      "chainCode": "",
-      "reason": "chainCode",
-      "detectedBy": "format"
-    },
-    {
-      "name": "lowercase chain code",
-      "pub": "GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYH",
-      "chainCode": "tihty7i6lmuemcxt3ewg5anxau72jqxjrul3mbkdul6i4goxwbda",
-      "reason": "chainCode",
-      "detectedBy": "format"
-    },
-    {
-      "name": "chain code with 0x prefix",
-      "pub": "GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYH",
-      "chainCode": "0xHTY7I6LMUEMCXT3EWG5ANXAU72JQXJRUL3MBKDUL6I4GOXWBDA",
-      "reason": "chainCode",
-      "detectedBy": "format"
-    },
-    {
-      "name": "non-canonical chain code with padding bits set",
-      "pub": "GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYH",
-      "chainCode": "TIHTY7I6LMUEMCXT3EWG5ANXAU72JQXJRUL3MBKDUL6I4GOXWBDB",
-      "reason": "chainCode",
-      "detectedBy": "format"
-    },
-    {
-      "name": "chain code too short",
-      "pub": "GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYH",
-      "chainCode": "TIHTY7I6LMUEMCXT3EWG5ANXAU72JQXJRUL3MBKDUL6I4GOXWBD",
-      "reason": "chainCode",
-      "detectedBy": "format"
-    },
-    {
-      "name": "chain code too long",
-      "pub": "GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYH",
-      "chainCode": "TIHTY7I6LMUEMCXT3EWG5ANXAU72JQXJRUL3MBKDUL6I4GOXWBDAA",
-      "reason": "chainCode",
-      "detectedBy": "format"
-    },
-    {
-      "name": "pub with a bad StrKey checksum",
-      "pub": "GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYA",
-      "chainCode": "TIHTY7I6LMUEMCXT3EWG5ANXAU72JQXJRUL3MBKDUL6I4GOXWBDA",
-      "reason": "pub",
-      "detectedBy": "coin"
-    }
+    { "name": "lowercase", "composite": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaakxk5lvov2xkaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" },
+    { "name": "short", "composite": "AA" },
+    { "name": "non-canonical trailing bits", "composite": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKXK5LVOV2XKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB" }
   ]
 }

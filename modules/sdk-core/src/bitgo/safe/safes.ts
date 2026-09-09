@@ -19,7 +19,7 @@ import { IBaseCoin } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { ApiResponseError } from '../errors';
 import { decodeWithCodec } from '../utils/codecs';
-import { DERIVABLE_ED25519_PUB_LENGTH } from './derivableEd25519Pub';
+import { isDerivableEd25519Pub } from './derivableEd25519Pub';
 import { postWithCodec } from '../utils/postWithCodec';
 import { FinalizeSafeOptions, InitializeSafeOptions } from './iSafe';
 import { CreateSafeOptions, GetSafeOptions, ISafes, ListSafesOptions, SafeCreationHandle, SafeKeys } from './iSafes';
@@ -260,15 +260,17 @@ export class Safes implements ISafes {
       bitgoKeychainPromise,
     ]);
 
-    // Tripwire. createBackup infers slot ④ from the shape of the pub it generates, so it composes
-    // silently or not at all. Here the slot is known explicitly, which makes this the one place the
-    // outcome can be checked without circularity: a root coin that stopped yielding StrKey pubs
-    // would otherwise mint non-derivable roots, and the symptom is unrecoverable wallets much later.
-    if (slot === 'ed25519Multisig' && backupKeychain.pub?.length !== DERIVABLE_ED25519_PUB_LENGTH) {
-      throw new Error(
-        `Safe ed25519Multisig backup root is not derivable: expected a ${DERIVABLE_ED25519_PUB_LENGTH}-character ` +
-          `composite pub, got ${backupKeychain.pub?.length ?? 0}.`
-      );
+    // Slot ④ roots use neutral raw public derivation material (32-byte public key plus 32-byte
+    // chain code), serialized as 128 lowercase hex characters. Coin-specific child encoding is
+    // performed by Wallet Platform after soft derivation.
+    if (
+      slot === 'ed25519Multisig' &&
+      (!backupKeychain.pub ||
+        !isDerivableEd25519Pub(backupKeychain.pub) ||
+        !bitgoKeychain.pub ||
+        !isDerivableEd25519Pub(bitgoKeychain.pub))
+    ) {
+      throw new Error('Safe ed25519Multisig roots are not derivable: expected 64-byte lowercase hex material');
     }
 
     return [userKeychain.id, backupKeychain.id, bitgoKeychain.id];
