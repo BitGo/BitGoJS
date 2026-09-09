@@ -707,7 +707,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
       throw new Error('missing required param keychains');
     }
 
-    assertFixedScriptWalletAddress(this.name, {
+    assertFixedScriptWalletAddress(this.wasmName, {
       address,
       keychains,
       format: params.format ?? 'base58',
@@ -736,7 +736,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
       throw new Error('missing required param keychains');
     }
 
-    const address = generateAddress(this.name, {
+    const address = generateAddress(this.wasmName, {
       // fixed-script (multisig) coins derive from the xpub triple via `pub`
       keychains: keychains as { pub: string }[],
       chain,
@@ -752,7 +752,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
    * @returns true iff coin supports spending from unspentType
    */
   supportsAddressType(addressType: ScriptType2Of3): boolean {
-    return fixedScriptWallet.supportsScriptType(this.name, addressType);
+    return fixedScriptWallet.supportsScriptType(this.wasmName, addressType);
   }
 
   /** inherited doc */

@@ -15,7 +15,7 @@ import { signAndVerifyPsbt } from '../transaction/fixedScript/signTransaction';
 import { generateAddressWithChainAndIndex } from '../address';
 import { encodeTransaction } from '../transaction/decode';
 import { getReplayProtectionPubkeys } from '../transaction/fixedScript/replayProtection';
-import { getMainnetCoinName, UtxoCoinName } from '../names';
+import { getMainnetCoinName, toWasmUtxoCoinName, UtxoCoinName, WasmUtxoCoinName } from '../names';
 import { parseOutputId, unspentSum, type WalletUnspent } from '../unspent';
 
 import { forCoin, RecoveryProvider } from './RecoveryProvider';
@@ -123,7 +123,7 @@ export interface RecoverParams {
  */
 function getFormattedAddress(
   coin: AbstractUtxoCoin,
-  coinName: UtxoCoinName,
+  coinName: WasmUtxoCoinName,
   walletKeys: fixedScriptWallet.RootWalletKeys,
   chain: ChainCode,
   addrIndex: number
@@ -162,7 +162,7 @@ async function queryBlockchainUnspentsPath(
   }
 
   async function gatherUnspents(addrIndex: number) {
-    const formattedAddress = getFormattedAddress(coin, coin.name, walletKeys, chain, addrIndex);
+    const formattedAddress = getFormattedAddress(coin, coin.wasmName, walletKeys, chain, addrIndex);
     const addrInfo = await recoveryProvider.getAddressInfo(formattedAddress);
     // we use txCount here because it implies usage - having tx'es means the addr was generated and used
     if (addrInfo.txCount === 0) {
@@ -297,7 +297,7 @@ function hasPrivateKey(key: BIP32): boolean {
  * @returns The PSBT at the appropriate signing stage (never finalized)
  */
 export function backupKeyRecoveryWithWalletUnspents(
-  coinName: UtxoCoinName,
+  coinName: UtxoCoinName | WasmUtxoCoinName,
   params: RecoverWithUnspentsParams,
   unspents: WalletUnspent<bigint>[]
 ): fixedScriptWallet.BitGoPsbt {
@@ -308,7 +308,7 @@ export function backupKeyRecoveryWithWalletUnspents(
     throw new ErrorNoInputToRecover();
   }
 
-  let psbt = createBackupKeyRecoveryPsbt(coinName, walletKeys, unspents, {
+  let psbt = createBackupKeyRecoveryPsbt(toWasmUtxoCoinName(coinName), walletKeys, unspents, {
     feeRateSatVB: feeRateSatVB,
     recoveryDestination: recoveryDestination,
     keyRecoveryServiceFee: krsFee ?? BigInt(0),
@@ -496,7 +496,7 @@ export async function backupKeyRecovery(
       fixedScriptWallet.outputScriptTypes
         .filter(
           (addressType) =>
-            fixedScriptWallet.supportsScriptType(coin.name, addressType) &&
+            fixedScriptWallet.supportsScriptType(coin.wasmName, addressType) &&
             !params.ignoreAddressTypes?.includes(addressType)
         )
         .reduce(
@@ -557,7 +557,7 @@ export async function backupKeyRecovery(
 
   // Build and sign PSBT
   const psbt = backupKeyRecoveryWithWalletUnspents(
-    coin.name,
+    coin.wasmName,
     {
       walletKeys,
       keys,

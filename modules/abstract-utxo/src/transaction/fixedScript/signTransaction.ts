@@ -4,7 +4,7 @@ import { isTriple } from '@bitgo/sdk-core';
 import _ from 'lodash';
 import { BIP32, bip32, fixedScriptWallet } from '@bitgo/wasm-utxo';
 
-import { UtxoCoinName } from '../../names';
+import { UtxoCoinName, WasmUtxoCoinName } from '../../names';
 import type { Unspent } from '../../unspent';
 
 import { Musig2Participant } from './musig2';
@@ -27,7 +27,7 @@ export async function signTransaction(
   coin: Musig2Participant<fixedScriptWallet.BitGoPsbt>,
   tx: fixedScriptWallet.BitGoPsbt,
   signerKeychain: bip32.BIP32Interface | undefined,
-  coinName: UtxoCoinName,
+  coinName: UtxoCoinName | WasmUtxoCoinName,
   params: {
     walletId: string | undefined;
     txInfo: { unspents?: Unspent<bigint | number>[] } | undefined;

@@ -50,7 +50,7 @@ function createTestUnspents(): WalletUnspent<bigint>[] {
  * Clone a PSBT - necessary because formatBackupKeyRecoveryResult mutates when finalizing.
  */
 function clonePsbt(psbt: fixedScriptWallet.BitGoPsbt): fixedScriptWallet.BitGoPsbt {
-  return fixedScriptWallet.BitGoPsbt.fromBytes(psbt.serialize(), coin.name);
+  return fixedScriptWallet.BitGoPsbt.fromBytes(psbt.serialize(), coin.wasmName);
 }
 
 describe('formatBackupKeyRecoveryResult', function () {

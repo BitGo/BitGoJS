@@ -60,7 +60,7 @@ export async function signTransaction<TNumber extends number | bigint>(
   } else {
     const tx = coin.decodeTransactionFromPrebuild(params.txPrebuild);
 
-    const signedTx = await fixedScript.signTransaction(coin, tx, getSignerKeychain(params.prv), coin.name, {
+    const signedTx = await fixedScript.signTransaction(coin, tx, getSignerKeychain(params.prv), coin.wasmName, {
       walletId: params.txPrebuild.walletId,
       txInfo: params.txPrebuild.txInfo,
       isLastSignature: params.isLastSignature ?? false,

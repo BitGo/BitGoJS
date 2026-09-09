@@ -3,7 +3,7 @@ import { getSeed } from '@bitgo/sdk-test';
 import * as wasmUtxo from '@bitgo/wasm-utxo';
 
 import { getReplayProtectionAddresses } from '../../../src';
-import { isUtxoCoinName, type UtxoCoinName } from '../../../src/names';
+import { isUtxoCoinName, toWasmUtxoCoinName, type UtxoCoinName } from '../../../src/names';
 import type { Unspent, UnspentWithPrevTx, WalletUnspent } from '../../../src/unspent';
 
 import { getCoinNameForNetwork } from './utxoCoins';
@@ -154,7 +154,7 @@ export function createWasmWalletUnspent<TNumber extends number | bigint = bigint
   network: NetworkArg
 ): WalletUnspent<TNumber> {
   // Get output script from address using correct wasm-utxo function
-  const outputScript = wasmUtxo.address.toOutputScriptWithCoin(address, toCoinName(network));
+  const outputScript = wasmUtxo.address.toOutputScriptWithCoin(address, toWasmUtxoCoinName(toCoinName(network)));
 
   // Create a mock transaction with output at vout=0
   const { txid } = createMockPrevTx(0, outputScript, BigInt(value));
@@ -250,7 +250,12 @@ export function toUnspentWithPrevTx(
   const coinName = toCoinName(network);
 
   // Get the output script for the wallet address
-  const outputScript = wasmUtxo.fixedScriptWallet.outputScript(rootWalletKeys, chain, index, coinName);
+  const outputScript = wasmUtxo.fixedScriptWallet.outputScript(
+    rootWalletKeys,
+    chain,
+    index,
+    toWasmUtxoCoinName(coinName)
+  );
 
   // Create mock prevTx with output at vout=0
   const { prevTx, txid } = createMockPrevTx(0, outputScript, input.value);

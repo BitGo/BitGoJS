@@ -2,7 +2,7 @@ import { ITransactionRecipient } from '@bitgo/sdk-core';
 import { Psbt, descriptorWallet } from '@bitgo/wasm-utxo';
 
 import type { TransactionExplanationDescriptor } from '../fixedScript/explainTransaction';
-import { UtxoCoinName, WasmUtxoCoinName } from '../../names';
+import { toWasmUtxoCoinName, UtxoCoinName, WasmUtxoCoinName } from '../../names';
 
 function sumValues(arr: { value: bigint }[]): bigint {
   return arr.reduce((sum, e) => sum + e.value, 0n);
@@ -36,7 +36,7 @@ export function explainPsbt(
   descriptors: descriptorWallet.DescriptorMap,
   coinName: UtxoCoinName | WasmUtxoCoinName
 ): TransactionExplanationDescriptor {
-  const parsedTransaction = descriptorWallet.parse(psbt, descriptors, coinName as WasmUtxoCoinName);
+  const parsedTransaction = descriptorWallet.parse(psbt, descriptors, toWasmUtxoCoinName(coinName));
   const { inputs, outputs } = parsedTransaction;
   const externalOutputs = outputs.filter((o) => o.scriptId === undefined);
   const changeOutputs = outputs.filter((o) => o.scriptId !== undefined);

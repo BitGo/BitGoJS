@@ -1,10 +1,10 @@
-import { BIP32, CoinName, fixedScriptWallet, address as wasmAddress } from '@bitgo/wasm-utxo';
+import { BIP32, fixedScriptWallet, address as wasmAddress } from '@bitgo/wasm-utxo';
 import { decrypt } from '@bitgo/sdk-api';
 import { BitGoBase, IWallet, Keychain, Triple, Wallet } from '@bitgo/sdk-core';
 
 import { AbstractUtxoCoin, TransactionInfo } from '../abstractUtxoCoin';
 import { signAndVerifyPsbt } from '../transaction/fixedScript/signTransaction';
-import { UtxoCoinName } from '../names';
+import { UtxoCoinName, WasmUtxoCoinName } from '../names';
 import { encodeTransaction } from '../transaction/decode';
 import { getReplayProtectionPubkeys } from '../transaction/fixedScript/replayProtection';
 import { toTNumber } from '../tnumber';
@@ -206,7 +206,7 @@ type ScriptId = {
 };
 
 async function getScriptId(coin: AbstractUtxoCoin, wallet: IWallet | WalletV1, script: Uint8Array): Promise<ScriptId> {
-  const address = wasmAddress.fromOutputScriptWithCoin(script, coin.name);
+  const address = coin.addressCodec.encode(script);
   let addressData: { chain: number; index: number };
   if (wallet instanceof Wallet) {
     addressData = await wallet.getAddress({ address });
@@ -242,7 +242,7 @@ async function toWalletUnspents<TNumber extends number | bigint = number>(
   for (const address of addresses) {
     let scriptId;
     try {
-      scriptId = await getScriptId(recoveryCoin, wallet, wasmAddress.toOutputScriptWithCoin(address, sourceCoin.name));
+      scriptId = await getScriptId(recoveryCoin, wallet, sourceCoin.addressCodec.decode(address));
     } catch (e) {
       console.error(`error getting scriptId for ${address}:`, e);
       continue;
@@ -329,7 +329,7 @@ async function getPrv(xprv?: string, passphrase?: string, wallet?: IWallet | Wal
  * @return unsigned PSBT
  */
 function createSweepTransaction<TNumber extends number | bigint = number>(
-  coinName: CoinName,
+  coinName: WasmUtxoCoinName,
   walletKeys: fixedScriptWallet.RootWalletKeys,
   unspents: WalletUnspent<TNumber>[],
   targetAddress: string,
@@ -403,7 +403,7 @@ export async function recoverCrossChain<TNumber extends number | bigint = number
 
   // Create PSBT for both signed and unsigned recovery
   let psbt = createSweepTransaction<TNumber>(
-    params.sourceCoin.getChain(),
+    params.sourceCoin.wasmName,
     walletKeys,
     walletUnspents,
     params.recoveryAddress,
