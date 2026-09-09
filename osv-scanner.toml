@@ -67,6 +67,10 @@ id = "GHSA-jmr9-qjv8-65gv"
 reason = "extract-zip unvalidated symlink path traversal on extraction (CVE-2026-56876); transitive via cypress and @puppeteer/browsers, both dev-only tooling; extracted archives are Cypress/Chromium binary release downloads from trusted sources, never untrusted user-supplied zips; no upstream fix (last_affected: 2.0.1, which is the latest release). Re-evaluate on 2026-11-13: drop this exclusion if extract-zip ships a patched release"
 
 [[IgnoredVulns]]
+id = "GHSA-7pqw-9j4j-h8q3"
+reason = "extract-zip arbitrary file write via symlink at final path component (CVE-2026-19693); transitive via cypress and @puppeteer/browsers, both dev-only tooling; extracted archives are Cypress/Chromium binary release downloads from trusted sources, never untrusted user-supplied zips; no upstream fix (last_affected: 2.0.1, which is the latest release). Re-evaluate on 2026-11-13: drop this exclusion if extract-zip ships a patched release"
+
+[[IgnoredVulns]]
 id = "GHSA-w4pp-8pjf-rmxw"
 reason = "pacote DoS via addGitSha on malicious spec.rawSpec (CVE-2026-9496); transitive via lerna (pinned pacote@21.0.1), @npmcli/arborist, and yeoman-generator (dev-time only); fix only in pacote 21.5.1+/22.0.0 which lerna does not yet support; all specs processed come from our own package.json/yarn.lock, never untrusted input"
 
