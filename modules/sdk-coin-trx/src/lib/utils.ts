@@ -62,15 +62,15 @@ export function isBase58Address(address: string): boolean {
 }
 
 /**
- * Detects hex representations of a TRON address: the 20-byte EVM-style form
- * (bare or 0x-prefixed) and the 21-byte form with the 0x41 version prefix.
- * These encode the same 21-byte address as the base58 form.
+ * Detects hex representations of a TRON address: 0x-prefixed 20-byte EVM-style,
+ * or 41-prefixed 21-byte form. Bare 20-byte hex (no 0x/41) is rejected — it is not
+ * an on-chain / API address encoding.
  *
  * @param address
  */
 export function isHexAddress(address: string): boolean {
-  const bare = address.toLowerCase().replace(/^0x/, '');
-  return /^[0-9a-f]{40}$/.test(bare) || /^41[0-9a-f]{40}$/.test(bare);
+  const lower = address.toLowerCase();
+  return /^0x[0-9a-f]{40}$/.test(lower) || /^41[0-9a-f]{40}$/.test(lower);
 }
 
 /**

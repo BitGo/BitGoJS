@@ -232,23 +232,35 @@ export class Trx extends BaseCoin {
   }
 
   /**
-   * Checks if this is a valid base58
-   * @param address
+   * Checks if this is a valid TRON address in any accepted representation:
+   * base58 (T...), 41-prefixed hex, or 0x-prefixed EVM-style hex (COINS-1575).
    */
   isValidAddress(address: string): boolean {
     if (!address) {
       return false;
     }
 
-    return Utils.isBase58Address(address);
+    return Utils.isBase58Address(address) || Utils.isHexAddress(address);
   }
 
   /**
-   * Checks if this is a valid hex address
+   * Checks if this is a valid hex representation of a TRON address
+   * (0x-prefixed 20-byte, or 41-prefixed 21-byte).
    * @param address hex address
    */
   isValidHexAddress(address: string): boolean {
-    return /^41[0-9a-f]{40}$/i.test(address);
+    return Utils.isHexAddress(address);
+  }
+
+  /**
+   * Convert any accepted TRON address form to canonical base58.
+   * Hex (0x... / 41...) and base58 all encode the same 21-byte address.
+   */
+  canonicalAddress(address: string): string {
+    if (!this.isValidAddress(address)) {
+      return address;
+    }
+    return Utils.getBase58AddressFromHexAddress(address);
   }
 
   /**
@@ -479,9 +491,12 @@ export class Trx extends BaseCoin {
     if (txParams.recipients && txParams.recipients.length === 1) {
       const recipient = txParams.recipients[0];
       const expectedAmount = recipient.amount.toString();
-      const expectedDestination = recipient.address;
+      // Canonicalize client-supplied address (base58 / 0x... / 41...) before comparing (COINS-1575).
+      const expectedDestination = Utils.getBase58AddressFromHexAddress(recipient.address);
       const actualAmount = value.amount.toString();
-      const actualDestination = addressesInBase58 ? value.to_address : Utils.getBase58AddressFromHex(value.to_address);
+      const actualDestination = addressesInBase58
+        ? Utils.getBase58AddressFromHexAddress(value.to_address)
+        : Utils.getBase58AddressFromHex(value.to_address);
 
       if (expectedAmount !== actualAmount) {
         throw new Error('transaction amount in txPrebuild does not match the value given by client');

@@ -140,10 +140,11 @@ export class TrxToken extends Trx {
         throw new Error('invalid required property recipients');
       }
 
-      // recipientHex has '41' hex prefix; convert to base58 for comparison
+      // recipientHex has '41' hex prefix; convert to base58 for comparison.
+      // Canonicalize the client-supplied address too so 0x... / 41... match base58 outputs (COINS-1575).
       const actualDestination = Utils.getBase58AddressFromHex(recipientHex);
       const actualAmount = transferAmount.toString();
-      const expectedDestination = recipients[0].address;
+      const expectedDestination = Utils.getBase58AddressFromHexAddress(recipients[0].address);
       const expectedAmount = recipients[0].amount.toString();
 
       if (actualAmount !== expectedAmount) {
@@ -167,7 +168,10 @@ export class TrxToken extends Trx {
       throw new Error('missing required property recipients');
     }
 
-    if (recipients[0].address === tx.outputs[0].address && recipients[0].amount === tx.outputs[0].value) {
+    // Outputs are base58; clients may pass base58, 0x..., or 41... — compare in canonical form.
+    const expectedAddress = Utils.getBase58AddressFromHexAddress(recipients[0].address);
+    const actualAddress = Utils.getBase58AddressFromHexAddress(tx.outputs[0].address);
+    if (expectedAddress === actualAddress && recipients[0].amount.toString() === tx.outputs[0].value.toString()) {
       return true;
     } else {
       throw new Error('Tx outputs does not match with expected txParams recipients');

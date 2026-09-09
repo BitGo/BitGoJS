@@ -79,26 +79,41 @@ describe('TRON:', function () {
       null,
       'xxxx',
       'YZ09fd-',
-      '412C2BA4A9FF6C53207DC5B686BFECF75EA7B805772',
-      '412C2BA4A9FF6C53207DC5B686BFECF75EA7B80',
-      'TBChwKYNaTo4a4N68Me1qEiiKsRDspXqLLZ',
+      '412C2BA4A9FF6C53207DC5B686BFECF75EA7B805772', // 43 hex chars — too long
+      '412C2BA4A9FF6C53207DC5B686BFECF75EA7B80', // too short
+      'TBChwKYNaTo4a4N68Me1qEiiKsRDspXqLLZ', // invalid base58 checksum
+      '0x341qg3922b1', // non-hex
+      '96be113992bdc3be24c11f6017085b605d253649', // bare 20-byte — not an on-chain address form
+    ];
+    // base58 and hex (0x / 41) are alternative encodings of the same address (COINS-1575)
+    const goodAddresses = [
+      'TBChwKYNaTo4a4N68Me1qEiiKsRDspXqLp',
+      'TPcf5jtYUhCN1X14tN577zF4NepbDZbxT7',
       '0x96be113992bdc3be24c11f6017085b605d253649',
-      '0x341qg3922b1',
       '41E0C0F581D7D02D40826C1C6CBEE71F625D6344D0',
       '412C2BA4A9FF6C53207DC5B686BFECF75EA7B80577',
       '418840E6C55B9ADA326D211D818C34A994AECED808',
       '412A2B9F7641D0750C1E822D0E49EF765C8106524B',
       '41A614F803B6FD780986A42C78EC9C7F77E6DED13C',
-      '418840E6C55B9ADA326D211D818C34A994AECED808',
     ];
-    const goodAddresses = ['TBChwKYNaTo4a4N68Me1qEiiKsRDspXqLp', 'TPcf5jtYUhCN1X14tN577zF4NepbDZbxT7'];
 
     badAddresses.map((addr) => {
-      assert.equal(basecoin.isValidAddress(addr), false);
+      assert.equal(basecoin.isValidAddress(addr as string), false);
     });
     goodAddresses.map((addr) => {
       assert.equal(basecoin.isValidAddress(addr), true);
     });
+  });
+
+  it('should canonicalize hex addresses to base58 (COINS-1575)', function () {
+    const base58 = 'TGai5uHgBcoLERrzDXMepqZB8Et7D8nV8K';
+    const hex41 = '414887974f42a789ef6d4dfc7ba28b1583219434b3';
+    const hex0x = '0x4887974f42a789ef6d4dfc7ba28b1583219434b3';
+
+    assert.equal(basecoin.canonicalAddress(base58), base58);
+    assert.equal(basecoin.canonicalAddress(hex41), base58);
+    assert.equal(basecoin.canonicalAddress(hex0x), base58);
+    assert.equal(basecoin.canonicalAddress('not-an-address'), 'not-an-address');
   });
 
   it('should throw if the params object is missing parameters', async function () {
