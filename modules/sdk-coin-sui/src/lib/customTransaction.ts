@@ -9,6 +9,7 @@ import { Transaction } from './transaction';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils from './utils';
 import { BaseKey, InvalidTransactionError, Recipient, TransactionRecipient, TransactionType } from '@bitgo/sdk-core';
+import BigNumber from 'bignumber.js';
 import { UNAVAILABLE_TEXT } from './constants';
 
 export class CustomTransaction extends Transaction<CustomProgrammableTransaction> {
@@ -77,7 +78,10 @@ export class CustomTransaction extends Transaction<CustomProgrammableTransaction
       value: recipient.amount,
       coin: this._coinConfig.name,
     }));
-    const totalAmount = this._recipients.reduce((accumulator, current) => accumulator + Number(current.amount), 0);
+    const totalAmount = this._recipients.reduce(
+      (accumulator, current) => accumulator.plus(current.amount),
+      new BigNumber(0)
+    );
 
     this._inputs = [
       {
@@ -169,11 +173,14 @@ export class CustomTransaction extends Transaction<CustomProgrammableTransaction
   private explainCustomTransaction(json: TxData, explanationResult: TransactionExplanation): TransactionExplanation {
     const recipients = utils.getRecipients(this.suiTransaction);
     const outputs: TransactionRecipient[] = recipients.map((recipient) => recipient);
-    const outputAmount = recipients.reduce((accumulator, current) => accumulator + Number(current.amount), 0);
+    const outputAmount = recipients.reduce(
+      (accumulator, current) => accumulator.plus(current.amount),
+      new BigNumber(0)
+    );
     return {
       ...explanationResult,
       outputs,
-      outputAmount,
+      outputAmount: outputAmount.toFixed(),
     };
   }
 }

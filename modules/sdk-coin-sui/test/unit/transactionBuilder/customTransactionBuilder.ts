@@ -107,7 +107,22 @@ describe('Sui Custom Transaction Builder', () => {
       deserialized.toBroadcastFormat().should.equal(rawTx);
     });
 
-    it('should reject a custom tx with unsupported txn type', async function () {
+    it('preserves precision when aggregating amounts above Number.MAX_SAFE_INTEGER', async function () {
+      const tx = new CustomTransaction(coins.get('tsui'));
+      tx.fromRawTransaction(CUSTOM_TX_PUBLIC_TRANSFER);
+
+      const largeAmount = '9007199254740993';
+      (tx as unknown as { _recipients: { address: string; amount: string }[] })._recipients = [
+        { address: tx.recipients[0].address, amount: largeAmount },
+        { address: tx.recipients[1].address, amount: '1' },
+      ];
+      tx.loadInputsAndOutputs();
+
+      should.equal(tx.inputs[0].value, '9007199254740994');
+      should.equal(tx.explainTransaction().outputAmount, '9007199254740994');
+    });
+
+
       should(() => factory.from(UNSUPPORTED_TX)).throwError(
         'unsupported target method 0000000000000000000000000000000000000000000000000000000000000003::staking_pool::split_staked_sui'
       );
