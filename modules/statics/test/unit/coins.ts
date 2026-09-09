@@ -1419,6 +1419,15 @@ describe('Liquid Staking Features', () => {
   });
 });
 
+describe('CSPR staking features', () => {
+  it('should not advertise STAKING for mainnet or testnet Casper', () => {
+    ['cspr', 'tcspr'].forEach((coinName) => {
+      const coin = coins.get(coinName);
+      coin.features.includes(CoinFeature.STAKING).should.eql(false);
+    });
+  });
+});
+
 describe('ADA RealFi USDr staking', () => {
   it('should have STAKING feature for stakeable USDr tokens', () => {
     ['ada:usdr', 'tada:usdr'].forEach((coinName) => {
