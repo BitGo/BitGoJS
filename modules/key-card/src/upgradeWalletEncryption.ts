@@ -81,7 +81,6 @@ export function createKeycardPdfGenerator(options: KeycardPdfGeneratorOptions = 
       bitgoKeychain,
       passphrase,
       passcodeEncryptionCode,
-      encryptionVersion: 2,
     });
     const questions = generateFaq(staticsCoin.fullName);
     return drawKeycard({ qrData, questions, walletLabel, keyCardImage });

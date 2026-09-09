@@ -3,6 +3,8 @@ import * as sinon from 'sinon';
 import 'should';
 import { Wallets } from '../../../../src/bitgo/wallet/wallets';
 import { Wallet } from '../../../../src/bitgo/wallet/wallet';
+import { makeRandomKey } from '../../../../src/bitgo/bitcoin';
+import { HIGH_ENTROPY_ENCRYPTION_VERSION } from '../../../../src/api';
 
 describe('Wallets - encryptionVersion threading', function () {
   let wallets: Wallets;
@@ -213,8 +215,10 @@ describe('Wallets - encryptionVersion threading', function () {
 
   describe('Wallet.shareWallet / createBulkWalletShare', function () {
     let wallet: Wallet;
+    let recipientPubKey: string;
 
     beforeEach(function () {
+      recipientPubKey = makeRandomKey().publicKey.toString('hex');
       const mockWalletData = {
         id: 'wallet-id',
         keys: ['key-1', 'key-2', 'key-3'],
@@ -229,9 +233,26 @@ describe('Wallets - encryptionVersion threading', function () {
       wallet = new Wallet(mockBitGo, mockBaseCoin, mockWalletData);
     });
 
-    it('shareWallet passes encryptionVersion to prepareSharedKeychain', async function () {
-      const prepareStub = sinon.stub(wallet, 'prepareSharedKeychain').resolves({});
-      mockBitGo.getSharingKey = sinon.stub().resolves({ userId: 'user-id', pubkey: 'recvPub', path: 'm/0' });
+    it('encryptPrvForUser encrypts to the ECDH secret at the high-entropy version', async function () {
+      await wallet.encryptPrvForUser('prv', 'pub', recipientPubKey, 'm/0', 2);
+
+      assert.ok(mockBitGo.encrypt.calledOnce, 'encrypt should have been called');
+      assert.strictEqual(mockBitGo.encrypt.firstCall.args[0].encryptionVersion, HIGH_ENTROPY_ENCRYPTION_VERSION);
+    });
+
+    it('preserves the encryptionVersion position before a pre-decrypted keychain', async function () {
+      await wallet.prepareSharedKeychain(undefined, recipientPubKey, 'm/0', 2, {
+        prv: 'prv',
+        pub: 'pub',
+      });
+
+      assert.strictEqual(mockBitGo.encrypt.firstCall.args[0].input, 'prv');
+      assert.strictEqual(mockBitGo.encrypt.firstCall.args[0].encryptionVersion, HIGH_ENTROPY_ENCRYPTION_VERSION);
+    });
+
+    it('shareWallet ignores a caller-supplied encryptionVersion for the shared keychain', async function () {
+      sinon.stub(wallet, 'getDecryptedKeychainForSharing').resolves({ prv: 'prv', pub: 'pub' });
+      mockBitGo.getSharingKey = sinon.stub().resolves({ userId: 'user-id', pubkey: recipientPubKey, path: 'm/0' });
       mockBitGo.post.returns({ send: sinon.stub().returns({ result: sinon.stub().resolves({}) }) });
 
       await wallet.shareWallet({
@@ -241,60 +262,55 @@ describe('Wallets - encryptionVersion threading', function () {
         encryptionVersion: 2,
       });
 
-      assert.ok(prepareStub.calledOnce, 'prepareSharedKeychain should be called');
-      assert.strictEqual(prepareStub.firstCall.args[3], 2, 'encryptionVersion should be forwarded');
+      assert.ok(mockBitGo.encrypt.calledOnce, 'encrypt should have been called');
+      assert.strictEqual(
+        mockBitGo.encrypt.firstCall.args[0].encryptionVersion,
+        HIGH_ENTROPY_ENCRYPTION_VERSION,
+        'the ECDH-keyed share must not be encrypted at the caller-requested version'
+      );
     });
 
-    it('shareWallet passes encryptionVersion: undefined when not set', async function () {
-      const prepareStub = sinon.stub(wallet, 'prepareSharedKeychain').resolves({});
-      mockBitGo.getSharingKey = sinon.stub().resolves({ userId: 'user-id', pubkey: 'recvPub', path: 'm/0' });
-      mockBitGo.post.returns({ send: sinon.stub().returns({ result: sinon.stub().resolves({}) }) });
-
-      await wallet.shareWallet({
-        email: 'test@test.com',
-        permissions: 'spend',
-        walletPassphrase: 'passphrase',
-      });
-
-      assert.ok(prepareStub.calledOnce);
-      assert.strictEqual(prepareStub.firstCall.args[3], undefined);
-    });
-
-    it('createBulkWalletShare passes encryptionVersion to encryptPrvForUser', async function () {
-      const encryptPrvStub = sinon
-        .stub(wallet, 'encryptPrvForUser')
-        .resolves({ encryptedPrv: 'enc', pub: 'pub', fromPubKey: 'fpk', toPubKey: 'tpk', path: 'm/0' });
-      sinon
-        .stub(wallet as any, 'getDecryptedKeychainForSharing')
-        .resolves({ prv: 'prv', pub: 'pub', encryptedPrv: 'encPrv' });
-      sinon.stub(wallet as any, 'createBulkKeyShares').resolves({ shares: [] });
+    it('createBulkWalletShare ignores a caller-supplied encryptionVersion for every share', async function () {
+      sinon.stub(wallet, 'getDecryptedKeychainForSharing').resolves({ prv: 'prv', pub: 'pub' });
+      sinon.stub(wallet, 'createBulkKeyShares').resolves({ shares: [] });
 
       await wallet.createBulkWalletShare({
         walletPassphrase: 'passphrase',
-        keyShareOptions: [{ userId: 'user-1', pubKey: 'pubKey', path: 'm/0', permissions: ['spend'] }],
+        keyShareOptions: [
+          { userId: 'user-1', pubKey: recipientPubKey, path: 'm/0', permissions: ['spend'] },
+          { userId: 'user-2', pubKey: recipientPubKey, path: 'm/1', permissions: ['spend'] },
+        ],
         encryptionVersion: 2,
       });
 
-      assert.ok(encryptPrvStub.calledOnce);
-      assert.strictEqual(encryptPrvStub.firstCall.args[4], 2, 'encryptionVersion should be forwarded');
+      assert.strictEqual(mockBitGo.encrypt.callCount, 2, 'each recipient gets its own encryption');
+      for (const call of mockBitGo.encrypt.getCalls()) {
+        assert.strictEqual(call.args[0].encryptionVersion, HIGH_ENTROPY_ENCRYPTION_VERSION);
+      }
     });
+  });
 
-    it('createBulkWalletShare passes encryptionVersion: undefined when not set', async function () {
-      const encryptPrvStub = sinon
-        .stub(wallet, 'encryptPrvForUser')
-        .resolves({ encryptedPrv: 'enc', pub: 'pub', fromPubKey: 'fpk', toPubKey: 'tpk', path: 'm/0' });
-      sinon
-        .stub(wallet as any, 'getDecryptedKeychainForSharing')
-        .resolves({ prv: 'prv', pub: 'pub', encryptedPrv: 'encPrv' });
-      sinon.stub(wallet as any, 'createBulkKeyShares').resolves({ shares: [] });
+  describe('Wallets.generateWallet', function () {
+    it('keeps human-passphrase encryption at the requested version and pins recovery encryption', async function () {
+      mockKeychains.createBackup = sinon.stub().resolves({ id: 'backup-key-id', pub: 'backup-pub' });
+      mockKeychains.createBitGo = sinon.stub().resolves({ id: 'bitgo-key-id', pub: 'bitgo-pub' });
+      mockBitGo.post.returns({ send: sinon.stub().returns({ result: sinon.stub().resolves({ id: 'wallet-id' }) }) });
+      mockBaseCoin.getDefaultMultisigType = sinon.stub().returns('onchain');
+      mockBaseCoin.isEVM = sinon.stub().returns(false);
+      mockBaseCoin.isValidMofNSetup = sinon.stub().returns(true);
+      mockBaseCoin.supplementGenerateWallet = sinon.stub().callsFake(async (params: unknown) => params);
+      mockBaseCoin.signMessage = sinon.stub().resolves(Buffer.from('aabbcc', 'hex'));
 
-      await wallet.createBulkWalletShare({
-        walletPassphrase: 'passphrase',
-        keyShareOptions: [{ userId: 'user-1', pubKey: 'pubKey', path: 'm/0', permissions: ['spend'] }],
+      await wallets.generateWallet({
+        label: 'Test Wallet',
+        passphrase: 'wallet-passphrase',
+        passcodeEncryptionCode: 'recovery-code',
+        encryptionVersion: 2,
       });
 
-      assert.ok(encryptPrvStub.calledOnce);
-      assert.strictEqual(encryptPrvStub.firstCall.args[4], undefined);
+      assert.strictEqual(mockBitGo.encrypt.callCount, 2);
+      assert.strictEqual(mockBitGo.encrypt.firstCall.args[0].encryptionVersion, 2);
+      assert.strictEqual(mockBitGo.encrypt.secondCall.args[0].encryptionVersion, HIGH_ENTROPY_ENCRYPTION_VERSION);
     });
   });
 });

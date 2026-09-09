@@ -1,5 +1,5 @@
 import { BaseCoin } from '@bitgo/statics';
-import { Keychain, KeychainsTriplet } from '@bitgo/sdk-core';
+import { HIGH_ENTROPY_ENCRYPTION_VERSION, Keychain, KeychainsTriplet } from '@bitgo/sdk-core';
 import { encrypt } from '@bitgo/sdk-api';
 import * as assert from 'assert';
 import {
@@ -136,10 +136,12 @@ function generateUserMasterPublicKeyQRData(publicKey: string): MasterPublicKeyQr
 async function generatePasscodeQrData(
   passphrase: string,
   passcodeEncryptionCode: string,
-  encryptionVersion?: 1 | 2,
   entityNoun: KeycardEntity = 'wallet'
 ): Promise<QrDataEntry> {
-  const encryptedPasscode = await encrypt(passcodeEncryptionCode, passphrase, { encryptionVersion });
+  // Box D uses the fixed version for its generated encryption key.
+  const encryptedPasscode = await encrypt(passcodeEncryptionCode, passphrase, {
+    encryptionVersion: HIGH_ENTROPY_ENCRYPTION_VERSION,
+  });
   const titleNoun = entityNoun === 'safe' ? 'Safe' : 'Wallet';
   return {
     title: `D: Encrypted ${titleNoun} Password`,
@@ -199,11 +201,7 @@ export async function generateQrData(params: GenerateQrDataParams): Promise<QrDa
   const qrData = buildWalletQrData(params);
 
   if (params.passphrase && params.passcodeEncryptionCode) {
-    qrData.passcode = await generatePasscodeQrData(
-      params.passphrase,
-      params.passcodeEncryptionCode,
-      params.encryptionVersion
-    );
+    qrData.passcode = await generatePasscodeQrData(params.passphrase, params.passcodeEncryptionCode);
   }
 
   return qrData;
@@ -213,11 +211,7 @@ export async function generateLightningQrData(params: GenerateLightningQrDataPar
   const qrData = buildLightningQrData(params);
 
   if (params.passphrase && params.passcodeEncryptionCode) {
-    qrData.passcode = await generatePasscodeQrData(
-      params.passphrase,
-      params.passcodeEncryptionCode,
-      params.encryptionVersion
-    );
+    qrData.passcode = await generatePasscodeQrData(params.passphrase, params.passcodeEncryptionCode);
   }
 
   return qrData;
@@ -282,12 +276,7 @@ export async function generateSafeQrData(params: GenerateSafeQrDataParams): Prom
   };
 
   if (params.passphrase && params.passcodeEncryptionCode) {
-    qrData.passcode = await generatePasscodeQrData(
-      params.passphrase,
-      params.passcodeEncryptionCode,
-      params.encryptionVersion,
-      'safe'
-    );
+    qrData.passcode = await generatePasscodeQrData(params.passphrase, params.passcodeEncryptionCode, 'safe');
   }
 
   return qrData;

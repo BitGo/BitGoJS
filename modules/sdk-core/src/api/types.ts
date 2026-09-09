@@ -20,6 +20,13 @@ export interface DecryptKeysOptions {
 export type EncryptionVersion = 1 | 2;
 
 /**
+ * Encryption version for values protected by high-entropy keys, including ECDH shared secrets and
+ * passcode encryption codes. It is independent of the caller-selected version for password-based
+ * encryption.
+ */
+export const HIGH_ENTROPY_ENCRYPTION_VERSION: EncryptionVersion = 1;
+
+/**
  * Return type for encryption session operations.
  * Runs the expensive KDF once; all subsequent calls derive keys via HKDF.
  */

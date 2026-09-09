@@ -832,6 +832,7 @@ export interface ShareWalletOptions {
    */
   skipKeychain?: boolean;
   disableEmail?: boolean;
+  /** @deprecated Ignored because the shared key is high entropy. */
   encryptionVersion?: EncryptionVersion;
   /**
    * Pre-decrypted wallet keychain. When supplied, shareWallet skips its internal
@@ -856,6 +857,7 @@ export interface BulkWalletShareOptions {
     path: string;
     permissions: string[];
   }>;
+  /** @deprecated Ignored because the shared key is high entropy. */
   encryptionVersion?: EncryptionVersion;
 }
 
