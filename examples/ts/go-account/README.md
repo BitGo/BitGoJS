@@ -69,6 +69,20 @@ Run `go-account-whitelist-list.ts` first to find the correct policy ID before up
 
 ---
 
+### Balances
+
+| Script | Description |
+|---|---|
+| `go-account-get-balance.ts` | Fetch per-currency balances (tradable, held, withdrawable) |
+
+**Optional env var:**
+
+| Variable | Description |
+|---|---|
+| `INCLUDE_UNSETTLED_IN_AVAILABLE` | Set to `true` to include unsettled trading balance in the available balance returned by the API (default: `false`) |
+
+---
+
 ### Trading
 
 | Script | Description |
@@ -119,6 +133,13 @@ OFC_WALLET_ID=your_wallet_id WHITELIST_ITEM=your_address WHITELIST_OPERATION=rem
 
 # Add a wallet ID instead of an address
 OFC_WALLET_ID=your_wallet_id WHITELIST_ITEM=target_wallet_id WHITELIST_ITEM_TYPE=walletId WHITELIST_OPERATION=add npx tsx go-account-whitelist-update.ts
+
+# --- Balances ---
+
+OFC_WALLET_ID=your_wallet_id npx tsx go-account-get-balance.ts
+
+# Show available including unsettled trading balance
+OFC_WALLET_ID=your_wallet_id INCLUDE_UNSETTLED_IN_AVAILABLE=true npx tsx go-account-get-balance.ts
 
 # --- Trading ---
 
