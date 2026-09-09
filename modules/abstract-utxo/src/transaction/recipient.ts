@@ -1,13 +1,16 @@
 import { address as wasmAddress } from '@bitgo/wasm-utxo';
 
-import { UtxoCoinName } from '../names';
+import { toWasmUtxoCoinName, UtxoCoinName, WasmUtxoCoinName } from '../names';
 
 const ScriptRecipientPrefix = 'scriptPubKey:';
 const OP_RETURN = 0x6a;
 
-/** Address/network-aware recipient conversion with overridable address decoding. */
+/** Address/network-aware recipient conversion. */
 export class AddressCodec {
-  constructor(public readonly coinName: UtxoCoinName) {}
+  constructor(
+    public readonly coinName: UtxoCoinName,
+    public readonly wasmName: WasmUtxoCoinName = toWasmUtxoCoinName(coinName)
+  ) {}
 
   /** Check if the address is a script recipient (starts with `scriptPubKey:`). */
   static isScriptRecipient(address: string): boolean {
@@ -35,7 +38,19 @@ export class AddressCodec {
   }
 
   decode(address: string): Uint8Array {
-    return wasmAddress.toOutputScriptWithCoin(address, this.coinName);
+    return wasmAddress.toOutputScriptWithCoin(address, this.wasmName);
+  }
+
+  encode(script: Uint8Array): string {
+    return wasmAddress.fromOutputScriptWithCoin(script, this.wasmName);
+  }
+
+  isValidAddress(address: string): boolean {
+    try {
+      return this.encode(this.decode(address)) === address;
+    } catch {
+      return false;
+    }
   }
 
   fromExtendedAddressFormatToScript(extendedAddress: string): Buffer {
@@ -60,9 +75,7 @@ export class AddressCodec {
   }
 
   toExtendedAddressFormat(script: Buffer): string {
-    return script[0] === OP_RETURN
-      ? `${ScriptRecipientPrefix}${script.toString('hex')}`
-      : wasmAddress.fromOutputScriptWithCoin(script, this.coinName);
+    return script[0] === OP_RETURN ? `${ScriptRecipientPrefix}${script.toString('hex')}` : this.encode(script);
   }
 }
 

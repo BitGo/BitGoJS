@@ -1,3 +1,7 @@
+import { isCoinName, type CoinName } from '@bitgo/wasm-utxo';
+
+export type WasmUtxoCoinName = CoinName;
+
 export const utxoCoinsMainnet = ['btc', 'bch', 'bcha', 'bsv', 'btg', 'dash', 'doge', 'ltc', 'pearl', 'zec'] as const;
 export const utxoCoinsTestnet = [
   'tbtc',
@@ -18,6 +22,13 @@ export const utxoCoinsTestnet = [
 export type UtxoCoinNameMainnet = (typeof utxoCoinsMainnet)[number];
 export type UtxoCoinNameTestnet = `t${UtxoCoinNameMainnet}` | 'tbtcsig' | 'tbtc4' | 'tbtcbgsig';
 export type UtxoCoinName = UtxoCoinNameMainnet | UtxoCoinNameTestnet;
+
+export function toWasmUtxoCoinName(coinName: UtxoCoinName | WasmUtxoCoinName): WasmUtxoCoinName {
+  if (!isCoinName(coinName)) {
+    throw new Error(`coin ${coinName} is not supported by wasm-utxo`);
+  }
+  return coinName;
+}
 
 export function isUtxoCoinNameMainnet(coinName: string): coinName is UtxoCoinNameMainnet {
   return utxoCoinsMainnet.includes(coinName as UtxoCoinNameMainnet);
