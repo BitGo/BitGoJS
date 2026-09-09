@@ -248,6 +248,8 @@ export interface TransactionParams extends BaseTransactionParams {
   /** Parameters for bridging intents (e.g. BTC -> sBTC peg-in), present when `type === 'bridging'`. */
   bridgingParams?: BridgingParams;
   qr?: boolean;
+  /** Zcash-only preference for resolving Unified Address recipients. */
+  unifiedRecipientPreference?: string;
 }
 
 export interface ParseTransactionOptions<TNumber extends number | bigint = number> extends BaseParseTransactionOptions {

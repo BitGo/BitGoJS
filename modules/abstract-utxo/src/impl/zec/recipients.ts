@@ -1,8 +1,12 @@
+/**
+ * @prettier
+ */
 import { fixedScriptWallet, zcashAddress } from '@bitgo/wasm-utxo';
+import { Triple } from '@bitgo/sdk-core';
 
 import { getReplayProtectionPubkeys } from '../../transaction/fixedScript/replayProtection';
 
-import { ZcashCoinName, UnifiedRecipientPreference } from './types';
+import { UnifiedRecipientPreference, ZcashCoinName } from './types';
 
 /**
  * How a recipient parsed from a Zcash PSBT is spent.
@@ -50,35 +54,53 @@ export interface PsbtRecipient {
    * The original Unified Address the client supplied for this recipient, when the PSBT stores
    * one: the v6 (Ironwood) PCZT for a shielded output, the transparent-output proprietary
    * key-value map for a v4 transparent output. `undefined` when the recipient was built from a
-   * plain address.
+   * plain address (or the single-receiver UA re-encoding is byte-identical for a shielded
+   * output).
    */
   unifiedAddress?: string;
   destination: PsbtRecipientDestination;
 }
 
+export type ResolvePsbtRecipientsOptions = {
+  /**
+   * Custom change wallet xpubs, when the transaction spends to a custom change wallet. Outputs
+   * matching these keys are classified as change, not recipients — matching how
+   * `explainPsbtWasm` treats them.
+   */
+  customChangeXpubs?: Triple<string>;
+};
+
 /**
  * Resolve the recipient list of a decoded Zcash PSBT (v4 Sapling-shaped or v6 Ironwood).
  *
  * Mirrors the recipient resolution of wallet-platform's utxo-core `buildTransaction` in the
- * decode direction: every non-wallet output with a resolvable address is a recipient. A
- * shielded output parses with `isShielded: true`, its `script` being the raw 43-byte receiver;
- * when the build stored the client's original Unified Address (the v6 PCZT for shielded
- * outputs, the transparent-output proprietary key-value map for v4), both the parsed address
- * and `unifiedAddress` report it verbatim. Opaque outputs with no address (e.g. OP_RETURN) are
- * skipped, as they carry no recipient.
+ * decode direction: every non-wallet, non-custom-change output with a resolvable address is a
+ * recipient. A shielded output parses with `isShielded: true`, its `script` being the raw
+ * 43-byte receiver; when the build stored the client's original Unified Address (the v6 PCZT for
+ * shielded outputs, the transparent-output proprietary key-value map for v4), both the parsed
+ * address and `unifiedAddress` report it verbatim. Opaque outputs with no address (e.g.
+ * OP_RETURN) are skipped, as they carry no recipient.
  */
 export function resolvePsbtRecipients(
   psbt: fixedScriptWallet.ZcashBitGoPsbt,
-  walletKeys: fixedScriptWallet.RootWalletKeys
+  walletKeys: fixedScriptWallet.RootWalletKeys,
+  opts: ResolvePsbtRecipientsOptions = {}
 ): PsbtRecipient[] {
   const parsed = psbt.parseTransactionWithWalletKeys(walletKeys, {
     replayProtection: { publicKeys: getReplayProtectionPubkeys('zec') },
   });
+  const customChangeOutputs = opts.customChangeXpubs
+    ? psbt.parseOutputsWithWalletKeys(opts.customChangeXpubs)
+    : undefined;
 
   const recipients: PsbtRecipient[] = [];
   parsed.outputs.forEach((output, i) => {
     // Wallet-owned (change) outputs.
     if (output.scriptId !== null) {
+      return;
+    }
+    // Outputs owned by the custom change wallet, if one was supplied.
+    if (customChangeOutputs?.[i]?.scriptId != null) {
       return;
     }
     // Opaque outputs (e.g. OP_RETURN) carry no recipient address.
@@ -106,20 +128,7 @@ export function resolvePsbtRecipients(
 
 /**
  * Infer the Unified-Address recipient preference for a Zcash transaction when the caller did
- * not pass one — the counterpart of wallet-platform's utxo-core `buildTransaction`
- * `classifyRecipientShieldedness`.
- *
- * A recipient that resolves to a transparent output — an ordinary transparent address, or a
- * Unified Address carrying a transparent receiver — is classified `'transparent'`; a Unified
- * Address carrying only an Orchard/Ironwood receiver is classified `'shielded'`. A mix of
- * shielded and transparent recipients is rejected. An address that is neither a transparent
- * address nor a Unified Address propagates the Unified-Address parse error — it is not
- * silently defaulted to `'transparent'`.
- *
- * @returns `'shielded'` when every recipient resolves shielded, `undefined` when every
- *   recipient resolves transparent (the build's default). The `'transparent'` arm of the
- *   return type exists so callers can pass the explicit preference through unchanged; this
- *   function itself never returns `'transparent'`.
+ * not pass one. A mix of shielded and transparent recipients is rejected.
  */
 export function getUnifiedRecipientPreference(
   name: ZcashCoinName,
@@ -127,17 +136,11 @@ export function getUnifiedRecipientPreference(
 ): UnifiedRecipientPreference | undefined {
   const shieldedness = recipients.map((recipient) => {
     if (recipient.address === undefined) {
-      // Raw script inherently transparent.
       return 'transparent' as const;
     }
-    // Ordinary transparent address, or a Unified Address carrying a transparent receiver:
-    // resolves transparently either way (the build's default when no preference is given).
     if (zcashAddress.hasTransparentReceiver(recipient.address, name)) {
       return 'transparent' as const;
     }
-    // A shielded (Orchard/Ironwood-only) Unified Address is the only remaining resolvable
-    // form. An address that is none of the above propagates the parse error instead of
-    // assuming a default.
     const unified = fixedScriptWallet.ZcashUnifiedAddress.parse(recipient.address, name);
     if (unified.hasOrchardReceiver) {
       return 'shielded' as const;

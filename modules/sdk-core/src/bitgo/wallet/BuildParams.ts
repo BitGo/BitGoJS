@@ -39,6 +39,8 @@ export const BuildParamsUTXO = t.partial({
   isReplaceableByFee: t.boolean,
   messages: t.array(Bip322Message),
   qr: t.boolean,
+  /* Zcash-only: how to resolve a Unified Address recipient ('shielded' or transparent) */
+  unifiedRecipientPreference: t.union([t.literal('transparent'), t.literal('shielded')]),
 });
 
 export const BuildParamsStacks = t.partial({
