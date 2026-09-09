@@ -17,7 +17,6 @@ import {
   AccountAuthenticatorNoAccountAuthenticator,
   Aptos,
   AptosConfig,
-  DEFAULT_MAX_GAS_AMOUNT,
   Ed25519PublicKey,
   Ed25519Signature,
   FeePayerRawTransaction,
@@ -34,11 +33,24 @@ import {
   TransactionAuthenticatorFeePayer,
   TransactionPayload,
 } from '@aptos-labs/ts-sdk';
-import { DEFAULT_GAS_UNIT_PRICE, UNAVAILABLE_TEXT } from '../constants';
+import {
+  DEFAULT_GAS_UNIT_PRICE,
+  DEFAULT_MAX_GAS_AMOUNT,
+  SIMULATION_GAS_BUFFER,
+  SIMULATION_MAX_GAS_AMOUNT,
+  UNAVAILABLE_TEXT,
+} from '../constants';
 import utils from '../utils';
 import BigNumber from 'bignumber.js';
 import { AptTransactionExplanation, TxData } from '../iface';
 import assert from 'assert';
+
+export function calculateDynamicMaxGasAmount(gasUsed: number): number {
+  if (!Number.isFinite(gasUsed) || gasUsed < 0) {
+    throw new Error('Invalid gas estimate');
+  }
+  return Math.max(DEFAULT_MAX_GAS_AMOUNT, Math.ceil(gasUsed * SIMULATION_GAS_BUFFER));
+}
 
 export type InputsAndOutputs = {
   /** Used for this.inputs */
@@ -63,6 +75,8 @@ export abstract class Transaction extends BaseTransaction {
   protected _feePayerAddress: string;
   protected _assetId: string;
   protected _isSimulateTxn: boolean;
+  protected _dynamicGasEstimation: boolean;
+  protected _gasDataProvided: boolean;
 
   static EMPTY_PUBLIC_KEY = Buffer.alloc(32);
   static EMPTY_SIGNATURE = Buffer.alloc(64);
@@ -78,6 +92,8 @@ export abstract class Transaction extends BaseTransaction {
     this._recipients = [];
     this._assetId = AccountAddress.ZERO.toString();
     this._isSimulateTxn = false;
+    this._dynamicGasEstimation = false;
+    this._gasDataProvided = false;
     this._senderSignature = {
       publicKey: {
         pub: Hex.fromHexInput(Transaction.EMPTY_PUBLIC_KEY).toString(),
@@ -192,6 +208,18 @@ export abstract class Transaction extends BaseTransaction {
 
   set isSimulateTxn(value: boolean) {
     this._isSimulateTxn = value;
+  }
+
+  get dynamicGasEstimation(): boolean {
+    return this._dynamicGasEstimation;
+  }
+
+  set dynamicGasEstimation(value: boolean) {
+    this._dynamicGasEstimation = value;
+  }
+
+  markGasDataProvided(): void {
+    this._gasDataProvided = true;
   }
 
   protected abstract getTransactionPayloadData(): InputGenerateTransactionPayloadData;
@@ -373,22 +401,48 @@ export abstract class Transaction extends BaseTransaction {
     };
   }
 
+  public createAptos(network: Network): Aptos {
+    return new Aptos(new AptosConfig({ network }));
+  }
+
   protected async buildRawTransaction(): Promise<void> {
     const network: Network = this._coinConfig.network.type === NetworkType.MAINNET ? Network.MAINNET : Network.TESTNET;
-    const aptos = new Aptos(new AptosConfig({ network }));
+    const aptos = this.createAptos(network);
     const senderAddress = AccountAddress.fromString(this._sender);
+    const data = this.getTransactionPayloadData() as InputGenerateTransactionPayloadData;
+    const maxGasAmount = this._dynamicGasEstimation && !this._gasDataProvided
+      ? SIMULATION_MAX_GAS_AMOUNT
+      : this.maxGasAmount;
 
-    const simpleTxn = await aptos.transaction.build.simple({
-      sender: senderAddress,
-      data: this.getTransactionPayloadData() as InputGenerateTransactionPayloadData,
-      options: {
-        maxGasAmount: this.maxGasAmount,
-        gasUnitPrice: this.gasUnitPrice,
-        expireTimestamp: this.expirationTime,
-        accountSequenceNumber: this.sequenceNumber,
-      },
-    });
-    this._rawTransaction = simpleTxn.rawTransaction;
+    const build = (gas: number) =>
+      aptos.transaction.build.simple({
+        sender: senderAddress,
+        data,
+        options: {
+          maxGasAmount: gas,
+          gasUnitPrice: this.gasUnitPrice,
+          expireTimestamp: this.expirationTime,
+          accountSequenceNumber: this.sequenceNumber,
+        },
+      });
+
+    const simpleTxn = await build(maxGasAmount);
+    if (!this._dynamicGasEstimation || this._gasDataProvided) {
+      this._rawTransaction = simpleTxn.rawTransaction;
+      return;
+    }
+
+    try {
+      const [simulation] = await aptos.transaction.simulate.simple({ transaction: simpleTxn });
+      const gasUsed = Number(simulation?.gas_used);
+      this._maxGasAmount = calculateDynamicMaxGasAmount(gasUsed);
+      const estimatedTxn = await build(this._maxGasAmount);
+      this._rawTransaction = estimatedTxn.rawTransaction;
+    } catch {
+      this._maxGasAmount = DEFAULT_MAX_GAS_AMOUNT;
+      const fallbackTxn = await build(this._maxGasAmount);
+      this._rawTransaction = fallbackTxn.rawTransaction;
+    }
   }
 
   private getSignablePayloadWithFeePayer(): Buffer {

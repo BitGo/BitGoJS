@@ -92,6 +92,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.transaction.maxGasAmount = gasData.maxGasAmount;
     this.transaction.gasUnitPrice = gasData.gasUnitPrice;
     this.transaction.gasUsed = gasData.gasUsed ?? 0;
+    this.transaction.markGasDataProvided();
     return this;
   }
 
@@ -123,6 +124,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   setIsSimulateTxn(value: boolean): void {
     this.transaction.isSimulateTxn = value;
+  }
+
+  /**
+   * Opt in to Aptos REST transaction simulation for a gas limit estimate.
+   * Explicit gasData always takes precedence over this option.
+   */
+  setDynamicGasEstimation(value = true): void {
+    this.transaction.dynamicGasEstimation = value;
   }
 
   /** @inheritdoc */
