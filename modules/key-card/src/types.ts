@@ -25,6 +25,7 @@ export interface GenerateQrDataCoinParams {
   // If both the passphrase and passcodeEncryptionCode are passed, then this code encrypts the passphrase with the
   // passcodeEncryptionCode and puts the result into Box D. Allows recoveries of the wallet password.
   passphrase?: string;
+  /** @deprecated Ignored because Box D uses a high-entropy key. */
   encryptionVersion?: EncryptionVersion;
 }
 

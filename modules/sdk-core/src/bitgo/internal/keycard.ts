@@ -6,7 +6,7 @@
  */
 import { isUndefined } from 'lodash';
 import { Keychain } from '../keychain';
-import { EncryptFnAsync, EncryptionVersion } from '../../api';
+import { EncryptFnAsync, EncryptionVersion, HIGH_ENTROPY_ENCRYPTION_VERSION } from '../../api';
 
 /**
  * Return the list of questions that will appear on the second page of the keycard
@@ -194,10 +194,11 @@ async function getKeyData(options: GetKeyDataOptions): Promise<any> {
 
   let encryptedWalletPasscode: string | undefined;
   if (passphrase && passcodeEncryptionCode) {
+    // Box D uses its fixed version; the backup key follows encryptionVersion.
     encryptedWalletPasscode = await encrypt({
       input: passphrase,
       password: passcodeEncryptionCode,
-      encryptionVersion,
+      encryptionVersion: HIGH_ENTROPY_ENCRYPTION_VERSION,
     });
   }
 
@@ -373,7 +374,8 @@ function renderKeycardPdf(options: DrawKeycardLayoutOptions, keyData: any): any 
 
 /**
  * Draw a keycard into a new pdf document object.
- * Defaults to v2 (Argon2id) encryption for Box D; pass `encryptionVersion: 1` for legacy v1.
+ *
+ * `encryptionVersion` applies to the backup key. Box D uses its fixed version.
  * @param options
  */
 export async function drawKeycard(options: DrawKeycardOptions): Promise<any> {

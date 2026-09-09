@@ -8,7 +8,7 @@ import BigNumber from 'bignumber.js';
 import * as t from 'io-ts';
 import { BigIntFromString } from 'io-ts-types';
 import * as _ from 'lodash';
-import { EncryptionVersion, IRequestTracer } from '../../api';
+import { EncryptionVersion, HIGH_ENTROPY_ENCRYPTION_VERSION, IRequestTracer } from '../../api';
 import * as common from '../../common';
 import { AddressBook, IAddressBook } from '../address-book';
 import {
@@ -2043,7 +2043,7 @@ export class Wallet implements IWallet {
    * @param pub - The wallet's public key
    * @param userPubkey - The recipient user's public key
    * @param path - The key path
-   * @param encryptionVersion - Optional encryption version (defaults to v2)
+   * @param encryptionVersion - Deprecated and ignored because the shared key is high entropy.
    * @returns The encrypted keychain for the recipient with all required fields
    */
   async encryptPrvForUser(
@@ -2051,11 +2051,18 @@ export class Wallet implements IWallet {
     pub: string,
     userPubkey: string,
     path: string,
+    /** @deprecated Ignored because the shared key is high entropy. */
     encryptionVersion?: EncryptionVersion
   ): Promise<BulkWalletShareKeychain> {
+    void encryptionVersion;
     const eckey = makeRandomKey();
     const secret = getSharedSecret(eckey, Buffer.from(userPubkey, 'hex')).toString('hex');
-    const newEncryptedPrv = await this.bitgo.encrypt({ password: secret, input: decryptedPrv, encryptionVersion });
+    // Use the fixed version for encryption to the recipient.
+    const newEncryptedPrv = await this.bitgo.encrypt({
+      password: secret,
+      input: decryptedPrv,
+      encryptionVersion: HIGH_ENTROPY_ENCRYPTION_VERSION,
+    });
 
     const keychain: BulkWalletShareKeychain = {
       pub,
@@ -2093,12 +2100,15 @@ export class Wallet implements IWallet {
    * @param walletPassphrase - The passphrase to decrypt the keychain
    * @param pubkey - The recipient's public key
    * @param path - The key path
+   * @param encryptionVersion - Deprecated and ignored because the shared key is high entropy.
+   * @param decryptedKeychain - Pre-decrypted keychain for bulk sharing
    * @returns The encrypted keychain for the recipient
    */
   async prepareSharedKeychain(
     walletPassphrase: string | undefined,
     pubkey: string,
     path: string,
+    /** @deprecated Ignored because the shared key is high entropy. */
     encryptionVersion?: EncryptionVersion,
     decryptedKeychain?: DecryptedKeychainData
   ): Promise<SharedKeyChain> {
@@ -3453,7 +3463,7 @@ export class Wallet implements IWallet {
 
   /**
    * Creates and downloads PDF keycard for wallet (requires response from wallets.generateWallet).
-   * Defaults to v2 encryption for Box D; pass `encryptionVersion: 1` for legacy v1.
+   * `encryptionVersion` applies to the backup key. Box D uses its fixed version.
    *
    * Note: this is example code and is not the version used on bitgo.com
    *

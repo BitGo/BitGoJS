@@ -7,7 +7,7 @@ import { bip32 } from '@bitgo/utxo-lib';
 import * as _ from 'lodash';
 import { CoinFeature } from '@bitgo/statics';
 
-import { EncryptionVersion, IEncryptionSession, sanitizeLegacyPath } from '../../api';
+import { EncryptionVersion, HIGH_ENTROPY_ENCRYPTION_VERSION, IEncryptionSession, sanitizeLegacyPath } from '../../api';
 import * as common from '../../common';
 import { IBaseCoin, KeychainsTriplet, SupplementGenerateWalletOptions } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
@@ -171,6 +171,19 @@ export class Wallets implements IWallets {
     return {
       wallet: new Wallet(this.bitgo, this.baseCoin, newWallet),
     };
+  }
+
+  /**
+   * Encrypt the wallet passphrase for recovery and Box D.
+   *
+   * Box D uses a fixed version independent of the caller's keychain encryption version.
+   */
+  private async encryptPassphraseForRecovery(passphrase: string, passcodeEncryptionCode: string): Promise<string> {
+    return await this.bitgo.encrypt({
+      input: passphrase,
+      password: passcodeEncryptionCode,
+      encryptionVersion: HIGH_ENTROPY_ENCRYPTION_VERSION,
+    });
   }
 
   private async generateLightningWallet(params: GenerateLightningWalletOptions): Promise<LightningWalletWithKeychains> {
@@ -341,11 +354,10 @@ export class Wallets implements IWallets {
       );
 
       const walletData = await this.generateLightningWallet(options);
-      walletData.encryptedWalletPassphrase = await this.bitgo.encrypt({
-        input: options.passphrase,
-        password: options.passcodeEncryptionCode,
-        encryptionVersion: options.encryptionVersion,
-      });
+      walletData.encryptedWalletPassphrase = await this.encryptPassphraseForRecovery(
+        options.passphrase,
+        options.passcodeEncryptionCode
+      );
       return walletData;
     }
 
@@ -362,11 +374,10 @@ export class Wallets implements IWallets {
 
       const walletData = await this.generateGoAccountWallet(options);
       if (options.passphrase !== undefined && options.passcodeEncryptionCode !== undefined) {
-        walletData.encryptedWalletPassphrase = await this.bitgo.encrypt({
-          input: options.passphrase,
-          password: options.passcodeEncryptionCode,
-          encryptionVersion: options.encryptionVersion,
-        });
+        walletData.encryptedWalletPassphrase = await this.encryptPassphraseForRecovery(
+          options.passphrase,
+          options.passcodeEncryptionCode
+        );
       }
       return walletData;
     }
@@ -472,11 +483,10 @@ export class Wallets implements IWallets {
         encryptionVersion: params.encryptionVersion,
       });
       if (params.passcodeEncryptionCode) {
-        walletData.encryptedWalletPassphrase = await this.bitgo.encrypt({
-          input: passphrase,
-          password: params.passcodeEncryptionCode,
-          encryptionVersion: params.encryptionVersion,
-        });
+        walletData.encryptedWalletPassphrase = await this.encryptPassphraseForRecovery(
+          passphrase,
+          params.passcodeEncryptionCode
+        );
       }
       return walletData;
     }
@@ -745,11 +755,10 @@ export class Wallets implements IWallets {
       }
 
       if (canEncrypt && params.passcodeEncryptionCode) {
-        result.encryptedWalletPassphrase = await this.bitgo.encrypt({
-          input: passphrase,
-          password: params.passcodeEncryptionCode,
-          encryptionVersion: params.encryptionVersion,
-        });
+        result.encryptedWalletPassphrase = await this.encryptPassphraseForRecovery(
+          passphrase,
+          params.passcodeEncryptionCode
+        );
       }
 
       return result;

@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import * as should from 'should';
 import { decrypt } from '@bitgo/sdk-api';
 import { generateLightningQrData, generateQrData } from '../../src/generateQrData';
-import { ApiKeyShare, Keychain, KeyType } from '@bitgo/sdk-core';
+import { ApiKeyShare, HIGH_ENTROPY_ENCRYPTION_VERSION, Keychain, KeyType } from '@bitgo/sdk-core';
 import { coins } from '@bitgo/statics';
 
 function createKeychain({
@@ -241,7 +241,7 @@ describe('generateQrData', function () {
     decryptedData.should.equal(passphrase);
   });
 
-  it('produces a v2 Box D when encryptionVersion is not set', async function () {
+  it('pins Box D to the high-entropy version when encryptionVersion is not set', async function () {
     const passphrase = 'testingIsFun';
     const passcodeEncryptionCode = '123456';
     const qrData = await generateQrData({
@@ -255,10 +255,10 @@ describe('generateQrData', function () {
 
     assert.ok(qrData.passcode);
     const envelope = JSON.parse(qrData.passcode.data);
-    assert.strictEqual(envelope.v, 2, 'should default to v2 envelope');
+    assert.strictEqual(envelope.v, HIGH_ENTROPY_ENCRYPTION_VERSION, 'should use the high-entropy envelope version');
   });
 
-  it('produces a v2 Box D when encryptionVersion: 2', async function () {
+  it('pins Box D to the high-entropy version when encryptionVersion: 2', async function () {
     const passphrase = 'testingIsFun';
     const passcodeEncryptionCode = '123456';
     const qrData = await generateQrData({
@@ -273,12 +273,12 @@ describe('generateQrData', function () {
 
     assert.ok(qrData.passcode);
     const envelope = JSON.parse(qrData.passcode.data);
-    assert.strictEqual(envelope.v, 2, 'should produce v2 envelope');
+    assert.strictEqual(envelope.v, HIGH_ENTROPY_ENCRYPTION_VERSION, 'should ignore the caller-selected version');
     const decryptedData = await decrypt(passcodeEncryptionCode, qrData.passcode.data);
     decryptedData.should.equal(passphrase);
   });
 
-  it('produces a v1 Box D when encryptionVersion: 1 is explicit', async function () {
+  it('pins Box D to the high-entropy version when encryptionVersion: 1', async function () {
     const passphrase = 'testingIsFun';
     const passcodeEncryptionCode = '123456';
     const qrData = await generateQrData({
@@ -293,7 +293,7 @@ describe('generateQrData', function () {
 
     assert.ok(qrData.passcode);
     const envelope = JSON.parse(qrData.passcode.data);
-    assert.notStrictEqual(envelope.v, 2, 'should produce v1 envelope');
+    assert.strictEqual(envelope.v, HIGH_ENTROPY_ENCRYPTION_VERSION, 'should use the high-entropy envelope version');
   });
 
   it('omits Box D when passphrase or passcodeEncryptionCode is missing', async function () {
@@ -324,7 +324,7 @@ describe('generateLightningQrData', function () {
     decryptedData.should.equal(passphrase);
   });
 
-  it('produces a v2 Box D when encryptionVersion: 2', async function () {
+  it('pins Lightning Box D to the high-entropy version when encryptionVersion: 2', async function () {
     const passphrase = 'testingIsFun';
     const passcodeEncryptionCode = '123456';
     const qrData = await generateLightningQrData({
@@ -337,7 +337,7 @@ describe('generateLightningQrData', function () {
 
     assert.ok(qrData.passcode);
     const envelope = JSON.parse(qrData.passcode.data);
-    assert.strictEqual(envelope.v, 2);
+    assert.strictEqual(envelope.v, HIGH_ENTROPY_ENCRYPTION_VERSION, 'should ignore the caller-selected version');
     const decryptedData = await decrypt(passcodeEncryptionCode, qrData.passcode.data);
     decryptedData.should.equal(passphrase);
   });
