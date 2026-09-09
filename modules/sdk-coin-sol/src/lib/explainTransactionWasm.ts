@@ -5,6 +5,7 @@ import {
   ZK_ELGAMAL_PROOF_PROGRAM_ID,
   CT_EXT_DISCRIMINATOR,
   CT_SUB_DISCRIMINATORS,
+  TOKEN_ACL_PROGRAM_ID,
 } from './constants';
 import { StakingAuthorizeParams, TransactionExplanation as SolLibTransactionExplanation } from './iface';
 import { findTokenName } from './instructionParamsFactory';
@@ -117,6 +118,18 @@ function isWasmConfidentialTransferInstruction(instr: InstructionParams): boolea
   return false;
 }
 
+/**
+ * Returns true if a WASM-parsed Unknown instruction is a Token ACL permissionless
+ * thaw instruction (sRFC-37 Token ACL program).
+ *
+ * The wasm parser does not know the Token ACL program, so ThawPermissionlessIdempotent
+ * instructions parse as Unknown. Mirrors the JS-side `getInstructionType` case for
+ * TOKEN_ACL_PROGRAM_ID in lib/utils.ts.
+ */
+function isWasmTokenAclThawInstruction(instr: InstructionParams): boolean {
+  return instr.type === 'Unknown' && instr.programId === TOKEN_ACL_PROGRAM_ID;
+}
+
 function deriveTransactionType(
   instructions: InstructionParams[],
   combined: CombinedPattern | null,
@@ -131,8 +144,8 @@ function deriveTransactionType(
   if (instructions.some((i) => i.type === 'StakePoolDepositSol')) return TransactionType.StakingActivate;
   if (instructions.some((i) => i.type === 'StakePoolWithdrawStake')) return TransactionType.StakingDeactivate;
 
-  // ATA-only transactions (ignoring boilerplate)
-  const meaningful = instructions.filter((i) => !BOILERPLATE_TYPES.has(i.type));
+  // ATA-only transactions (ignoring boilerplate and Token ACL permissionless thaw)
+  const meaningful = instructions.filter((i) => !BOILERPLATE_TYPES.has(i.type) && !isWasmTokenAclThawInstruction(i));
   if (meaningful.length > 0 && meaningful.every((i) => i.type === 'CreateAssociatedTokenAccount')) {
     return TransactionType.AssociatedTokenAccountInitialization;
   }
@@ -145,7 +158,8 @@ function deriveTransactionType(
   if (instructions.some((i) => i.type === 'Unknown' && isWasmConfidentialTransferInstruction(i))) {
     return TransactionType.ConfidentialTransfer;
   }
-  if (instructions.some((i) => i.type === 'Unknown')) return TransactionType.CustomTx;
+  if (instructions.some((i) => i.type === 'Unknown' && !isWasmTokenAclThawInstruction(i)))
+    return TransactionType.CustomTx;
 
   // Send requires an explicit Transfer or TokenTransfer instruction.
   // Everything else is a custom/unrecognized transaction.
