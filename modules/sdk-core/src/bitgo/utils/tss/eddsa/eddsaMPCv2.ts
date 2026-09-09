@@ -402,7 +402,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     return { ...(await keychains.add(keychainParams)), reducedEncryptedPrv };
   }
 
-  private async addUserKeychain(
+  protected async addUserKeychain(
     commonKeychain: string,
     privateMaterial: Buffer,
     reducedPrivateMaterial: Buffer,
@@ -427,7 +427,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     );
   }
 
-  private async addBackupKeychain(
+  protected async addBackupKeychain(
     commonKeychain: string,
     privateMaterial: Buffer,
     reducedPrivateMaterial: Buffer,
@@ -451,7 +451,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     );
   }
 
-  private async addBitgoKeychain(commonKeychain: string, safeId?: string): Promise<Keychain> {
+  protected async addBitgoKeychain(commonKeychain: string, safeId?: string): Promise<Keychain> {
     return this.createParticipantKeychain(
       MPCv2PartiesEnum.BITGO,
       commonKeychain,
@@ -1080,7 +1080,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
 
   // #region retrofit
 
-  private async getUserAndBackupSession(retrofit?: DecryptedRetrofitPayload): Promise<{
+  protected async getUserAndBackupSession(retrofit?: DecryptedRetrofitPayload): Promise<{
     userDkg: EddsaMPSDkg.DKG;
     backupDkg: EddsaMPSDkg.DKG;
   }> {

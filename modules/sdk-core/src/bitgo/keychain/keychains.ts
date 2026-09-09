@@ -410,13 +410,17 @@ export class Keychains implements IKeychains {
       throw new SafeMpcCeremonyUnsupportedError(this.baseCoin.getFamily());
     }
 
+    // A safeId on a keygen ceremony selects the VRF variant, which additionally runs the
+    // VRF DKG alongside the signing DKG. Ordinary TSS wallet creation never sets safeId
+    // and keeps the plain MPCv2 flow.
     let MpcUtils;
     if (this.baseCoin.getMPCAlgorithm() === 'eddsa') {
-      MpcUtils = isMPCv2 ? EDDSAUtils.EddsaMPCv2Utils : EDDSAUtils.default;
+      MpcUtils = isMPCv2
+        ? params.safeId
+          ? EDDSAUtils.EddsaVrfMPCv2Utils
+          : EDDSAUtils.EddsaMPCv2Utils
+        : EDDSAUtils.default;
     } else {
-      // A safeId on a keygen ceremony selects the VRF variant, which additionally runs the
-      // VRF DKG alongside the signing DKG. Ordinary TSS wallet creation never sets safeId
-      // and keeps the plain MPCv2 flow.
       MpcUtils = isMPCv2
         ? params.safeId
           ? ECDSAUtils.EcdsaVrfMPCv2Utils

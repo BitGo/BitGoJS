@@ -15,6 +15,7 @@ export {
 } from '../baseTypes';
 
 export * from './eddsaMPCv2';
+export * from './eddsaVrfMPCv2';
 export * from './eddsaMPCv2KeyGenSender';
 export * from './typesEddsaMPCv2';
 export * from './SMC/utils';
