@@ -14,13 +14,7 @@ import {
   UtxoNamedKeychains,
 } from '../../keychains';
 import { verifyKeySignature } from '../../verifyKey';
-import {
-  assertValidTransactionRecipient,
-  fromExtendedAddressFormatToScript,
-  isScriptRecipient,
-  toExtendedAddressFormat,
-  toOutputScript,
-} from '../recipient';
+import { AddressCodec } from '../recipient';
 import { ComparableOutput, ExpectedOutput, outputDifference } from '../outputDifference';
 import { toTNumber } from '../../tnumber';
 
@@ -39,9 +33,9 @@ function toCanonicalTransactionRecipient(
   address: string;
 } {
   const amount = BigInt(output.valueString);
-  assertValidTransactionRecipient({ amount, address: output.address });
+  AddressCodec.assertValidTransactionRecipient({ amount, address: output.address });
   assert(output.address, 'address is required');
-  if (isScriptRecipient(output.address)) {
+  if (AddressCodec.isScriptRecipient(output.address)) {
     return { amount, address: output.address };
   }
   return { amount, address: coin.canonicalAddress(output.address) };
@@ -49,7 +43,8 @@ function toCanonicalTransactionRecipient(
 
 async function parseRbfTransaction<TNumber extends bigint | number>(
   coin: AbstractUtxoCoin,
-  params: ParseTransactionOptions<TNumber>
+  params: ParseTransactionOptions<TNumber>,
+  addressCodec: AddressCodec = new AddressCodec(coin.name)
 ): Promise<ParsedTransaction<TNumber>> {
   const { txParams, wallet } = params;
 
@@ -68,18 +63,22 @@ async function parseRbfTransaction<TNumber extends bigint | number>(
   );
 
   // Recurse into parseTransaction with the derived recipients and without rbfTxIds
-  return parseTransaction(coin, {
-    ...params,
-    txParams: {
-      ...txParams,
-      recipients,
-      rbfTxIds: undefined,
+  return parseTransaction(
+    coin,
+    {
+      ...params,
+      txParams: {
+        ...txParams,
+        recipients,
+        rbfTxIds: undefined,
+      },
     },
-  });
+    addressCodec
+  );
 }
 
 function toExpectedOutputs(
-  coin: AbstractUtxoCoin,
+  addressCodec: AddressCodec,
   txParams: {
     recipients?: ITransactionRecipient[];
     allowExternalChangeAddress?: boolean;
@@ -95,21 +94,21 @@ function toExpectedOutputs(
       }
       return [
         {
-          script: toOutputScript(output, coin.name),
+          script: addressCodec.toOutputScript(output),
           value: output.amount === 'max' ? 'max' : BigInt(output.amount),
         },
       ];
     }
     return [
       {
-        script: fromExtendedAddressFormatToScript(output.address, coin.name),
+        script: addressCodec.fromExtendedAddressFormatToScript(output.address),
         value: output.amount === 'max' ? 'max' : BigInt(output.amount),
       },
     ];
   });
   if (txParams.allowExternalChangeAddress && txParams.changeAddress) {
     expectedOutputs.push({
-      script: toOutputScript(txParams.changeAddress, coin.name),
+      script: addressCodec.toOutputScript(txParams.changeAddress),
       // When an external change address is explicitly specified, count all outputs going towards that
       // address in the expected outputs (regardless of the output amount)
       value: 'max',
@@ -136,13 +135,14 @@ function verifyCustomChangeKeys(userKeychain: UtxoKeychain, customChange: Custom
 
 export async function parseTransaction<TNumber extends bigint | number>(
   coin: AbstractUtxoCoin,
-  params: ParseTransactionOptions<TNumber>
+  params: ParseTransactionOptions<TNumber>,
+  addressCodec: AddressCodec = new AddressCodec(coin.name)
 ): Promise<ParsedTransaction<TNumber>> {
   const { txParams, txPrebuild, wallet, verification = {}, reqId } = params;
 
   // Branch off early for RBF transactions
   if (txParams.rbfTxIds) {
-    return parseRbfTransaction(coin, params);
+    return parseRbfTransaction(coin, params, addressCodec);
   }
 
   if (!_.isUndefined(verification.disableNetworking) && !_.isBoolean(verification.disableNetworking)) {
@@ -170,7 +170,7 @@ export async function parseTransaction<TNumber extends bigint | number>(
     throw new Error('missing required txPrebuild property txHex');
   }
 
-  const expectedOutputs = toExpectedOutputs(coin, txParams);
+  const expectedOutputs = toExpectedOutputs(addressCodec, txParams);
 
   // get the keychains from the custom change wallet if needed
   let customChange: CustomChangeOptions | undefined;
@@ -229,6 +229,7 @@ export async function parseTransaction<TNumber extends bigint | number>(
         verification,
         keychainArray: toKeychainTriple(keychains),
         wallet,
+        addressCodec,
         txParams: {
           recipients: txParams.recipients ?? [],
           changeAddress: txParams.changeAddress,
@@ -247,7 +248,7 @@ export async function parseTransaction<TNumber extends bigint | number>(
 
   function toComparableOutputsWithExternal(outputs: Output[]): ComparableOutputWithExternal<bigint | 'max'>[] {
     return outputs.map((output) => ({
-      script: fromExtendedAddressFormatToScript(output.address, coin.name),
+      script: addressCodec.fromExtendedAddressFormatToScript(output.address),
       value: output.amount === 'max' ? 'max' : (BigInt(output.amount) as bigint | 'max'),
       external: output.external,
     }));
@@ -287,7 +288,7 @@ export async function parseTransaction<TNumber extends bigint | number>(
 
   function toOutputs(outputs: ExpectedOutput[] | ComparableOutputWithExternal<bigint | 'max'>[]): Output[] {
     return outputs.map((output) => ({
-      address: toExtendedAddressFormat(output.script, coin.name),
+      address: addressCodec.toExtendedAddressFormat(output.script),
       amount: output.value.toString(),
       external: output.external,
     }));

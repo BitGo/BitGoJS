@@ -14,7 +14,7 @@ import {
 
 import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
 import { Output, FixedScriptWalletOutput } from '../types';
-import { fromExtendedAddressFormatToScript } from '../recipient';
+import type { AddressCodec } from '../recipient';
 
 const debug = debugLib('bitgo:v2:parseoutput');
 
@@ -199,6 +199,7 @@ export interface ParseOutputOptions {
   verification: VerificationOptions;
   keychainArray: Triple<{ pub: string }>;
   wallet: IWallet;
+  addressCodec: AddressCodec;
   txParams: {
     recipients: ITransactionRecipient[];
     changeAddress?: string;
@@ -214,6 +215,7 @@ export async function parseOutput({
   verification,
   keychainArray,
   wallet,
+  addressCodec,
   txParams,
   customChange,
   reqId,
@@ -280,9 +282,9 @@ export async function parseOutput({
      */
     if (txParams.recipients !== undefined && txParams.recipients.length > RECIPIENT_THRESHOLD) {
       const isCurrentAddressInRecipients = txParams.recipients.some((recipient) =>
-        fromExtendedAddressFormatToScript(recipient.address, coin.name).equals(
-          fromExtendedAddressFormatToScript(currentAddress, coin.name)
-        )
+        addressCodec
+          .fromExtendedAddressFormatToScript(recipient.address)
+          .equals(addressCodec.fromExtendedAddressFormatToScript(currentAddress))
       );
 
       if (isCurrentAddressInRecipients) {

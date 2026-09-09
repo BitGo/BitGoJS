@@ -3,13 +3,14 @@ import assert from 'assert';
 import * as testutils from '@bitgo/wasm-utxo/testutils';
 
 import { verifyTransaction } from '../../../../src/transaction/descriptor/verifyTransaction';
-import { toExtendedAddressFormat } from '../../../../src/transaction/recipient';
+import { AddressCodec } from '../../../../src/transaction/recipient';
 import { getUtxoCoin } from '../../util';
 
 const { getDefaultXPubs, getDescriptor, getDescriptorMap, mockPsbt } = testutils.descriptor;
 
 describe('descriptor verifyTransaction - quantum-resistant sweep', function () {
   const coin = getUtxoCoin('tbtc');
+  const addressCodec = new AddressCodec(coin.name);
 
   const xpubsSelf = getDefaultXPubs('a');
   const xpubsOther = getDefaultXPubs('b');
@@ -46,7 +47,7 @@ describe('descriptor verifyTransaction - quantum-resistant sweep', function () {
   it('should reject when external outputs exist and qr is true', async function () {
     const psbt = buildPsbtWithExternal();
     const externalScript = Buffer.from(descriptorOther.atDerivationIndex(0).scriptPubkey());
-    const externalAddress = toExtendedAddressFormat(externalScript, 'tbtc');
+    const externalAddress = new AddressCodec(coin.name).toExtendedAddressFormat(externalScript);
 
     await assert.rejects(
       verifyTransaction(
@@ -59,7 +60,8 @@ describe('descriptor verifyTransaction - quantum-resistant sweep', function () {
           txPrebuild: { txHex: Buffer.from(psbt.serialize()).toString('hex') },
           wallet: {} as any,
         },
-        descriptorMap
+        descriptorMap,
+        addressCodec
       ),
       /quantum-resistant sweep transactions must only contain wallet-internal outputs/
     );
@@ -75,7 +77,8 @@ describe('descriptor verifyTransaction - quantum-resistant sweep', function () {
         txPrebuild: { txHex: Buffer.from(psbt.serialize()).toString('hex') },
         wallet: {} as any,
       },
-      descriptorMap
+      descriptorMap,
+      addressCodec
     );
 
     assert.strictEqual(result, true);
@@ -91,7 +94,8 @@ describe('descriptor verifyTransaction - quantum-resistant sweep', function () {
         txPrebuild: { txHex: Buffer.from(psbt.serialize()).toString('hex') },
         wallet: {} as any,
       },
-      descriptorMap
+      descriptorMap,
+      addressCodec
     );
 
     assert.strictEqual(result, true);

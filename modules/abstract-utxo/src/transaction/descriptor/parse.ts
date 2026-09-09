@@ -6,9 +6,8 @@ import { BaseOutput, BaseParsedTransaction, BaseParsedTransactionOutputs } from 
 import { getKeySignatures, toBip32Triple, UtxoNamedKeychains } from '../../keychains';
 import { getDescriptorMapFromWallet, getPolicyForEnv } from '../../descriptor';
 import { IDescriptorWallet } from '../../descriptor/descriptorWallet';
-import { fromExtendedAddressFormatToScript, toExtendedAddressFormat } from '../recipient';
+import { AddressCodec } from '../recipient';
 import { outputDifferencesWithExpected, OutputDifferenceWithExpected } from '../outputDifference';
-import { UtxoCoinName } from '../../names';
 import { decodeDescriptorPsbt } from '../decode';
 
 function sumValues(arr: { value: bigint }[]): bigint {
@@ -21,11 +20,11 @@ export type RecipientOutput = Omit<ParsedOutput, 'value'> & {
   value: bigint | 'max';
 };
 
-function toRecipientOutput(recipient: ITransactionRecipient, coinName: UtxoCoinName): RecipientOutput {
+function toRecipientOutput(recipient: ITransactionRecipient, addressCodec: AddressCodec): RecipientOutput {
   return {
     address: recipient.address,
     value: recipient.amount === 'max' ? 'max' : BigInt(recipient.amount),
-    script: fromExtendedAddressFormatToScript(recipient.address, coinName),
+    script: addressCodec.fromExtendedAddressFormatToScript(recipient.address),
     scriptId: undefined, // Recipients are external outputs
   };
 }
@@ -40,9 +39,9 @@ function parseOutputsWithPsbt(
   psbt: Psbt,
   descriptorMap: descriptorWallet.DescriptorMap,
   recipientOutputs: RecipientOutput[],
-  coinName: UtxoCoinName
+  addressCodec: AddressCodec
 ): ParsedOutputs {
-  const parsed = descriptorWallet.parse(psbt, descriptorMap, coinName);
+  const parsed = descriptorWallet.parse(psbt, descriptorMap, addressCodec.coinName);
   const outputs: ParsedOutput[] = parsed.outputs.map((output) => ({
     ...output,
     script: Buffer.from(output.script),
@@ -56,15 +55,15 @@ function parseOutputsWithPsbt(
   };
 }
 
-function toBaseOutputs(outputs: ParsedOutput[], coinName: UtxoCoinName): BaseOutput<bigint>[];
-function toBaseOutputs(outputs: RecipientOutput[], coinName: UtxoCoinName): BaseOutput<bigint | 'max'>[];
+function toBaseOutputs(outputs: ParsedOutput[], addressCodec: AddressCodec): BaseOutput<bigint>[];
+function toBaseOutputs(outputs: RecipientOutput[], addressCodec: AddressCodec): BaseOutput<bigint | 'max'>[];
 function toBaseOutputs(
   outputs: (ParsedOutput | RecipientOutput)[],
-  coinName: UtxoCoinName
+  addressCodec: AddressCodec
 ): BaseOutput<bigint | 'max'>[] {
   return outputs.map(
     (o): BaseOutput<bigint | 'max'> => ({
-      address: toExtendedAddressFormat(o.script, coinName),
+      address: addressCodec.toExtendedAddressFormat(o.script),
       amount: o.value === 'max' ? 'max' : BigInt(o.value),
       external: o.scriptId === undefined,
     })
@@ -75,18 +74,18 @@ export type ParsedOutputsBigInt = BaseParsedTransactionOutputs<bigint, BaseOutpu
 
 function toBaseParsedTransactionOutputs(
   { outputs, changeOutputs, explicitOutputs, implicitOutputs, missingOutputs }: ParsedOutputs,
-  coinName: UtxoCoinName
+  addressCodec: AddressCodec
 ): ParsedOutputsBigInt {
   const explicitExternalOutputs = explicitOutputs.filter((o) => o.scriptId === undefined);
   const implicitExternalOutputs = implicitOutputs.filter((o) => o.scriptId === undefined);
   return {
-    outputs: toBaseOutputs(outputs, coinName),
-    changeOutputs: toBaseOutputs(changeOutputs, coinName),
-    explicitExternalOutputs: toBaseOutputs(explicitExternalOutputs, coinName),
+    outputs: toBaseOutputs(outputs, addressCodec),
+    changeOutputs: toBaseOutputs(changeOutputs, addressCodec),
+    explicitExternalOutputs: toBaseOutputs(explicitExternalOutputs, addressCodec),
     explicitExternalSpendAmount: sumValues(explicitExternalOutputs),
-    implicitExternalOutputs: toBaseOutputs(implicitExternalOutputs, coinName),
+    implicitExternalOutputs: toBaseOutputs(implicitExternalOutputs, addressCodec),
     implicitExternalSpendAmount: sumValues(implicitExternalOutputs),
-    missingOutputs: toBaseOutputs(missingOutputs, coinName),
+    missingOutputs: toBaseOutputs(missingOutputs, addressCodec),
   };
 }
 
@@ -94,17 +93,17 @@ export function toBaseParsedTransactionOutputsFromPsbt(
   psbt: Psbt | Uint8Array,
   descriptorMap: descriptorWallet.DescriptorMap,
   recipients: ITransactionRecipient[],
-  coinName: UtxoCoinName
+  addressCodec: AddressCodec
 ): ParsedOutputsBigInt {
   const wasmPsbt = psbt instanceof Psbt ? psbt : Psbt.deserialize(psbt);
   return toBaseParsedTransactionOutputs(
     parseOutputsWithPsbt(
       wasmPsbt,
       descriptorMap,
-      recipients.map((r) => toRecipientOutput(r, coinName)),
-      coinName
+      recipients.map((r) => toRecipientOutput(r, addressCodec)),
+      addressCodec
     ),
-    coinName
+    addressCodec
   );
 }
 
@@ -116,7 +115,8 @@ export type ParsedDescriptorTransaction<TAmount extends number | bigint> = BaseP
 export function parse(
   coin: AbstractUtxoCoin,
   wallet: IDescriptorWallet,
-  params: ParseTransactionOptions<number | bigint>
+  params: ParseTransactionOptions<number | bigint>,
+  addressCodec: AddressCodec = new AddressCodec(coin.name)
 ): ParsedDescriptorTransaction<bigint> {
   if (params.txParams.allowExternalChangeAddress) {
     throw new Error('allowExternalChangeAddress is not supported for descriptor wallets');
@@ -136,7 +136,7 @@ export function parse(
   const walletKeys = toBip32Triple(keychains);
   const descriptorMap = getDescriptorMapFromWallet(wallet, walletKeys, getPolicyForEnv(params.wallet.bitgo.env));
   return {
-    ...toBaseParsedTransactionOutputsFromPsbt(wasmPsbt, descriptorMap, recipients, coin.name),
+    ...toBaseParsedTransactionOutputsFromPsbt(wasmPsbt, descriptorMap, recipients, addressCodec),
     keychains,
     keySignatures: getKeySignatures(wallet) ?? {},
     customChange: undefined,
