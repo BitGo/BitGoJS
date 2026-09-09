@@ -275,7 +275,7 @@ const mainnetBase: EnvironmentTemplate = {
       baseUrl: 'https://api.etherscan.io/v2',
     },
     ip: {
-      baseUrl: 'https://www.storyscan.io',
+      baseUrl: 'https://datanetscan.io',
     },
     somi: {
       baseUrl: 'https://mainnet.somnia.w3us.site',
@@ -522,7 +522,7 @@ const testnetBase: EnvironmentTemplate = {
       baseUrl: 'https://api.etherscan.io/v2',
     },
     ip: {
-      baseUrl: 'https://aeneid.storyscan.io',
+      baseUrl: 'https://aeneid.datanetscan.io',
     },
     tbaseeth: {
       baseUrl: 'https://api.etherscan.io/v2',
