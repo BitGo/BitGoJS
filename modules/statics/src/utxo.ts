@@ -262,6 +262,16 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     BTC_FEATURES
   ),
   utxo(
+    'f3e1c2d4-5b6a-47c8-9012-3456789abcde',
+    'tbtcstx',
+    // Stacks Bitcoin regtest, represented by Bitcoin testnet transaction semantics in utxo-lib.
+    'Stacks Bitcoin (Regtest)',
+    Networks.test.bitcoinStx,
+    UnderlyingAsset.BTC,
+    BaseUnit.BTC,
+    BTC_FEATURES
+  ),
+  utxo(
     '8feb110d-0d68-44ce-ae97-b8c30ec870a9',
     'btg',
     'Bitcoin Gold',
