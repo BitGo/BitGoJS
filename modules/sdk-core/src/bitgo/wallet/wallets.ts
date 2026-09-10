@@ -435,6 +435,25 @@ export class Wallets implements IWallets {
       throw new Error('EVM TSS wallets are only supported for wallet version 3, 5 and 6');
     }
 
+    // Transparent zcash wallets are multisig and isTSS is not set inherently.
+    // Shielded zcash wallets are MPC
+    if (params.isShielded) {
+      assert(enterprise, 'enterprise is required for shielded wallet');
+      if (type !== 'custodial') {
+        throw new Error('shielded wallets can only be created as custodial wallets');
+      }
+      if (params.multisigType !== 'tss') {
+        throw new Error('shielded wallets must set/use multisigType tss');
+      }
+      return this.generateCustodialMpcWallet({
+        multisigType: 'tss',
+        isShielded: true,
+        label,
+        enterprise,
+        walletVersion: params.walletVersion,
+      });
+    }
+
     if (isTss) {
       if (!this.baseCoin.supportsTss()) {
         throw new Error(`coin ${this.baseCoin.getFamily()} does not support TSS at this time`);
@@ -489,22 +508,6 @@ export class Wallets implements IWallets {
         );
       }
       return walletData;
-    }
-
-    // Transparent zcash wallets are multisig and isTSS is not set inherently.
-    // Shielded zcash wallets are MPC
-    if (params.isShielded) {
-      assert(enterprise, 'enterprise is required for shielded wallet');
-      if (type !== 'custodial') {
-        throw new Error('shielded wallets can only be created as custodial wallets');
-      }
-      return this.generateCustodialMpcWallet({
-        multisigType: 'tss',
-        isShielded: true,
-        label,
-        enterprise,
-        walletVersion: params.walletVersion,
-      });
     }
 
     // Handle distributed custody
