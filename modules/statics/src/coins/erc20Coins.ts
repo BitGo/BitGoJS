@@ -3720,7 +3720,7 @@ export const erc20Coins = [
     18,
     '0x5a98fcbea516cf06857215779fd812ca3bef1b32',
     UnderlyingAsset.LDO,
-    ETH_FEATURES_WITH_FRANKFURT_GERMANY
+    [...ETH_FEATURES_WITH_FRANKFURT_GERMANY, CoinFeature.BULK_TRANSACTION]
   ),
   erc20(
     '5a44ae9e-c002-46cd-af8a-7e5fc91f3492',
