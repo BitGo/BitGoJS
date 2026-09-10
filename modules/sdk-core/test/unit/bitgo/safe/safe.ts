@@ -1,7 +1,7 @@
 import * as sinon from 'sinon';
 import 'should';
 import { SafeData } from '@bitgo/public-types';
-import { IncorrectPasswordError, Safe, deriveSafeChildHardenedFromXprv } from '../../../../src';
+import { ECDSAUtils, IncorrectPasswordError, Safe, deriveSafeChildHardenedFromXprv } from '../../../../src';
 
 const ROOT_XPRV =
   'xprv9s21ZrQH143K3hekyNj7TciR4XNYe1kMj68W2ipjJGNHETWP7o42AjDnSPgKhdZ4x8NBAvaL72RrXjuXNdmkMqLERZza73oYugGtbLFXG8g';
@@ -108,21 +108,23 @@ describe('Safe', function () {
     });
   });
 
-  describe('member/share methods are stubbed (WCN-1204)', function () {
-    it('addMember throws not-implemented (WCN-1204)', async function () {
-      await safe.addMember({ userId: 'u', permissions: ['view'] }).should.be.rejectedWith(/WCN-1204/);
+  describe('member/share methods are stubbed', function () {
+    it('addMember throws not-implemented', async function () {
+      await safe.addMember({ userId: 'u', permissions: ['view'] }).should.be.rejectedWith(/not yet implemented/);
     });
 
-    it('addMemberToWallet throws not-implemented (WCN-1204)', async function () {
-      await safe.addMemberToWallet({ walletId: 'w', walletPassphrase: 'p' }).should.be.rejectedWith(/WCN-1204/);
+    it('addMemberToWallet throws not-implemented', async function () {
+      await safe
+        .addMemberToWallet({ walletId: 'w', walletPassphrase: 'p' })
+        .should.be.rejectedWith(/not yet implemented/);
     });
 
-    it('listShares throws not-implemented (WCN-1204)', async function () {
-      await safe.listShares().should.be.rejectedWith(/WCN-1204/);
+    it('listShares throws not-implemented', async function () {
+      await safe.listShares().should.be.rejectedWith(/not yet implemented/);
     });
 
-    it('acceptShare throws not-implemented (WCN-1204)', async function () {
-      await safe.acceptShare({ safeShareId: 's' }).should.be.rejectedWith(/WCN-1204/);
+    it('acceptShare throws not-implemented', async function () {
+      await safe.acceptShare({ safeShareId: 's' }).should.be.rejectedWith(/not yet implemented/);
     });
   });
 
@@ -150,7 +152,6 @@ describe('Safe', function () {
         keychains: sinon.stub().returns({ get: keychainsGet, add: keychainsAdd }),
       });
     }
-
     beforeEach(function () {
       stubCoin('tbtc');
       mockBitGo.decrypt = sinon.stub().callsFake(({ input, password }: { input: string; password: string }) => {
@@ -229,17 +230,63 @@ describe('Safe', function () {
       addArgs.should.not.have.property('derivedFromParentWithSeed');
     });
 
-    it('rejects TSS minting', async function () {
-      await safe
-        .createWallet({ coin: 'hteth', label: 'evm', passphrase: 'pw', multisigType: 'tss' })
-        .should.be.rejectedWith(/MPC safe wallet minting is not yet implemented/);
-    });
-
-    it('rejects a TSS-default coin even without multisigType tss', async function () {
+    it('mints a TSS wallet via the derive ceremony: registers user+backup children and posts the tss body', async function () {
       stubCoin('hteth', { getDefaultMultisigType: 'tss' });
-      await safe
-        .createWallet({ coin: 'hteth', label: 'evm', passphrase: 'pw' })
-        .should.be.rejectedWith(/MPC safe wallet minting is not yet implemented/);
+      // Real VRF key envelopes: `{version: 1, prvKeyShare, vrf}`.
+      const userBlob = ECDSAUtils.buildVrfKeyEnvelopes(
+        Buffer.from('signing-1'),
+        Buffer.from('reduced-1'),
+        Buffer.from('vrf-1')
+      ).envelope.toString('base64');
+      const backupBlob = ECDSAUtils.buildVrfKeyEnvelopes(
+        Buffer.from('signing-2'),
+        Buffer.from('reduced-2'),
+        Buffer.from('vrf-2')
+      ).envelope.toString('base64');
+      keychainsGet
+        .onFirstCall()
+        .resolves({ id: 'ecdsa-user', source: 'user', encryptedPrv: `enc:${userBlob}` })
+        .onSecondCall()
+        .resolves({ id: 'ecdsa-backup', source: 'backup', encryptedPrv: `enc:${backupBlob}` });
+      mockBitGo.decrypt = sinon
+        .stub()
+        .callsFake(({ input }: { input: string }) => Promise.resolve(input.startsWith('enc:') ? input.slice(4) : ''));
+
+      derivationQuery.returns({
+        result: sinon.stub().resolves({ slot: 'ecdsaMpc', index: 0 }),
+      });
+
+      // Child keychains registered by the ceremony (mocked through the tss utils).
+      const ceremonyStub = sinon.stub(ECDSAUtils.EcdsaVrfMPCv2Utils.prototype, 'createSafeChildKeychains').resolves({
+        userKeychain: { id: 'ecdsa-child-user' },
+        backupKeychain: { id: 'ecdsa-child-backup' },
+      } as never);
+
+      const wallet = await safe.createWallet({ coin: 'hteth', label: 'evm', passphrase: 'pw', multisigType: 'tss' });
+
+      derivationQuery.calledOnceWithExactly({ slot: 'ecdsaMpc' }).should.be.true();
+      const ceremonyArgs = ceremonyStub.firstCall.args[0];
+      ceremonyArgs.should.containEql({
+        safeId: 'test-safe-id',
+        enterprise: 'test-enterprise-id',
+        parentKeyId: 'ecdsa-bitgo',
+        derivationIndex: 0,
+        userRootKeyId: 'ecdsa-user',
+        backupRootKeyId: 'ecdsa-backup',
+      });
+      ceremonyArgs.userRootKeyShare.should.deepEqual(Buffer.from('signing-1'));
+      ceremonyArgs.userRootVrfKeyShare.should.deepEqual(Buffer.from('vrf-1'));
+      ceremonyArgs.backupRootKeyShare.should.deepEqual(Buffer.from('signing-2'));
+
+      // The mint body carries the two registered child ids and the tss multisigType.
+      mintSend.firstCall.args[0].should.eql({
+        coin: 'hteth',
+        label: 'evm',
+        type: 'hot',
+        multisigType: 'tss',
+        keys: ['ecdsa-child-user', 'ecdsa-child-backup'],
+      });
+      wallet.id().should.equal('wallet-id');
     });
 
     it('rejects a peeked derivation index for the wrong slot', async function () {
