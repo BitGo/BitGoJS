@@ -1,6 +1,7 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { fixedScriptWallet, type CoinName } from '@bitgo/wasm-utxo';
 
+import { toWasmUtxoCoinName, type UtxoCoinName } from '../../../src/names';
 const { ChainCode } = fixedScriptWallet;
 
 type UtxolibRootWalletKeys = utxolib.bitgo.RootWalletKeys;
@@ -15,10 +16,10 @@ const defaultChain = ChainCode.value('p2sh', 'external');
  * Utxolib keys are converted to wasm-utxo keys for address generation.
  */
 export function getWalletAddress(
-  coinName: CoinName,
+  coinName: CoinName | UtxoCoinName,
   walletKeys: RootWalletKeys,
   chain = defaultChain,
   index = 0
 ): string {
-  return fixedScriptWallet.address(walletKeys, chain, index, coinName);
+  return fixedScriptWallet.address(walletKeys, chain, index, toWasmUtxoCoinName(coinName));
 }

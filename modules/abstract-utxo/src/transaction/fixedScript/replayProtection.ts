@@ -1,12 +1,12 @@
 import { address, type AddressFormat } from '@bitgo/wasm-utxo';
 
-import { UtxoCoinName } from '../../names';
+import { UtxoCoinName, WasmUtxoCoinName } from '../../names';
 
 export const pubkeyProd = Buffer.from('0255b9f71ac2c78fffd83e3e37b9e17ae70d5437b7f56d0ed2e93b7de08015aa59', 'hex');
 
 export const pubkeyTestnet = Buffer.from('0219da48412c2268865fe8c126327d1b12eee350a3b69eb09e3323cc9a11828945', 'hex');
 
-export function getReplayProtectionPubkeys(coinName: UtxoCoinName): Buffer[] {
+export function getReplayProtectionPubkeys(coinName: UtxoCoinName | WasmUtxoCoinName): Buffer[] {
   switch (coinName) {
     case 'bch':
     case 'bsv':
@@ -27,7 +27,10 @@ const replayProtectionScriptsProd = [Buffer.from('a914174315cfde84f4c45395ac6f15
 // bchtest:pqtjmnzwqffkrk2349g3cecfwwjwxusvnq87n07cal
 const replayProtectionScriptsTestnet = [Buffer.from('a914172dcc4e025361d951a9511c670973a4e3720c9887', 'hex')];
 
-export function getReplayProtectionAddresses(coinName: UtxoCoinName, format: AddressFormat = 'default'): string[] {
+export function getReplayProtectionAddresses(
+  coinName: UtxoCoinName | WasmUtxoCoinName,
+  format: AddressFormat = 'default'
+): string[] {
   switch (coinName) {
     case 'bch':
     case 'bsv':
@@ -40,6 +43,6 @@ export function getReplayProtectionAddresses(coinName: UtxoCoinName, format: Add
   }
 }
 
-export function isReplayProtectionUnspent(u: { address: string }, coinName: UtxoCoinName): boolean {
+export function isReplayProtectionUnspent(u: { address: string }, coinName: UtxoCoinName | WasmUtxoCoinName): boolean {
   return getReplayProtectionAddresses(coinName).includes(u.address);
 }

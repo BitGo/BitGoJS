@@ -71,11 +71,8 @@ export class WasmCrossChainRecoveryProvider<TNumber extends number | bigint> imp
     // Format the deposit address for BCH-like coins
     let formattedAddress = this.depositUnspent.address;
     if (this.addressFormat === 'cashaddr') {
-      formattedAddress = wasmAddress.fromOutputScriptWithCoin(
-        wasmAddress.toOutputScriptWithCoin(this.depositUnspent.address, this.coin.name),
-        this.coin.name,
-        this.addressFormat
-      );
+      const script = wasmAddress.toOutputScriptWithCoin(this.depositUnspent.address, this.coin.wasmName);
+      formattedAddress = wasmAddress.fromOutputScriptWithCoin(script, this.coin.wasmName, 'cashaddr');
       if (formattedAddress.includes(':')) {
         [, formattedAddress] = formattedAddress.split(':');
       }
@@ -95,11 +92,8 @@ export class WasmCrossChainRecoveryProvider<TNumber extends number | bigint> imp
     // Format deposit address for output
     let outputAddress = this.depositUnspent.address;
     if (this.addressFormat === 'cashaddr') {
-      outputAddress = wasmAddress.fromOutputScriptWithCoin(
-        wasmAddress.toOutputScriptWithCoin(this.depositUnspent.address, this.coin.name),
-        this.coin.name,
-        this.addressFormat
-      );
+      const script = wasmAddress.toOutputScriptWithCoin(this.depositUnspent.address, this.coin.wasmName);
+      outputAddress = wasmAddress.fromOutputScriptWithCoin(script, this.coin.wasmName, 'cashaddr');
       if (outputAddress.includes(':')) {
         [, outputAddress] = outputAddress.split(':');
       }

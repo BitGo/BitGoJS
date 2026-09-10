@@ -9,7 +9,7 @@ import * as fixedScript from './fixedScript';
 export async function parseTransaction<TNumber extends bigint | number>(
   coin: AbstractUtxoCoin,
   params: ParseTransactionOptions<TNumber>,
-  addressCodec: AddressCodec = new AddressCodec(coin.name)
+  addressCodec: AddressCodec = coin.addressCodec
 ): Promise<ParsedTransaction<TNumber>> {
   if (isDescriptorWallet(params.wallet)) {
     return descriptor.parseToAmountType(coin, params.wallet, params, addressCodec);

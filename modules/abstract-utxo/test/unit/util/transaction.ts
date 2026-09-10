@@ -3,7 +3,7 @@ import assert from 'assert';
 import * as utxolib from '@bitgo/utxo-lib';
 import { ECPair, fixedScriptWallet, hasPsbtMagic, address as wasmAddress } from '@bitgo/wasm-utxo';
 
-import type { UtxoCoinName } from '../../../src/names';
+import { toWasmUtxoCoinName, type UtxoCoinName } from '../../../src/names';
 import type { Unspent } from '../../../src/unspent';
 
 import { getCoinNameForNetwork } from './utxoCoins';
@@ -30,7 +30,9 @@ function toTxOutput<TNumber extends number | bigint = number>(
   network: utxolib.Network
 ): utxolib.TxOutput<TNumber> {
   return {
-    script: Buffer.from(wasmAddress.toOutputScriptWithCoin(u.address, getCoinNameForNetwork(network))),
+    script: Buffer.from(
+      wasmAddress.toOutputScriptWithCoin(u.address, toWasmUtxoCoinName(getCoinNameForNetwork(network)))
+    ),
     value: u.value,
   };
 }
@@ -48,8 +50,8 @@ export function assertEqualParsedPsbt(
   if (!hasPsbtMagic(b)) {
     throw new Error('b is not a psbt');
   }
-  const aPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(a, coinName);
-  const bPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(b, coinName);
+  const aPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(a, toWasmUtxoCoinName(coinName));
+  const bPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(b, toWasmUtxoCoinName(coinName));
   const aParsed = aPsbt.parseTransactionWithWalletKeys(walletKeys, {
     replayProtection: { publicKeys: replayProtection },
   });

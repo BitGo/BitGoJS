@@ -63,7 +63,7 @@ export class InscriptionBuilder implements IInscriptionBuilder {
       derivedKey.publicKey,
       contentType,
       inscriptionData,
-      this.coin.name
+      this.coin.wasmName
     );
 
     // Convert TapLeafScript to utxolib format for backwards compatibility
@@ -121,7 +121,7 @@ export class InscriptionBuilder implements IInscriptionBuilder {
     }
 
     const psbt = createPsbtForSingleInscriptionPassingTransaction(
-      this.coin.name,
+      this.coin.wasmName,
       {
         walletKeys: walletXpubs,
         signer,
@@ -279,7 +279,7 @@ export class InscriptionBuilder implements IInscriptionBuilder {
       commitAddress,
       recipientAddress,
       Buffer.from(halfSignedCommitTransaction.txHex, 'hex'),
-      this.coin.name
+      this.coin.wasmName
     );
 
     return this.wallet.submitTransaction({

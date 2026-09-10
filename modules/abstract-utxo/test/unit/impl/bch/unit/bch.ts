@@ -134,4 +134,14 @@ describe('Custom BCH Tests', function () {
     assert.throws(() => bch.canonicalAddress('bitcoincash:qqq3728yw0y47sqn6l2na30mcw6zm78dzqre909m2r', 'blah'));
     assert.throws(() => bch.canonicalAddress(undefined as any, 'blah'));
   });
+
+  it('should validate BCH address formats through format-specific codecs', function () {
+    const base58Address = '1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu';
+    const cashaddr = 'bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a';
+
+    assert.strictEqual(bch.isValidAddress(base58Address), true);
+    assert.strictEqual(bch.isValidAddress(cashaddr), true);
+    assert.strictEqual(bch.isValidAddress(cashaddr, { anyFormat: false }), false);
+    assert.strictEqual(bch.isValidAddress('bitcoincash:not-an-address'), false);
+  });
 });

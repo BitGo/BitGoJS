@@ -78,7 +78,7 @@ export function parseToAmountType<TAmount extends number | bigint>(
   coin: AbstractUtxoCoin,
   wallet: IDescriptorWallet,
   params: ParseTransactionOptions<TAmount>,
-  addressCodec: AddressCodec = new AddressCodec(coin.name)
+  addressCodec: AddressCodec = coin.addressCodec
 ): BaseParsedTransaction<TAmount, BaseOutput<string>> {
   return parsedDescriptorTransactionToTNumber<TAmount, BaseOutput<string>>(parse(coin, wallet, params, addressCodec), {
     amountTypeAggregate: coin.amountType,

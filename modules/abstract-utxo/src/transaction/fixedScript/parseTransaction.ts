@@ -44,7 +44,7 @@ function toCanonicalTransactionRecipient(
 async function parseRbfTransaction<TNumber extends bigint | number>(
   coin: AbstractUtxoCoin,
   params: ParseTransactionOptions<TNumber>,
-  addressCodec: AddressCodec = new AddressCodec(coin.name)
+  addressCodec: AddressCodec = coin.addressCodec
 ): Promise<ParsedTransaction<TNumber>> {
   const { txParams, wallet } = params;
 
@@ -136,7 +136,7 @@ function verifyCustomChangeKeys(userKeychain: UtxoKeychain, customChange: Custom
 export async function parseTransaction<TNumber extends bigint | number>(
   coin: AbstractUtxoCoin,
   params: ParseTransactionOptions<TNumber>,
-  addressCodec: AddressCodec = new AddressCodec(coin.name)
+  addressCodec: AddressCodec = coin.addressCodec
 ): Promise<ParsedTransaction<TNumber>> {
   const { txParams, txPrebuild, wallet, verification = {}, reqId } = params;
 

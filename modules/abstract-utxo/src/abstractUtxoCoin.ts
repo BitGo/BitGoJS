@@ -2,7 +2,7 @@ import assert from 'assert';
 import { randomBytes } from 'crypto';
 
 import _ from 'lodash';
-import { address as wasmAddress, BIP32, fixedScriptWallet, hasPsbtMagic } from '@bitgo/wasm-utxo';
+import { BIP32, fixedScriptWallet, hasPsbtMagic } from '@bitgo/wasm-utxo';
 import {
   AddressCoinSpecific,
   BaseCoin,
@@ -72,7 +72,15 @@ import {
   ErrorImplicitExternalOutputs,
 } from './transaction/descriptor/verifyTransaction';
 import { assertDescriptorWalletAddress, getDescriptorMapFromWallet, isDescriptorWallet } from './descriptor';
-import { getFullNameFromCoinName, getMainnetCoinName, isMainnetCoin, UtxoCoinName, UtxoCoinNameMainnet } from './names';
+import {
+  getFullNameFromCoinName,
+  getMainnetCoinName,
+  toWasmUtxoCoinName,
+  isMainnetCoin,
+  WasmUtxoCoinName,
+  UtxoCoinName,
+  UtxoCoinNameMainnet,
+} from './names';
 import { assertFixedScriptWalletAddress, generateAddress } from './address/fixedScript';
 import { ParsedTransaction } from './transaction/types';
 import { decodeDescriptorPsbt, decodePsbt, encodeTransaction, stringToBufferTryFormats } from './transaction/decode';
@@ -414,6 +422,15 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
     return getFullNameFromCoinName(this.name);
   }
 
+  /** Coin name used by wasm-utxo. Private Bitcoin networks may map to a shared codec. */
+  get wasmName(): WasmUtxoCoinName {
+    return toWasmUtxoCoinName(this.name);
+  }
+
+  get addressCodec(): AddressCodec {
+    return new AddressCodec(this.name, this.wasmName);
+  }
+
   /** Indicates whether the coin supports a block target */
   supportsBlockTarget(): boolean {
     // FIXME: the SDK does not seem to use this anywhere so it is unclear what the purpose of this method is
@@ -461,27 +478,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
       }
     }
 
-    // By default, allow all address formats.
-    // At the time of writing, the only additional address format is bch cashaddr.
-    const anyFormat = (param as { anyFormat: boolean } | undefined)?.anyFormat ?? true;
-    try {
-      const script = wasmAddress.toOutputScriptWithCoin(address, this.name);
-      // Determine which format the input address was in by round-tripping
-      // through each candidate and checking byte-equality. 'default' is tried
-      // first so canonical default-format addresses early-exit.
-      for (const format of ['default', 'cashaddr'] as const) {
-        try {
-          if (wasmAddress.fromOutputScriptWithCoin(script, this.name, format) === address) {
-            return anyFormat || format === 'default';
-          }
-        } catch {
-          // coin doesn't support this format; try the next one
-        }
-      }
-      return false;
-    } catch (e) {
-      return false;
-    }
+    return this.addressCodec.isValidAddress(address);
   }
 
   /**
@@ -568,7 +565,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
     if (!hasPsbtMagic(buffer)) {
       throw new ErrorDeprecatedTxFormat('legacy');
     }
-    return decodePsbt(buffer, this.name);
+    return decodePsbt(buffer, this.wasmName);
   }
 
   decodeTransactionAsPsbt(input: Buffer | string): fixedScriptWallet.BitGoPsbt {
@@ -596,7 +593,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
   async parseTransaction<TNumber extends number | bigint = number>(
     params: ParseTransactionOptions<TNumber>
   ): Promise<ParsedTransaction<TNumber>> {
-    return this.parseTransactionWithAddressCodec(params, new AddressCodec(this.name));
+    return this.parseTransactionWithAddressCodec(params, this.addressCodec);
   }
 
   protected parseTransactionWithAddressCodec<TNumber extends number | bigint>(
@@ -639,7 +636,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
   async verifyTransaction<TNumber extends number | bigint = number>(
     params: VerifyTransactionOptions<TNumber>
   ): Promise<boolean> {
-    return this.verifyTransactionWithAddressCodec(params, new AddressCodec(this.name));
+    return this.verifyTransactionWithAddressCodec(params, this.addressCodec);
   }
 
   protected async verifyTransactionWithAddressCodec<TNumber extends number | bigint>(
@@ -693,7 +690,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
         throw new Error('keychains must be a triple');
       }
       assertDescriptorWalletAddress(
-        this.name,
+        this.addressCodec,
         params,
         getDescriptorMapFromWallet(wallet, toBip32Triple(keychains), getPolicyForEnv(this.bitgo.env))
       );
@@ -710,7 +707,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
       throw new Error('missing required param keychains');
     }
 
-    assertFixedScriptWalletAddress(this.name, {
+    assertFixedScriptWalletAddress(this.wasmName, {
       address,
       keychains,
       format: params.format ?? 'base58',
@@ -739,7 +736,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
       throw new Error('missing required param keychains');
     }
 
-    const address = generateAddress(this.name, {
+    const address = generateAddress(this.wasmName, {
       // fixed-script (multisig) coins derive from the xpub triple via `pub`
       keychains: keychains as { pub: string }[],
       chain,
@@ -755,7 +752,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
    * @returns true iff coin supports spending from unspentType
    */
   supportsAddressType(addressType: ScriptType2Of3): boolean {
-    return fixedScriptWallet.supportsScriptType(this.name, addressType);
+    return fixedScriptWallet.supportsScriptType(this.wasmName, addressType);
   }
 
   /** inherited doc */
@@ -789,7 +786,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
       .post(this.url('/wallet/' + walletId + '/tx/signpsbt'))
       .send({ psbt: buffer.toString('hex') })
       .result();
-    return decodePsbt(response.psbt, this.name);
+    return decodePsbt(response.psbt, this.wasmName);
   }
 
   /**
@@ -907,9 +904,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
     if (wallet && isDescriptorWallet(wallet)) {
       // Descriptor wallets decode prebuild bytes straight into the wasm-utxo
       // descriptor Psbt, skipping the fixedScriptWallet.BitGoPsbt intermediate.
-      return explainTx(decodeDescriptorPsbt(params), { ...params, wallet }, this.name);
+      return explainTx(decodeDescriptorPsbt(params), { ...params, wallet }, this.wasmName);
     }
-    return explainTx(this.decodeTransactionFromPrebuild(params), { ...params, wallet }, this.name);
+    return explainTx(this.decodeTransactionFromPrebuild(params), { ...params, wallet }, this.wasmName);
   }
 
   /**

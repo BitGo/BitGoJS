@@ -14,7 +14,7 @@ import {
 } from '@bitgo/sdk-core';
 import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 
-import { UtxoCoinName } from '../names';
+import { toWasmUtxoCoinName, UtxoCoinName, WasmUtxoCoinName } from '../names';
 
 type ScriptType2Of3 = fixedScriptWallet.OutputScriptType;
 type ChainCode = fixedScriptWallet.ChainCode;
@@ -35,8 +35,8 @@ interface GenerateFixedScriptAddressOptions extends GenerateAddressOptions {
   keychains: { pub: string }[];
 }
 
-function supportsAddressType(coinName: UtxoCoinName, addressType: ScriptType2Of3): boolean {
-  return fixedScriptWallet.supportsScriptType(coinName, addressType);
+function supportsAddressType(coinName: UtxoCoinName | WasmUtxoCoinName, addressType: ScriptType2Of3): boolean {
+  return fixedScriptWallet.supportsScriptType(toWasmUtxoCoinName(coinName), addressType);
 }
 
 /**
@@ -47,7 +47,7 @@ function normalizeScriptType(scriptType: ScriptType2Of3 | 'p2tr'): ScriptType2Of
 }
 
 export function generateAddressWithChainAndIndex(
-  coinName: UtxoCoinName,
+  coinName: UtxoCoinName | WasmUtxoCoinName,
   keychains: fixedScriptWallet.WalletKeysArg | Triple<string>,
   chain: ChainCode,
   index: number,
@@ -56,7 +56,7 @@ export function generateAddressWithChainAndIndex(
   // Convert CreateAddressFormat to AddressFormat for wasm-utxo
   // 'base58' -> 'default', 'cashaddr' -> 'cashaddr'
   const wasmFormat = format === 'base58' ? 'default' : format;
-  return fixedScriptWallet.address(keychains, chain, index, coinName, wasmFormat);
+  return fixedScriptWallet.address(keychains, chain, index, toWasmUtxoCoinName(coinName), wasmFormat);
 }
 
 /**
@@ -70,7 +70,10 @@ export function generateAddressWithChainAndIndex(
  * @param params.bech32      {boolean}  Deprecated
  * @returns {string} The generated address
  */
-export function generateAddress(coinName: UtxoCoinName, params: GenerateFixedScriptAddressOptions): string {
+export function generateAddress(
+  coinName: UtxoCoinName | WasmUtxoCoinName,
+  params: GenerateFixedScriptAddressOptions
+): string {
   let derivationIndex = 0;
   if (_.isInteger(params.index) && (params.index as number) > 0) {
     derivationIndex = params.index as number;
@@ -142,7 +145,7 @@ type Keychain = {
 };
 
 export function assertFixedScriptWalletAddress(
-  coinName: UtxoCoinName,
+  coinName: UtxoCoinName | WasmUtxoCoinName,
   {
     chain,
     index,

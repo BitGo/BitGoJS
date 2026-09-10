@@ -5,12 +5,24 @@ import * as testutils from '@bitgo/wasm-utxo/testutils';
 import { IWallet, WalletCoinSpecific } from '@bitgo/sdk-core';
 
 import { descriptor as utxod } from '../../src';
+import { Tbtc } from '../../src/impl/btc';
+import type { WasmUtxoCoinName } from '../../src/names';
 
-import { getUtxoCoin } from './util';
+import { defaultBitGo, getUtxoCoin } from './util';
 
 export function getDescriptorAddress(d: string, index: number, coinName: CoinName): string {
   const derivedScript = utxod.Descriptor.fromString(d, 'derivable').atDerivationIndex(index).scriptPubkey();
   return wasmAddress.fromOutputScriptWithCoin(derivedScript, coinName);
+}
+
+class RegtestTbtc extends Tbtc {
+  constructor() {
+    super(defaultBitGo);
+  }
+
+  override get wasmName(): WasmUtxoCoinName {
+    return 'tbtcreg';
+  }
 }
 
 describe('descriptor wallets', function () {
@@ -39,9 +51,9 @@ describe('descriptor wallets', function () {
 
   const descFoo = getNamedDescriptor2Of2('foo', xpubs[0], xpubs[1]);
   const descBar = getNamedDescriptor2Of2('bar', xpubs[1], xpubs[0]);
-  const addressFoo0 = getDescriptorAddress(descFoo.value, 0, coin.name);
-  const addressFoo1 = getDescriptorAddress(descFoo.value, 1, coin.name);
-  const addressBar0 = getDescriptorAddress(descBar.value, 0, coin.name);
+  const addressFoo0 = getDescriptorAddress(descFoo.value, 0, coin.wasmName);
+  const addressFoo1 = getDescriptorAddress(descFoo.value, 1, coin.wasmName);
+  const addressBar0 = getDescriptorAddress(descBar.value, 0, coin.wasmName);
 
   it('has expected values', function () {
     assert.deepStrictEqual(
@@ -87,4 +99,23 @@ describe('descriptor wallets', function () {
   runTestIsAddress(addressFoo1, 0, 'foo', descFoo.value.slice(-8), /Address mismatch for descriptor/);
   runTestIsAddress(addressBar0, 0, 'bar', descFoo.value.slice(-8), /Descriptor checksum mismatch/);
   runTestIsAddress(addressFoo0, 0, 'bar', descBar.value.slice(-8), /Address mismatch for descriptor/);
+
+  it('uses the coin address codec for descriptor wallet addresses', async function () {
+    const regtestCoin = new RegtestTbtc();
+    const address = getDescriptorAddress(descFoo.value, 0, regtestCoin.wasmName);
+    const wallet = getIWalletWithDescriptors([descFoo, descBar]);
+
+    assert.strictEqual(
+      await regtestCoin.isWalletAddress(
+        {
+          address,
+          index: 0,
+          coinSpecific: { descriptorName: 'foo', descriptorChecksum: descFoo.value.slice(-8) },
+          keychains: xpubs.map((pub) => ({ pub })),
+        },
+        wallet
+      ),
+      true
+    );
+  });
 });

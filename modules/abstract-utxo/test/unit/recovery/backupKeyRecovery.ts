@@ -103,7 +103,7 @@ function run(
       });
       const fixturePsbt = fixedScriptWallet.BitGoPsbt.fromBytes(
         Buffer.from(storedFixture.psbtHex, 'hex'),
-        fixtureCoin.name
+        fixtureCoin.wasmName
       );
       fixtureParsed = fixturePsbt.parseTransactionWithWalletKeys(wasmWalletKeys, {
         replayProtection: { publicKeys: replayProtection },

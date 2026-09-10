@@ -2,8 +2,20 @@ import { BitGoBase } from '@bitgo/sdk-core';
 import { address as wasmAddress } from '@bitgo/wasm-utxo';
 
 import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
-import { UtxoCoinName } from '../../names';
+import { UtxoCoinName, WasmUtxoCoinName } from '../../names';
 import { AddressCodec } from '../../transaction';
+
+type BchAddressFormat = 'default' | 'cashaddr';
+
+class BchAddressCodec extends AddressCodec {
+  constructor(coinName: UtxoCoinName, wasmName: WasmUtxoCoinName, private readonly format: BchAddressFormat) {
+    super(coinName, wasmName);
+  }
+
+  override encode(script: Uint8Array): string {
+    return wasmAddress.fromOutputScriptWithCoin(script, this.wasmName, this.format);
+  }
+}
 
 export class Bch extends AbstractUtxoCoin {
   readonly name: UtxoCoinName = 'bch';
@@ -14,6 +26,26 @@ export class Bch extends AbstractUtxoCoin {
 
   static createInstance(bitgo: BitGoBase): Bch {
     return new Bch(bitgo);
+  }
+
+  private getBchAddressCodec(format: BchAddressFormat): BchAddressCodec {
+    return new BchAddressCodec(this.name, this.wasmName, format);
+  }
+
+  override get addressCodec(): BchAddressCodec {
+    return this.getBchAddressCodec('default');
+  }
+
+  override isValidAddress(
+    address: string,
+    param?: { anyFormat?: boolean; allowLightning?: boolean } | boolean
+  ): boolean {
+    const anyFormat = typeof param === 'object' ? param?.anyFormat ?? true : true;
+    const isDefaultAddress = super.isValidAddress(address, param);
+    if (isDefaultAddress || !anyFormat) {
+      return isDefaultAddress;
+    }
+    return this.getBchAddressCodec('cashaddr').isValidAddress(address);
   }
 
   /**
@@ -34,13 +66,14 @@ export class Bch extends AbstractUtxoCoin {
     }
 
     if (version === 'base58') {
-      const script = wasmAddress.toOutputScriptWithCoin(address, this.name);
-      return wasmAddress.fromOutputScriptWithCoin(script, this.name, 'default');
+      const codec = this.addressCodec;
+      const script = codec.decode(address);
+      return codec.encode(script);
     }
 
     if (version === 'cashaddr') {
-      const script = wasmAddress.toOutputScriptWithCoin(address, this.name);
-      return wasmAddress.fromOutputScriptWithCoin(script, this.name, 'cashaddr');
+      const codec = this.getBchAddressCodec('cashaddr');
+      return codec.encode(codec.decode(address));
     }
 
     throw new Error(`invalid version ${version}`);

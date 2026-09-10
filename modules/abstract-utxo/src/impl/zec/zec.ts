@@ -30,7 +30,8 @@ export class Zec extends AbstractUtxoCoin {
 
   isValidAddress(address: string, param?: { anyFormat?: boolean; allowLightning?: boolean } | boolean): boolean {
     return (
-      zcashAddress.hasTransparentReceiver(address, this.name) || zcashAddress.hasOrchardReceiver(address, this.name)
+      zcashAddress.hasTransparentReceiver(address, this.wasmName) ||
+      zcashAddress.hasOrchardReceiver(address, this.wasmName)
     );
   }
 }
