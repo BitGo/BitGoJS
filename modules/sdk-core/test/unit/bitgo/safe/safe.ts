@@ -1,10 +1,20 @@
 import * as sinon from 'sinon';
 import 'should';
 import { SafeData } from '@bitgo/public-types';
-import { IncorrectPasswordError, Safe, deriveSafeChildHardenedFromXprv } from '../../../../src';
+import {
+  IncorrectPasswordError,
+  Safe,
+  deriveSafeChildEd25519Hardened,
+  deriveSafeChildHardenedFromXprv,
+} from '../../../../src';
 
 const ROOT_XPRV =
   'xprv9s21ZrQH143K3hekyNj7TciR4XNYe1kMj68W2ipjJGNHETWP7o42AjDnSPgKhdZ4x8NBAvaL72RrXjuXNdmkMqLERZza73oYugGtbLFXG8g';
+
+// 32-byte synthetic seed, StrKey spelling generated with stellar-sdk; pinned derivation vectors in
+// test/unit/bitgo/safe/safeDerivation.ts.
+const ROOT_ED25519_SEED_STRKEY = 'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI';
+const ed25519ChildAt0 = deriveSafeChildEd25519Hardened(ROOT_ED25519_SEED_STRKEY, 0);
 
 describe('Safe', function () {
   let safe: Safe;
@@ -251,11 +261,41 @@ describe('Safe', function () {
         .should.be.rejectedWith(/returned slot 'ecdsaMpc'/);
     });
 
-    it('rejects ed25519 onchain coins', async function () {
+    it('mints an ed25519 wallet from the StrKey seed user root', async function () {
       stubCoin('txlm');
-      await safe
-        .createWallet({ coin: 'txlm', label: 'xlm', passphrase: 'pw' })
-        .should.be.rejectedWith(/ed25519 coin safe wallet minting is not yet supported/);
+      keychainsGet.resolves({
+        id: 'user-root-id',
+        source: 'user',
+        encryptedPrv: `enc:${ROOT_ED25519_SEED_STRKEY}`,
+        pub: 'GAB2CB576PHBBPQ5ODORRZ2LYCMWPZGWGCN2KDK7DXOIMZASKUY3QZ6Q',
+        type: 'independent',
+      });
+      keychainsAdd.resolves({ id: 'child-key-id', pub: ed25519ChildAt0.pub, type: 'independent' });
+      derivationQuery.returns({
+        result: sinon.stub().resolves({ slot: 'ed25519Multisig', index: 0 }),
+      });
+
+      await safe.createWallet({ coin: 'txlm', label: 'xlm desk', passphrase: 'pw' });
+
+      derivationQuery.calledOnceWithExactly({ slot: 'ed25519Multisig' }).should.be.true();
+      keychainsGet.calledOnceWithExactly({ id: 'ed-user' }).should.be.true();
+      const addArgs = keychainsAdd.firstCall.args[0];
+      addArgs.should.eql({
+        pub: ed25519ChildAt0.pub,
+        source: 'user',
+        keyType: 'independent',
+        parent: 'ed-user',
+        safeId: 'test-safe-id',
+        derivedFromParentWithPath: "m/0'",
+      });
+      addArgs.should.not.have.property('encryptedPrv');
+      mintSend.firstCall.args[0].should.eql({
+        coin: 'txlm',
+        label: 'xlm desk',
+        type: 'hot',
+        multisigType: 'onchain',
+        keys: ['child-key-id'],
+      });
     });
 
     it('rejects an empty passphrase', async function () {
