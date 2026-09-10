@@ -307,7 +307,7 @@ export class Transaction extends BaseTransaction {
     }
     const credentials = (this._flareTransaction as UnsignedTx).credentials;
     if (credentials != null && credentials.length === 0) {
-      throw new InvalidTransactionError('transaction has no credentials -- cannot broadcast');
+      throw new InvalidTransactionError('transaction has no credentials — cannot broadcast');
     }
     if (credentials) {
       let hasRealSignature = false;
