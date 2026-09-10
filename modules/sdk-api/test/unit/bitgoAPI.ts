@@ -5,6 +5,7 @@ import { ProxyAgent } from 'proxy-agent';
 import * as sinon from 'sinon';
 import nock from 'nock';
 import type { IHmacAuthStrategy } from '@bitgo/sdk-hmac';
+import type { IEncryptionSession } from '@bitgo/sdk-core';
 
 describe('Constructor', function () {
   describe('cookiesPropagationEnabled argument', function () {
@@ -1130,6 +1131,39 @@ describe('Constructor', function () {
 
       sinon.assert.calledWithMatch(v1UpdatePasswordStub, { encryptionVersion: 2 });
       sinon.assert.calledWithMatch(v2UpdatePasswordStub, { encryptionVersion: 2 });
+    });
+    it('shares one encryption session across keychain password updates', async function () {
+      nock(ROOT).get('/api/v2/user/checkBatchingPasswordFlow').query(true).reply(200, { isBatchingFlowEnabled: false });
+      nock(ROOT)
+        .post('/api/v1/user/changepassword', (body: unknown) => {
+          if (!body || typeof body !== 'object') {
+            return false;
+          }
+          return 'keychains' in body && 'v2_keychains' in body;
+        })
+        .reply(200, {});
+
+      const destroy = sandbox.stub();
+      const session: IEncryptionSession = {
+        encrypt: sandbox.stub().resolves('session-encrypted'),
+        decrypt: sandbox.stub().resolves('session-decrypted'),
+        destroy,
+      };
+      const createSession = sandbox.stub(bitgo, 'createEncryptionSession').resolves(session);
+
+      await bitgo.changePassword({ oldPassword: 'oldpw', newPassword: 'newpw', encryptionVersion: 2 });
+
+      sinon.assert.calledOnce(createSession);
+      sinon.assert.calledWithExactly(createSession, 'newpw', 2);
+      sinon.assert.calledWithMatch(v1UpdatePasswordStub, {
+        encryptionVersion: 2,
+        encryptionSession: session,
+      });
+      sinon.assert.calledWithMatch(v2UpdatePasswordStub, {
+        encryptionVersion: 2,
+        encryptionSession: session,
+      });
+      sinon.assert.calledOnce(destroy);
     });
   });
 

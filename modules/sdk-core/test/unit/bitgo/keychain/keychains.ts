@@ -1,6 +1,7 @@
 import * as sinon from 'sinon';
 import 'should';
 import { Keychains, decodeDerivableEd25519Pub } from '../../../../src';
+import type { IEncryptionSession } from '../../../../src/api';
 
 /**
  * Slot-④ root keys are generated as XLM keychains, so `create()` yields a 56-char StrKey pub.
@@ -145,6 +146,33 @@ describe('Keychains.createBackup', function () {
       const body = sentBody();
       (body.pub === undefined).should.be.true();
       body.provider!.should.equal('krs-provider');
+    });
+  });
+  describe('password rotation encryption session', function () {
+    it('uses the supplied session for the new encrypted private key', async function () {
+      mockBitGo.decrypt = sinon.stub().resolves('decrypted-prv');
+      const sessionEncrypt = sinon.stub().resolves('session-encrypted');
+      const session: IEncryptionSession = {
+        encrypt: sessionEncrypt,
+        decrypt: sinon.stub().resolves('decrypted-prv'),
+        destroy: sinon.stub(),
+      };
+
+      const updatedKeychain = await keychains.updateSingleKeychainPassword({
+        keychain: {
+          id: 'key-id',
+          encryptedPrv: 'legacy-encrypted-prv',
+          type: 'independent',
+        },
+        oldPassword: 'old-password',
+        newPassword: 'new-password',
+        encryptionVersion: 2,
+        encryptionSession: session,
+      });
+
+      sessionEncrypt.calledOnceWithExactly('decrypted-prv').should.equal(true);
+      mockBitGo.encrypt.called.should.equal(false);
+      updatedKeychain.encryptedPrv!.should.equal('session-encrypted');
     });
   });
 });

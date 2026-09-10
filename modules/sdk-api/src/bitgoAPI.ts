@@ -20,6 +20,7 @@ import {
   GetSharingKeyOptions,
   GetSigningKeyApi,
   GlobalCoinFactory,
+  IEncryptionSession,
   IRequestTracer,
   makeRandomKey,
   sanitizeLegacyPath,
@@ -859,7 +860,7 @@ export class BitGoAPI implements BitGoBase {
    * v1: returns a shim that satisfies the same interface but runs SJCL PBKDF2 per call. Lets
    * callers that must produce v1 envelopes use the same factory as v2 callers.
    */
-  async createEncryptionSession(password: string, encryptionVersion?: EncryptionVersion) {
+  async createEncryptionSession(password: string, encryptionVersion?: EncryptionVersion): Promise<IEncryptionSession> {
     return createEncryptionSession(password, { encryptionVersion });
   }
 
@@ -2032,54 +2033,67 @@ export class BitGoAPI implements BitGoBase {
     // we just need to choose a coin that exists in the current environment
     const coin = common.Environments[this.getEnv()].network === 'bitcoin' ? 'btc' : 'tbtc';
 
-    const updateKeychainPasswordParams = { oldPassword, newPassword, encryptionVersion };
-    const v1KeychainUpdatePWResult = await this.keychains().updatePassword(updateKeychainPasswordParams);
-    const v2Keychains = await this.coin(coin).keychains().updatePassword(updateKeychainPasswordParams);
-
-    const [hmacOldPassword, hmacNewPassword] = await Promise.all([
-      this._hmacAuthStrategy.calculateHMAC(user.username, oldPassword),
-      this._hmacAuthStrategy.calculateHMAC(user.username, newPassword),
-    ]);
-
-    const updatePasswordParams = {
-      keychains: v1KeychainUpdatePWResult.keychains,
-      v2_keychains: v2Keychains,
-      version: v1KeychainUpdatePWResult.version,
-      oldPassword: hmacOldPassword,
-      password: hmacNewPassword,
-    };
-
-    // Calculate payload size in KB
-    const payloadSizeBytes = JSON.stringify(updatePasswordParams).length;
-    const payloadSizeKB = Math.ceil(payloadSizeBytes / 1024);
-
-    // Check if batching flow is enabled
+    // Argon2 is expensive, so one v2 session covers every matching keychain. V1 uses
+    // direct SJCL calls because it has no Argon2 derivation to cache.
+    const encryptionSession =
+      encryptionVersion === 2 ? await this.createEncryptionSession(newPassword, encryptionVersion) : undefined;
     try {
-      const batchingFlowCheck = await this.get(this.url('/user/checkBatchingPasswordFlow', 2))
-        .query({ payloadSize: payloadSizeKB.toString() })
-        .result();
+      const updateKeychainPasswordParams = {
+        oldPassword,
+        newPassword,
+        encryptionVersion,
+        encryptionSession,
+      };
+      const v1KeychainUpdatePWResult = await this.keychains().updatePassword(updateKeychainPasswordParams);
+      const v2Keychains = await this.coin(coin).keychains().updatePassword(updateKeychainPasswordParams);
 
-      if (batchingFlowCheck.isBatchingFlowEnabled) {
-        await this.processKeychainPasswordUpdatesInBatches(
-          updatePasswordParams.keychains,
-          updatePasswordParams.v2_keychains,
-          batchingFlowCheck.maxBatchSizeKB,
-          3
-        );
-        // Call changepassword API without keychains for batching flow
-        return this.post(this.url('/user/changepassword'))
-          .send({
-            version: updatePasswordParams.version,
-            oldPassword: updatePasswordParams.oldPassword,
-            password: updatePasswordParams.password,
-          })
+      const [hmacOldPassword, hmacNewPassword] = await Promise.all([
+        this._hmacAuthStrategy.calculateHMAC(user.username, oldPassword),
+        this._hmacAuthStrategy.calculateHMAC(user.username, newPassword),
+      ]);
+
+      const updatePasswordParams = {
+        keychains: v1KeychainUpdatePWResult.keychains,
+        v2_keychains: v2Keychains,
+        version: v1KeychainUpdatePWResult.version,
+        oldPassword: hmacOldPassword,
+        password: hmacNewPassword,
+      };
+
+      // Calculate payload size in KB
+      const payloadSizeBytes = JSON.stringify(updatePasswordParams).length;
+      const payloadSizeKB = Math.ceil(payloadSizeBytes / 1024);
+
+      // Check if batching flow is enabled
+      try {
+        const batchingFlowCheck = await this.get(this.url('/user/checkBatchingPasswordFlow', 2))
+          .query({ payloadSize: payloadSizeKB.toString() })
           .result();
-      }
-    } catch (error) {
-      // batching flow check failed
-    }
 
-    return this.post(this.url('/user/changepassword')).send(updatePasswordParams).result();
+        if (batchingFlowCheck.isBatchingFlowEnabled) {
+          await this.processKeychainPasswordUpdatesInBatches(
+            updatePasswordParams.keychains,
+            updatePasswordParams.v2_keychains,
+            batchingFlowCheck.maxBatchSizeKB,
+            3
+          );
+          // Call changepassword API without keychains for batching flow
+          return this.post(this.url('/user/changepassword'))
+            .send({
+              version: updatePasswordParams.version,
+              oldPassword: updatePasswordParams.oldPassword,
+              password: updatePasswordParams.password,
+            })
+            .result();
+        }
+      } catch (error) {
+        // batching flow check failed
+      }
+
+      return this.post(this.url('/user/changepassword')).send(updatePasswordParams).result();
+    } finally {
+      encryptionSession?.destroy();
+    }
   }
 
   /**
