@@ -31,7 +31,7 @@ export interface FinalizeSafeOptions {
 }
 
 /**
- * Sharing ONE safe wallet with a non-member rides the existing wallet-share handshake (FR-13),
+ * Sharing ONE safe wallet with a non-member rides the existing wallet-share handshake,
  * so the result is the existing WalletShare shape.
  */
 export type WalletShareData = WalletShare;
@@ -43,7 +43,10 @@ export interface CreateSafeWalletOptions {
   label: string;
   passphrase: string;
   type?: 'hot';
-  /** `tss` throws until MPC mint lands. Defaults to `onchain`. */
+  /**
+   * `onchain` (default) mints a secp256k1 multisig wallet; `tss` mints an MPC
+   * wallet by deriving child keys from the safe's MPC roots.
+   */
   multisigType?: 'onchain' | 'tss';
 }
 

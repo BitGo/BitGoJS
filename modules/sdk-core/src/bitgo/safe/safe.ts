@@ -11,6 +11,7 @@ import { IBaseCoin } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { IncorrectPasswordError } from '../errors';
 import { decryptKeychainPrivateKey } from '../keychain';
+import { ECDSAUtils } from '../utils';
 import { boundedInt, decodeWithCodec } from '../utils/codecs';
 import { postWithCodec } from '../utils/postWithCodec';
 import { Wallet } from '../wallet';
@@ -37,17 +38,28 @@ const GetDerivationIndexResponse = t.type({
   index: boundedInt(0, 0x7fffffff, 'derivationIndex'),
 });
 
-const CreateWalletInSafeBody = t.strict({
-  coin: t.string,
-  label: t.string,
-  type: t.literal('hot'),
-  multisigType: t.literal('onchain'),
-  keys: t.tuple([t.string]),
-});
+const CreateWalletInSafeBody = t.union([
+  t.strict({
+    coin: t.string,
+    label: t.string,
+    type: t.literal('hot'),
+    multisigType: t.literal('onchain'),
+    keys: t.tuple([t.string]),
+  }),
+  // TSS mint: the SDK registers the user AND backup child keys (both carry
+  // encryptedPrv); the BitGo child key is minted by the server.
+  t.strict({
+    coin: t.string,
+    label: t.string,
+    type: t.literal('hot'),
+    multisigType: t.literal('tss'),
+    keys: t.tuple([t.string, t.string]),
+  }),
+]);
 
 function onchainSlotForCoin(coin: IBaseCoin): Extract<RootKeyType, 'secp256k1Multisig'> {
   if (coin.getDefaultMultisigType() === 'tss') {
-    throw new Error('MPC safe wallet minting is not yet implemented; use a slot-1 onchain coin');
+    throw new Error('MPC safe wallet minting requires multisigType "tss"; use "onchain" for non-MPC minting');
   }
   const curve = coins.get(coin.getChain()).primaryKeyCurve;
   if (curve === KeyCurve.Secp256k1) {
@@ -59,13 +71,27 @@ function onchainSlotForCoin(coin: IBaseCoin): Extract<RootKeyType, 'secp256k1Mul
   throw new Error(`Coin '${coin.getChain()}' is not supported for safe wallet minting`);
 }
 
-function userRootIdFromSafe(safe: SafeData, slot: RootKeyType): string | undefined {
+function tssSlotForCoin(coin: IBaseCoin): Extract<RootKeyType, 'ecdsaMpc'> {
+  if (coin.getDefaultMultisigType() !== 'tss') {
+    throw new Error(`Coin '${coin.getChain()}' is not a TSS coin; cannot mint a tss safe wallet for it`);
+  }
+  const curve = coins.get(coin.getChain()).primaryKeyCurve;
+  if (curve === KeyCurve.Secp256k1) {
+    return 'ecdsaMpc';
+  }
+  if (curve === KeyCurve.Ed25519) {
+    throw new Error('ed25519 MPC safe wallet minting is not yet supported');
+  }
+  throw new Error(`Coin '${coin.getChain()}' is not supported for safe wallet minting`);
+}
+
+function rootIdFromSafe(safe: SafeData, slot: RootKeyType, position: 0 | 1 | 2): string | undefined {
   const triplet = safe.rootKeys?.hot?.[slot];
   if (!triplet || triplet.length !== 3) {
     return undefined;
   }
-  const userRootId = triplet[0];
-  return userRootId.length > 0 ? userRootId : undefined;
+  const rootId = triplet[position];
+  return rootId.length > 0 ? rootId : undefined;
 }
 
 /**
@@ -105,8 +131,16 @@ export class Safe implements ISafe {
   }
 
   /**
-   * Mint a child wallet: peek the sequential index, hardened-derive the user child,
-   * register it public-only, then mint. Backup and BitGo children are soft-derived on the server.
+   * Mint a child wallet: peek the sequential index, derive the child keys, register
+   * them, then mint.
+   *
+   * `onchain`: hardened-derive the user child (`m/<index>'`), register it
+   * public-only; backup and BitGo children are soft-derived on the server.
+   *
+   * `tss`: decrypt the safe's `ecdsaMpc` root blobs (each carries the DKLS signing
+   * keyshare and the Ristretto VRF keyshare), run the hard-derive ceremony against
+   * the server (SDK drives user and backup), register the user and backup children
+   * with the derived signing share encrypted under the Safe passphrase, then mint.
    */
   async createWallet(params: CreateSafeWalletOptions): Promise<Wallet> {
     if (params.passphrase.length === 0) {
@@ -115,12 +149,10 @@ export class Safe implements ISafe {
     if (params.type !== undefined && params.type !== 'hot') {
       throw new Error('Safe wallets are hot-only in v1');
     }
-    if (params.multisigType === 'tss') {
-      throw new Error('MPC safe wallet minting is not yet implemented; use multisigType "onchain"');
-    }
+    const isTss = params.multisigType === 'tss';
 
     const coin = this.bitgo.coin(params.coin);
-    const slot = onchainSlotForCoin(coin);
+    const slot = isTss ? tssSlotForCoin(coin) : onchainSlotForCoin(coin);
 
     const indexResponse = await this.bitgo.get(this.url('/derivation-index')).query({ slot }).result();
     const peeked = decodeWithCodec(GetDerivationIndexResponse, indexResponse, 'GetDerivationIndexResponse');
@@ -129,9 +161,22 @@ export class Safe implements ISafe {
     }
     const { index } = peeked;
 
-    const userRootId = userRootIdFromSafe(this._safe, slot) ?? userRootIdFromSafe(await this.fetchSafeData(), slot);
+    const safeData = rootIdFromSafe(this._safe, slot, 0) !== undefined ? this._safe : await this.fetchSafeData();
+    const userRootId = rootIdFromSafe(safeData, slot, 0);
     if (userRootId === undefined) {
       throw new Error(`Safe ${this.id()} is missing rootKeys.hot.${slot}`);
+    }
+
+    if (isTss) {
+      const backupRootId = rootIdFromSafe(safeData, slot, 1);
+      const bitgoRootId = rootIdFromSafe(safeData, slot, 2);
+      if (backupRootId === undefined) {
+        throw new Error(`Safe ${this.id()} is missing rootKeys.hot.${slot} backup key`);
+      }
+      if (bitgoRootId === undefined) {
+        throw new Error(`Safe ${this.id()} is missing rootKeys.hot.${slot} bitgo key`);
+      }
+      return this.createTssWalletInSafe(coin, userRootId, backupRootId, bitgoRootId, index, params);
     }
 
     const keychains = coin.keychains();
@@ -175,6 +220,72 @@ export class Safe implements ISafe {
     return new Wallet(this.bitgo, coin, response);
   }
 
+  /**
+   * TSS wallet mint: decrypt both root blobs, seed and run the hard-derive ceremony
+   * with the server, register the derived user and backup children (encryptedPrv
+   * holds the signing share only), then POST the unchanged mint endpoint with both
+   * child ids.
+   */
+  private async createTssWalletInSafe(
+    coin: IBaseCoin,
+    userRootId: string,
+    backupRootId: string,
+    bitgoRootId: string,
+    index: number,
+    params: CreateSafeWalletOptions
+  ): Promise<Wallet> {
+    const keychains = coin.keychains();
+    const [userRootKeychain, backupRootKeychain] = await Promise.all([
+      keychains.get({ id: userRootId }),
+      keychains.get({ id: backupRootId }),
+    ]);
+    if (userRootKeychain.source !== 'user') {
+      throw new InvalidRootKeychainSourceError(userRootKeychain.id, userRootKeychain.source);
+    }
+    if (backupRootKeychain.source !== 'backup') {
+      throw new InvalidRootKeychainSourceError(backupRootKeychain.id, backupRootKeychain.source);
+    }
+    const [userRootPrv, backupRootPrv] = await Promise.all([
+      decryptKeychainPrivateKey(this.bitgo, userRootKeychain, params.passphrase),
+      decryptKeychainPrivateKey(this.bitgo, backupRootKeychain, params.passphrase),
+    ]);
+    if (!userRootPrv || !backupRootPrv) {
+      throw new IncorrectPasswordError();
+    }
+
+    const userRootMaterial = ECDSAUtils.parseVrfKeyEnvelopes(userRootPrv);
+    const backupRootMaterial = ECDSAUtils.parseVrfKeyEnvelopes(backupRootPrv);
+
+    const tssUtils = new ECDSAUtils.EcdsaVrfMPCv2Utils(this.bitgo, coin);
+    const { userKeychain, backupKeychain } = await tssUtils.createSafeChildKeychains({
+      passphrase: params.passphrase,
+      enterprise: this.enterpriseId(),
+      safeId: this.id(),
+      // Derive from the safe's BitGo root key (its material holds the VRF share).
+      parentKeyId: bitgoRootId,
+      derivationIndex: index,
+      userRootKeyId: userRootId,
+      backupRootKeyId: backupRootId,
+      userRootKeyShare: userRootMaterial.signing,
+      userRootVrfKeyShare: userRootMaterial.vrf,
+      backupRootKeyShare: backupRootMaterial.signing,
+      backupRootVrfKeyShare: backupRootMaterial.vrf,
+    });
+    if (userKeychain.id.length === 0 || backupKeychain.id.length === 0) {
+      throw new Error('safe child key registration returned an empty id');
+    }
+    const keys: [string, string] = [userKeychain.id, backupKeychain.id];
+
+    const response = await postWithCodec(this.bitgo, this.url('/wallets'), CreateWalletInSafeBody, {
+      coin: params.coin,
+      label: params.label,
+      type: 'hot',
+      multisigType: 'tss',
+      keys,
+    }).result();
+    return new Wallet(this.bitgo, coin, response);
+  }
+
   private async fetchSafeData(): Promise<SafeData> {
     const response = await this.bitgo.get(this.url()).result();
     return decodeWithCodec(SafeData, response, 'SafeData');
@@ -182,34 +293,30 @@ export class Safe implements ISafe {
 
   /**
    * Add a member to the whole safe (view/admin/spend). Spend opens a key share.
-   * Body lands in WCN-1204.
    */
   async addMember(params: AddSafeMemberOptions): Promise<SafeData> {
-    throw new Error('Safe.addMember is not yet implemented (WCN-1204)');
+    throw new Error('Safe.addMember is not yet implemented');
   }
 
   /**
-   * Share ONE safe wallet with a non-member via the existing wallet-share handshake (FR-13).
-   * Body lands in WCN-1204.
+   * Share ONE safe wallet with a non-member via the existing wallet-share handshake.
    */
   async addMemberToWallet(params: AddSafeWalletMemberOptions): Promise<WalletShareData> {
-    throw new Error('Safe.addMemberToWallet is not yet implemented (WCN-1204)');
+    throw new Error('Safe.addMemberToWallet is not yet implemented');
   }
 
   /**
    * List the safe key shares visible to the caller.
-   * Body lands in WCN-1204.
    */
   async listShares(params: { state?: SafeShareState } = {}): Promise<SafeShareData[]> {
-    throw new Error('Safe.listShares is not yet implemented (WCN-1204)');
+    throw new Error('Safe.listShares is not yet implemented');
   }
 
   /**
    * Accept a safe key share addressed to the caller.
-   * Body lands in WCN-1204.
    */
   async acceptShare(params: AcceptSafeShareOptions): Promise<SafeShareData> {
-    throw new Error('Safe.acceptShare is not yet implemented (WCN-1204)');
+    throw new Error('Safe.acceptShare is not yet implemented');
   }
 
   /**
