@@ -104,6 +104,8 @@ export interface UpdatePasswordOptions {
    * Sept 15 breaking-change window closes).
    */
   encryptionVersion?: EncryptionVersion;
+  /** Reuse one password-derived session across all matching keychains. */
+  encryptionSession?: IEncryptionSession;
 }
 
 export interface UpdateSingleKeychainPasswordOptions {
@@ -115,6 +117,8 @@ export interface UpdateSingleKeychainPasswordOptions {
    * Pass `2` to opt in to the Argon2id upgrade.
    */
   encryptionVersion?: EncryptionVersion;
+  /** Reuse one password-derived session for this keychain's new envelope. */
+  encryptionSession?: IEncryptionSession;
 }
 
 /**

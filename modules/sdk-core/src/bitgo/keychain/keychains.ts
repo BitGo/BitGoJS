@@ -125,6 +125,7 @@ export class Keychains implements IKeychains {
             oldPassword: params.oldPassword,
             newPassword: params.newPassword,
             encryptionVersion: params.encryptionVersion,
+            encryptionSession: params.encryptionSession,
           });
           if (updatedKeychain.encryptedPrv) {
             // Both TSS and multi-user-ofc keys have multiple public keys in their key document and thus need to use objectID
@@ -208,11 +209,13 @@ export class Keychains implements IKeychains {
     const oldEncryptedPrv = params.keychain.encryptedPrv;
     try {
       const decryptedPrv = await this.bitgo.decrypt({ input: oldEncryptedPrv, password: params.oldPassword });
-      const newEncryptedPrv = await this.bitgo.encrypt({
-        input: decryptedPrv,
-        password: params.newPassword,
-        encryptionVersion: params.encryptionVersion ?? this.getEncryptionVersion(oldEncryptedPrv),
-      });
+      const newEncryptedPrv = params.encryptionSession
+        ? await params.encryptionSession.encrypt(decryptedPrv)
+        : await this.bitgo.encrypt({
+            input: decryptedPrv,
+            password: params.newPassword,
+            encryptionVersion: params.encryptionVersion ?? this.getEncryptionVersion(oldEncryptedPrv),
+          });
       return _.assign({}, params.keychain, { encryptedPrv: newEncryptedPrv });
     } catch (e) {
       // catching an error here means that the password was incorrect or, less likely, the input to decrypt is corrupted
