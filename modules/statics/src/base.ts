@@ -2008,6 +2008,7 @@ export enum UnderlyingAsset {
   'sepeth:usdc' = 'sepeth:usdc',
   'sepeth:pyusd' = 'sepeth:pyusd',
   'sepeth:wtgxx' = 'sepeth:wtgxx',
+  'sepeth:real1' = 'sepeth:real1',
   // Robinhood Chain testnet ERC-20 tokens
   'thoodeth:amzn' = 'thoodeth:amzn',
   'thoodeth:tsla' = 'thoodeth:tsla',

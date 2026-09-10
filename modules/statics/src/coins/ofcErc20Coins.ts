@@ -5163,6 +5163,20 @@ export const tOfcErc20Coins = [
     undefined,
     'sepeth'
   ),
+  tofcerc20(
+    '70bef63c-60ff-4a1b-8045-6ca14a04aa96',
+    'ofcsepeth:real1',
+    'REAL1',
+    6,
+    UnderlyingAsset['sepeth:real1'],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'sepeth'
+  ),
 
   ofcerc20(
     'cc2a92cf-d799-463b-b08c-e9a4d5e87934',
