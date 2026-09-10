@@ -147,6 +147,13 @@ export class Transaction extends BaseTransaction {
     if (!this._prepareCommand || !this._prepareCommand.preparedTransaction) {
       throw new InvalidTransactionError('Empty transaction data');
     }
+    if (this._type === TransactionType.CantonCommand) {
+      // Generic allowlisted DAML command (CreateCommand/ExerciseCommand) — unlike the
+      // purpose-built transaction types, there's no fixed sender/receiver/amount shape to
+      // parse from the prepared transaction bytes here.
+      result.amount = '0';
+      return result;
+    }
     // TODO: extract other required data (utxo used, request time, execute before etc)
     let parsedInfo: PreparedTxnParsedInfo;
     try {

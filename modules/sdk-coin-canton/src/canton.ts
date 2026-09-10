@@ -114,6 +114,7 @@ export class Canton extends BaseCoin {
       case TransactionType.TransferAcknowledge:
       case TransactionType.OneStepPreApproval:
       case TransactionType.TransferOfferWithdrawn:
+      case TransactionType.CantonCommand:
         // There is no input for these type of transactions, so always return true.
         return true;
       case TransactionType.Send:

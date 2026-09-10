@@ -5,6 +5,7 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { CantonCommandBuilder } from './cantonCommandBuilder';
 import { OneStepPreApprovalBuilder } from './oneStepPreApprovalBuilder';
 import { TransferAcceptanceBuilder } from './transferAcceptanceBuilder';
 import { TransferAcknowledgeBuilder } from './transferAcknowledgeBuilder';
@@ -48,6 +49,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
         case TransactionType.TransferReject: {
           return this.getTransferRejectBuilder(tx);
         }
+        case TransactionType.CantonCommand: {
+          return this.getCantonCommandBuilder(tx);
+        }
         default: {
           throw new InvalidTransactionError('unsupported transaction');
         }
@@ -73,6 +77,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getTransferRejectBuilder(tx?: Transaction): TransferRejectionBuilder {
     return TransactionBuilderFactory.initializeBuilder(tx, new TransferRejectionBuilder(this._coinConfig));
+  }
+
+  getCantonCommandBuilder(tx?: Transaction): CantonCommandBuilder {
+    return TransactionBuilderFactory.initializeBuilder(tx, new CantonCommandBuilder(this._coinConfig));
   }
 
   /** @inheritdoc */

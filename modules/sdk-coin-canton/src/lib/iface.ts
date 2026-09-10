@@ -161,3 +161,41 @@ export interface CantonTransferRequest {
   memoId?: string;
   tokenName?: string;
 }
+
+export interface CantonCreateCommand {
+  CreateCommand: {
+    templateId: string;
+    createArguments: Record<string, unknown>;
+  };
+}
+
+export interface CantonExerciseCommand {
+  ExerciseCommand: {
+    templateId: string;
+    choice: string;
+    choiceArgument?: Record<string, unknown>;
+    // omitted when the contractId will be resolved via resolveContracts at build time
+    contractId?: string;
+  };
+}
+
+export type CantonCommandUnion = CantonCreateCommand | CantonExerciseCommand;
+
+/**
+ * Declares a contract to resolve from the active contract set at build time, and the
+ * dot-notation path within the command where its resolved contractId should be injected
+ * (e.g. "ExerciseCommand.contractId").
+ */
+export interface CantonCommandResolveContractSpec {
+  templateId: string;
+  actAs: string[];
+  readAs?: string[];
+  // if true, resolves all active contracts for the templateId instead of just the first match
+  resolveAll?: boolean;
+  injectAs: string;
+}
+
+export interface CantonCommandRequest extends CantonPrepareCommandRequest {
+  command: CantonCommandUnion;
+  resolveContracts?: CantonCommandResolveContractSpec[];
+}
