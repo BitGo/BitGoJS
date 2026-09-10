@@ -39,7 +39,7 @@
     ]
   },
   "dependencies": {
-    "@bitgo/public-types": "6.66.0",
+    "@bitgo/public-types": "6.70.1",
     "@bitgo/sdk-core": "^38.15.0",
     "@bitgo/statics": "^59.15.0",
     "@bitgo/utxo-lib": "^11.24.4",
