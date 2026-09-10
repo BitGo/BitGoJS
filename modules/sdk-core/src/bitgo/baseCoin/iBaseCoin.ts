@@ -11,7 +11,7 @@ import EddsaUtils, { EddsaMPCv2Utils, PrebuildTransactionWithIntentOptions, TxRe
 import { RedpallasMPCv2Utils } from '../utils/tss/redpallas';
 import { CreateAddressFormat, CustomSigningFunction, IWallet, IWallets, Memo, Wallet, WalletData } from '../wallet';
 
-import { TokenEnablement } from '@bitgo/public-types';
+import { TokenEnablement, unifiedAddressPreference } from '@bitgo/public-types';
 import { Hash } from 'crypto';
 import { TransactionType } from '../../account-lib';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
@@ -356,8 +356,15 @@ export interface FeeEstimateOptions {
   type?: keyof typeof TransactionType;
 }
 
+/** How a Zcash Unified Address recipient should be resolved. */
+export type UnifiedRecipientPreference = unifiedAddressPreference;
+
 // TODO (SDKT-9): reverse engineer and add options
 export interface ExtraPrebuildParamsOptions {
+  /**
+   * how to resolve a Unified Address recipient (`'shielded'` or `'transparent'`).
+   */
+  unifiedRecipientPreference?: UnifiedRecipientPreference;
   [index: string]: unknown;
 }
 

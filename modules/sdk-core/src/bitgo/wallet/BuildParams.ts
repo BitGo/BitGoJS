@@ -1,6 +1,7 @@
 /* eslint no-redeclare: off */
 
 import * as t from 'io-ts';
+import { unifiedAddressPreference } from '@bitgo/public-types';
 import { getCodecProperties } from '../utils/codecProps';
 
 export const Bip322Message = t.type({
@@ -39,6 +40,10 @@ export const BuildParamsUTXO = t.partial({
   isReplaceableByFee: t.boolean,
   messages: t.array(Bip322Message),
   qr: t.boolean,
+  /**
+   * how to resolve a Unified Address recipient for zec.
+   */
+  unifiedRecipientPreference: unifiedAddressPreference,
 });
 
 export const BuildParamsStacks = t.partial({
