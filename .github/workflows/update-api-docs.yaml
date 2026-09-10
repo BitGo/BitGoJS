@@ -1,0 +1,26 @@
+---
+name: Update BitGo Express API docs
+
+# Kept manual until the first OpenAPI batch is added to openapi-index.ts.
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  generate-and-update-api-docs:
+    uses: BitGo/gha-dev-portal-updater/.github/workflows/generate-and-update.yml@645bcc9d1e669f5b53eebc0121eede056569ca1a # v5.38.0
+    with:
+      target-repo: api-docs
+      service-name: platform-express
+      types-package-path: ./modules/express
+      api-spec-file: src/typedRoutes/api/openapi-index.ts
+      api-spec-title: BitGo Express API
+      codec-config-file: ./modules/express/openapi-generator.rc.js
+      remote-working-directory: ''
+    secrets: inherit
