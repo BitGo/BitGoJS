@@ -176,6 +176,26 @@ function runWithScriptTypes(scriptTypes: ScriptType2Of3[]) {
 }
 
 describe('Backup Key Recovery PSBT', function () {
+  it('uses the supplied post-NU6.2 block height for Zcash', function () {
+    const { walletKeys: externalWallet } = createWasmWalletKeys('external');
+    const recoveryDestination = getWalletAddress('zec', externalWallet);
+    const unspent = toUnspent({ scriptType: 'p2sh', value: BigInt(1e8) }, 0, 'zec', wasmWalletKeys);
+
+    const psbt = backupKeyRecoveryWithWalletUnspents(
+      'zec',
+      {
+        walletKeys: wasmWalletKeys,
+        keys: [userPrivkey, backupPrivkey, wasmWalletKeys.bitgoKey()],
+        recoveryDestination,
+        feeRateSatVB: 1,
+        blockHeight: 3_364_600,
+      },
+      [unspent]
+    );
+
+    assert.strictEqual((psbt as fixedScriptWallet.ZcashBitGoPsbt).consensusBranchId, 0x5437f330);
+  });
+
   // compatible with all coins
   runWithScriptTypes(['p2sh']);
 
