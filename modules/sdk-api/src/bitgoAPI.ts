@@ -1053,11 +1053,14 @@ export class BitGoAPI implements BitGoBase {
   }
 
   /**
-   * Synchronous method for activating an access token.
+   * Activate an access token and sync it to the HMAC auth strategy.
+   * Resolves once the token has been registered with the strategy, so callers
+   * can safely issue signed requests immediately after.
    */
-  authenticateWithAccessToken({ accessToken }: AccessTokenOptions): void {
+  async authenticateWithAccessToken({ accessToken }: AccessTokenOptions): Promise<void> {
     debug('now authenticating with access token %s', accessToken.substring(0, 8));
     this._token = accessToken;
+    await this._hmacAuthStrategy.setToken?.(this._token);
   }
 
   /**
@@ -1152,14 +1155,14 @@ export class BitGoAPI implements BitGoBase {
         return new Error('already logged in');
       }
 
-      const authUrl = this.microservicesUrl('/api/auth/v1/session');
+      const authUrl = this.url('/user/login', 2);
       const request = this.post(authUrl);
 
       if (forceV1Auth) {
         request.forceV1Auth = true;
         // tell the server that the client was forced to downgrade the authentication protocol
         authParams.forceV1Auth = true;
-        debug('forcing v1 auth for call to authenticate');
+        debug('forcing v1 auth on request');
       }
       const response: superagent.Response = await request.send(authParams);
       // extract body and user information
