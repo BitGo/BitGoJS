@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.14.0...@bitgo/statics@59.15.0) (2026-09-10)
+
+
+### Features
+
+* **statics:** onboard real1 token on sepolia ([cbfd8eb](https://github.com/BitGo/BitGoJS/commit/cbfd8ebb0cd1e18f35b62d36220d611ed6ce8838))
+
+
+
+
+
 # [59.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.13.0...@bitgo/statics@59.14.0) (2026-09-09)
 
 

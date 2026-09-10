@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [12.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@12.5.0...@bitgo/abstract-utxo@12.6.0) (2026-09-10)
+
+
+### Bug Fixes
+
+* **abstract-utxo:** pass Zcash recovery block height ([65bf651](https://github.com/BitGo/BitGoJS/commit/65bf651c2f99abae9f88affb207e84d76a55ba7a))
+
+
+### Features
+
+* **sdk-coin-zec:** support redpallas mpc algorithm and reorder shielded check ([0b05aba](https://github.com/BitGo/BitGoJS/commit/0b05abaa2aaab01b17e5e6d238688af94e15ea5a))
+
+
+
+
+
 # [12.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@12.4.4...@bitgo/abstract-utxo@12.5.0) (2026-09-09)
 
 

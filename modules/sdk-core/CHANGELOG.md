@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.14.0...@bitgo/sdk-core@38.15.0) (2026-09-10)
+
+
+### Features
+
+* run VRF DKG during EdDSA safe MPC root creation ([d7bfa80](https://github.com/BitGo/BitGoJS/commit/d7bfa80f232d76e5d567b3b57b8c5b01cf370c5b))
+* **sdk-coin-zec:** support redpallas mpc algorithm and reorder shielded check ([0b05aba](https://github.com/BitGo/BitGoJS/commit/0b05abaa2aaab01b17e5e6d238688af94e15ea5a))
+
+
+### Performance Improvements
+
+* **sdk-core:** pin high-entropy encryption to v1 ([ab92e68](https://github.com/BitGo/BitGoJS/commit/ab92e6892d986c3caf9a9a2e43df75f85395413f))
+
+
+
+
+
 # [38.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.13.0...@bitgo/sdk-core@38.14.0) (2026-09-09)
 
 

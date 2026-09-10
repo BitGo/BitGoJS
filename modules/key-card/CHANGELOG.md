@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.34.16](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.34.15...@bitgo/key-card@0.34.16) (2026-09-10)
+
+
+### Performance Improvements
+
+* **sdk-core:** pin high-entropy encryption to v1 ([ab92e68](https://github.com/BitGo/BitGoJS/commit/ab92e6892d986c3caf9a9a2e43df75f85395413f))
+
+
+
+
+
 ## [0.34.15](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.34.14...@bitgo/key-card@0.34.15) (2026-09-09)
 
 **Note:** Version bump only for package @bitgo/key-card
