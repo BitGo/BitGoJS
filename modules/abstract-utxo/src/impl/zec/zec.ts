@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase, MPCAlgorithm } from '@bitgo/sdk-core';
 import { zcashAddress } from '@bitgo/wasm-utxo';
 
 import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
@@ -12,6 +12,16 @@ export class Zec extends AbstractUtxoCoin {
 
   constructor(bitgo: BitGoBase) {
     super(bitgo);
+  }
+
+  /**
+   * ZEC shielded (Orchard/Ironwood) custodial wallets use RedPallas threshold keys.
+   * Transparent (secp256k1 multisig) flows are unaffected: MPCAlgorithm is only
+   * consulted on the TSS custodial wallet-creation path.
+   * @inheritdoc
+   */
+  getMPCAlgorithm(): MPCAlgorithm {
+    return 'redpallas';
   }
 
   static createInstance(bitgo: BitGoBase): Zec {
