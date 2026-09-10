@@ -1334,7 +1334,7 @@ export const erc20Coins = [
     8,
     '0x6c8c6b02e7b2be14d4fa6022dfd6d75921d90e4e',
     UnderlyingAsset.CBAT,
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.RECEIPT_TOKEN]
   ),
   erc20(
     '6c9c046a-2d9e-425c-9408-5db99e0ce1a7',
@@ -1375,7 +1375,8 @@ export const erc20Coins = [
     'Compound DAI',
     8,
     '0xf5dce57282a584d2746faf1593d3121fcac444dc',
-    UnderlyingAsset.CDAI
+    UnderlyingAsset.CDAI,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.RECEIPT_TOKEN]
   ),
   erc20(
     '9e5041fe-a4c5-4c03-b1aa-360b54e939ad',
@@ -1419,15 +1420,18 @@ export const erc20Coins = [
     8,
     '0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5',
     UnderlyingAsset.CETH,
-    AccountCoin.getFeaturesByTypeExcluding(
-      [
-        CoinFeature.CUSTODY_BITGO_SINGAPORE,
-        CoinFeature.CUSTODY_BITGO_GERMANY,
-        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
-        CoinFeature.CUSTODY_BITGO_FRANKFURT,
-      ],
-      ETH_FEATURES
-    )
+    [
+      ...AccountCoin.getFeaturesByTypeExcluding(
+        [
+          CoinFeature.CUSTODY_BITGO_SINGAPORE,
+          CoinFeature.CUSTODY_BITGO_GERMANY,
+          CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+          CoinFeature.CUSTODY_BITGO_FRANKFURT,
+        ],
+        ETH_FEATURES
+      ),
+      CoinFeature.RECEIPT_TOKEN,
+    ]
   ),
   erc20(
     'fd41106e-cf6f-4f0c-9868-a41fbcec8a49',
@@ -1675,7 +1679,7 @@ export const erc20Coins = [
     8,
     '0x158079ee67fce2f58472a96584a73c7ab9ac95c1',
     UnderlyingAsset.CREP,
-    ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.RECEIPT_TOKEN]
   ),
   erc20(
     '60d46b84-16ea-43c0-b36a-1234114ff69f',
@@ -1752,7 +1756,7 @@ export const erc20Coins = [
     8,
     '0x39aa39c021dfbae8fac545936693ac917d5e7563',
     UnderlyingAsset.CUSDC,
-    ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.RECEIPT_TOKEN]
   ),
   erc20(
     '62599dbf-9953-4e99-82bd-9582f19c79de',
@@ -1761,7 +1765,7 @@ export const erc20Coins = [
     8,
     '0xc11b1268c1a384e55c48c2391d8d480264a3a7f4',
     UnderlyingAsset.CWBTC,
-    ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.RECEIPT_TOKEN]
   ),
   erc20(
     '1cc20e86-1e91-49b5-98f0-48f6dd184081',
@@ -1805,7 +1809,7 @@ export const erc20Coins = [
     8,
     '0xb3319f5d18bc0d84dd1b4825dcde5d5f7266d407',
     UnderlyingAsset.CZRX,
-    ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.RECEIPT_TOKEN]
   ),
   erc20(
     '4bf54e88-8fe8-4678-86f1-76ce0a75e641',
@@ -8005,7 +8009,8 @@ export const erc20Coins = [
     'Staked USDe',
     18,
     '0x9d39a5de30e57443bff2a8307a4256c8797a3497',
-    UnderlyingAsset.SUSDE
+    UnderlyingAsset.SUSDE,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.RECEIPT_TOKEN]
   ),
   erc20(
     'fd4d284b-f3eb-4890-ad1f-2d698979b291',
@@ -8403,7 +8408,7 @@ export const erc20Coins = [
     6,
     '0x71fc860f7d3a592a4a98740e39db31d25db65ae8',
     UnderlyingAsset.AUSDT,
-    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.REBASE_TOKEN]
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.REBASE_TOKEN, CoinFeature.RECEIPT_TOKEN]
   ),
   erc20(
     '8d9c0c6b-0ab7-4d98-8b9a-83ae3b77914c',
@@ -8420,7 +8425,7 @@ export const erc20Coins = [
     8,
     '0x9ff58f4ffb29fa2266ab25e75e2a8b3503311656',
     UnderlyingAsset.AWBTC,
-    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.REBASE_TOKEN]
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.REBASE_TOKEN, CoinFeature.RECEIPT_TOKEN]
   ),
   erc20(
     'fbd1d2af-b3c9-4272-aa92-30c1594fc626',
@@ -8429,7 +8434,7 @@ export const erc20Coins = [
     18,
     '0x5165d24277cd063f5ac44efd447b27025e888f37',
     UnderlyingAsset.AYFI,
-    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.REBASE_TOKEN]
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.REBASE_TOKEN, CoinFeature.RECEIPT_TOKEN]
   ),
   erc20(
     '0ff6ec5b-ebff-47b8-aa60-0b02e4ce4de8',
@@ -8678,7 +8683,8 @@ export const erc20Coins = [
     'Compound Dai',
     8,
     '0x5d3a536e4d6dbd6114cc1ead35777bab948e3643',
-    UnderlyingAsset.CDAIV2
+    UnderlyingAsset.CDAIV2,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.RECEIPT_TOKEN]
   ),
   erc20(
     '7a01ceff-fe46-4e24-b501-99ca9a6c1ee5',
