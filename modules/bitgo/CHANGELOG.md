@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [52.12.0](https://github.com/BitGo/BitGoJS/compare/bitgo@52.11.0...bitgo@52.12.0) (2026-09-09)
+
+
+### Bug Fixes
+
+* align child derivation path field with WP ([f9b64ca](https://github.com/BitGo/BitGoJS/commit/f9b64cab837abaa89e0ef9c439901b9ebe0d8376))
+
+
+### Features
+
+* **sdk-core:** add wrap() and unwrap() to DefiVault ([61ea5a0](https://github.com/BitGo/BitGoJS/commit/61ea5a0cba522849fe0051c9ea792df3eee0c97a))
+* **sdk-core:** integrate DKLS VRF DKG into createKeychains for safe roots ([223e3c4](https://github.com/BitGo/BitGoJS/commit/223e3c4f057e3d0e71efd31dfdd066ad0e0dd79b))
+
+
+
+
+
 # [52.11.0](https://github.com/BitGo/BitGoJS/compare/bitgo@52.10.1...bitgo@52.11.0) (2026-09-04)
 
 

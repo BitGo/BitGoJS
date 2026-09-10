@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.7.40](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tia@3.7.39...@bitgo/sdk-coin-tia@3.7.40) (2026-09-09)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-tia
+
+
+
+
+
 ## [3.7.39](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tia@3.7.38...@bitgo/sdk-coin-tia@3.7.39) (2026-09-04)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-tia

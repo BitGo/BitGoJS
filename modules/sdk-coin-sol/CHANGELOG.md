@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.8.0...@bitgo/sdk-coin-sol@8.9.0) (2026-09-09)
+
+
+### Bug Fixes
+
+* **sdk-coin-sol:** recognize Token ACL thaw in WASM explain ([ee06d9a](https://github.com/BitGo/BitGoJS/commit/ee06d9a543baa6a0e5ff92ca3e3846d738aa0712))
+* **sdk-coin-sol:** support Token-2022 close ATA ([6267706](https://github.com/BitGo/BitGoJS/commit/62677066c0e070aa966b674fd528fc4940c1ddc0))
+
+
+### Features
+
+* **sdk-coin-sol:** remove check for confidential extension ([9dbf67a](https://github.com/BitGo/BitGoJS/commit/9dbf67a5c5788d39de54f7fff90923214df97070))
+
+
+
+
+
 # [8.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.7.2...@bitgo/sdk-coin-sol@8.8.0) (2026-09-04)
 
 

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.19.0...@bitgo/sdk-lib-mpc@10.20.0) (2026-09-09)
+
+
+### Features
+
+* **sdk-core:** integrate DKLS VRF DKG into createKeychains for safe roots ([223e3c4](https://github.com/BitGo/BitGoJS/commit/223e3c4f057e3d0e71efd31dfdd066ad0e0dd79b))
+* **sdk-lib-mpc:** add VrfDkg wrapper for MPS VRF keygen ([37ab5d0](https://github.com/BitGo/BitGoJS/commit/37ab5d034bcc15ad1881b054a07b42c570dc2155))
+
+
+
+
+
 # [10.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.18.0...@bitgo/sdk-lib-mpc@10.19.0) (2026-09-04)
 
 

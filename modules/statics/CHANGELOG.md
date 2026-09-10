@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.13.0...@bitgo/statics@59.14.0) (2026-09-09)
+
+
+### Features
+
+* add new tokens from AMS API ([4a1ef6c](https://github.com/BitGo/BitGoJS/commit/4a1ef6c9ad479fe11c4ea6f1a8cd83b2cc137fe4))
+* add new tokens from AMS API ([35a5b5c](https://github.com/BitGo/BitGoJS/commit/35a5b5c5dfc5acb9dd5da53a241545b445baa951))
+* add new tokens from AMS API ([792ae06](https://github.com/BitGo/BitGoJS/commit/792ae06a8e766815df1e99415e1cd405d255785f))
+* **statics:** enable ZAMA staking metadata ([b0012c8](https://github.com/BitGo/BitGoJS/commit/b0012c83baaf94e59122b4bf5378c48ff811d7f5))
+
+
+
+
+
 # [59.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.12.0...@bitgo/statics@59.13.0) (2026-09-04)
 
 
