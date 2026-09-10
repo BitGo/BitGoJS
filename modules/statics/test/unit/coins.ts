@@ -1277,6 +1277,10 @@ describe('Bulk Transaction Features', () => {
 });
 
 describe('ERC20 Bulk Transaction Feature', () => {
+  it('should mark LDO as spendable', () => {
+    coins.get('ldo').features.includes(CoinFeature.BULK_TRANSACTION).should.eql(true);
+  });
+
   it('should have ERC20_BULK_TRANSACTION feature for appropriate coins', () => {
     const erc20BulkTransactionCoins = [
       'eth',
