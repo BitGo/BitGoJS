@@ -1971,6 +1971,7 @@ class HoodethTestnet extends Testnet implements EthereumNetwork {
   explorerUrl = 'https://explorer.testnet.chain.robinhood.com/tx/';
   accountExplorerUrl = 'https://explorer.testnet.chain.robinhood.com/address/';
   chainId = 46630;
+  tokenOperationHashPrefix = '46630-ERC20';
   batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
   nativeCoinOperationHashPrefix = '46630';
 }
@@ -1981,6 +1982,7 @@ class Hoodeth extends Mainnet implements EthereumNetwork {
   explorerUrl = 'https://robinhoodchain.blockscout.com/tx/';
   accountExplorerUrl = 'https://robinhoodchain.blockscout.com/address/';
   chainId = 4663;
+  tokenOperationHashPrefix = '4663-ERC20';
   batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
   nativeCoinOperationHashPrefix = '4663';
 }
