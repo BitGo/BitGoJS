@@ -278,7 +278,7 @@ export class Transaction extends BaseTransaction {
     if (!this._flareTransaction) {
       throw new InvalidTransactionError('empty transaction to sign');
     }
-    if (!this.hasCredentials) {
+    if (!this.credentials || this.credentials.length === 0) {
       throw new InvalidTransactionError('empty credentials to sign');
     }
     const unsignedTx = this._flareTransaction as UnsignedTx;

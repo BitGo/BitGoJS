@@ -606,6 +606,16 @@ describe('FLRP credential guard regression', () => {
     tx.signature.length.should.equal(1);
   });
 
+  it('rejects external signatures when credentials are established but empty', async () => {
+    const tx = (await factory.from(testData.fullSigntxHex).build()) as Transaction;
+    (tx.getFlareTransaction() as UnsignedTx).credentials = [];
+
+    assert.throws(
+      () => tx.addExternalSignature(new Uint8Array(65)),
+      /empty credentials to sign/
+    );
+  });
+
   it('rejects a real signature alongside an address placeholder', async () => {
     const tx = (await factory.from(testData.fullSigntxHex).build()) as Transaction;
     const flareTx = tx.getFlareTransaction() as UnsignedTx;
