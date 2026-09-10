@@ -15204,4 +15204,16 @@ export const erc20Coins = [
     undefined,
     Networks.test.sepolia
   ),
+  terc20(
+    '97658fdb-33fc-4995-bd11-7b6d3b1bf20d',
+    'sepeth:real1',
+    'REAL1',
+    6,
+    '0x8463e1f760d0572d04bc76a6031361d76124562f',
+    UnderlyingAsset['sepeth:real1'],
+    ACCOUNT_COIN_DEFAULT_FEATURES,
+    undefined,
+    undefined,
+    Networks.test.sepolia
+  ),
 ];
