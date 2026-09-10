@@ -74,7 +74,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     retrofit?: DecryptedRetrofitPayload;
     webauthnInfo?: WebauthnKeyEncryptionInfo;
     encryptionVersion?: EncryptionVersion;
-    // Wallet Safes v1 (@experimental): tags the resulting user/backup/bitgo root keys with this safe.
+    // @experimental: tags the resulting user/backup/bitgo root keys with this safe.
     safeId?: string;
   }): Promise<KeychainsTriplet> {
     const { userSession, backupSession } = this.getUserAndBackupSession(2, 3, params.retrofit);
@@ -393,7 +393,10 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     },
     encryptionVersion?: EncryptionVersion,
     enterprise?: string,
-    safeId?: string
+    safeId?: string,
+    // Safe child registration: the parent root key id this child was hardened-derived
+    // from, plus the derivation index (`m/<index>').
+    child?: { parentKeyId?: string; index?: number }
   ): Promise<Keychain> {
     let source: string;
     let encryptedPrv: string | undefined = undefined;
@@ -403,9 +406,19 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       case MPCv2PartiesEnum.USER:
       case MPCv2PartiesEnum.BACKUP:
         source = participantIndex === MPCv2PartiesEnum.USER ? 'user' : 'backup';
+        assert(passphrase, `Passphrase is required for ${source} keychain`);
+        if (privateMaterial === undefined) {
+          assert(
+            participantIndex === MPCv2PartiesEnum.BACKUP &&
+              safeId !== undefined &&
+              child?.parentKeyId !== undefined &&
+              child.index !== undefined,
+            `Private material is required for ${source} keychain`
+          );
+          break;
+        }
         assert(privateMaterial, `Private material is required for ${source} keychain`);
         assert(reducedPrivateMaterial, `Reduced private material is required for ${source} keychain`);
-        assert(passphrase, `Passphrase is required for ${source} keychain`);
         privateMaterialBase64 = privateMaterial.toString('base64');
         if (encryptionSession) {
           encryptedPrv = await encryptionSession.encrypt(privateMaterialBase64);
@@ -424,7 +437,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
           // beyond the server-stored encryptedPrv.
           reducedEncryptedPrv = await this.bitgo.encrypt({
             // Buffer.toString('base64') can not be used here as it does not work on the browser.
-            // The browser deals with a Buffer as Uint8Array, therefore in the browser .toString('base64') just creates a comma seperated string of the array values.
+            // The browser deals with a Buffer as Uint8Array, therefore on browser .toString('base64') just creates a comma seperated string of the array values.
             input: btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(reducedPrivateMaterial)))),
             password: passphrase,
             encryptionVersion,
@@ -446,6 +459,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       originalPasscodeEncryptionCode,
       isMPCv2: true,
       safeId,
+      parent: child?.parentKeyId,
+      derivedFromParentWithPath: child?.index !== undefined ? `m/${child.index}'` : undefined,
     };
 
     if (webauthnInfo && participantIndex === MPCv2PartiesEnum.USER && privateMaterialBase64) {
@@ -1158,7 +1173,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       derivationPath = signableTx.derivationPath;
       serializedTxHex = signableTx.serializedTxHex;
     } else if (requestType === RequestType.message) {
-      // TODO(WP-2176): Add support for message signing
+      // TODO: add support for message signing
       throw new Error('MPCv2 message signing not supported yet.');
     } else {
       throw new Error('Invalid request type, got: ' + requestType);
@@ -1210,7 +1225,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     const { txRequest, reqId } = params;
     let txRequestResolved: TxRequest;
 
-    // TODO(WP-2176): Add support for message signing
+    // TODO: add support for message signing
     assert(
       requestType === RequestType.tx,
       'Only transaction signing is supported for external signer, got: ' + requestType
