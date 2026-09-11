@@ -1,0 +1,45 @@
+// Generated: 2026-09-04
+// @bitgo/wasm-mps version: 1.15.0 (pinned in modules/sdk-lib-mpc/package.json)
+// Coin: EdDSA MPCv2 (3-party DKG, deterministic seeds)
+//
+// These are real bincode-serialized Keyshare<EdwardsPoint> blobs produced by
+// @bitgo/wasm-mps at the version pinned in this repo. If the wire format changes,
+// DSG round0 will fail to deserialize these bytes, making the regression test in
+// test/unit/tss/eddsa/mpcv2Compatibility.ts the earliest signal of a breaking change.
+//
+// Regeneration procedure (deterministic; reproduces the exact bytes below while
+// the pin stays at 1.15.0):
+//   - party i seed: sha256("wci-1476-fixture-party-" + i), i in {0, 1, 2}
+//   - per party: libsodium crypto_box_seed_keypair(seed)
+//   - DKG seed: a304733c16cc821fe171d5c7dbd7276fd90deae808b7553d17a1e55e4a76b270
+//   - run the DKG via the sdk-lib-mpc DKG class (src/tss/eddsa-mps/dkg.ts):
+//     getFirstMessage(dkgSeed), then handleIncomingMessages for rounds 1-2.
+//     Party 0 -> userKeyShare, party 1 -> backupKeyShare, party 2 ->
+//     bitgoKeyShare; commonKeychain = hex(pk) + hex(chaincode); party 0's
+//     getReducedKeyShare() -> userReducedKeyShare.
+//   Same fixtures as hsm-api PR #1262 and BitGoWASM PR #376.
+
+export const EDDSA_MPCV2_FIXTURES = {
+  commonKeychain:
+    '4d085a45375f3308d93f9a7de21bd6edd77a7a5d7a02cd0c1a2f4ba4560bd76a926021c9cd6712e0e52ccf7f6867eb0ebc8889f335d34f21dd5e36b2db5cb4fe',
+
+  // Opaque bincode-serialized Keyshare<EdwardsPoint> from @bitgo/wasm-mps
+  userKeyShare: Buffer.from(
+    '0203007c01f56048ff0c0056edac6cc44d54c6d95fe68d072d1c1fbad9c4f3fac9ec054d085a45375f3308d93f9a7de21bd6edd77a7a5d7a02cd0c1a2f4ba4560bd76a6058f5d7601f380c8419e6fce20b8fbd2ec63ab06b5f4b81cab3959cd4e01433452df0e73fb57b332be5bc0bbb4cd34585494614923309be8a844125ed773af2456613b78a6339153b12a20152c055f19ba02283c84c4fe068d760bfcfc7e1d620c182a8d5159b5122940b3063f76d3f713e9e01a06f6e770502b7b8e97fe03a3b00926021c9cd6712e0e52ccf7f6867eb0ebc8889f335d34f21dd5e36b2db5cb4fe',
+    'hex'
+  ),
+  backupKeyShare: Buffer.from(
+    '020301ee23eba58bf28bfe1c67150ddb4bac0fb057a74e227eadc7eaf8c237f36ca0044d085a45375f3308d93f9a7de21bd6edd77a7a5d7a02cd0c1a2f4ba4560bd76a6058f5d7601f380c8419e6fce20b8fbd2ec63ab06b5f4b81cab3959cd4e01433452df0e73fb57b332be5bc0bbb4cd34585494614923309be8a844125ed773af2456613b78a6339153b12a20152c055f19ba02283c84c4fe068d760bfcfc7e1d620c182a8d5159b5122940b3063f76d3f713e9e01a06f6e770502b7b8e97fe03a3b00926021c9cd6712e0e52ccf7f6867eb0ebc8889f335d34f21dd5e36b2db5cb4fe',
+    'hex'
+  ),
+  bitgoKeyShare: Buffer.from(
+    '0203026046e1eacee50afde3e07dadf1490459864f680f3dcf3e701b18c17beb0f54034d085a45375f3308d93f9a7de21bd6edd77a7a5d7a02cd0c1a2f4ba4560bd76a6058f5d7601f380c8419e6fce20b8fbd2ec63ab06b5f4b81cab3959cd4e01433452df0e73fb57b332be5bc0bbb4cd34585494614923309be8a844125ed773af2456613b78a6339153b12a20152c055f19ba02283c84c4fe068d760bfcfc7e1d620c182a8d5159b5122940b3063f76d3f713e9e01a06f6e770502b7b8e97fe03a3b00926021c9cd6712e0e52ccf7f6867eb0ebc8889f335d34f21dd5e36b2db5cb4fe',
+    'hex'
+  ),
+
+  // CBOR-encoded EddsaReducedKeyShare for the user party
+  userReducedKeyShare: Buffer.from(
+    'b90003686b6579536861726598e5020300187c0118f51860184818ff0c00185618ed18ac186c18c4184d185418c618d9185f18e6188d07182d181c181f18ba18d918c418f318fa18c918ec05184d08185a18451837185f18330818d9183f189a187d18e2181b18d618ed18d7187a187a185d187a0218cd0c181a182f184b18a418560b18d7186a1860185818f518d71860181f18380c1884181918e618fc18e20b188f18bd182e18c6183a18b0186b185f184b188118ca18b31895189c18d418e01418331845182d18f018e7183f18b5187b1833182b18e518bc0b18bb184c18d3184518851849184614189218330918be188a18841841182518ed1877183a18f2184518661318b7188a1863183915183b1218a201185218c0185518f1189b18a01822188318c8184c184f18e0186818d7186018bf18cf18c718e118d6182018c1188218a818d515189b1851182218940b1830186318f7186d183f1871183e189e0118a0186f186e1877050218b718b818e9187f18e0183a183b0018921860182118c918cd18671218e018e5182c18cf187f1868186718eb0e18bc1888188918f3183518d3184f182118dd185e183618b218db185c18b418fe637075629820184d08185a18451837185f18330818d9183f189a187d18e2181b18d618ed18d7187a187a185d187a0218cd0c181a182f184b18a418560b18d7186a6d726f6f74436861696e436f6465982018921860182118c918cd18671218e018e5182c18cf187f1868186718eb0e18bc1888188918f3183518d3184f182118dd185e183618b218db185c18b418fe',
+    'hex'
+  ),
+} as const;
