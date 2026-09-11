@@ -2,10 +2,11 @@
  * @prettier
  */
 import { BitGoBase, MPCAlgorithm } from '@bitgo/sdk-core';
-import { zcashAddress } from '@bitgo/wasm-utxo';
 
 import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
 import { UtxoCoinName } from '../../names';
+
+import { ZecAddressCodec } from './address';
 
 export class Zec extends AbstractUtxoCoin {
   readonly name: UtxoCoinName = 'zec';
@@ -28,10 +29,11 @@ export class Zec extends AbstractUtxoCoin {
     return new Zec(bitgo);
   }
 
+  override get addressCodec(): ZecAddressCodec {
+    return new ZecAddressCodec(this.name, this.wasmName);
+  }
+
   isValidAddress(address: string, param?: { anyFormat?: boolean; allowLightning?: boolean } | boolean): boolean {
-    return (
-      zcashAddress.hasTransparentReceiver(address, this.wasmName) ||
-      zcashAddress.hasOrchardReceiver(address, this.wasmName)
-    );
+    return this.addressCodec.isValidAddress(address);
   }
 }
