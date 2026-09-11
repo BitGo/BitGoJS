@@ -6,7 +6,7 @@ import { CoinFeature } from '@bitgo/statics';
 import { GetVaultResponse, VaultProtocol, VaultProtocolType } from '@bitgo/public-types';
 import {
   ConcreteDepositResult,
-  MorphoDepositResult,
+  Erc4626DepositResult,
   DefiOperation,
   DefiOperationListResult,
   DepositResult,
@@ -60,7 +60,7 @@ export class DefiVault implements IDefiVault {
 
   /**
    * Minimal dispatch codec. The deposit path reads only `protocol` to choose
-   * between the concrete and morpho flows, so it must not hard-fail on the
+   * between the concrete, Morpho, and Aave flows, so it must not hard-fail on the
    * validity of unrelated response fields (e.g. `composition[]`) it never
    * consumes. A code path must not fail on the validity of data it does not
    * consume.
@@ -83,7 +83,7 @@ export class DefiVault implements IDefiVault {
 
   /**
    * Fetch vault config from defi-service. Used internally to determine
-   * which deposit path to take (Concrete vs Morpho).
+   * which deposit path to take (Concrete vs Morpho vs Aave V3).
    */
   async getVaultConfig(params: GetVaultConfigOptions): Promise<GetVaultResponse> {
     return decodeWithCodec(GetVaultResponse, await this.fetchVaultRaw(params.vaultId), 'getVaultConfig');
@@ -107,9 +107,9 @@ export class DefiVault implements IDefiVault {
   /**
    * Deposit an amount of underlying asset into a vault.
    *
-   * Dispatches to the concrete or morpho path based on vault provider.
+   * Dispatches to the concrete, Morpho, or Aave V3 path based on vault provider.
    * The concrete path returns a pendingApproval (custodial wallet).
-   * The morpho path issues two sendMany calls (approve + deposit).
+   * The Morpho and Aave V3 paths issue two sendMany calls (approve + deposit).
    *
    * @param params.vaultId - DeFi-service vault identifier
    * @param params.amount - amount in base units of the underlying asset
@@ -127,8 +127,8 @@ export class DefiVault implements IDefiVault {
 
     if (protocol === VaultProtocol.CONCRETE_BTCCX) {
       return this.depositToConcreteVault(params);
-    } else if (protocol === VaultProtocol.MORPHO) {
-      return this.depositToMorphoVault(params);
+    } else if (protocol === VaultProtocol.MORPHO || protocol === VaultProtocol.AAVE_V3) {
+      return this.depositToErc4626Vault(params);
     } else {
       throw new Error(`Unsupported vault protocol: ${protocol}`);
     }
@@ -154,10 +154,10 @@ export class DefiVault implements IDefiVault {
   }
 
   /**
-   * Morpho vault deposit path. Issues two sendMany calls (approve + deposit)
-   * and returns the operationId that links them.
+   * ERC-4626 vault deposit path (Morpho, Aave V3, ...). Issues two sendMany
+   * calls (approve + deposit) and returns the operationId that links them.
    */
-  private async depositToMorphoVault(params: DepositToVaultOptions): Promise<MorphoDepositResult> {
+  private async depositToErc4626Vault(params: DepositToVaultOptions): Promise<Erc4626DepositResult> {
     // TODO(CGD-1709): Re-enable active operation pre-flight check once the
     // defi-service operations endpoint is deployed and returning active state.
     // const activeOps: DefiOperationListResult = await this.bitgo
