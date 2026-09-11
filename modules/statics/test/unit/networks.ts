@@ -92,6 +92,17 @@ Object.entries(Networks).forEach(([category, networks]) => {
   });
 });
 
+describe('Hoodeth Network', function () {
+  it('should use chain-specific ERC20 operation hash prefixes', function () {
+    Networks.main.hoodeth.chainId.should.equal(4663);
+    Networks.main.hoodeth.nativeCoinOperationHashPrefix.should.equal('4663');
+    Networks.main.hoodeth.tokenOperationHashPrefix.should.equal('4663-ERC20');
+    Networks.test.hoodeth.chainId.should.equal(46630);
+    Networks.test.hoodeth.nativeCoinOperationHashPrefix.should.equal('46630');
+    Networks.test.hoodeth.tokenOperationHashPrefix.should.equal('46630-ERC20');
+  });
+});
+
 describe('Cosmos-family addressPrefix', function () {
   const cases: Array<[string, AccountNetwork, string]> = [
     ['main.atom', Networks.main.atom, 'cosmos'],
