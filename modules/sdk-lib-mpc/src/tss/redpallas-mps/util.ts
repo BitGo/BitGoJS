@@ -29,12 +29,8 @@ function validateSeed(seed?: RedPallasDKGPartySeed): RedPallasDKGPartySeed {
 /**
  * Runs a full 3-party (2-of-3) RedPallas DKG in-process. See `RedPallasDKGPartySeed`.
  * Mirrors `generateEdDsaDKGKeyShares` in `../eddsa-mps/util.ts`.
- *
- * @param derivationSeed - 32-byte seed consumed by round2 for the (platform-side-only)
- *   subsequent derivation process. Must be the same value across all three parties.
  */
 export async function generateRedPallasDKGKeyShares(
-  derivationSeed: Buffer,
   seedUser?: RedPallasDKGPartySeed,
   seedBackup?: RedPallasDKGPartySeed,
   seedBitgo?: RedPallasDKGPartySeed
@@ -67,10 +63,9 @@ export async function generateRedPallasDKGKeyShares(
     ...bitgo.handleIncomingMessages(r1Messages),
   ];
 
-  user.handleIncomingMessages(r2Messages, derivationSeed);
-  backup.handleIncomingMessages(r2Messages, derivationSeed);
-  bitgo.handleIncomingMessages(r2Messages, derivationSeed);
-
+  user.handleIncomingMessages(r2Messages);
+  backup.handleIncomingMessages(r2Messages);
+  bitgo.handleIncomingMessages(r2Messages);
   return [user, backup, bitgo];
 }
 

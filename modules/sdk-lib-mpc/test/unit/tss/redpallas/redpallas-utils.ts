@@ -9,7 +9,6 @@ describe('RedPallas Utility Functions', function () {
     const dkgSeedUser = Buffer.from('b415844d27dd9320f282d6d8ecd8387f0e9fbf9198664e28a2f66e6f5b87c381', 'hex');
     const dkgSeedBackup = Buffer.from('ae02d3f7464313d0f72f9f3862694579fa11f8983fc3fe42183cd137e3f3f30a', 'hex');
     const dkgSeedBitgo = Buffer.from('44d85ab746decb8f0f0c62be0498542ddf58f31d9ed24bd1f62b1b1be17fce0f', 'hex');
-    const derivationSeed = Buffer.from('c526955e37be0a0c8b77a831eb615948772b38df9f04d8c5a2e0e1f1d0c9b8a7', 'hex');
 
     it('should be deterministic with split encKey and dkgSeed', async function () {
       const split = {
@@ -17,13 +16,8 @@ describe('RedPallas Utility Functions', function () {
         backup: { encKey: seedBackup, dkgSeed: dkgSeedBackup },
         bitgo: { encKey: seedBitgo, dkgSeed: dkgSeedBitgo },
       };
-      const [user, backup, bitgo] = await generateRedPallasDKGKeyShares(
-        derivationSeed,
-        split.user,
-        split.backup,
-        split.bitgo
-      );
-      const [repeatUser] = await generateRedPallasDKGKeyShares(derivationSeed, split.user, split.backup, split.bitgo);
+      const [user, backup, bitgo] = await generateRedPallasDKGKeyShares(split.user, split.backup, split.bitgo);
+      const [repeatUser] = await generateRedPallasDKGKeyShares(split.user, split.backup, split.bitgo);
 
       const userPublicKey = user.getSharePublicKey().toString('hex');
       assert.strictEqual(userPublicKey, backup.getSharePublicKey().toString('hex'));
@@ -35,27 +29,17 @@ describe('RedPallas Utility Functions', function () {
       const okBackup = { encKey: seedBackup, dkgSeed: dkgSeedBackup };
       const okBitgo = { encKey: seedBitgo, dkgSeed: dkgSeedBitgo };
       await assert.rejects(
-        generateRedPallasDKGKeyShares(
-          derivationSeed,
-          { encKey: Buffer.alloc(31), dkgSeed: dkgSeedUser },
-          okBackup,
-          okBitgo
-        ),
+        generateRedPallasDKGKeyShares({ encKey: Buffer.alloc(31), dkgSeed: dkgSeedUser }, okBackup, okBitgo),
         /encKey must be at least 32 bytes/
       );
       await assert.rejects(
-        generateRedPallasDKGKeyShares(
-          derivationSeed,
-          { encKey: seedUser, dkgSeed: Buffer.alloc(31) },
-          okBackup,
-          okBitgo
-        ),
+        generateRedPallasDKGKeyShares({ encKey: seedUser, dkgSeed: Buffer.alloc(31) }, okBackup, okBitgo),
         /dkgSeed must be at least 32 bytes/
       );
     });
 
     it('should produce distinct key shares per party with a shared public key', async function () {
-      const [user, backup, bitgo] = await generateRedPallasDKGKeyShares(derivationSeed);
+      const [user, backup, bitgo] = await generateRedPallasDKGKeyShares();
 
       const userShare = user.getKeyShare();
       const backupShare = backup.getKeyShare();
