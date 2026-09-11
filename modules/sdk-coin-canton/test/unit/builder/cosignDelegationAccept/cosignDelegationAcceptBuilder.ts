@@ -5,7 +5,11 @@ import { coins } from '@bitgo/statics';
 
 import { CosignDelegationAcceptBuilder, Transaction, TransactionBuilderFactory } from '../../../../src';
 import { CantonTransferAcceptRejectRequest, TxData } from '../../../../src/lib/iface';
-import { CosignDelegationAcceptPrepareResponse, CosignDelegationAcceptRawTransaction } from '../../../resources';
+import {
+  CosignDelegationAcceptPrepareResponse,
+  CosignDelegationAcceptTemplePrepareResponse,
+  CosignDelegationAcceptRawTransaction,
+} from '../../../resources';
 
 const commandId = '3935a06d-3b03-41be-99a5-95b2ecaabf7d';
 const contractId =
@@ -93,6 +97,24 @@ describe('CosignDelegationAccept Builder', () => {
     assert.equal(
       txData.receiver,
       'ravi-new-party::122092e7d33ac10c0f3d55976342f37555df05da5b742956d56a62ae2367769079d2'
+    );
+    assert.equal(txData.amount, '0');
+  });
+  it('should parse Temple prepared acceptance transaction via toJson', function () {
+    const txBuilder = new CosignDelegationAcceptBuilder(coins.get('tcanton'));
+    const tx = new Transaction(coins.get('tcanton'));
+    txBuilder.initBuilder(tx);
+    txBuilder.setTransaction(CosignDelegationAcceptTemplePrepareResponse);
+    txBuilder.commandId(commandId).contractId(contractId).actAs(actAsPartyId);
+    const txData = txBuilder.transaction.toJson() as TxData;
+    should.exist(txData);
+    assert.equal(
+      txData.sender,
+      'ravi-2-step-party::122092e7d33ac10c0f3d55976342f37555df05da5b742956d56a62ae2367769079d2'
+    );
+    assert.equal(
+      txData.receiver,
+      'test-delegation::122092e7d33ac10c0f3d55976342f37555df05da5b742956d56a62ae2367769079d2'
     );
     assert.equal(txData.amount, '0');
   });

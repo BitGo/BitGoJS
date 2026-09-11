@@ -10,6 +10,7 @@ import {
   CANTON_BLOCK_HEIGHT,
   CantonAllocationAllocatePrepareResponse,
   CantonExerciseCommandPrepareResponse,
+  CosignDelegationAcceptTemplePrepareResponse,
   GenerateTopologyResponse,
   OneStepPreApprovalPrepareResponse,
   PreparedTransactionRawData,
@@ -71,6 +72,23 @@ describe('Canton Util', function () {
       assert.equal(parsedData.sender, 'DSO::1220be58c29e65de40bf273be1dc2b266d43a9a002ea5b18955aeef7aac881bb471a');
       assert.equal(parsedData.receiver, 'abcde::12205b4e3537a95126d90604592344d8ad3c3ddccda4f79901954280ee19c576714d');
       assert.equal(parsedData.amount, '50000000000');
+    });
+
+    it('should parse the Temple cosign delegation acceptance prepared transaction', () => {
+      const parsedData = utils.parseRawCantonTransactionData(
+        CosignDelegationAcceptTemplePrepareResponse.preparedTransaction,
+        TransactionType.CosignDelegationAccept
+      );
+      should.exist(parsedData);
+      assert.equal(
+        parsedData.sender,
+        'ravi-2-step-party::122092e7d33ac10c0f3d55976342f37555df05da5b742956d56a62ae2367769079d2'
+      );
+      assert.equal(
+        parsedData.receiver,
+        'test-delegation::122092e7d33ac10c0f3d55976342f37555df05da5b742956d56a62ae2367769079d2'
+      );
+      assert.equal(parsedData.amount, '0');
     });
 
     it('should parse the rejection prepared transaction', () => {
