@@ -4,6 +4,7 @@ import {
   SOL_TOKEN_FEATURES,
   SOL_TOKEN_FEATURES_EXCLUDE_EUROPE,
   SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE,
+  SOL_TOKEN_FEATURES_TRUST_ONLY,
   SOL_TOKEN_FEATURES_WITH_FRANKFURT,
   SOL_TOKEN_FEATURES_WITH_FRANKFURT_GERMANY,
 } from '../coinFeatures';
@@ -4292,7 +4293,7 @@ export const solTokens = [
     'Em46fxxwgY2RRoUbBMSbEjJwY62x3ESMNdhnsGpEKewm',
     'Em46fxxwgY2RRoUbBMSbEjJwY62x3ESMNdhnsGpEKewm',
     UnderlyingAsset['sol:wtgxx'],
-    SOL_TOKEN_FEATURES,
+    SOL_TOKEN_FEATURES_TRUST_ONLY,
     ProgramID.Token2022ProgramId
   ),
   solToken(
