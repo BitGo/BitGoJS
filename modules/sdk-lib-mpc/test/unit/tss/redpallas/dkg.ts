@@ -11,10 +11,6 @@ function makeKeypair(seed?: Buffer) {
   return { privKey, pubKey };
 }
 
-function makeDerivationSeed(): Buffer {
-  return crypto.randomBytes(32);
-}
-
 describe('RedPallas MPS DKG', function () {
   let user: RedPallasMPSDkg.RedPallasDKG;
   let backup: RedPallasMPSDkg.RedPallasDKG;
@@ -22,17 +18,14 @@ describe('RedPallas MPS DKG', function () {
   let userKP: { privKey: Buffer; pubKey: Buffer };
   let backupKP: { privKey: Buffer; pubKey: Buffer };
   let bitgoKP: { privKey: Buffer; pubKey: Buffer };
-  let derivationSeed: Buffer;
 
   beforeEach(function () {
     user = new RedPallasMPSDkg.RedPallasDKG(3, 2, 0);
     backup = new RedPallasMPSDkg.RedPallasDKG(3, 2, 1);
     bitgo = new RedPallasMPSDkg.RedPallasDKG(3, 2, 2);
-
     userKP = makeKeypair();
     backupKP = makeKeypair();
     bitgoKP = makeKeypair();
-    derivationSeed = makeDerivationSeed();
   });
 
   describe('DKG Initialization', function () {
@@ -131,9 +124,9 @@ describe('RedPallas MPS DKG', function () {
       });
 
       const r3Messages = [
-        ...user.handleIncomingMessages(r2Messages, derivationSeed),
-        ...backup.handleIncomingMessages(r2Messages, derivationSeed),
-        ...bitgo.handleIncomingMessages(r2Messages, derivationSeed),
+        ...user.handleIncomingMessages(r2Messages),
+        ...backup.handleIncomingMessages(r2Messages),
+        ...bitgo.handleIncomingMessages(r2Messages),
       ];
 
       assert.strictEqual(user.getState(), RedPallasDkgState.Complete);
@@ -154,28 +147,6 @@ describe('RedPallas MPS DKG', function () {
       assert(Buffer.isBuffer(bitgoKeyShare) && bitgoKeyShare.length > 0, 'BitGo key share should be non-empty Buffer');
     });
 
-    it('should require a 32-byte derivationSeed for round 2', async function () {
-      const r1Messages = [user.getFirstMessage(), backup.getFirstMessage(), bitgo.getFirstMessage()];
-      const r2Messages = [
-        ...user.handleIncomingMessages(r1Messages),
-        ...backup.handleIncomingMessages(r1Messages),
-        ...bitgo.handleIncomingMessages(r1Messages),
-      ];
-
-      assert.strictEqual(user.getState(), RedPallasDkgState.WaitMsg2);
-
-      assert.throws(() => {
-        user.handleIncomingMessages(r2Messages);
-      }, /Missing or invalid derivationSeed/);
-
-      assert.throws(() => {
-        user.handleIncomingMessages(r2Messages, Buffer.alloc(31));
-      }, /Missing or invalid derivationSeed/);
-
-      // Failed round2 must leave the session in WaitMsg2
-      assert.strictEqual(user.getState(), RedPallasDkgState.WaitMsg2);
-    });
-
     it('should generate consistent public keys across all parties', async function () {
       const r1Messages = [user.getFirstMessage(), backup.getFirstMessage(), bitgo.getFirstMessage()];
       const r2Messages = [
@@ -183,9 +154,9 @@ describe('RedPallas MPS DKG', function () {
         ...backup.handleIncomingMessages(r1Messages),
         ...bitgo.handleIncomingMessages(r1Messages),
       ];
-      user.handleIncomingMessages(r2Messages, derivationSeed);
-      backup.handleIncomingMessages(r2Messages, derivationSeed);
-      bitgo.handleIncomingMessages(r2Messages, derivationSeed);
+      user.handleIncomingMessages(r2Messages);
+      backup.handleIncomingMessages(r2Messages);
+      bitgo.handleIncomingMessages(r2Messages);
 
       const userPk = user.getSharePublicKey().toString('hex');
       const backupPk = backup.getSharePublicKey().toString('hex');
@@ -200,19 +171,13 @@ describe('RedPallas MPS DKG', function () {
     const seedUser = Buffer.from('a304733c16cc821fe171d5c7dbd7276fd90deae808b7553d17a1e55e4a76b270', 'hex');
     const seedBackup = Buffer.from('9d91c2e6353202cf61f8f275158b3468e9a00f7872fc2fd310b72cd026e2e2f9', 'hex');
     const seedBitgo = Buffer.from('33c749b635cdba7f9fbf51ad0387431cde47e20d8dc13acd1f51a9a0ad06ebfe', 'hex');
-    const fixedDerivationSeed = Buffer.from('c526955e37be0a0c8b77a831eb615948772b38df9f04d8c5a2e0e1f1d0c9b8a7', 'hex');
 
     it('should create key shares with deterministic seeds', async function () {
       const userParty = { encKey: seedUser, dkgSeed: seedUser };
       const backupParty = { encKey: seedBackup, dkgSeed: seedBackup };
       const bitgoParty = { encKey: seedBitgo, dkgSeed: seedBitgo };
 
-      const [user1, backup1, bitgo1] = await generateRedPallasDKGKeyShares(
-        fixedDerivationSeed,
-        userParty,
-        backupParty,
-        bitgoParty
-      );
+      const [user1, backup1, bitgo1] = await generateRedPallasDKGKeyShares(userParty, backupParty, bitgoParty);
 
       const pk0 = user1.getSharePublicKey().toString('hex');
       const pk1 = backup1.getSharePublicKey().toString('hex');
@@ -220,7 +185,7 @@ describe('RedPallas MPS DKG', function () {
       assert.strictEqual(pk0, pk1, 'User and backup should have same public key');
       assert.strictEqual(pk1, pk2, 'Backup and BitGo should have same public key');
 
-      const [user2] = await generateRedPallasDKGKeyShares(fixedDerivationSeed, userParty, backupParty, bitgoParty);
+      const [user2] = await generateRedPallasDKGKeyShares(userParty, backupParty, bitgoParty);
       assert.strictEqual(
         user1.getSharePublicKey().toString('hex'),
         user2.getSharePublicKey().toString('hex'),
@@ -237,13 +202,11 @@ describe('RedPallas MPS DKG', function () {
       const seedBBitgo = Buffer.from('44d85ab746decb8f0f0c62be0498542ddf58f31d9ed24bd1f62b1b1be17fce0f', 'hex');
 
       const [user1] = await generateRedPallasDKGKeyShares(
-        fixedDerivationSeed,
         { encKey: seedAUser, dkgSeed: seedAUser },
         { encKey: seedABackup, dkgSeed: seedABackup },
         { encKey: seedABitgo, dkgSeed: seedABitgo }
       );
       const [user2] = await generateRedPallasDKGKeyShares(
-        fixedDerivationSeed,
         { encKey: seedBUser, dkgSeed: seedBUser },
         { encKey: seedBBackup, dkgSeed: seedBBackup },
         { encKey: seedBBitgo, dkgSeed: seedBBitgo }
@@ -257,7 +220,7 @@ describe('RedPallas MPS DKG', function () {
     });
 
     it('should create key shares without party seeds (random)', async function () {
-      const [userDkg, backupDkg, bitgoDkg] = await generateRedPallasDKGKeyShares(derivationSeed);
+      const [userDkg, backupDkg, bitgoDkg] = await generateRedPallasDKGKeyShares();
 
       const userPk = userDkg.getSharePublicKey().toString('hex');
       const backupPk = backupDkg.getSharePublicKey().toString('hex');
@@ -268,7 +231,7 @@ describe('RedPallas MPS DKG', function () {
     });
 
     it('should generate valid reduced key shares', async function () {
-      const [userDkg, backupDkg, bitgoDkg] = await generateRedPallasDKGKeyShares(derivationSeed);
+      const [userDkg, backupDkg, bitgoDkg] = await generateRedPallasDKGKeyShares();
 
       const userReduced = userDkg.getReducedKeyShare();
       const backupReduced = backupDkg.getReducedKeyShare();
@@ -361,7 +324,7 @@ describe('RedPallas MPS DKG', function () {
     });
 
     it('should throw error when trying to export session after completion', async function () {
-      const [userDkg, backupDkg, bitgoDkg] = await generateRedPallasDKGKeyShares(derivationSeed);
+      const [userDkg, backupDkg, bitgoDkg] = await generateRedPallasDKGKeyShares();
 
       assert.throws(() => {
         userDkg.getSession();
