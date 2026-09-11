@@ -11,6 +11,7 @@ import {
   VerificationOptions,
   TypedData,
   NFTTransferOptions,
+  UnifiedRecipientPreference,
 } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { Keychain, KeychainWithEncryptedPrv } from '../keychain';
@@ -230,6 +231,10 @@ export interface PrebuildTransactionOptions {
    * the legacy format defined by bitcoinjs-lib, or the 'psbt' format, which follows the BIP-174.
    */
   txFormat?: 'legacy' | 'psbt' | 'psbt-lite';
+  /**
+   * how to resolve a Unified Address recipient for zec.
+   */
+  unifiedRecipientPreference?: UnifiedRecipientPreference;
   /**
    * Custom Solana instructions to include in the transaction.
    * Each instruction contains a program ID, accounts array, and data buffer.

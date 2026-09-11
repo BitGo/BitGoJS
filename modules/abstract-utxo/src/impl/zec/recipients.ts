@@ -1,8 +1,9 @@
 import { fixedScriptWallet, zcashAddress } from '@bitgo/wasm-utxo';
+import type { UnifiedRecipientPreference } from '@bitgo/sdk-core';
 
 import { getReplayProtectionPubkeys } from '../../transaction/fixedScript/replayProtection';
 
-import { ZcashCoinName, UnifiedRecipientPreference } from './types';
+import { ZcashCoinName } from './types';
 
 /**
  * How a recipient parsed from a Zcash PSBT is spent.
