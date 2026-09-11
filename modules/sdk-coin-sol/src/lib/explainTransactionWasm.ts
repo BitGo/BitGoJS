@@ -9,7 +9,6 @@ import {
 } from './constants';
 import { StakingAuthorizeParams, TransactionExplanation as SolLibTransactionExplanation } from './iface';
 import { findTokenName } from './instructionParamsFactory';
-import bs58 from 'bs58';
 
 export interface ExplainTransactionWasmOptions {
   txBase64: string;
@@ -110,7 +109,7 @@ function isWasmConfidentialTransferInstruction(instr: InstructionParams): boolea
   // Token-2022 CT extension: byte 0 = CT_EXT_DISCRIMINATOR, byte 1 ∈ CT_SUB_DISCRIMINATORS
   const TOKEN_2022_PROGRAM_ID = 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb';
   if (programId === TOKEN_2022_PROGRAM_ID) {
-    const dataBytes = bs58.decode(instr.data);
+    const dataBytes = Buffer.from(instr.data, 'base64');
     if (dataBytes.length >= 2) {
       return dataBytes[0] === CT_EXT_DISCRIMINATOR && CT_SUB_DISCRIMINATORS.has(dataBytes[1]);
     }

@@ -45,6 +45,21 @@ describe('explainTransactionWasm', function () {
       explained.tokenEnablements?.[0].tokenName.should.equal('3VDBJWgzRUscjQzzAp52na1dDquExZmD1PkCvH9svGF6');
     });
 
+    it('should classify a Token-2022 BurnChecked unknown instruction as CustomTx', function () {
+      // BurnChecked is not decoded by the WASM parser, so it is emitted as Unknown with
+      // base64-encoded data. This must not throw while checking for confidential transfers.
+      const TOKEN_2022_BURN_CHECKED_BASE64 =
+        'AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAIEd4VubrtXALIH766Ipu/Fvh26FyvOPjpBMkYBe3UO30SFN5lu5h+qbiflw3DnoJGsdJ035d0WtazcVkIoE5FhOgk/IBzpsSfv2fKcdhTIHFEQKNBi10zrLtUIacusFNtQBt324e51j94YQl285GzN2rYa/E2DuQ0n/r35KNihi/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEDAwECAAoKQEIPAAAAAAAG';
+
+      const explained = explainSolTransaction({
+        txBase64: TOKEN_2022_BURN_CHECKED_BASE64,
+        feeInfo: { fee: '5000' },
+        coinName: 'tsol',
+      });
+
+      explained.type.should.equal('CustomTx');
+    });
+
     it('should classify token transfer with Token ACL permissionless thaw as Send', function () {
       // TokenTransfer (transferChecked, Token-2022) + Token ACL ThawPermissionlessIdempotent for
       // the destination ATA. The Unknown thaw instruction previously triggered the CustomTx
