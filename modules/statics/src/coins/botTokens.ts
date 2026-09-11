@@ -4895,4 +4895,58 @@ export const botTokens = [
     undefined,
     undefined
   ),
+  AccountCtors.erc20(
+    '748676ef-9ebe-4857-83cf-9ee7fb587c1c',
+    'eth:esp',
+    'Espresso',
+    18,
+    '0x031de51f3e8016514bd0963d0b2ab825a591db9a',
+    'eth:esp' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-switzerland' as CoinFeature,
+      'custody-bitgo-sister-trust-one' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.erc20(
+    'e0868225-9e7b-4b94-885c-31aed45c454a',
+    'eth:grvt',
+    'GRVT',
+    18,
+    '0xad29f2723fcdbcf665f210f25e06f97477e417cf',
+    'eth:grvt' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-switzerland' as CoinFeature,
+      'custody-bitgo-sister-trust-one' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.erc20(
+    '63df6bab-a33f-4bb2-ad2a-350309cc4fea',
+    'eth:hei',
+    'Heima',
+    18,
+    '0xf8f173e20e15f3b6cb686fb64724d370689de083',
+    'eth:hei' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-switzerland' as CoinFeature,
+      'custody-bitgo-sister-trust-one' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    undefined
+  ),
 ];

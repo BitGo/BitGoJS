@@ -3501,4 +3501,46 @@ export const botOfcTokens = [
     undefined,
     undefined
   ),
+  AccountCtors.ofcerc20(
+    '58aaaa57-e5ae-4fd7-8b39-cd1cbbeb8b70',
+    'ofceth:esp',
+    'Espresso',
+    18,
+    'eth:esp' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    'e51bf341-682f-4e01-a655-5a3607417e06',
+    'ofceth:grvt',
+    'GRVT',
+    18,
+    'eth:grvt' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    'f508d93e-ad68-4657-ace3-7142865e41e2',
+    'ofceth:hei',
+    'Heima',
+    18,
+    'eth:hei' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
 ];
