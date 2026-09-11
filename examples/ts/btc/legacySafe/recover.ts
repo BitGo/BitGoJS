@@ -8,6 +8,7 @@ const destination = '2MyGxrhLC4kRfuVjLqCVYFtC7DchhgMCiNz';
  * Usage: npx tsx btc/legacySafe/recover.ts
  * */
 const recoveryTransaction = async () => {
+  await legacySafeConfig.sdk.authenticateWithAccessToken({ accessToken: legacySafeConfig.accessToken });
   const coin = legacySafeConfig.sdk.coin(legacySafeConfig.coin) as AbstractUtxoCoin;
   return await coin.recoverV1({
     walletId: legacySafeConfig.walletId,

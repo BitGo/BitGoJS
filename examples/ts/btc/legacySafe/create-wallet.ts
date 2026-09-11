@@ -25,6 +25,7 @@ const createWallet = async () => {
 };
 
 export const getV1SafeWallet = async () => {
+  await legacySafeConfig.bitgo.authenticateWithAccessToken({ accessToken: legacySafeConfig.accessToken });
   await legacySafeConfig.bitgo.unlock({ otp: '000000' });
   const v1SafeWallet = await legacySafeConfig.bitgo
     .wallets()

@@ -26,7 +26,7 @@ const otp = '';
 
 // Create the wallet
 async function main() {
-  bitgo.authenticateWithAccessToken({ accessToken });
+  await bitgo.authenticateWithAccessToken({ accessToken });
 
   await bitgo.unlock({ otp: otp, duration: 3600 });
   const wallet = await bitgo.coin(coin).wallets().get({ id });

@@ -36,7 +36,7 @@ const address = 'your root address or address of same wallet';
 const closeRemainderTo = 'your address where send token balance once you disable it';
 
 async function main(): Promise<void> {
-  bitgo.authenticateWithAccessToken({ accessToken });
+  await bitgo.authenticateWithAccessToken({ accessToken });
 
   const wallet: Wallet = await bitgo.coin(coin).wallets().get({ id: walletId });
 

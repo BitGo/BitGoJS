@@ -9,6 +9,7 @@ const RECEIVE_ADDRESS = '';
 const CHANGE_ADDRESS = '';
 
 async function getWallet() {
+  await changeAddressConfig.sdk.authenticateWithAccessToken({ accessToken: changeAddressConfig.accessToken });
   return await changeAddressConfig.sdk
     .coin(changeAddressConfig.coin)
     .wallets()

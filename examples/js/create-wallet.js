@@ -31,7 +31,7 @@ const coin = 'tltc';
 
 // Create the wallet
 Promise.coroutine(function* () {
-  bitgo.authenticateWithAccessToken({ accessToken });
+  yield bitgo.authenticateWithAccessToken({ accessToken });
 
   const walletOptions = {
     label,

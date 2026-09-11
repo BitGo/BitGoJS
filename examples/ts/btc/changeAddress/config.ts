@@ -10,10 +10,9 @@ const otp = '';
 
 const sdk = new BitGoAPI({ env });
 sdk.register('tbtc', Tbtc.createInstance);
-sdk.authenticateWithAccessToken({ accessToken });
-
 export const changeAddressConfig = {
   env,
+  accessToken,
   coin: env === 'test' ? 'tbtc' : 'btc',
   sdk,
   walletPassphrase,

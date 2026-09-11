@@ -7,11 +7,11 @@ import { BitGo, EnvironmentName } from '../../../../../modules/bitgo';
 import { rbfConfig } from './config';
 
 const bitgo = new BitGo({ env: rbfConfig.env as EnvironmentName });
-bitgo.authenticateWithAccessToken({ accessToken: rbfConfig.accessToken });
 
 const RECEIVE_ADDRESS = '';
 
 async function getWallet() {
+  await bitgo.authenticateWithAccessToken({ accessToken: rbfConfig.accessToken });
   return await bitgo.coin(rbfConfig.coin).wallets().get({ id: rbfConfig.walletId });
 }
 

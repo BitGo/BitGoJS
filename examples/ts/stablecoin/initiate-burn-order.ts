@@ -36,7 +36,6 @@ const fromAmountInFullUnits = '100'; // Amount in full units of the stablecoin (
 
 // Initialize BitGo SDK
 const bitgo = new BitGoJS.BitGo({ env: environment });
-bitgo.authenticateWithAccessToken({ accessToken: accessToken });
 const basecoin = bitgo.coin(ofcStablecoin);
 
 function createStablecoinUrl(path: string): string {
@@ -48,6 +47,7 @@ function createStablecoinUrl(path: string): string {
  */
 async function main() {
   try {
+    await bitgo.authenticateWithAccessToken({ accessToken: accessToken });
     console.log('🚀 Starting Stablecoin Burn Order Process...');
     console.log('='.repeat(50));
     console.log(`Environment: ${environment}`);

@@ -71,7 +71,7 @@ async function main(): Promise<void> {
 
   // Initialize BitGo SDK
   const bitgo = new BitGo({ env: environment });
-  bitgo.authenticateWithAccessToken({ accessToken });
+  await bitgo.authenticateWithAccessToken({ accessToken });
   if (otp) {
     const unlock = await bitgo.unlock({ otp, duration: 3600 });
     if (!unlock) {

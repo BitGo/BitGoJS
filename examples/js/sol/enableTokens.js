@@ -25,7 +25,7 @@ const coin = 'tsol';
 
 // Enable tokens for your root wallet
 async function main() {
-  bitgo.authenticateWithAccessToken({ accessToken });
+  await bitgo.authenticateWithAccessToken({ accessToken });
   const wallet = await bitgo.coin(coin).wallets().get({ id: walletId });
 
   const enableTokens = await wallet.sendTokenEnablements({

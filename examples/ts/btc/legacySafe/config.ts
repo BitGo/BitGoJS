@@ -13,10 +13,9 @@ const otp = '';
 
 const sdk = new BitGoAPI({ env });
 sdk.register('tbtc', Tbtc.createInstance);
-sdk.authenticateWithAccessToken({ accessToken });
-
 export const legacySafeConfig = {
   env,
+  accessToken,
   coin: env === 'test' ? 'tbtc' : 'btc',
   bitgo,
   sdk,

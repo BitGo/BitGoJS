@@ -26,7 +26,7 @@ const walletId = '';
 
 async function buildPayTx() {
   try {
-    bitgo.authenticateWithAccessToken({ accessToken });
+    await bitgo.authenticateWithAccessToken({ accessToken });
     const wallet = await bitgo.coin(coin).wallets().getWallet({ id: walletId });
     const recipients = [
       {

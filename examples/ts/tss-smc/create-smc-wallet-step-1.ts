@@ -15,7 +15,7 @@ async function createSMCWalletStep1() {
   const rawdata = readFileSync("./json/fromOVC2-step-1.json").toString();
   const parsedData = JSON.parse(rawdata);
 
-  bitgo.authenticateWithAccessToken({ accessToken });
+  await bitgo.authenticateWithAccessToken({ accessToken });
   const bitgoCoin = bitgo.coin(coinName);
 
   const { bitGoOutputJsonForOvc, bitGoKeyId } = await bitgoCoin

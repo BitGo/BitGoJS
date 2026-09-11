@@ -16,7 +16,7 @@ const walletId = '';
 const accessToken = '';
 
 Promise.coroutine(function* () {
-  bitgo.authenticateWithAccessToken({ accessToken });
+  yield bitgo.authenticateWithAccessToken({ accessToken });
 
   const wallet = yield bitgo.coin(coin).wallets().getWallet({ id: walletId });
   const address = yield wallet.createAddress({ label: 'My address' });

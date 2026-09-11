@@ -22,7 +22,7 @@ const userCommonKeyChain = "6e1bf...9c967"
 const bitgoKeyId = "649b69a0d2521600089f16044cd5e5cb";
 
 async function createSMCWalletStep2() {
-  bitgo.authenticateWithAccessToken({ accessToken });
+  await bitgo.authenticateWithAccessToken({ accessToken });
   const bitgoCoin = bitgo.coin(coinName);
 
   const bitgoKeyChain = await bitgoCoin.keychains().get({ id: bitgoKeyId })

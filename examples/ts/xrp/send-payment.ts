@@ -30,7 +30,7 @@ async function sendTx() {
   });
 
   const basecoin = bitgo.coin(coin);
-  bitgo.authenticateWithAccessToken({ accessToken });
+  await bitgo.authenticateWithAccessToken({ accessToken });
   // await bitgo.unlock({ otp: otp, duration: 3600 });
 
   const walletInstance = await basecoin.wallets().get({ id: walletId });

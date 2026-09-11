@@ -23,7 +23,7 @@ const coin = 'tltc';
 
 // Create the wallet with Bluebird coroutines
 Promise.coroutine(function* () {
-  bitgo.authenticateWithAccessToken({ accessToken });
+  yield bitgo.authenticateWithAccessToken({ accessToken });
 
   const wallet = yield bitgo.coin(coin).wallets().get({ id });
 

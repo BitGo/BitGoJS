@@ -26,7 +26,7 @@ const walletId = '';
 const forwarderVersion = 1;
 
 async function createAddress() {
-  bitgo.authenticateWithAccessToken({ accessToken });
+  await bitgo.authenticateWithAccessToken({ accessToken });
 
   const wallet = await bitgo.coin(coin).wallets().get({ id: walletId });
 

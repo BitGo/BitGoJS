@@ -13,7 +13,7 @@ const accessToken = '';
 const walletId = '';
 
 async function main() {
-  bitgo.authenticateWithAccessToken({ accessToken });
+  await bitgo.authenticateWithAccessToken({ accessToken });
 
   const walletInstance = await basecoin.wallets().get({ id: walletId });
   const addresses = await walletInstance.addresses();
