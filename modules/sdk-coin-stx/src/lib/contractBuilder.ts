@@ -15,7 +15,7 @@ import { Transaction } from './transaction';
 import { isValidAddress } from './utils';
 import { ClarityValueJson } from './iface';
 import { Utils } from '.';
-import { CONTRACT_NAME_SENDMANY, CONTRACT_NAME_STAKING } from './constants';
+import { CONTRACT_NAME_SENDMANY, VALID_STAKING_CONTRACT_NAMES } from './constants';
 import { AbstractContractBuilder } from './abstractContractBuilder';
 
 export class ContractBuilder extends AbstractContractBuilder {
@@ -60,8 +60,8 @@ export class ContractBuilder extends AbstractContractBuilder {
     if (name.length === 0) {
       throw new InvalidParameterValueError('Invalid name');
     }
-    if (name !== CONTRACT_NAME_STAKING && name !== CONTRACT_NAME_SENDMANY) {
-      throw new InvalidParameterValueError('Only pox-4 and send-many-memo contracts supported');
+    if (!VALID_STAKING_CONTRACT_NAMES.includes(name) && name !== CONTRACT_NAME_SENDMANY) {
+      throw new InvalidParameterValueError('Only pox-4, pox-5 and send-many-memo contracts supported');
     }
     this._contractName = name;
     return this;

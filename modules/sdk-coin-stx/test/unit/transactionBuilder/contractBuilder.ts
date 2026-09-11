@@ -3,7 +3,16 @@ import should from 'should';
 import BigNum from 'bn.js';
 import { StacksTestnet, StacksMainnet } from '@stacks/network';
 import { TransactionType } from '@bitgo/sdk-core';
-import { bufferCV, noneCV, someCV, standardPrincipalCV, tupleCV, uintCV, intCV } from '@stacks/transactions';
+import {
+  bufferCV,
+  contractPrincipalCV,
+  noneCV,
+  someCV,
+  standardPrincipalCV,
+  tupleCV,
+  uintCV,
+  intCV,
+} from '@stacks/transactions';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { coins } from '@bitgo/statics';
@@ -291,6 +300,191 @@ describe('Stacks: Contract Builder', function () {
         tx.inputs[0].value.should.equal('0');
       });
 
+      describe('pox-5 contract calls', () => {
+        /* Contract call in clarity POX-5 (SIP-045)
+        (define-public (stake (signer-manager <signer-manager-trait>)
+                              (amount-ustx uint)
+                              (num-cycles uint)
+                              (start-burn-ht uint)
+                              (signer-calldata (optional (buff 500)))))
+         */
+        const pox5StakeArgs = [
+          { type: 'principal', val: testData.SIGNER_MANAGER_PRINCIPAL_TESTNET },
+          { type: 'uint128', val: '400000000' },
+          { type: 'uint128', val: '2' },
+          { type: 'uint128', val: '52800' },
+          { type: 'optional', val: { type: 'buffer', val: Buffer.from('signer-calldata') } },
+        ];
+
+        const initPox5TxBuilder = (f = factory) => {
+          const txBuilder = f.getContractBuilder();
+          txBuilder.fee({ fee: '180' });
+          txBuilder.nonce(0);
+          txBuilder.contractName(testData.POX_5_CONTRACT_NAME);
+          return txBuilder;
+        };
+
+        it('an unsigned pox-5 stake contract call transaction', async () => {
+          const builder = initPox5TxBuilder();
+          builder.contractAddress(testData.CONTRACT_ADDRESS);
+          builder.functionName(testData.POX_5_STAKE_FUNCTION_NAME);
+          builder.functionArgs(pox5StakeArgs);
+          builder.fromPubKey(testData.TX_SENDER.pub);
+          builder.numberSignatures(1);
+          const tx = await builder.build();
+
+          const txJson = tx.toJson();
+          should.deepEqual(txJson.payload.contractAddress, testData.CONTRACT_ADDRESS);
+          should.deepEqual(txJson.payload.contractName, testData.POX_5_CONTRACT_NAME);
+          should.deepEqual(txJson.payload.functionName, testData.POX_5_STAKE_FUNCTION_NAME);
+          should.deepEqual(txJson.nonce, 0);
+          should.deepEqual(txJson.fee.toString(), '180');
+          should.deepEqual(tx.toBroadcastFormat(), testData.UNSIGNED_POX_5_STAKE_CONTRACT_CALL);
+
+          tx.type.should.equal(TransactionType.ContractCall);
+          tx.outputs.length.should.equal(1);
+          tx.outputs[0].address.should.equal(testData.CONTRACT_ADDRESS);
+          tx.outputs[0].value.should.equal('0');
+          tx.inputs.length.should.equal(1);
+          tx.inputs[0].address.should.equal(testData.TX_SENDER.address);
+          tx.inputs[0].value.should.equal('0');
+        });
+
+        it('a signed pox-5 stake contract call transaction', async () => {
+          const builder = initPox5TxBuilder();
+          builder.contractAddress(testData.CONTRACT_ADDRESS);
+          builder.functionName(testData.POX_5_STAKE_FUNCTION_NAME);
+          builder.functionArgs(pox5StakeArgs);
+          builder.sign({ key: testData.TX_SENDER.prv });
+          const tx = await builder.build();
+
+          const txJson = tx.toJson();
+          should.deepEqual(txJson.payload.contractName, testData.POX_5_CONTRACT_NAME);
+          should.deepEqual(txJson.payload.functionName, testData.POX_5_STAKE_FUNCTION_NAME);
+          should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_POX_5_STAKE_CONTRACT_CALL);
+          tx.type.should.equal(TransactionType.ContractCall);
+        });
+
+        it('a signed pox-5 stake contract call transaction without signer-calldata', async () => {
+          const builder = initPox5TxBuilder();
+          builder.contractAddress(testData.CONTRACT_ADDRESS);
+          builder.functionName(testData.POX_5_STAKE_FUNCTION_NAME);
+          builder.functionArgs([
+            { type: 'principal', val: testData.SIGNER_MANAGER_PRINCIPAL_TESTNET },
+            { type: 'uint128', val: '400000000' },
+            { type: 'uint128', val: '2' },
+            { type: 'uint128', val: '52800' },
+            { type: 'optional' },
+          ]);
+          builder.sign({ key: testData.TX_SENDER.prv });
+          const tx = await builder.build();
+
+          const txJson = tx.toJson();
+          should.deepEqual(txJson.payload.functionArgs[4], stringifyCv(noneCV()));
+          should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_POX_5_STAKE_NO_CALLDATA_CONTRACT_CALL);
+        });
+
+        it('a signed serialized pox-5 stake contract call transaction (round trip)', async () => {
+          const builder = factory.from(testData.SIGNED_POX_5_STAKE_CONTRACT_CALL);
+          const tx = await builder.build();
+          const txJson = tx.toJson();
+          should.deepEqual(txJson.payload.contractAddress, testData.CONTRACT_ADDRESS);
+          should.deepEqual(txJson.payload.contractName, testData.POX_5_CONTRACT_NAME);
+          should.deepEqual(txJson.payload.functionName, testData.POX_5_STAKE_FUNCTION_NAME);
+          should.deepEqual(txJson.nonce, 0);
+          should.deepEqual(txJson.fee.toString(), '180');
+          should.deepEqual(txJson.payload.functionArgs, [
+            stringifyCv(contractPrincipalCV('STDE7Y8HV3RX8VBM2TZVWJTS7ZA1XB0SSC3NEVH0', 'signer-manager')),
+            stringifyCv(uintCV('400000000')),
+            stringifyCv(uintCV('2')),
+            stringifyCv(uintCV('52800')),
+            stringifyCv(someCV(bufferCV(Buffer.from('signer-calldata')))),
+          ]);
+          should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_POX_5_STAKE_CONTRACT_CALL);
+          tx.type.should.equal(TransactionType.ContractCall);
+          tx.outputs.length.should.equal(1);
+          tx.outputs[0].address.should.equal(testData.CONTRACT_ADDRESS);
+          tx.outputs[0].value.should.equal('0');
+          tx.inputs.length.should.equal(1);
+          tx.inputs[0].address.should.equal(testData.TX_SENDER.address);
+          tx.inputs[0].value.should.equal('0');
+        });
+
+        it('a signed pox-5 stake-update contract call transaction (round trip)', async () => {
+          /* Contract call in clarity POX-5 (SIP-045)
+          (define-public (stake-update (signer-manager <signer-manager-trait>)
+                                       (old-signer-manager <signer-manager-trait>)
+                                       (cycles-to-extend uint)
+                                       (amount-increase uint)
+                                       (signer-calldata (optional (buff 500)))))
+           */
+          const builder = initPox5TxBuilder();
+          builder.contractAddress(testData.CONTRACT_ADDRESS);
+          builder.functionName(testData.POX_5_STAKE_UPDATE_FUNCTION_NAME);
+          builder.functionArgs([
+            { type: 'principal', val: testData.SIGNER_MANAGER_PRINCIPAL_TESTNET },
+            { type: 'principal', val: testData.OLD_SIGNER_MANAGER_PRINCIPAL_TESTNET },
+            { type: 'uint128', val: '4' },
+            { type: 'uint128', val: '100000000' },
+            { type: 'optional' },
+          ]);
+          builder.sign({ key: testData.TX_SENDER.prv });
+          const tx = await builder.build();
+          should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_POX_5_STAKE_UPDATE_CONTRACT_CALL);
+
+          const rebuilt = await factory.from(tx.toBroadcastFormat()).build();
+          const txJson = rebuilt.toJson();
+          should.deepEqual(txJson.payload.contractName, testData.POX_5_CONTRACT_NAME);
+          should.deepEqual(txJson.payload.functionName, testData.POX_5_STAKE_UPDATE_FUNCTION_NAME);
+          should.deepEqual(txJson.payload.functionArgs.length, 5);
+          should.deepEqual(rebuilt.toBroadcastFormat(), tx.toBroadcastFormat());
+        });
+
+        it('a signed pox-5 unstake contract call transaction (round trip)', async () => {
+          /* Contract call in clarity POX-5 (SIP-045)
+          (define-public (unstake (old-signer-manager <signer-manager-trait>)))
+           */
+          const builder = initPox5TxBuilder();
+          builder.contractAddress(testData.CONTRACT_ADDRESS);
+          builder.functionName(testData.POX_5_UNSTAKE_FUNCTION_NAME);
+          builder.functionArgs([{ type: 'principal', val: testData.OLD_SIGNER_MANAGER_PRINCIPAL_TESTNET }]);
+          builder.sign({ key: testData.TX_SENDER.prv });
+          const tx = await builder.build();
+          should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_POX_5_UNSTAKE_CONTRACT_CALL);
+
+          const rebuilt = await factory.from(tx.toBroadcastFormat()).build();
+          const txJson = rebuilt.toJson();
+          should.deepEqual(txJson.payload.contractName, testData.POX_5_CONTRACT_NAME);
+          should.deepEqual(txJson.payload.functionName, testData.POX_5_UNSTAKE_FUNCTION_NAME);
+          should.deepEqual(txJson.payload.functionArgs, [
+            stringifyCv(contractPrincipalCV('STDE7Y8HV3RX8VBM2TZVWJTS7ZA1XB0SSC3NEVH0', 'old-signer-manager')),
+          ]);
+          should.deepEqual(rebuilt.toBroadcastFormat(), tx.toBroadcastFormat());
+        });
+
+        it('an unsigned pox-5 stake contract call transaction on mainnet', async () => {
+          const builder = initPox5TxBuilder(factoryProd);
+          builder.contractAddress(testData.MAINNET_CONTRACT_ADDRESS);
+          builder.functionName(testData.POX_5_STAKE_FUNCTION_NAME);
+          builder.functionArgs([
+            { type: 'principal', val: testData.SIGNER_MANAGER_PRINCIPAL_MAINNET },
+            { type: 'uint128', val: '400000000' },
+            { type: 'uint128', val: '2' },
+            { type: 'uint128', val: '52800' },
+            { type: 'optional', val: { type: 'buffer', val: Buffer.from('signer-calldata') } },
+          ]);
+          builder.fromPubKey(testData.TX_SENDER.pub);
+          builder.numberSignatures(1);
+          const tx = await builder.build();
+
+          const txJson = tx.toJson();
+          should.deepEqual(txJson.payload.contractAddress, testData.MAINNET_CONTRACT_ADDRESS);
+          should.deepEqual(txJson.payload.contractName, testData.POX_5_CONTRACT_NAME);
+          should.deepEqual(txJson.payload.functionName, testData.POX_5_STAKE_FUNCTION_NAME);
+          should.deepEqual(tx.toBroadcastFormat(), testData.UNSIGNED_POX_5_STAKE_MAINNET_CONTRACT_CALL);
+        });
+      });
+
       it('a multisig transfer transaction', async () => {
         const builder = initTxBuilder();
         builder.functionArgs([{ type: 'optional', val: { type: 'int128', val: '123' } }]);
@@ -363,6 +557,14 @@ describe('Stacks: Contract Builder', function () {
           ]);
         });
 
+        it('contract principal (pox-5 signer-manager trait argument)', () => {
+          const builder = initTxBuilder();
+          builder.functionArgs([{ type: 'principal', val: testData.SIGNER_MANAGER_PRINCIPAL_TESTNET }]);
+          should.deepEqual((builder as any)._functionArgs, [
+            contractPrincipalCV('STDE7Y8HV3RX8VBM2TZVWJTS7ZA1XB0SSC3NEVH0', 'signer-manager'),
+          ]);
+        });
+
         it('Buffer as string', () => {
           const builder = initTxBuilder();
           builder.functionArgs([
@@ -408,11 +610,24 @@ describe('Stacks: Contract Builder', function () {
         });
         it('a contract call with an invalid contract name pox-2', () => {
           const builder = initTxBuilder();
-          assert.throws(() => builder.contractName('pox-2'), /Only pox-4 and send-many-memo contracts supported/);
+          assert.throws(
+            () => builder.contractName('pox-2'),
+            /Only pox-4, pox-5 and send-many-memo contracts supported/
+          );
         });
         it('a contract call with an invalid contract name pox-3', () => {
           const builder = initTxBuilder();
-          assert.throws(() => builder.contractName('pox-3'), /Only pox-4 and send-many-memo contracts supported/);
+          assert.throws(
+            () => builder.contractName('pox-3'),
+            /Only pox-4, pox-5 and send-many-memo contracts supported/
+          );
+        });
+        it('a contract call with an invalid contract name pox-6', () => {
+          const builder = initTxBuilder();
+          assert.throws(
+            () => builder.contractName('pox-6'),
+            /Only pox-4, pox-5 and send-many-memo contracts supported/
+          );
         });
         it('a contract call with an invalid contract function name', () => {
           const builder = initTxBuilder();
