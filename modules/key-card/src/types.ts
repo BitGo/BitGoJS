@@ -72,7 +72,8 @@ export const SAFE_ROOT_ORDER: SafeRootKeyType[] = ['secp256k1Multisig', 'ecdsaMp
 /**
  * The JSON object encoded in a safe keycard box (A/B/C): the four roots keyed by
  * {@link SafeRootKeyType}. Values are per-root ciphertext for A/B (encryptedPrv or
- * reducedEncryptedPrv) or public keys for C. The root-key-type keys are self-identifying, so a
+ * reducedEncryptedPrv; safe MPC ciphertext decrypts to a versioned signing+VRF envelope) or
+ * public keys for C. The root-key-type keys are self-identifying, so a
  * consumer parses by key rather than by size/offset.
  */
 export type SafeKeycardRoots = Record<SafeRootKeyType, string>;
