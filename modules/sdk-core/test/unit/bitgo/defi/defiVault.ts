@@ -51,6 +51,21 @@ describe('DefiVault', function () {
     };
   }
 
+  function makeAaveVault(id: string) {
+    return {
+      id,
+      name: 'Aave V3 USDC Vault',
+      protocol: VaultProtocol.AAVE_V3,
+      status: 'active',
+      coin: 'eth',
+      assetToken: 'usdc',
+      shareToken: 'stataUSDC',
+      riskManager: 'manager-3',
+      custodyType: 'qualified',
+      vaultContractAddress: '0xAaveVault',
+    };
+  }
+
   // A vault response whose `composition[]` no longer matches the strict
   // GetVaultResponse codec — mirrors the prod incident where a display-only
   // nested field was narrowed/removed server-side. The deposit dispatch path
@@ -440,6 +455,109 @@ describe('DefiVault', function () {
         await assert.rejects(() => defiVault.depositToVault({ vaultId: 'vlt-1', amount: '' }), {
           message: 'amount is required',
         });
+      });
+    });
+
+    describe('aave_v3 provider', function () {
+      it('should call sendMany for approve and deposit on happy path', async function () {
+        mockBitGo.get.returns(mockRequest(makeAaveVault('vlt-aave-usdc')));
+
+        const operationId = 'op-aave-123';
+        const sendManyStub = sinon.stub(wallet, 'sendMany');
+        sendManyStub.onFirstCall().resolves({
+          txRequest: {
+            txRequestId: 'txreq-aave-approve-1',
+            intent: { intentType: 'defi-approve' },
+            transactions: [{ unsignedTx: { coinSpecific: { operationId } } }],
+          },
+        });
+        sendManyStub.onSecondCall().resolves({
+          txRequest: {
+            txRequestId: 'txreq-aave-deposit-1',
+            intent: { intentType: 'defi-deposit' },
+            transactions: [{ unsignedTx: { coinSpecific: { operationId } } }],
+          },
+        });
+
+        const result = await defiVault.depositToVault({
+          vaultId: 'vlt-aave-usdc',
+          amount: '1000000',
+        });
+
+        (result as any).operationId.should.equal(operationId);
+        (result as any).txRequestIds.approve.should.equal('txreq-aave-approve-1');
+        (result as any).txRequestIds.deposit.should.equal('txreq-aave-deposit-1');
+        sendManyStub.calledTwice.should.be.true();
+
+        const approveArgs: any = sendManyStub.firstCall.args[0];
+        approveArgs.type.should.equal('defiApprove');
+        approveArgs.defiParams.should.deepEqual({ vaultId: 'vlt-aave-usdc', amount: '1000000' });
+
+        const depositArgs: any = sendManyStub.secondCall.args[0];
+        depositArgs.type.should.equal('defiDeposit');
+        depositArgs.defiParams.should.deepEqual({
+          vaultId: 'vlt-aave-usdc',
+          amount: '1000000',
+          operationId,
+        });
+      });
+
+      it('should extract operationId from the lite apiVersion coinSpecific', async function () {
+        mockBitGo.get.returns(mockRequest(makeAaveVault('vlt-aave-usdc')));
+
+        const operationId = 'op-aave-lite';
+        const sendManyStub = sinon.stub(wallet, 'sendMany');
+        sendManyStub.onFirstCall().resolves({
+          txRequest: {
+            txRequestId: 'txreq-aave-approve-lite',
+            unsignedTxs: [{ coinSpecific: { operationId } }],
+          },
+        });
+        sendManyStub.onSecondCall().resolves({
+          txRequest: { txRequestId: 'txreq-aave-deposit-lite' },
+        });
+
+        const result = await defiVault.depositToVault({ vaultId: 'vlt-aave-usdc', amount: '1000000' });
+
+        (result as any).operationId.should.equal(operationId);
+        (result as any).txRequestIds.approve.should.equal('txreq-aave-approve-lite');
+        (result as any).txRequestIds.deposit.should.equal('txreq-aave-deposit-lite');
+      });
+
+      it('should throw when operationId is absent from the approve txRequest', async function () {
+        mockBitGo.get.returns(mockRequest(makeAaveVault('vlt-aave-usdc')));
+
+        const sendManyStub = sinon.stub(wallet, 'sendMany');
+        sendManyStub.resolves({
+          txRequest: {
+            txRequestId: 'txreq-aave-approve-missing',
+            transactions: [{ unsignedTx: { coinSpecific: {} } }],
+          },
+        });
+
+        await assert.rejects(() => defiVault.depositToVault({ vaultId: 'vlt-aave-usdc', amount: '1000000' }), {
+          message: 'operationId not found in approve txRequest response',
+        });
+        sendManyStub.calledOnce.should.be.true();
+      });
+
+      it('should propagate deposit sendMany failure without cleanup', async function () {
+        mockBitGo.get.returns(mockRequest(makeAaveVault('vlt-aave-usdc')));
+
+        const operationId = 'op-aave-failure';
+        const sendManyStub = sinon.stub(wallet, 'sendMany');
+        sendManyStub.onFirstCall().resolves({
+          txRequest: {
+            txRequestId: 'txreq-aave-approve-failure',
+            transactions: [{ unsignedTx: { coinSpecific: { operationId } } }],
+          },
+        });
+        sendManyStub.onSecondCall().rejects(new Error('Aave deposit creation failed'));
+
+        await assert.rejects(() => defiVault.depositToVault({ vaultId: 'vlt-aave-usdc', amount: '1000000' }), {
+          message: 'Aave deposit creation failed',
+        });
+        mockBitGo.del.called.should.be.false();
       });
     });
 

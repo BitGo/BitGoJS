@@ -54,12 +54,18 @@ export interface ConcreteDepositResult {
   state: string;
 }
 
-export interface MorphoDepositResult {
+export interface Erc4626DepositResult {
   operationId: string;
   txRequestIds: { approve: string; deposit: string };
 }
 
-export type DepositResult = ConcreteDepositResult | MorphoDepositResult;
+/**
+ * @deprecated Renamed to {@link Erc4626DepositResult}. Alias kept for
+ * backward compatibility with the published sdk-core API.
+ */
+export type MorphoDepositResult = Erc4626DepositResult;
+
+export type DepositResult = ConcreteDepositResult | Erc4626DepositResult;
 
 export interface DefiOperationListResult {
   items: DefiOperation[];
