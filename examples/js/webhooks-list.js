@@ -17,7 +17,7 @@ const accessToken = '';
 const network = '';
 
 async function main() {
-  bitgo.authenticateWithAccessToken({ accessToken });
+  await bitgo.authenticateWithAccessToken({ accessToken });
 
   const coin = bitgo.coin(network);
 

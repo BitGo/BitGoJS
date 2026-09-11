@@ -32,7 +32,7 @@ const walletPassphrase = null;
 const xprv = null;
 
 async function main() {
-  bitgo.authenticateWithAccessToken({ accessToken });
+  await bitgo.authenticateWithAccessToken({ accessToken });
 
   const recoveryTx = await sourceCoin.recoverFromWrongChain({
     txid,

@@ -146,7 +146,7 @@ describe('BitGoAPI HMAC Strategy Injection', function () {
       });
 
       nock(TEST_URI)
-        .post('/api/auth/v1/session')
+        .post('/api/v2/user/login')
         .reply(
           200,
           { access_token: TEST_TOKEN, user: { username: 'test@test.com' } },

@@ -34,7 +34,7 @@ const bitgoTest = new BitGo({
 
 async function main() {
   console.log('Connecting to staging...');
-  bitgoTest.authenticateWithAccessToken({ accessToken: config.accessToken });
+  await bitgoTest.authenticateWithAccessToken({ accessToken: config.accessToken });
   //await bitgoTest.unlock({ otp: config.otp, duration: 3600 });
   const wallet = await bitgoTest.coin('tbaseeth').wallets().get({ id: config.walletId });
   console.log('Wallet ID   :', wallet.id());

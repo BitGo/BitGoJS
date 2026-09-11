@@ -30,7 +30,7 @@ const coin = 'tatom';
 
 // Create the wallet
 async function main() {
-  bitgo.authenticateWithAccessToken({ accessToken });
+  await bitgo.authenticateWithAccessToken({ accessToken });
   const passcodeEncryptionCode = bitgo.generateRandomPassword();
 
   const walletOptions = {

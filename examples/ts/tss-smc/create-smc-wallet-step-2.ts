@@ -32,7 +32,7 @@ async function createSMCWalletStep2() {
     throw new Error("Common keychain mismatch between the two OVCs");
   }
 
-  bitgo.authenticateWithAccessToken({ accessToken });
+  await bitgo.authenticateWithAccessToken({ accessToken });
   const bitgoCoin = bitgo.coin(coinName);
 
   const bitgoKeyChain = await bitgoCoin.keychains().get({ id: bitgoKeyId })

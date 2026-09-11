@@ -21,7 +21,7 @@ const walletId = '';
 const addressId = '';
 
 async function flushForwarderTokenManually() {
-  bitgo.authenticateWithAccessToken({ accessToken });
+  await bitgo.authenticateWithAccessToken({ accessToken });
   const wallet = await bitgo.coin(coin).wallets().get({ id: walletId });
 
   const flushForwarderOptions = {

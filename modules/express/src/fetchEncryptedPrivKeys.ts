@@ -64,7 +64,7 @@ const walletWithPrv: WalletWithPrv = esWalletWithPrv ? JSON.parse(esWalletWithPr
 // ];
 
 export async function fetchKeys(ids: WalletIds, token: string, accessToken?: string): Promise<Record<string, string>> {
-  bg.authenticateWithAccessToken({ accessToken: token });
+  await bg.authenticateWithAccessToken({ accessToken: token });
 
   // get the encrypted user privKey for each walletId and store in the JSON output
   const output: Output = {};

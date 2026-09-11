@@ -16,7 +16,7 @@ const walletId = null;
 const walletPassphrase = '';
 
 Promise.coroutine(function* () {
-  bitgo.authenticateWithAccessToken({ accessToken: accessToken });
+  yield bitgo.authenticateWithAccessToken({ accessToken: accessToken });
 
   const walletInstance = yield basecoin.wallets().get({ id: walletId });
 

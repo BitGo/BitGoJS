@@ -25,7 +25,7 @@ const callbackUrl = '';
 const type = '';
 
 async function main() {
-  bitgo.authenticateWithAccessToken({ accessToken });
+  await bitgo.authenticateWithAccessToken({ accessToken });
 
   const coin = bitgo.coin(network);
 

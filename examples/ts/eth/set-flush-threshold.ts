@@ -23,7 +23,7 @@ const walletId = '';
 const threshold = 10;
 
 async function setTokenFlushThreshold() {
-  bitgo.authenticateWithAccessToken({ accessToken });
+  await bitgo.authenticateWithAccessToken({ accessToken });
   const wallet = await bitgo.coin(coin).wallets().get({ id: walletId });
   console.log('Initial Token Flush Threshold:', wallet.tokenFlushThresholds());
   await wallet.updateTokenFlushThresholds({ terc: threshold });

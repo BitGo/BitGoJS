@@ -13,10 +13,9 @@ const otp = '';
 const sdk = new BitGoAPI({ env });
 sdk.register('tbtc4', Tbtc4.createInstance);
 sdk.register('btc', Btc.createInstance);
-sdk.authenticateWithAccessToken({ accessToken });
-
 export const omniConfig = {
   env,
+  accessToken,
   coin: env === 'test' ? 'tbtc4' : 'btc',
   network: env === 'test' ? utxolib.networks.bitcoinTestnet4 : utxolib.networks.bitcoin,
   sdk,

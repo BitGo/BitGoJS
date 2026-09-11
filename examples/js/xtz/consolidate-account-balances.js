@@ -27,7 +27,7 @@ const otp = '000000';
 const accessToken = '';
 
 Promise.coroutine(function* () {
-  bitgo.authenticateWithAccessToken({ accessToken });
+  yield bitgo.authenticateWithAccessToken({ accessToken });
 
   const wallet = yield bitgo.coin(coin).wallets().get({ id: walletId });
   // Wallet's base address - only address in the wallet that can send funds to other accounts

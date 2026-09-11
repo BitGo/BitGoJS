@@ -15,7 +15,7 @@ const base64TxHex = '<base64-tx-hex>';
 
 async function submitCustomTx() {
   // (Optional) unlock if needed
-  bitgo.authenticateWithAccessToken({ accessToken: accessToken });
+  await bitgo.authenticateWithAccessToken({ accessToken: accessToken });
   await bitgo.unlock({ otp: '000000', duration: 3600 });
   const walletInstance = await basecoin.wallets().get({ id: walletId });
 

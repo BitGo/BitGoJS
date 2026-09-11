@@ -18,7 +18,7 @@ const accessToken = null;
 const coin = 'tltc';
 
 Promise.coroutine(function* () {
-  bitgo.authenticateWithAccessToken({ accessToken });
+  yield bitgo.authenticateWithAccessToken({ accessToken });
 
   const wallets = yield bitgo.coin(coin).wallets().list({});
 

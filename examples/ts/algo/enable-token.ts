@@ -34,7 +34,7 @@ const accessToken = 'insert access token string here';
 const address = 'your root address or address of same wallet';
 
 async function main(): Promise<void> {
-  bitgo.authenticateWithAccessToken({ accessToken });
+  await bitgo.authenticateWithAccessToken({ accessToken });
 
   const wallet: Wallet = await bitgo.coin(coin).wallets().get({ id: walletId });
 

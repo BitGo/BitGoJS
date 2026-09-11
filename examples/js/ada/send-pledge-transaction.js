@@ -17,7 +17,7 @@ const pledgingNodeWitnessCborHex = '';
 
 Promise.coroutine(function* () {
   // generating address w/ same staking key and same payment key
-  bitgo.authenticateWithAccessToken({ accessToken: accessToken });
+  yield bitgo.authenticateWithAccessToken({ accessToken: accessToken });
   yield bitgo.unlock({ otp: '000000', duration: 3600 });
   const walletInstance = yield basecoin.wallets().get({ id: walletId });
 

@@ -21,7 +21,7 @@ const walletId = '';
 // toggles boolean flags for deployForwardersManually and flushForwardersManually
 
 async function setForwarderFlags() {
-  bitgo.authenticateWithAccessToken({ accessToken });
+  await bitgo.authenticateWithAccessToken({ accessToken });
   const wallet = await bitgo.coin(coin).wallets().get({ id: walletId });
 
   const deployForwardersManually = wallet._wallet.coinSpecific.deployForwardersManually;

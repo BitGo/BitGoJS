@@ -114,7 +114,7 @@ describe('BitGo Prototype Methods', function () {
     });
   });
 
-  describe('Authenticate in Microservices', () => {
+  describe('Authenticate via v2 login', () => {
     let bitgo;
     const authenticateRequest = {
       username: 'test@bitgo.com',
@@ -125,10 +125,10 @@ describe('BitGo Prototype Methods', function () {
       forceSMS: false,
     };
 
-    it('goes to microservices', async function () {
+    it('goes to the v2 user login endpoint', async function () {
       bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri: 'https://microservices.uri' } as any);
       const scope = nock(BitGoJS.Environments[bitgo.getEnv()].uri)
-        .post('/api/auth/v1/session')
+        .post('/api/v2/user/login')
         .reply(200, {
           user: {
             username: 'test@bitgo.com',
@@ -140,10 +140,10 @@ describe('BitGo Prototype Methods', function () {
       scope.isDone().should.be.true();
     });
 
-    it('goes to microservices even when microservicesUri is not specified', async function () {
+    it('goes to the v2 user login endpoint when microservicesUri is not specified', async function () {
       bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
       const scope = nock(BitGoJS.Environments[bitgo.getEnv()].uri)
-        .post('/api/auth/v1/session')
+        .post('/api/v2/user/login')
         .reply(200, {
           user: {
             username: 'test@bitgo.com',
@@ -379,7 +379,7 @@ describe('BitGo Prototype Methods', function () {
 
     before(async function () {
       nock('https://bitgo.fakeurl')
-        .post('/api/auth/v1/session')
+        .post('/api/v2/user/login')
         .reply(200, {
           access_token: 'access_token',
           user: { username: 'update_pw_tester@bitgo.com' },
@@ -685,7 +685,7 @@ describe('BitGo Prototype Methods', function () {
 
     it('should get the ecdhKeychain if ensureEcdhKeychain is set and user already has ecdhKeychain', async function () {
       nock('https://bitgo.fakeurl')
-        .post('/api/auth/v1/session')
+        .post('/api/v2/user/login')
         .reply(200, {
           access_token: 'access_token',
           user: { username: 'auth-test@bitgo.com' },
@@ -709,9 +709,10 @@ describe('BitGo Prototype Methods', function () {
       should.exist(response.user.ecdhKeychain);
       response.user.ecdhKeychain.should.equal('some-existing-xpub');
     });
+
     it('should create the ecdhKeychain if ensureEcdhKeychain is set and the user does not already have ecdhKeychain', async function () {
       nock('https://bitgo.fakeurl')
-        .post('/api/auth/v1/session')
+        .post('/api/v2/user/login')
         .reply(200, {
           access_token: 'access_token',
           user: { username: 'auth-test@bitgo.com' },

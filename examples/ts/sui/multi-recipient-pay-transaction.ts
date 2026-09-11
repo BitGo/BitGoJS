@@ -38,7 +38,7 @@ const recipients = [
 
 // build pay transaction
 async function buildPayTx() {
-  bitgo.authenticateWithAccessToken({ accessToken });
+  await bitgo.authenticateWithAccessToken({ accessToken });
   bitgo.unlock({ otp: '000000' });
   const wallet = await bitgo.coin(coin).wallets().getWallet({ id: walletId });
 
