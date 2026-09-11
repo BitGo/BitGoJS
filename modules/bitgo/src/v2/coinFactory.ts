@@ -164,6 +164,7 @@ import {
   Tbtc4,
   Tbtcbgsig,
   Tbtcstx,
+  Tbtcstxprivate1,
   Tcanton,
   Tcelo,
   Tcoredao,
@@ -340,6 +341,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('tbtc4', Tbtc4.createInstance);
   coinFactory.register('tbtcbgsig', Tbtcbgsig.createInstance);
   coinFactory.register('tbtcstx', Tbtcstx.createInstance);
+  coinFactory.register('tbtcstxprivate1', Tbtcstxprivate1.createInstance);
   coinFactory.register('tcanton', Tcanton.createInstance);
   coinFactory.register('tcelo', Tcelo.createInstance);
   coinFactory.register('tcoredao', Tcoredao.createInstance);
