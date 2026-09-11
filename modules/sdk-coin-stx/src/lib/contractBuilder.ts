@@ -7,15 +7,18 @@ import {
   ClarityValue,
   encodeClarityValue,
   noneCV,
+  listCV,
+  responseErrorCV,
+  responseOkCV,
   someCV,
   tupleCV,
 } from '@stacks/transactions';
 import { InvalidParameterValueError } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
-import { isValidAddress } from './utils';
+import { contractPrincipalCVFromString, isValidAddress, standardPrincipalCVFromString } from './utils';
 import { ClarityValueJson } from './iface';
 import { Utils } from '.';
-import { CONTRACT_NAME_SENDMANY, CONTRACT_NAME_STAKING } from './constants';
+import { CONTRACT_NAME_SENDMANY, VALID_STAKING_CONTRACT_NAMES } from './constants';
 import { AbstractContractBuilder } from './abstractContractBuilder';
 
 export class ContractBuilder extends AbstractContractBuilder {
@@ -60,8 +63,11 @@ export class ContractBuilder extends AbstractContractBuilder {
     if (name.length === 0) {
       throw new InvalidParameterValueError('Invalid name');
     }
-    if (name !== CONTRACT_NAME_STAKING && name !== CONTRACT_NAME_SENDMANY) {
-      throw new InvalidParameterValueError('Only pox-4 and send-many-memo contracts supported');
+    if (!VALID_STAKING_CONTRACT_NAMES.includes(name) && name !== CONTRACT_NAME_SENDMANY) {
+      throw new InvalidParameterValueError('Only pox-4, pox-5, and send-many-memo contracts supported');
+    }
+    if (this._functionName && !Utils.isValidContractFunctionName(this._functionName, name)) {
+      throw new InvalidParameterValueError(`${this._functionName} is not supported contract function name`);
     }
     this._contractName = name;
     return this;
@@ -77,7 +83,7 @@ export class ContractBuilder extends AbstractContractBuilder {
     if (name.length === 0) {
       throw new InvalidParameterValueError('Invalid name');
     }
-    if (!Utils.isValidContractFunctionName(name)) {
+    if (!Utils.isValidContractFunctionName(name, this._contractName)) {
       throw new InvalidParameterValueError(`${name} is not supported contract function name`);
     }
     this._functionName = name;
@@ -104,6 +110,22 @@ export class ContractBuilder extends AbstractContractBuilder {
         } else {
           return someCV(this.parseCv(arg.val));
         }
+      case 'list':
+        if (arg.val instanceof Array) {
+          return listCV(arg.val.map((value) => this.parseCv(value)));
+        }
+        throw new InvalidParameterValueError('list requires Array val');
+      case 'response':
+        if (arg.val && typeof arg.val === 'object' && !Array.isArray(arg.val)) {
+          const response = arg.val as { type?: string; val?: ClarityValueJson };
+          if (response.type === 'ok' && response.val !== undefined) {
+            return responseOkCV(this.parseCv(response.val));
+          }
+          if (response.type === 'err' && response.val !== undefined) {
+            return responseErrorCV(this.parseCv(response.val));
+          }
+        }
+        throw new InvalidParameterValueError('response requires { type: ok|err, val }');
       case 'tuple':
         if (arg.val instanceof Array) {
           const data = {};
@@ -113,6 +135,19 @@ export class ContractBuilder extends AbstractContractBuilder {
           return tupleCV(data);
         }
         throw new InvalidParameterValueError('tuple require Array val');
+      case 'contractPrincipal':
+      case 'contract-principal': {
+        if (typeof arg.val !== 'string') {
+          throw new InvalidParameterValueError('contract principal requires string val');
+        }
+        return contractPrincipalCVFromString(arg.val);
+      }
+      case 'standardPrincipal':
+      case 'standard-principal':
+        if (typeof arg.val !== 'string') {
+          throw new InvalidParameterValueError('standard principal requires string val');
+        }
+        return standardPrincipalCVFromString(arg.val);
       case 'buffer':
         if (arg.val instanceof Buffer) {
           return bufferCV(arg.val);

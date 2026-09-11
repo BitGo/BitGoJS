@@ -171,6 +171,13 @@ describe('Stacks: Fungible Token Transfer Builder', () => {
           new RegExp('test-function is not supported contract function name')
         );
       });
+      it('rejects PoX-5 functions', () => {
+        const builder = initTxBuilder();
+        assert.throws(
+          () => builder.functionName('claim-rewards'),
+          new RegExp('claim-rewards is not supported contract function name')
+        );
+      });
     });
   });
 });
