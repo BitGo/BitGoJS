@@ -34,7 +34,7 @@ require('dotenv').config({ path: '../../../.env' });
 // Initialize BitGo SDK with the APPROVING admin's access token
 const bitgo = new BitGoAPI({
   accessToken: process.env.TESTNET_ACCESS_TOKEN,
-  env: 'test', // Change to 'production' for mainnet
+  env: 'test', // Change to 'prod' for mainnet
 });
 
 const baseCoin = 'ofc';

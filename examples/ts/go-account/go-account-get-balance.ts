@@ -25,7 +25,7 @@ require('dotenv').config({ path: '../../../.env' });
 // Initialize BitGo SDK
 const bitgo = new BitGoAPI({
   accessToken: process.env.TESTNET_ACCESS_TOKEN,
-  env: 'staging', // Change to 'production' for mainnet
+  env: 'test', // Change to 'prod' for mainnet
 });
 
 // ---------------------------------------------------------------------------

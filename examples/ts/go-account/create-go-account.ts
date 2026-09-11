@@ -21,7 +21,7 @@ require('dotenv').config({ path: '../../../.env' });
 // Initialize BitGo SDK
 const bitgo = new BitGoAPI({
   accessToken: process.env.TESTNET_ACCESS_TOKEN,
-  env: 'test', // Change this to env: 'production' when you are ready for production
+  env: 'test', // Change this to env: 'prod' when you are ready for production
 });
 
 // Go Accounts use the 'ofc' (Off-Chain) coin
