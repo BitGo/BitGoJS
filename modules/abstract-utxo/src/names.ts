@@ -8,6 +8,7 @@ export const utxoCoinsTestnet = [
   'tbtc4',
   'tbtcsig',
   'tbtcbgsig',
+  'tbtcstx',
   'tbch',
   'tbcha',
   'tbsv',
@@ -20,7 +21,7 @@ export const utxoCoinsTestnet = [
 ] as const;
 
 export type UtxoCoinNameMainnet = (typeof utxoCoinsMainnet)[number];
-export type UtxoCoinNameTestnet = `t${UtxoCoinNameMainnet}` | 'tbtcsig' | 'tbtc4' | 'tbtcbgsig';
+export type UtxoCoinNameTestnet = `t${UtxoCoinNameMainnet}` | 'tbtcsig' | 'tbtc4' | 'tbtcbgsig' | 'tbtcstx';
 export type UtxoCoinName = UtxoCoinNameMainnet | UtxoCoinNameTestnet;
 
 export function toWasmUtxoCoinName(coinName: UtxoCoinName | WasmUtxoCoinName): WasmUtxoCoinName {
@@ -50,6 +51,7 @@ export function getMainnetCoinName(coinName: UtxoCoinName): UtxoCoinNameMainnet 
     case 'tbtc4':
     case 'tbtcsig':
     case 'tbtcbgsig':
+    case 'tbtcstx':
       return 'btc';
     default:
       return coinName.slice(1) as UtxoCoinNameMainnet;
@@ -92,6 +94,9 @@ export function getFullNameFromCoinName(coinName: UtxoCoinName): string {
       break;
     case 'tbtcbgsig':
       prefix = 'BitGo Signet ';
+      break;
+    case 'tbtcstx':
+      prefix = 'Stacks ';
       break;
     default:
       prefix = isUtxoCoinNameTestnet(coinName) ? 'Testnet ' : '';

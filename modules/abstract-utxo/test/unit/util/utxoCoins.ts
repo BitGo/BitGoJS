@@ -1,6 +1,7 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo } from '@bitgo/sdk-test';
+import { coins, UtxoCoin } from '@bitgo/statics';
 
 import {
   AbstractUtxoCoin,
@@ -30,50 +31,36 @@ import type { UtxoCoinName } from '../../../src/names';
 
 export const defaultBitGo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
 
-/** Map coin names to utxolib network objects for test infrastructure */
-const coinNameToNetwork: Record<string, utxolib.Network> = {
-  btc: utxolib.networks.bitcoin,
-  tbtc: utxolib.networks.testnet,
-  tbtcsig: utxolib.networks.bitcoinPublicSignet,
-  tbtc4: utxolib.networks.bitcoinTestnet4,
-  tbtcbgsig: utxolib.networks.bitcoinBitGoSignet,
-  bch: utxolib.networks.bitcoincash,
-  tbch: utxolib.networks.bitcoincashTestnet,
-  bcha: utxolib.networks.ecash,
-  tbcha: utxolib.networks.ecashTest,
-  bsv: utxolib.networks.bitcoinsv,
-  tbsv: utxolib.networks.bitcoinsvTestnet,
-  btg: utxolib.networks.bitcoingold,
-  dash: utxolib.networks.dash,
-  tdash: utxolib.networks.dashTest,
-  doge: utxolib.networks.dogecoin,
-  tdoge: utxolib.networks.dogecoinTest,
-  ltc: utxolib.networks.litecoin,
-  tltc: utxolib.networks.litecoinTest,
-  zec: utxolib.networks.zcash,
-  tzec: utxolib.networks.zcashTest,
-};
-
-/**
- * Get utxolib Network for a coin name. For test infrastructure only.
- */
-export function getNetworkForCoinName(coinName: string): utxolib.Network {
-  const network = coinNameToNetwork[coinName];
-  if (!network) {
-    throw new Error(`Unknown coin name: ${coinName}`);
-  }
-  return network;
+function isUtxolibNetworkName(name: string): name is utxolib.NetworkName {
+  return Object.prototype.hasOwnProperty.call(utxolib.networks, name);
 }
 
 /**
- * Get coin name for a utxolib Network. For test infrastructure only.
+ * Get the utxolib network for a coin name from the canonical statics definition.
+ */
+export function getNetworkForCoinName(coinName: string): utxolib.Network {
+  const coin = coins.getOrUndefined(coinName);
+  if (!(coin instanceof UtxoCoin)) {
+    throw new Error(`Unknown coin name: ${coinName}`);
+  }
+
+  const networkName = coin.network.utxolibName;
+  if (!isUtxolibNetworkName(networkName)) {
+    throw new Error(`Unknown utxolib network ${networkName} for coin ${coinName}`);
+  }
+
+  return utxolib.networks[networkName];
+}
+
+/**
+ * Get the canonical test coin for a utxolib network.
  */
 export function getCoinNameForNetwork(network: utxolib.Network): UtxoCoinName {
-  for (const [name, n] of Object.entries(coinNameToNetwork)) {
-    if (n === network) {
-      return name as UtxoCoinName;
-    }
+  const coin = utxoCoins.find((coin) => getNetworkForCoinName(coin.name) === network);
+  if (coin) {
+    return coin.name;
   }
+
   throw new Error(`Unknown network: ${utxolib.getNetworkName(network)}`);
 }
 

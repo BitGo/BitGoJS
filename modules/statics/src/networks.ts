@@ -541,6 +541,14 @@ class BitcoinBitGoSignet extends Testnet implements UtxoNetwork {
   explorerUrl = 'https://mempool.space/notanetwork/tx/';
 }
 
+class BitcoinStx extends Testnet implements UtxoNetwork {
+  name = 'BitcoinStx';
+  family = CoinFamily.BTC;
+  // Stacks regtest uses testnet transaction semantics in utxo-lib.
+  utxolibName = 'testnet';
+  explorerUrl = undefined;
+}
+
 class BitcoinCash extends Mainnet implements UtxoNetwork {
   name = 'BitcoinCash';
   family = CoinFamily.BCH;
@@ -3070,6 +3078,7 @@ export const Networks = {
     bitcoinPublicSignet: Object.freeze(new BitcoinPublicSignet()),
     bitcoinTestnet4: Object.freeze(new BitcoinTestnet4()),
     bitcoinBitGoSignet: Object.freeze(new BitcoinBitGoSignet()),
+    bitcoinStx: Object.freeze(new BitcoinStx()),
     bitcoinCash: Object.freeze(new BitcoinCashTestnet()),
     bitcoinGold: Object.freeze(new BitcoinGoldTestnet()),
     bitcoinSV: Object.freeze(new BitcoinSVTestnet()),
