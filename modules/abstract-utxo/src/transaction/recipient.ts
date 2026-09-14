@@ -41,6 +41,31 @@ export class AddressCodec {
     return wasmAddress.toOutputScriptWithCoin(address, this.wasmName);
   }
 
+  /**
+   * Resolve a change address to its script. Change addresses are always transparent wallet
+   * addresses, so coins whose address resolution depends on transaction context (e.g. Zcash
+   * Unified Addresses with a bound recipient preference) override this to bypass that
+   * context. The base implementation defers to decode.
+   */
+  decodeChangeAddress(address: string): Uint8Array {
+    return this.decode(address);
+  }
+
+  /** Resolve a transparent change address directly to a Buffer script. */
+  decodeChangeScript(address: string): Buffer {
+    return Buffer.from(this.decodeChangeAddress(address));
+  }
+
+  /**
+   * Convert an output's scriptPubKey back to the address form the output should report. The
+   * base implementation encodes the script. Coins whose output scripts cannot always be
+   * re-encoded (e.g. Zcash shielded recipients, whose raw Orchard receiver has no scriptPubKey
+   * encoding) override this and may fall back to the output's original address.
+   */
+  outputScriptToAddress(script: Buffer, address?: string): string {
+    return this.toExtendedAddressFormat(script);
+  }
+
   encode(script: Uint8Array): string {
     return wasmAddress.fromOutputScriptWithCoin(script, this.wasmName);
   }

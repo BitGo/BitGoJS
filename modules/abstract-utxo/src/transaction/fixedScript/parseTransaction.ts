@@ -25,6 +25,9 @@ export type ComparableOutputWithExternal<TValue> = (ComparableOutput<TValue> | E
   external: boolean | undefined;
 };
 
+type ExpectedOutputWithAddress = ExpectedOutput & { address?: string };
+type ComparableOutputWithAddress<TValue> = ComparableOutputWithExternal<TValue> & { address: string };
+
 function toCanonicalTransactionRecipient(
   coin: AbstractUtxoCoin,
   output: { valueString: string; address?: string }
@@ -84,9 +87,9 @@ function toExpectedOutputs(
     allowExternalChangeAddress?: boolean;
     changeAddress?: string;
   }
-): ExpectedOutput[] {
+): ExpectedOutputWithAddress[] {
   // verify that each recipient from txParams has their own output
-  const expectedOutputs: ExpectedOutput[] = (txParams.recipients ?? []).flatMap((output) => {
+  const expectedOutputs: ExpectedOutputWithAddress[] = (txParams.recipients ?? []).flatMap((output) => {
     if (output.address === undefined) {
       assert('script' in output, 'script is required for non-encodeable scriptPubkeys');
       if (output.amount.toString() !== '0') {
@@ -103,17 +106,19 @@ function toExpectedOutputs(
       {
         script: addressCodec.fromExtendedAddressFormatToScript(output.address),
         value: output.amount === 'max' ? 'max' : BigInt(output.amount),
+        address: output.address,
       },
     ];
   });
   if (txParams.allowExternalChangeAddress && txParams.changeAddress) {
     expectedOutputs.push({
-      script: addressCodec.toOutputScript(txParams.changeAddress),
+      script: addressCodec.decodeChangeScript(txParams.changeAddress),
       // When an external change address is explicitly specified, count all outputs going towards that
       // address in the expected outputs (regardless of the output amount)
       value: 'max',
       // Note that the change output is not required to exist, so we mark it as optional.
       optional: true,
+      address: txParams.changeAddress,
     });
   }
   return expectedOutputs;
@@ -246,11 +251,16 @@ export async function parseTransaction<TNumber extends bigint | number>(
 
   const changeOutputs = _.filter(allOutputDetails, { external: false });
 
-  function toComparableOutputsWithExternal(outputs: Output[]): ComparableOutputWithExternal<bigint | 'max'>[] {
+  function toComparableOutputsWithExternal(outputs: Output[]): ComparableOutputWithAddress<bigint | 'max'>[] {
     return outputs.map((output) => ({
-      script: addressCodec.fromExtendedAddressFormatToScript(output.address),
+      // Change/custom-change outputs are always transparent wallet addresses.
+      script:
+        output.external === false
+          ? addressCodec.decodeChangeScript(output.address)
+          : addressCodec.fromExtendedAddressFormatToScript(output.address),
       value: output.amount === 'max' ? 'max' : (BigInt(output.amount) as bigint | 'max'),
       external: output.external,
+      address: output.address,
     }));
   }
 
@@ -277,7 +287,6 @@ export async function parseTransaction<TNumber extends bigint | number>(
    *
    * This has become obsolete with the intoduction of `utxocore.paygo.verifyPayGoAddressProof()`.
    */
-
   // make sure that all the extra addresses are change addresses
   // get all the additional external outputs the server added and calculate their values
   const implicitExternalOutputs = implicitOutputs.filter((output) => output.external);
@@ -286,9 +295,9 @@ export async function parseTransaction<TNumber extends bigint | number>(
     coin.amountType
   ) as TNumber;
 
-  function toOutputs(outputs: ExpectedOutput[] | ComparableOutputWithExternal<bigint | 'max'>[]): Output[] {
+  function toOutputs(outputs: ExpectedOutputWithAddress[] | ComparableOutputWithAddress<bigint | 'max'>[]): Output[] {
     return outputs.map((output) => ({
-      address: addressCodec.toExtendedAddressFormat(output.script),
+      address: addressCodec.outputScriptToAddress(output.script, output.address),
       amount: output.value.toString(),
       external: output.external,
     }));

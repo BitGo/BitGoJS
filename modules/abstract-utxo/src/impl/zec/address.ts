@@ -79,6 +79,16 @@ export class ZecAddressCodec extends AddressCodec {
     }
     return zcashAddress.toShieldedReceiverWithCoin(address, this.wasmName);
   }
+
+  /** Change addresses are always transparent wallet addresses. */
+  override decodeChangeAddress(address: string): Uint8Array {
+    return zcashAddress.toTransparentReceiverWithCoin(address, this.wasmName);
+  }
+
+  /** Preserve a shielded output's original UA because its raw receiver cannot be encoded. */
+  override outputScriptToAddress(script: Buffer, address?: string): string {
+    return address ?? this.toExtendedAddressFormat(script);
+  }
 }
 
 /**
