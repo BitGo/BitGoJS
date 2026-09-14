@@ -10,6 +10,10 @@
  * IMPORTANT: For Go Account (OFC) wallets, the onToken parameter is always required
  * when creating addresses.
  *
+ * Required environment variables (in examples/.env):
+ *   TESTNET_ACCESS_TOKEN   - your BitGo access token
+ *   OFC_WALLET_ID          - your Go Account wallet ID
+ *
  * Copyright 2025, BitGo, Inc.  All Rights Reserved.
  */
 
@@ -27,8 +31,8 @@ const bitgo = new BitGoAPI({
 const coin = 'ofc';
 bitgo.register(coin, coins.Ofc.createInstance);
 
-// Configuration - Update these values
-const walletId = 'your_wallet_id'; // The ID of your existing Go Account wallet
+// Configuration - Update these values or set them as environment variables
+const walletId = process.env.OFC_WALLET_ID || 'your_wallet_id'; // The ID of your existing Go Account wallet
 const addressLabel = 'My New Address 2'; // Label for the new address
 
 // Token to create address for (required for OFC wallets)

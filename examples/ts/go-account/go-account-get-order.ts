@@ -28,7 +28,7 @@ const bitgo = new BitGoAPI({
 // ---------------------------------------------------------------------------
 
 /** Your Go Account wallet ID */
-const accountId = process.env.OFC_WALLET_ID || 'your_wallet_id';
+const walletId = process.env.OFC_WALLET_ID || 'your_wallet_id';
 
 /** The order ID returned when the order was placed */
 const orderId = process.env.TRADE_ORDER_ID || 'your_order_id';
@@ -58,7 +58,7 @@ async function main() {
   console.log('=== Go Account — Get Trade Order ===\n');
 
   const url = (bitgo as any).microservicesUrl(
-    `/api/prime/trading/v1/accounts/${accountId}/orders/${orderId}`
+    `/api/prime/trading/v1/accounts/${walletId}/orders/${orderId}`
   );
 
   console.log(`Fetching order ${orderId}...`);

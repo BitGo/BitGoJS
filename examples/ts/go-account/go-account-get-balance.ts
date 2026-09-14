@@ -33,7 +33,7 @@ const bitgo = new BitGoAPI({
 // ---------------------------------------------------------------------------
 
 /** Your Go Account wallet ID */
-const accountId = process.env.OFC_WALLET_ID || 'your_wallet_id';
+const walletId = process.env.OFC_WALLET_ID || 'your_wallet_id';
 
 /**
  * When true, unsettled trading balance is included in the available balance
@@ -67,10 +67,10 @@ async function main() {
   console.log(`Include unsettled in available: ${includeUnsettledInAvailable}\n`);
 
   const url = (bitgo as any).microservicesUrl(
-    `/api/prime/trading/v1/accounts/${accountId}/balances`
+    `/api/prime/trading/v1/accounts/${walletId}/balances`
   );
 
-  console.log(`Fetching balances for account ${accountId}...`);
+  console.log(`Fetching balances for account ${walletId}...`);
   const response: GetBalancesResponse = await (bitgo as any)
     .get(url)
     .query({ includeUnsettledInAvailable })
@@ -103,7 +103,7 @@ async function main() {
   console.log('\n' + '='.repeat(60));
   console.log('SUMMARY');
   console.log('='.repeat(60));
-  console.log(`  Account ID            : ${accountId}`);
+  console.log(`  Account ID            : ${walletId}`);
   console.log(`  Currencies held       : ${balances.length}`);
   console.log(`  Include unsettled     : ${includeUnsettledInAvailable}`);
   for (const b of balances) {

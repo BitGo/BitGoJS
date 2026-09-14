@@ -30,7 +30,7 @@ const bitgo = new BitGoAPI({
  * Your Go Account wallet ID.
  * Find this in the BitGo portal or from the wallet object in your API responses.
  */
-const accountId = process.env.OFC_WALLET_ID || 'your_wallet_id';
+const walletId = process.env.OFC_WALLET_ID || 'your_wallet_id';
 
 // ---------------------------------------------------------------------------
 
@@ -53,10 +53,10 @@ async function main() {
   console.log('=== Go Account — List Trading Products ===\n');
 
   const url = (bitgo as any).microservicesUrl(
-    `/api/prime/trading/v1/accounts/${accountId}/products`
+    `/api/prime/trading/v1/accounts/${walletId}/products`
   );
 
-  console.log(`Fetching trading products for account ${accountId}...`);
+  console.log(`Fetching trading products for account ${walletId}...`);
   const response: ListProductsResponse = await (bitgo as any).get(url).result();
 
   const products: Product[] = response.data ?? [];
@@ -99,7 +99,7 @@ async function main() {
   console.log('\n' + '='.repeat(60));
   console.log('SUMMARY');
   console.log('='.repeat(60));
-  console.log(`  Account ID        : ${accountId}`);
+  console.log(`  Account ID        : ${walletId}`);
   console.log(`  Total products    : ${products.length}`);
   console.log(`  Available to trade: ${availableProducts.length}`);
   console.log(`  Disabled          : ${disabledProducts.length}`);
