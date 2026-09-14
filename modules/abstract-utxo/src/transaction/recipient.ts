@@ -56,19 +56,10 @@ export class AddressCodec {
     return this.decode(address);
   }
 
-  /** Resolve a transparent change address directly to a Buffer script. */
-  decodeChangeScript(address: string): Buffer {
-    return Buffer.from(this.decodeChangeAddress(address));
-  }
-
-  /**
-   * Convert an output's scriptPubKey back to the address form the output should report. The
-   * base implementation encodes the script. Coins whose output scripts cannot always be
-   * re-encoded (e.g. Zcash shielded recipients, whose raw Orchard receiver has no scriptPubKey
-   * encoding) override this and may fall back to the output's original address.
-   */
-  outputScriptToAddress(script: Buffer, address?: string): string {
-    return this.toExtendedAddressFormat(script);
+  /** Resolve an external address, including extended script recipients, to its script. */
+  decodeExternalAddress(address: string): Uint8Array {
+    const result = AddressCodec.fromExtendedAddressFormat(address);
+    return 'script' in result ? Buffer.from(result.script, 'hex') : this.decode(result.address);
   }
 
   encode(script: Uint8Array): string {
@@ -84,13 +75,10 @@ export class AddressCodec {
   }
 
   fromExtendedAddressFormatToScript(extendedAddress: string): Buffer {
-    const result = AddressCodec.fromExtendedAddressFormat(extendedAddress);
-    if ('script' in result) {
-      return Buffer.from(result.script, 'hex');
-    }
-    return Buffer.from(this.decode(result.address));
+    return Buffer.from(this.decodeExternalAddress(extendedAddress));
   }
 
+  /** Check whether a parsed output address resolves to its raw script. */
   isMatchingScript(output: AddressCodecOutput): boolean {
     if (output.address === undefined || output.address === null) {
       return true;
@@ -116,7 +104,13 @@ export class AddressCodec {
     throw new Error('invalid input');
   }
 
-  toExtendedAddressFormat(script: Buffer): string {
+  toExtendedAddressFormat(script: Buffer, address?: string): string {
+    if (address !== undefined && !this.isMatchingScript({ address, script })) {
+      throw new Error(`address ${address} does not match output script`);
+    }
+    if (address !== undefined) {
+      return address;
+    }
     return script[0] === OP_RETURN ? `${ScriptRecipientPrefix}${script.toString('hex')}` : this.encode(script);
   }
 }

@@ -112,7 +112,7 @@ function toExpectedOutputs(
   });
   if (txParams.allowExternalChangeAddress && txParams.changeAddress) {
     expectedOutputs.push({
-      script: addressCodec.decodeChangeScript(txParams.changeAddress),
+      script: Buffer.from(addressCodec.decodeChangeAddress(txParams.changeAddress)),
       // When an external change address is explicitly specified, count all outputs going towards that
       // address in the expected outputs (regardless of the output amount)
       value: 'max',
@@ -254,10 +254,9 @@ export async function parseTransaction<TNumber extends bigint | number>(
   function toComparableOutputsWithExternal(outputs: Output[]): ComparableOutputWithAddress<bigint | 'max'>[] {
     return outputs.map((output) => ({
       // Change/custom-change outputs are always transparent wallet addresses.
-      script:
-        output.external === false
-          ? addressCodec.decodeChangeScript(output.address)
-          : addressCodec.fromExtendedAddressFormatToScript(output.address),
+      script: output.external
+        ? Buffer.from(addressCodec.decodeExternalAddress(output.address))
+        : Buffer.from(addressCodec.decodeChangeAddress(output.address)),
       value: output.amount === 'max' ? 'max' : (BigInt(output.amount) as bigint | 'max'),
       external: output.external,
       address: output.address,
@@ -297,7 +296,7 @@ export async function parseTransaction<TNumber extends bigint | number>(
 
   function toOutputs(outputs: ExpectedOutputWithAddress[] | ComparableOutputWithAddress<bigint | 'max'>[]): Output[] {
     return outputs.map((output) => ({
-      address: addressCodec.outputScriptToAddress(output.script, output.address),
+      address: addressCodec.toExtendedAddressFormat(output.script, output.address),
       amount: output.value.toString(),
       external: output.external,
     }));
