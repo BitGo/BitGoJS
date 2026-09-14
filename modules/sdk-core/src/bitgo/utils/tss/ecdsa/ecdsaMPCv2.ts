@@ -60,6 +60,7 @@ import { InvalidTransactionError } from '../../../errors';
 import { BitGoBase } from '../../../bitgoBase';
 import { resolveEffectiveTxParams } from '../recipientUtils';
 import type { EcdsaMPCv2KeyGenCallbacks } from '../../../wallet/iWallets';
+import { parseMpcV2KeyShareEnvelope } from './keyShareEnvelope';
 
 export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
   private static readonly DKLS23_SIGNING_USER_GPG_KEY = 'DKLS23_SIGNING_USER_GPG_KEY';
@@ -1549,16 +1550,21 @@ export async function isGG18SigningMaterial(
  * @param bitgo BitGo instance for v1/v2 auto-detect decrypt
  * @returns MPC v2 recovery key shares
  */
+export interface MpcV2RecoveryKeyShares {
+  userKeyShare: Buffer;
+  backupKeyShare: Buffer;
+  commonKeyChain: string;
+  /** Serialized VRF keyshares from safe-root envelopes, when present. */
+  userVrfKeyShare?: Buffer;
+  backupVrfKeyShare?: Buffer;
+}
+
 export async function getMpcV2RecoveryKeyShares(
   encryptedUserKey: string,
   encryptedBackupKey: string,
   walletPassphrase: string | undefined,
   bitgo: BitGoBase
-): Promise<{
-  userKeyShare: Buffer;
-  backupKeyShare: Buffer;
-  commonKeyChain: string;
-}> {
+): Promise<MpcV2RecoveryKeyShares> {
   if (await isGG18SigningMaterial(encryptedUserKey, walletPassphrase, bitgo)) {
     return getMpcV2RecoveryKeySharesFromGG18(encryptedUserKey, encryptedBackupKey, walletPassphrase, bitgo);
   }
@@ -1622,11 +1628,7 @@ async function getMpcV2RecoveryKeySharesFromGG18(
   encryptedGG18BackupKey: string,
   walletPassphrase: string | undefined,
   bitgo: BitGoBase
-): Promise<{
-  userKeyShare: Buffer;
-  backupKeyShare: Buffer;
-  commonKeyChain: string;
-}> {
+): Promise<MpcV2RecoveryKeyShares> {
   const [userKeyCombined, backupKeyCombined] = await getKeyCombinedFromTssKeyShares(
     encryptedGG18UserKey,
     encryptedGG18BackupKey,
@@ -1665,22 +1667,18 @@ async function getMpcV2RecoveryKeySharesFromReducedKey(
   encryptedMPCv2BackupKey: string,
   walletPassphrase: string | undefined,
   bitgo: BitGoBase
-): Promise<{
-  userKeyShare: Buffer;
-  backupKeyShare: Buffer;
-  commonKeyChain: string;
-}> {
-  const userCompressedPrv = Buffer.from(
-    await bitgo.decrypt({ password: walletPassphrase, input: encryptedMPCv2UserKey }),
-    'base64'
+): Promise<MpcV2RecoveryKeyShares> {
+  const userMaterial = parseMpcV2KeyShareEnvelope(
+    await bitgo.decrypt({ password: walletPassphrase, input: encryptedMPCv2UserKey })
   );
-  const bakcupCompressedPrv = Buffer.from(
-    await bitgo.decrypt({ password: walletPassphrase, input: encryptedMPCv2BackupKey }),
-    'base64'
+  const backupMaterial = parseMpcV2KeyShareEnvelope(
+    await bitgo.decrypt({ password: walletPassphrase, input: encryptedMPCv2BackupKey })
   );
 
-  const userPrvJSON: DklsTypes.ReducedKeyShare = DklsTypes.getDecodedReducedKeyShare(userCompressedPrv);
-  const backupPrvJSON: DklsTypes.ReducedKeyShare = DklsTypes.getDecodedReducedKeyShare(bakcupCompressedPrv);
+  const userPrvJSON: DklsTypes.ReducedKeyShare = DklsTypes.getDecodedReducedKeyShare(userMaterial.signingKeyShare);
+  const backupPrvJSON: DklsTypes.ReducedKeyShare = DklsTypes.getDecodedReducedKeyShare(
+    backupMaterial.signingKeyShare
+  );
   const userKeyRetrofit: DklsTypes.RetrofitData = {
     xShare: {
       x: Buffer.from(userPrvJSON.prv).toString('hex'),
@@ -1701,7 +1699,18 @@ async function getMpcV2RecoveryKeySharesFromReducedKey(
   const userKeyShare = user.getKeyShare();
   const backupKeyShare = backup.getKeyShare();
   const commonKeyChain = DklsTypes.getCommonKeychain(userKeyShare);
-  return { userKeyShare, backupKeyShare, commonKeyChain };
+  const hasUserVrf = userMaterial.vrfKeyShare !== undefined;
+  const hasBackupVrf = backupMaterial.vrfKeyShare !== undefined;
+  if (hasUserVrf !== hasBackupVrf) {
+    throw new Error('MPC keyshare envelopes must either both contain VRF keyshares or both omit them');
+  }
+  return {
+    userKeyShare,
+    backupKeyShare,
+    commonKeyChain,
+    userVrfKeyShare: userMaterial.vrfKeyShare,
+    backupVrfKeyShare: backupMaterial.vrfKeyShare,
+  };
 }
 
 /**

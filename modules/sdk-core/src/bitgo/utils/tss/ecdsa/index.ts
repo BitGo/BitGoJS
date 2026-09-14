@@ -5,3 +5,4 @@ export * from './types';
 export * from './typesMPCv2';
 export * from './SMC/utils';
 export * from './ecdsaMPCv2KeyGenSender';
+export * from './keyShareEnvelope';

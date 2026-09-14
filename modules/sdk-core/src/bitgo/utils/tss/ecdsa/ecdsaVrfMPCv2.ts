@@ -13,14 +13,7 @@ import { envRequiresBitgoPubGpgKeyConfig, isBitgoMpcPubKey } from '../../../tss/
 import { EcdsaMPCv2Utils } from './ecdsaMPCv2';
 import { KeyGenSenderForEnterprise } from './ecdsaMPCv2KeyGenSender';
 import { MPCv2PartiesEnum, MpcV2VrfKeyGenResponseFields } from './typesMPCv2';
-
-/**
- * Version field of the `encryptedPrv` envelope used when a ceremony produces both a
- * signing keyshare and a VRF keyshare. The plaintext handed to encrypt() is
- * `base64(cborEncode(envelope))`, keeping it a single opaque base64 token exactly as
- * the ordinary MPCv2 format does.
- */
-const VRF_KEY_ENVELOPE_VERSION = 1;
+import { MPC_VRF_KEY_ENVELOPE_VERSION } from './keyShareEnvelope';
 
 /**
  * Wire format for VRF DKG messages riding the MPCv2-R1/R2 payloads: an opaque blob,
@@ -71,12 +64,12 @@ export function buildVrfKeyEnvelopes(
   vrfKeyShare: Buffer
 ): { envelope: Buffer; reducedEnvelope: Buffer } {
   const envelope = encode({
-    version: VRF_KEY_ENVELOPE_VERSION,
+    version: MPC_VRF_KEY_ENVELOPE_VERSION,
     prvKeyShare: new Uint8Array(privateMaterial),
     vrf: new Uint8Array(vrfKeyShare),
   });
   const reducedEnvelope = encode({
-    version: VRF_KEY_ENVELOPE_VERSION,
+    version: MPC_VRF_KEY_ENVELOPE_VERSION,
     prvKeyShare: new Uint8Array(reducedPrivateMaterial),
     vrf: new Uint8Array(vrfKeyShare),
   });
