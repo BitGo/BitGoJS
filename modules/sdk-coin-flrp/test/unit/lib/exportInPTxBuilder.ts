@@ -560,3 +560,70 @@ describe('Flrp Export In P Tx Builder', () => {
     });
   });
 });
+
+describe('FLRP credential guard regression', () => {
+  const coinConfig = coins.get('tflrp');
+  const factory = new TransactionBuilderFactory(coinConfig);
+
+  it('treats an established empty credential array as credentials', async () => {
+    const tx = (await factory.from(testData.fullSigntxHex).build()) as Transaction;
+    const flareTx = tx.getFlareTransaction() as UnsignedTx;
+    flareTx.credentials = [];
+
+    tx.hasCredentials.should.be.true();
+    assert.throws(() => tx.toBroadcastFormat(), /transaction has no credentials/);
+  });
+
+  it('does not regenerate credentials when an established array is empty', async () => {
+    const builder = factory.from(testData.fullSigntxHex) as any;
+    const internalTx = builder.transaction as Transaction;
+    (internalTx.getFlareTransaction() as UnsignedTx).credentials = [];
+
+    const rebuilt = (await builder.build()) as Transaction;
+    (rebuilt.getFlareTransaction() as UnsignedTx).credentials.length.should.equal(0);
+  });
+
+  it('rejects signing when credentials are established but empty', async () => {
+    const builder = factory.from(testData.fullSigntxHex) as any;
+    const internalTx = builder.transaction as Transaction;
+    (internalTx.getFlareTransaction() as UnsignedTx).credentials = [];
+    builder.sign({ key: testData.privateKeys[0] });
+
+    await builder.build().should.be.rejectedWith('empty credentials to sign');
+  });
+
+  it('intersects signatures across every credential', async () => {
+    const tx = (await factory.from(testData.fullSigntxHex).build()) as Transaction;
+    const credentials = (tx.getFlareTransaction() as UnsignedTx).credentials;
+    credentials.length.should.be.greaterThan(1);
+    tx.signature.length.should.equal(2);
+
+    const signatures = credentials[1].getSignatures();
+    const secondSignatureIndex = signatures.findIndex((signature) => !signature.startsWith('0'.repeat(90)));
+    secondSignatureIndex.should.be.greaterThanOrEqual(0);
+    credentials[1].setSignature(secondSignatureIndex, Buffer.from('0'.repeat(130), 'hex'));
+
+    tx.signature.length.should.equal(1);
+  });
+
+  it('rejects external signatures when credentials are established but empty', async () => {
+    const tx = (await factory.from(testData.fullSigntxHex).build()) as Transaction;
+    (tx.getFlareTransaction() as UnsignedTx).credentials = [];
+
+    assert.throws(
+      () => tx.addExternalSignature(new Uint8Array(65)),
+      /empty credentials to sign/
+    );
+  });
+
+  it('rejects a real signature alongside an address placeholder', async () => {
+    const tx = (await factory.from(testData.fullSigntxHex).build()) as Transaction;
+    const flareTx = tx.getFlareTransaction() as UnsignedTx;
+    const credentials = flareTx.credentials;
+    credentials.length.should.be.greaterThan(0);
+
+    const placeholder = Buffer.from(''.padStart(90, '0') + '11'.repeat(20), 'hex');
+    credentials[0].setSignature(0, placeholder);
+    assert.throws(() => tx.toBroadcastFormat(), /real ECDSA alongside an address placeholder \(r=0\)/);
+  });
+});
