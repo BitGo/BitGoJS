@@ -1,7 +1,7 @@
 import { address as wasmAddress, fixedScriptWallet, isCoinName, zcashAddress } from '@bitgo/wasm-utxo';
 import type { UnifiedRecipientPreference } from '@bitgo/sdk-core';
 
-import { AddressCodec } from '../../transaction/recipient';
+import { AddressCodec, type AddressCodecOutput } from '../../transaction/recipient';
 import { UtxoCoinName, WasmUtxoCoinName } from '../../names';
 
 export type ZcashAddressKind = 'transparent' | 'shielded';
@@ -85,9 +85,35 @@ export class ZecAddressCodec extends AddressCodec {
     return zcashAddress.toTransparentReceiverWithCoin(address, this.wasmName);
   }
 
-  /** Preserve a shielded output's original UA because its raw receiver cannot be encoded. */
-  override outputScriptToAddress(script: Buffer, address?: string): string {
-    return address ?? this.toExtendedAddressFormat(script);
+  override isMatchingScript(output: AddressCodecOutput): boolean {
+    const address = output.address;
+    if (address === undefined || address === null) {
+      return true;
+    }
+
+    if (AddressCodec.isScriptRecipient(address)) {
+      return super.isMatchingScript(output);
+    }
+
+    const matchesOutput = (decode: () => Uint8Array): boolean => {
+      try {
+        return Buffer.from(decode()).equals(Buffer.from(output.script));
+      } catch {
+        return false;
+      }
+    };
+    const isShielded = Reflect.get(output, 'isShielded');
+
+    if (isShielded === true) {
+      return matchesOutput(() => zcashAddress.toShieldedReceiverWithCoin(address, this.wasmName));
+    }
+    if (isShielded === false) {
+      return matchesOutput(() => zcashAddress.toTransparentReceiverWithCoin(address, this.wasmName));
+    }
+    return (
+      matchesOutput(() => zcashAddress.toTransparentReceiverWithCoin(address, this.wasmName)) ||
+      matchesOutput(() => zcashAddress.toShieldedReceiverWithCoin(address, this.wasmName))
+    );
   }
 }
 

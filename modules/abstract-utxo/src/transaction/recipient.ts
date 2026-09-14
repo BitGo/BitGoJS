@@ -5,6 +5,11 @@ import { toWasmUtxoCoinName, UtxoCoinName, WasmUtxoCoinName } from '../names';
 const ScriptRecipientPrefix = 'scriptPubKey:';
 const OP_RETURN = 0x6a;
 
+export interface AddressCodecOutput {
+  address?: string | null;
+  script: Uint8Array;
+}
+
 /** Address/network-aware recipient conversion. */
 export class AddressCodec {
   constructor(
@@ -84,6 +89,18 @@ export class AddressCodec {
       return Buffer.from(result.script, 'hex');
     }
     return Buffer.from(this.decode(result.address));
+  }
+
+  isMatchingScript(output: AddressCodecOutput): boolean {
+    if (output.address === undefined || output.address === null) {
+      return true;
+    }
+
+    try {
+      return this.fromExtendedAddressFormatToScript(output.address).equals(Buffer.from(output.script));
+    } catch {
+      return false;
+    }
   }
 
   toOutputScript(v: string | { address: string } | { script: string }): Buffer {

@@ -10,9 +10,12 @@ import {
   aggregateTransactionExplanations,
   type TransactionExplanationBigInt,
 } from '../../../../src/transaction/fixedScript';
+import { AddressCodec } from '../../../../src/transaction/recipient';
+import { getCoinNameForNetwork } from '../../util';
 
 function describeTransactionWith(acidTest: testutil.AcidTest) {
   describe(`${acidTest.name}`, function () {
+    const addressCodec = new AddressCodec(getCoinNameForNetwork(acidTest.network));
     let walletXpubs: fixedScriptWallet.RootWalletKeys;
     let customChangeWalletXpubs: fixedScriptWallet.RootWalletKeys | undefined;
     let wasmPsbt: fixedScriptWallet.BitGoPsbt;
@@ -28,6 +31,7 @@ function describeTransactionWith(acidTest: testutil.AcidTest) {
 
     it('should return expected outputs from explainPsbtWasm', function () {
       const wasmExplanation = explainPsbtWasm(wasmPsbt, walletXpubs, {
+        addressCodec,
         replayProtection: {
           publicKeys: [acidTest.getReplayProtectionPublicKey()],
         },
@@ -56,6 +60,7 @@ function describeTransactionWith(acidTest: testutil.AcidTest) {
 
     it('explainPsbtWasmBigInt returns bigint amounts and inputs array', function () {
       const result = explainPsbtWasmBigInt(wasmPsbt, walletXpubs, {
+        addressCodec,
         replayProtection: { publicKeys: [acidTest.getReplayProtectionPublicKey()] },
       });
       assert.strictEqual(typeof result.fee, 'bigint');
@@ -79,6 +84,7 @@ function describeTransactionWith(acidTest: testutil.AcidTest) {
 
     it('returns custom change outputs when parameter is set', function () {
       const wasmExplanation = explainPsbtWasm(wasmPsbt, walletXpubs, {
+        addressCodec,
         replayProtection: {
           publicKeys: [acidTest.getReplayProtectionPublicKey()],
         },
@@ -116,6 +122,7 @@ describe('explainPsbt(Wasm)', function () {
     assert.throws(
       () =>
         explainPsbtWasmBigInt(wasmPsbt, walletXpubs, {
+          addressCodec: new AddressCodec('btc'),
           replayProtection: { publicKeys: [] },
         }),
       /Fee calculation error: outputs exceed inputs/
@@ -137,6 +144,7 @@ describe('aggregateTransactionExplanations', function () {
           const wasmPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(psbtBytes, networkName);
           const walletXpubs = fixedScriptWallet.RootWalletKeys.from(acidTest.rootWalletKeys);
           exp = explainPsbtWasmBigInt(wasmPsbt, walletXpubs, {
+            addressCodec: new AddressCodec('btc'),
             replayProtection: { publicKeys: [acidTest.getReplayProtectionPublicKey()] },
           });
         });
