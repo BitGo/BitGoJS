@@ -909,7 +909,12 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
       // descriptor Psbt, skipping the fixedScriptWallet.BitGoPsbt intermediate.
       return explainTx(decodeDescriptorPsbt(params), { ...params, wallet }, this.wasmName, this.addressCodec);
     }
-    return explainTx(this.decodeTransactionFromPrebuild(params), { ...params, wallet }, this.wasmName, this.addressCodec);
+    return explainTx(
+      this.decodeTransactionFromPrebuild(params),
+      { ...params, wallet },
+      this.wasmName,
+      this.addressCodec
+    );
   }
 
   /**

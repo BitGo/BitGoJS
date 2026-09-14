@@ -441,7 +441,10 @@ describe('BIP322', function () {
     it('should successfully run with a user nonce', function () {
       const psbt = createUnsignedPsbt();
       assertCommon(
-        explainPsbtWasm(psbt, walletKeys, { addressCodec: new AddressCodec('btc'), replayProtection: { publicKeys: [] } }),
+        explainPsbtWasm(psbt, walletKeys, {
+          addressCodec: new AddressCodec('btc'),
+          replayProtection: { publicKeys: [] },
+        }),
         0
       );
     });
@@ -450,7 +453,10 @@ describe('BIP322', function () {
       const psbt = createUnsignedPsbt();
       psbt.sign(BIP32.fromBase58(xprivs[0]));
       assertCommon(
-        explainPsbtWasm(psbt, walletKeys, { addressCodec: new AddressCodec('btc'), replayProtection: { publicKeys: [] } }),
+        explainPsbtWasm(psbt, walletKeys, {
+          addressCodec: new AddressCodec('btc'),
+          replayProtection: { publicKeys: [] },
+        }),
         1
       );
     });
@@ -460,7 +466,10 @@ describe('BIP322', function () {
       psbt.sign(BIP32.fromBase58(xprivs[0]));
       psbt.sign(BIP32.fromBase58(xprivs[2]));
       assertCommon(
-        explainPsbtWasm(psbt, walletKeys, { addressCodec: new AddressCodec('btc'), replayProtection: { publicKeys: [] } }),
+        explainPsbtWasm(psbt, walletKeys, {
+          addressCodec: new AddressCodec('btc'),
+          replayProtection: { publicKeys: [] },
+        }),
         2
       );
     });
