@@ -1,8 +1,9 @@
-import { fixedScriptWallet, bip322 } from '@bitgo/wasm-utxo';
+import { bip322, fixedScriptWallet } from '@bitgo/wasm-utxo';
 import { Triple } from '@bitgo/sdk-core';
 
 import type { FixedScriptWalletOutput, Output, BitGoPsbt } from '../types';
 import type { Bip322Message } from '../../abstractUtxoCoin';
+import type { AddressCodec } from '../recipient';
 
 import type { TransactionExplanationWasm } from './explainTransaction';
 
@@ -40,6 +41,7 @@ function toExternalOutputBigInt(output: ParsedExternalOutput): Output<bigint> {
 }
 
 interface ExplainPsbtWasmParams {
+  addressCodec: AddressCodec;
   replayProtection: {
     checkSignature?: boolean;
     publicKeys: Buffer[];
@@ -102,6 +104,9 @@ export function explainPsbtWasmBigInt(
   const customChangeOutputs: FixedScriptWalletOutput<bigint>[] = [];
 
   parsed.outputs.forEach((output, i) => {
+    if (!params.addressCodec.isMatchingScript(output)) {
+      throw new Error(`Output ${i} address ${output.address} does not match its raw script`);
+    }
     const parseCustomChangeOutput = parsedCustomChangeOutputs?.[i];
     if (isParsedWalletOutput(output)) {
       changeOutputs.push(toChangeOutputBigInt(output));

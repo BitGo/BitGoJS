@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { fixedScriptWallet } from '@bitgo/wasm-utxo';
+import { fixedScriptWallet, zcashAddress } from '@bitgo/wasm-utxo';
 
 import {
   Zec,
@@ -220,6 +220,29 @@ describe('ZecAddressCodec', function () {
   it('decode: throws for garbage', function () {
     const codec = new ZecAddressCodec('tzec', 'tzec');
     assert.throws(() => codec.decode('not-a-real-address'));
+  });
+
+  it('isMatchingScript selects the receiver represented by the parsed output', function () {
+    const codec = new ZecAddressCodec('tzec', 'tzec');
+    const transparentScript = codec.decode(testnetWallet.unified);
+    const shieldedScript = zcashAddress.toShieldedReceiverWithCoin(testnetWallet.unified, 'tzec');
+
+    assert.strictEqual(
+      codec.isMatchingScript({ address: testnetWallet.unified, script: transparentScript, isShielded: false }),
+      true
+    );
+    assert.strictEqual(
+      codec.isMatchingScript({ address: testnetWallet.unified, script: shieldedScript, isShielded: true }),
+      true
+    );
+    assert.strictEqual(
+      codec.isMatchingScript({ address: testnetWallet.unified, script: transparentScript, isShielded: true }),
+      false
+    );
+    assert.strictEqual(
+      codec.isMatchingScript({ address: testnetWallet.unified, script: shieldedScript, isShielded: false }),
+      false
+    );
   });
 
   // -- encode (inherited) ----------------------------------------------------

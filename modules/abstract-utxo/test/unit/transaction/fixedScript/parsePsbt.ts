@@ -93,6 +93,7 @@ function describeParseTransactionWith(
         wasmPsbt,
         acidTest.rootWalletKeys.triple.map((k) => k.neutered().toBase58()) as Triple<string>,
         {
+          addressCodec: coin.addressCodec,
           replayProtection: {
             publicKeys: [acidTest.getReplayProtectionPublicKey()],
           },
