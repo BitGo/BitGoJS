@@ -26,7 +26,7 @@ const enterprise = '';
 
 // build pay transaction
 async function buildPayTx() {
-  await bitgo.authenticateWithAccessToken({ accessToken });
+  bitgo.authenticateWithAccessToken({ accessToken });
 
   const walletOptions: GenerateWalletOptions = {
     label,

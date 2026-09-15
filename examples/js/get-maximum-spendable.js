@@ -26,7 +26,7 @@ const coin = 'tbtc';
 const basecoin = bitgo.coin(coin);
 
 Promise.coroutine(function* () {
-  yield bitgo.authenticateWithAccessToken({ accessToken });
+  bitgo.authenticateWithAccessToken({ accessToken });
 
   const walletInstance = yield basecoin.wallets().get({ id: id });
 
