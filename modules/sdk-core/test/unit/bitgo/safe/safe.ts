@@ -337,6 +337,45 @@ describe('Safe', function () {
       });
     });
 
+    for (const chain of ['talgo', 'thbar']) {
+      it(`mints an ed25519 ${chain} wallet posting the user child as a StrKey (server converts)`, async function () {
+        // The user child is hardened-derived from the txlm StrKey user root, so the SDK posts a
+        // Stellar StrKey for EVERY ed25519 wallet coin. Wallet Platform converts the pub to the
+        // wallet coin's representation at registration; the SDK never coin-encodes children.
+        stubCoin(chain);
+        keychainsGet.resolves({
+          id: 'user-root-id',
+          source: 'user',
+          encryptedPrv: `enc:${ROOT_ED25519_SEED_STRKEY}`,
+          pub: 'GAB2CB576PHBBPQ5ODORRZ2LYCMWPZGWGCN2KDK7DXOIMZASKUY3QZ6Q',
+          type: 'independent',
+        });
+        keychainsAdd.resolves({ id: 'child-key-id', pub: `converted-${chain}-pub`, type: 'independent' });
+        derivationQuery.returns({
+          result: sinon.stub().resolves({ slot: 'ed25519Multisig', index: 0 }),
+        });
+
+        await safe.createWallet({ coin: chain, label: `${chain} desk`, passphrase: 'pw' });
+
+        const addArgs = keychainsAdd.firstCall.args[0];
+        addArgs.should.eql({
+          pub: ed25519ChildAt0.pub,
+          source: 'user',
+          keyType: 'independent',
+          parent: 'ed-user',
+          safeId: 'test-safe-id',
+          derivedFromParentWithPath: "m/0'",
+        });
+        mintSend.firstCall.args[0].should.eql({
+          coin: chain,
+          label: `${chain} desk`,
+          type: 'hot',
+          multisigType: 'onchain',
+          keys: ['child-key-id'],
+        });
+      });
+    }
+
     it('rejects an empty passphrase', async function () {
       await safe
         .createWallet({ coin: 'tbtc', label: 'w', passphrase: '' })

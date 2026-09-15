@@ -105,9 +105,21 @@ describe('Keychains.createBackup', function () {
       sentBody().pub!.should.equal(XPUB);
     });
 
-    it('leaves a TSS backup key untouched', async function () {
-      await keychains.createBackup({ prv: 'tss-prv', commonKeychain: 'common-keychain', safeId: SAFE_ID });
-      (sentBody().pub === undefined).should.be.true();
+    it('sends a body with no chainCode and source backup', async function () {
+      await keychains.createBackup({ passphrase: 'pw' });
+
+      const body = sentBody();
+      body.should.not.have.property('chainCode');
+      body.source!.should.equal('backup');
+      body.encryptedPrv!.should.equal('encrypted-prv');
+    });
+
+    it('leaves a KRS-provider backup key untouched', async function () {
+      await keychains.createBackup({ provider: 'krs-provider', safeId: SAFE_ID });
+
+      const body = sentBody();
+      (body.pub === undefined).should.be.true();
+      body.provider!.should.equal('krs-provider');
     });
   });
   describe('password rotation encryption session', function () {

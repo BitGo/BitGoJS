@@ -356,9 +356,10 @@ export class Keychains implements IKeychains {
     }
 
     // Wallet Safes v1 slot ④ (`ed25519Multisig`): store neutral raw derivation material as
-    // publicKey32 || chainCode32, serialized as canonical lowercase hex. The root is deliberately
-    // not encoded as a Stellar/Algorand/HBAR public key; coin-specific encoding happens after
-    // public soft derivation when the wallet child is minted.
+    // publicKey32 || chainCode32, serialized together as canonical unpadded RFC 4648 base32
+    // (exactly 103 uppercase characters). The root is deliberately not encoded as a
+    // Stellar/Algorand/HBAR public key; coin-specific encoding happens after public soft
+    // derivation when the wallet child is minted.
     const withKey = params as CreateBackupOptions & { pub?: string };
     if (params.safeId !== undefined && withKey.pub !== undefined && isValidEd25519StrKeyPublicKey(withKey.pub)) {
       withKey.pub = encodeDerivableEd25519Pub(decodeEd25519StrKeyPublicKey(withKey.pub), generateEd25519ChainCode());

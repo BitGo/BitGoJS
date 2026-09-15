@@ -1,5 +1,5 @@
 {
-  "$comment": "Shared cross-repo fixture: raw 32-byte public key || raw 32-byte chain code encoded together as canonical unpadded RFC 4648 base32.",
+  "$comment": "Shared ed25519Multisig safe-root fixture: raw 32-byte public key || raw 32-byte chain code encoded together as canonical unpadded RFC 4648 base32 (uppercase A-Z2-7, 103 characters). Plain JSON with no repo-specific imports so wallet-platform, BitGoJS sdk-core, BitGoJS modules/key-card and WRW can all consume this identical file. The final base32 character carries 2 significant bits and 3 zero padding bits, so 8 spellings decode to the same 64 bytes and only the zero-padded one is valid — validators must re-encode, not just match the alphabet. The softDerivation vectors pin the m/<index> unhardened child public key expected from a root: they were generated with @bitgo/account-lib's Eddsa.deriveUnhardened (via @bitgo-beta/sdk-core) over genuine ed25519 points, and every consuming implementation MUST reproduce them exactly — a divergent unhardened derivation derives co-signer keys nobody else can reproduce, permanently bricking the wallets minted with it. The child chain code is deliberately not pinned: consumers discard it after deriving the child public key.",
   "publicKeyBytes": 32,
   "chainCodeBytes": 32,
   "rootPubBase32Length": 103,
@@ -8,23 +8,65 @@
       "name": "zero public key and repeated chain code",
       "pub": "0000000000000000000000000000000000000000000000000000000000000000",
       "chainCode": "abababababababababababababababababababababababababababababababab",
-      "composite": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKXK5LVOV2XKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      "composite": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKXK5LVOV2XK5LVOV2XK5LVOV2XK5LVOV2XK5LVOV2XK5LVOV2XKY"
     },
     {
       "name": "mixed public key and chain code",
       "pub": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
       "chainCode": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
-      "composite": "AERUKZ4JVPG7AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      "composite": "AERUKZ4JVPG66AJDIVTYTK6N54ASGRLHRGV433YBENCWPCNLZXX75XF2TB3FIMQQ73OLVGDWKQZBB7W4XKMHMVBSCD7NZOUYOZKDEEA"
+    },
+    {
+      "name": "typical public key with a mixed chain code",
+      "pub": "d5a7c39b1f84e206a93f7c4b8d2e615f0a9c3b7e5d1f48c2a6b0e3947f518d26",
+      "chainCode": "3c9f1a7b5e2d84c6a0f3b9d7e1c5a2846f0b3d9e7c1a5f8b2d04e6c9a3f7b1d5",
+      "composite": "2WT4HGY7QTRANKJ7PRFY2LTBL4FJYO36LUPURQVGWDRZI72RRUTDZHY2PNPC3BGGUDZ3TV7BYWRII3YLHWPHYGS7RMWQJZWJUP33DVI"
+    },
+    {
+      "name": "typical public key with a repeating chain code",
+      "pub": "9b2f7d4a1e8c3b6f5a0d9e2c7b4f1a8d3e6c9b2f5a8d1e4c7b0f3a6d9e2c5b81",
+      "chainCode": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+      "composite": "TMXX2SQ6RQ5W6WQNTYWHWTY2RU7GZGZPLKGR4TD3B45G3HRMLOA43TONZXG43TONZXG43TONZXG43TONZXG43TONZXG43TONZXG43TI"
     }
   ],
-  "invalid": [
-    { "name": "lowercase", "composite": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaakxk5lvov2xkaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" },
-    { "name": "short", "composite": "AA" },
-    { "name": "non-canonical trailing bits", "composite": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKXK5LVOV2XKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB" }
-  ],
   "invalidComposite": [
-    { "name": "lowercase", "composite": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaakxk5lvov2xkaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" },
-    { "name": "short", "composite": "AA" },
-    { "name": "non-canonical trailing bits", "composite": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKXK5LVOV2XKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB" }
+    {
+      "name": "lowercase",
+      "composite": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaakxk5lvov2xk5lvov2xk5lvov2xk5lvov2xk5lvov2xk5lvov2xky"
+    },
+    {
+      "name": "short",
+      "composite": "AA"
+    },
+    {
+      "name": "non-canonical trailing bits",
+      "composite": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKXK5LVOV2XK5LVOV2XK5LVOV2XK5LVOV2XK5LVOV2XK5LVOV2XKZ"
+    }
+  ],
+  "softDerivation": [
+    {
+      "name": "root A at m/0",
+      "index": 0,
+      "pub": "07a2206d82e1238043906260d95f86e046056610756050d558d282476556d0a6",
+      "chainCode": "1111111111111111111111111111111111111111111111111111111111111111",
+      "composite": "A6RCA3MC4ERYAQ4QMJQNSX4G4BDAKZQQOVQFBVKY2KBEOZKW2CTBCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEI",
+      "childPub": "3cec3c1be67f00f8f8d5a33cc3937ba7d7da96a79332af622942f38150f32d6e"
+    },
+    {
+      "name": "root A at m/1",
+      "index": 1,
+      "pub": "07a2206d82e1238043906260d95f86e046056610756050d558d282476556d0a6",
+      "chainCode": "1111111111111111111111111111111111111111111111111111111111111111",
+      "composite": "A6RCA3MC4ERYAQ4QMJQNSX4G4BDAKZQQOVQFBVKY2KBEOZKW2CTBCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEI",
+      "childPub": "b315782a33f863e87a40731157456e62ce7d4e941cfb2e3f71c56edb993bf7af"
+    },
+    {
+      "name": "root B at max non-hardened m/2147483647",
+      "index": 2147483647,
+      "pub": "6af98980a20d1d090d729aee97e8cab65df61eeec9dc7b6070baa6b0e02f860d",
+      "chainCode": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+      "composite": "NL4YTAFCBUOQSDLSTLXJP2GKWZO7MHXOZHOHWYDQXKTLBYBPQYG43TONZXG43TONZXG43TONZXG43TONZXG43TONZXG43TONZXG43TI",
+      "childPub": "acda5ebd6543ed99141eb9da0cf1101e3ce11a637ee83743786b67a3b319439e"
+    }
   ]
 }

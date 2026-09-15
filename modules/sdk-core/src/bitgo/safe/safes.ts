@@ -261,8 +261,8 @@ export class Safes implements ISafes {
     ]);
 
     // Slot ④ roots use neutral raw public derivation material (32-byte public key plus 32-byte
-    // chain code), serialized as 128 lowercase hex characters. Coin-specific child encoding is
-    // performed by Wallet Platform after soft derivation.
+    // chain code), serialized together as canonical unpadded RFC 4648 base32 (103 characters).
+    // Coin-specific child encoding is performed by Wallet Platform after soft derivation.
     if (
       slot === 'ed25519Multisig' &&
       (!backupKeychain.pub ||
@@ -270,7 +270,7 @@ export class Safes implements ISafes {
         !bitgoKeychain.pub ||
         !isDerivableEd25519Pub(bitgoKeychain.pub))
     ) {
-      throw new Error('Safe ed25519Multisig roots are not derivable: expected 64-byte lowercase hex material');
+      throw new Error('Safe ed25519Multisig roots are not derivable: expected 64-byte canonical base32 material');
     }
 
     return [userKeychain.id, backupKeychain.id, bitgoKeychain.id];

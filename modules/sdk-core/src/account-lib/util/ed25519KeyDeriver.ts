@@ -15,7 +15,9 @@ export interface HdKeypair {
  * https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md
  * https://github.com/satoshilabs/slips/blob/master/slip-0010.md
  *
- * @deprecated
+ * This is the sanctioned hardened-derivation path for Wallet Safes v1 ed25519 user children
+ * (see `deriveSafeChildEd25519Hardened`); hardened SLIP-0010 derivation needs no chain code and
+ * no WASM machinery, unlike the unhardened co-signer path in `bitgo/safe/derivableEd25519Pub`.
  */
 export class Ed25519KeyDeriver {
   /**
