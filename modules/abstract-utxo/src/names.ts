@@ -9,6 +9,7 @@ export const utxoCoinsTestnet = [
   'tbtcsig',
   'tbtcbgsig',
   'tbtcstx',
+  'tbtcstxprivate1',
   'tbch',
   'tbcha',
   'tbsv',
@@ -21,7 +22,13 @@ export const utxoCoinsTestnet = [
 ] as const;
 
 export type UtxoCoinNameMainnet = (typeof utxoCoinsMainnet)[number];
-export type UtxoCoinNameTestnet = `t${UtxoCoinNameMainnet}` | 'tbtcsig' | 'tbtc4' | 'tbtcbgsig' | 'tbtcstx';
+export type UtxoCoinNameTestnet =
+  | `t${UtxoCoinNameMainnet}`
+  | 'tbtcsig'
+  | 'tbtc4'
+  | 'tbtcbgsig'
+  | 'tbtcstx'
+  | 'tbtcstxprivate1';
 export type UtxoCoinName = UtxoCoinNameMainnet | UtxoCoinNameTestnet;
 
 export function toWasmUtxoCoinName(coinName: UtxoCoinName | WasmUtxoCoinName): WasmUtxoCoinName {
@@ -52,6 +59,7 @@ export function getMainnetCoinName(coinName: UtxoCoinName): UtxoCoinNameMainnet 
     case 'tbtcsig':
     case 'tbtcbgsig':
     case 'tbtcstx':
+    case 'tbtcstxprivate1':
       return 'btc';
     default:
       return coinName.slice(1) as UtxoCoinNameMainnet;
@@ -84,6 +92,10 @@ function getBaseNameFromMainnet(coinName: UtxoCoinNameMainnet): string {
 }
 
 export function getFullNameFromCoinName(coinName: UtxoCoinName): string {
+  if (coinName === 'tbtcstxprivate1') {
+    return 'Stacks Bitcoin (Private-1 Regtest)';
+  }
+
   let prefix: string;
   switch (coinName) {
     case 'tbtc4':
