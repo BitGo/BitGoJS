@@ -113,6 +113,34 @@ describe('Staking Wallet Common', function () {
       stakingRequest.should.deepEqual(expected);
       msScope.isDone().should.be.True();
     });
+
+    it('should preserve existing staking subtypes in the request payload', async function () {
+      const expected = fixtures.stakingRequest([fixtures.transaction('NEW')]);
+      const msScope = nock(microservicesUri)
+        .post(`/api/staking/v1/${stakingWallet.coin}/wallets/${stakingWallet.walletId}/requests`, {
+          amount: '1',
+          clientId: 'clientId',
+          subType: 'ETH_STAKE_PECTRA',
+          type: 'STAKE',
+        })
+        .reply(201, expected);
+
+      const stakingRequest = await stakingWallet.stake({
+        amount: '1',
+        clientId: 'clientId',
+        subType: 'ETH_STAKE_PECTRA',
+      });
+
+      should.exist(stakingRequest);
+      stakingRequest.should.deepEqual(expected);
+      msScope.isDone().should.be.True();
+    });
+
+    it('should reject incomplete pox5-bond options before making a request', async function () {
+      await stakingWallet
+        .stake({ subType: 'pox5-bond' } as any)
+        .should.be.rejectedWith('bondIndex is required for pox5-bond staking');
+    });
   });
 
   describe('unstake', function () {

@@ -88,9 +88,9 @@ export interface StakeOptions {
    */
   blsSignature?: string;
   /**
-   * subtype-specific interfaces provide their own discriminant
+   * coin-specific staking subtype. Subtype-specific interfaces may narrow this field.
    */
-  subType?: never;
+  subType?: string;
   /**
    * stx btc reward address
    */
