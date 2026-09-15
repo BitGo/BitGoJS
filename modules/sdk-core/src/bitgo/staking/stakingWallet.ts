@@ -75,6 +75,7 @@ export class StakingWallet implements IStakingWallet {
       | StoryStakeOptions
       | XdcStakeOptions
   ): Promise<StakingRequest> {
+    validatePox5StakeOptions(options);
     return await this.createStakingRequest(options, 'STAKE');
   }
 
@@ -505,6 +506,20 @@ export class StakingWallet implements IStakingWallet {
         `Cannot perform deep validation for staking transaction ${transaction.stakingRequestId} without specified build params`
       );
     }
+  }
+}
+
+function validatePox5StakeOptions(options: StakeOptions | Pox5StakeOptions): void {
+  if (options.subType !== 'pox5-bond') {
+    return;
+  }
+
+  const pox5Options = options as Partial<Pox5StakeOptions>;
+  if (!Number.isInteger(pox5Options.bondIndex) || (pox5Options.bondIndex as number) < 0) {
+    throw new Error('bondIndex is required for pox5-bond staking');
+  }
+  if (typeof pox5Options.signerManager !== 'string' || pox5Options.signerManager.length === 0) {
+    throw new Error('signerManager is required for pox5-bond staking');
   }
 }
 
