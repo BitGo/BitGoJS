@@ -229,6 +229,13 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
       this._instructionsData.push(stakingDeactivateData);
     }
 
+    if (this._priorityFee && this._priorityFee !== Number(0)) {
+      this._instructionsData.unshift({
+        type: InstructionBuilderTypes.SetPriorityFee,
+        params: { fee: this._priorityFee },
+      });
+    }
+
     return await super.buildImplementation();
   }
 }
