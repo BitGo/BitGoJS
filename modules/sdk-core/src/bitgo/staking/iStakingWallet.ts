@@ -27,7 +27,7 @@ export type StakingSubType =
   | 'PSTAVAX_STAKE'
   | 'WFLR_STAKE'
   | 'VOTE'
-  | 'STX_BTC_POX5_BOND';
+  | 'pox5-bond';
 
 export interface StakingRequest {
   id: string;
@@ -62,7 +62,7 @@ export type BabylonParams = {
 };
 
 export interface Pox5StakeOptions extends Omit<StakeOptions, 'subType'> {
-  subType: 'STX_BTC_POX5_BOND';
+  subType: 'pox5-bond';
   bondIndex: number;
   signerManager: string;
   numCycles?: string;

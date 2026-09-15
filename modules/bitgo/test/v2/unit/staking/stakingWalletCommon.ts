@@ -106,6 +106,32 @@ describe('Staking Wallet Common', function () {
       msScope.isDone().should.be.True();
     });
 
+    it('should preserve the legacy PoX-5 subtype on the wire', async function () {
+      const expected = fixtures.stakingRequest([fixtures.transaction('NEW')]);
+      const msScope = nock(microservicesUri)
+        .post(`/api/staking/v1/${stakingWallet.coin}/wallets/${stakingWallet.walletId}/requests`, {
+          amount: '1',
+          bondIndex: 0,
+          clientId: 'clientId',
+          signerManager: 'manager',
+          subType: 'pox5-bond',
+          type: 'STAKE',
+        })
+        .reply(201, expected);
+
+      const stakingRequest = await stakingWallet.stake({
+        amount: '1',
+        bondIndex: 0,
+        clientId: 'clientId',
+        signerManager: 'manager',
+        subType: 'pox5-bond',
+      });
+
+      should.exist(stakingRequest);
+      stakingRequest.should.deepEqual(expected);
+      msScope.isDone().should.be.True();
+    });
+
     it('should call staking-service to stake with optional stakeMany parameters', async function () {
       const expected = fixtures.stakingRequest([fixtures.transaction('NEW')]);
       const msScope = nock(microservicesUri)
