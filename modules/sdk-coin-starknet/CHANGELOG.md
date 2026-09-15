@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.7.19](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-starknet@1.7.18...@bitgo/sdk-coin-starknet@1.7.19) (2026-09-15)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-starknet
+
+
+
+
+
 ## [1.7.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-starknet@1.7.17...@bitgo/sdk-coin-starknet@1.7.18) (2026-09-10)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-starknet

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [8.9.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.9.1...@bitgo/sdk-coin-sol@8.9.2) (2026-09-15)
+
+
+### Bug Fixes
+
+* **sdk-coin-sol:** decode Token-2022 unknown data as base64 ([1d826ff](https://github.com/BitGo/BitGoJS/commit/1d826ff283f2abfb8c5eb8ac4b400a3c0f4a90e7))
+
+
+
+
+
 ## [8.9.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.9.0...@bitgo/sdk-coin-sol@8.9.1) (2026-09-10)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol
