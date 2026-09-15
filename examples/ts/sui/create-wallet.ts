@@ -26,7 +26,7 @@ const enterprise = '';
 
 // Create the wallet
 async function createWallet() {
-  await bitgo.authenticateWithAccessToken({ accessToken });
+  bitgo.authenticateWithAccessToken({ accessToken });
 
   const walletOptions: GenerateWalletOptions = {
     label,

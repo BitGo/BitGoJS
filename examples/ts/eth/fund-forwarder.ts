@@ -27,7 +27,7 @@ const forwarderAddress = '';
 const amount = '1';
 
 async function fundForwarder() {
-  await bitgo.authenticateWithAccessToken({ accessToken });
+  bitgo.authenticateWithAccessToken({ accessToken });
   const wallet = await bitgo.coin(coin).wallets().get({ id: walletId });
 
   const fundForwarderParams: FundForwarderParams = {

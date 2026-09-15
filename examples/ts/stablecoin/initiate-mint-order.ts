@@ -36,6 +36,7 @@ const fromAmountInFullUnits = '100'; // Amount in full units of USD (100 USD) - 
 
 // Initialize BitGo SDK
 const bitgo = new BitGoJS.BitGo({ env: environment });
+bitgo.authenticateWithAccessToken({ accessToken: accessToken });
 const basecoin = bitgo.coin(ofcUsdCoin);
 
 function createStablecoinUrl(path: string): string {
@@ -47,7 +48,6 @@ function createStablecoinUrl(path: string): string {
  */
 async function main() {
   try {
-    await bitgo.authenticateWithAccessToken({ accessToken: accessToken });
     console.log('🚀 Starting Stablecoin Mint Order Process...');
     console.log('='.repeat(50));
     console.log(`Environment: ${environment}`);

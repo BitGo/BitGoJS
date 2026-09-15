@@ -29,7 +29,7 @@ const coin = 'teth';
 
 // Create the wallet
 async function createWallet() {
-  await bitgo.authenticateWithAccessToken({ accessToken });
+  bitgo.authenticateWithAccessToken({ accessToken });
 
   const walletOptions = {
     label,

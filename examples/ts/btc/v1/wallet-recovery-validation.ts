@@ -81,7 +81,7 @@ async function main(): Promise<void> {
       throw new Error('Login did not return a usable token (no access_token or encryptedToken).');
     }
 
-    await bitgo.authenticateWithAccessToken({ accessToken });
+    bitgo.authenticateWithAccessToken({ accessToken });
 
     console.log('Authentication successful.');
 

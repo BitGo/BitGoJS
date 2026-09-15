@@ -30,7 +30,7 @@ const coin = 'tada';
 
 // Create the wallet
 async function main() {
-  await bitgo.authenticateWithAccessToken({ accessToken });
+  bitgo.authenticateWithAccessToken({ accessToken });
   const passcodeEncryptionCode = bitgo.generateRandomPassword();
 
   const walletOptions = {

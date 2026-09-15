@@ -32,7 +32,7 @@ const coin = 'tsol';
 
 // Create the wallet
 async function main() {
-  await bitgo.authenticateWithAccessToken({ accessToken });
+  bitgo.authenticateWithAccessToken({ accessToken });
 
   const walletOptions = {
     label,

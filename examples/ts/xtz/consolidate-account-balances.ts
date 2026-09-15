@@ -27,7 +27,7 @@ const otp = '000000';
 const accessToken = '';
 
 async function main() {
-  await bitgo.authenticateWithAccessToken({ accessToken });
+  bitgo.authenticateWithAccessToken({ accessToken });
 
   const wallet = await bitgo.coin(coin).wallets().getWallet({ id: walletId });
   const coinSpecific = wallet.coinSpecific() as WalletCoinSpecific;

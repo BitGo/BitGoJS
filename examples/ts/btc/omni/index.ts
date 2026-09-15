@@ -14,7 +14,6 @@ const ASSET_ID = 31;
 const BASE_AMOUNT = 729100000n; // this is currently 7.291 USDT
 
 async function getWallet() {
-  await omniConfig.sdk.authenticateWithAccessToken({ accessToken: omniConfig.accessToken });
   return await omniConfig.sdk.coin(omniConfig.coin).wallets().get({ id: omniConfig.walletId });
 }
 

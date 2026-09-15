@@ -486,7 +486,7 @@ describe('Constructor', function () {
         const bitgo = new BitGoAPI({ env: 'custom', customRootURI: ROOT, hmacAuthStrategy: strategy });
 
         nock(ROOT)
-          .post('/api/v2/user/login')
+          .post('/api/auth/v1/session')
           .reply(200, {
             user: { username: 'test@example.com' },
             access_token: 'v2xmyaccesstoken',
@@ -519,7 +519,7 @@ describe('Constructor', function () {
         const bitgo = new BitGoAPI({ env: 'custom', customRootURI: ROOT, hmacAuthStrategy: strategy });
 
         nock(ROOT)
-          .post('/api/v2/user/login')
+          .post('/api/auth/v1/session')
           .reply(200, {
             user: { username: 'test@example.com' },
             access_token: 'v2xmytoken',
@@ -539,36 +539,6 @@ describe('Constructor', function () {
         });
 
         keyReady.should.be.true();
-      });
-
-      it('handles an ECDH-encrypted token response (no access_token) through the v2 login flow', async function () {
-        const { strategy, setTokenStub } = makeStrategy();
-        const bitgo = new BitGoAPI({ env: 'custom', customRootURI: ROOT, hmacAuthStrategy: strategy });
-
-        // Stub token issuance so the test does not depend on real crypto. The point is
-        // to assert the v2 login response with encryptedToken reaches handleTokenIssuance
-        // and that the decrypted token is then synced to the strategy.
-        const handleTokenIssuanceStub = sinon
-          .stub(bitgo, 'handleTokenIssuance')
-          .resolves({ token: 'v2xdecryptedtoken' });
-
-        nock(ROOT)
-          .post('/api/v2/user/login')
-          .reply(200, {
-            user: { username: 'test@example.com' },
-            encryptedToken: 'encrypted-token-value',
-            encryptedECDHXprv: 'encrypted-ecdh-xprv',
-            derivationPath: 'm/999999/0/1',
-          });
-
-        await bitgo.authenticate({ username: 'test@example.com', password: 'hunter2' });
-
-        // The SDK must have taken the ECDH path (not the plain access_token path).
-        handleTokenIssuanceStub.calledOnce.should.be.true();
-        handleTokenIssuanceStub.firstCall.args[0].encryptedToken.should.equal('encrypted-token-value');
-        // The decrypted token must be synced to the strategy.
-        setTokenStub.calledOnce.should.be.true();
-        setTokenStub.firstCall.args[0].should.equal('v2xdecryptedtoken');
       });
     });
 
@@ -608,7 +578,7 @@ describe('Constructor', function () {
         const { strategy, clearTokenStub } = makeStrategy();
         const bitgo = new BitGoAPI({ env: 'custom', customRootURI: ROOT, hmacAuthStrategy: strategy });
 
-        await bitgo.authenticateWithAccessToken({ accessToken: 'v2xsometoken' });
+        bitgo.authenticateWithAccessToken({ accessToken: 'v2xsometoken' });
         (bitgo as any)._token.should.equal('v2xsometoken');
 
         await bitgo.clearAsync();
@@ -672,14 +642,13 @@ describe('Constructor', function () {
     });
 
     describe('sync token-setting methods', function () {
-      it('authenticateWithAccessToken calls setToken (HMAC strategy must be kept in sync for v2/v3 signing)', async function () {
+      it('authenticateWithAccessToken does not call setToken (synchronous — caller must invoke setToken on the strategy manually)', function () {
         const { strategy, setTokenStub } = makeStrategy();
         const bitgo = new BitGoAPI({ env: 'custom', customRootURI: ROOT, hmacAuthStrategy: strategy });
 
-        await bitgo.authenticateWithAccessToken({ accessToken: 'v2xsynctoken' });
+        bitgo.authenticateWithAccessToken({ accessToken: 'v2xsynctoken' });
 
-        setTokenStub.calledOnce.should.be.true();
-        setTokenStub.firstCall.args[0].should.equal('v2xsynctoken');
+        setTokenStub.called.should.be.false();
       });
 
       it('fromJSON does not call setToken (synchronous — caller must invoke setToken on the strategy manually)', function () {
@@ -709,7 +678,7 @@ describe('Constructor', function () {
         });
         const bitgo = new BitGoAPI({ env: 'custom', customRootURI: ROOT, hmacAuthStrategy: strategy });
         // Do NOT set _ecdhXprv — simulates SSO/enterprise session (Okta, Entra, etc.)
-        await bitgo.authenticateWithAccessToken({ accessToken: 'v2xstrategytoken' });
+        bitgo.authenticateWithAccessToken({ accessToken: 'v2xstrategytoken' });
 
         const scope = nock(ROOT).post('/api/auth/v1/accesstoken').reply(200, {
           token: 'v2xnewplaintoken',
@@ -757,7 +726,7 @@ describe('Constructor', function () {
           isAuthenticated: sinon.stub().returns(true),
         });
         const bitgo = new BitGoAPI({ env: 'custom', customRootURI: ROOT, hmacAuthStrategy: strategy });
-        await bitgo.authenticateWithAccessToken({ accessToken: 'v2xstrategytoken' });
+        bitgo.authenticateWithAccessToken({ accessToken: 'v2xstrategytoken' });
 
         nock(ROOT).post('/api/auth/v1/accesstoken').reply(200, {
           token: 'v2xplaintoken',
@@ -778,7 +747,7 @@ describe('Constructor', function () {
           isAuthenticated: sinon.stub().returns(false),
         });
         const bitgo = new BitGoAPI({ env: 'custom', customRootURI: ROOT, hmacAuthStrategy: strategy });
-        await bitgo.authenticateWithAccessToken({ accessToken: 'v2xlegacytoken' });
+        bitgo.authenticateWithAccessToken({ accessToken: 'v2xlegacytoken' });
 
         nock(ROOT).post('/api/auth/v1/accesstoken').reply(200, {
           token: 'v2xlegacyresult',
@@ -793,7 +762,7 @@ describe('Constructor', function () {
       it('should force V1 auth when isAuthenticated is not defined on strategy', async function () {
         const { strategy } = makeStrategy();
         const bitgo = new BitGoAPI({ env: 'custom', customRootURI: ROOT, hmacAuthStrategy: strategy });
-        await bitgo.authenticateWithAccessToken({ accessToken: 'v2xnoauthmethod' });
+        bitgo.authenticateWithAccessToken({ accessToken: 'v2xnoauthmethod' });
 
         nock(ROOT).post('/api/auth/v1/accesstoken').reply(200, {
           token: 'v2xresult',

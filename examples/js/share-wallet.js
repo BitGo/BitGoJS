@@ -30,7 +30,7 @@ const passphrase = null;
 const coin = 'tltc';
 
 Promise.coroutine(function* () {
-  yield bitgo.authenticateWithAccessToken({ accessToken });
+  bitgo.authenticateWithAccessToken({ accessToken });
 
   const wallet = yield bitgo.coin(coin).wallets().get({ id: walletId });
 

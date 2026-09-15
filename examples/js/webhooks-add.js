@@ -32,7 +32,7 @@ const label = '';
 const numConfirmations = 0;
 
 async function main() {
-  await bitgo.authenticateWithAccessToken({ accessToken });
+  bitgo.authenticateWithAccessToken({ accessToken });
 
   const coin = bitgo.coin(network);
 

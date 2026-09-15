@@ -23,7 +23,7 @@ const unspentIds = ['', ''];
 const expireTime = '';
 
 async function createUnspentReservation() {
-  await bitgo.authenticateWithAccessToken({ accessToken });
+  bitgo.authenticateWithAccessToken({ accessToken });
   const wallet = await bitgo.coin(coin).wallets().get({ id: walletId });
 
   const reserveResult = await wallet.manageUnspentReservations({
@@ -33,7 +33,7 @@ async function createUnspentReservation() {
 }
 
 async function modifyUnspentReservation() {
-  await bitgo.authenticateWithAccessToken({ accessToken });
+  bitgo.authenticateWithAccessToken({ accessToken });
   const wallet = await bitgo.coin(coin).wallets().get({ id: walletId });
 
   const reserveResult = await wallet.manageUnspentReservations({
@@ -43,7 +43,7 @@ async function modifyUnspentReservation() {
 }
 
 async function releaseUnspentReservation() {
-  await bitgo.authenticateWithAccessToken({ accessToken });
+  bitgo.authenticateWithAccessToken({ accessToken });
   const wallet = await bitgo.coin(coin).wallets().get({ id: walletId });
 
   const reserveResult = await wallet.manageUnspentReservations({
