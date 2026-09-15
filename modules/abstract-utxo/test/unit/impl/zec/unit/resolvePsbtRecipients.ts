@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 
 import { address as wasmAddress, fixedScriptWallet } from '@bitgo/wasm-utxo';
 
+import { ZecAddressCodec } from '../../../../../src/impl/zec';
 import { resolvePsbtRecipients } from '../../../../../src/impl/zec/recipients';
 import { getDefaultWasmWalletKeys } from '../../../util';
 
@@ -21,6 +22,7 @@ const IRONWOOD_RECEIVER = Buffer.from(
 
 describe('resolvePsbtRecipients', function () {
   const { walletKeys } = getDefaultWasmWalletKeys();
+  const addressCodec = new ZecAddressCodec('tzec', 'tzec');
 
   function buildV4Psbt(unifiedAddress?: string): fixedScriptWallet.ZcashBitGoPsbt {
     const psbt = fixedScriptWallet.ZcashBitGoPsbt.createEmpty('tzec', walletKeys, { blockHeight: 3146400 });
@@ -49,7 +51,7 @@ describe('resolvePsbtRecipients', function () {
   }
 
   it('resolves external transparent outputs and excludes wallet change (v4)', function () {
-    const recipients = resolvePsbtRecipients(buildV4Psbt(), walletKeys);
+    const recipients = resolvePsbtRecipients(buildV4Psbt(), walletKeys, addressCodec);
     assert.strictEqual(recipients.length, 1);
     const recipient = recipients[0];
     assert.strictEqual(recipient.destination.kind, 'transparent');
@@ -63,7 +65,7 @@ describe('resolvePsbtRecipients', function () {
   });
 
   it('reports the original UA verbatim for a transparent output built from a Unified Address (v4)', function () {
-    const recipients = resolvePsbtRecipients(buildV4Psbt(testnetWallet.unified), walletKeys);
+    const recipients = resolvePsbtRecipients(buildV4Psbt(testnetWallet.unified), walletKeys, addressCodec);
     assert.strictEqual(recipients.length, 1);
     const recipient = recipients[0];
     assert.deepStrictEqual(recipient.destination, {
@@ -77,7 +79,7 @@ describe('resolvePsbtRecipients', function () {
   });
 
   it('resolves a shielded v6 output to its (re-encoded) Orchard Unified Address recipient', function () {
-    const recipients = resolvePsbtRecipients(buildV6Psbt(), walletKeys);
+    const recipients = resolvePsbtRecipients(buildV6Psbt(), walletKeys, addressCodec);
     assert.strictEqual(recipients.length, 1);
     const recipient = recipients[0];
     const expectedAddress = fixedScriptWallet.ZcashUnifiedAddress.encodeOrchardReceiver(
@@ -98,7 +100,7 @@ describe('resolvePsbtRecipients', function () {
       new Uint8Array(IRONWOOD_RECEIVER),
       'tzec'
     );
-    const recipients = resolvePsbtRecipients(buildV6Psbt(orchardOnlyUa), walletKeys);
+    const recipients = resolvePsbtRecipients(buildV6Psbt(orchardOnlyUa), walletKeys, addressCodec);
     assert.strictEqual(recipients.length, 1);
     const recipient = recipients[0];
     assert.deepStrictEqual(recipient.destination, { kind: 'zcashShielded', unifiedAddress: orchardOnlyUa });

@@ -6,6 +6,7 @@ import { bip322 as wasmBip322, fixedScriptWallet, BIP32, type Triple } from '@bi
 import { getKeyTriple } from '@bitgo/wasm-utxo/testutils';
 
 import { explainPsbtWasm } from '../../src/transaction/fixedScript';
+import { AddressCodec } from '../../src/transaction/recipient';
 import {
   BIP322MessageBroadcastable,
   BIP322MessageInfo,
@@ -439,20 +440,37 @@ describe('BIP322', function () {
 
     it('should successfully run with a user nonce', function () {
       const psbt = createUnsignedPsbt();
-      assertCommon(explainPsbtWasm(psbt, walletKeys, { replayProtection: { publicKeys: [] } }), 0);
+      assertCommon(
+        explainPsbtWasm(psbt, walletKeys, {
+          addressCodec: new AddressCodec('btc'),
+          replayProtection: { publicKeys: [] },
+        }),
+        0
+      );
     });
 
     it('should successfully run with a user signature', function () {
       const psbt = createUnsignedPsbt();
       psbt.sign(BIP32.fromBase58(xprivs[0]));
-      assertCommon(explainPsbtWasm(psbt, walletKeys, { replayProtection: { publicKeys: [] } }), 1);
+      assertCommon(
+        explainPsbtWasm(psbt, walletKeys, {
+          addressCodec: new AddressCodec('btc'),
+          replayProtection: { publicKeys: [] },
+        }),
+        1
+      );
     });
-
     it('should successfully run with a hsm signature', function () {
       const psbt = createUnsignedPsbt();
       psbt.sign(BIP32.fromBase58(xprivs[0]));
       psbt.sign(BIP32.fromBase58(xprivs[2]));
-      assertCommon(explainPsbtWasm(psbt, walletKeys, { replayProtection: { publicKeys: [] } }), 2);
+      assertCommon(
+        explainPsbtWasm(psbt, walletKeys, {
+          addressCodec: new AddressCodec('btc'),
+          replayProtection: { publicKeys: [] },
+        }),
+        2
+      );
     });
   });
 

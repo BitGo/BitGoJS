@@ -2,6 +2,7 @@ import { fixedScriptWallet, zcashAddress } from '@bitgo/wasm-utxo';
 import type { UnifiedRecipientPreference } from '@bitgo/sdk-core';
 
 import { getReplayProtectionPubkeys } from '../../transaction/fixedScript/replayProtection';
+import type { AddressCodec } from '../../transaction/recipient';
 
 import { ZcashCoinName } from './types';
 
@@ -70,7 +71,8 @@ export interface PsbtRecipient {
  */
 export function resolvePsbtRecipients(
   psbt: fixedScriptWallet.ZcashBitGoPsbt,
-  walletKeys: fixedScriptWallet.RootWalletKeys
+  walletKeys: fixedScriptWallet.RootWalletKeys,
+  addressCodec: AddressCodec
 ): PsbtRecipient[] {
   const parsed = psbt.parseTransactionWithWalletKeys(walletKeys, {
     replayProtection: { publicKeys: getReplayProtectionPubkeys('zec') },
@@ -86,8 +88,12 @@ export function resolvePsbtRecipients(
     if (output.address === null) {
       return;
     }
+    // The raw parsed receiver/script is authoritative; proprietary Unified Address metadata
+    // must match it before it is exposed to callers.
+    if (!addressCodec.isMatchingScript(output)) {
+      throw new Error(`Output ${i} address ${output.address} does not match its raw recipient`);
+    }
     // The original client-passed Unified Address, stored verbatim in the PSBT's key-value
-    // pairs: the orchard PCZT for a shielded output (parsed `address` reports it in full), the
     // transparent-output proprietary map for a v4 transparent output.
     const unifiedAddress = output.isShielded ? output.address : psbt.transparentOutputUnifiedAddress(i) ?? undefined;
     recipients.push({
