@@ -841,6 +841,73 @@ export const reducedAmsTokenConfig = {
   ],
 };
 
+// AMS groups tokens by family, so a single family key can map to multiple
+// token configs (e.g. several Canton-family tokens under one 'canton' entry).
+export const multipleTokensSameFamilyConfig = {
+  eth: [
+    {
+      id: '49ff49ea-3355-4717-bbb0-5e8f5cae2201',
+      fullName: 'Hoodi Testnet fake token',
+      name: 'hteth:faketoken',
+      prefix: '',
+      suffix: 'HTETH:FAKETOKEN',
+      baseUnit: 'wei',
+      kind: 'crypto',
+      family: 'eth',
+      isToken: true,
+      additionalFeatures: ['bulk-transaction'],
+      excludedFeatures: ['custody-bitgo-korea'],
+      decimalPlaces: 6,
+      asset: 'hteth:faketoken',
+      network: {
+        name: 'Hoodi',
+      },
+      primaryKeyCurve: 'secp256k1',
+      contractAddress: '0x89a959b9184b4f8c8633646d5dfd049d2ebc983a',
+    },
+    {
+      id: '5b56d132-2eb0-4c8c-9b1c-3a4b6b7d1234',
+      fullName: 'Hoodi Testnet fake token 2',
+      name: 'hteth:faketoken2',
+      prefix: '',
+      suffix: 'HTETH:FAKETOKEN2',
+      baseUnit: 'wei',
+      kind: 'crypto',
+      family: 'eth',
+      isToken: true,
+      additionalFeatures: ['bulk-transaction'],
+      excludedFeatures: ['custody-bitgo-korea'],
+      decimalPlaces: 6,
+      asset: 'hteth:faketoken2',
+      network: {
+        name: 'Hoodi',
+      },
+      primaryKeyCurve: 'secp256k1',
+      contractAddress: '0x89a959b9184b4f8c8633646d5dfd049d2ebc983b',
+    },
+    {
+      id: '6c67e243-3fc1-4d9d-ac2d-4b5c7c8e2345',
+      fullName: 'Hoodi Testnet fake token 3',
+      name: 'hteth:faketoken3',
+      prefix: '',
+      suffix: 'HTETH:FAKETOKEN3',
+      baseUnit: 'wei',
+      kind: 'crypto',
+      family: 'eth',
+      isToken: true,
+      additionalFeatures: ['bulk-transaction'],
+      excludedFeatures: ['custody-bitgo-korea'],
+      decimalPlaces: 6,
+      asset: 'hteth:faketoken3',
+      network: {
+        name: 'Hoodi',
+      },
+      primaryKeyCurve: 'secp256k1',
+      contractAddress: '0x89a959b9184b4f8c8633646d5dfd049d2ebc983c',
+    },
+  ],
+};
+
 export const amsTokenWithUnsupportedNetwork = {
   'hteth:faketoken': [
     {

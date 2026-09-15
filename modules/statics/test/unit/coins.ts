@@ -37,6 +37,7 @@ import {
   dynamicBaseChainFullConfig,
   dynamicTestNetwork,
   incorrectAmsTokenConfig,
+  multipleTokensSameFamilyConfig,
   reducedAmsTokenConfig,
   reducedTokenConfigForAllChains,
   trimmedDynamicBaseChainConfig,
@@ -1626,6 +1627,13 @@ describe('create token map using config details', () => {
     const bgerchToken = coins.get('bgerch');
     const bgerchNetwork = bgerchToken?.network;
     JSON.stringify(bgerchNetwork).should.eql(JSON.stringify(token?.network));
+  });
+
+  it('should create every token grouped under the same family key, not just the first', () => {
+    const coinMap = createTokenMapUsingTrimmedConfigDetails(multipleTokensSameFamilyConfig);
+    coinMap.has('hteth:faketoken').should.eql(true);
+    coinMap.has('hteth:faketoken2').should.eql(true);
+    coinMap.has('hteth:faketoken3').should.eql(true);
   });
 
   it('should form base coin for tokens of all the chains', () => {
