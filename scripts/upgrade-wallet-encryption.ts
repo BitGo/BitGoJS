@@ -76,7 +76,7 @@ async function main() {
     parseArgs();
 
   const bitgo = new BitGo({ env });
-  await bitgo.authenticateWithAccessToken({ accessToken });
+  bitgo.authenticateWithAccessToken({ accessToken });
 
   const wallet = await bitgo.coin(coin).wallets().get({ id: walletId });
   const result = await wallet.upgradeEncryption({
