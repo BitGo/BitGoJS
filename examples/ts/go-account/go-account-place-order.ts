@@ -49,7 +49,7 @@ const bitgo = new BitGoAPI({
  * Your Go Account wallet ID.
  * Find this in the BitGo portal or from the wallet object in your API responses.
  */
-const accountId = process.env.OFC_WALLET_ID || 'your_wallet_id';
+const walletId = process.env.OFC_WALLET_ID || 'your_wallet_id';
 
 /**
  * Unique identifier for this order.  Must be unique per account.
@@ -163,7 +163,7 @@ async function main() {
 
   // Log what we are about to send
   console.log('Order details:');
-  console.log(`  Account ID       : ${accountId}`);
+  console.log(`  Account ID       : ${walletId}`);
   console.log(`  Client Order ID  : ${clientOrderId}`);
   console.log(`  Type             : ${orderType}`);
   console.log(`  Product          : ${product}`);
@@ -184,7 +184,7 @@ async function main() {
   console.log('');
 
   const url = (bitgo as any).microservicesUrl(
-    `/api/prime/trading/v1/accounts/${accountId}/orders`
+    `/api/prime/trading/v1/accounts/${walletId}/orders`
   );
 
   console.log('Placing trade order...');

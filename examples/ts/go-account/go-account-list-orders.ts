@@ -30,7 +30,7 @@ const bitgo = new BitGoAPI({
 // ---------------------------------------------------------------------------
 
 /** Your Go Account wallet ID */
-const accountId = process.env.OFC_WALLET_ID || 'your_wallet_id';
+const walletId = process.env.OFC_WALLET_ID || 'your_wallet_id';
 
 /** Optional: filter orders by status */
 const statusFilter = process.env.TRADE_ORDER_STATUS;
@@ -65,7 +65,7 @@ async function main() {
   console.log('=== Go Account — List Trade Orders ===\n');
 
   const url = (bitgo as any).microservicesUrl(
-    `/api/prime/trading/v1/accounts/${accountId}/orders`
+    `/api/prime/trading/v1/accounts/${walletId}/orders`
   );
 
   // Build query params
@@ -77,7 +77,7 @@ async function main() {
     query['product'] = productFilter;
   }
 
-  console.log(`Fetching orders for account ${accountId}...`);
+  console.log(`Fetching orders for account ${walletId}...`);
   if (statusFilter) console.log(`  Status filter  : ${statusFilter}`);
   if (productFilter) console.log(`  Product filter : ${productFilter}`);
   console.log('');
@@ -112,7 +112,7 @@ async function main() {
   console.log('\n' + '='.repeat(60));
   console.log('SUMMARY');
   console.log('='.repeat(60));
-  console.log(`  Account ID     : ${accountId}`);
+  console.log(`  Account ID     : ${walletId}`);
   console.log(`  Total orders   : ${orders.length}`);
 
   // Group by status
