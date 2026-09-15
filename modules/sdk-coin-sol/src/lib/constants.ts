@@ -115,6 +115,7 @@ export enum ValidInstructionTypesEnum {
   Burn = 'Burn',
   DepositSol = 'DepositSol',
   WithdrawStake = 'WithdrawStake',
+  WithdrawSol = 'WithdrawSol',
   Approve = 'Approve',
   CustomInstruction = 'CustomInstruction',
   PermissionlessThawIdempotent = 'PermissionlessThawIdempotent',
@@ -191,6 +192,7 @@ export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [
   ValidInstructionTypesEnum.Approve,
   ValidInstructionTypesEnum.DepositSol,
   ValidInstructionTypesEnum.WithdrawStake,
+  ValidInstructionTypesEnum.WithdrawSol,
   ValidInstructionTypesEnum.CustomInstruction,
   ValidInstructionTypesEnum.PermissionlessThawIdempotent,
 ];
