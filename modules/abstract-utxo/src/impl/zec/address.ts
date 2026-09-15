@@ -4,6 +4,8 @@ import type { UnifiedRecipientPreference } from '@bitgo/sdk-core';
 import { AddressCodec } from '../../transaction/recipient';
 import { UtxoCoinName, WasmUtxoCoinName } from '../../names';
 
+import type { ZecAddressCodecOutput } from './types';
+
 export type ZcashAddressKind = 'transparent' | 'shielded';
 
 /**
@@ -78,6 +80,47 @@ export class ZecAddressCodec extends AddressCodec {
       throw new Error(`address ${address} has no Orchard receiver to resolve as shielded`);
     }
     return zcashAddress.toShieldedReceiverWithCoin(address, this.wasmName);
+  }
+
+  /** Change addresses are always transparent wallet addresses. */
+  override decodeChangeAddress(address: string): Uint8Array {
+    return zcashAddress.toTransparentReceiverWithCoin(address, this.wasmName);
+  }
+  override isMatchingScript(output: ZecAddressCodecOutput): boolean {
+    const address = output.address;
+    if (address === undefined || address === null) {
+      return true;
+    }
+    if (AddressCodec.isScriptRecipient(address)) {
+      return super.isMatchingScript(output);
+    }
+
+    const matchesOutput = (decode: () => Uint8Array): boolean => {
+      try {
+        return Buffer.from(decode()).equals(Buffer.from(output.script));
+      } catch {
+        return false;
+      }
+    };
+    const isShielded = output.isShielded;
+    if (isShielded === true) {
+      return matchesOutput(() => zcashAddress.toShieldedReceiverWithCoin(address, this.wasmName));
+    }
+    if (isShielded === false) {
+      return matchesOutput(() => zcashAddress.toTransparentReceiverWithCoin(address, this.wasmName));
+    }
+    return (
+      matchesOutput(() => zcashAddress.toTransparentReceiverWithCoin(address, this.wasmName)) ||
+      matchesOutput(() => zcashAddress.toShieldedReceiverWithCoin(address, this.wasmName))
+    );
+  }
+
+  /** Preserve a shielded output's original UA only after validating it against the raw script. */
+  override toExtendedAddressFormat(script: Buffer, address?: string): string {
+    if (address !== undefined && !this.isMatchingScript({ address, script })) {
+      throw new Error(`address ${address} does not match the output script`);
+    }
+    return address ?? super.toExtendedAddressFormat(script);
   }
 }
 
