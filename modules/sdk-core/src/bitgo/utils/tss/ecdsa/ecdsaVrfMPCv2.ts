@@ -1,9 +1,17 @@
-import { DklsComms, DklsDkg, DklsTypes, DklsVrf } from '@bitgo/sdk-lib-mpc';
-import { encode } from 'cbor-x';
+import { DklsComms, DklsDkg, DklsDrv, DklsTypes, DklsVrf } from '@bitgo/sdk-lib-mpc';
+import { decode, encode } from 'cbor-x';
 import assert from 'assert';
 import { NonEmptyString } from 'io-ts-types';
-import { MPCv2KeyGenRound1Response, MPCv2KeyGenRound2Response, MPCv2KeyGenStateEnum } from '@bitgo/public-types';
-
+import {
+  MPCv2DeriveRound1Request,
+  MPCv2DeriveRound1Response,
+  MPCv2DeriveRound2Request,
+  MPCv2DeriveRound2Response,
+  MPCv2DeriveRound3Response,
+  MPCv2KeyGenRound1Response,
+  MPCv2KeyGenRound2Response,
+  MPCv2KeyGenStateEnum,
+} from '@bitgo/public-types';
 import { KeychainsTriplet } from '../../../baseCoin';
 import { DecryptedRetrofitPayload } from '../../../keychain/iKeychains';
 import { EncryptionVersion } from '../../../../api';
@@ -11,7 +19,11 @@ import { generateGPGKeyPair } from '../../opengpgUtils';
 import { WebauthnKeyEncryptionInfo } from '../../../keychain';
 import { envRequiresBitgoPubGpgKeyConfig, isBitgoMpcPubKey } from '../../../tss/bitgoPubKeys';
 import { EcdsaMPCv2Utils } from './ecdsaMPCv2';
-import { KeyGenSenderForEnterprise } from './ecdsaMPCv2KeyGenSender';
+import {
+  EcdsaMPCv2DeriveKeySendFn,
+  KeyGenSenderForEnterprise,
+  KeyGenSenderForSafeChild,
+} from './ecdsaMPCv2KeyGenSender';
 import { MPCv2PartiesEnum, MpcV2VrfKeyGenResponseFields } from './typesMPCv2';
 
 /**
@@ -21,6 +33,15 @@ import { MPCv2PartiesEnum, MpcV2VrfKeyGenResponseFields } from './typesMPCv2';
  * the ordinary MPCv2 format does.
  */
 const VRF_KEY_ENVELOPE_VERSION = 1;
+type VrfKeyEnvelope = {
+  version: unknown;
+  prvKeyShare: unknown;
+  vrf: unknown;
+};
+
+function isVrfKeyEnvelope(value: unknown): value is VrfKeyEnvelope {
+  return typeof value === 'object' && value !== null && 'version' in value && 'prvKeyShare' in value && 'vrf' in value;
+}
 
 /**
  * Wire format for VRF DKG messages riding the MPCv2-R1/R2 payloads: an opaque blob,
@@ -84,6 +105,48 @@ export function buildVrfKeyEnvelopes(
 }
 
 /**
+ * Parses a decrypted root blob produced by {@link buildVrfKeyEnvelopes}: a CBOR
+ * envelope `{version: 1, prvKeyShare, vrf}`. Returns the signing and VRF keyshares
+ * as Buffers. Throws if the blob is not a valid VRF key envelope.
+ */
+export function parseVrfKeyEnvelopes(decryptedBlob: string): { signing: Buffer; vrf: Buffer } {
+  let envelope: unknown;
+  try {
+    envelope = decode(Buffer.from(decryptedBlob, 'base64'));
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    throw new Error(`Failed to decode safe MPC root key envelope: ${message}`);
+  }
+  if (!isVrfKeyEnvelope(envelope)) {
+    throw new Error('Invalid safe MPC root key envelope: expected version, signing keyshare, and VRF keyshare');
+  }
+  const { version, prvKeyShare, vrf } = envelope;
+  if (version !== VRF_KEY_ENVELOPE_VERSION) {
+    throw new Error(`Unsupported safe MPC root key envelope version: ${String(version)}`);
+  }
+  if (!(prvKeyShare instanceof Uint8Array) || prvKeyShare.length === 0) {
+    throw new Error('Safe MPC root key envelope is missing a signing keyshare');
+  }
+  if (!(vrf instanceof Uint8Array) || vrf.length === 0) {
+    throw new Error('Safe MPC root key envelope is missing a VRF keyshare');
+  }
+  return { signing: Buffer.from(prvKeyShare), vrf: Buffer.from(vrf) };
+}
+
+/**
+ * Encodes a hardened derivation index as the byte path the DKLS hard-derive wasm
+ * expects: one big-endian u32 with the hardened bit (0x80000000) set — i.e. the
+ * child path `m/<index>'`. The server derives the same hardened path from the
+ * `derivationIndex` it receives on round 1.
+ */
+export function hardenedDerivationPath(index: number): Uint8Array {
+  if (!Number.isInteger(index) || index < 0 || index > 0x7fffffff) {
+    throw new Error(`Invalid derivation index: ${index}`);
+  }
+  return new Uint8Array([0x80 | (index >>> 24), (index >>> 16) & 0xff, (index >>> 8) & 0xff, index & 0xff]);
+}
+
+/**
  * EcdsaMPCv2Utils variant that runs the Ristretto VRF DKG alongside the signing DKLS
  * DKG inside the same MPCv2 keygen rounds, for safe MPC root creation.
  *
@@ -105,7 +168,7 @@ export class EcdsaVrfMPCv2Utils extends EcdsaMPCv2Utils {
     // Tags the resulting user/backup/bitgo root keys with this safe.
     safeId: string;
   }): Promise<KeychainsTriplet> {
-    const { userSession, backupSession } = this.getUserAndBackupSessions(params.retrofit);
+    const { userSession, backupSession } = this.createSigningDkgSessions(params.retrofit);
     const userVrfSession = new DklsVrf.VrfDkg(3, 2, MPCv2PartiesEnum.USER);
     const backupVrfSession = new DklsVrf.VrfDkg(3, 2, MPCv2PartiesEnum.BACKUP);
 
@@ -161,7 +224,7 @@ export class EcdsaVrfMPCv2Utils extends EcdsaMPCv2Utils {
     const backupGpgPublicKey = backupGpgKey.publicKey;
     assert(NonEmptyString.is(userGpgPublicKey), 'User GPG public key is required');
     assert(NonEmptyString.is(backupGpgPublicKey), 'Backup GPG public key is required');
-    // The platform derives withVrf from the safeId on this request; the VRF messages ride as opaque blobs.
+    // Keep VRF messages opaque on the key-generation request.
     const round1Sender = KeyGenSenderForEnterprise<MPCv2KeyGenRound1Response & MpcV2VrfKeyGenResponseFields>(
       this.bitgo,
       params.enterprise,
@@ -527,8 +590,220 @@ export class EcdsaVrfMPCv2Utils extends EcdsaMPCv2Utils {
       encryptionSession?.destroy();
     }
   }
+  /**
+   * Sends round 1 for the user/BitGo hard-derive ceremony.
+   */
+  async sendDerivationRound1BySender(
+    senderFn: EcdsaMPCv2DeriveKeySendFn<MPCv2DeriveRound1Response>,
+    userGpgPublicKey: string,
+    payload: DklsTypes.AuthEncMessages,
+    parentKeyId: string,
+    derivationIndex: number
+  ): Promise<MPCv2DeriveRound1Response> {
+    assert(NonEmptyString.is(userGpgPublicKey), 'User GPG public key is required');
+    assert(NonEmptyString.is(parentKeyId), 'Parent key id is required');
+    const userMsg1 = payload.broadcastMessages.find((m) => m.from === MPCv2PartiesEnum.USER)?.payload;
+    assert(userMsg1, 'User message 1 not found in broadcast messages');
 
-  private getUserAndBackupSessions(retrofit?: DecryptedRetrofitPayload) {
+    assert(
+      MPCv2DeriveRound1Request.props.derivationIndex.is(derivationIndex),
+      'Derivation index must be a non-negative safe integer'
+    );
+    const request: MPCv2DeriveRound1Request = {
+      userGpgPublicKey,
+      userMsg1: { from: MPCv2PartiesEnum.USER, ...userMsg1 },
+      parentKeyId,
+      derivationIndex,
+    };
+    return senderFn(MPCv2KeyGenStateEnum['MPCv2Derive-R1'], request);
+  }
+
+  /**
+   * Sends round 2 for the user/BitGo hard-derive ceremony.
+   */
+  async sendDerivationRound2BySender(
+    senderFn: EcdsaMPCv2DeriveKeySendFn<MPCv2DeriveRound2Response>,
+    sessionId: string,
+    payload: DklsTypes.AuthEncMessages
+  ): Promise<MPCv2DeriveRound2Response> {
+    assert(NonEmptyString.is(sessionId), 'Session ID is required');
+    const userMsg2 = payload.broadcastMessages.find((m) => m.from === MPCv2PartiesEnum.USER)?.payload;
+    assert(userMsg2, 'User message 2 not found in broadcast messages');
+
+    const request: MPCv2DeriveRound2Request = {
+      sessionId,
+      userMsg2: { from: MPCv2PartiesEnum.USER, ...userMsg2 },
+    };
+    return senderFn(MPCv2KeyGenStateEnum['MPCv2Derive-R2'], request);
+  }
+
+  /**
+   * Completes round 3 and returns the child common keychain.
+   */
+  async sendDerivationRound3BySender(
+    senderFn: EcdsaMPCv2DeriveKeySendFn<MPCv2DeriveRound3Response>,
+    sessionId: string
+  ): Promise<MPCv2DeriveRound3Response> {
+    assert(NonEmptyString.is(sessionId), 'Session ID is required');
+    return senderFn(MPCv2KeyGenStateEnum['MPCv2Derive-R3'], { sessionId });
+  }
+
+  /**
+   * Runs the safe child hard-derive ceremony and registers child key documents.
+   */
+  async createSafeChildKeychains(params: {
+    passphrase: string;
+    enterprise: string;
+    safeId: string;
+    /** Root key ID used for the derive. */
+    parentKeyId: string;
+    derivationIndex: number;
+    userRootKeyId: string;
+    backupRootKeyId: string;
+    userRootKeyShare: Buffer;
+    userRootVrfKeyShare: Buffer;
+    originalPasscodeEncryptionCode?: string;
+    webauthnInfo?: WebauthnKeyEncryptionInfo;
+    encryptionVersion?: EncryptionVersion;
+  }): Promise<Pick<KeychainsTriplet, 'userKeychain' | 'backupKeychain'>> {
+    const userGpgKey = await generateGPGKeyPair('secp256k1');
+
+    const { mpcv2PublicKey } = await this.getBitgoGpgPubkeyBasedOnFeatureFlags(params.enterprise, true);
+    const mpcv2Key = mpcv2PublicKey ?? this.bitgoMPCv2PublicGpgKey;
+    assert(mpcv2Key, 'Failed to get BitGo MPCv2 GPG public key');
+    const bitgoPublicGpgKey = mpcv2Key.armor();
+
+    if (envRequiresBitgoPubGpgKeyConfig(this.bitgo.getEnv())) {
+      assert(isBitgoMpcPubKey(bitgoPublicGpgKey, 'mpcv2'), 'Invalid BitGo GPG public key');
+    }
+
+    const userGpgPrvKey: DklsTypes.PartyGpgKey = {
+      partyId: MPCv2PartiesEnum.USER,
+      gpgKey: userGpgKey.privateKey,
+    };
+    const bitgoGpgPubKey: DklsTypes.PartyGpgKey = {
+      partyId: MPCv2PartiesEnum.BITGO,
+      gpgKey: bitgoPublicGpgKey,
+    };
+
+    const path = hardenedDerivationPath(params.derivationIndex);
+    const userDeriveSession = new DklsDrv.Derive(
+      3,
+      2,
+      MPCv2PartiesEnum.USER,
+      params.userRootKeyShare,
+      params.userRootVrfKeyShare,
+      path
+    );
+
+    // Round 1: send the user's first message.
+    const userRound1Msg = await userDeriveSession.initDerive();
+    const round1Messages = await DklsComms.encryptAndAuthOutgoingMessages(
+      {
+        broadcastMessages: [DklsTypes.serializeBroadcastMessage(userRound1Msg)],
+        p2pMessages: [],
+      },
+      [bitgoGpgPubKey],
+      [userGpgPrvKey]
+    );
+    assert(NonEmptyString.is(userGpgKey.publicKey), 'User GPG public key is required');
+    const { sessionId, bitgoMsg1 } = await this.sendDerivationRound1BySender(
+      KeyGenSenderForSafeChild<MPCv2DeriveRound1Response>(this.bitgo, params.enterprise, params.safeId),
+      userGpgKey.publicKey,
+      round1Messages,
+      params.parentKeyId,
+      params.derivationIndex
+    );
+
+    // Round 2: process the peer's first message and return the user's second.
+    const decryptedBitgoRound1 = await DklsComms.decryptAndVerifyIncomingMessages(
+      { p2pMessages: [], broadcastMessages: [this.formatBitgoBroadcastMessage(bitgoMsg1)] },
+      [bitgoGpgPubKey],
+      []
+    );
+    const bitgoRound1Msg = decryptedBitgoRound1.broadcastMessages.find((m) => m.from === MPCv2PartiesEnum.BITGO);
+    assert(bitgoRound1Msg, 'BitGo derive message 1 not found in broadcast messages');
+    const userRound2Messages = userDeriveSession.handleIncomingMessages({
+      p2pMessages: [],
+      broadcastMessages: [DklsTypes.deserializeBroadcastMessage(bitgoRound1Msg)],
+    });
+    const round2Messages = await DklsComms.encryptAndAuthOutgoingMessages(
+      DklsTypes.serializeMessages(userRound2Messages),
+      [bitgoGpgPubKey],
+      [userGpgPrvKey]
+    );
+    const { sessionId: sessionIdRound2, bitgoMsg2 } = await this.sendDerivationRound2BySender(
+      KeyGenSenderForSafeChild<MPCv2DeriveRound2Response>(this.bitgo, params.enterprise, params.safeId),
+      sessionId,
+      round2Messages
+    );
+    assert.equal(sessionId, sessionIdRound2, 'Round 1 and 2 Session IDs do not match');
+
+    // Process the peer response to finalize the local child share.
+    const decryptedBitgoRound2 = await DklsComms.decryptAndVerifyIncomingMessages(
+      { p2pMessages: [], broadcastMessages: [this.formatBitgoBroadcastMessage(bitgoMsg2)] },
+      [bitgoGpgPubKey],
+      []
+    );
+    const bitgoRound2Msg = decryptedBitgoRound2.broadcastMessages.find((m) => m.from === MPCv2PartiesEnum.BITGO);
+    assert(bitgoRound2Msg, 'BitGo derive message 2 not found in broadcast messages');
+    userDeriveSession.handleIncomingMessages({
+      p2pMessages: [],
+      broadcastMessages: [DklsTypes.deserializeBroadcastMessage(bitgoRound2Msg)],
+    });
+
+    // Round 3: obtain the child common-keychain metadata.
+    const { sessionId: sessionIdRound3, commonKeychain } = await this.sendDerivationRound3BySender(
+      KeyGenSenderForSafeChild<MPCv2DeriveRound3Response>(this.bitgo, params.enterprise, params.safeId),
+      sessionId
+    );
+    assert.equal(sessionId, sessionIdRound3, 'Round 1 and 3 Session IDs do not match');
+
+    const userPrivateMaterial = userDeriveSession.getKeyShare();
+    const userReducedPrivateMaterial = userDeriveSession.getReducedKeyShare();
+    const userCommonKeychain = DklsTypes.getCommonKeychain(userPrivateMaterial);
+    assert.equal(commonKeychain, userCommonKeychain, 'User and BitGo common keychains do not match');
+
+    const encryptionSession =
+      params.encryptionVersion === 2 ? await this.bitgo.createEncryptionSession(params.passphrase) : undefined;
+    try {
+      const userKeychainPromise = this.createParticipantKeychain(
+        MPCv2PartiesEnum.USER,
+        commonKeychain,
+        userPrivateMaterial,
+        userReducedPrivateMaterial,
+        params.passphrase,
+        params.originalPasscodeEncryptionCode,
+        params.webauthnInfo,
+        encryptionSession,
+        params.encryptionVersion,
+        params.enterprise,
+        params.safeId,
+        { parentKeyId: params.userRootKeyId, index: params.derivationIndex }
+      );
+      const backupKeychainPromise = this.createParticipantKeychain(
+        MPCv2PartiesEnum.BACKUP,
+        commonKeychain,
+        undefined,
+        undefined,
+        params.passphrase,
+        params.originalPasscodeEncryptionCode,
+        undefined,
+        encryptionSession,
+        params.encryptionVersion,
+        undefined,
+        params.safeId,
+        { parentKeyId: params.backupRootKeyId, index: params.derivationIndex }
+      );
+
+      const [userKeychain, backupKeychain] = await Promise.all([userKeychainPromise, backupKeychainPromise]);
+      return { userKeychain, backupKeychain };
+    } finally {
+      encryptionSession?.destroy();
+    }
+  }
+
+  private createSigningDkgSessions(retrofit?: DecryptedRetrofitPayload) {
     if (retrofit) {
       const retrofitData = this.getMpcV2RetrofitDataFromMpcV1Keys({
         mpcv1UserKeyShare: retrofit.decryptedUserKey,

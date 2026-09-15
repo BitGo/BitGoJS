@@ -1032,6 +1032,17 @@
     monocle-ts "^2.3.13"
     newtype-ts "^0.3.5"
 
+"@bitgo/public-types@6.72.1":
+  version "6.72.1"
+  resolved "https://registry.npmjs.org/@bitgo/public-types/-/public-types-6.72.1.tgz#ad8db680222e936ce46641d30581c264c9bc5c1b"
+  integrity sha512-ePj1wkgAn/C7Zj5+qQagFASVghPt16SIKBy09BnCl++Brl3UVTBPkLG7uhaHY1l4TNBv27sHEQbUg7ifsJ5JOw==
+  dependencies:
+    fp-ts "^2.0.0"
+    io-ts "npm:@bitgo-forks/io-ts@2.1.4"
+    io-ts-types "^0.5.16"
+    monocle-ts "^2.3.13"
+    newtype-ts "^0.3.5"
+
 "@bitgo/wasm-dot@^1.7.0":
   version "1.7.0"
   resolved "https://registry.npmjs.org/@bitgo/wasm-dot/-/wasm-dot-1.7.0.tgz"

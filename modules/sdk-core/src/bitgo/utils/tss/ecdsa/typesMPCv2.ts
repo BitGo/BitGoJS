@@ -1,5 +1,11 @@
 import * as t from 'io-ts';
 import {
+  MPCv2DeriveRound1Request,
+  MPCv2DeriveRound1Response,
+  MPCv2DeriveRound2Request,
+  MPCv2DeriveRound2Response,
+  MPCv2DeriveRound3Request,
+  MPCv2DeriveRound3Response,
   MPCv2KeyGenRound1Request,
   MPCv2KeyGenRound1Response,
   MPCv2KeyGenRound2Request,
@@ -47,3 +53,13 @@ export type GenerateMPCv2KeyRequestBody = t.TypeOf<typeof generateMPCv2KeyReques
 
 export type GenerateMPCv2KeyRequestResponse = t.TypeOf<typeof generateMPCv2KeyRequestResponse> &
   MpcV2VrfKeyGenResponseFields;
+
+export type GenerateMPCv2DeriveKeyRequest =
+  | MPCv2DeriveRound1Request
+  | MPCv2DeriveRound2Request
+  | MPCv2DeriveRound3Request;
+
+export type GenerateMPCv2DeriveKeyRequestResponse =
+  | MPCv2DeriveRound1Response
+  | MPCv2DeriveRound2Response
+  | MPCv2DeriveRound3Response;
