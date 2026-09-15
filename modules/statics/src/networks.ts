@@ -1694,8 +1694,8 @@ class CoredaoTestnet extends Testnet implements EthereumNetwork {
 class IP extends Mainnet implements EthereumNetwork {
   name = 'Data Network';
   family = CoinFamily.IP;
-  explorerUrl = 'https://www.storyscan.io/tx/';
-  accountExplorerUrl = 'https://www.storyscan.io/address/';
+  explorerUrl = 'https://datanetscan.io/tx/';
+  accountExplorerUrl = 'https://datanetscan.io/address/';
   chainId = 1514;
   nativeCoinOperationHashPrefix = '1514';
 }
@@ -1703,8 +1703,8 @@ class IP extends Mainnet implements EthereumNetwork {
 class IPTestnet extends Testnet implements EthereumNetwork {
   name = 'Data Network Testnet';
   family = CoinFamily.IP;
-  explorerUrl = 'https://aeneid.storyscan.io/tx/';
-  accountExplorerUrl = 'https://aeneid.storyscan.io/address/';
+  explorerUrl = 'https://aeneid.datanetscan.io/tx/';
+  accountExplorerUrl = 'https://aeneid.datanetscan.io/address/';
   chainId = 1315;
   nativeCoinOperationHashPrefix = '1315';
 }
