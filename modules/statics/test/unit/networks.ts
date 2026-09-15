@@ -89,6 +89,16 @@ Object.entries(Networks).forEach(([category, networks]) => {
         );
       });
     });
+
+    describe('Pearl Network', function () {
+      it('should have a testnet explorer URL (CECHO-2178)', function () {
+        Networks.test.pearl.explorerUrl.should.equal('https://blockbook.testnet.pearlresearch.ai/tx/');
+      });
+
+      it('has no mainnet explorer URL yet - Pearl has not launched mainnet', function () {
+        should(Networks.main.pearl.explorerUrl).be.undefined();
+      });
+    });
   });
 });
 
