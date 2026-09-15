@@ -1,4 +1,4 @@
-import type { MsgDerivationInit, MsgState } from '@bitgo/wasm-mps';
+import type { MsgState } from '@bitgo/wasm-mps';
 import { encode } from 'cbor-x';
 import crypto from 'crypto';
 import { DeserializedMessage, DeserializedMessages, RedPallasDkgState, RedPallasReducedKeyShare } from './types';
@@ -149,10 +149,8 @@ export class RedPallasDKG {
    * matching the ordering expected by @bitgo/wasm-mps.
    *
    * @param messagesForIthRound - All n messages for this round (including own).
-   * @param derivationSeed - Required only when advancing WaitMsg2 -> Complete (round2): a
-   *   32-byte seed consumed by the subsequent, platform-side-only derivation process.
    */
-  handleIncomingMessages(messagesForIthRound: DeserializedMessages, derivationSeed?: Buffer): DeserializedMessages {
+  handleIncomingMessages(messagesForIthRound: DeserializedMessages): DeserializedMessages {
     if (this.dkgState === RedPallasDkgState.Complete) {
       throw Error('DKG session already completed');
     }
@@ -190,12 +188,9 @@ export class RedPallasDKG {
     }
 
     if (this.dkgState === RedPallasDkgState.WaitMsg2) {
-      if (!derivationSeed || derivationSeed.length !== 32) {
-        throw Error('Missing or invalid derivationSeed: must be 32 bytes (required for round2)');
-      }
-      let result: MsgDerivationInit;
+      let result;
       try {
-        result = wasm.redpallas_dkg_round2_process(otherMsgs, this.dkgStateBytes!, derivationSeed);
+        result = wasm.redpallas_dkg_round2_process(otherMsgs, this.dkgStateBytes!);
       } catch (err) {
         throw new Error(`Error while creating messages from party ${this.partyIdx}, round ${this.dkgState}: ${err}`);
       }
