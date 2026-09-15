@@ -11,7 +11,7 @@ import { getReplayProtectionPubkeys } from './fixedScript/replayProtection';
 import type { TransactionExplanationUtxolibPsbt, TransactionExplanationWasm } from './fixedScript/explainTransaction';
 import * as fixedScript from './fixedScript';
 import * as descriptor from './descriptor';
-
+import type { AddressCodec } from './recipient';
 /**
  * Decompose a raw transaction into useful information, such as the total amounts,
  * change amounts, and transaction outputs.
@@ -24,7 +24,8 @@ export function explainTx<TNumber extends number | bigint>(
     customChangeXpubs?: Triple<string>;
     txInfo?: { unspents?: Unspent<TNumber>[] };
   },
-  coinName: UtxoCoinName | WasmUtxoCoinName
+  coinName: UtxoCoinName | WasmUtxoCoinName,
+  addressCodec: AddressCodec
 ): TransactionExplanationUtxolibPsbt | TransactionExplanationWasm {
   if (params.wallet && isDescriptorWallet(params.wallet)) {
     if (!(tx instanceof WasmPsbt)) {
@@ -47,6 +48,7 @@ export function explainTx<TNumber extends number | bigint>(
       throw new Error('pub triple must be valid triple or RootWalletKeys');
     }
     return fixedScript.explainPsbtWasm(tx, walletXpubs, {
+      addressCodec,
       replayProtection: {
         publicKeys: getReplayProtectionPubkeys(coinName),
       },

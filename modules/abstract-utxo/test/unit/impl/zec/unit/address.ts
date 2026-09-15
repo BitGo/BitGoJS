@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { fixedScriptWallet } from '@bitgo/wasm-utxo';
+import { fixedScriptWallet, zcashAddress } from '@bitgo/wasm-utxo';
 
 import {
   Zec,
@@ -11,6 +11,7 @@ import {
   isShieldedZcashAddress,
   isValidZcashAddress,
 } from '../../../../../src/impl/zec';
+import type { ZecAddressCodecOutput } from '../../../../../src/impl/zec/types';
 
 // ZIP-316 unified-address test vectors, copied from
 // BitGoWASM/packages/wasm-utxo/test/fixtures/zcash/unified_address.json so
@@ -220,6 +221,35 @@ describe('ZecAddressCodec', function () {
   it('decode: throws for garbage', function () {
     const codec = new ZecAddressCodec('tzec', 'tzec');
     assert.throws(() => codec.decode('not-a-real-address'));
+  });
+
+  it('isMatchingScript validates the receiver represented by parsed output metadata', function () {
+    const codec = new ZecAddressCodec('tzec', 'tzec');
+    const transparentScript = codec.decode(testnetWallet.unified);
+    const shieldedScript = zcashAddress.toShieldedReceiverWithCoin(testnetWallet.unified, 'tzec');
+    const transparentOutput: ZecAddressCodecOutput = {
+      address: testnetWallet.unified,
+      script: transparentScript,
+      isShielded: false,
+    };
+    const shieldedOutput: ZecAddressCodecOutput = {
+      address: testnetWallet.unified,
+      script: shieldedScript,
+      isShielded: true,
+    };
+    const transparentMetadataForShieldedOutput: ZecAddressCodecOutput = { ...transparentOutput, isShielded: true };
+    const shieldedMetadataForTransparentOutput: ZecAddressCodecOutput = { ...shieldedOutput, isShielded: false };
+    assert.strictEqual(codec.isMatchingScript(transparentMetadataForShieldedOutput), false);
+    assert.strictEqual(codec.isMatchingScript(shieldedMetadataForTransparentOutput), false);
+    assert.strictEqual(
+      codec.isMatchingScript({ address: testnetWallet.unified, script: Buffer.from('00', 'hex') }),
+      false
+    );
+    assert.strictEqual(
+      codec.toExtendedAddressFormat(Buffer.from(shieldedScript), testnetWallet.unified),
+      testnetWallet.unified
+    );
+    assert.throws(() => codec.toExtendedAddressFormat(Buffer.from(transparentScript), 'not-a-real-address'));
   });
 
   // -- encode (inherited) ----------------------------------------------------

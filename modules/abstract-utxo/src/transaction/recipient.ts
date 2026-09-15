@@ -5,6 +5,11 @@ import { toWasmUtxoCoinName, UtxoCoinName, WasmUtxoCoinName } from '../names';
 const ScriptRecipientPrefix = 'scriptPubKey:';
 const OP_RETURN = 0x6a;
 
+export interface AddressCodecOutput {
+  address?: string | null;
+  script: Uint8Array;
+}
+
 /** Address/network-aware recipient conversion. */
 export class AddressCodec {
   constructor(
@@ -41,6 +46,38 @@ export class AddressCodec {
     return wasmAddress.toOutputScriptWithCoin(address, this.wasmName);
   }
 
+  /**
+   * Resolve a change address to its script. Change addresses are always transparent wallet
+   * addresses, so coins whose address resolution depends on transaction context (e.g. Zcash
+   * Unified Addresses with a bound recipient preference) override this to bypass that
+   * context. The base implementation defers to decode.
+   */
+  decodeChangeAddress(address: string): Uint8Array {
+    return this.decode(address);
+  }
+
+  /**
+   * Validate that an output address represents its raw script. Coins with multiple receiver
+   * types may override this to choose the receiver represented by parsed output metadata.
+   */
+  isMatchingScript(output: { address?: string | null; script: Uint8Array }): boolean {
+    if (output.address === undefined || output.address === null) {
+      return true;
+    }
+    try {
+      return this.fromExtendedAddressFormatToScript(output.address).equals(Buffer.from(output.script));
+    } catch {
+      return false;
+    }
+  }
+  /**
+   * Convert an output script back to its address form. The optional original address is accepted
+   * by coin-specific codecs that need to preserve an address not re-encodable from the script.
+   */
+  toExtendedAddressFormat(script: Buffer, _address?: string): string {
+    return script[0] === OP_RETURN ? `${ScriptRecipientPrefix}${script.toString('hex')}` : this.encode(script);
+  }
+
   encode(script: Uint8Array): string {
     return wasmAddress.fromOutputScriptWithCoin(script, this.wasmName);
   }
@@ -72,10 +109,6 @@ export class AddressCodec {
       return this.fromExtendedAddressFormatToScript(v.address);
     }
     throw new Error('invalid input');
-  }
-
-  toExtendedAddressFormat(script: Buffer): string {
-    return script[0] === OP_RETURN ? `${ScriptRecipientPrefix}${script.toString('hex')}` : this.encode(script);
   }
 }
 

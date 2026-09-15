@@ -8,6 +8,7 @@ import { common, Wallet } from '@bitgo/sdk-core';
 import { getSeed } from '@bitgo/sdk-test';
 
 import { explainPsbtWasm } from '../../src/transaction/fixedScript';
+import { AddressCodec } from '../../src/transaction/recipient';
 import { verifyKeySignature } from '../../src/verifyKey';
 
 import { defaultBitGo, getUtxoCoin } from './util';
@@ -18,6 +19,7 @@ function explainPsbt(
   customChangeWalletKeys: utxolib.bitgo.RootWalletKeys | undefined
 ) {
   return explainPsbtWasm(psbt, fixedScriptWallet.RootWalletKeys.from(walletKeys), {
+    addressCodec: new AddressCodec('btc'),
     replayProtection: { publicKeys: [] },
     customChangeWalletXpubs: customChangeWalletKeys
       ? fixedScriptWallet.RootWalletKeys.from(customChangeWalletKeys)
