@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@4.0.19...@bitgo/sdk-coin-stx@4.1.0) (2026-09-15)
+
+
+### Features
+
+* **sdk-coin-stx:** add PoX-5 bond builders ([8a7d52c](https://github.com/BitGo/BitGoJS/commit/8a7d52caac27e49881d6dc166e8c292bc8a58ccc))
+
+
+
+
+
 ## [4.0.19](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@4.0.18...@bitgo/sdk-coin-stx@4.0.19) (2026-09-10)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-stx

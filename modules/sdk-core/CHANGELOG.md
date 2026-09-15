@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.15.0...@bitgo/sdk-core@38.16.0) (2026-09-15)
+
+
+### Bug Fixes
+
+* **sdk-core:** preserve staking subtype compatibility ([12c4593](https://github.com/BitGo/BitGoJS/commit/12c45936919bee5fa1a91c1e86f5a31b014012cd))
+
+
+### Features
+
+* **abstract-utxo:** add unifiedRecipientPreference to build params ([8819fc1](https://github.com/BitGo/BitGoJS/commit/8819fc1b2e7330b1f6d8d8b90ce8846ec1ad1a35))
+* **sdk-coin-stx:** add PoX-5 bond builders ([8a7d52c](https://github.com/BitGo/BitGoJS/commit/8a7d52caac27e49881d6dc166e8c292bc8a58ccc))
+* **sdk-core:** add Aave V3 vault deposits ([0b38575](https://github.com/BitGo/BitGoJS/commit/0b38575688a6fb39782dca7519a47028507cc3bf))
+* **sdk-core:** dkls derive round orchestrator ([2177418](https://github.com/BitGo/BitGoJS/commit/21774188309b626e73f6515557f54107e31d6d01))
+* **statics:** replace Story explorer URLs with Data Network ([fc89ab5](https://github.com/BitGo/BitGoJS/commit/fc89ab52fe5eb6cbc2d7db3eb7a4217cda5e87b6))
+
+
+### Performance Improvements
+
+* **sdk-core:** reuse Argon2 session for account password rotation ([e86be12](https://github.com/BitGo/BitGoJS/commit/e86be12199e5bac1ff73f7ac3e0835977edd3ab3))
+
+
+
+
+
 # [38.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.14.0...@bitgo/sdk-core@38.15.0) (2026-09-10)
 
 

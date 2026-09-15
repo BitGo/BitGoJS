@@ -3,6 +3,34 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [53.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@52.12.1...bitgo@53.0.0) (2026-09-15)
+
+
+### Bug Fixes
+
+* **sdk-api:** route authenticate() to v2 login ([873e1ac](https://github.com/BitGo/BitGoJS/commit/873e1ac777a11e981736ade101d3d9267269edf8))
+* **sdk-core:** preserve staking subtype compatibility ([12c4593](https://github.com/BitGo/BitGoJS/commit/12c45936919bee5fa1a91c1e86f5a31b014012cd))
+
+
+### Features
+
+* **sdk-coin-btc:** register tbtcstx ([57901b3](https://github.com/BitGo/BitGoJS/commit/57901b3ea9ed60c03891d10b7a0dabe679fddc54))
+* **sdk-coin-btc:** register tbtcstxprivate1 ([b9815b5](https://github.com/BitGo/BitGoJS/commit/b9815b563df427ecc1e119edef0f4c9cf9ae3a36))
+* **sdk-core:** dkls derive round orchestrator ([2177418](https://github.com/BitGo/BitGoJS/commit/21774188309b626e73f6515557f54107e31d6d01))
+
+
+### BREAKING CHANGES
+
+* **sdk-api:** authenticateWithAccessToken now returns
+Promise<void> instead of void. Callers that relied on synchronous
+completion must await it; login now routes through /api/v2/user/login.
+
+TICKET: WCN-2652
+
+
+
+
+
 ## [52.12.1](https://github.com/BitGo/BitGoJS/compare/bitgo@52.12.0...bitgo@52.12.1) (2026-09-10)
 
 **Note:** Version bump only for package bitgo
