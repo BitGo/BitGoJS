@@ -53,8 +53,11 @@ export { CoinMap } from './map';
 export {
   networkFeatureMapForTokens,
   registerNetworkFeatures,
+  registerErc20Families,
   getNetworkFeatures,
   getTokenFeatures,
+  EVM_TOKEN_FEATURES,
+  EVM_TOKEN_FEATURES_NON_EIP1559,
 } from './networkFeatureMapForTokens';
 export {
   generateErc20Coin,
