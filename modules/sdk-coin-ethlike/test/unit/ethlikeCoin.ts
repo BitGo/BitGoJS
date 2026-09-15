@@ -60,6 +60,7 @@ describe('EthLike coin tests', function () {
         const recoveryId = '0x1234567890abcdef';
         nock(bitgo.microservicesUrl(`/api/recovery/v1/crosschain`)).get(`/${recoveryId}/buildtx`).reply(200, {
           txHex: mockData.ccr[coin.name].txHex,
+          walletVersion: 0,
         });
         const walletPassphrase = TestBitGo.V2.TEST_RECOVERY_PASSCODE as string;
         const params = {
@@ -75,6 +76,7 @@ describe('EthLike coin tests', function () {
         const recoveryId = '0x1234567890abcdef';
         nock(bitgo.microservicesUrl(`/api/recovery/v1/crosschain`)).get(`/${recoveryId}/buildtx`).reply(200, {
           txHex: mockData.ccr[coin.name].txHex,
+          walletVersion: 0,
         });
         nock(bitgo.microservicesUrl(`/api/recovery/v1/crosschain`)).post(`/${recoveryId}/sign`).reply(200, {
           coin: coin.name,
@@ -96,6 +98,7 @@ describe('EthLike coin tests', function () {
         const recoveryId = '0x1234567890abcdef';
         nock(bitgo.microservicesUrl(`/api/recovery/v1/crosschain`)).get(`/${recoveryId}/buildtx`).reply(200, {
           txHex: mockData.ccr[coin.name].txHex,
+          walletVersion: 0,
         });
         const params = {
           recoveryId,
@@ -112,7 +115,7 @@ describe('EthLike coin tests', function () {
           coin: coin.name,
           txHex: mockData.ccr[coin.name].txHex,
           txid: mockData.ccr[coin.name].txid,
-          walletVersion: 1,
+          walletVersion: 0,
         };
 
         nock(bitgo.microservicesUrl(`/api/recovery/v1/crosschain`))
