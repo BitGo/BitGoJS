@@ -1163,7 +1163,7 @@ describe('Constructor', function () {
       sinon.assert.calledWithMatch(v1UpdatePasswordStub, { encryptionVersion: 2 });
       sinon.assert.calledWithMatch(v2UpdatePasswordStub, { encryptionVersion: 2 });
     });
-    it('shares one encryption session across keychain password updates', async function () {
+    it('creates one encryption session, passes it to both keychain update calls, and destroys it', async function () {
       nock(ROOT).get('/api/v2/user/checkBatchingPasswordFlow').query(true).reply(200, { isBatchingFlowEnabled: false });
       nock(ROOT)
         .post('/api/v1/user/changepassword', (body: unknown) => {
@@ -1186,6 +1186,14 @@ describe('Constructor', function () {
 
       sinon.assert.calledOnce(createSession);
       sinon.assert.calledWithExactly(createSession, 'newpw', 2);
+      // Call-site truth: the params object reaches both updatePassword calls, but the
+      // deprecated v1-leg (src/v1/keychains.ts) ignores encryptionSession/encryptionVersion
+      // and preserves each envelope's version -- see test/unit/v1/keychains.ts. Only the
+      // coin-leg consumes the session.
+      sinon.assert.calledWithMatch(v1UpdatePasswordStub, {
+        oldPassword: 'oldpw',
+        newPassword: 'newpw',
+      });
       sinon.assert.calledWithMatch(v1UpdatePasswordStub, {
         encryptionVersion: 2,
         encryptionSession: session,
