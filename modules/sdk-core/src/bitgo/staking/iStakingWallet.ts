@@ -1,6 +1,34 @@
 import { SignedTransaction } from '../baseCoin';
 import { PrebuildTransactionOptions, PrebuildTransactionResult } from '../wallet';
 
+/**
+ * All known staking subtypes across coins.
+ * Used by StakeOptions.subType for compile-time type safety.
+ */
+export type StakingSubType =
+  | 'STAKE'
+  | 'ETH_STAKE_PECTRA'
+  | 'LIDO'
+  | 'SOL_STAKE'
+  | 'MARINADE'
+  | 'MARINADE_SELECT'
+  | 'NATIVE_STAKE'
+  | 'INFRARED_LIQUID_STAKE'
+  | 'WCT_STAKE'
+  | 'STACK'
+  | 'SELF_STACK'
+  | 'MULTI_NOMINATOR_STAKE'
+  | 'SINGLE_NOMINATOR_STAKE'
+  | 'TON_WHALES'
+  | 'VET_VALIDATOR_REGISTRATION'
+  | 'VET_UNSTAKE'
+  | 'VET_INCREASE_STAKE'
+  | 'STAVAX_STAKE'
+  | 'PSTAVAX_STAKE'
+  | 'WFLR_STAKE'
+  | 'VOTE'
+  | 'STX_BTC_POX5_BOND';
+
 export interface StakingRequest {
   id: string;
   amount: string;
@@ -34,7 +62,7 @@ export type BabylonParams = {
 };
 
 export interface Pox5StakeOptions extends Omit<StakeOptions, 'subType'> {
-  subType: 'pox5-bond';
+  subType: 'STX_BTC_POX5_BOND';
   bondIndex: number;
   signerManager: string;
   numCycles?: string;
@@ -88,9 +116,10 @@ export interface StakeOptions {
    */
   blsSignature?: string;
   /**
-   * subtype-specific interfaces provide their own discriminant
+   * coin-specific staking subtype, forwarded to staking-service.
+   * Restricted to known values via StakingSubType union.
    */
-  subType?: never;
+  subType?: StakingSubType;
   /**
    * stx btc reward address
    */
@@ -214,9 +243,10 @@ export interface UnstakeOptions {
   clientId?: string;
   delegationId?: string;
   /**
-   * coin sepcific staking subtype
+   * coin-specific staking subtype for unstaking.
+   * Restricted to known values via StakingSubType union.
    */
-  subType?: string;
+  subType?: StakingSubType;
 }
 
 export interface EthUnstakeOptions {
