@@ -552,26 +552,26 @@ export function createTokenMapUsingTrimmedConfigDetails(
   const networkNameMap = getNetworksMap();
 
   for (const tokenConfigs of Object.values(reducedTokenConfigMap)) {
-    if (!tokenConfigs.length) continue;
-    const tokenConfig = tokenConfigs[0];
-    const network = networkNameMap.get(tokenConfig.network.name);
+    for (const tokenConfig of tokenConfigs) {
+      const network = networkNameMap.get(tokenConfig.network.name);
 
-    if (isCoinPresentInCoinMap({ ...tokenConfig })) continue;
+      if (isCoinPresentInCoinMap({ ...tokenConfig })) continue;
 
-    if (!tokenConfig.isToken) {
-      // Dynamic base chain — network must be pre-registered in networkByName map before calling this function.
-      if (network) {
-        amsTokenConfigMap[tokenConfig.name] = [
-          { ...tokenConfig, features: tokenConfig.additionalFeatures ?? [], network },
-        ];
+      if (!tokenConfig.isToken) {
+        // Dynamic base chain — network must be pre-registered in networkByName map before calling this function.
+        if (network) {
+          amsTokenConfigMap[tokenConfig.name] = [
+            { ...tokenConfig, features: tokenConfig.additionalFeatures ?? [], network },
+          ];
+        }
+      } else if (network && getNetworkFeatures(network.family as string)) {
+        const features = new Set([
+          ...(getNetworkFeatures(network.family as string) || []),
+          ...(tokenConfig.additionalFeatures || []),
+        ]);
+        tokenConfig.excludedFeatures?.forEach((feature) => features.delete(feature));
+        amsTokenConfigMap[tokenConfig.name] = [{ ...tokenConfig, features: Array.from(features), network }];
       }
-    } else if (network && getNetworkFeatures(network.family as string)) {
-      const features = new Set([
-        ...(getNetworkFeatures(network.family as string) || []),
-        ...(tokenConfig.additionalFeatures || []),
-      ]);
-      tokenConfig.excludedFeatures?.forEach((feature) => features.delete(feature));
-      amsTokenConfigMap[tokenConfig.name] = [{ ...tokenConfig, features: Array.from(features), network }];
     }
   }
 
