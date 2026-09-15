@@ -4412,11 +4412,11 @@ export const allCoinsAndTokens = [
   ),
   erc20Token(
     'e354c3b7-397c-436c-b756-1b266c3d79dc',
-    'tbaseeth:waBasSepLidUSDC',
+    'tbaseeth:wabasseplidusdc',
     'Wrapped Aave Base Sepolia USDC',
     6,
     '0xf430cb6e2b85f99222fbfa6dfea18ff60fa6b32a',
-    UnderlyingAsset['tbaseeth:waBasSepLidUSDC'],
+    UnderlyingAsset['tbaseeth:wabasseplidusdc'],
     Networks.test.basechain,
     [...AccountCoin.DEFAULT_FEATURES, CoinFeature.EIP1559, CoinFeature.RECEIPT_TOKEN]
   ),
