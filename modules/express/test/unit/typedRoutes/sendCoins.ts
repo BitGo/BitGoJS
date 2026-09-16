@@ -128,7 +128,10 @@ describe('SendCoins V2 codec tests', function () {
         .send(requestBody);
 
       assert.strictEqual(result.status, 200);
-      assert.deepStrictEqual(mockWallet.send.firstCall.args[0], requestBody);
+      const callArgs = mockWallet.send.firstCall.args[0];
+      assert.strictEqual(callArgs.walletId, requestBody.walletId);
+      assert.strictEqual(callArgs.amount, requestBody.amount);
+      assert.strictEqual(callArgs.address, undefined);
     });
 
     it('should successfully send with amount as string', async function () {

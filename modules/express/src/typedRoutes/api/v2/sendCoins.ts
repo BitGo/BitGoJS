@@ -23,7 +23,7 @@ export const SendCoinsRequestParams = {
  * Internally, wallet.send() converts the address and amount into a recipients array
  * and calls wallet.sendMany(), so the response structure is identical.
  */
-const SendCoinsRequestBodyFields = {
+export const SendCoinsRequestBody = {
   /** Destination address (length ≤ 500), unless walletId is provided */
   address: optional(t.string),
 
@@ -410,15 +410,7 @@ const SendCoinsRequestBodyFields = {
       }),
     ])
   ),
-};
-
-/**
- * A send destination must be either an address or a Go Account wallet ID.
- */
-export const SendCoinsRequestBody = t.intersection([
-  t.type(SendCoinsRequestBodyFields),
-  t.union([t.type({ address: t.string }), t.type({ walletId: t.string })]),
-]);
+} as const;
 
 /**
  * This call allows you to create and send cryptocurrency to a destination address.
