@@ -149,11 +149,8 @@ export interface BridgingParams {
 export interface PrebuildTransactionOptions {
   reqId?: IRequestTracer;
   recipients?: {
-    address?: string;
-    walletId?: string;
+    address: string;
     amount: string | number;
-    feeLimit?: string;
-    data?: string | TokenTransferRecipientParams;
     tokenName?: string;
     tokenData?: TokenTransferRecipientParams;
   }[];
@@ -966,8 +963,7 @@ export interface SendOptions {
 export interface SendManyOptions extends PrebuildAndSignTransactionOptions {
   reqId?: IRequestTracer;
   recipients?: {
-    address?: string;
-    walletId?: string;
+    address: string;
     amount: string | number;
     feeLimit?: string;
     data?: string | TokenTransferRecipientParams;

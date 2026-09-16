@@ -3005,7 +3005,7 @@ export class Wallet implements IWallet {
         ...(params.address !== undefined ? { address: params.address } : { walletId: params.walletId }),
         amount: params.amount,
       },
-    ];
+    ] as SendManyOptions['recipients'];
     if (params.tokenName) {
       recipients[0].tokenName = params.tokenName;
     }
@@ -3192,21 +3192,7 @@ export class Wallet implements IWallet {
       // Close ATA is a rent reclaim, not a value transfer. Wallet Platform requires amount '0'.
       const isCloseAssociatedTokenAccount = params.type === 'closeAssociatedTokenAccount';
       params.recipients.forEach(function (recipient) {
-        const address = recipient.address;
-        if (address === undefined) {
-          if (recipient.walletId === undefined) {
-            throw new Error('missing required parameter address or walletId');
-          }
-          coin.checkRecipient(
-            { address: recipient.walletId, amount: recipient.amount },
-            { allowZeroAmount: isCloseAssociatedTokenAccount }
-          );
-        } else {
-          coin.checkRecipient(
-            { address, amount: recipient.amount },
-            { allowZeroAmount: isCloseAssociatedTokenAccount }
-          );
-        }
+        coin.checkRecipient(recipient, { allowZeroAmount: isCloseAssociatedTokenAccount });
         if (isCloseAssociatedTokenAccount && recipient.amount !== '0' && recipient.amount !== 0) {
           throw new Error("invalid argument for amount - closeAssociatedTokenAccount requires amount '0'");
         }
