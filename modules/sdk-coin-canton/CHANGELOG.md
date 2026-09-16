@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.32.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.31.4...@bitgo/sdk-coin-canton@1.32.0) (2026-09-15)
+
+
+### Features
+
+* handle temple delegation acceptance prepared txn ([e576a43](https://github.com/BitGo/BitGoJS/commit/e576a434614ce1df0d14a2aa64db5a452809d2ed))
+
+
+
+
+
 ## [1.31.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.31.3...@bitgo/sdk-coin-canton@1.31.4) (2026-09-10)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-canton

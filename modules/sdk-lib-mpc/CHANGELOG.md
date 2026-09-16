@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.20.0...@bitgo/sdk-lib-mpc@10.21.0) (2026-09-15)
+
+
+### Bug Fixes
+
+* **sdk-lib-mpc:** adapt RedPallas DKG to wasm-mps 1.15.0 API ([753568b](https://github.com/BitGo/BitGoJS/commit/753568b9eeaa939e333099ec77a924a25a46d58e))
+
+
+### Features
+
+* **sdk-core:** dkls derive round orchestrator ([2177418](https://github.com/BitGo/BitGoJS/commit/21774188309b626e73f6515557f54107e31d6d01))
+
+
+
+
+
 # [10.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.19.0...@bitgo/sdk-lib-mpc@10.20.0) (2026-09-09)
 
 

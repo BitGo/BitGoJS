@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@2.5.4...@bitgo/sdk-api@3.0.0) (2026-09-15)
+
+
+### Bug Fixes
+
+* **sdk-api:** route authenticate() to v2 login ([873e1ac](https://github.com/BitGo/BitGoJS/commit/873e1ac777a11e981736ade101d3d9267269edf8))
+
+
+### Performance Improvements
+
+* **sdk-core:** reuse Argon2 session for account password rotation ([e86be12](https://github.com/BitGo/BitGoJS/commit/e86be12199e5bac1ff73f7ac3e0835977edd3ab3))
+
+
+### BREAKING CHANGES
+
+* **sdk-api:** authenticateWithAccessToken now returns
+Promise<void> instead of void. Callers that relied on synchronous
+completion must await it; login now routes through /api/v2/user/login.
+
+TICKET: WCN-2652
+
+
+
+
+
 ## [2.5.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@2.5.3...@bitgo/sdk-api@2.5.4) (2026-09-10)
 
 **Note:** Version bump only for package @bitgo/sdk-api

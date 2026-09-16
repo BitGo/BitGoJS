@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-btc@2.13.42...@bitgo/sdk-coin-btc@2.14.0) (2026-09-15)
+
+
+### Features
+
+* **sdk-coin-btc:** register tbtcstx ([57901b3](https://github.com/BitGo/BitGoJS/commit/57901b3ea9ed60c03891d10b7a0dabe679fddc54))
+* **sdk-coin-btc:** register tbtcstxprivate1 ([b9815b5](https://github.com/BitGo/BitGoJS/commit/b9815b563df427ecc1e119edef0f4c9cf9ae3a36))
+
+
+
+
+
 ## [2.13.42](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-btc@2.13.41...@bitgo/sdk-coin-btc@2.13.42) (2026-09-10)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-btc

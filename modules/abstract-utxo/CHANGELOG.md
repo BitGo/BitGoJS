@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [12.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@12.6.0...@bitgo/abstract-utxo@12.7.0) (2026-09-15)
+
+
+### Features
+
+* **abstract-utxo:** add unifiedRecipientPreference to build params ([8819fc1](https://github.com/BitGo/BitGoJS/commit/8819fc1b2e7330b1f6d8d8b90ce8846ec1ad1a35))
+* **abstract-utxo:** add zec address codec with unified address support ([6bfe3a7](https://github.com/BitGo/BitGoJS/commit/6bfe3a76f7649e83c0907c63853c88c75c29dd3a))
+* **sdk-coin-btc:** register tbtcstx ([57901b3](https://github.com/BitGo/BitGoJS/commit/57901b3ea9ed60c03891d10b7a0dabe679fddc54))
+* **sdk-coin-btc:** register tbtcstxprivate1 ([b9815b5](https://github.com/BitGo/BitGoJS/commit/b9815b563df427ecc1e119edef0f4c9cf9ae3a36))
+
+
+
+
+
 # [12.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@12.5.0...@bitgo/abstract-utxo@12.6.0) (2026-09-10)
 
 

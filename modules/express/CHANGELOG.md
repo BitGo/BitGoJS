@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [17.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@16.4.5...@bitgo/express@17.0.0) (2026-09-15)
+
+
+### Bug Fixes
+
+* **sdk-api:** route authenticate() to v2 login ([873e1ac](https://github.com/BitGo/BitGoJS/commit/873e1ac777a11e981736ade101d3d9267269edf8))
+
+
+### BREAKING CHANGES
+
+* **sdk-api:** authenticateWithAccessToken now returns
+Promise<void> instead of void. Callers that relied on synchronous
+completion must await it; login now routes through /api/v2/user/login.
+
+TICKET: WCN-2652
+
+
+
+
+
 ## [16.4.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@16.4.4...@bitgo/express@16.4.5) (2026-09-10)
 
 **Note:** Version bump only for package @bitgo/express

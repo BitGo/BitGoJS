@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.15.0...@bitgo/statics@59.16.0) (2026-09-15)
+
+
+### Bug Fixes
+
+* **statics:** process every token per family in createTokenMapUsingTrimmedConfigDetails ([af82cdb](https://github.com/BitGo/BitGoJS/commit/af82cdb36b2fde0fdb6d00778e67e9af8a29681e))
+
+
+### Features
+
+* **sdk-coin-btc:** register tbtcstx ([57901b3](https://github.com/BitGo/BitGoJS/commit/57901b3ea9ed60c03891d10b7a0dabe679fddc54))
+* **sdk-coin-btc:** register tbtcstxprivate1 ([b9815b5](https://github.com/BitGo/BitGoJS/commit/b9815b563df427ecc1e119edef0f4c9cf9ae3a36))
+* **statics:** replace Story explorer URLs with Data Network ([fc89ab5](https://github.com/BitGo/BitGoJS/commit/fc89ab52fe5eb6cbc2d7db3eb7a4217cda5e87b6))
+* **statics:** scope wtgxx tokens to BitGo Trust only ([b84a7e7](https://github.com/BitGo/BitGoJS/commit/b84a7e7d91b8ae4f00cdfff86f85c0df970ef03e))
+
+
+
+
+
 # [59.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.14.0...@bitgo/statics@59.15.0) (2026-09-10)
 
 
