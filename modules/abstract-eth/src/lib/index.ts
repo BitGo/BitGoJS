@@ -1,4 +1,5 @@
 export * from './constants';
+export * from './eip7702';
 export * from './zamaUtils';
 export * from './decryptionDelegationBuilder';
 export * from './contractCall';

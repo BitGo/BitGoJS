@@ -30,6 +30,7 @@ import {
   UnwrapERC7984Data,
   FinalizeUnwrapERC7984Data,
 } from './iface';
+import { SET_CODE_TX_TYPE, SetCodeAuthorization } from './eip7702';
 import {
   calculateForwarderAddress,
   calculateForwarderV1Address,
@@ -83,6 +84,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _counter: number;
   private _fee: Fee;
   protected _value: string;
+
+  // EIP-7702 set code transaction parameters
+  private _eip7702: boolean;
+  private _authorizationList: SetCodeAuthorization[];
 
   // the signature on the external ETH transaction
   private _txSignature: SignatureParts;
@@ -147,6 +152,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._type = TransactionType.Send;
     this._counter = 0;
     this._value = '0';
+    this._eip7702 = false;
+    this._authorizationList = [];
     this._walletOwnerAddresses = [];
     this._forwarderVersion = 0;
     this._walletVersion = 0;
@@ -254,6 +261,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
           maxPriorityFeePerGas: transactionJson.maxPriorityFeePerGas,
         },
       });
+    }
+
+    // EIP-7702 (type 0x04) reuses EIP-1559 fee fields and carries a set code
+    // authorization list.
+    if (transactionJson._type === ETHTransactionType.EIP7702) {
+      this._eip7702 = true;
+      this._authorizationList = transactionJson.authorizationList;
     }
 
     if (hasSignature(transactionJson)) {
@@ -439,7 +453,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (typeof rawTransaction === 'string') {
       if (RAW_TX_HEX_REGEX.test(rawTransaction.toLowerCase())) {
         const txBytes = ethUtil.toBuffer(ethUtil.addHexPrefix(rawTransaction.toLowerCase()));
-        if (!this.isEip1559Txn(txBytes) && !this.isRLPDecodable(txBytes)) {
+        if (!this.isEip1559Txn(txBytes) && !this.isRLPDecodable(txBytes) && !this.isSetCodeTxn(txBytes)) {
           throw new ParseTransactionError('There was error in decoding the hex string');
         }
       } else {
@@ -470,6 +484,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     } catch (_) {
       return false;
     }
+  }
+
+  private isSetCodeTxn(txn: Buffer): boolean {
+    return txn.length > 0 && txn[0] === SET_CODE_TX_TYPE;
   }
 
   protected validateBaseTransactionFields(): void {
@@ -787,7 +805,17 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       to: this._contractAddress,
     };
 
-    if (this._fee.eip1559) {
+    if (this._eip7702) {
+      // EIP-7702 uses EIP-1559 fee semantics plus a set code authorization list.
+      const eip1559 = this._fee.eip1559;
+      return {
+        ...baseParams,
+        _type: ETHTransactionType.EIP7702,
+        maxFeePerGas: eip1559 ? eip1559.maxFeePerGas : this._fee.fee,
+        maxPriorityFeePerGas: eip1559 ? eip1559.maxPriorityFeePerGas : this._fee.fee,
+        authorizationList: this._authorizationList,
+      };
+    } else if (this._fee.eip1559) {
       return {
         ...baseParams,
         _type: ETHTransactionType.EIP1559,
@@ -802,6 +830,27 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         v: this.getFinalV(),
       };
     }
+  }
+
+  /**
+   * Mark the transaction as an EIP-7702 set code transaction (type `0x04`).
+   * The fee must be set with EIP-1559 fields (`maxFeePerGas` /
+   * `maxPriorityFeePerGas`) and at least one authorization must be supplied via
+   * {@link setAuthorizationList}.
+   */
+  eip7702(): this {
+    this._eip7702 = true;
+    return this;
+  }
+
+  /**
+   * Set the signed EIP-7702 authorization list to embed in the transaction.
+   *
+   * @param authorizationList the fully signed authorizations
+   */
+  setAuthorizationList(authorizationList: SetCodeAuthorization[]): this {
+    this._authorizationList = authorizationList;
+    return this;
   }
 
   // endregion

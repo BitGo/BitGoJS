@@ -1,5 +1,6 @@
 import { BaseFee } from '@bitgo/sdk-core';
 import { KeyPair } from './keyPair';
+import { SetCodeAuthorization } from './eip7702';
 
 export interface EthFee extends BaseFee {
   gasLimit: string;
@@ -50,6 +51,7 @@ export interface BaseTxData {
 export const ETHTransactionType = {
   LEGACY: 'Legacy',
   EIP1559: 'EIP1559',
+  EIP7702: 'EIP7702',
 } as const;
 
 // eslint-disable-next-line no-redeclare
@@ -69,7 +71,20 @@ export interface EIP1559TxData extends BaseTxData {
   maxPriorityFeePerGas: string;
 }
 
-export type TxData = EIP1559TxData | LegacyTxData;
+/**
+ * EIP-7702 "set code" transaction data (transaction type `0x04`). Uses EIP-1559
+ * fee semantics plus an ordered list of signed authorizations that delegate the
+ * sender EOA's code to a target address.
+ */
+export interface EIP7702TxData extends BaseTxData {
+  _type: typeof ETHTransactionType.EIP7702;
+  gasPrice?: never;
+  maxFeePerGas: string;
+  maxPriorityFeePerGas: string;
+  authorizationList: SetCodeAuthorization[];
+}
+
+export type TxData = EIP1559TxData | LegacyTxData | EIP7702TxData;
 
 /**
  * An Ethereum transaction with helpers for serialization and deserialization.
