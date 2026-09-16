@@ -15097,6 +15097,19 @@ export const erc20Coins = [
     '0x6781d5631bfe47432b089e64e3eab3b6edd26177',
     UnderlyingAsset['eth:jpysc']
   ),
+  // Aave V3 StataTokenV2 (ERC-4626) USDC wrapper — vault share token for the
+  // ETH_USDC_AAVE_V3 DeFi Earn vault (DEFI-794, TDD - Aave V3 §11.3). Share
+  // token, not a spendable asset: pricing/balances derive from convertToAssets()
+  // against the USDC underlying (0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48).
+  erc20(
+    '8c2a071a-f3cc-4024-9d66-99bed562e562',
+    'eth:waethusdc',
+    'Wrapped Aave Ethereum USDC',
+    6,
+    '0xd4fa2d31b7968e448877f69a96de69f5de8cd23e',
+    UnderlyingAsset['eth:waethusdc'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.EIP1559, CoinFeature.RECEIPT_TOKEN]
+  ),
   terc20(
     '0c333619-e5a6-4f9d-8bbc-5b0e5dc64d03',
     'hteth:grtxp',

@@ -4553,6 +4553,7 @@ export enum UnderlyingAsset {
   'eth:zk' = 'eth:zk',
   'eth:grove' = 'eth:grove',
   'eth:scx' = 'eth:scx',
+  'eth:waethusdc' = 'eth:waethusdc',
   // ADA testnet tokens
   'tada:water' = 'tada:water',
   'tada:tusda' = 'tada:tusda',
