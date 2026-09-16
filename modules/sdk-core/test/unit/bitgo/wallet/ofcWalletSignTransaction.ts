@@ -150,7 +150,7 @@ describe('Wallet - OFC', function () {
         await wallet.send({ walletId: 'destination-wallet-id', amount: '100' });
 
         sendManyStub.calledOnce.should.be.true();
-        sendManyStub.firstCall.args[0].recipients.should.deepEqual([
+        sendManyStub.firstCall.args[0].recipients!.should.deepEqual([
           { walletId: 'destination-wallet-id', amount: '100' },
         ]);
       });
