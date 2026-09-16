@@ -17,13 +17,13 @@ export const SendCoinsRequestParams = {
  * Request body for sending to a single recipient (v2)
  *
  * This endpoint is a convenience wrapper around sendMany that accepts a single
- * address and amount instead of a recipients array. It supports the full set of
- * parameters available in sendMany.
+ * address or Go Account wallet ID and amount instead of a recipients array. It
+ * supports the full set of parameters available in sendMany.
  *
  * Internally, wallet.send() converts the address and amount into a recipients array
  * and calls wallet.sendMany(), so the response structure is identical.
  */
-export const SendCoinsRequestBody = {
+const SendCoinsRequestBodyFields = {
   /** Destination address (length ≤ 500), unless walletId is provided */
   address: optional(t.string),
 
@@ -410,7 +410,15 @@ export const SendCoinsRequestBody = {
       }),
     ])
   ),
-} as const;
+};
+
+/**
+ * A send destination must be either an address or a Go Account wallet ID.
+ */
+export const SendCoinsRequestBody = t.intersection([
+  t.type(SendCoinsRequestBodyFields),
+  t.union([t.type({ address: t.string }), t.type({ walletId: t.string })]),
+]);
 
 /**
  * This call allows you to create and send cryptocurrency to a destination address.
