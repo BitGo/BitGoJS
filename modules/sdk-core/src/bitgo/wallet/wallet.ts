@@ -3000,12 +3000,12 @@ export class Wallet implements IWallet {
       }
     });
 
-    const recipients: SendManyOptions['recipients'] = [
+    const recipients = [
       {
         ...(params.address !== undefined ? { address: params.address } : { walletId: params.walletId }),
         amount: params.amount,
       },
-    ] as SendManyOptions['recipients'];
+    ] as NonNullable<SendManyOptions['recipients']>;
     if (params.tokenName) {
       recipients[0].tokenName = params.tokenName;
     }
