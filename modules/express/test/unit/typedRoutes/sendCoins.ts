@@ -842,7 +842,7 @@ describe('SendCoins V2 codec tests', function () {
           amount: 1000000,
         };
 
-        const decoded = assertDecode(SendCoinsRequestBody, validBody);
+        const decoded = assertDecode(t.type(SendCoinsRequestBody), validBody);
         assert.strictEqual(decoded.address, validBody.address);
         assert.strictEqual(decoded.amount, validBody.amount);
       });
@@ -853,7 +853,7 @@ describe('SendCoins V2 codec tests', function () {
           amount: '1000000',
         };
 
-        const decoded = assertDecode(SendCoinsRequestBody, validBody);
+        const decoded = assertDecode(t.type(SendCoinsRequestBody), validBody);
         assert.strictEqual(decoded.address, validBody.address);
         assert.strictEqual(decoded.amount, '1000000');
       });
@@ -869,7 +869,7 @@ describe('SendCoins V2 codec tests', function () {
           message: 'test message',
         };
 
-        const decoded = assertDecode(SendCoinsRequestBody, validBody);
+        const decoded = assertDecode(t.type(SendCoinsRequestBody), validBody);
         assert.strictEqual(decoded.walletPassphrase, 'test_passphrase');
         assert.strictEqual(decoded.feeRate, 50000);
         assert.strictEqual(decoded.minConfirms, 2);
@@ -887,7 +887,7 @@ describe('SendCoins V2 codec tests', function () {
           },
         };
 
-        const decoded = assertDecode(SendCoinsRequestBody, validBody);
+        const decoded = assertDecode(t.type(SendCoinsRequestBody), validBody);
         assert.ok(decoded.eip1559);
         assert.ok('maxPriorityFeePerGas' in decoded.eip1559);
         assert.ok('maxFeePerGas' in decoded.eip1559);
@@ -902,7 +902,7 @@ describe('SendCoins V2 codec tests', function () {
           eip1559: {},
         };
 
-        const decoded = assertDecode(SendCoinsRequestBody, validBody);
+        const decoded = assertDecode(t.type(SendCoinsRequestBody), validBody);
         assert.ok(decoded.eip1559);
         assert.deepStrictEqual(decoded.eip1559, {});
       });
@@ -917,7 +917,7 @@ describe('SendCoins V2 codec tests', function () {
         };
 
         // Partial objects pass schema validation; controller validates and rejects
-        const decoded = assertDecode(SendCoinsRequestBody, partialBody);
+        const decoded = assertDecode(t.type(SendCoinsRequestBody), partialBody);
         assert.ok(decoded.eip1559);
         assert.strictEqual(decoded.eip1559.maxFeePerGas, 100000000000);
       });
@@ -932,7 +932,7 @@ describe('SendCoins V2 codec tests', function () {
           },
         };
 
-        const decoded = assertDecode(SendCoinsRequestBody, validBody);
+        const decoded = assertDecode(t.type(SendCoinsRequestBody), validBody);
         assert.ok(decoded.memo);
         assert.strictEqual(decoded.memo.value, 'payment reference 123');
         assert.strictEqual(decoded.memo.type, 'text');
@@ -945,7 +945,7 @@ describe('SendCoins V2 codec tests', function () {
           tokenName: 'terc',
         };
 
-        const decoded = assertDecode(SendCoinsRequestBody, validBody);
+        const decoded = assertDecode(t.type(SendCoinsRequestBody), validBody);
         assert.strictEqual(decoded.tokenName, 'terc');
       });
 
@@ -955,7 +955,7 @@ describe('SendCoins V2 codec tests', function () {
           amount: 1000000,
         };
 
-        const decoded = assertDecode(SendCoinsRequestBody, validBody);
+        const decoded = assertDecode(t.type(SendCoinsRequestBody), validBody);
         assert.strictEqual(decoded.walletId, validBody.walletId);
         assert.strictEqual(decoded.address, undefined);
       });
@@ -966,7 +966,7 @@ describe('SendCoins V2 codec tests', function () {
         };
 
         assert.throws(() => {
-          assertDecode(SendCoinsRequestBody, invalidBody);
+          assertDecode(t.type(SendCoinsRequestBody), invalidBody);
         });
       });
 
@@ -977,7 +977,7 @@ describe('SendCoins V2 codec tests', function () {
         };
 
         assert.throws(() => {
-          assertDecode(SendCoinsRequestBody, invalidBody);
+          assertDecode(t.type(SendCoinsRequestBody), invalidBody);
         });
       });
 
@@ -988,7 +988,7 @@ describe('SendCoins V2 codec tests', function () {
         };
 
         assert.throws(() => {
-          assertDecode(SendCoinsRequestBody, invalidBody);
+          assertDecode(t.type(SendCoinsRequestBody), invalidBody);
         });
       });
 
@@ -1003,7 +1003,7 @@ describe('SendCoins V2 codec tests', function () {
         };
 
         assert.throws(() => {
-          assertDecode(SendCoinsRequestBody, invalidBody);
+          assertDecode(t.type(SendCoinsRequestBody), invalidBody);
         });
       });
     });
