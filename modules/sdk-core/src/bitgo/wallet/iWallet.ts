@@ -310,6 +310,33 @@ export interface PrebuildTransactionOptions {
     amount: string;
   };
   /**
+   * EIP-7702 set code parameters (`type: 'eip7702'`). The per-authorization
+   * signatures are pre-computed on the MPC message-signing path; the txRequest
+   * carries the resulting authorizationList.
+   */
+  eip7702Params?: {
+    /** The implementation contract address the EOA delegates to (0x-prefixed hex). */
+    implementationAddress: string;
+    chainId: number | bigint | string;
+    nonce: number | bigint | string;
+    authorizationList: {
+      chainId: number | bigint | string;
+      address: string;
+      nonce: number | bigint | string;
+      yParity: 0 | 1;
+      r: string;
+      s: string;
+    }[];
+    envelope: {
+      maxPriorityFeePerGas: number | bigint | string;
+      maxFeePerGas: number | bigint | string;
+      gasLimit: number | bigint | string;
+      destination: string;
+      value: number | bigint | string;
+      data: string;
+    };
+  };
+  /**
    * Parameters for executing DAML commands on Canton.
    */
   cantonCommandParams?: CantonCommandParams;

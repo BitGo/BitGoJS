@@ -305,6 +305,43 @@ export interface WrapIntentParams {
   amount: string;
 }
 
+/** A pre-signed authorization entry for an EIP-7702 set code transaction. */
+export interface Eip7702Authorization {
+  chainId: number | bigint | string;
+  /** 20-byte address that will hold the delegation (0x-prefixed hex). */
+  address: string;
+  nonce: number | bigint | string;
+  yParity: 0 | 1;
+  /** secp256k1 signature `r` (0x-prefixed hex). */
+  r: string;
+  /** secp256k1 signature `s` (0x-prefixed hex). */
+  s: string;
+}
+
+/**
+ * EIP-7702 set code intent parameters (input container for `eip7702Params`).
+ * The per-authorization signatures are pre-computed on the MPC message-signing
+ * path; the txRequest carries the resulting authorizationList.
+ */
+export interface Eip7702IntentParams {
+  /** The implementation contract address the EOA delegates to (0x-prefixed hex). */
+  implementationAddress: string;
+  chainId: number | bigint | string;
+  nonce: number | bigint | string;
+  authorizationList: Eip7702Authorization[];
+  /** Outer transaction envelope (EIP-1559 semantics). */
+  envelope: {
+    maxPriorityFeePerGas: number | bigint | string;
+    maxFeePerGas: number | bigint | string;
+    gasLimit: number | bigint | string;
+    /** Destination of the transaction; EIP-7702 requires a non-null destination. */
+    destination: string;
+    value: number | bigint | string;
+    /** Hex-encoded calldata (0x-prefixed or not). */
+    data: string;
+  };
+}
+
 export interface IntentOptionsForMessage extends IntentOptionsBase {
   messageRaw: string;
   messageEncoded?: string;
@@ -385,6 +422,8 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
   defiParams?: DefiIntentParams;
   /** ERC-7984 wrap / wrapApprove fields flattened onto the WP intent. */
   wrapParams?: WrapIntentParams;
+  /** EIP-7702 set code intent parameters (eip7702 intent). */
+  eip7702Params?: Eip7702IntentParams;
   /** Canton party ID of the end investor to onboard (cantonEndInvestorOnboardingOffer intent). */
   endInvestorPartyId?: string;
   /** Reason for rejecting the onboarding offer (cantonEndInvestorOnboardingReject intent). */
@@ -503,6 +542,16 @@ export interface PopulatedIntent extends PopulatedIntentBase, DefiIntentFields {
   clientOnboarder?: string;
   /** Optional ISO 8601 expiration timestamp (cantonParticipantOnboardingRequest intent). */
   expirationIso?: string;
+  // EIP-7702 set code intent fields
+  implementationAddress?: string;
+  chainId?: number | bigint | string;
+  authorizationList?: Eip7702Authorization[];
+  maxPriorityFeePerGas?: number | bigint | string;
+  maxFeePerGas?: number | bigint | string;
+  gasLimit?: number | bigint | string;
+  destination?: string;
+  value?: number | bigint | string;
+  data?: string;
 }
 
 export type TxRequestState =
