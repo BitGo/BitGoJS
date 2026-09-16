@@ -36,3 +36,4 @@ export {
   resolvePermissionlessThaw,
   resolveTransferHookAccounts,
 } from './token2022Resolve';
+export { rawToUiAmountString, uiAmountToRaw } from './scaledUiAmount';
