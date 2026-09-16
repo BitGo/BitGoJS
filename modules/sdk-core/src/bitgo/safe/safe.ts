@@ -24,7 +24,11 @@ import {
   ISafe,
   WalletShareData,
 } from './iSafe';
-import { deriveAndSelfCheckSafeChildHardened, DerivedFromParentWithHardenedPath } from './safeDerivation';
+import {
+  deriveAndSelfCheckSafeChildHardened,
+  deriveSafeChildEd25519Hardened,
+  DerivedFromParentWithHardenedPath,
+} from './safeDerivation';
 
 const SafeRootKeySlot = t.keyof({
   secp256k1Multisig: null,
@@ -56,7 +60,7 @@ const CreateWalletInSafeBody = t.union([
   }),
 ]);
 
-function onchainSlotForCoin(coin: IBaseCoin): Extract<RootKeyType, 'secp256k1Multisig'> {
+function onchainSlotForCoin(coin: IBaseCoin): Extract<RootKeyType, 'secp256k1Multisig' | 'ed25519Multisig'> {
   if (coin.getDefaultMultisigType() === 'tss') {
     throw new Error('MPC safe wallet minting requires multisigType "tss"; use "onchain" for non-MPC minting');
   }
@@ -65,7 +69,7 @@ function onchainSlotForCoin(coin: IBaseCoin): Extract<RootKeyType, 'secp256k1Mul
     return 'secp256k1Multisig';
   }
   if (curve === KeyCurve.Ed25519) {
-    throw new Error('ed25519 coin safe wallet minting is not yet supported');
+    return 'ed25519Multisig';
   }
   throw new Error(`Coin '${coin.getChain()}' is not supported for safe wallet minting`);
 }
@@ -186,7 +190,10 @@ export class Safe implements ISafe {
       throw new IncorrectPasswordError();
     }
 
-    const derived = deriveAndSelfCheckSafeChildHardened(rootPrv, index);
+    const derived =
+      slot === 'ed25519Multisig'
+        ? deriveSafeChildEd25519Hardened(rootPrv, index)
+        : deriveAndSelfCheckSafeChildHardened(rootPrv, index);
     const derivedFromParentWithHardenedPath = decodeWithCodec(
       DerivedFromParentWithHardenedPath,
       derived.derivationPath,

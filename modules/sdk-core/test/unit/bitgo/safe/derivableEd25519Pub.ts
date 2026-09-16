@@ -1,130 +1,134 @@
 import 'should';
 import {
-  DERIVABLE_ED25519_CHAIN_CODE_LENGTH,
+  DERIVABLE_ED25519_CHAIN_CODE_BYTES,
   DERIVABLE_ED25519_PUB_LENGTH,
-  DERIVABLE_ED25519_PUB_SPLIT_OFFSET,
+  Ed25519BIP32,
+  Eddsa,
   decodeDerivableEd25519Pub,
+  decodeEd25519StrKeyPublicKey,
+  decodeEd25519StrKeySecretSeed,
   encodeDerivableEd25519Pub,
+  encodeEd25519StrKeyPublicKey,
+  generateEd25519ChainCode,
+  isChecksumValidStrKeyEd25519Pub,
   isDerivableEd25519Pub,
-  isValidEd25519ChainCode,
   isValidEd25519StrKeyPublicKey,
-  generateEd25519ChainCodeBase32,
+  softDeriveChildPubEd25519,
 } from '../../../../src';
 
-// Cross-repo fixture: byte-identical to
-// packages/wallet-platform/test/unit/base/safes/fixtures/derivableEd25519Pub.json.
-// Four independent implementations of this split will otherwise drift, and the failure mode is an
-// unrecoverable wallet.
+// Cross-repo fixture: byte-identical to wallet-platform
+// test/unit/base/safes/fixtures/derivableEd25519Pub.json. Four independent implementations of this
+// format will otherwise drift, and the failure mode is unrecoverable wallets.
 import * as fixture from './fixtures/derivableEd25519Pub.json';
 
+const PUBLIC_KEY = Buffer.alloc(32);
+const CHAIN_CODE = Buffer.alloc(32, 0xab);
+const ROOT_PUB = encodeDerivableEd25519Pub(PUBLIC_KEY, CHAIN_CODE);
+const ROOT_KEYCHAIN = Buffer.concat([PUBLIC_KEY, CHAIN_CODE]).toString('hex');
+const STRKEY_PUBLIC = 'GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYH';
+const STRKEY_SEED = 'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI';
+
 describe('derivableEd25519Pub', function () {
-  describe('format constants', function () {
+  describe('base32 root format', function () {
+    it('encodes 32-byte public key plus 32-byte chain code', function () {
+      DERIVABLE_ED25519_CHAIN_CODE_BYTES.should.equal(32);
+      DERIVABLE_ED25519_PUB_LENGTH.should.equal(103);
+      ROOT_PUB.should.match(/^[A-Z2-7]{103}$/);
+      decodeDerivableEd25519Pub(ROOT_PUB).pub.equals(PUBLIC_KEY).should.equal(true);
+      decodeDerivableEd25519Pub(ROOT_PUB).chainCode.equals(CHAIN_CODE).should.equal(true);
+    });
+
     it('matches the constants pinned in the shared fixture', function () {
-      DERIVABLE_ED25519_PUB_SPLIT_OFFSET.should.equal(fixture.splitOffset);
-      DERIVABLE_ED25519_CHAIN_CODE_LENGTH.should.equal(fixture.chainCodeLength);
-      DERIVABLE_ED25519_PUB_LENGTH.should.equal(fixture.compositeLength);
+      DERIVABLE_ED25519_PUB_LENGTH.should.equal(fixture.rootPubBase32Length);
+      DERIVABLE_ED25519_CHAIN_CODE_BYTES.should.equal(fixture.chainCodeBytes);
+    });
+
+    it('generates raw chain code for root composition', function () {
+      generateEd25519ChainCode().length.should.equal(32);
     });
   });
 
-  describe('encodeDerivableEd25519Pub', function () {
-    for (const v of fixture.valid) {
-      it(`composes ${v.name}`, function () {
-        encodeDerivableEd25519Pub(v.pub, v.chainCode).should.equal(v.composite);
+  describe('fixture vectors', function () {
+    for (const vector of fixture.valid) {
+      it(`round-trips ${vector.name}`, function () {
+        const composite = encodeDerivableEd25519Pub(
+          Buffer.from(vector.pub, 'hex'),
+          Buffer.from(vector.chainCode, 'hex')
+        );
+        composite.should.equal(vector.composite);
+        const decoded = decodeDerivableEd25519Pub(vector.composite);
+        decoded.pub.toString('hex').should.equal(vector.pub);
+        decoded.chainCode.toString('hex').should.equal(vector.chainCode);
+        isDerivableEd25519Pub(vector.composite).should.equal(true);
       });
     }
 
-    for (const v of fixture.invalidEncodeInputs) {
-      it(`rejects ${v.name}`, function () {
-        (() => encodeDerivableEd25519Pub(v.pub, v.chainCode)).should.throw(/Invalid derivable ed25519 pub/);
-      });
-    }
-  });
-
-  describe('decodeDerivableEd25519Pub', function () {
-    for (const v of fixture.valid) {
-      it(`splits ${v.name}`, function () {
-        decodeDerivableEd25519Pub(v.composite).should.eql({ pub: v.pub, chainCode: v.chainCode });
-      });
-    }
-
-    for (const v of fixture.invalidComposite) {
-      it(`rejects ${v.name}`, function () {
-        (() => decodeDerivableEd25519Pub(v.composite)).should.throw(/Invalid derivable ed25519 pub/);
-        isDerivableEd25519Pub(v.composite).should.equal(false);
+    for (const vector of fixture.invalidComposite) {
+      it(`rejects ${vector.name}`, function () {
+        isDerivableEd25519Pub(vector.composite).should.equal(false);
+        (() => decodeDerivableEd25519Pub(vector.composite)).should.throw(/Invalid derivable ed25519 pub/);
       });
     }
   });
 
-  describe('round trip', function () {
-    for (const v of fixture.valid) {
-      it(`round-trips ${v.name}`, function () {
-        const composite = encodeDerivableEd25519Pub(v.pub, v.chainCode);
-        const decoded = decodeDerivableEd25519Pub(composite);
-        decoded.should.eql({ pub: v.pub, chainCode: v.chainCode });
-        encodeDerivableEd25519Pub(decoded.pub, decoded.chainCode).should.equal(composite);
-        isDerivableEd25519Pub(composite).should.equal(true);
-      });
-    }
-  });
-
-  describe('isValidEd25519ChainCode', function () {
-    const { chainCode } = fixture.valid[3];
-
-    it('accepts 52 canonical base32 characters', function () {
-      isValidEd25519ChainCode(chainCode).should.equal(true);
+  describe('raw public soft derivation', function () {
+    it('derives a deterministic public key and discards the child chain code', async function () {
+      const eddsa = await Eddsa.initialize(await Ed25519BIP32.initialize());
+      const derived = eddsa.deriveUnhardened(ROOT_KEYCHAIN, 'm/7');
+      derived.length.should.equal(128);
+      derived.slice(0, 64).should.match(/^[0-9a-f]{64}$/);
+      derived.slice(64).should.match(/^[0-9a-f]{64}$/);
+      (await softDeriveChildPubEd25519(ROOT_PUB, 7)).toString('hex').should.equal(derived.slice(0, 64));
     });
 
-    it('rejects lowercase', function () {
-      isValidEd25519ChainCode(chainCode.toLowerCase()).should.equal(false);
-    });
-
-    it('rejects a chain code of the wrong length', function () {
-      isValidEd25519ChainCode(chainCode.slice(0, 51)).should.equal(false);
-      isValidEd25519ChainCode(chainCode + 'A').should.equal(false);
-    });
-
-    it('rejects a character outside the base32 alphabet', function () {
-      // 0, 1, 8 and 9 are absent from the RFC 4648 alphabet.
-      isValidEd25519ChainCode('0' + chainCode.slice(1)).should.equal(false);
-    });
-
-    it('rejects a non-canonical spelling whose padding bits are set', function () {
-      // The 52nd character holds 1 significant bit and 4 padding bits, so 16 strings decode to the
-      // same 32 bytes. Only the zero-padded one is the chain code.
-      const BASE32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-      const bumped = chainCode.slice(0, 51) + BASE32[BASE32.indexOf(chainCode[51]) + 1];
-      bumped.should.not.equal(chainCode);
-      isValidEd25519ChainCode(bumped).should.equal(false);
-    });
-
-    it('accepts what the generator mints', function () {
-      isValidEd25519ChainCode(generateEd25519ChainCodeBase32()).should.equal(true);
-    });
-  });
-
-  describe('isValidEd25519StrKeyPublicKey', function () {
-    for (const v of fixture.valid) {
-      it(`accepts the pub half of ${v.name}`, function () {
-        isValidEd25519StrKeyPublicKey(v.pub).should.equal(true);
+    // The golden vectors below pin the unhardened derivation output shared cross-repo with
+    // wallet-platform: a divergent implementation derives co-signer keys nobody else can
+    // reproduce, permanently bricking the wallets minted with it.
+    for (const vector of fixture.softDerivation) {
+      it(`derives the pinned golden child: ${vector.name}`, async function () {
+        const child = await softDeriveChildPubEd25519(vector.composite, vector.index);
+        child.toString('hex').should.equal(vector.childPub);
       });
     }
 
-    it('rejects a bad checksum', function () {
-      // last character of a known-good pub flipped
+    it('rejects a hardened or out-of-range index', async function () {
+      await softDeriveChildPubEd25519(ROOT_PUB, -1).should.be.rejectedWith(/non-hardened/);
+      await softDeriveChildPubEd25519(ROOT_PUB, 0x80000000).should.be.rejectedWith(/non-hardened/);
+      await softDeriveChildPubEd25519(ROOT_PUB, 1.5).should.be.rejectedWith(/non-hardened/);
+    });
+
+    it('rejects a malformed root', async function () {
+      await softDeriveChildPubEd25519(fixture.invalidComposite[1].composite, 0).should.be.rejectedWith(
+        /Invalid derivable ed25519 pub/
+      );
+      await softDeriveChildPubEd25519(STRKEY_PUBLIC, 0).should.be.rejectedWith(/Invalid derivable ed25519 pub/);
+    });
+  });
+
+  describe('Stellar user-key codecs', function () {
+    it('keeps Stellar encoding separate from the neutral root format', function () {
+      isValidEd25519StrKeyPublicKey(STRKEY_PUBLIC).should.equal(true);
+      encodeEd25519StrKeyPublicKey(decodeEd25519StrKeyPublicKey(STRKEY_PUBLIC)).should.equal(STRKEY_PUBLIC);
+      decodeEd25519StrKeySecretSeed(STRKEY_SEED).length.should.equal(32);
+      isDerivableEd25519Pub(STRKEY_PUBLIC).should.equal(false);
+      isChecksumValidStrKeyEd25519Pub(STRKEY_PUBLIC).should.equal(true);
+    });
+
+    it('rejects a public key with a corrupted checksum', function () {
       isValidEd25519StrKeyPublicKey('GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYA').should.equal(false);
     });
 
-    it('rejects a secret seed', function () {
+    it('rejects a secret seed where a public key is required', function () {
       isValidEd25519StrKeyPublicKey('SA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYH').should.equal(false);
+      (() => decodeEd25519StrKeyPublicKey('SA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYH')).should.throw(
+        /StrKey public key/
+      );
     });
 
-    it('rejects a non-base32 character', function () {
+    it('rejects a non-base32 character, the empty string, and lowercase', function () {
       isValidEd25519StrKeyPublicKey('GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKY1').should.equal(false);
-    });
-
-    it('rejects the empty string and a composite pub', function () {
       isValidEd25519StrKeyPublicKey('').should.equal(false);
-      isValidEd25519StrKeyPublicKey(fixture.valid[3].composite).should.equal(false);
+      isValidEd25519StrKeyPublicKey(STRKEY_PUBLIC.toLowerCase()).should.equal(false);
     });
   });
 });
