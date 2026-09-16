@@ -24,8 +24,11 @@ export const SendCoinsRequestParams = {
  * and calls wallet.sendMany(), so the response structure is identical.
  */
 export const SendCoinsRequestBody = {
-  /** Destination address (length ≤ 500) */
-  address: t.string,
+  /** Destination address (length ≤ 500), unless walletId is provided */
+  address: optional(t.string),
+
+  /** Go Account wallet ID destination, instead of address */
+  walletId: optional(t.string),
 
   /** Amount in base units (e.g. satoshi, wei, drops, stroops). For doge, only string is allowed. */
   amount: t.union([t.number, t.string]),

@@ -1104,6 +1104,10 @@ function createTSSSendParams(req: express.Request, wallet: Wallet) {
  * @param req
  */
 async function handleV2SendOne(req: ExpressApiRouteRequest<'express.wallet.sendcoins', 'post'>) {
+  if (req.decoded.address === undefined && req.decoded.walletId === undefined) {
+    throw new ApiResponseError('Missing required field: address or walletId', 400);
+  }
+
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.decoded.coin);
   const reqId = new RequestTracer();

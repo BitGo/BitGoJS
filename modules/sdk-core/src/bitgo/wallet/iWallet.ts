@@ -946,6 +946,7 @@ export interface SubmitTransactionOptions {
 
 export interface SendOptions {
   address?: string;
+  walletId?: string;
   amount?: number | string;
   data?: string;
   feeLimit?: string;
@@ -962,7 +963,8 @@ export interface SendOptions {
 export interface SendManyOptions extends PrebuildAndSignTransactionOptions {
   reqId?: IRequestTracer;
   recipients?: {
-    address: string;
+    address?: string;
+    walletId?: string;
     amount: string | number;
     feeLimit?: string;
     data?: string | TokenTransferRecipientParams;

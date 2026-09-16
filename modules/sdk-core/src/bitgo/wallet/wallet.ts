@@ -2964,6 +2964,7 @@ export class Wallet implements IWallet {
    * Send coins to a recipient
    * @param params
    * @param params.address - the destination address
+   * @param params.walletId - the destination Go Account wallet ID
    * @param params.amount - the amount in satoshis/wei/base value to be sent
    * @param params.message - optional message to attach to transaction
    * @param params.data - [Ethereum Specific] optional data to pass to transaction
@@ -2975,14 +2976,14 @@ export class Wallet implements IWallet {
    * @returns {*}
    */
   async send(params: SendOptions = {}): Promise<any> {
-    common.validateParams(params, ['address'], ['message', 'data']);
+    common.validateParams(params, [], ['message', 'data']);
 
     if (_.isUndefined(params.amount)) {
       throw new Error('missing required parameter amount');
     }
 
-    if (_.isUndefined(params.address)) {
-      throw new Error('missing required parameter address');
+    if (_.isUndefined(params.address) && _.isUndefined(params.walletId)) {
+      throw new Error('missing required parameter address or walletId');
     }
 
     const coin = this.baseCoin;
@@ -3001,7 +3002,7 @@ export class Wallet implements IWallet {
 
     const recipients: SendManyOptions['recipients'] = [
       {
-        address: params.address,
+        ...(params.address !== undefined ? { address: params.address } : { walletId: params.walletId }),
         amount: params.amount,
       },
     ];
@@ -3191,7 +3192,17 @@ export class Wallet implements IWallet {
       // Close ATA is a rent reclaim, not a value transfer. Wallet Platform requires amount '0'.
       const isCloseAssociatedTokenAccount = params.type === 'closeAssociatedTokenAccount';
       params.recipients.forEach(function (recipient) {
-        coin.checkRecipient(recipient, { allowZeroAmount: isCloseAssociatedTokenAccount });
+        if (recipient.address === undefined) {
+          if (recipient.walletId === undefined) {
+            throw new Error('missing required parameter address or walletId');
+          }
+          coin.checkRecipient(
+            { address: recipient.walletId, amount: recipient.amount },
+            { allowZeroAmount: isCloseAssociatedTokenAccount }
+          );
+        } else {
+          coin.checkRecipient(recipient, { allowZeroAmount: isCloseAssociatedTokenAccount });
+        }
         if (isCloseAssociatedTokenAccount && recipient.amount !== '0' && recipient.amount !== 0) {
           throw new Error("invalid argument for amount - closeAssociatedTokenAccount requires amount '0'");
         }
