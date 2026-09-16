@@ -7648,6 +7648,20 @@ export const tOfcErc20Coins = [
     'baseeth'
   ),
   ofcerc20(
+    'eb8c558b-45b9-437e-ae83-25508b3760e3',
+    'ofcbaseeth:glx',
+    'GLMall Token',
+    6,
+    UnderlyingAsset['baseeth:glx'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
+  ofcerc20(
     'e5ffd11d-59b4-4c95-a4c7-bebaf57222f0',
     'ofczketh:zk',
     'zkSync',

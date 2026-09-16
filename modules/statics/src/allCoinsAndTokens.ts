@@ -5278,6 +5278,15 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['baseeth:svvv'],
     Networks.main.basechain
   ),
+  erc20Token(
+    '4c51251a-9a9b-4835-97b2-8b96216f7491',
+    'baseeth:glx',
+    'GLMall Token',
+    6,
+    '0x6b84dcd57ac5ed6e1d0881fad73c4f61c554dddb',
+    UnderlyingAsset['baseeth:glx'],
+    Networks.main.basechain
+  ),
 
   // ARC mainnet tokens
   erc20Token(
@@ -6287,6 +6296,50 @@ export const allCoinsAndTokens = [
     '',
     'XLM:BTGO'
   ),
+  stellarToken(
+    'a09edc99-4a24-4396-a437-8de7ce0f3645',
+    'xlm:USDT0-GATISXX6BZ6NC7IKQBY37CJD4SOZL3CYZJWXEDG6JVIY4WBS6KXJHN6Q',
+    'USDT0',
+    7,
+    UnderlyingAsset['xlm:USDT0-GATISXX6BZ6NC7IKQBY37CJD4SOZL3CYZJWXEDG6JVIY4WBS6KXJHN6Q'],
+    '',
+    [...XLM_TOKEN_FEATURES_WITH_FRANKFURT, CoinFeature.STABLECOIN],
+    '',
+    'XLM:USDT0'
+  ),
+  stellarToken(
+    'c951a465-3d11-433e-b05b-69f7a8747783',
+    'xlm:WTGX-GDMBNMFJ3TRFLASJ6UGETFME3PJPNKPU24C7KFDBEBPQFG2CI6UC3JG6',
+    'WisdomTree Government Money Market Digital Fund',
+    7,
+    UnderlyingAsset['xlm:WTGX-GDMBNMFJ3TRFLASJ6UGETFME3PJPNKPU24C7KFDBEBPQFG2CI6UC3JG6'],
+    'stellar.wisdomtree.com',
+    ACCOUNT_COIN_DEFAULT_FEATURES_TRUST_ONLY,
+    '',
+    'XLM:WTGXX'
+  ),
+  stellarToken(
+    '8e6e51ee-6bc0-4420-9eb8-7330975dd5a5',
+    'xlm:FLTT-GBTZKH3RNKW46XEZNCGZEBAGJISKDZKQXKSQ2N5G5SFX36TLWKKR6QJ6',
+    'WisdomTree Floating Rate Treasury Digital Fund',
+    7,
+    UnderlyingAsset['xlm:FLTT-GBTZKH3RNKW46XEZNCGZEBAGJISKDZKQXKSQ2N5G5SFX36TLWKKR6QJ6'],
+    'stellar.wisdomtree.com',
+    ACCOUNT_COIN_DEFAULT_FEATURES_TRUST_ONLY,
+    '',
+    'XLM:FLTTX'
+  ),
+  stellarToken(
+    '19e90771-7e7c-4d3a-9365-d53974fce295',
+    'xlm:WTSI-GAD22PDBRFEMXAKPFDP4JGDFWKKD6VPXWUWEAXBS6ZYJYFFQDUN7HAFG',
+    'WisdomTree Short-Duration Income Digital Fund',
+    7,
+    UnderlyingAsset['xlm:WTSI-GAD22PDBRFEMXAKPFDP4JGDFWKKD6VPXWUWEAXBS6ZYJYFFQDUN7HAFG'],
+    'stellar.wisdomtree.com',
+    ACCOUNT_COIN_DEFAULT_FEATURES_TRUST_ONLY,
+    '',
+    'XLM:WTSIX'
+  ),
   tronToken(
     '5f3266f8-252c-492a-90d7-bb6d3bf550fb',
     'trx:btt',
@@ -6651,6 +6704,17 @@ export const allCoinsAndTokens = [
     [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     '',
     'TXLM:USDC'
+  ),
+  tstellarToken(
+    '85869f03-218d-453b-956f-64c76bad388a',
+    'txlm:USDL-GDMJSPSI4IXMDDSJPJRIRCBFNMHOK4KKAD67WBDBZ4MYHHJRIPWQ5UQG',
+    'USDL',
+    7,
+    UnderlyingAsset['txlm:USDL-GDMJSPSI4IXMDDSJPJRIRCBFNMHOK4KKAD67WBDBZ4MYHHJRIPWQ5UQG'],
+    'example.com',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'TXLM:USDL'
   ),
   ttronToken(
     '4ece7f15-a5c9-4302-8c82-787d7eb7e3c9',
@@ -7750,6 +7814,15 @@ export const allCoinsAndTokens = [
     '0x374c5fb7979d5fdbaad2d95409e235e5cbdfd43c',
     UnderlyingAsset['arbeth:mlk'],
     EVM_TOKEN_FEATURES_TRUST_ONLY
+  ),
+  arbethErc20(
+    '2d29a72f-5791-4d72-8a0c-7529a20328a0',
+    'arbeth:usdg',
+    'USDG',
+    6,
+    '0x004b506865409877c9fa29bfb1eba929984b9bbc',
+    UnderlyingAsset['arbeth:usdg'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
 
   opethErc20(

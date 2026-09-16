@@ -3505,4 +3505,13 @@ export const bscTokens = [
     UnderlyingAsset['bsc:real'],
     BSC_TOKEN_FEATURES_TRUST_ONLY
   ),
+  bscToken(
+    'ab1c8824-596c-4ebb-8b53-bb8cbe397d89',
+    'bsc:hei',
+    'Heima',
+    18,
+    '0xf8f173e20e15f3b6cb686fb64724d370689de083',
+    UnderlyingAsset['bsc:hei'],
+    BSC_TOKEN_FEATURES
+  ),
 ];
