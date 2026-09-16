@@ -385,6 +385,8 @@ export abstract class MpcUtils {
             destination: eip7702Params.envelope.destination,
             value: eip7702Params.envelope.value,
             data: eip7702Params.envelope.data,
+            recipients: eip7702Params.recipients,
+            sponsorAddress: eip7702Params.sponsorAddress,
             feeOptions: params.feeOptions,
             feeToken: params.feeToken,
           };

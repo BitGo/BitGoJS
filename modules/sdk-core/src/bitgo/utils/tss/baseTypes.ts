@@ -340,6 +340,12 @@ export interface Eip7702IntentParams {
     /** Hex-encoded calldata (0x-prefixed or not). */
     data: string;
   };
+  /** Batch recipients for a delegated batch send (multiple recipients, one tx). */
+  recipients?: Array<{ to: string; amount: string }>;
+  /** Gas-tank address that pays gas for the batch (the enterprise fee address
+   *  by default). When set, the envelope is signed by the gas tank, not the
+   *  wallet MPC key. */
+  sponsorAddress?: string;
 }
 
 export interface IntentOptionsForMessage extends IntentOptionsBase {
