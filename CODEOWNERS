@@ -155,8 +155,8 @@
 /webpack/ @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/ecosystem @BitGo/btc-team
 
 # Asset Metadata Service
-/modules/statics/src/coins/botTokens.ts @BitGo/ams
-/modules/statics/src/coins/botOfcTokens.ts @BitGo/ams
+/modules/statics/src/coins/botTokens.ts @BitGo/ecosystem
+/modules/statics/src/coins/botOfcTokens.ts @BitGo/ecosystem
 
 /.eslintrc.json @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/ecosystem @BitGo/btc-team
 /.prettierrc.yml @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/ecosystem @BitGo/btc-team
