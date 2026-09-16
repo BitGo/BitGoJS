@@ -1,10 +1,15 @@
 import should from 'should';
+import { ethers } from 'ethers';
 import { bufferToHex } from 'ethereumjs-util';
 import {
   computeSetCodeAuthorizationDigest,
   buildSetCodeTransaction,
   parseSetCodeTransaction,
   getSetCodeTransactionSigningHash,
+  encodeSetCodeExecuteBatch,
+  encodeSetCodeSponsoredExecuteBatch,
+  encodeSetCodeBatchSend,
+  buildSetCodeBatchTxParams,
   SET_CODE_TX_TYPE,
   DELEGATION_PREFIX,
 } from '../../src/lib/eip7702';
@@ -143,6 +148,61 @@ describe('EIP-7702', () => {
     it('returns a 32-byte keccak hash', () => {
       const hash = getSetCodeTransactionSigningHash(TX_PARAMS as never);
       hash.length.should.equal(32);
+    });
+  });
+
+  describe('batch sends and gas-tank sponsorship', () => {
+    const abiCoder = new ethers.utils.AbiCoder();
+    const recipientA = { to: ADDRESS, amount: '1000000000000000' };
+    const recipientB = { to: '0x1111111111111111111111111111111111111111', amount: '2000000000000000' };
+
+    it('encodeSetCodeExecuteBatch round-trips calls', () => {
+      const data = encodeSetCodeExecuteBatch([
+        { to: recipientA.to, value: recipientA.amount, data: '0x' },
+        { to: recipientB.to, value: recipientB.amount, data: '0x' },
+      ]);
+      const decoded = abiCoder.decode(['tuple(address,uint256,bytes)[]'], '0x' + data.slice(10))[0];
+      decoded.should.have.length(2);
+      decoded[0][0].toLowerCase().should.equal(recipientA.to.toLowerCase());
+      decoded[0][1].toString().should.equal(recipientA.amount);
+      decoded[1][0].toLowerCase().should.equal(recipientB.to.toLowerCase());
+      decoded[1][1].toString().should.equal(recipientB.amount);
+    });
+
+    it('encodeSetCodeSponsoredExecuteBatch round-trips calls', () => {
+      const data = encodeSetCodeSponsoredExecuteBatch([
+        { to: recipientA.to, value: recipientA.amount, data: '0x' },
+      ]);
+      const decoded = abiCoder.decode(['tuple(address,uint256,bytes)[]'], '0x' + data.slice(10))[0];
+      decoded.should.have.length(1);
+      decoded[0][0].toLowerCase().should.equal(recipientA.to.toLowerCase());
+      decoded[0][1].toString().should.equal(recipientA.amount);
+    });
+
+    it('encodeSetCodeBatchSend round-trips recipients', () => {
+      const data = encodeSetCodeBatchSend([recipientA, recipientB]);
+      const decoded = abiCoder.decode(['tuple(address,uint256)[]'], '0x' + data.slice(10))[0];
+      decoded.should.have.length(2);
+      decoded[0][0].toLowerCase().should.equal(recipientA.to.toLowerCase());
+      decoded[0][1].toString().should.equal(recipientA.amount);
+      decoded[1][1].toString().should.equal(recipientB.amount);
+    });
+
+    it('buildSetCodeBatchTxParams targets the EOA with zero value', () => {
+      const params = buildSetCodeBatchTxParams(ADDRESS, [recipientA, recipientB], false);
+      params.destination.toLowerCase().should.equal(ADDRESS.toLowerCase());
+      params.value.should.equal('0');
+      const decoded = abiCoder.decode(['tuple(address,uint256,bytes)[]'], '0x' + params.data.slice(10))[0];
+      decoded.should.have.length(2);
+    });
+
+    it('buildSetCodeBatchTxParams sponsored flag targets sponsoredExecuteBatch', () => {
+      const self = buildSetCodeBatchTxParams(ADDRESS, [recipientA], false);
+      const sponsored = buildSetCodeBatchTxParams(ADDRESS, [recipientA], true);
+      sponsored.destination.toLowerCase().should.equal(ADDRESS.toLowerCase());
+      sponsored.value.should.equal('0');
+      // selectors differ: executeBatch vs sponsoredExecuteBatch
+      self.data.slice(0, 10).should.not.equal(sponsored.data.slice(0, 10));
     });
   });
 });

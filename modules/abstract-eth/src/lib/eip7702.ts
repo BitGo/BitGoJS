@@ -27,6 +27,7 @@
 import { RLP } from '@ethereumjs/rlp';
 import BN from 'bn.js';
 import assert from 'assert';
+import { ethers } from 'ethers';
 import { addHexPrefix, bufferToHex, keccak256, setLengthLeft, toBuffer } from 'ethereumjs-util';
 
 /** EIP-7702 set code transaction type (`0x04`). */
@@ -256,5 +257,90 @@ export function parseSetCodeTransaction(serialized: string): SignedSetCodeTransa
     yParity: decoded[10].length === 0 ? 0 : (decoded[10][0] as 0 | 1),
     r: bufferToHex(decoded[11]),
     s: bufferToHex(decoded[12]),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Batch sends and gas-tank sponsorship (delegated execution)
+//
+// After an EOA delegates to the EIP7702Delegate implementation, a transaction
+// with `destination = <EOA>` executes the delegated code in the EOA's context.
+// A batch send to N recipients is one such transaction whose calldata calls
+// `executeBatch`/`batchSend` (gas paid by the EOA) or `sponsoredExecuteBatch`
+// (gas paid by an allowlisted gas tank). These helpers produce that calldata.
+// ---------------------------------------------------------------------------
+
+/** A single recipient of a batched native-value send. */
+export interface SetCodeRecipient {
+  /** Recipient address (0x-prefixed hex). */
+  to: string;
+  /** Native value to send, as a decimal or hex string. */
+  amount: string;
+}
+
+/** A single call in a delegated batch execution. */
+export interface SetCodeCall {
+  /** Call target (0x-prefixed hex). */
+  to: string;
+  /** Native value to send with the call, as a decimal or hex string. */
+  value: string;
+  /** Hex-encoded calldata (0x-prefixed or not). */
+  data: string;
+}
+
+const abiCoder = new ethers.utils.AbiCoder();
+
+const executeBatchSelector = ethers.utils.id('executeBatch((address,uint256,bytes)[])').slice(0, 10);
+const sponsoredExecuteBatchSelector = ethers.utils.id('sponsoredExecuteBatch((address,uint256,bytes)[])').slice(0, 10);
+const batchSendSelector = ethers.utils.id('batchSend((address,uint256)[])').slice(0, 10);
+
+/**
+ * Encode calldata for `executeBatch((address,uint256,bytes)[])` on the
+ * delegated implementation. Gas is paid by the delegating EOA.
+ */
+export function encodeSetCodeExecuteBatch(calls: SetCodeCall[]): string {
+  return executeBatchSelector + abiCoder.encode(['tuple(address,uint256,bytes)[]'], [calls.map((c) => [c.to, c.value, c.data])]).slice(2);
+}
+
+/**
+ * Encode calldata for `sponsoredExecuteBatch((address,uint256,bytes)[])` on
+ * the delegated implementation. Gas is paid by the allowlisted gas tank that
+ * sends the transaction.
+ */
+export function encodeSetCodeSponsoredExecuteBatch(calls: SetCodeCall[]): string {
+  return sponsoredExecuteBatchSelector + abiCoder.encode(['tuple(address,uint256,bytes)[]'], [calls.map((c) => [c.to, c.value, c.data])]).slice(2);
+}
+
+/**
+ * Encode calldata for `batchSend((address,uint256)[])` on the delegated
+ * implementation — a native-value transfer to many recipients in one
+ * transaction, gas paid by the delegating EOA.
+ */
+export function encodeSetCodeBatchSend(recipients: SetCodeRecipient[]): string {
+  return batchSendSelector + abiCoder.encode(['tuple(address,uint256)[]'], [recipients.map((r) => [r.to, r.amount])]).slice(2);
+}
+
+/**
+ * Build the outer transaction fields for a batched send executed through the
+ * delegated EOA.
+ *
+ * @param delegatedEoa - the delegating EOA (the transaction `destination`).
+ * @param recipients - the batch recipients.
+ * @param sponsored - if true, encode `sponsoredExecuteBatch` (a gas tank pays
+ *   gas); otherwise encode `executeBatch` (the EOA pays).
+ * @returns `{ destination, value, data }` to place in the set-code transaction
+ *   params. `value` is always `0` — each recipient's amount is carried inside
+ *   the encoded batch and funded from the EOA's balance.
+ */
+export function buildSetCodeBatchTxParams(
+  delegatedEoa: string,
+  recipients: SetCodeRecipient[],
+  sponsored: boolean
+): { destination: string; value: string; data: string } {
+  const calls: SetCodeCall[] = recipients.map((r) => ({ to: r.to, value: r.amount, data: '0x' }));
+  return {
+    destination: delegatedEoa,
+    value: '0',
+    data: sponsored ? encodeSetCodeSponsoredExecuteBatch(calls) : encodeSetCodeExecuteBatch(calls),
   };
 }
