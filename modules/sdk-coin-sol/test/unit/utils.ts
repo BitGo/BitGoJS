@@ -7,6 +7,7 @@ import {
   PublicKey,
   StakeProgram,
   SystemProgram,
+  Transaction,
   TransactionInstruction,
 } from '@solana/web3.js';
 import {
@@ -19,8 +20,11 @@ import BigNumber from 'bignumber.js';
 import {
   TOKEN_2022_PROGRAM_ID,
   ASSOCIATED_TOKEN_PROGRAM_ID,
+  createApproveInstruction,
   createTransferCheckedWithFeeInstruction,
 } from '@solana/spl-token';
+import { StakePoolInstruction } from '@solana/spl-stake-pool';
+import { TransactionType } from '@bitgo/sdk-core';
 
 describe('SOL util library', function () {
   describe('isValidAddress', function () {
@@ -286,6 +290,21 @@ describe('SOL util library', function () {
       });
       Utils.getInstructionType(setComputeUnitPriceInstruction).should.equal('SetPriorityFee');
     });
+    it('should succeed for stake pool program WithdrawSol instruction', function () {
+      // JPool unstake (DEFI-887): SPL Stake Pool program, discriminator 16 = WithdrawSol
+      const withdrawSolInstruction = StakePoolInstruction.withdrawSol({
+        stakePool: new PublicKey(testData.nonceAccount.pub),
+        sourcePoolAccount: new PublicKey(testData.nonceAccount.pub),
+        withdrawAuthority: new PublicKey(testData.nonceAccount.pub),
+        reserveStake: new PublicKey(testData.nonceAccount.pub),
+        destinationSystemAccount: new PublicKey(testData.authAccount.pub),
+        sourceTransferAuthority: new PublicKey(testData.authAccount.pub),
+        managerFeeAccount: new PublicKey(testData.nonceAccount.pub),
+        poolMint: new PublicKey(testData.nonceAccount.pub),
+        poolTokens: 1000000,
+      });
+      Utils.getInstructionType(withdrawSolInstruction).should.equal('WithdrawSol');
+    });
   });
 
   describe('validateIntructionTypes', function () {
@@ -312,6 +331,67 @@ describe('SOL util library', function () {
       should(() => Utils.validateIntructionTypes([assignInstruction])).throwError(
         'Invalid transaction, instruction type not supported: ' + Utils.getInstructionType(assignInstruction)
       );
+    });
+    it('should succeed for JPool unstake instruction set including WithdrawSol (DEFI-887)', function () {
+      const ownerPubkey = new PublicKey(testData.authAccount.pub);
+      const poolTokenAccount = new PublicKey(testData.nonceAccount.pub);
+      const withdrawAuthority = new PublicKey(testData.nonceAccount.pub);
+      const withdrawSolInstruction = StakePoolInstruction.withdrawSol({
+        stakePool: new PublicKey(testData.nonceAccount.pub),
+        sourcePoolAccount: poolTokenAccount,
+        withdrawAuthority,
+        reserveStake: new PublicKey(testData.nonceAccount.pub),
+        destinationSystemAccount: ownerPubkey,
+        sourceTransferAuthority: ownerPubkey,
+        managerFeeAccount: new PublicKey(testData.nonceAccount.pub),
+        poolMint: new PublicKey(testData.nonceAccount.pub),
+        poolTokens: 1000000,
+      });
+      const jPoolUnstakeInstructions = [
+        ComputeBudgetProgram.setComputeUnitLimit({ units: 300000 }),
+        ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 100000 }),
+        createApproveInstruction(poolTokenAccount, withdrawAuthority, ownerPubkey, 1000000),
+        withdrawSolInstruction,
+        new TransactionInstruction({
+          keys: [],
+          programId: new PublicKey(MEMO_PROGRAM_PK),
+          data: Buffer.from('WalletConnectDefiCustomTx'),
+        }),
+      ];
+      // Previously threw: NotSupported: Invalid transaction, instruction type not supported: WithdrawSol
+      should.doesNotThrow(() => Utils.validateIntructionTypes(jPoolUnstakeInstructions));
+    });
+  });
+
+  describe('getTransactionType', function () {
+    it('should classify JPool unstake (WithdrawSol + WalletConnectDefiCustomTx memo) as CustomTx', function () {
+      const ownerPubkey = new PublicKey(testData.authAccount.pub);
+      const poolTokenAccount = new PublicKey(testData.nonceAccount.pub);
+      const withdrawAuthority = new PublicKey(testData.nonceAccount.pub);
+      const withdrawSolInstruction = StakePoolInstruction.withdrawSol({
+        stakePool: new PublicKey(testData.nonceAccount.pub),
+        sourcePoolAccount: poolTokenAccount,
+        withdrawAuthority,
+        reserveStake: new PublicKey(testData.nonceAccount.pub),
+        destinationSystemAccount: ownerPubkey,
+        sourceTransferAuthority: ownerPubkey,
+        managerFeeAccount: new PublicKey(testData.nonceAccount.pub),
+        poolMint: new PublicKey(testData.nonceAccount.pub),
+        poolTokens: 1000000,
+      });
+      const transaction = new Transaction();
+      transaction.add(
+        ComputeBudgetProgram.setComputeUnitLimit({ units: 300000 }),
+        ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 100000 }),
+        createApproveInstruction(poolTokenAccount, withdrawAuthority, ownerPubkey, 1000000),
+        withdrawSolInstruction,
+        new TransactionInstruction({
+          keys: [],
+          programId: new PublicKey(MEMO_PROGRAM_PK),
+          data: Buffer.from('WalletConnectDefiCustomTx'),
+        })
+      );
+      Utils.getTransactionType(transaction).should.equal(TransactionType.CustomTx);
     });
   });
 
