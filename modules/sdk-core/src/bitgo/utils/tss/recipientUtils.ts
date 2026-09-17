@@ -69,10 +69,19 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
   'stakeClaimRewards',
 
   'createAccount',
+  // Canton operations with no SDK-level recipients. Canton.verifyTransaction validates these from the transaction itself.
   'transferAccept',
   'transferReject',
   'transferOfferWithdrawn',
+  'cosignDelegationAccept',
+  'allocationAllocate',
+  'allocationOfferWithdrawn',
   'cantonCommand',
+  'cantonEndInvestorOnboardingOffer',
+  'cantonEndInvestorOnboardingAccept',
+  'cantonEndInvestorOnboardingReject',
+  'cantonParticipantOnboardingRequest',
+
   'pledge',
 
   // Avalanche / Flare cross-chain atomic imports — recipients are not supplied
