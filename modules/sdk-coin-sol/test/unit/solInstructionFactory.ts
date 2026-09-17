@@ -1,4 +1,5 @@
 import should from 'should';
+import { SolStakingTypeEnum } from '@bitgo/public-types';
 import * as testData from '../resources/sol';
 import { solInstructionFactory } from '../../src/lib/solInstructionFactory';
 import {
@@ -669,6 +670,97 @@ describe('Instruction Builder Tests: ', function () {
       // Since "hello world" is not valid base64, it should fall back to UTF-8
       resultInstruction.data.toString('utf8').should.equal('hello world');
     });
+  });
+
+  describe('Lamport precision', function () {
+    const fromAddress = testData.authAccount.pub;
+    const stakingAddress = testData.nonceAccount.pub;
+    const validator = testData.authAccount2.pub;
+
+    const numberOnlyInstructions = (amount: string): InstructionParams[] => [
+      {
+        type: InstructionBuilderTypes.CreateNonceAccount,
+        params: { fromAddress, nonceAddress: stakingAddress, authAddress: fromAddress, amount },
+      },
+      ...[SolStakingTypeEnum.NATIVE, SolStakingTypeEnum.MARINADE].map(
+        (stakingType): InstructionParams => ({
+          type: InstructionBuilderTypes.StakingActivate,
+          params: { fromAddress, stakingAddress, validator, stakingType, amount },
+        })
+      ),
+      {
+        type: InstructionBuilderTypes.StakingDeactivate,
+        params: {
+          fromAddress,
+          stakingAddress,
+          unstakingAddress: validator,
+          stakingType: SolStakingTypeEnum.NATIVE,
+          amount,
+        },
+      },
+      {
+        type: InstructionBuilderTypes.StakingWithdraw,
+        params: { fromAddress, stakingAddress, amount },
+      },
+    ];
+
+    for (const amount of ['0', '9007199254740991', '9007199254740992', '9007199254740993', '18446744073709551615']) {
+      it(`preserves the exact transfer amount ${amount}`, () => {
+        const [instruction] = solInstructionFactory({
+          type: InstructionBuilderTypes.Transfer,
+          params: { fromAddress, toAddress: stakingAddress, amount },
+        });
+        instruction.data.readBigUInt64LE(4).should.equal(BigInt(amount));
+      });
+
+      it(`preserves the exact Marinade deactivate amount ${amount}`, () => {
+        const [instruction] = solInstructionFactory({
+          type: InstructionBuilderTypes.StakingDeactivate,
+          params: {
+            fromAddress,
+            stakingAddress,
+            stakingType: SolStakingTypeEnum.MARINADE,
+            recipients: [{ address: validator, amount }],
+          },
+        });
+        instruction.data.readBigUInt64LE(4).should.equal(BigInt(amount));
+      });
+    }
+
+    for (const amount of [
+      '-1',
+      '1.5',
+      'NaN',
+      'Infinity',
+      '9007199254740992',
+      '9007199254740993',
+      '18446744073709551615',
+    ]) {
+      it(`rejects ${amount} in all number-only lamport APIs`, () => {
+        for (const instruction of numberOnlyInstructions(amount)) {
+          should(() => solInstructionFactory(instruction)).throwError(/Invalid amount: expected integer/);
+        }
+      });
+    }
+
+    for (const amount of ['0', '100000', '9007199254740991']) {
+      it(`accepts the safe amount ${amount} in all number-only lamport APIs`, () => {
+        for (const instruction of numberOnlyInstructions(amount)) {
+          solInstructionFactory(instruction).length.should.be.above(0);
+        }
+      });
+    }
+
+    for (const amount of ['-1', '1.5', '1e3', '18446744073709551616']) {
+      it(`rejects the invalid transfer amount ${amount}`, () => {
+        should(() =>
+          solInstructionFactory({
+            type: InstructionBuilderTypes.Transfer,
+            params: { fromAddress, toAddress: stakingAddress, amount },
+          })
+        ).throwError(/Invalid amount/);
+      });
+    }
   });
 
   describe('Fail ', function () {
