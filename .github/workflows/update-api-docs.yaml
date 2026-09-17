@@ -22,5 +22,5 @@ jobs:
       api-spec-file: src/typedRoutes/api/openapi-index.ts
       api-spec-title: BitGo Express API
       codec-config-file: ./modules/express/openapi-generator.rc.js
-      remote-working-directory: ''
+      remote-working-directory: services
     secrets: inherit
