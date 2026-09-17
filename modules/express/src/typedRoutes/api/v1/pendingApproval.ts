@@ -9,7 +9,7 @@ export const pendingApprovalRequestParams = {
 };
 
 export const pendingApprovalRequestBody = {
-  /** State of the approval: 'approved' to approve, any other value or omit to reject (defaults to rejection) */
+  /** State of the approval: 'approved' to approve, 'canceled' to cancel, any other value or omit to reject */
   state: optional(t.string),
   /** Wallet passphrase for transaction signing (required for transactionRequest approvals unless tx or xprv provided) */
   walletPassphrase: optional(t.string),
@@ -30,9 +30,9 @@ export const pendingApprovalRequestBody = {
 /**
  * Approve or reject a pending approval
  *
- * Updates the state of a pending approval to either 'approved' or 'rejected' based on the
- * state parameter. If state is 'approved', the approval is approved; otherwise, it is rejected.
- * Default behavior (when state is omitted) is rejection.
+ * Updates the state of a pending approval to 'approved', 'canceled', or 'rejected' based on
+ * the state parameter. If state is 'approved', the approval is approved; if state is 'canceled',
+ * it is canceled; otherwise, it is rejected. Default behavior is rejection.
  *
  * **Approval Types:**
  * - **transactionRequest**: Transaction approvals (may require walletPassphrase for signing)
