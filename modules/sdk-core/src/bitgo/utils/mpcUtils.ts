@@ -226,6 +226,7 @@ export abstract class MpcUtils {
         'unwrap-native',
         'wrapApprove',
         'wrap',
+        'eip7702',
       ].includes(params.intentType)
     ) {
       assert(params.recipients, `'recipients' is a required parameter for ${params.intentType} intent`);
@@ -365,6 +366,27 @@ export abstract class MpcUtils {
             ...baseIntent,
             tokenName: params.wrapParams.tokenName,
             amount: params.wrapParams.amount,
+            feeOptions: params.feeOptions,
+            feeToken: params.feeToken,
+          };
+        }
+        case 'eip7702': {
+          assert(params.eip7702Params, `'eip7702Params' is required for ${params.intentType} intent`);
+          const { eip7702Params } = params;
+          return {
+            ...baseIntent,
+            implementationAddress: eip7702Params.implementationAddress,
+            chainId: eip7702Params.chainId,
+            nonce: `${eip7702Params.nonce}`,
+            authorizationList: eip7702Params.authorizationList,
+            maxPriorityFeePerGas: eip7702Params.envelope.maxPriorityFeePerGas,
+            maxFeePerGas: eip7702Params.envelope.maxFeePerGas,
+            gasLimit: eip7702Params.envelope.gasLimit,
+            destination: eip7702Params.envelope.destination,
+            value: eip7702Params.envelope.value,
+            data: eip7702Params.envelope.data,
+            recipients: eip7702Params.recipients,
+            sponsorAddress: eip7702Params.sponsorAddress,
             feeOptions: params.feeOptions,
             feeToken: params.feeToken,
           };
