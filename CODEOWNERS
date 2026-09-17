@@ -161,7 +161,7 @@
 /.eslintrc.json @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/ecosystem @BitGo/btc-team
 /.prettierrc.yml @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/ecosystem @BitGo/btc-team
 /check-package-versions.js @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/ecosystem @BitGo/btc-team
-/CODEOWNERS @BitGo/git-admins
+/CODEOWNERS @BitGo/production
 /DEVELOPERS.md @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/ecosystem @BitGo/btc-team
 /commitlint.config.js @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/ecosystem @BitGo/btc-team
 /Dockerfile @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/ecosystem @BitGo/btc-team
