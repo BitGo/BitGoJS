@@ -261,6 +261,7 @@ describe('Safe', function () {
       const ceremonyStub = sinon.stub(ECDSAUtils.EcdsaVrfMPCv2Utils.prototype, 'createSafeChildKeychains').resolves({
         userKeychain: { id: 'ecdsa-child-user' },
         backupKeychain: { id: 'ecdsa-child-backup-placeholder' },
+        bitgoKeychain: { id: 'ecdsa-child-bitgo-placeholder' },
       } as never);
 
       const wallet = await safe.createWallet({ coin: 'hteth', label: 'evm', passphrase: 'pw', multisigType: 'tss' });
@@ -286,7 +287,7 @@ describe('Safe', function () {
         label: 'evm',
         type: 'hot',
         multisigType: 'tss',
-        keys: ['ecdsa-child-user', 'ecdsa-child-backup-placeholder'],
+        keys: ['ecdsa-child-user', 'ecdsa-child-backup-placeholder', 'ecdsa-child-bitgo-placeholder'],
       });
       wallet.id().should.equal('wallet-id');
     });

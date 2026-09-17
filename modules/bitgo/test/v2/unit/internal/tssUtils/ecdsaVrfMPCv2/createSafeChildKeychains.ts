@@ -80,9 +80,9 @@ describe('TSS ECDSA safe child keychains (user/BitGo hard derive):', async funct
     const round1Nock = await nockDeriveRound1(bitgoPair);
     const round2Nock = await nockDeriveRound2(bitgoPair);
     const round3Nock = await nockDeriveRound3(bitgoPair);
-    const addKeyNock = await nockAddChildKey(coinName, 2);
+    const addKeyNock = await nockAddChildKey(coinName);
 
-    const { userKeychain, backupKeychain } = await tssUtils.createSafeChildKeychains({
+    const { userKeychain, backupKeychain, bitgoKeychain } = await tssUtils.createSafeChildKeychains({
       passphrase: 'test',
       enterprise: enterpriseId,
       safeId: SAFE_ID,
@@ -99,6 +99,9 @@ describe('TSS ECDSA safe child keychains (user/BitGo hard derive):', async funct
     assert.ok(round3Nock.isDone());
     assert.ok(addKeyNock.isDone());
     assert.equal(userKeychain.commonKeychain, backupKeychain.commonKeychain);
+    assert.equal(bitgoKeychain.commonKeychain, userKeychain.commonKeychain);
+    assert.equal(bitgoKeychain.source, 'bitgo');
+    assert.equal(bitgoKeychain.encryptedPrv, undefined);
     assert.equal(userKeychain.commonKeychain, DklsTypes.getCommonKeychain(bitgoPair.getKeyShare()));
 
     const encryptedUserPrv = userKeychain.encryptedPrv;
@@ -122,9 +125,9 @@ describe('TSS ECDSA safe child keychains (user/BitGo hard derive):', async funct
     const round1Nock = await nockDeriveRound1(bitgoPair, 1, idx);
     const round2Nock = await nockDeriveRound2(bitgoPair);
     const round3Nock = await nockDeriveRound3(bitgoPair);
-    const addKeyNock = await nockAddChildKey(coinName, 2, idx);
+    const addKeyNock = await nockAddChildKey(coinName, 3, idx);
 
-    const { userKeychain, backupKeychain } = await tssUtils.createSafeChildKeychains({
+    const { userKeychain, backupKeychain, bitgoKeychain } = await tssUtils.createSafeChildKeychains({
       passphrase: 'test',
       enterprise: enterpriseId,
       safeId: SAFE_ID,
@@ -141,6 +144,64 @@ describe('TSS ECDSA safe child keychains (user/BitGo hard derive):', async funct
     assert.ok(round3Nock.isDone());
     assert.ok(addKeyNock.isDone());
     assert.equal(userKeychain.commonKeychain, backupKeychain.commonKeychain);
+    assert.equal(bitgoKeychain.commonKeychain, userKeychain.commonKeychain);
+  });
+
+  it('registers the BitGo child placeholder with the soft path and no private material', async function () {
+    const [userRoot, , bitgoRoot] = await DklsUtils.generateDKGKeyShares();
+    const [vrfUser, , vrfBitgo] = await DklsVrfUtils.generateVrfDKGKeyShares();
+    const bitgoPair = new DklsDrv.Derive(3, 2, 2, bitgoRoot.getKeyShare(), vrfBitgo.getKeyShare(), PATH_M0);
+
+    await nockDeriveRound1(bitgoPair);
+    await nockDeriveRound2(bitgoPair);
+    await nockDeriveRound3(bitgoPair);
+
+    const addKeyBodies: AddKeychainOptions[] = [];
+    nock('https://bitgo.fakeurl')
+      .post(`/api/v2/${coinName}/key`)
+      .times(3)
+      .reply(200, (uri, requestBody: AddKeychainOptions) => {
+        addKeyBodies.push(requestBody);
+        return { id: requestBody.source, source: requestBody.source, commonKeychain: requestBody.commonKeychain };
+      });
+
+    const { bitgoKeychain } = await tssUtils.createSafeChildKeychains({
+      passphrase: 'test',
+      enterprise: enterpriseId,
+      safeId: SAFE_ID,
+      parentKeyId: BITGO_ROOT_KEY_ID,
+      derivationIndex: DERIVATION_INDEX,
+      userRootKeyId: USER_ROOT_KEY_ID,
+      backupRootKeyId: BACKUP_ROOT_KEY_ID,
+      userRootKeyShare: userRoot.getKeyShare(),
+      userRootVrfKeyShare: vrfUser.getKeyShare(),
+    });
+
+    const userBody = addKeyBodies.find((body) => body.source === 'user');
+    assert.ok(userBody, 'expected a user child registration');
+    const bitgoBody = addKeyBodies.find((body) => body.source === 'bitgo');
+    assert.ok(bitgoBody, 'expected a bitgo child registration');
+    // Same common keychain across all three child registrations.
+    assert.equal(bitgoBody.commonKeychain, userBody.commonKeychain);
+    assert.equal(bitgoBody.commonKeychain, bitgoKeychain.commonKeychain);
+    // User and backup children stay hardened; only the BitGo placeholder is soft.
+    assert.equal(userBody.derivedFromParentWithPath, "m/0'");
+    assert.equal(userBody.parent, USER_ROOT_KEY_ID);
+    const backupBody = addKeyBodies.find((body) => body.source === 'backup');
+    assert.ok(backupBody, 'expected a backup child registration');
+    assert.equal(backupBody.derivedFromParentWithPath, "m/0'");
+    assert.equal(backupBody.parent, BACKUP_ROOT_KEY_ID);
+    // Exact wire body: public-only placeholder, soft derivation path, no private material.
+    // commonKeychain cross-references the user body instead of itself.
+    assert.deepEqual(bitgoBody, {
+      source: 'bitgo',
+      keyType: 'tss',
+      isMPCv2: true,
+      commonKeychain: userBody.commonKeychain,
+      safeId: SAFE_ID,
+      parent: BITGO_ROOT_KEY_ID,
+      derivedFromParentWithPath: 'm/0',
+    });
   });
 
   it('should reject root key material that is not a valid VRF envelope', async function () {
@@ -320,7 +381,11 @@ describe('TSS ECDSA safe child keychains (user/BitGo hard derive):', async funct
       });
   }
 
-  async function nockAddChildKey(coin: string, times = 2, index = DERIVATION_INDEX) {
+  /**
+   * Nocks the child key registrations: user and backup post a hardened path, the BitGo
+   * placeholder posts the soft path with no private material.
+   */
+  async function nockAddChildKey(coin: string, times = 3, index = DERIVATION_INDEX) {
     return nock('https://bitgo.fakeurl')
       .post(
         `/api/v2/${coin}/key`,
@@ -329,7 +394,7 @@ describe('TSS ECDSA safe child keychains (user/BitGo hard derive):', async funct
           body.isMPCv2 === true &&
           body.safeId === SAFE_ID &&
           !!body.parent &&
-          body.derivedFromParentWithPath === `m/${index}'`
+          (body.derivedFromParentWithPath === `m/${index}'` || body.derivedFromParentWithPath === `m/${index}`)
       )
       .times(times)
       .reply(200, (uri, requestBody: AddKeychainOptions) => ({
