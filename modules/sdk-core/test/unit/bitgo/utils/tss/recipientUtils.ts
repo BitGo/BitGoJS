@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { NO_RECIPIENT_TX_TYPES, resolveEffectiveTxParams } from '../../../../../src/bitgo/utils/tss/recipientUtils';
 import { InvalidTransactionError } from '../../../../../src/bitgo/errors';
-import { TxRequest } from '../../../../../src/bitgo/utils/tss/baseTypes';
+import { PopulatedIntent, TxRequest } from '../../../../../src/bitgo/utils/tss/baseTypes';
 
 function makeTxRequest(overrides: Partial<TxRequest> = {}): TxRequest {
   return {
@@ -52,10 +52,19 @@ describe('recipientUtils', function () {
         'claim',
         'stakeClaimRewards',
         'createAccount',
+        // Canton operations with no SDK-level recipients.
         'transferAccept',
         'transferReject',
         'transferOfferWithdrawn',
+        'cosignDelegationAccept',
+        'allocationAllocate',
+        'allocationOfferWithdrawn',
         'cantonCommand',
+        'cantonEndInvestorOnboardingOffer',
+        'cantonEndInvestorOnboardingAccept',
+        'cantonEndInvestorOnboardingReject',
+        'cantonParticipantOnboardingRequest',
+
         'pledge',
         // Avalanche / Flare cross-chain atomic imports
         'import',
@@ -118,6 +127,28 @@ describe('recipientUtils', function () {
       ]) {
         const txRequest = makeTxRequest();
         assert.doesNotThrow(() => resolveEffectiveTxParams(txRequest, { type: txType }));
+      }
+    });
+
+    it('does not require recipients for Canton intents resolved from the tx request', function () {
+      const cantonIntentTypes = [
+        'transferAccept',
+        'transferReject',
+        'transferOfferWithdrawn',
+        'cosignDelegationAccept',
+        'allocationAllocate',
+        'allocationOfferWithdrawn',
+        'cantonCommand',
+        'cantonEndInvestorOnboardingOffer',
+        'cantonEndInvestorOnboardingAccept',
+        'cantonEndInvestorOnboardingReject',
+        'cantonParticipantOnboardingRequest',
+      ];
+
+      for (const intentType of cantonIntentTypes) {
+        const intent: PopulatedIntent = { intentType };
+        const txRequest = makeTxRequest({ intent });
+        assert.doesNotThrow(() => resolveEffectiveTxParams(txRequest, undefined));
       }
     });
 
