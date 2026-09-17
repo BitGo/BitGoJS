@@ -48,3 +48,22 @@ Optional env: `RECIPIENT_A`, `RECIPIENT_B`, `AMOUNT_A`, `AMOUNT_B`.
 
 ## Explorer
 All tx hashes link to https://hoodi.beaconcha.in/tx/<hash>.
+
+## Verified on-chain findings (Hoodi, 2026-09-17)
+Three critical wire-format facts were confirmed by broadcasting real txs:
+1. **Authorization nonce is a SCALAR** in the tuple RLP (geth rejects a nested
+   list: `expected input string or byte for uint64 ... AuthList[0].Nonce`).
+   `@ethereumjs/tx` v5's JSON path encodes it as a nested list — do NOT copy that.
+2. **The authorization digest is over the IMPLEMENTATION address** (the
+   tuple's `address` field), not the delegating EOA. The node recomputes
+   `keccak256(0x05 || rlp([chainId, address, nonce]))` from the tuple, so
+   signing over the EOA recovers a different authority and the tuple is skipped.
+3. **Self-delegation auth nonce = tx nonce + 1**: the spec increments the
+   SENDER's nonce before processing the authorization list, so the authority's
+   nonce at check time is tx nonce + 1.
+
+Live on-chain proof (Hoodi):
+- EOA `0xDad010e3A43A850B86bDaA61FA2cD580b600b3A0` delegated to
+  `0xd9b435f8aaa0d2c6d789eceeba8a1c3a5cf8089a` (code = `0xef0100...`).
+- Self-paid batch: 2 recipients in 1 tx, EOA paid gas.
+- Gas-tank sponsored batch: gas tank paid gas, values from EOA balance.

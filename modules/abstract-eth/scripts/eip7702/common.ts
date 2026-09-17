@@ -101,3 +101,24 @@ export async function printBalances(labels: Record<string, string>): Promise<voi
 export function encodeAddSponsor(sponsor: string): string {
   return new ethers.utils.Interface(['function addSponsor(address)']).encodeFunctionData('addSponsor', [sponsor]);
 }
+
+/**
+ * Broadcast a raw signed transaction via eth_sendRawTransaction and return the
+ * tx hash. Used for the 0x04 set-code tx because ethers v5 cannot parse
+ * transaction type 4 (it would fail when building the sendTransaction result).
+ */
+export async function sendRawTransaction(rawHex: string): Promise<string> {
+  const res = await fetch(HOODI_RPC, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_sendRawTransaction', params: [rawHex] }),
+  });
+  const json = (await res.json()) as { result?: string; error?: { message?: string } };
+  if (json.error) {
+    throw new Error(`eth_sendRawTransaction failed: ${json.error.message ?? JSON.stringify(json.error)}`);
+  }
+  if (!json.result) {
+    throw new Error('eth_sendRawTransaction returned no result');
+  }
+  return json.result;
+}

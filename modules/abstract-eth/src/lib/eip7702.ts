@@ -136,9 +136,9 @@ export function buildSetCodeTransaction(params: SignedSetCodeTransaction): Buffe
   const authorizationList = params.authorizationList.map((auth) => [
     toMinimalBuffer(auth.chainId),
     toBytes(auth.address, 20),
-    // Per the reference implementations, the authorization `nonce` is RLP
-    // encoded as a nested list.
-    [toMinimalBuffer(auth.nonce)],
+    // The authorization `nonce` is a scalar uint64 on the wire (geth rejects a
+    // nested list here: "expected input string or byte for uint64").
+    toMinimalBuffer(auth.nonce),
     toMinimalBuffer(auth.yParity),
     toBytes(auth.r, 32),
     toBytes(auth.s, 32),
@@ -172,7 +172,7 @@ export function getSetCodeTransactionSigningHash(params: SetCodeTransactionParam
   const authorizationList = params.authorizationList.map((auth) => [
     toMinimalBuffer(auth.chainId),
     toBytes(auth.address, 20),
-    [toMinimalBuffer(auth.nonce)],
+    toMinimalBuffer(auth.nonce),
     toMinimalBuffer(auth.yParity),
     toBytes(auth.r, 32),
     toBytes(auth.s, 32),
@@ -244,11 +244,11 @@ export function parseSetCodeTransaction(serialized: string): SignedSetCodeTransa
       return { address: bufferToHex(addr), storageKeys: storageKeys.map(bufferToHex) };
     }),
     authorizationList: rawAuthList.map((auth) => {
-      const [c, a, n, yp, rr, ss] = auth as unknown as [Buffer, Buffer, Buffer[], Buffer, Buffer, Buffer];
+      const [c, a, n, yp, rr, ss] = auth as unknown as [Buffer, Buffer, Buffer | Buffer[], Buffer, Buffer, Buffer];
       return {
         chainId: bufferToHex(c),
         address: bufferToHex(a),
-        nonce: bufferToHex(Buffer.concat(n)),
+        nonce: bufferToHex(Array.isArray(n) ? Buffer.concat(n) : Buffer.from(n)),
         yParity: yp.length === 0 ? 0 : (yp[0] as 0 | 1),
         r: bufferToHex(rr),
         s: bufferToHex(ss),
