@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.21.0...@bitgo/sdk-lib-mpc@11.0.0) (2026-09-17)
+
+
+### Tests
+
+* **sdk-lib-mpc:** add EdDSA MPCv2 keyshare wire-format regression ([55e603f](https://github.com/BitGo/BitGoJS/commit/55e603fd3ce039bfd823482d81f550b3aaac9043))
+
+
+### BREAKING CHANGES
+
+* **sdk-lib-mpc:** before it reaches production.
+
+Ticket: WCI-1476
+
+
+
+
+
 # [10.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.20.0...@bitgo/sdk-lib-mpc@10.21.0) (2026-09-15)
 
 

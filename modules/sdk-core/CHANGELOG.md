@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.16.0...@bitgo/sdk-core@38.17.0) (2026-09-17)
+
+
+### Bug Fixes
+
+* **sdk-core:** allow recipient-free Canton intents during TSS signing ([db33203](https://github.com/BitGo/BitGoJS/commit/db33203809090e3f86546e2ff1534c73d3b64be0))
+* **sdk-core:** clarify base32 Safe root validation ([32fc80b](https://github.com/BitGo/BitGoJS/commit/32fc80b3f82999e7cf28830b7c8f8ce49b17a15c))
+
+
+### Features
+
+* **sdk-core:** migrate Ed25519 Safe roots to neutral base32 ([fe23f73](https://github.com/BitGo/BitGoJS/commit/fe23f734d139ce49bf7cf5df837bdfdd8a81d0af))
+
+
+
+
+
 # [38.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.15.0...@bitgo/sdk-core@38.16.0) (2026-09-15)
 
 

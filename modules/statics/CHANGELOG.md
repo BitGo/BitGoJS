@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.16.0...@bitgo/statics@59.17.0) (2026-09-17)
+
+
+### Bug Fixes
+
+* **statics:** derive EVM token features from ERC20 support for AMS onboarding ([5d60e32](https://github.com/BitGo/BitGoJS/commit/5d60e3276714e0133b647df88dfc46a2c65823d7))
+* **statics:** rename tbaseeth:waBasSepLidUSDC to tbaseeth:wabasseplidusdc ([8005e51](https://github.com/BitGo/BitGoJS/commit/8005e51e627bec6437578b5642c566a1233d88f4))
+* **statics:** set Pearl testnet block explorer URL ([d751f02](https://github.com/BitGo/BitGoJS/commit/d751f02a043173955c686571f9091bcaf1fc606d))
+
+
+### Features
+
+* **statics:** onboard batch 0907 tokens (CECHO-2139) ([df1605b](https://github.com/BitGo/BitGoJS/commit/df1605b9249b46c23ba402cff3394b484b507ae4))
+* **statics:** onboard eth:waethusdc stata token ([36bdfe6](https://github.com/BitGo/BitGoJS/commit/36bdfe69d543f3ae06683ae2f26522fae1e960cc))
+
+
+
+
+
 # [59.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.15.0...@bitgo/statics@59.16.0) (2026-09-15)
 
 
