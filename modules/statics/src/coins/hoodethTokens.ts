@@ -2975,6 +2975,76 @@ export const hoodethTokens = [
     EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20Token(
+    '3bdc7d7d-700e-4986-8bd1-70dcd323bd1f',
+    'hoodeth:index',
+    'The Index',
+    18,
+    '0x56910d4409f3a0c78c64dd8d0545ff0705389870',
+    UnderlyingAsset['hoodeth:index'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '518ca10c-0553-44b8-9849-40be42ebee2e',
+    'hoodeth:up',
+    'up',
+    18,
+    '0x57c0e45cb534413d1c20a4240955d6bb250bb4f1',
+    UnderlyingAsset['hoodeth:up'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '85237d91-13ad-4624-be3f-3b20bb1a436f',
+    'hoodeth:ram',
+    'Ramses',
+    18,
+    '0x5173d45a1191ee33cbb7d8c7e65f21b04ed54802',
+    UnderlyingAsset['hoodeth:ram'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '4c1fd207-b9f2-4a47-99c0-572afaf74bae',
+    'hoodeth:tendies',
+    'TENDIES',
+    18,
+    '0x45242320dbb855eea8fd36804c6487e10e97fcf9',
+    UnderlyingAsset['hoodeth:tendies'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'd4949de1-6883-4a1d-a442-67202b4b4652',
+    'hoodeth:goose',
+    'Goose Token',
+    18,
+    '0x348cc963411fb82cd6e0b64345714fec94f242cb',
+    UnderlyingAsset['hoodeth:goose'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '2a5caf22-7819-465a-bc94-d74bbbffdd58',
+    'hoodeth:ai',
+    'Artificial Inu',
+    18,
+    '0x2e8c31162b855a2ffa90f6f8634643ad6f111e18',
+    UnderlyingAsset['hoodeth:ai'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '0889af93-9de4-4204-8dc4-49469ae4228c',
+    'hoodeth:pipedog',
+    'pipedog',
+    18,
+    '0x5cb6f181081301b44905f3ae15419112ecabd8a6',
+    UnderlyingAsset['hoodeth:pipedog'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
     '3493d608-fd3e-45dc-926d-783d54a8fe4d',
     'thoodeth:amzn',
     'Amazon',

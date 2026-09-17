@@ -4959,6 +4959,34 @@ export const ofcCoins = [
     7,
     UnderlyingAsset['xlm:BTGO-GAXTPUVP2XINTMEN57FPJ34DAPZXDMMGX7TB7ASIBWHWT6ARC3IOGA2W']
   ),
+  ofcStellarToken(
+    '66c55a71-3352-407b-945a-ceed3fdc7487',
+    'ofcxlm:usdt0',
+    'USDT0',
+    7,
+    UnderlyingAsset['xlm:USDT0-GATISXX6BZ6NC7IKQBY37CJD4SOZL3CYZJWXEDG6JVIY4WBS6KXJHN6Q']
+  ),
+  ofcStellarToken(
+    '43eae9c6-d08d-4bc1-ad82-075f2a540382',
+    'ofcxlm:wtgxx',
+    'WisdomTree Government Money Market Digital Fund',
+    7,
+    UnderlyingAsset['xlm:WTGX-GDMBNMFJ3TRFLASJ6UGETFME3PJPNKPU24C7KFDBEBPQFG2CI6UC3JG6']
+  ),
+  ofcStellarToken(
+    'e39f4d37-54d9-44df-8d49-74bf44bb46c5',
+    'ofcxlm:flttx',
+    'WisdomTree Floating Rate Treasury Digital Fund',
+    7,
+    UnderlyingAsset['xlm:FLTT-GBTZKH3RNKW46XEZNCGZEBAGJISKDZKQXKSQ2N5G5SFX36TLWKKR6QJ6']
+  ),
+  ofcStellarToken(
+    '714742d0-ce52-4ada-9522-a36c270fa22d',
+    'ofcxlm:wtsix',
+    'WisdomTree Short-Duration Income Digital Fund',
+    7,
+    UnderlyingAsset['xlm:WTSI-GAD22PDBRFEMXAKPFDP4JGDFWKKD6VPXWUWEAXBS6ZYJYFFQDUN7HAFG']
+  ),
 
   tofcStellarToken(
     '7b909f95-f4e5-44e5-aaca-1b254d87cc02',
@@ -4990,6 +5018,13 @@ export const ofcCoins = [
     'yGHS',
     7,
     UnderlyingAsset['txlm:yGHS-GCF46XLX3R7OXIDAFZ3HH6DEY5VT3BJJRSTKSSOKPLGNH6H7QYV3A2OA']
+  ),
+  tofcStellarToken(
+    '640aecc5-ebaa-4465-afca-0349202b74b6',
+    'ofctxlm:usdl',
+    'Test USDL',
+    7,
+    UnderlyingAsset['txlm:USDL-GDMJSPSI4IXMDDSJPJRIRCBFNMHOK4KKAD67WBDBZ4MYHHJRIPWQ5UQG']
   ),
   tofcArbethErc20(
     '2489c0e2-c13f-4287-bd1f-03dcd0a8562e',
@@ -6322,6 +6357,7 @@ export const ofcCoins = [
     8,
     UnderlyingAsset['arbeth:mlk']
   ),
+  ofcArbethErc20('efdcda4e-74aa-4bc6-9f62-4381449a6a43', 'ofcarbeth:usdg', 'USDG', 6, UnderlyingAsset['arbeth:usdg']),
   // New SOL OFC tokens
   ofcsolToken(
     '68a1c4e8-9a22-4177-9fae-d0356f245a85',
@@ -6927,4 +6963,5 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['bsc:sysbon']
   ),
+  ofcBscToken('fb9be7b0-cdde-4452-89a3-0f733db31411', 'ofcbsc:hei', 'Heima', 18, UnderlyingAsset['bsc:hei']),
 ];

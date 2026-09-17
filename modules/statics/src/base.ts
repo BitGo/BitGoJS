@@ -2311,6 +2311,13 @@ export enum UnderlyingAsset {
   'hoodeth:bnd' = 'hoodeth:bnd',
   'hoodeth:pons' = 'hoodeth:pons',
   'hoodeth:stonkbroker' = 'hoodeth:stonkbroker',
+  'hoodeth:index' = 'hoodeth:index',
+  'hoodeth:up' = 'hoodeth:up',
+  'hoodeth:ram' = 'hoodeth:ram',
+  'hoodeth:tendies' = 'hoodeth:tendies',
+  'hoodeth:goose' = 'hoodeth:goose',
+  'hoodeth:ai' = 'hoodeth:ai',
+  'hoodeth:pipedog' = 'hoodeth:pipedog',
   'hemieth:hemi' = 'hemieth:hemi',
   'hemieth:hemibtc' = 'hemieth:hemibtc',
   'usdt0:stable' = 'usdt0:stable',
@@ -3035,6 +3042,10 @@ export enum UnderlyingAsset {
   'xlm:SHX-GDSTRSHXHGJ7ZIVRBXEYE5Q74XUVCUSEKEBR7UCHEUUEK72N7I7KJ6JH' = 'xlm:SHX-GDSTRSHXHGJ7ZIVRBXEYE5Q74XUVCUSEKEBR7UCHEUUEK72N7I7KJ6JH',
   'xlm:YLDS-GAC7MOPTQLQUM3KC24AW4GHS3RLF72LPEZO54AH7EZ6TSMGRB5SOAVH3' = 'xlm:YLDS-GAC7MOPTQLQUM3KC24AW4GHS3RLF72LPEZO54AH7EZ6TSMGRB5SOAVH3',
   'xlm:BTGO-GAXTPUVP2XINTMEN57FPJ34DAPZXDMMGX7TB7ASIBWHWT6ARC3IOGA2W' = 'xlm:BTGO-GAXTPUVP2XINTMEN57FPJ34DAPZXDMMGX7TB7ASIBWHWT6ARC3IOGA2W',
+  'xlm:USDT0-GATISXX6BZ6NC7IKQBY37CJD4SOZL3CYZJWXEDG6JVIY4WBS6KXJHN6Q' = 'xlm:USDT0-GATISXX6BZ6NC7IKQBY37CJD4SOZL3CYZJWXEDG6JVIY4WBS6KXJHN6Q',
+  'xlm:WTGX-GDMBNMFJ3TRFLASJ6UGETFME3PJPNKPU24C7KFDBEBPQFG2CI6UC3JG6' = 'xlm:WTGX-GDMBNMFJ3TRFLASJ6UGETFME3PJPNKPU24C7KFDBEBPQFG2CI6UC3JG6',
+  'xlm:FLTT-GBTZKH3RNKW46XEZNCGZEBAGJISKDZKQXKSQ2N5G5SFX36TLWKKR6QJ6' = 'xlm:FLTT-GBTZKH3RNKW46XEZNCGZEBAGJISKDZKQXKSQ2N5G5SFX36TLWKKR6QJ6',
+  'xlm:WTSI-GAD22PDBRFEMXAKPFDP4JGDFWKKD6VPXWUWEAXBS6ZYJYFFQDUN7HAFG' = 'xlm:WTSI-GAD22PDBRFEMXAKPFDP4JGDFWKKD6VPXWUWEAXBS6ZYJYFFQDUN7HAFG',
 
   // Eth NFTs
   // generic NFTs
@@ -3065,6 +3076,7 @@ export enum UnderlyingAsset {
   'txlm:BTGT-GCCUFJV5P32QGVZVW73SF7P53ZH2OXJ5C3DYSXDECSRCP3FU2GJ2PXGE' = 'txlm:BTGT-GCCUFJV5P32QGVZVW73SF7P53ZH2OXJ5C3DYSXDECSRCP3FU2GJ2PXGE',
   'txlm:yGHS-GCF46XLX3R7OXIDAFZ3HH6DEY5VT3BJJRSTKSSOKPLGNH6H7QYV3A2OA' = 'txlm:yGHS-GCF46XLX3R7OXIDAFZ3HH6DEY5VT3BJJRSTKSSOKPLGNH6H7QYV3A2OA',
   'txlm:TUSDTC-GC26PEYGETD7L6PUW2VCU3PSC7LCLRRPOSUILSHD2RT23IQUEAN4TQBQ' = 'txlm:TUSDTC-GC26PEYGETD7L6PUW2VCU3PSC7LCLRRPOSUILSHD2RT23IQUEAN4TQBQ',
+  'txlm:USDL-GDMJSPSI4IXMDDSJPJRIRCBFNMHOK4KKAD67WBDBZ4MYHHJRIPWQ5UQG' = 'txlm:USDL-GDMJSPSI4IXMDDSJPJRIRCBFNMHOK4KKAD67WBDBZ4MYHHJRIPWQ5UQG',
 
   // Algorand testnet tokens
   'talgo:USON-16026728' = 'talgo:USON-16026728',
@@ -3628,6 +3640,7 @@ export enum UnderlyingAsset {
   'bsc:hygwon' = 'bsc:hygwon',
   'bsc:secuon' = 'bsc:secuon',
   'bsc:sysbon' = 'bsc:sysbon',
+  'bsc:hei' = 'bsc:hei',
 
   // BSC NFTs
   // generic NFTs
@@ -3744,6 +3757,7 @@ export enum UnderlyingAsset {
   // Bitkub batch (CSHLD-1278)
   'arbeth:obt' = 'arbeth:obt',
   'arbeth:magic' = 'arbeth:magic',
+  'arbeth:usdg' = 'arbeth:usdg',
 
   // BaseETH mainnet tokens
   'baseeth:aero' = 'baseeth:aero',
@@ -3816,6 +3830,7 @@ export enum UnderlyingAsset {
   'baseeth:allo' = 'baseeth:allo',
   'baseeth:gro' = 'baseeth:gro',
   'baseeth:jvhhusdc' = 'baseeth:jvhhusdc',
+  'baseeth:glx' = 'baseeth:glx',
 
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
