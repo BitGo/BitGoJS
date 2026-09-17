@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [17.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@17.0.0...@bitgo/express@17.0.1) (2026-09-17)
+
+
+### Reverts
+
+* Revert "fix(sdk-api): route authenticate() to v2 login" ([2771dbb](https://github.com/BitGo/BitGoJS/commit/2771dbb4b389f96fa285b881ac6107abba3e2d37))
+
+
+
+
+
 # [17.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@16.4.5...@bitgo/express@17.0.0) (2026-09-15)
 
 

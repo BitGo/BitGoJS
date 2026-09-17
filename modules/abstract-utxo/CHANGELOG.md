@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [13.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@12.7.0...@bitgo/abstract-utxo@13.0.0) (2026-09-17)
+
+
+### Features
+
+* **abstract-utxo:** support ZEC v6 psbt decoding ([494d19e](https://github.com/BitGo/BitGoJS/commit/494d19ebd8502b9120fb8e3c261d179d69e57d43))
+
+
+### BREAKING CHANGES
+
+* **abstract-utxo:** explainTx, explainPsbtWasm and zec's resolvePsbtRecipients now require address codec to decode and verify the psbt output
+Ticket: CSHLD-1640
+
+
+
+
+
 # [12.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@12.6.0...@bitgo/abstract-utxo@12.7.0) (2026-09-15)
 
 

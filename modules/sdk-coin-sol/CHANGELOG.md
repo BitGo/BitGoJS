@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.9.2...@bitgo/sdk-coin-sol@8.10.0) (2026-09-17)
+
+
+### Bug Fixes
+
+* **sdk-coin-sol:** allow WithdrawSol stake pool instruction ([f4be3d8](https://github.com/BitGo/BitGoJS/commit/f4be3d8885a342543bfc682594993ae7beb2cddf))
+
+
+### Features
+
+* **sdk-coin-sol:** add scaled-UI uiAmount/raw conversion util ([cfc4260](https://github.com/BitGo/BitGoJS/commit/cfc42606c6878e810728af36e6cb3232362a6c51))
+
+
+
+
+
 ## [8.9.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.9.1...@bitgo/sdk-coin-sol@8.9.2) (2026-09-15)
 
 
