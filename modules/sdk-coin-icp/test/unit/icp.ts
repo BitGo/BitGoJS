@@ -345,6 +345,40 @@ describe('Internet computer', function () {
         result.should.equal(true);
       });
 
+      it('should verify a valid memo-based address when rootAddress param is the memo-suffixed wallet receiveAddress', async function () {
+        const rootAddress = addressVerificationData.rootAddress;
+
+        // Production shape from wallet.createAddress() verification:
+        // rootAddress param = wallet.receiveAddress.address (memo-suffixed).
+        const params = {
+          address: `${rootAddress}?memoId=4`,
+          rootAddress: `${rootAddress}?memoId=3`,
+          walletVersion: 1,
+          keychains: keychains,
+          index: 0,
+        };
+
+        const result = await basecoin.isWalletAddress(params);
+        result.should.equal(true);
+      });
+
+      it('should reject when the memo-suffixed rootAddress param has a different root', async function () {
+        const rootAddress = addressVerificationData.rootAddress;
+        const differentAddress = testData.Accounts.account2.address;
+
+        const params = {
+          address: `${differentAddress}?memoId=123`,
+          rootAddress: `${rootAddress}?memoId=3`,
+          walletVersion: 1,
+          keychains: keychains,
+          index: 0,
+        };
+
+        await basecoin
+          .isWalletAddress(params)
+          .should.be.rejectedWith(`address validation failure: expected ${rootAddress} but got ${differentAddress}`);
+      });
+
       it('should fail when rootAddress does not match commonKeychain derivation', async function () {
         // Use a rootAddress that doesn't match what's derived from commonKeychain
         const invalidRootAddress = testData.Accounts.account1.address;
