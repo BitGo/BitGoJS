@@ -397,6 +397,20 @@ export const botOfcTokens = [
     undefined,
     'hteth'
   ),
+  AccountCtors.tofcerc20(
+    '76131170-45dd-4cb3-95cf-6fbb1ecd992e',
+    'ofchteth:loan',
+    'loan',
+    6,
+    'hteth:loan' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
   AccountCtors.ofcerc20(
     '26f46d44-700d-4e32-8845-fb181e6d8027',
     'ofceth:gusdcq',
