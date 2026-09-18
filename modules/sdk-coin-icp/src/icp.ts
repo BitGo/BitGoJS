@@ -168,12 +168,17 @@ export class Icp extends BaseCoin {
       if (!extractedRootAddress || extractedRootAddress === address) {
         throw new Error('memoId is required for wallet version 1 addresses');
       }
-      if (extractedRootAddress.toLowerCase() !== rootAddress.toLowerCase()) {
+      // In the wallet.createAddress() verification flow, rootAddress is the wallet's
+      // memo-suffixed receiveAddress (e.g. 'root?memoId=3') for memo-based (walletVersion 1)
+      // wallets. Strip the memo so bare roots are compared and the bare root is
+      // what gets key-verified by verifyMPCWalletAddress.
+      const walletRootAddress = utils.validateMemoAndReturnRootAddress(rootAddress);
+      if (!walletRootAddress || extractedRootAddress.toLowerCase() !== walletRootAddress.toLowerCase()) {
         throw new UnexpectedAddressError(
-          `address validation failure: expected ${rootAddress} but got ${extractedRootAddress}`
+          `address validation failure: expected ${walletRootAddress} but got ${extractedRootAddress}`
         );
       }
-      addressToVerify = rootAddress;
+      addressToVerify = walletRootAddress;
     }
 
     const indexToVerify = walletVersion === 1 ? 0 : params.index;
