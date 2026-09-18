@@ -41,6 +41,7 @@ describe('Safe', function () {
     mockBitGo = {
       url: sinon.stub().callsFake((path: string) => path),
       post: sinon.stub(),
+      put: sinon.stub(),
       get: sinon.stub(),
     };
     safeData = {
@@ -88,6 +89,36 @@ describe('Safe', function () {
       safe.url().should.equal('/enterprise/test-enterprise-id/safes/test-safe-id');
       safe.url('/freeze').should.equal('/enterprise/test-enterprise-id/safes/test-safe-id/freeze');
       mockBitGo.url.calledWith('/enterprise/test-enterprise-id/safes/test-safe-id', 2).should.be.true();
+    });
+  });
+
+  describe('update REST plumbing', function () {
+    function stubPut(response: unknown) {
+      const resultStub = sinon.stub().resolves(response);
+      const sendStub = sinon.stub().returns({ result: resultStub });
+      mockBitGo.put.returns({ send: sendStub });
+      return { resultStub, sendStub };
+    }
+
+    it('updates the label and decodes SafeData', async function () {
+      const updated = { ...safeDataWire, label: 'renamed safe' };
+      const { sendStub } = stubPut(updated);
+
+      const result = await safe.update({ label: 'renamed safe' });
+
+      mockBitGo.put.calledWith('/enterprise/test-enterprise-id/safes/test-safe-id').should.be.true();
+      sendStub.calledWithExactly({ label: 'renamed safe' }).should.be.true();
+      result.label.should.equal('renamed safe');
+      result.createdAt.should.be.instanceof(Date);
+      safe.label().should.equal('my safe');
+    });
+
+    it('propagates update errors', async function () {
+      const resultStub = sinon.stub().rejects(new Error('rename failed'));
+      const sendStub = sinon.stub().returns({ result: resultStub });
+      mockBitGo.put.returns({ send: sendStub });
+
+      await safe.update({ label: 'renamed safe' }).should.be.rejectedWith('rename failed');
     });
   });
 
