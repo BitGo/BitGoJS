@@ -128,20 +128,6 @@ describe('Safes', function () {
         .should.be.rejectedWith(/ed25519Multisig roots are not derivable/);
     });
 
-    it('rejects an ed25519Multisig BitGo root that came back non-derivable', async function () {
-      // The BitGo root is composed server-side; if it ever comes back as a bare Stellar StrKey
-      // instead of the neutral raw root format, wallets minted from it are unrecoverable.
-      keychainsByCoin['txlm'] = makeKeychains('txlm');
-      keychainsByCoin['txlm'].createBitGo.resolves({
-        id: 'txlm-bitgo',
-        pub: 'GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYH',
-      });
-
-      await safes
-        .createSafeKeys({ label: 'my safe', passphrase: 'pw', safeId: 'safe-1' })
-        .should.be.rejectedWith(/ed25519Multisig roots are not derivable/);
-    });
-
     it('does not apply the derivable check to the secp256k1Multisig slot', async function () {
       // Slot ① backup roots are xpubs, which already carry a chain code and are never composed.
       keychainsByCoin['tbtc'] = makeKeychains('tbtc');

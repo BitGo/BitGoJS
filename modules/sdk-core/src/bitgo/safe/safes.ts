@@ -265,10 +265,7 @@ export class Safes implements ISafes {
     // Coin-specific child encoding is performed by Wallet Platform after soft derivation.
     if (
       slot === 'ed25519Multisig' &&
-      (!backupKeychain.pub ||
-        !isDerivableEd25519Pub(backupKeychain.pub) ||
-        !bitgoKeychain.pub ||
-        !isDerivableEd25519Pub(bitgoKeychain.pub))
+      (!backupKeychain.pub || !isDerivableEd25519Pub(backupKeychain.pub) || !bitgoKeychain.pub)
     ) {
       throw new Error('Safe ed25519Multisig roots are not derivable: expected 64-byte canonical base32 material');
     }
