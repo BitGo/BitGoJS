@@ -212,11 +212,12 @@ function transferInstruction(data: Transfer): TransactionInstruction[] {
   } = data;
   assert(fromAddress, 'Missing fromAddress param');
   assert(toAddress, 'Missing toAddress param');
-  assert(amount, 'Missing toAddress param');
+  assert(amount, 'Missing amount param');
+  assertValidAmountString(amount, 'amount');
   const transferInstruction = SystemProgram.transfer({
     fromPubkey: new PublicKey(fromAddress),
     toPubkey: new PublicKey(toAddress),
-    lamports: parseInt(amount, 10),
+    lamports: BigInt(amount),
   });
   return [transferInstruction];
 }
@@ -352,7 +353,7 @@ function createNonceAccountInstruction(data: WalletInit): TransactionInstruction
     fromPubkey: new PublicKey(fromAddress),
     noncePubkey: new PublicKey(nonceAddress),
     authorizedPubkey: new PublicKey(authAddress),
-    lamports: new BigNumber(amount).toNumber(),
+    lamports: toSafeAmountNumber(amount, 'amount'),
   });
   return nonceAccountInstruction.instructions;
 }
@@ -399,7 +400,7 @@ function stakingInitializeInstruction(data: StakingActivate): TransactionInstruc
         stakePubkey,
         authorized: new Authorized(validatorPubkey, fromPubkey), // staker and withdrawer
         lockup: new Lockup(0, 0, fromPubkey), // No minimum epoch to withdraw
-        lamports: new BigNumber(amount).toNumber(),
+        lamports: toSafeAmountNumber(amount, 'amount'),
       });
       tx.add(walletInitStaking);
       break;
@@ -411,7 +412,7 @@ function stakingInitializeInstruction(data: StakingActivate): TransactionInstruc
         stakePubkey,
         authorized: new Authorized(fromPubkey, fromPubkey), // staker and withdrawer
         lockup: new Lockup(0, 0, fromPubkey), // No minimum epoch to withdraw
-        lamports: new BigNumber(amount).toNumber(),
+        lamports: toSafeAmountNumber(amount, 'amount'),
       });
       tx.add(walletInitStaking);
 
@@ -474,10 +475,11 @@ function stakingDeactivateInstruction(data: StakingDeactivate): TransactionInstr
 
       const tx = new Transaction();
       const toPubkeyAddress = new PublicKey(recipients[0].address || '');
+      assertValidAmountString(recipients[0].amount, 'amount');
       const transferInstruction = SystemProgram.transfer({
         fromPubkey: new PublicKey(fromAddress),
         toPubkey: toPubkeyAddress,
-        lamports: parseInt(recipients[0].amount, 10),
+        lamports: BigInt(recipients[0].amount),
       });
 
       tx.add(transferInstruction);
@@ -508,7 +510,7 @@ function stakingDeactivateInstruction(data: StakingDeactivate): TransactionInstr
             stakePubkey: new PublicKey(stakingAddress),
             authorizedPubkey: new PublicKey(fromAddress),
             splitStakePubkey: unstakingAddress,
-            lamports: new BigNumber(data.params.amount).toNumber(),
+            lamports: toSafeAmountNumber(data.params.amount, 'amount'),
           },
           0
         );
@@ -556,7 +558,7 @@ function stakingWithdrawInstruction(data: StakingWithdraw): TransactionInstructi
     stakePubkey: new PublicKey(stakingAddress),
     authorizedPubkey: new PublicKey(fromAddress),
     toPubkey: new PublicKey(fromAddress),
-    lamports: new BigNumber(amount).toNumber(),
+    lamports: toSafeAmountNumber(amount, 'amount'),
   });
 
   return withdrawStaking.instructions;
@@ -943,6 +945,16 @@ function assertValidU8(value: number, fieldName: string): void {
   if (!Number.isInteger(value) || value < 0 || value > 255) {
     throw new Error(`Invalid ${fieldName}: expected u8 (0-255), got ${value}`);
   }
+}
+
+// Number-only web3.js lamports params accept no bigint; reject anything a number
+// cannot represent exactly instead of silently rounding at the BigNumber boundary.
+function toSafeAmountNumber(value: string, fieldName: string): number {
+  const amount = new BigNumber(value);
+  if (!amount.isInteger() || amount.isLessThan(0) || !amount.isLessThanOrEqualTo(Number.MAX_SAFE_INTEGER)) {
+    throw new Error(`Invalid ${fieldName}: expected integer in [0, ${Number.MAX_SAFE_INTEGER}], got "${value}"`);
+  }
+  return amount.toNumber();
 }
 
 /**
