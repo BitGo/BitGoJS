@@ -56,7 +56,7 @@ const CreateWalletInSafeBody = t.union([
     label: t.string,
     type: t.literal('hot'),
     multisigType: t.literal('tss'),
-    keys: t.tuple([t.string, t.string]),
+    keys: t.tuple([t.string, t.string, t.string]),
   }),
 ]);
 
@@ -249,7 +249,7 @@ export class Safe implements ISafe {
     const userRootMaterial = ECDSAUtils.parseVrfKeyEnvelopes(userRootPrv);
 
     const tssUtils = new ECDSAUtils.EcdsaVrfMPCv2Utils(this.bitgo, coin);
-    const { userKeychain, backupKeychain } = await tssUtils.createSafeChildKeychains({
+    const { userKeychain, backupKeychain, bitgoKeychain } = await tssUtils.createSafeChildKeychains({
       passphrase: params.passphrase,
       enterprise: this.enterpriseId(),
       safeId: this.id(),
@@ -260,10 +260,10 @@ export class Safe implements ISafe {
       userRootKeyShare: userRootMaterial.signing,
       userRootVrfKeyShare: userRootMaterial.vrf,
     });
-    if (userKeychain.id.length === 0 || backupKeychain.id.length === 0) {
+    if (userKeychain.id.length === 0 || backupKeychain.id.length === 0 || bitgoKeychain.id.length === 0) {
       throw new Error('safe child key registration returned an empty id');
     }
-    const keys: [string, string] = [userKeychain.id, backupKeychain.id];
+    const keys: [string, string, string] = [userKeychain.id, backupKeychain.id, bitgoKeychain.id];
 
     const response = await postWithCodec(this.bitgo, this.url('/wallets'), CreateWalletInSafeBody, {
       coin: params.coin,

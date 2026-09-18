@@ -394,9 +394,10 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     encryptionVersion?: EncryptionVersion,
     enterprise?: string,
     safeId?: string,
-    // Safe child registration: the parent root key id this child was hardened-derived
-    // from, plus the derivation index (`m/<index>').
-    child?: { parentKeyId?: string; index?: number }
+    // Safe child registration: the parent root key id this child was derived from, plus the
+    // derivation index. User/backup children are hardened (`m/<index>'`); the BitGo child
+    // placeholder is soft (`m/<index>`), matching the server-side derive.
+    child?: { parentKeyId?: string; index?: number; hardened?: boolean }
   ): Promise<Keychain> {
     let source: string;
     let encryptedPrv: string | undefined = undefined;
@@ -451,6 +452,11 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
         throw new Error('Invalid participant index');
     }
 
+    let derivedFromParentWithPath: string | undefined;
+    if (child?.index !== undefined) {
+      derivedFromParentWithPath = child.hardened === false ? `m/${child.index}` : `m/${child.index}'`;
+    }
+
     const recipientKeychainParams: AddKeychainOptions = {
       source,
       keyType: 'tss' as KeyType,
@@ -460,7 +466,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       isMPCv2: true,
       safeId,
       parent: child?.parentKeyId,
-      derivedFromParentWithPath: child?.index !== undefined ? `m/${child.index}'` : undefined,
+      derivedFromParentWithPath,
     };
 
     if (webauthnInfo && participantIndex === MPCv2PartiesEnum.USER && privateMaterialBase64) {
@@ -592,7 +598,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     };
   }
 
-  private async addUserKeychain(
+  protected async addUserKeychain(
     commonKeychain: string,
     privateMaterial: Buffer,
     reducedPrivateMaterial: Buffer,
@@ -606,7 +612,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     },
     encryptionVersion?: EncryptionVersion,
     enterprise?: string,
-    safeId?: string
+    safeId?: string,
+    child?: { parentKeyId?: string; index?: number; hardened?: boolean }
   ): Promise<Keychain> {
     return this.createParticipantKeychain(
       MPCv2PartiesEnum.USER,
@@ -619,14 +626,15 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       encryptionSession,
       encryptionVersion,
       enterprise,
-      safeId
+      safeId,
+      child
     );
   }
 
-  private async addBackupKeychain(
+  protected async addBackupKeychain(
     commonKeychain: string,
-    privateMaterial: Buffer,
-    reducedPrivateMaterial: Buffer,
+    privateMaterial: Buffer | undefined,
+    reducedPrivateMaterial: Buffer | undefined,
     passphrase: string,
     originalPasscodeEncryptionCode?: string,
     encryptionSession?: {
@@ -635,8 +643,17 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       destroy(): void;
     },
     encryptionVersion?: EncryptionVersion,
-    safeId?: string
+    safeId?: string,
+    child?: { parentKeyId?: string; index?: number; hardened?: boolean }
   ): Promise<Keychain> {
+    if (privateMaterial === undefined) {
+      // Safe backup child placeholder: no local private material, but always derived from a
+      // parent root (hardened path).
+      assert(
+        child?.parentKeyId !== undefined && child.index !== undefined,
+        'Backup placeholder requires a parent key id and derivation index'
+      );
+    }
     return this.createParticipantKeychain(
       MPCv2PartiesEnum.BACKUP,
       commonKeychain,
@@ -648,7 +665,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       encryptionSession,
       encryptionVersion,
       undefined,
-      safeId
+      safeId,
+      child
     );
   }
 
@@ -671,7 +689,11 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     return { userSession, backupSession };
   }
 
-  private async addBitgoKeychain(commonKeychain: string, safeId?: string): Promise<Keychain> {
+  protected async addBitgoKeychain(
+    commonKeychain: string,
+    safeId?: string,
+    child?: { parentKeyId?: string; index?: number; hardened?: boolean }
+  ): Promise<Keychain> {
     return this.createParticipantKeychain(
       MPCv2PartiesEnum.BITGO,
       commonKeychain,
@@ -683,11 +705,10 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       undefined,
       undefined,
       undefined,
-      safeId
+      safeId,
+      child
     );
   }
-  // #endregion
-
   /**
    * Creates ECDSA MPCv2 keychains using external signer callbacks instead of a passphrase.
    * The external signer holds all private key material; the SDK only coordinates the DKG protocol.

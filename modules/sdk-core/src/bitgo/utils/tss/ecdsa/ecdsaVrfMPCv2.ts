@@ -665,9 +665,8 @@ export class EcdsaVrfMPCv2Utils extends EcdsaMPCv2Utils {
     originalPasscodeEncryptionCode?: string;
     webauthnInfo?: WebauthnKeyEncryptionInfo;
     encryptionVersion?: EncryptionVersion;
-  }): Promise<Pick<KeychainsTriplet, 'userKeychain' | 'backupKeychain'>> {
+  }): Promise<KeychainsTriplet> {
     const userGpgKey = await generateGPGKeyPair('secp256k1');
-
     const { mpcv2PublicKey } = await this.getBitgoGpgPubkeyBasedOnFeatureFlags(params.enterprise, true);
     const mpcv2Key = mpcv2PublicKey ?? this.bitgoMPCv2PublicGpgKey;
     assert(mpcv2Key, 'Failed to get BitGo MPCv2 GPG public key');
@@ -767,8 +766,11 @@ export class EcdsaVrfMPCv2Utils extends EcdsaMPCv2Utils {
     const encryptionSession =
       params.encryptionVersion === 2 ? await this.bitgo.createEncryptionSession(params.passphrase) : undefined;
     try {
-      const userKeychainPromise = this.createParticipantKeychain(
-        MPCv2PartiesEnum.USER,
+      // The user and BitGo child registrations reuse the parent's regular MPC helpers; the
+      // BitGo child is the public-only placeholder with the soft path the server-side derive
+      // used. The backup child carries no local private material, so the material-taking
+      // addBackupKeychain helper does not fit and it registers via createParticipantKeychain.
+      const userKeychainPromise = this.addUserKeychain(
         commonKeychain,
         userPrivateMaterial,
         userReducedPrivateMaterial,
@@ -781,23 +783,29 @@ export class EcdsaVrfMPCv2Utils extends EcdsaMPCv2Utils {
         params.safeId,
         { parentKeyId: params.userRootKeyId, index: params.derivationIndex }
       );
-      const backupKeychainPromise = this.createParticipantKeychain(
-        MPCv2PartiesEnum.BACKUP,
+      const backupKeychainPromise = this.addBackupKeychain(
         commonKeychain,
         undefined,
         undefined,
         params.passphrase,
         params.originalPasscodeEncryptionCode,
-        undefined,
         encryptionSession,
         params.encryptionVersion,
-        undefined,
         params.safeId,
         { parentKeyId: params.backupRootKeyId, index: params.derivationIndex }
       );
+      const bitgoKeychainPromise = this.addBitgoKeychain(commonKeychain, params.safeId, {
+        parentKeyId: params.parentKeyId,
+        index: params.derivationIndex,
+        hardened: false,
+      });
 
-      const [userKeychain, backupKeychain] = await Promise.all([userKeychainPromise, backupKeychainPromise]);
-      return { userKeychain, backupKeychain };
+      const [userKeychain, backupKeychain, bitgoKeychain] = await Promise.all([
+        userKeychainPromise,
+        backupKeychainPromise,
+        bitgoKeychainPromise,
+      ]);
+      return { userKeychain, backupKeychain, bitgoKeychain };
     } finally {
       encryptionSession?.destroy();
     }
