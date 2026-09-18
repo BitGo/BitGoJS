@@ -22,6 +22,7 @@ import {
   AddSafeWalletMemberOptions,
   CreateSafeWalletOptions,
   ISafe,
+  UpdateSafeOptions,
   WalletShareData,
 } from './iSafe';
 import {
@@ -314,6 +315,14 @@ export class Safe implements ISafe {
    */
   async freeze(params: FreezeSafeBody = {}): Promise<SafeData> {
     const response = await postWithCodec(this.bitgo, this.url('/freeze'), FreezeSafeBody, params).result();
+    return decodeWithCodec(SafeData, response, 'SafeData');
+  }
+
+  /**
+   * Update the safe label.
+   */
+  async update(params: UpdateSafeOptions): Promise<SafeData> {
+    const response = await this.bitgo.put(this.url()).send({ label: params.label }).result();
     return decodeWithCodec(SafeData, response, 'SafeData');
   }
 

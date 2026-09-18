@@ -41,6 +41,7 @@ describe('Safe', function () {
     mockBitGo = {
       url: sinon.stub().callsFake((path: string) => path),
       post: sinon.stub(),
+      put: sinon.stub(),
       get: sinon.stub(),
     };
     safeData = {
@@ -91,7 +92,7 @@ describe('Safe', function () {
     });
   });
 
-  describe('freeze / archive REST plumbing', function () {
+  describe('freeze / update / archive REST plumbing', function () {
     function stubPost(response: unknown) {
       const resultStub = sinon.stub().resolves(response);
       const sendStub = sinon.stub().returns({ result: resultStub });
@@ -107,6 +108,28 @@ describe('Safe', function () {
       sendStub.calledWith({ reason: 'incident' }).should.be.true();
       result.freeze!.reason!.should.equal('incident');
       result.createdAt.should.be.instanceof(Date);
+    });
+
+    it('updates the label with PUT and decodes SafeData', async function () {
+      const updated = { ...safeDataWire, label: 'renamed safe' };
+      const resultStub = sinon.stub().resolves(updated);
+      const sendStub = sinon.stub().returns({ result: resultStub });
+      mockBitGo.put.returns({ send: sendStub });
+
+      const result = await safe.update({ label: 'renamed safe' });
+
+      mockBitGo.put.calledWith('/enterprise/test-enterprise-id/safes/test-safe-id').should.be.true();
+      sendStub.calledWithExactly({ label: 'renamed safe' }).should.be.true();
+      result.label.should.equal('renamed safe');
+      result.createdAt.should.be.instanceof(Date);
+    });
+
+    it('propagates update request errors', async function () {
+      const resultStub = sinon.stub().rejects(new Error('update failed'));
+      const sendStub = sinon.stub().returns({ result: resultStub });
+      mockBitGo.put.returns({ send: sendStub });
+
+      await safe.update({ label: 'renamed safe' }).should.be.rejectedWith('update failed');
     });
 
     it('archive posts an empty body to the archive route and decodes SafeData', async function () {

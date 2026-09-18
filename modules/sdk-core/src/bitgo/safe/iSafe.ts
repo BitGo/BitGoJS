@@ -22,6 +22,10 @@ export interface InitializeSafeOptions {
   label: string;
 }
 
+export interface UpdateSafeOptions {
+  label: string;
+}
+
 /**
  * Phase 3 — the client hands back the 12 key ids it created in Phase 2.
  * @experimental
@@ -101,6 +105,7 @@ export interface ISafe {
   listShares(params?: { state?: SafeShareState }): Promise<SafeShareData[]>;
   acceptShare(params: AcceptSafeShareOptions): Promise<SafeShareData>;
   freeze(params?: FreezeSafeBody): Promise<SafeData>;
+  update(params: UpdateSafeOptions): Promise<SafeData>;
   archive(): Promise<SafeData>;
   toJSON(): SafeData;
 }
