@@ -22,6 +22,11 @@ export interface InitializeSafeOptions {
   label: string;
 }
 
+/** @experimental */
+export interface UpdateSafeOptions {
+  label: string;
+}
+
 /**
  * Phase 3 — the client hands back the 12 key ids it created in Phase 2.
  * @experimental
@@ -93,6 +98,7 @@ export interface ISafe {
   status(): SafeData['status'];
   url(extra?: string): string;
   createWallet(params: CreateSafeWalletOptions): Promise<Wallet>;
+  update(params: UpdateSafeOptions): Promise<SafeData>;
   // whole-safe: view/admin/spend/dapp; spend opens a key share (also how a spender services a
   // safeShareRequests entry in UMS orgs)
   addMember(params: AddSafeMemberOptions): Promise<SafeData>;

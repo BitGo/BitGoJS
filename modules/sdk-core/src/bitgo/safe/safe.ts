@@ -22,6 +22,7 @@ import {
   AddSafeWalletMemberOptions,
   CreateSafeWalletOptions,
   ISafe,
+  UpdateSafeOptions,
   WalletShareData,
 } from './iSafe';
 import {
@@ -306,6 +307,14 @@ export class Safe implements ISafe {
    */
   async acceptShare(params: AcceptSafeShareOptions): Promise<SafeShareData> {
     throw new Error('Safe.acceptShare is not yet implemented');
+  }
+
+  /**
+   * Update the safe label.
+   */
+  async update(params: UpdateSafeOptions): Promise<SafeData> {
+    const response = await this.bitgo.put(this.url()).send({ label: params.label }).result();
+    return decodeWithCodec(SafeData, response, 'SafeData');
   }
 
   /**
