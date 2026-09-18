@@ -547,8 +547,11 @@ export interface HalfSignedUtxoTransaction {
 export interface HalfSignedAccountTransaction {
   halfSigned?: {
     txHex?: string; // Transaction in any format required by each coin, i.e. in Tron it is a stringifyed JSON
+    /** JSON string returned by the account coin's transaction build endpoint. */
     payload?: string;
     txBase64?: string;
+    /** Hex-encoded signature for Go Account transactions. */
+    signature?: string;
   };
 }
 
