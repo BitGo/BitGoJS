@@ -1,5 +1,5 @@
 import 'should';
-import { Ed25519KeyDeriver } from '@bitgo/sdk-core';
+import { Ed25519KeyDeriver } from '@bitgo/sdk-lib-safes';
 import { keys } from '../../resources/ed25519Deriver';
 
 describe('Key Derivation:', () => {

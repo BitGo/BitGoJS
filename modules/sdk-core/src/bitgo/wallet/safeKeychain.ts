@@ -3,7 +3,7 @@
  */
 import { BitGoBase } from '../bitgoBase';
 import { decryptKeychainPrivateKey, IKeychains, Keychain, KeychainWithEncryptedPrv } from '../keychain';
-import { deriveSafeChildHardenedFromXprv, parseDerivedFromParentWithHardenedPath } from '../safe/safeDerivation';
+import { deriveSafeChildHardenedFromXprv, parseDerivedFromParentWithHardenedPath } from '@bitgo/sdk-lib-safes';
 import { IncorrectPasswordError } from '../errors';
 import type { DecryptedKeychainData } from './iWallet';
 

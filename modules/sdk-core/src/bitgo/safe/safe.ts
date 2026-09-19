@@ -6,7 +6,6 @@
  */
 import * as t from 'io-ts';
 import { FreezeSafeBody, SafeData, SafeShareData, SafeShareState, type RootKeyType } from '@bitgo/public-types';
-import { coins, KeyCurve } from '@bitgo/statics';
 import { IBaseCoin } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { IncorrectPasswordError } from '../errors';
@@ -29,7 +28,9 @@ import {
   deriveAndSelfCheckSafeChildHardened,
   deriveSafeChildEd25519Hardened,
   DerivedFromParentWithHardenedPath,
-} from './safeDerivation';
+  onchainSlotForCoin,
+  tssSlotForCoin,
+} from '@bitgo/sdk-lib-safes';
 
 const SafeRootKeySlot = t.keyof({
   secp256k1Multisig: null,
@@ -60,34 +61,6 @@ const CreateWalletInSafeBody = t.union([
     keys: t.tuple([t.string, t.string, t.string]),
   }),
 ]);
-
-function onchainSlotForCoin(coin: IBaseCoin): Extract<RootKeyType, 'secp256k1Multisig' | 'ed25519Multisig'> {
-  if (coin.getDefaultMultisigType() === 'tss') {
-    throw new Error('MPC safe wallet minting requires multisigType "tss"; use "onchain" for non-MPC minting');
-  }
-  const curve = coins.get(coin.getChain()).primaryKeyCurve;
-  if (curve === KeyCurve.Secp256k1) {
-    return 'secp256k1Multisig';
-  }
-  if (curve === KeyCurve.Ed25519) {
-    return 'ed25519Multisig';
-  }
-  throw new Error(`Coin '${coin.getChain()}' is not supported for safe wallet minting`);
-}
-
-function tssSlotForCoin(coin: IBaseCoin): Extract<RootKeyType, 'ecdsaMpc'> {
-  if (coin.getDefaultMultisigType() !== 'tss') {
-    throw new Error(`Coin '${coin.getChain()}' is not a TSS coin; cannot mint a tss safe wallet for it`);
-  }
-  const curve = coins.get(coin.getChain()).primaryKeyCurve;
-  if (curve === KeyCurve.Secp256k1) {
-    return 'ecdsaMpc';
-  }
-  if (curve === KeyCurve.Ed25519) {
-    throw new Error('ed25519 MPC safe wallet minting is not yet supported');
-  }
-  throw new Error(`Coin '${coin.getChain()}' is not supported for safe wallet minting`);
-}
 
 function rootIdFromSafe(safe: SafeData, slot: RootKeyType, position: 0 | 1 | 2): string | undefined {
   const triplet = safe.rootKeys?.hot?.[slot];
@@ -154,7 +127,13 @@ export class Safe implements ISafe {
     const isTss = params.multisigType === 'tss';
 
     const coin = this.bitgo.coin(params.coin);
-    const slot = isTss ? tssSlotForCoin(coin) : onchainSlotForCoin(coin);
+    if (isTss && coin.getDefaultMultisigType() !== 'tss') {
+      throw new Error(`Coin '${coin.getChain()}' is not a TSS coin; cannot mint a tss safe wallet for it`);
+    }
+    if (!isTss && coin.getDefaultMultisigType() === 'tss') {
+      throw new Error('MPC safe wallet minting requires multisigType "tss"; use "onchain" for non-MPC minting');
+    }
+    const slot = isTss ? tssSlotForCoin(coin.getChain()) : onchainSlotForCoin(coin.getChain());
 
     const indexResponse = await this.bitgo.get(this.url('/derivation-index')).query({ slot }).result();
     const peeked = decodeWithCodec(GetDerivationIndexResponse, indexResponse, 'GetDerivationIndexResponse');

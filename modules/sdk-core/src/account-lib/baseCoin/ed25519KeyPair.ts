@@ -6,7 +6,7 @@ import {
   toHex,
   toUint8Array,
 } from '../util/crypto';
-import { Ed25519KeyDeriver } from '../util/ed25519KeyDeriver';
+import { Ed25519KeyDeriver } from '@bitgo/sdk-lib-safes';
 import { BaseKeyPair } from './baseKeyPair';
 import { AddressFormat, DotAddressFormat } from './enum';
 import { isPrivateKey, isPublicKey, isSeed, DefaultKeys, KeyPairOptions } from './iface';
