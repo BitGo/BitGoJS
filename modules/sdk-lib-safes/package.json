@@ -1,0 +1,52 @@
+{
+  "name": "@bitgo/sdk-lib-safes",
+  "version": "1.0.0",
+  "description": "Pure Safe key derivation and slot mapping shared by mint, sign, and recovery",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "test": "yarn unit-test",
+    "unit-test": "mocha --recursive test",
+    "build": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check '**/*.{ts,js,json}'",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "prepare": "npm run build"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/sdk-lib-safes"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@bitgo/public-types": "6.75.0",
+    "@bitgo/statics": "^59.17.0",
+    "@bitgo/utxo-lib": "^11.24.4",
+    "create-hmac": "^1.1.7",
+    "fp-ts": "^2.12.2",
+    "io-ts": "npm:@bitgo-forks/io-ts@2.1.4",
+    "tweetnacl": "^1.0.3"
+  },
+  "devDependencies": {
+    "@types/mocha": "^9.1.0",
+    "@types/node": "^24.10.9",
+    "mocha": "10.6.0",
+    "should": "^13.1.3",
+    "tsx": "^4.20.4"
+  },
+  "files": [
+    "dist"
+  ]
+}

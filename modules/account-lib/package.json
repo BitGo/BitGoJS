@@ -92,6 +92,7 @@
     "@bitgo/sdk-coin-zketh": "^2.7.43",
     "@bitgo/sdk-core": "^38.17.0",
     "@bitgo/sdk-lib-mpc": "^11.0.0",
+    "@bitgo/sdk-lib-safes": "^1.0.0",
     "@bitgo/statics": "^59.17.0",
     "bignumber.js": "^9.1.1",
     "bs58": "^4.0.1"

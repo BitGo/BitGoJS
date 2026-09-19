@@ -290,6 +290,9 @@
       "path": "./modules/sdk-lib-mpc"
     },
     {
+      "path": "./modules/sdk-lib-safes"
+    },
+    {
       "path": "./modules/sdk-opensslbytes"
     },
     {
