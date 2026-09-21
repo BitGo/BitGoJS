@@ -4002,6 +4002,7 @@ export enum UnderlyingAsset {
 
   // zkSync testnet tokens
   'tzketh:link' = 'tzketh:link',
+  'tzketh:tmt' = 'tzketh:tmt',
 
   // Celo mainnet tokens
   'celo:pact' = 'celo:pact',

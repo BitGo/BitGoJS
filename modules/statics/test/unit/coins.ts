@@ -1758,14 +1758,33 @@ describe('create token map using config details', () => {
 
     it('should return zksyncera from chainId 324', function () {
       const coinName = coins.coinNameFromChainId(324);
-      should(coinName).not.be.undefined();
-      // Note: This may return 'zketh' due to legacy mapping - verify expected behavior
+      should(coinName).equal('zksyncera');
     });
 
     it('should return tzksyncera from chainId 300', function () {
       const coinName = coins.coinNameFromChainId(300);
-      should(coinName).not.be.undefined();
-      // Note: This may return 'tzketh' due to legacy mapping - verify expected behavior
+      should(coinName).equal('tzksyncera');
+    });
+
+    it('should associate zketh ERC20 tokens with the zksyncera network and family', function () {
+      const mainnetToken = coins.get('zketh:link');
+      mainnetToken.family.should.equal(CoinFamily.ZKSYNCERA);
+      mainnetToken.network.should.deepEqual(Networks.main.zkSyncEra);
+      mainnetToken.isToken.should.equal(true);
+
+      const zkToken = coins.get('zketh:zk');
+      zkToken.family.should.equal(CoinFamily.ZKSYNCERA);
+      zkToken.network.should.deepEqual(Networks.main.zkSyncEra);
+
+      const testnetToken = coins.get('tzketh:link');
+      testnetToken.family.should.equal(CoinFamily.ZKSYNCERA);
+      testnetToken.network.should.deepEqual(Networks.test.zkSyncEra);
+
+      const tmtToken = coins.get('tzketh:tmt');
+      tmtToken.family.should.equal(CoinFamily.ZKSYNCERA);
+      tmtToken.network.should.deepEqual(Networks.test.zkSyncEra);
+      tmtToken.fullName.should.equal('Test Mintable Token');
+      tmtToken.isToken.should.equal(true);
     });
   });
 });

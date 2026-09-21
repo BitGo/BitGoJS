@@ -240,6 +240,7 @@ export interface TokenNetwork {
   trx: { tokens: TrxTokenConfig[] };
   xrp: { tokens: XrpTokenConfig[]; mptTokens: XrpMptTokenConfig[] };
   zketh: { tokens: EthLikeTokenConfig[] };
+  zksyncera: { tokens: EthLikeTokenConfig[] };
   sui: { tokens: SuiTokenConfig[] };
   tao: { tokens: TaoTokenConfig[] };
   polyx: { tokens: PolyxTokenConfig[] };
@@ -738,7 +739,8 @@ const getFormattedLineaethTokens = (customCoinMap = coins) =>
 function getZkethTokenConfig(coin: ZkethERC20Token): EthLikeTokenConfig {
   return {
     type: coin.name,
-    coin: coin.network.type === NetworkType.MAINNET ? 'zketh' : 'tzketh',
+    // Tokens live on the zksyncera network/family (CECHO-2215). Names stay zketh:* for compatibility.
+    coin: coin.network.type === NetworkType.MAINNET ? 'zksyncera' : 'tzksyncera',
     network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
     name: coin.fullName,
     tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
@@ -1342,6 +1344,7 @@ export const getFormattedTokensByNetwork = (network: 'Mainnet' | 'Testnet', coin
 
   const ethLikeTokenMap = getEthLikeTokens(network, TokenTypeEnum.ERC20);
   const ethLikeErc721TokenMap = getEthLikeTokens(network, TokenTypeEnum.ERC721);
+  const zkethTokens = getFormattedZkethTokens(coinMap).filter((token) => token.network === network);
 
   return {
     ...mergeEthLikeTokenMap(ethLikeTokenMap, ethLikeErc721TokenMap),
@@ -1405,7 +1408,10 @@ export const getFormattedTokensByNetwork = (network: 'Mainnet' | 'Testnet', coin
       tokens: getFormattedSeievmTokens(coinMap).filter((token) => token.network === network),
     },
     zketh: {
-      tokens: getFormattedZkethTokens(coinMap).filter((token) => token.network === network),
+      tokens: zkethTokens,
+    },
+    zksyncera: {
+      tokens: zkethTokens,
     },
     sol: {
       tokens: getFormattedSolTokens(coinMap).filter((token) => token.network === network),

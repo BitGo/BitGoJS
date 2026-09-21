@@ -794,5 +794,19 @@ describe('getFormattedTokensByNetwork EVM family coverage (drift guard)', () => 
     // baseeth is the concrete gap this closes: it has no hand-written entry in
     // getFormattedTokensByNetwork's returned object, but its base coin supports ERC20.
     should(formattedTokens.bitcoin.baseeth).not.be.undefined();
+
+    should(formattedTokens.bitcoin.zksyncera).not.be.undefined();
+    should(formattedTokens.bitcoin.zksyncera.tokens.length).be.greaterThan(0);
+    formattedTokens.bitcoin.zksyncera.tokens.some((token) => token.type === 'zketh:zk').should.eql(true);
+    formattedTokens.bitcoin.zksyncera.tokens.forEach((token) => {
+      token.coin.should.equal('zksyncera');
+    });
+
+    should(formattedTokens.testnet.zksyncera).not.be.undefined();
+    formattedTokens.testnet.zksyncera.tokens.some((token) => token.type === 'tzketh:link').should.eql(true);
+    formattedTokens.testnet.zksyncera.tokens.some((token) => token.type === 'tzketh:tmt').should.eql(true);
+    formattedTokens.testnet.zksyncera.tokens.forEach((token) => {
+      token.coin.should.equal('tzksyncera');
+    });
   });
 });
