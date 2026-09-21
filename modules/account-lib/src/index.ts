@@ -1,8 +1,8 @@
+import { Ed25519KeyDeriver } from '@bitgo/sdk-lib-safes';
 import {
   BaseBuilder,
   BaseTransactionBuilderFactory,
   BuildTransactionError,
-  Ed25519KeyDeriver,
   Ed25519BIP32,
   Eddsa,
   accountLibBaseCoin,

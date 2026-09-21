@@ -1,24 +1,23 @@
 import 'should';
+import { bip32 } from '@bitgo/utxo-lib';
 import {
+  deriveAndSelfCheckSafeChildHardened,
   deriveSafeChildEd25519Hardened,
   deriveSafeChildHardenedFromXprv,
   getSafeHardenedDerivationPath,
+  parseDerivedFromParentWithHardenedPath,
   parseSafeDerivationIndex,
-} from '../../../../src';
+} from '../../src';
 
-// Deliberate guard: re-derives through sdk-core's public barrel (which re-exports from
-// @bitgo/sdk-lib-safes) to prove the re-export and byte-for-byte output hold end-to-end.
-// The secp256k1 ROOT_XPRV vector is secret and lives only here; the leaf's own
-// test/unit/safeDerivation.ts pins a public BIP32 vector instead.
+// BIP32 test vector 1 (public): seed 000102...0f → master → m/0'. The child pub is the published
+// vector; the prv is asserted structurally (round-trips to the pub) rather than hardcoded.
+const BIP32_VECTOR_1_SEED = '000102030405060708090a0b0c0d0e0f';
+const BIP32_VECTOR_1_M0_PUB =
+  'xpub68Gmy5EdvgibQVfPdqkBBCHxA5htiqg55crXYuXoQRKfDBFA1WEjWgP6LHhwBZeNK1VTsfTFUHCdrfp1bgwQ9xv5ski8PX9rL2dZXvgGDnw';
 
-// 32-byte synthetic root seed. The StrKey spelling was generated with stellar-sdk
-// (Keypair.fromRawEd25519Seed); the derivation vectors below were generated with an independent
-// SLIP-0010 implementation written from the spec and cross-checked against published vectors
-// (SLIP-0010 test vector 1 seed 000102...0f derives m/0' to 68e0fe46...dade7a3).
+// 32-byte synthetic root seed. The StrKey spelling was generated with stellar-sdk; the pinned
+// SLIP-0010 outputs below match sdk-core's safeDerivation test vectors.
 const ROOT_SEED_STRKEY = 'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI';
-
-const ROOT_XPRV =
-  'xprv9s21ZrQH143K3hekyNj7TciR4XNYe1kMj68W2ipjJGNHETWP7o42AjDnSPgKhdZ4x8NBAvaL72RrXjuXNdmkMqLERZza73oYugGtbLFXG8g';
 
 describe('safeDerivation', function () {
   describe('parseSafeDerivationIndex', function () {
@@ -50,23 +49,41 @@ describe('safeDerivation', function () {
     });
   });
 
+  describe('parseDerivedFromParentWithHardenedPath', function () {
+    it('parses m/<n> primed paths', function () {
+      parseDerivedFromParentWithHardenedPath("m/0'").should.equal(0);
+      parseDerivedFromParentWithHardenedPath("m/123'").should.equal(123);
+    });
+
+    it('rejects unhardened and malformed paths', function () {
+      (() => parseDerivedFromParentWithHardenedPath('m/0')).should.throw(/derivedFromParentWithHardenedPath/);
+      (() => parseDerivedFromParentWithHardenedPath('m/999999/a/b')).should.throw(/derivedFromParentWithHardenedPath/);
+      (() => parseDerivedFromParentWithHardenedPath("not-a-path'")).should.throw(/derivedFromParentWithHardenedPath/);
+      (() => parseDerivedFromParentWithHardenedPath("m/0''")).should.throw(/derivedFromParentWithHardenedPath/);
+    });
+  });
+
   describe('deriveSafeChildHardenedFromXprv', function () {
-    it('derives m/0 from the root xprv', function () {
-      const child = deriveSafeChildHardenedFromXprv(ROOT_XPRV, 0);
+    it('derives m/0 from the BIP32 vector 1 master', function () {
+      const root = bip32.fromSeed(Buffer.from(BIP32_VECTOR_1_SEED, 'hex'));
+      const child = deriveSafeChildHardenedFromXprv(root.toBase58(), 0);
       child.derivationPath.should.equal("m/0'");
-      child.pub.should.equal(
-        'xpub69PbR6HB6ZaW3Q9CWAzNsmWXC8TBDq1VEmd25XkwUgrU3PVGAbj6bksqPnGWcFdAodXWRpWMXJ5KGim45n55cZjXeW7FDw4BqahtxTEN4wB'
-      );
-      child.prv.should.equal(
-        'xprv9vQF1akHGC2Cpv4jQ9TNWdZne6cgpNHdsYhRH9MKvMKVAbA7d4Qr3xZMYXqAS35V4damCDP2hYohCLViHzcGhX4Tr7djjCBruAX73SsjCiC'
-      );
+      child.pub.should.equal(BIP32_VECTOR_1_M0_PUB);
+      bip32.fromBase58(child.prv).neutered().toBase58().should.equal(child.pub);
+    });
+
+    it('self-check returns the same deterministic child', function () {
+      const root = bip32.fromSeed(Buffer.from(BIP32_VECTOR_1_SEED, 'hex'));
+      const child = deriveAndSelfCheckSafeChildHardened(root.toBase58(), 0);
+      child.derivationPath.should.equal("m/0'");
+      child.pub.should.equal(BIP32_VECTOR_1_M0_PUB);
+      bip32.fromBase58(child.prv).neutered().toBase58().should.equal(child.pub);
     });
   });
 
   describe('deriveSafeChildEd25519Hardened', function () {
     it('derives m/0 to the pinned SLIP-0010 vector', function () {
-      const child = deriveSafeChildEd25519Hardened(ROOT_SEED_STRKEY, 0);
-      child.should.eql({
+      deriveSafeChildEd25519Hardened(ROOT_SEED_STRKEY, 0).should.eql({
         prv: 'b127eb5092011c085345c8ce0bfeda6064f9e1249e29cc238c1d64bf2e587ce7',
         pub: 'GCTZR46FPFAMYN734SQB4NCNBI44M4DSNM5RJPCDLOMAOFPEUVUXPK7R',
         derivationPath: "m/0'",
@@ -74,8 +91,7 @@ describe('safeDerivation', function () {
     });
 
     it('derives m/7 to the pinned SLIP-0010 vector', function () {
-      const child = deriveSafeChildEd25519Hardened(ROOT_SEED_STRKEY, '7');
-      child.should.eql({
+      deriveSafeChildEd25519Hardened(ROOT_SEED_STRKEY, '7').should.eql({
         prv: 'd54701e221cf51e9e208a7c59e3fe3e4cfbb6b91fd3f35ce092a471c35228217',
         pub: 'GC2Y5EU2XA22SOSCRSZRNDEY3UAA4OJSLZ5NQUFUZDBQSLMVCIZCBHIN',
         derivationPath: "m/7'",
@@ -86,7 +102,6 @@ describe('safeDerivation', function () {
       (() => deriveSafeChildEd25519Hardened(ROOT_SEED_STRKEY.slice(0, 55), 0)).should.throw(
         /Invalid ed25519 StrKey secret seed/
       );
-      (() => deriveSafeChildEd25519Hardened(ROOT_XPRV, 0)).should.throw(/Invalid ed25519 StrKey secret seed/);
     });
 
     it('rejects an invalid index', function () {

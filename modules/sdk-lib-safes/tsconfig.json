@@ -7,12 +7,9 @@
     "esModuleInterop": true,
     "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"]
   },
-  "include": ["src/**/*", "test/**/*", "test/unit/bitgo/safe/fixtures/derivableEd25519Pub.json"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules"],
   "references": [
-    {
-      "path": "../sdk-lib-safes"
-    },
     {
       "path": "../statics"
     },

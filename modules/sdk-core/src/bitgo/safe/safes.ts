@@ -19,7 +19,7 @@ import { IBaseCoin } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { ApiResponseError } from '../errors';
 import { decodeWithCodec } from '../utils/codecs';
-import { isDerivableEd25519Pub } from './derivableEd25519Pub';
+import { isDerivableEd25519Pub } from '@bitgo/sdk-lib-safes';
 import { postWithCodec } from '../utils/postWithCodec';
 import { FinalizeSafeOptions, InitializeSafeOptions } from './iSafe';
 import { CreateSafeOptions, GetSafeOptions, ISafes, ListSafesOptions, SafeCreationHandle, SafeKeys } from './iSafes';

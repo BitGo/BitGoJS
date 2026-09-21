@@ -10,7 +10,7 @@ import {
   encodeDerivableEd25519Pub,
   generateEd25519ChainCode,
   isValidEd25519StrKeyPublicKey,
-} from '../safe/derivableEd25519Pub';
+} from '@bitgo/sdk-lib-safes';
 import { decodeOrElse, ECDSAUtils, EDDSAUtils, generateRandomPassword, RequestTracer } from '../utils';
 import {
   AddKeychainOptions,
