@@ -1,6 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
-import { bufferToBase64Url } from './base64url';
-import { WebAuthnOtpDevice, WebAuthnProvider } from './webAuthnTypes';
+import { BitGoBase, bufferToBase64Url, type WebAuthnOtpDevice, type WebAuthnProvider } from '@bitgo/sdk-core';
 
 interface RegisterChallengeResponse {
   challenge: string;

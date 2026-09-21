@@ -1,7 +1,12 @@
-import type { BitGoBase, IWallet, KeychainWebauthnDevice, KeychainWithEncryptedPrv } from '@bitgo/sdk-core';
+import {
+  derivePassword,
+  type BitGoBase,
+  type IWallet,
+  type KeychainWebauthnDevice,
+  type KeychainWithEncryptedPrv,
+  type WebAuthnProvider,
+} from '@bitgo/sdk-core';
 import { buildEvalByCredential, matchDeviceByCredentialId } from './prfHelpers';
-import { derivePassword } from './derivePassword';
-import type { WebAuthnProvider } from './webAuthnTypes';
 
 /** API payloads may use either spelling for the webauthn device list. */
 type UserKeychainResponse = KeychainWithEncryptedPrv & {

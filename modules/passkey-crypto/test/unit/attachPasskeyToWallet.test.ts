@@ -1,8 +1,7 @@
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import { attachPasskeyToWallet } from '../../src/attachPasskeyToWallet';
-import { derivePassword } from '../../src/derivePassword';
-import { WebAuthnOtpDevice, PasskeyAuthResult, WebAuthnProvider } from '../../src/webAuthnTypes';
+import { derivePassword, type PasskeyAuthResult, type WebAuthnOtpDevice, type WebAuthnProvider } from '@bitgo/sdk-core';
 
 describe('attachPasskeyToWallet', function () {
   const coin = 'tbtc';

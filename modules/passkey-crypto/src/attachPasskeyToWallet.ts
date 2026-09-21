@@ -1,8 +1,13 @@
-import { BitGoBase, EncryptionVersion, Keychain } from '@bitgo/sdk-core';
-import { base64UrlToBuffer } from './base64url';
-import { deriveEnterpriseSalt } from './deriveEnterpriseSalt';
-import { derivePassword } from './derivePassword';
-import { WebAuthnOtpDevice, WebAuthnProvider } from './webAuthnTypes';
+import {
+  BitGoBase,
+  EncryptionVersion,
+  Keychain,
+  base64UrlToBuffer,
+  deriveEnterpriseSalt,
+  derivePassword,
+  type WebAuthnOtpDevice,
+  type WebAuthnProvider,
+} from '@bitgo/sdk-core';
 
 export async function attachPasskeyToWallet(params: {
   bitgo: BitGoBase;

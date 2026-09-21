@@ -14,8 +14,11 @@ import type {
   SafeShareData,
   SafeShareKeychain,
   SafeShareState,
+  WebAuthnOtpDevice,
 } from '@bitgo/public-types';
+import type { EncryptionVersion } from '../../api/types';
 import type { Wallet, WalletShare } from '../wallet';
+import type { WebAuthnProvider } from '../webauthn';
 
 /** @experimental */
 export interface InitializeSafeOptions {
@@ -89,6 +92,34 @@ export type AcceptSafeShareAsNonSpenderOptions = {
 export type AcceptSafeShareOptions = AcceptSafeShareAsSpenderOptions | AcceptSafeShareAsNonSpenderOptions;
 
 /**
+ * Register a PRF passkey on every user root of the safe. The device must be PRF-capable
+ * and already enrolled on the caller's account.
+ * @experimental
+ */
+export interface RegisterSafePasskeyOptions {
+  device: WebAuthnOtpDevice;
+  safePassphrase: string;
+  provider: WebAuthnProvider;
+  /** Encryption version for the PRF-wrapped blobs; defaults to the SDK default (mirrors wallet attach). */
+  encryptionVersion?: EncryptionVersion;
+}
+
+/**
+ * Remove a PRF passkey from every user root. `safePassphrase` is verified client-side
+ * (decrypts a user root) before the server is called.
+ * @experimental
+ */
+export interface RemoveSafePasskeyOptions {
+  device: WebAuthnOtpDevice;
+  safePassphrase: string;
+}
+
+export interface RegisterSafePasskeyResponse {
+  otpDeviceId: string;
+  updatedKeys: string[];
+}
+
+/**
  * @experimental
  */
 export interface ISafe {
@@ -106,6 +137,8 @@ export interface ISafe {
   addMemberToWallet(params: AddSafeWalletMemberOptions): Promise<WalletShareData>;
   listShares(params?: { state?: SafeShareState }): Promise<SafeShareData[]>;
   acceptShare(params: AcceptSafeShareOptions): Promise<SafeShareData>;
+  registerPasskey(params: RegisterSafePasskeyOptions): Promise<RegisterSafePasskeyResponse>;
+  removePasskey(params: RemoveSafePasskeyOptions): Promise<void>;
   freeze(params?: FreezeSafeBody): Promise<SafeData>;
   archive(): Promise<SafeData>;
   toJSON(): SafeData;

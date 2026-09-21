@@ -29,6 +29,7 @@ export * from './types';
 export * from './utils';
 export * from './safe';
 export * from './wallet';
+export * from './webauthn';
 export * from './webhook';
 export { bitcoinUtil };
 export { tss };
