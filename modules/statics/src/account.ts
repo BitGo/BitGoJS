@@ -647,8 +647,8 @@ export class OpethERC20Token extends ContractAddressDefinedToken {
 }
 
 /**
- * The zkSync network support tokens
- * zkSync Tokens are ERC20 tokens
+ * The zkSync Era network support tokens.
+ * These ERC20 tokens belong to the zksyncera family (CECHO-2215).
  */
 export class ZkethERC20Token extends ContractAddressDefinedToken {
   constructor(options: Erc20ConstructorOptions) {
@@ -2778,7 +2778,7 @@ export function topethErc20(
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
- * @param network? Optional token network. Defaults to zkSync mainnet network.
+ * @param network? Optional token network. Defaults to zkSync Era mainnet network.
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
@@ -2792,7 +2792,7 @@ export function zkethErc20(
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
   suffix: string = name.toUpperCase(),
-  network: AccountNetwork = Networks.main.zkSync,
+  network: AccountNetwork = Networks.main.zkSyncEra,
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return Object.freeze(
@@ -2825,7 +2825,7 @@ export function zkethErc20(
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
- * @param network? Optional token network. Defaults to the zkSync sepolia test network.
+ * @param network? Optional token network. Defaults to the zkSync Era sepolia test network.
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
@@ -2839,7 +2839,7 @@ export function tzkethErc20(
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
   suffix: string = name.toUpperCase(),
-  network: AccountNetwork = Networks.test.zkSync,
+  network: AccountNetwork = Networks.test.zkSyncEra,
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return zkethErc20(

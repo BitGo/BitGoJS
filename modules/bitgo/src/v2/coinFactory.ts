@@ -1055,6 +1055,11 @@ export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor |
     case 'zketh':
     case 'tzketh':
       return ZkethToken.createTokenConstructor(tokenConfig as EthLikeTokenConfig);
+    case 'zksyncera':
+    case 'tzksyncera': {
+      const zksynceraCoinNames = { Mainnet: 'zksyncera', Testnet: 'tzksyncera' };
+      return EthLikeErc20Token.createTokenConstructor(tokenConfig as EthLikeTokenConfig, zksynceraCoinNames);
+    }
     case 'bera':
     case 'tbera':
       return BeraToken.createTokenConstructor(tokenConfig as EthLikeTokenConfig);

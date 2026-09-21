@@ -8091,6 +8091,14 @@ export const allCoinsAndTokens = [
     '0xcccb29bac5ad81290383643c6fb38130cda9d881',
     UnderlyingAsset['tzketh:link']
   ),
+  tzkethErc20(
+    '0b979d93-ed38-466f-a596-bc1b7357c84e',
+    'tzketh:tmt',
+    'Test Mintable Token',
+    18,
+    '0x2f74afa29aa54eafcf358326c29e4252b2b30040',
+    UnderlyingAsset['tzketh:tmt']
+  ),
   beraErc20(
     'ef833f4e-7617-4c6d-8a1f-1fef0dd1dd0e',
     'bera:bgt',

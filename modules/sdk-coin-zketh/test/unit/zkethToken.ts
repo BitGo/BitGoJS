@@ -20,12 +20,12 @@ describe('Zketh Token:', function () {
 
   it('should return constants', function () {
     zkethTokenCoin.getChain().should.equal('tzketh:link');
-    zkethTokenCoin.getBaseChain().should.equal('tzketh');
+    zkethTokenCoin.getBaseChain().should.equal('tzksyncera');
     zkethTokenCoin.getFullName().should.equal('Zketh Token');
     zkethTokenCoin.getBaseFactor().should.equal(1e18);
     zkethTokenCoin.type.should.equal(tokenName);
     zkethTokenCoin.name.should.equal('zkSync Test LINK');
-    zkethTokenCoin.coin.should.equal('tzketh');
+    zkethTokenCoin.coin.should.equal('tzksyncera');
     zkethTokenCoin.network.should.equal('Testnet');
     zkethTokenCoin.decimalPlaces.should.equal(18);
   });
