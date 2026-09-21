@@ -4968,21 +4968,21 @@ export const ofcCoins = [
   ),
   ofcStellarToken(
     '43eae9c6-d08d-4bc1-ad82-075f2a540382',
-    'ofcxlm:wtgxx',
+    'ofcxlm:wtgx',
     'WisdomTree Government Money Market Digital Fund',
     7,
     UnderlyingAsset['xlm:WTGX-GDMBNMFJ3TRFLASJ6UGETFME3PJPNKPU24C7KFDBEBPQFG2CI6UC3JG6']
   ),
   ofcStellarToken(
     'e39f4d37-54d9-44df-8d49-74bf44bb46c5',
-    'ofcxlm:flttx',
+    'ofcxlm:fltt',
     'WisdomTree Floating Rate Treasury Digital Fund',
     7,
     UnderlyingAsset['xlm:FLTT-GBTZKH3RNKW46XEZNCGZEBAGJISKDZKQXKSQ2N5G5SFX36TLWKKR6QJ6']
   ),
   ofcStellarToken(
     '714742d0-ce52-4ada-9522-a36c270fa22d',
-    'ofcxlm:wtsix',
+    'ofcxlm:wtsi',
     'WisdomTree Short-Duration Income Digital Fund',
     7,
     UnderlyingAsset['xlm:WTSI-GAD22PDBRFEMXAKPFDP4JGDFWKKD6VPXWUWEAXBS6ZYJYFFQDUN7HAFG']
