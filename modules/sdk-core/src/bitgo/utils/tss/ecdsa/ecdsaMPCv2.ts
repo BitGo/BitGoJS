@@ -394,10 +394,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     encryptionVersion?: EncryptionVersion,
     enterprise?: string,
     safeId?: string,
-    // Safe child registration: the parent root key id this child was derived from, plus the
-    // derivation index. User/backup children are hardened (`m/<index>'`); the BitGo child
-    // placeholder is soft (`m/<index>`), matching the server-side derive.
-    child?: { parentKeyId?: string; index?: number; hardened?: boolean }
+    // Safe child registration: the parent root key ID and derivation index.
+    child?: { parentKeyId?: string; index?: number }
   ): Promise<Keychain> {
     let source: string;
     let encryptedPrv: string | undefined = undefined;
@@ -454,7 +452,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
 
     let derivedFromParentWithPath: string | undefined;
     if (child?.index !== undefined) {
-      derivedFromParentWithPath = child.hardened === false ? `m/${child.index}` : `m/${child.index}'`;
+      derivedFromParentWithPath = `m/${child.index}'`;
     }
 
     const recipientKeychainParams: AddKeychainOptions = {
@@ -613,7 +611,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     encryptionVersion?: EncryptionVersion,
     enterprise?: string,
     safeId?: string,
-    child?: { parentKeyId?: string; index?: number; hardened?: boolean }
+    child?: { parentKeyId?: string; index?: number }
   ): Promise<Keychain> {
     return this.createParticipantKeychain(
       MPCv2PartiesEnum.USER,
@@ -644,7 +642,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     },
     encryptionVersion?: EncryptionVersion,
     safeId?: string,
-    child?: { parentKeyId?: string; index?: number; hardened?: boolean }
+    child?: { parentKeyId?: string; index?: number }
   ): Promise<Keychain> {
     if (privateMaterial === undefined) {
       // Safe backup child placeholder: no local private material, but always derived from a
@@ -692,7 +690,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
   protected async addBitgoKeychain(
     commonKeychain: string,
     safeId?: string,
-    child?: { parentKeyId?: string; index?: number; hardened?: boolean }
+    child?: { parentKeyId?: string; index?: number }
   ): Promise<Keychain> {
     return this.createParticipantKeychain(
       MPCv2PartiesEnum.BITGO,

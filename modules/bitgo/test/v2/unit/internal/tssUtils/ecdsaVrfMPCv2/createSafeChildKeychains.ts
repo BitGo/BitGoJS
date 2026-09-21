@@ -147,7 +147,7 @@ describe('TSS ECDSA safe child keychains (user/BitGo hard derive):', async funct
     assert.equal(bitgoKeychain.commonKeychain, userKeychain.commonKeychain);
   });
 
-  it('registers the BitGo child placeholder with the soft path and no private material', async function () {
+  it('registers the BitGo child placeholder with the hardened path and no private material', async function () {
     const [userRoot, , bitgoRoot] = await DklsUtils.generateDKGKeyShares();
     const [vrfUser, , vrfBitgo] = await DklsVrfUtils.generateVrfDKGKeyShares();
     const bitgoPair = new DklsDrv.Derive(3, 2, 2, bitgoRoot.getKeyShare(), vrfBitgo.getKeyShare(), PATH_M0);
@@ -184,15 +184,14 @@ describe('TSS ECDSA safe child keychains (user/BitGo hard derive):', async funct
     // Same common keychain across all three child registrations.
     assert.equal(bitgoBody.commonKeychain, userBody.commonKeychain);
     assert.equal(bitgoBody.commonKeychain, bitgoKeychain.commonKeychain);
-    // User and backup children stay hardened; only the BitGo placeholder is soft.
+    // All child paths are hardened.
     assert.equal(userBody.derivedFromParentWithPath, "m/0'");
     assert.equal(userBody.parent, USER_ROOT_KEY_ID);
     const backupBody = addKeyBodies.find((body) => body.source === 'backup');
     assert.ok(backupBody, 'expected a backup child registration');
     assert.equal(backupBody.derivedFromParentWithPath, "m/0'");
     assert.equal(backupBody.parent, BACKUP_ROOT_KEY_ID);
-    // Exact wire body: public-only placeholder, soft derivation path, no private material.
-    // commonKeychain cross-references the user body instead of itself.
+    // Exact wire body: public-only placeholder with no private material.
     assert.deepEqual(bitgoBody, {
       source: 'bitgo',
       keyType: 'tss',
@@ -200,7 +199,7 @@ describe('TSS ECDSA safe child keychains (user/BitGo hard derive):', async funct
       commonKeychain: userBody.commonKeychain,
       safeId: SAFE_ID,
       parent: BITGO_ROOT_KEY_ID,
-      derivedFromParentWithPath: 'm/0',
+      derivedFromParentWithPath: "m/0'",
     });
   });
 
@@ -382,8 +381,7 @@ describe('TSS ECDSA safe child keychains (user/BitGo hard derive):', async funct
   }
 
   /**
-   * Nocks the child key registrations: user and backup post a hardened path, the BitGo
-   * placeholder posts the soft path with no private material.
+   * Nocks the hardened child key registrations.
    */
   async function nockAddChildKey(coin: string, times = 3, index = DERIVATION_INDEX) {
     return nock('https://bitgo.fakeurl')
@@ -394,7 +392,7 @@ describe('TSS ECDSA safe child keychains (user/BitGo hard derive):', async funct
           body.isMPCv2 === true &&
           body.safeId === SAFE_ID &&
           !!body.parent &&
-          (body.derivedFromParentWithPath === `m/${index}'` || body.derivedFromParentWithPath === `m/${index}`)
+          body.derivedFromParentWithPath === `m/${index}'`
       )
       .times(times)
       .reply(200, (uri, requestBody: AddKeychainOptions) => ({

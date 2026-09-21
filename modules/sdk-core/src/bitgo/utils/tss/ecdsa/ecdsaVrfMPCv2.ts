@@ -766,10 +766,6 @@ export class EcdsaVrfMPCv2Utils extends EcdsaMPCv2Utils {
     const encryptionSession =
       params.encryptionVersion === 2 ? await this.bitgo.createEncryptionSession(params.passphrase) : undefined;
     try {
-      // The user and BitGo child registrations reuse the parent's regular MPC helpers; the
-      // BitGo child is the public-only placeholder with the soft path the server-side derive
-      // used. The backup child carries no local private material, so the material-taking
-      // addBackupKeychain helper does not fit and it registers via createParticipantKeychain.
       const userKeychainPromise = this.addUserKeychain(
         commonKeychain,
         userPrivateMaterial,
@@ -797,7 +793,6 @@ export class EcdsaVrfMPCv2Utils extends EcdsaMPCv2Utils {
       const bitgoKeychainPromise = this.addBitgoKeychain(commonKeychain, params.safeId, {
         parentKeyId: params.parentKeyId,
         index: params.derivationIndex,
-        hardened: false,
       });
 
       const [userKeychain, backupKeychain, bitgoKeychain] = await Promise.all([
