@@ -8,6 +8,27 @@ import type { ZecAddressCodecOutput } from './types';
 
 export type ZcashAddressKind = 'transparent' | 'shielded';
 
+export interface ZecAddressCodecOptions {
+  /**
+   * Resolve an address that does not carry the preferred receiver via its other receiver
+   * instead of throwing.
+   *
+   * Only the transaction-verification codec sets this (see `Zec.parseTransaction`). Output
+   * comparison resolves both the requested recipients and the transaction's actual outputs
+   * through `decode`, and an actual output legitimately need not match the preference: a
+   * shielded transaction can carry a transparent pay-as-you-go output, and a tampered
+   * prebuild can carry a transparent output where a shielded one was requested. Both must
+   * resolve to the bytes they pay so they surface as an output difference
+   * (TxIntentMismatchError in verifyTransaction) — or as an allowed implicit external output —
+   * rather than aborting verification with a decode error.
+   *
+   * This never relaxes what the caller asked for: `Zec.parseTransaction` validates every
+   * requested recipient against the preference with a strict codec first, so the fallback can
+   * only ever apply to an actual transaction output.
+   */
+  resolveOtherReceiverType?: boolean;
+}
+
 /**
  * Address codec for Zcash coins ('zec'/'tzec') that understands ZIP-316
  * Unified Addresses in addition to ordinary transparent addresses.
@@ -25,15 +46,19 @@ export class ZecAddressCodec extends AddressCodec {
   private readonly zcashNetworkName: fixedScriptWallet.ZcashNetworkName;
   /** How Unified Address recipients resolve when this codec decodes them. */
   private readonly unifiedRecipientPreference: UnifiedRecipientPreference;
+  /** See `ZecAddressCodecOptions.resolveOtherReceiverType`. */
+  private readonly resolveOtherReceiverType: boolean;
 
   constructor(
     coinName: UtxoCoinName,
     wasmName: WasmUtxoCoinName,
-    unifiedRecipientPreference: UnifiedRecipientPreference = 'transparent'
+    unifiedRecipientPreference: UnifiedRecipientPreference = 'transparent',
+    options: ZecAddressCodecOptions = {}
   ) {
     super(coinName, wasmName);
     this.zcashNetworkName = wasmName as fixedScriptWallet.ZcashNetworkName;
     this.unifiedRecipientPreference = unifiedRecipientPreference;
+    this.resolveOtherReceiverType = options.resolveOtherReceiverType ?? false;
   }
 
   /**
@@ -63,23 +88,65 @@ export class ZecAddressCodec extends AddressCodec {
    *   43-byte diversifier + `pk_d` — of a UA carrying one. Any other address
    *   (plain transparent, transparent-only UA, malformed, wrong network)
    *   throws, since it has no Orchard receiver to resolve.
+   *
+   * With `resolveOtherReceiverType` an address that does not carry the preferred receiver
+   * resolves via its other receiver instead of throwing; the preference-bound error is still
+   * what surfaces when the address carries neither. See the option's doc for why only the
+   * transaction-verification codec sets it.
+   *
+   * Note the trade-off the fallback makes: within a single dual-receiver Unified Address, a
+   * payment moved between its own transparent and Orchard receivers resolves identically
+   * under either preference, so output comparison cannot see the substitution. Both receivers
+   * belong to the address the caller supplied, so this is not a theft vector, but it does mean
+   * a shielded payment can be settled transparently (or the reverse) without verification
+   * objecting. Detecting it would require comparing against each output's raw script, which
+   * the shared output shape does not carry.
    */
   override decode(address: string): Uint8Array {
+    try {
+      return this.decodePreferredReceiver(address);
+    } catch (preferredReceiverError) {
+      if (this.resolveOtherReceiverType) {
+        try {
+          return this.decodeOtherReceiver(address);
+        } catch {
+          // carries neither receiver type — report the preference-bound reason below
+        }
+      }
+      throw preferredReceiverError;
+    }
+  }
+
+  /** Resolve `address` under this codec's unified-recipient preference. */
+  private decodePreferredReceiver(address: string): Uint8Array {
     if (this.unifiedRecipientPreference !== 'shielded') {
       return zcashAddress.toTransparentReceiverWithCoin(address, this.wasmName);
     }
-    // The raw Orchard receiver exists only for a Unified Address carrying one; anything else
-    // (plain transparent address, transparent-only UA, malformed, wrong network) throws.
+    // The raw Orchard receiver exists only for a Unified Address carrying one. Distinguish a
+    // perfectly valid transparent address — which simply has no Orchard receiver — from a
+    // malformed or wrong-network address, so callers see the accurate reason instead of a
+    // misleading "invalid address" for a valid address. `hasTransparentReceiver` never throws
+    // and is network-aware, so a wrong-network transparent address still reports as invalid.
     let unified: fixedScriptWallet.ZcashUnifiedAddress | undefined;
     try {
       unified = fixedScriptWallet.ZcashUnifiedAddress.parse(address, this.zcashNetworkName);
     } catch {
+      if (zcashAddress.hasTransparentReceiver(address, this.wasmName)) {
+        throw new Error(`address ${address} has no Orchard receiver to resolve as shielded`);
+      }
       throw new Error(`address ${address} is not a valid address for network ${this.zcashNetworkName}`);
     }
     if (!unified?.hasOrchardReceiver) {
       throw new Error(`address ${address} has no Orchard receiver to resolve as shielded`);
     }
     return zcashAddress.toShieldedReceiverWithCoin(address, this.wasmName);
+  }
+
+  /** Resolve `address` under the receiver type this codec's preference does not name. */
+  private decodeOtherReceiver(address: string): Uint8Array {
+    return this.unifiedRecipientPreference === 'shielded'
+      ? zcashAddress.toTransparentReceiverWithCoin(address, this.wasmName)
+      : zcashAddress.toShieldedReceiverWithCoin(address, this.wasmName);
   }
 
   /** Change addresses are always transparent wallet addresses. */

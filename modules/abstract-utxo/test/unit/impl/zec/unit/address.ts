@@ -203,9 +203,12 @@ describe('ZecAddressCodec', function () {
     assert.deepStrictEqual(receiver, Buffer.from(new Uint8Array(43).fill(0x42)));
   });
 
-  it('decode: shielded-bound codec throws invalid-address error for a plain transparent address', function () {
+  it('decode: shielded-bound codec reports the accurate reason for a plain transparent address', function () {
     const codec = new ZecAddressCodec('tzec', 'tzec', 'shielded');
-    assert.throws(() => codec.decode(testnetWallet.transparentAddress), /is not a valid address for network/);
+    assert.throws(
+      () => codec.decode(testnetWallet.transparentAddress),
+      /has no Orchard receiver to resolve as shielded/
+    );
   });
 
   it('decode: shielded-bound codec throws invalid-address error for a wrong-network UA', function () {
@@ -221,6 +224,62 @@ describe('ZecAddressCodec', function () {
   it('decode: throws for garbage', function () {
     const codec = new ZecAddressCodec('tzec', 'tzec');
     assert.throws(() => codec.decode('not-a-real-address'));
+  });
+
+  describe('decode with resolveOtherReceiverType', function () {
+    const orchardOnly = fixedScriptWallet.ZcashUnifiedAddress.encodeOrchardReceiver(
+      new Uint8Array(43).fill(0x42),
+      'tzec'
+    );
+
+    it('resolves a plain transparent address under a shielded preference', function () {
+      const address = testnetWallet.transparentAddress;
+      // strictly, a transparent address has no Orchard receiver to resolve
+      assert.throws(
+        () => new ZecAddressCodec('tzec', 'tzec', 'shielded').decode(address),
+        /has no Orchard receiver to resolve as shielded/
+      );
+      // with the fallback it resolves to its own scriptPubKey
+      const codec = new ZecAddressCodec('tzec', 'tzec', 'shielded', { resolveOtherReceiverType: true });
+      assert.deepStrictEqual(
+        Buffer.from(codec.decode(address)),
+        Buffer.from(new ZecAddressCodec('tzec', 'tzec', 'transparent').decode(address))
+      );
+    });
+
+    it('resolves an Orchard-only UA under a transparent preference', function () {
+      assert.throws(() => new ZecAddressCodec('tzec', 'tzec', 'transparent').decode(orchardOnly));
+      const codec = new ZecAddressCodec('tzec', 'tzec', 'transparent', { resolveOtherReceiverType: true });
+      assert.deepStrictEqual(Buffer.from(codec.decode(orchardOnly)), Buffer.from(new Uint8Array(43).fill(0x42)));
+    });
+
+    it('keeps the preferred receiver for a UA carrying both', function () {
+      // the fallback must not change how an address that does satisfy the preference resolves
+      const address = testnetWallet.unified;
+      (['transparent', 'shielded'] as const).forEach((preference) => {
+        assert.deepStrictEqual(
+          Buffer.from(
+            new ZecAddressCodec('tzec', 'tzec', preference, { resolveOtherReceiverType: true }).decode(address)
+          ),
+          Buffer.from(new ZecAddressCodec('tzec', 'tzec', preference).decode(address)),
+          `preference ${preference}`
+        );
+      });
+    });
+
+    it('reports the preference-bound reason when neither receiver resolves', function () {
+      const codec = new ZecAddressCodec('tzec', 'tzec', 'shielded', { resolveOtherReceiverType: true });
+      assert.throws(() => codec.decode('not-a-real-address'), /is not a valid address for network/);
+      assert.throws(() => codec.decode(zip316Mainnet.unified), /is not a valid address for network/);
+    });
+
+    it('is off by default, so the coin-level codec stays strict', function () {
+      assert.throws(() => new ZecAddressCodec('tzec', 'tzec', 'transparent').decode(orchardOnly));
+      assert.throws(
+        () => new ZecAddressCodec('tzec', 'tzec', 'shielded').decode(testnetWallet.transparentAddress),
+        /has no Orchard receiver to resolve as shielded/
+      );
+    });
   });
 
   it('isMatchingScript validates the receiver represented by parsed output metadata', function () {
