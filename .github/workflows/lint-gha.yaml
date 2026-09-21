@@ -10,6 +10,12 @@ name: Lint GitHub Actions Files
 # https://docs.github.com/en/enterprise-cloud@latest/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets#require-workflows-to-pass-before-merging
 on:
   pull_request:
+    # Include `edited` so retargeted pull requests are linted again.
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - edited
   merge_group:
 
 permissions:
