@@ -58,6 +58,15 @@ describe('AllocationAllocate Builder', () => {
     assert.equal(requestObj.senderPartyId, senderPartyId);
     assert.equal(requestObj.comment, comment);
   });
+  it('should preserve a large allocation amount', function () {
+    const txBuilder = new AllocationAllocateBuilder(coins.get('tcanton'));
+    const tx = new Transaction(coins.get('tcanton'));
+    txBuilder.initBuilder(tx);
+    const amount = '123456789012345678901234567890';
+    buildWithAllRequired(txBuilder).amount(amount);
+
+    assert.strictEqual(txBuilder.toRequestObject().amount, amount);
+  });
 
   it('should build the allocation allocate request object without optional comment', function () {
     const txBuilder = new AllocationAllocateBuilder(coins.get('tcanton'));

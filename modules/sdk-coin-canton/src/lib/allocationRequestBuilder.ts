@@ -1,8 +1,9 @@
 import { PublicKey, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { AllocationRequest, CantonPrepareCommandResponse } from './iface';
+import { AllocationRequest, CantonAmount, CantonAmountInput, CantonPrepareCommandResponse } from './iface';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction/transaction';
+import { normalizeCantonAmount } from './amount';
 
 /**
  * Builder for an AllocationRequest txRequest — an internal, non-signable transaction
@@ -20,10 +21,10 @@ export class AllocationRequestBuilder extends TransactionBuilder {
   private _transferLegId: string;
   private _senderPartyId: string;
   private _receiverPartyId: string;
-  private _amount: number;
+  private _amount: CantonAmount;
   private _token: string;
   private _receiveToken: string;
-  private _receiveAmount: number;
+  private _receiveAmount: CantonAmount;
   private _allocateBefore: string;
   private _settleBefore: string;
   private _comment?: string;
@@ -142,13 +143,10 @@ export class AllocationRequestBuilder extends TransactionBuilder {
 
   /**
    * Sets the quantity to allocate.
-   * @param amount - allocation amount
+   * @param amount - allocation amount. Use a string or bigint above Number.MAX_SAFE_INTEGER.
    */
-  amount(amount: number): this {
-    if (isNaN(amount) || amount <= 0) {
-      throw new Error('amount must be a positive number');
-    }
-    this._amount = amount;
+  amount(amount: CantonAmountInput): this {
+    this._amount = normalizeCantonAmount(amount, 'amount must be a positive number');
     return this;
   }
 
@@ -178,13 +176,10 @@ export class AllocationRequestBuilder extends TransactionBuilder {
 
   /**
    * Sets the quantity the allocating party will receive on settlement.
-   * @param amount - receive amount
+   * @param amount - receive amount. Use a string or bigint above Number.MAX_SAFE_INTEGER.
    */
-  receiveAmount(amount: number): this {
-    if (isNaN(amount) || amount <= 0) {
-      throw new Error('receiveAmount must be a positive number');
-    }
-    this._receiveAmount = amount;
+  receiveAmount(amount: CantonAmountInput): this {
+    this._receiveAmount = normalizeCantonAmount(amount, 'receiveAmount must be a positive number');
     return this;
   }
 

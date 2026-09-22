@@ -165,10 +165,13 @@ export interface CantonAllocationAllocateWithdrawnRequest extends CantonTransfer
   tokenName?: string;
 }
 
+export type CantonAmount = number | string;
+export type CantonAmountInput = CantonAmount | bigint;
+
 export interface TransferAcknowledge {
   contractId: string;
   senderPartyId: string;
-  amount: number;
+  amount: CantonAmount;
   expiryEpoch: number;
   updateId: string;
 }
@@ -184,7 +187,7 @@ export interface CantonTransferRequest {
   commandId: string;
   senderPartyId: string;
   receiverPartyId: string;
-  amount: number;
+  amount: CantonAmount;
   expiryEpoch: number;
   sendViaOneStep: boolean;
   memoId?: string;
@@ -193,7 +196,7 @@ export interface CantonTransferRequest {
 
 export interface CantonAllocationAllocateRequest {
   commandId: string;
-  amount: number;
+  amount: CantonAmount;
   token: string;
   operatorId: string;
   contractId?: string;
@@ -219,10 +222,10 @@ export interface AllocationRequest {
   transferLegId: string;
   senderPartyId: string;
   receiverPartyId: string;
-  amount: number;
+  amount: CantonAmount;
   token: string;
   receiveToken: string;
-  receiveAmount: number;
+  receiveAmount: CantonAmount;
   allocateBefore: string;
   settleBefore: string;
   comment?: string;
