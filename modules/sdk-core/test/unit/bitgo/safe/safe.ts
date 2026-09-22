@@ -272,6 +272,22 @@ describe('Safe', function () {
       addArgs.should.not.have.property('derivedFromParentWithSeed');
     });
 
+    it('mints hteth onchain from secp256k1Multisig roots when default wallet type is tss', async function () {
+      stubCoin('hteth', { getDefaultMultisigType: 'tss' });
+
+      await safe.createWallet({ coin: 'hteth', label: 'evm onchain', passphrase: 'pw' });
+
+      derivationQuery.calledOnceWithExactly({ slot: 'secp256k1Multisig' }).should.be.true();
+      keychainsGet.calledOnceWithExactly({ id: 'user-root-id' }).should.be.true();
+      mintSend.firstCall.args[0].should.containEql({
+        coin: 'hteth',
+        label: 'evm onchain',
+        type: 'hot',
+        multisigType: 'onchain',
+        keys: ['child-key-id'],
+      });
+    });
+
     it('mints a TSS wallet via the user/BitGo derive ceremony', async function () {
       stubCoin('hteth', { getDefaultMultisigType: 'tss' });
       // Real VRF key envelope: `{version: 1, prvKeyShare, vrf}`.

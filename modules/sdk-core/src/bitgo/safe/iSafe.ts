@@ -49,8 +49,8 @@ export interface CreateSafeWalletOptions {
   passphrase: string;
   type?: 'hot';
   /**
-   * `onchain` (default) mints a secp256k1 multisig wallet; `tss` mints an MPC
-   * wallet by deriving child keys from the safe's MPC roots.
+   * Mint scheme: `onchain` (default) uses the independent multisig root slot for the coin's
+   * curve; `tss` uses the MPC root slot. Independent of the coin's default wallet multisig type.
    */
   multisigType?: 'onchain' | 'tss';
 }
