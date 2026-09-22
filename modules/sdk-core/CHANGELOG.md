@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.17.0...@bitgo/sdk-core@38.18.0) (2026-09-22)
+
+
+### Bug Fixes
+
+* **sdk-core:** post hardened path for Safe MPC BitGo child ([c5956e0](https://github.com/BitGo/BitGoJS/commit/c5956e0410177dfebffe3a5d8cc727b7e4ccb1de))
+
+
+### Features
+
+* extract Safe derivation into a leaf package ([8a61c3a](https://github.com/BitGo/BitGoJS/commit/8a61c3aec6bc863e6414c985cc83edd311835e7a))
+* **sdk-coin-zec:** verify shielded wallet addresses via coinSpecific ([0d74c63](https://github.com/BitGo/BitGoJS/commit/0d74c63bbd28e35a3de095676dbc389016d565c4))
+* **sdk-core:** add label update method ([e3ebc8a](https://github.com/BitGo/BitGoJS/commit/e3ebc8a77f39816a11e206406f96984e11a7884d))
+* **sdk-core:** register BitGo Safe child placeholder for TSS minting ([47bce1c](https://github.com/BitGo/BitGoJS/commit/47bce1ca8adb60fa1c5cdca6918969cd4eb42997))
+
+
+
+
+
 # [38.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.16.0...@bitgo/sdk-core@38.17.0) (2026-09-17)
 
 

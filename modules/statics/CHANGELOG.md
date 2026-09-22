@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [59.17.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.17.0...@bitgo/statics@59.17.1) (2026-09-22)
+
+
+### Bug Fixes
+
+* **statics:** move zketh ERC20 tokens onto zksyncera ([6f7fcec](https://github.com/BitGo/BitGoJS/commit/6f7fcecffcc997c7cf9d205aa6616c5b2cca2221))
+
+
+
+
+
 # [59.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.16.0...@bitgo/statics@59.17.0) (2026-09-17)
 
 

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [13.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@13.0.0...@bitgo/abstract-utxo@13.1.0) (2026-09-22)
+
+
+### Features
+
+* **abstract-utxo:** add zec v6 transaction signing support ([e30160d](https://github.com/BitGo/BitGoJS/commit/e30160de1424ac7ebf5f7df4bac59a02a73b0d50))
+* **sdk-coin-zec:** verify shielded wallet addresses via coinSpecific ([0d74c63](https://github.com/BitGo/BitGoJS/commit/0d74c63bbd28e35a3de095676dbc389016d565c4))
+
+
+
+
+
 # [13.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@12.7.0...@bitgo/abstract-utxo@13.0.0) (2026-09-17)
 
 
