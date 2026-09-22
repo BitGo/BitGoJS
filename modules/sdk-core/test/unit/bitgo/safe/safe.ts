@@ -3,6 +3,7 @@ import 'should';
 import { SafeData } from '@bitgo/public-types';
 import {
   ECDSAUtils,
+  EDDSAUtils,
   IncorrectPasswordError,
   Safe,
   deriveSafeChildEd25519Hardened,
@@ -321,6 +322,73 @@ describe('Safe', function () {
         keys: ['ecdsa-child-user', 'ecdsa-child-backup-placeholder', 'ecdsa-child-bitgo-placeholder'],
       });
       wallet.id().should.equal('wallet-id');
+    });
+
+    for (const chain of ['sol', 'tsol']) {
+      it(`mints a ${chain} TSS wallet through the EdDSA user/BitGo derivation`, async function () {
+        stubCoin(chain, { getDefaultMultisigType: 'tss' });
+        const userBlob = EDDSAUtils.buildVrfKeyEnvelopes(
+          Buffer.from('eddsa-root-signing'),
+          Buffer.from('eddsa-root-reduced'),
+          Buffer.from('eddsa-root-vrf')
+        ).envelope.toString('base64');
+        keychainsGet.resolves({ id: 'eddsa-user', source: 'user', encryptedPrv: `enc:${userBlob}` });
+        derivationQuery.returns({
+          result: sinon.stub().resolves({ slot: 'eddsaMpc', index: 7 }),
+        });
+
+        const ceremonyStub = sinon.stub(EDDSAUtils.EddsaVrfMPCv2Utils.prototype, 'createSafeChildKeychains').resolves({
+          userKeychain: { id: 'eddsa-child-user', type: 'tss' },
+          backupKeychain: { id: 'eddsa-child-backup', type: 'tss' },
+          bitgoKeychain: { id: 'eddsa-child-bitgo', type: 'tss' },
+        });
+
+        const wallet = await safe.createWallet({
+          coin: chain,
+          label: 'sol desk',
+          passphrase: 'pw',
+          multisigType: 'tss',
+        });
+
+        derivationQuery.calledOnceWithExactly({ slot: 'eddsaMpc' }).should.be.true();
+        keychainsGet.calledOnceWithExactly({ id: 'eddsa-user' }).should.be.true();
+        ceremonyStub.calledOnce.should.be.true();
+        const ceremonyArgs = ceremonyStub.firstCall.args[0];
+        ceremonyArgs.should.containEql({
+          passphrase: 'pw',
+          enterprise: 'test-enterprise-id',
+          safeId: 'test-safe-id',
+          parentKeyId: 'eddsa-bitgo',
+          derivationIndex: 7,
+          userRootKeyId: 'eddsa-user',
+          backupRootKeyId: 'eddsa-backup',
+        });
+        ceremonyArgs.userRootKeyShare.should.deepEqual(Buffer.from('eddsa-root-signing'));
+        ceremonyArgs.userRootVrfKeyShare.should.deepEqual(Buffer.from('eddsa-root-vrf'));
+        ceremonyArgs.should.not.have.property('backupRootKeyShare');
+        ceremonyArgs.should.not.have.property('backupRootVrfKeyShare');
+        keychainsAdd.notCalled.should.be.true();
+        mintSend.firstCall.args[0].should.eql({
+          coin: chain,
+          label: 'sol desk',
+          type: 'hot',
+          multisigType: 'tss',
+          keys: ['eddsa-child-user', 'eddsa-child-backup', 'eddsa-child-bitgo'],
+        });
+        wallet.id().should.equal('wallet-id');
+      });
+    }
+
+    it('rejects a Solana derivation index from the wrong MPC slot before decrypting or minting', async function () {
+      stubCoin('tsol', { getDefaultMultisigType: 'tss' });
+      derivationQuery.returns({ result: sinon.stub().resolves({ slot: 'ecdsaMpc', index: 0 }) });
+
+      await safe
+        .createWallet({ coin: 'tsol', label: 'sol desk', passphrase: 'pw', multisigType: 'tss' })
+        .should.be.rejectedWith(/returned slot 'ecdsaMpc', expected 'eddsaMpc'/);
+      derivationQuery.calledOnceWithExactly({ slot: 'eddsaMpc' }).should.be.true();
+      keychainsGet.notCalled.should.be.true();
+      mintSend.notCalled.should.be.true();
     });
 
     it('rejects a peeked derivation index for the wrong slot', async function () {

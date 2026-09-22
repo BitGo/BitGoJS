@@ -1,9 +1,14 @@
-import { DklsTypes, MPSComms, MpsVrf, type MPSTypes } from '@bitgo/sdk-lib-mpc';
+import { DklsTypes, MPSComms, MpsDerive, MpsVrf, type MPSTypes } from '@bitgo/sdk-lib-mpc';
 import {
+  EddsaMPCv2DeriveRound1Request,
+  EddsaMPCv2DeriveRound1Response,
+  EddsaMPCv2DeriveRound2Request,
+  EddsaMPCv2DeriveRound2Response,
   MPCv2KeyGenStateEnum,
   type EddsaMPCv2KeyGenRound1Response,
   type EddsaMPCv2KeyGenRound2Response,
 } from '@bitgo/public-types';
+import { DerivedFromParentWithHardenedPath } from '@bitgo/sdk-lib-safes';
 import { encode } from 'cbor-x';
 import assert from 'assert';
 import * as t from 'io-ts';
@@ -18,7 +23,11 @@ import type { WebauthnKeyEncryptionInfo } from '../../../keychain';
 import { envRequiresBitgoPubGpgKeyConfig, isBitgoEddsaMpcv2PubKey } from '../../../tss/bitgoPubKeys';
 import { base64String, boundedInt, decodeWithCodec } from '../../codecs';
 import { EddsaMPCv2Utils } from './eddsaMPCv2';
-import { KeyGenSenderForEnterprise } from './eddsaMPCv2KeyGenSender';
+import {
+  EddsaMPCv2DeriveKeySendFn,
+  KeyGenSenderForEnterprise,
+  KeyGenSenderForSafeChild,
+} from './eddsaMPCv2KeyGenSender';
 import type { EddsaMPCv2VrfKeyGenResponseFields } from './typesEddsaMPCv2';
 import { MPCv2PartiesEnum } from '../ecdsa/typesMPCv2';
 
@@ -311,6 +320,153 @@ export class EddsaVrfMPCv2Utils extends EddsaMPCv2Utils {
     ]);
     // #endregion
 
+    return { userKeychain, backupKeychain, bitgoKeychain };
+  }
+
+  async sendDerivationRound1BySender(
+    senderFn: EddsaMPCv2DeriveKeySendFn<EddsaMPCv2DeriveRound1Response>,
+    userGpgPublicKey: string,
+    userMsg1: MPSTypes.MPSSignedMessage,
+    parentKeyId: string,
+    derivationIndex: number
+  ): Promise<EddsaMPCv2DeriveRound1Response> {
+    const request = decodeWithCodec(
+      EddsaMPCv2DeriveRound1Request,
+      { userGpgPublicKey, userMsg1, parentKeyId, derivationIndex },
+      'EddsaMPCv2DeriveRound1Request'
+    );
+    assert(request.derivationIndex <= 0x7fffffff, 'Derivation index must fit a hardened child path');
+    return decodeWithCodec(
+      EddsaMPCv2DeriveRound1Response,
+      await senderFn(MPCv2KeyGenStateEnum['MPCv2Derive-R1'], request),
+      'EddsaMPCv2DeriveRound1Response'
+    );
+  }
+
+  async sendDerivationRound2BySender(
+    senderFn: EddsaMPCv2DeriveKeySendFn<EddsaMPCv2DeriveRound2Response>,
+    sessionId: string,
+    userMsg2: MPSTypes.MPSSignedMessage
+  ): Promise<EddsaMPCv2DeriveRound2Response> {
+    const request = decodeWithCodec(
+      EddsaMPCv2DeriveRound2Request,
+      { sessionId, userMsg2 },
+      'EddsaMPCv2DeriveRound2Request'
+    );
+    return decodeWithCodec(
+      EddsaMPCv2DeriveRound2Response,
+      await senderFn(MPCv2KeyGenStateEnum['MPCv2Derive-R2'], request),
+      'EddsaMPCv2DeriveRound2Response'
+    );
+  }
+
+  /** Derives the user signing share with BitGo and registers all three safe children. */
+  async createSafeChildKeychains(params: {
+    passphrase: string;
+    enterprise: string;
+    safeId: string;
+    parentKeyId: string;
+    derivationIndex: number;
+    userRootKeyId: string;
+    backupRootKeyId: string;
+    userRootKeyShare: Buffer;
+    userRootVrfKeyShare: Buffer;
+    originalPasscodeEncryptionCode?: string;
+    webauthnInfo?: WebauthnKeyEncryptionInfo;
+    encryptionVersion?: EncryptionVersion;
+  }): Promise<KeychainsTriplet> {
+    assert(NonEmptyString.is(params.safeId), 'Safe ID is required for child derivation');
+    assert(NonEmptyString.is(params.userRootKeyId), 'User root key ID is required for child derivation');
+    assert(NonEmptyString.is(params.backupRootKeyId), 'Backup root key ID is required for child derivation');
+    assert(NonEmptyString.is(params.parentKeyId), 'BitGo root key ID is required for child derivation');
+    const path = decodeWithCodec(
+      DerivedFromParentWithHardenedPath,
+      `m/${params.derivationIndex}'`,
+      'derivedFromParentWithPath'
+    );
+
+    const userKeyPair = await generateGPGKeyPair('ed25519');
+    const userGpgKey = await pgp.readPrivateKey({ armoredKey: userKeyPair.privateKey });
+    const { eddsaMpcv2PublicKey } = await this.getBitgoGpgPubkeyBasedOnFeatureFlags(params.enterprise, true);
+    const bitgoPublicGpgKey = eddsaMpcv2PublicKey ?? this.bitgoEddsaMpcv2PublicGpgKey;
+    assert(bitgoPublicGpgKey, 'Failed to get BitGo EdDSA MPCv2 GPG public key');
+    const bitgoPublicGpgKeyArmored = bitgoPublicGpgKey.armor();
+    if (envRequiresBitgoPubGpgKeyConfig(this.bitgo.getEnv())) {
+      assert(isBitgoEddsaMpcv2PubKey(bitgoPublicGpgKeyArmored), 'Invalid BitGo GPG public key');
+    }
+    const bitgoKeyObj = await pgp.readKey({ armoredKey: bitgoPublicGpgKeyArmored });
+
+    const userDeriveSession = new MpsDerive.Derive(
+      3,
+      2,
+      MPCv2PartiesEnum.USER,
+      params.userRootKeyShare,
+      params.userRootVrfKeyShare,
+      path
+    );
+
+    const userMsg1 = await userDeriveSession.initDerive();
+    const signedUserMsg1 = await MPSComms.detachSignMpsMessage(userMsg1.payload, userGpgKey);
+    const { sessionId, bitgoMsg1 } = await this.sendDerivationRound1BySender(
+      KeyGenSenderForSafeChild<EddsaMPCv2DeriveRound1Response>(this.bitgo, params.enterprise, params.safeId),
+      userKeyPair.publicKey,
+      signedUserMsg1,
+      params.parentKeyId,
+      params.derivationIndex
+    );
+
+    const [userMsg2] = userDeriveSession.handleIncomingMessages([
+      { from: MPCv2PartiesEnum.BITGO, payload: await MPSComms.verifyMpsMessage(bitgoMsg1, bitgoKeyObj) },
+    ]);
+    assert(userMsg2, 'User derive round 1 must produce a round 2 message');
+    const signedUserMsg2 = await MPSComms.detachSignMpsMessage(userMsg2.payload, userGpgKey);
+    const {
+      sessionId: sessionIdRound2,
+      commonPublicKeychain,
+      bitgoMsg2,
+    } = await this.sendDerivationRound2BySender(
+      KeyGenSenderForSafeChild<EddsaMPCv2DeriveRound2Response>(this.bitgo, params.enterprise, params.safeId),
+      sessionId,
+      signedUserMsg2
+    );
+    assert.equal(sessionId, sessionIdRound2, 'Round 1 and 2 Session IDs do not match');
+
+    const finalMessages = userDeriveSession.handleIncomingMessages([
+      { from: MPCv2PartiesEnum.BITGO, payload: await MPSComms.verifyMpsMessage(bitgoMsg2, bitgoKeyObj) },
+    ]);
+    assert.equal(finalMessages.length, 0, 'MPS derive round 2 must not produce another message');
+    const commonKeychain = userDeriveSession.getCommonKeychain();
+    assert.equal(commonKeychain, commonPublicKeychain, 'User and BitGo common keychains do not match');
+
+    const [userKeychain, backupKeychain, bitgoKeychain] = await Promise.all([
+      this.addUserKeychain(
+        commonKeychain,
+        userDeriveSession.getKeyShare(),
+        userDeriveSession.getReducedKeyShare(),
+        params.passphrase,
+        params.originalPasscodeEncryptionCode,
+        params.webauthnInfo,
+        params.encryptionVersion,
+        params.enterprise,
+        params.safeId,
+        { parentKeyId: params.userRootKeyId, index: params.derivationIndex }
+      ),
+      this.addBackupKeychain(
+        commonKeychain,
+        undefined,
+        undefined,
+        params.passphrase,
+        params.originalPasscodeEncryptionCode,
+        params.encryptionVersion,
+        params.enterprise,
+        params.safeId,
+        { parentKeyId: params.backupRootKeyId, index: params.derivationIndex }
+      ),
+      this.addBitgoKeychain(commonKeychain, params.safeId, {
+        parentKeyId: params.parentKeyId,
+        index: params.derivationIndex,
+      }),
+    ]);
     return { userKeychain, backupKeychain, bitgoKeychain };
   }
 }
