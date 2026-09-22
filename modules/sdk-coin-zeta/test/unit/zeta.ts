@@ -186,6 +186,69 @@ describe('Zeta', function () {
         })
         .should.rejectedWith('missing required tx prebuild property txHex');
     });
+
+    it('should succeed to verify transaction with a memo-suffixed recipient address', async function () {
+      // Regression test for CSHLD-1780: recipients can carry their memo folded into the
+      // address as `address?memoId=X` (see 'should validate wallet receive address' above),
+      // but explainTransaction() always reports the plain on-chain address plus a separate
+      // memo field (see 'should explain a transfer transaction with memo'). Before the fix,
+      // comparing the raw strings directly made every memo-tagged recipient fail here even
+      // though the transaction matched exactly - this reproduces a live incident on a ZETA
+      // wallet where the client could never sign a pending, correctly-built transaction.
+      const txPrebuild = {
+        txHex: TEST_TX_WITH_MEMO.signedTxBase64,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: `${TEST_TX_WITH_MEMO.to}?memoId=${TEST_TX_WITH_MEMO.memo}`,
+            amount: TEST_TX_WITH_MEMO.sendAmount,
+          },
+        ],
+      };
+      const verification = {};
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should fail to verify transaction when the recipient memoId does not match the tx memo', async function () {
+      const txPrebuild = {
+        txHex: TEST_TX_WITH_MEMO.signedTxBase64,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: `${TEST_TX_WITH_MEMO.to}?memoId=999999`,
+            amount: TEST_TX_WITH_MEMO.sendAmount,
+          },
+        ],
+      };
+      const verification = {};
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, verification })
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should fail to verify transaction when the recipient has no memoId but the tx has one', async function () {
+      const txPrebuild = {
+        txHex: TEST_TX_WITH_MEMO.signedTxBase64,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: TEST_TX_WITH_MEMO.to,
+            amount: TEST_TX_WITH_MEMO.sendAmount,
+          },
+        ],
+      };
+      const verification = {};
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, verification })
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
   });
 
   describe('Explain Transaction: ', () => {
