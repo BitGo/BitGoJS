@@ -95,8 +95,8 @@ Object.entries(Networks).forEach(([category, networks]) => {
         Networks.test.pearl.explorerUrl.should.equal('https://blockbook.testnet.pearlresearch.ai/tx/');
       });
 
-      it('has no mainnet explorer URL yet - Pearl has not launched mainnet', function () {
-        should(Networks.main.pearl.explorerUrl).be.undefined();
+      it('should have a mainnet explorer URL (CECHO-2233)', function () {
+        Networks.main.pearl.explorerUrl.should.equal('https://blockbook.pearlresearch.ai/tx/');
       });
     });
   });

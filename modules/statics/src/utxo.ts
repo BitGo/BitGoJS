@@ -162,7 +162,19 @@ const ZEC_FEATURES = [
   CoinFeature.TSS_COLD,
   CoinFeature.MPCV2,
 ];
-const PEARL_FEATURES = [...UtxoCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.DISTRIBUTED_CUSTODY];
+const PEARL_FEATURES = [
+  ...UtxoCoin.DEFAULT_FEATURES,
+  CoinFeature.BULK_TRANSACTION,
+  CoinFeature.DISTRIBUTED_CUSTODY,
+  CoinFeature.CUSTODY_BITGO_NEW_YORK,
+  CoinFeature.CUSTODY_BITGO_GERMANY,
+  CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+  CoinFeature.CUSTODY_BITGO_FRANKFURT,
+  CoinFeature.CUSTODY_BITGO_SINGAPORE,
+  CoinFeature.CUSTODY_BITGO_SISTER_TRUST_ONE,
+  CoinFeature.CUSTODY_BITGO_KOREA,
+  CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+];
 export const utxoCoins: Readonly<BaseCoin>[] = [
   utxo(
     '8d6e08d5-399f-414f-8430-6ceca1798cbf',

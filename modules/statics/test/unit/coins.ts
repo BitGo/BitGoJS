@@ -211,6 +211,20 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   injective: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
   opeth: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   'opeth:op': { features: [] },
+  pearl: {
+    features: [
+      CoinFeature.CUSTODY_BITGO_NEW_YORK,
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.CUSTODY_BITGO_SISTER_TRUST_ONE,
+      CoinFeature.CUSTODY_BITGO_KOREA,
+      CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+      CoinFeature.BULK_TRANSACTION,
+      CoinFeature.DISTRIBUTED_CUSTODY,
+    ],
+  },
   polygon: {
     features: [
       CoinFeature.CUSTODY_BITGO_GERMANY,
@@ -551,6 +565,20 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   tweth: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
   tinjective: { features: [CoinFeature.CUSTODY_BITGO_SWITZERLAND] },
   topeth: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  tpearl: {
+    features: [
+      CoinFeature.CUSTODY_BITGO_NEW_YORK,
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.CUSTODY_BITGO_SISTER_TRUST_ONE,
+      CoinFeature.CUSTODY_BITGO_KOREA,
+      CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+      CoinFeature.BULK_TRANSACTION,
+      CoinFeature.DISTRIBUTED_CUSTODY,
+    ],
+  },
   tpolygon: {
     features: [
       CoinFeature.CUSTODY_BITGO_GERMANY,
