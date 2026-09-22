@@ -6,6 +6,7 @@ import {
   BitGoBase,
   ExtraPrebuildParamsOptions,
   HalfSignedUtxoTransaction,
+  IWallet,
   MPCAlgorithm,
   SignedTransaction,
   Wallet,
@@ -13,7 +14,13 @@ import {
 } from '@bitgo/sdk-core';
 import _ from 'lodash';
 
-import { AbstractUtxoCoin, ParseTransactionOptions, SignTransactionOptions } from '../../abstractUtxoCoin';
+import {
+  AbstractUtxoCoin,
+  ParseTransactionOptions,
+  SignTransactionOptions,
+  UtxoCoinSpecific,
+  VerifyAddressOptions,
+} from '../../abstractUtxoCoin';
 import type { ParsedTransaction } from '../../transaction/types';
 import { stringToBufferTryFormats } from '../../transaction/decode';
 import { UtxoCoinName, toWasmUtxoCoinName } from '../../names';
@@ -22,6 +29,7 @@ import { AddressCodec } from '../../transaction/recipient';
 import { ZecAddressCodec } from './address';
 import { signIronwoodTransaction } from './signIronwoodTransaction';
 import { resolvePsbtRecipients, PsbtRecipient } from './recipients';
+import { assertShieldedWalletAddress } from './shieldedAddress';
 import type { ZcashCoinName } from './types';
 
 export class Zec extends AbstractUtxoCoin {
@@ -47,6 +55,21 @@ export class Zec extends AbstractUtxoCoin {
 
   override get addressCodec(): ZecAddressCodec {
     return new ZecAddressCodec(this.name, this.wasmName);
+  }
+
+  /**
+   * Shielded (Orchard/Ironwood) addresses are returned with `coinSpecific.shielded` and
+   * cannot be locally rederived from secp256k1 xpubs (RedPallas keychains carry none), so
+   * verify them against the platform-reported diversifier/pkD instead of the fixed-script
+   * transparent derivation the base class performs.
+   * @inheritdoc
+   */
+  override async isWalletAddress(params: VerifyAddressOptions<UtxoCoinSpecific>, wallet?: IWallet): Promise<boolean> {
+    if (params.coinSpecific?.shielded) {
+      assertShieldedWalletAddress(this.name, params);
+      return true;
+    }
+    return super.isWalletAddress(params, wallet);
   }
 
   isValidAddress(address: string, param?: { anyFormat?: boolean; allowLightning?: boolean } | boolean): boolean {

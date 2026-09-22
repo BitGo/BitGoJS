@@ -529,6 +529,20 @@ export interface AddressCoinSpecific {
   forwarderVersion?: number;
   /** Fee address for v4 EVM forwarders (used when deriving/verifying v4 forwarder addresses). */
   feeAddress?: string;
+  /**
+   * Zcash shielded (Orchard/Ironwood) receiver data reported by wallet-platform. Present
+   * only for shielded addresses; see `assertShieldedWalletAddress`.
+   */
+  shielded?: {
+    /** Receiver type, e.g. 'ironwood'. */
+    type?: string;
+    /** 11-byte hex diversifier. */
+    diversifier?: string;
+    /** 32-byte hex `pk_d`. */
+    pkD?: string;
+    /** Wallet address index the diversifier was derived from. */
+    diversifierIndex?: number;
+  };
 }
 
 export interface FullySignedTransaction {
