@@ -5001,4 +5001,22 @@ export const botTokens = [
     undefined,
     undefined
   ),
+  AccountCtors.erc20(
+    'fcff2226-ad33-4921-a43d-2d502381686e',
+    'eth:ctbtccx',
+    'Concrete Bitgo BTCCx Test Vault',
+    18,
+    '0x8c02efe4590f725e384ba50771da0634d444e94c',
+    'eth:ctbtccx' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-switzerland' as CoinFeature,
+      'custody-bitgo-sister-trust-one' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    undefined
+  ),
 ];
