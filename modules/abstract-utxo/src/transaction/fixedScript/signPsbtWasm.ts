@@ -31,27 +31,15 @@ function hasKeyPathSpendInput(
 }
 
 /**
- * Sign all inputs of a PSBT and verify signatures after signing.
- * Uses bulk signing for performance (signs all matching inputs in one pass).
- * Collects and logs signing errors and verification errors, throws error in the end if any of them failed.
+ * Verify signatures on all signed inputs, per-input for granular error reporting.
+ * Shared by the generic wasm signing path and Zec's Ironwood (v6) signing path.
  */
-export function signAndVerifyPsbtWasm(
+export function verifyPsbtSignaturesWasm(
   tx: fixedScriptWallet.BitGoPsbt,
-  signerKeychain: bip32.BIP32Interface | BIP32,
+  wasmSigner: BIP32,
   rootWalletKeys: fixedScriptWallet.RootWalletKeys,
-  replayProtection: ReplayProtectionKeys,
-  { writeSignedWith = false }: { writeSignedWith?: boolean } = {}
-): fixedScriptWallet.BitGoPsbt {
-  const wasmSigner = toWasmBIP32(signerKeychain);
-
-  // Bulk sign all wallet inputs (ECDSA + MuSig2) - much faster than per-input signing
-  try {
-    tx.sign(wasmSigner);
-  } catch (e) {
-    throw new BulkSigningError(e);
-  }
-
-  // Verify signatures for all signed inputs (still per-input for granular error reporting)
+  replayProtection: ReplayProtectionKeys
+): void {
   const parsed = tx.parseTransactionWithWalletKeys(rootWalletKeys, { replayProtection });
   const verifyErrors: InputSigningError<bigint>[] = [];
 
@@ -76,16 +64,45 @@ export function signAndVerifyPsbtWasm(
   if (verifyErrors.length) {
     throw new TransactionSigningError([], verifyErrors);
   }
+}
+
+/** Embed the wasm-utxo version metadata into the signed PSBT. Shared by all wasm signing paths. */
+export function writeWasmUtxoSignedWithKv(tx: fixedScriptWallet.BitGoPsbt): void {
+  const versionInfo = getWasmUtxoVersion();
+  const versionPayload = new TextEncoder().encode(
+    JSON.stringify({
+      version: versionInfo.version,
+      gitHash: versionInfo.gitHash,
+    })
+  );
+  tx.setKV({ type: 'bitgo', subtype: fixedScriptWallet.BitGoKeySubtype.WasmUtxoSignedWith }, versionPayload);
+}
+
+/**
+ * Sign all inputs of a PSBT and verify signatures after signing.
+ * Uses bulk signing for performance (signs all matching inputs in one pass).
+ * Collects and logs signing errors and verification errors, throws error in the end if any of them failed.
+ */
+export function signAndVerifyPsbtWasm(
+  tx: fixedScriptWallet.BitGoPsbt,
+  signerKeychain: bip32.BIP32Interface | BIP32,
+  rootWalletKeys: fixedScriptWallet.RootWalletKeys,
+  replayProtection: ReplayProtectionKeys,
+  { writeSignedWith = false }: { writeSignedWith?: boolean } = {}
+): fixedScriptWallet.BitGoPsbt {
+  const wasmSigner = toWasmBIP32(signerKeychain);
+
+  // Bulk sign all wallet inputs (ECDSA + MuSig2) - much faster than per-input signing
+  try {
+    tx.sign(wasmSigner);
+  } catch (e) {
+    throw new BulkSigningError(e);
+  }
+
+  verifyPsbtSignaturesWasm(tx, wasmSigner, rootWalletKeys, replayProtection);
 
   if (writeSignedWith) {
-    const versionInfo = getWasmUtxoVersion();
-    const versionPayload = new TextEncoder().encode(
-      JSON.stringify({
-        version: versionInfo.version,
-        gitHash: versionInfo.gitHash,
-      })
-    );
-    tx.setKV({ type: 'bitgo', subtype: fixedScriptWallet.BitGoKeySubtype.WasmUtxoSignedWith }, versionPayload);
+    writeWasmUtxoSignedWithKv(tx);
   }
 
   return tx;

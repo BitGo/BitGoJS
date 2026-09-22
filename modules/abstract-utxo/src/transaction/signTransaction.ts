@@ -13,7 +13,7 @@ import { decodeDescriptorPsbt, encodeTransaction } from './decode';
 
 const debug = buildDebug('bitgo:abstract-utxo:transaction:signTransaction');
 
-function getSignerKeychain(userPrv: unknown): BIP32 | undefined {
+export function getSignerKeychain(userPrv: unknown): BIP32 | undefined {
   if (userPrv === undefined) {
     return undefined;
   }
@@ -26,6 +26,22 @@ function getSignerKeychain(userPrv: unknown): BIP32 | undefined {
   }
   debug(`Here is the public key of the xprv you used to sign: ${signerKeychain.neutered().toBase58()}`);
   return signerKeychain;
+}
+
+/**
+ * Wrap a signed transaction (finalized PSBT or extracted bytes) into the signTransaction result
+ * shape, honoring the caller's legacy-format request.
+ * Shared by the generic signing path and Zec's Ironwood (v6) signing path.
+ */
+export function toSignTransactionResult(
+  signedTx: fixedScriptWallet.BitGoPsbt | Buffer,
+  { returnLegacyFormat }: { returnLegacyFormat?: boolean }
+): { txHex: string } {
+  if (returnLegacyFormat && signedTx instanceof fixedScriptWallet.BitGoPsbt) {
+    return { txHex: Buffer.from(signedTx.getHalfSignedLegacyFormat()).toString('hex') };
+  }
+  const buffer = Buffer.isBuffer(signedTx) ? signedTx : encodeTransaction(signedTx);
+  return { txHex: buffer.toString('hex') };
 }
 
 export async function signTransaction<TNumber extends number | bigint>(
@@ -71,12 +87,6 @@ export async function signTransaction<TNumber extends number | bigint>(
       writeSignedWith: params.writeSignedWith,
     });
 
-    // Convert half-signed PSBT to legacy format when the caller explicitly requested txFormat: 'legacy'
-    if (params.returnLegacyFormat && signedTx instanceof fixedScriptWallet.BitGoPsbt) {
-      return { txHex: Buffer.from(signedTx.getHalfSignedLegacyFormat()).toString('hex') };
-    }
-
-    const buffer = Buffer.isBuffer(signedTx) ? signedTx : encodeTransaction(signedTx);
-    return { txHex: buffer.toString('hex') };
+    return toSignTransactionResult(signedTx, params);
   }
 }
