@@ -23,6 +23,25 @@ export function signAndVerifyPsbt(
   return signAndVerifyPsbtWasm(psbt, signerKeychain, rootWalletKeys, replayProtection, options);
 }
 
+/**
+ * Finalize a signed PSBT into its final form: the extracted transaction bytes on the last
+ * signature round (unless the caller asked to keep the PSBT), otherwise the signed PSBT itself.
+ * Shared by the generic signing path and Zec's Ironwood (v6) signing path.
+ */
+export function finalizeSignedPsbt(
+  signedPsbt: fixedScriptWallet.BitGoPsbt,
+  { isLastSignature = false, extractTransaction = true }: { isLastSignature?: boolean; extractTransaction?: boolean }
+): fixedScriptWallet.BitGoPsbt | Buffer {
+  if (!isLastSignature) {
+    return signedPsbt;
+  }
+  if (extractTransaction) {
+    signedPsbt.finalizeAllInputs();
+    return Buffer.from(signedPsbt.extractTransaction().toBytes());
+  }
+  return signedPsbt;
+}
+
 export async function signTransaction(
   coin: Musig2Participant<fixedScriptWallet.BitGoPsbt>,
   tx: fixedScriptWallet.BitGoPsbt,
@@ -59,12 +78,5 @@ export async function signTransaction(
     walletId: params.walletId,
     writeSignedWith: params.writeSignedWith,
   });
-  if (isLastSignature) {
-    if (extractTransaction) {
-      signedPsbt.finalizeAllInputs();
-      return Buffer.from(signedPsbt.extractTransaction().toBytes());
-    }
-    return signedPsbt;
-  }
-  return signedPsbt;
+  return finalizeSignedPsbt(signedPsbt, { isLastSignature, extractTransaction });
 }

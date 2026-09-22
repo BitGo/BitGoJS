@@ -5,18 +5,22 @@ import { fixedScriptWallet, hasPsbtMagic, zcashAddress } from '@bitgo/wasm-utxo'
 import {
   BitGoBase,
   ExtraPrebuildParamsOptions,
+  HalfSignedUtxoTransaction,
   MPCAlgorithm,
+  SignedTransaction,
   Wallet,
   UnifiedRecipientPreference,
 } from '@bitgo/sdk-core';
+import _ from 'lodash';
 
-import { AbstractUtxoCoin, ParseTransactionOptions } from '../../abstractUtxoCoin';
+import { AbstractUtxoCoin, ParseTransactionOptions, SignTransactionOptions } from '../../abstractUtxoCoin';
 import type { ParsedTransaction } from '../../transaction/types';
 import { stringToBufferTryFormats } from '../../transaction/decode';
 import { UtxoCoinName, toWasmUtxoCoinName } from '../../names';
 import { AddressCodec } from '../../transaction/recipient';
 
 import { ZecAddressCodec } from './address';
+import { signIronwoodTransaction } from './signIronwoodTransaction';
 import { resolvePsbtRecipients, PsbtRecipient } from './recipients';
 import type { ZcashCoinName } from './types';
 
@@ -100,6 +104,26 @@ export class Zec extends AbstractUtxoCoin {
       return super.decodeTransaction(input);
     }
     return fixedScriptWallet.ZcashPsbt.fromBytes(buffer, toWasmUtxoCoinName(this.name) as ZcashCoinName);
+  }
+
+  /**
+   * Route v6 (Ironwood) prebuilds to the Ironwood signing path — its `sign` override requires
+   * the wallet root keys to derive the ovk on the user's first signing round — and keep every
+   * other prebuild (v4 and non-PSBT) on the generic path.
+   */
+  override async signTransaction<TNumber extends number | bigint = number>(
+    params: SignTransactionOptions<TNumber>
+  ): Promise<SignedTransaction | HalfSignedUtxoTransaction> {
+    const txPrebuild = params?.txPrebuild;
+    if (!_.isObject(txPrebuild)) {
+      // Defer to the base path for its standard missing/malformed-prebuild validation errors.
+      return super.signTransaction(params);
+    }
+    const tx = this.decodeTransactionFromPrebuild(txPrebuild);
+    if (!(tx instanceof fixedScriptWallet.ZcashIronwoodBitGoPsbt)) {
+      return super.signTransaction(params);
+    }
+    return signIronwoodTransaction(this, tx, params);
   }
   resolveRecipientsFromPsbt(input: Buffer | string, walletKeys: fixedScriptWallet.RootWalletKeys): PsbtRecipient[] {
     const psbt = this.decodeTransaction(input);

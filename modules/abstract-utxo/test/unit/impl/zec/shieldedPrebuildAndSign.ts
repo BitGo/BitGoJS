@@ -2,7 +2,7 @@ import * as assert from 'assert';
 
 import * as sinon from 'sinon';
 import nock = require('nock');
-import { common, VerificationOptions, Wallet } from '@bitgo/sdk-core';
+import { common, Triple, VerificationOptions, Wallet } from '@bitgo/sdk-core';
 import { getSeed } from '@bitgo/sdk-test';
 import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 
@@ -384,5 +384,171 @@ describe('Zec getExtraPrebuildParams (unifiedRecipientPreference forwarding)', f
       unifiedRecipientPreference: 'shielded',
     });
     assert.strictEqual(result.txFormat, 'psbt-lite');
+  });
+});
+
+describe('Zec signTransaction (v6 Ironwood transparent-input signing)', function () {
+  const zec = getUtxoCoin('tzec') as Zec;
+  const { xpubs } = getDefaultWasmWalletKeys();
+  const [userKeychain, backupKeychain, bitgoKeychain] = keychainsBase58;
+  const pubs: Triple<string> = [userKeychain.pub, backupKeychain.pub, bitgoKeychain.pub];
+
+  it('signs the transparent inputs with the user key and finalizes the shielded out_ciphertext (ovk via ECDH)', async function () {
+    const signed = await zec.signTransaction({
+      txPrebuild: { txHex: buildShieldedV6PrebuildHex() },
+      prv: userKeychain.prv,
+      pubs,
+    });
+    assert.ok('txHex' in signed);
+    const { txHex } = signed;
+    // The half-signed result is the v6 PSBT with the user's ECDSA signatures over the
+    // ZIP-244 transparent sighash. Deriving the ovk (ECDH of the BitGo root pubkey and the
+    // user root key) and finalizing out_ciphertext happens inside sign(), before any
+    // sighash is computed — a failing ovk step aborts the whole round.
+    const psbt = zec.decodeTransaction(Buffer.from(txHex, 'hex'));
+    assert.ok(psbt instanceof fixedScriptWallet.ZcashIronwoodBitGoPsbt);
+    assert.strictEqual(psbt.verifySignature(0, xpubs[0]), true);
+    assert.strictEqual(psbt.verifySignature(0, xpubs[2]), false);
+  });
+
+  it('out_ciphertext survives the serialize round-trip: the BitGo countersigning round succeeds on it', async function () {
+    const userRound = await zec.signTransaction({
+      txPrebuild: { txHex: buildShieldedV6PrebuildHex() },
+      prv: userKeychain.prv,
+      pubs,
+    });
+    assert.ok('txHex' in userRound);
+    const bitgoRound = await zec.signTransaction({
+      txPrebuild: { txHex: userRound.txHex },
+      prv: bitgoKeychain.prv,
+      pubs,
+    });
+    assert.ok('txHex' in bitgoRound);
+    const psbt = zec.decodeTransaction(Buffer.from(bitgoRound.txHex, 'hex'));
+    assert.ok(psbt instanceof fixedScriptWallet.ZcashIronwoodBitGoPsbt);
+    // Fully signed transparent inputs: both the user and BitGo signatures verify against
+    // the v6 (ZIP-244) sighash — the proof service takes it from here via combineProof.
+    assert.strictEqual(psbt.verifySignature(0, xpubs[0]), true);
+    assert.strictEqual(psbt.verifySignature(0, xpubs[2]), true);
+    assert.strictEqual(psbt.verifySignature(0, xpubs[1]), false);
+  });
+
+  it('rejects a first signing round opened by a non-user key', async function () {
+    // The wasm derives the ovk from the first-round signer's key: a round opened by the
+    // backup or BitGo key would produce an out_ciphertext neither the user nor the server
+    // can re-derive, leaving the shielded output unrecoverable.
+    await assert.rejects(
+      zec.signTransaction({
+        txPrebuild: { txHex: buildShieldedV6PrebuildHex() },
+        prv: bitgoKeychain.prv,
+        pubs,
+      }),
+      /user/
+    );
+  });
+
+  it('requires rootWalletKeys when signing an Ironwood PSBT', function () {
+    const psbt = fixedScriptWallet.ZcashIronwoodBitGoPsbt.fromBytes(
+      Buffer.from(buildShieldedV6PrebuildHex(), 'hex'),
+      'tzec'
+    );
+    const { xprivs } = getDefaultWasmWalletKeys();
+    // Without rootWalletKeys the ovk step cannot run, so sign() throws at runtime rather
+    // than silently skipping it — the signing dispatch must always pass rootWalletKeys.
+    assert.throws(() => psbt.sign(xprivs[0]));
+  });
+
+  it('signs a v4 (Sapling-shaped) psbt through the generic signing path', async function () {
+    // The signTransaction override routes only v6 (Ironwood) prebuilds; a v4 prebuild must
+    // keep flowing through the generic path unchanged.
+    const psbt = fixedScriptWallet.ZcashBitGoPsbt.createEmpty('tzec', walletKeys, { blockHeight: 3146400 });
+    psbt.addWalletInput({ txid: '44'.repeat(32), vout: 0, value: 100000n }, walletKeys, {
+      scriptId: { chain: 0, index: 0 },
+    });
+    psbt.addWalletOutput(walletKeys, { chain: 1, index: 0, value: 90000n });
+    const signed = await zec.signTransaction({
+      txPrebuild: { txHex: Buffer.from(psbt.serialize()).toString('hex') },
+      prv: userKeychain.prv,
+      pubs,
+    });
+    assert.ok('txHex' in signed);
+    const decoded = zec.decodeTransaction(Buffer.from(signed.txHex, 'hex'));
+    assert.ok(decoded instanceof fixedScriptWallet.ZcashBitGoPsbt);
+    assert.ok(!(decoded instanceof fixedScriptWallet.ZcashIronwoodBitGoPsbt));
+    assert.strictEqual(decoded.verifySignature(0, xpubs[0]), true);
+  });
+});
+
+describe('Zec shielded out_ciphertext (ovk derivation)', function () {
+  const { xprivs } = getDefaultWasmWalletKeys();
+
+  function buildPsbt(buildOvk?: Uint8Array): fixedScriptWallet.ZcashIronwoodBitGoPsbt {
+    const psbt = fixedScriptWallet.ZcashIronwoodBitGoPsbt.createEmpty('tzec', walletKeys, { blockHeight: 4200000 });
+    psbt.addWalletInput({ txid: '11'.repeat(32), vout: 0, value: 100000n }, walletKeys, {
+      scriptId: { chain: 0, index: 0 },
+    });
+    psbt.addWalletOutput(walletKeys, { chain: 1, index: 0, value: 90000n });
+    psbt.addShieldedOutputs(
+      [
+        {
+          recipient: new Uint8Array(IRONWOOD_RECEIVER),
+          amount: 5000n,
+          unifiedAddress,
+          ...(buildOvk ? { ovk: buildOvk } : {}),
+        },
+      ],
+      new Uint8Array(32)
+    );
+    return psbt;
+  }
+
+  function pcztOf(psbt: fixedScriptWallet.ZcashIronwoodBitGoPsbt): Buffer {
+    const pczt = psbt.getPczt();
+    assert.ok(pczt, 'expected the orchard PCZT to be present');
+    return Buffer.from(pczt);
+  }
+
+  it('sign() finalizes out_ciphertext to the same bytes as the explicit client-managed-ovk derivation', function () {
+    // out_ciphertext encryption is deterministic given the (identical) orchard action and the
+    // ovk, so byte-equality of the PCZT proves sign()'s implicit derivation is exactly the
+    // documented one: the ECDH agreement of rootWalletKeys.bitgoKey() and the user root key.
+    const bytes = buildPsbt().serialize();
+    const autoPsbt = fixedScriptWallet.ZcashIronwoodBitGoPsbt.fromBytes(bytes, 'tzec');
+    autoPsbt.sign(xprivs[0], walletKeys);
+    const manualPsbt = fixedScriptWallet.ZcashIronwoodBitGoPsbt.fromBytes(bytes, 'tzec');
+    manualPsbt.setShieldedOutCiphertext(0, xprivs[0], walletKeys);
+    assert.deepStrictEqual(pcztOf(autoPsbt), pcztOf(manualPsbt));
+  });
+
+  it('out_ciphertext differs when encrypted under different ovks', function () {
+    // The binding between out_ciphertext and the ovk is real: two builds identical except for
+    // the build-time ovk produce different PCZTs, so the equality assertions here are not
+    // vacuous (out_ciphertext cannot be a constant).
+    assert.notDeepStrictEqual(
+      pcztOf(buildPsbt(new Uint8Array(32).fill(1))),
+      pcztOf(buildPsbt(new Uint8Array(32).fill(2)))
+    );
+  });
+
+  it('sign() overrides a build-time ovk with the wallet ovk', function () {
+    const bytes = buildPsbt(new Uint8Array(32).fill(1)).serialize();
+    const builtPsbt = fixedScriptWallet.ZcashIronwoodBitGoPsbt.fromBytes(bytes, 'tzec');
+    const signedPsbt = fixedScriptWallet.ZcashIronwoodBitGoPsbt.fromBytes(bytes, 'tzec');
+    signedPsbt.sign(xprivs[0], walletKeys);
+    // The first signing round re-encrypts out_ciphertext under the wallet ovk, discarding the
+    // build-time one...
+    assert.notDeepStrictEqual(pcztOf(signedPsbt), pcztOf(builtPsbt));
+    // ...and the result is byte-identical to the explicit wallet-ovk derivation.
+    const manualPsbt = fixedScriptWallet.ZcashIronwoodBitGoPsbt.fromBytes(bytes, 'tzec');
+    manualPsbt.setShieldedOutCiphertext(0, xprivs[0], walletKeys);
+    assert.deepStrictEqual(pcztOf(signedPsbt), pcztOf(manualPsbt));
+  });
+
+  it('rejects an ovk derived from a non-user key', function () {
+    // An ovk from the backup or BitGo key is one neither the user nor the server can
+    // reproduce, which would leave the shielded output unrecoverable after broadcast.
+    const psbt = buildPsbt();
+    assert.throws(() => psbt.setShieldedOutCiphertext(0, xprivs[1], walletKeys));
+    assert.throws(() => psbt.setShieldedOutCiphertext(0, xprivs[2], walletKeys));
   });
 });
