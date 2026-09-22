@@ -120,6 +120,35 @@ describe('encryption methods tests', () => {
       assert.strictEqual(await decrypt(password, ciphertext), plaintext);
     });
 
+    it('decrypts v2 data with copy-paste line breaks inside the envelope', async () => {
+      const ciphertext = await encrypt(password, plaintext);
+      // Simulates a KeyCard PDF whose long box values wrap across lines.
+      const wrapped = ciphertext.replace(/(.{8})/g, '$1\n');
+      assert.strictEqual(await decrypt(password, wrapped), plaintext);
+    });
+
+    it('decrypts v1 data with copy-paste line breaks inside the envelope', async () => {
+      const ciphertext = await encrypt(password, plaintext, { encryptionVersion: 1 });
+      const wrapped = ciphertext.replace(/(.{8})/g, '$1\r\n  ');
+      assert.strictEqual(await decrypt(password, wrapped), plaintext);
+    });
+
+    it('decrypts a pretty-printed v2 envelope (whitespace between tokens)', async () => {
+      const ciphertext = await encrypt(password, plaintext);
+      const pretty = JSON.stringify(JSON.parse(ciphertext), null, 2);
+      assert.strictEqual(await decrypt(password, pretty), plaintext);
+    });
+
+    it('does not alter valid envelopes whose adata contains whitespace', async () => {
+      const ciphertext = await encrypt(password, plaintext, { adata: 'hello world' });
+      const pretty = JSON.stringify(JSON.parse(ciphertext), null, 2);
+      assert.strictEqual(await decrypt(password, pretty), plaintext);
+    });
+
+    it('still rejects non-JSON input even after whitespace stripping', async () => {
+      await assert.rejects(() => decrypt(password, 'n o t - j s o n'), /ciphertext is not valid JSON/);
+    });
+
     it('throws on wrong password for v1', async () => {
       const ciphertext = await encrypt(password, plaintext, { encryptionVersion: 1 });
       await assert.rejects(() => decrypt('wrongPassword', ciphertext));

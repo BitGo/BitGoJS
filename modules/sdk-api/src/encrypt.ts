@@ -153,23 +153,46 @@ export async function decryptV1WithFallback(
 }
 
 /**
+ * Strips all whitespace from a ciphertext envelope. Envelope string fields
+ * other than `adata` (which is a raw UTF-8 AEAD-bound string) hold only
+ * base64/hex/fixed identifiers, and inter-token whitespace is already legal
+ * JSON — so whitespace inside the rest of the envelope can only be a
+ * copy-paste artifact (KeyCard PDFs wrap long box values across lines).
+ * Mirrors key-card's normalizeSectionValue, which also joins wrapped section
+ * values with no separator. Callers must only use this as a fallback when
+ * the raw envelope fails JSON.parse, so that valid envelopes — including
+ * ones whose adata contains meaningful whitespace — are never altered.
+ */
+export function stripCiphertextWhitespace(ciphertext: string): string {
+  return ciphertext.replace(/\s+/g, '');
+}
+
+/**
  * Auto-detect v1 (PBKDF2-SHA256 + AES-CCM) or v2 (Argon2id + AES-256-GCM)
- * from the envelope `v` field and decrypt.
+ * from the envelope `v` field and decrypt. If the raw envelope is not valid
+ * JSON, retries once with whitespace stripped before failing, so wrapped
+ * pastes (e.g. from a KeyCard PDF) still decrypt.
  */
 export async function decrypt(password: string, ciphertext: string): Promise<string> {
-  let envelopeVersion: number | undefined;
+  let normalized: string;
   try {
-    const envelope = JSON.parse(ciphertext);
-    envelopeVersion = envelope.v;
+    JSON.parse(ciphertext);
+    normalized = ciphertext;
   } catch {
-    throw new Error('decrypt: ciphertext is not valid JSON');
+    normalized = stripCiphertextWhitespace(ciphertext);
+    try {
+      JSON.parse(normalized);
+    } catch {
+      throw new Error('decrypt: ciphertext is not valid JSON');
+    }
   }
+  const envelopeVersion: number | undefined = JSON.parse(normalized).v;
   if (envelopeVersion === 2) {
     // Do not catch: wrong password on v2 must not silently fall through to v1.
-    return decryptV2(password, ciphertext);
+    return decryptV2(password, normalized);
   }
   if (envelopeVersion !== undefined && envelopeVersion !== 1) {
     throw new Error(`decrypt: unknown envelope version ${envelopeVersion}`);
   }
-  return decryptV1WithFallback(password, ciphertext);
+  return decryptV1WithFallback(password, normalized);
 }

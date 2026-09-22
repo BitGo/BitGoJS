@@ -2927,7 +2927,10 @@ describe('ETH:', function () {
               encryptedPrv: key,
               walletPassphrase: 'foo',
             }),
-          { message: 'failed to decrypt prv: decrypt: ciphertext is not valid JSON' }
+          // The fixture key is a KeyCard paste with wrapped lines; decrypt
+          // now strips that whitespace, so the wrong passphrase fails the
+          // actual password check instead of the envelope parse.
+          { message: 'failed to decrypt prv: incorrect password' }
         );
       });
 
