@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-wemix",
-  "version": "1.7.43",
+  "version": "1.7.44",
   "description": "BitGo SDK coin library for Wemix",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,15 +40,15 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-eth": "^25.3.10",
-    "@bitgo/sdk-core": "^38.17.0",
-    "@bitgo/statics": "^59.17.0",
+    "@bitgo/abstract-eth": "^25.3.11",
+    "@bitgo/sdk-core": "^38.18.0",
+    "@bitgo/statics": "^59.17.1",
     "@ethereumjs/common": "^2.6.5",
     "@ethereumjs/tx": "^3.3.0"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^3.0.1",
-    "@bitgo/sdk-test": "^9.1.78"
+    "@bitgo/sdk-api": "^3.0.2",
+    "@bitgo/sdk-test": "^9.1.79"
   },
   "files": [
     "dist"

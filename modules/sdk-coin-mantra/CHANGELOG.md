@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.44](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-mantra@1.5.43...@bitgo/sdk-coin-mantra@1.5.44) (2026-09-22)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-mantra
+
+
+
+
+
 ## [1.5.43](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-mantra@1.5.42...@bitgo/sdk-coin-mantra@1.5.43) (2026-09-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-mantra

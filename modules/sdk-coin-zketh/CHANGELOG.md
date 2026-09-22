@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.7.44](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-zketh@2.7.43...@bitgo/sdk-coin-zketh@2.7.44) (2026-09-22)
+
+
+### Bug Fixes
+
+* **statics:** move zketh ERC20 tokens onto zksyncera ([6f7fcec](https://github.com/BitGo/BitGoJS/commit/6f7fcecffcc997c7cf9d205aa6616c5b2cca2221))
+
+
+
+
+
 ## [2.7.43](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-zketh@2.7.42...@bitgo/sdk-coin-zketh@2.7.43) (2026-09-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-zketh

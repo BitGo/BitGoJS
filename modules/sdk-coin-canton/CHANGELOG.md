@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.32.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.32.1...@bitgo/sdk-coin-canton@1.32.2) (2026-09-22)
+
+
+### Bug Fixes
+
+* **sdk-coin-canton:** handle large amounts in canton builders ([b9b1936](https://github.com/BitGo/BitGoJS/commit/b9b1936f226a164a60423883eccf3dd78ac722c1))
+
+
+
+
+
 ## [1.32.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.32.0...@bitgo/sdk-coin-canton@1.32.1) (2026-09-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-canton

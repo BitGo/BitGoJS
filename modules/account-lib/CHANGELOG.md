@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.23.29...@bitgo/account-lib@27.24.0) (2026-09-22)
+
+
+### Features
+
+* extract Safe derivation into a leaf package ([8a61c3a](https://github.com/BitGo/BitGoJS/commit/8a61c3aec6bc863e6414c985cc83edd311835e7a))
+
+
+
+
+
 ## [27.23.29](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.23.28...@bitgo/account-lib@27.23.29) (2026-09-17)
 
 **Note:** Version bump only for package @bitgo/account-lib

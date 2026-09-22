@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [53.1.0](https://github.com/BitGo/BitGoJS/compare/bitgo@53.0.1...bitgo@53.1.0) (2026-09-22)
+
+
+### Bug Fixes
+
+* **sdk-core:** post hardened path for Safe MPC BitGo child ([c5956e0](https://github.com/BitGo/BitGoJS/commit/c5956e0410177dfebffe3a5d8cc727b7e4ccb1de))
+* **statics:** move zketh ERC20 tokens onto zksyncera ([6f7fcec](https://github.com/BitGo/BitGoJS/commit/6f7fcecffcc997c7cf9d205aa6616c5b2cca2221))
+
+
+### Features
+
+* **sdk-core:** register BitGo Safe child placeholder for TSS minting ([47bce1c](https://github.com/BitGo/BitGoJS/commit/47bce1ca8adb60fa1c5cdca6918969cd4eb42997))
+
+
+
+
+
 ## [53.0.1](https://github.com/BitGo/BitGoJS/compare/bitgo@53.0.0...bitgo@53.0.1) (2026-09-17)
 
 
