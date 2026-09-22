@@ -1,10 +1,10 @@
-import { TssSettings } from '@bitgo/public-types';
+import { TssSettings, type KeyBulkUpdateBody, KeyBulkUpdateResponse } from '@bitgo/public-types';
 import assert from 'assert';
 import * as _ from 'lodash';
 import * as common from '../../common';
 import { IBaseCoin, KeychainsTriplet, KeyPair } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
-import { SafeMpcCeremonyUnsupportedError } from '../errors';
+import { IncorrectPasswordError, SafeMpcCeremonyUnsupportedError } from '../errors';
 import {
   decodeEd25519StrKeyPublicKey,
   encodeDerivableEd25519Pub,
@@ -32,6 +32,11 @@ import {
 } from './iKeychains';
 import { BitGoKeyFromOvcShares, BitGoToOvcJSON, OvcToBitGoJSON } from './ovcJsonCodec';
 import { EncryptionVersion, IEncryptionSession } from '../../api';
+
+/** Server-side transaction budget for one bulk key update: each write is sub-KB, so hundreds of
+ * envelopes fit in one Mongo transaction. Only batches past this size are chunked, at the cost
+ * of all-or-nothing across chunks. */
+const BULK_KEY_UPDATE_BATCH_SIZE = 500;
 
 export class Keychains implements IKeychains {
   private readonly bitgo: BitGoBase;
@@ -69,6 +74,9 @@ export class Keychains implements IKeychains {
    * @param params
    * @param params.limit - Max number of results in a single call.
    * @param params.prevId - Continue iterating (provided by nextBatchPrevId in the previous list)
+   * @param params.safeId - Optional safe id; scopes the listing to the safe's keys (requires safe
+   *   admin). The result set is coin-independent — the same safe yields the same keys through any
+   *   coin's keychains().
    * @returns {*}
    */
   async list(params: ListKeychainOptions = {}): Promise<ListKeychainsResult> {
@@ -86,30 +94,62 @@ export class Keychains implements IKeychains {
       }
       queryObject.prevId = params.prevId;
     }
+    if (!_.isUndefined(params.safeId)) {
+      if (!_.isString(params.safeId)) {
+        throw new Error('invalid safeId argument, expecting string');
+      }
+      queryObject.safeId = params.safeId;
+    }
 
     return this.bitgo.get(this.baseCoin.url('/key')).query(queryObject).result();
   }
 
   /**
-   * Change the decryption password for all possible keychains associated with a user.
+   * Change the decryption password for keychains. One method, two modes — the optional `safeId`
+   * parameter flips BOTH the error philosophy and the persistence story, so pick the mode
+   * deliberately:
    *
-   * This function iterates through all keys associated with the user, decrypts
-   * them with the old password and re-encrypts them with the new password.
+   * **Legacy mode (no `safeId`)** — login-password sync. Walks all keychains associated with the
+   * user for this coin, decrypts each one with `oldPassword` and re-encrypts it with
+   * `newPassword`, silently skipping keychains that fail to decrypt (e.g. wallets that never
+   * matched the login password). Persists NOTHING: the returned `changedKeys` map
+   * (`{ xpub|keyId → newEncryptedPrv }`) is the caller's job to persist.
    *
-   * This should be called when a user changes their login password, and are expecting
-   * that their wallet passwords are changed to match the new login password.
+   * **Safe mode (`safeId` present)** — safe passphrase rotation. Requires safe admin. Walks the
+   * safe's keychains (all slots plus every minted MPC wallet's user key; keychains without an
+   * `encryptedPrv` are skipped), decrypts every envelope with `oldPassword` BEFORE any write and
+   * fails fast with `IncorrectPasswordError` on the first undecryptable one — so a wrong
+   * passphrase results in zero writes instead of a half-rotated safe. Re-encrypts through a
+   * single shared encryption session (one Argon2 for the whole fan-out) and persists everything
+   * atomically server-side via the coinless batch endpoint `PUT /api/v2/key/bulk`, per-key
+   * compare-and-swap against the old envelope (a stale envelope — e.g. after an in-flight mint —
+   * is rejected with a 409 naming the key; within one batch the write is all-or-nothing, so
+   * re-running the rotation recovers). Batches past {@link BULK_KEY_UPDATE_BATCH_SIZE} items are
+   * chunked and each chunk commits independently: a failure after an earlier chunk has committed
+   * leaves mixed old/new envelopes that a re-run with the old passphrase cannot recover from.
+   * Resolves with the batch response, NOT a `changedKeys` map. In this mode envelopes are
+   * emitted at the shared session's version (`encryptionVersion`, default v2), not
+   * per-keychain source versions; when both `encryptionSession` and `encryptionVersion` are
+   * supplied, the provided session wins and `encryptionVersion` is ignored.
    *
    * @param params
    * @param params.oldPassword - The old password used for encrypting the key
    * @param params.newPassword - The new password to be used for encrypting the key
-   * @returns changedKeys Object - e.g.:
+   * @param params.safeId - Optional safe id; switches to safe mode (see above)
+   * @returns legacy mode: changedKeys Object - e.g.:
    *  {
    *    xpub1: encryptedPrv,
    *    ...
    *  }
+   * @returns safe mode: the batch response, one `{ keyId, updated }` item per rotated key
    */
-  async updatePassword(params: UpdatePasswordOptions): Promise<ChangedKeychains> {
-    common.validateParams(params, ['oldPassword', 'newPassword'], []);
+  async updatePassword(params: UpdatePasswordOptions & { safeId: string }): Promise<KeyBulkUpdateResponse>;
+  async updatePassword(params: UpdatePasswordOptions): Promise<ChangedKeychains>;
+  async updatePassword(params: UpdatePasswordOptions): Promise<ChangedKeychains | KeyBulkUpdateResponse> {
+    common.validateParams(params, ['oldPassword', 'newPassword'], ['safeId']);
+    if (!_.isUndefined(params.safeId)) {
+      return this.updateSafePassword(params as UpdatePasswordOptions & { safeId: string });
+    }
     const changedKeys: ChangedKeychains = {};
     let prevId;
     let keysLeft = true;
@@ -157,6 +197,91 @@ export class Keychains implements IKeychains {
       }
     }
     return changedKeys;
+  }
+
+  /**
+   * Safe-mode implementation of {@link Keychains.updatePassword} (`params.safeId` present).
+   *
+   * Walks the safe's keychains page by page (`GET /:coin/key?safeId=...`), decrypts every
+   * envelope with the old password as it goes (the fail-fast preflight — the first
+   * undecryptable envelope aborts with zero writes, so old and new envelopes can never be
+   * mixed by a half-rotation), re-encrypts through one shared encryption session, and persists
+   * the whole fan-out through the coinless batch endpoint (chunked past
+   * {@link BULK_KEY_UPDATE_BATCH_SIZE} items; each chunk commits independently, so a mid-chunk
+   * failure leaves mixed old/new envelopes that re-running the walk with the old passphrase
+   * cannot recover — callers must resume deliberately).
+   */
+  private async updateSafePassword(params: UpdatePasswordOptions & { safeId: string }): Promise<KeyBulkUpdateResponse> {
+    const updates: KeyBulkUpdateBody['updates'] = [];
+    let session: IEncryptionSession | undefined;
+    let ownSession = false;
+    try {
+      let prevId: string | undefined;
+      let keysLeft = true;
+      while (keysLeft) {
+        const result: ListKeychainsResult = await this.list({ limit: 500, prevId, safeId: params.safeId });
+        for (const key of result.keys) {
+          const oldEncryptedPrv = key.encryptedPrv;
+          if (_.isUndefined(oldEncryptedPrv)) {
+            // Public-only multisig children and MPC child backup/bitgo placeholders carry no
+            // user-held envelope — nothing to rotate.
+            continue;
+          }
+          // One session (one Argon2 run) is shared across the whole fan-out; created lazily so
+          // a safe with nothing to rotate pays no KDF.
+          if (!session) {
+            session =
+              params.encryptionSession ??
+              (await this.bitgo.createEncryptionSession(params.newPassword, params.encryptionVersion));
+            ownSession = !params.encryptionSession;
+          }
+          let decryptedPrv: string;
+          try {
+            decryptedPrv = await this.bitgo.decrypt({ input: oldEncryptedPrv, password: params.oldPassword });
+          } catch (e) {
+            // Deliberate divergence from the legacy path's skip-and-continue: a key that no
+            // longer decrypts with the old passphrase would silently split the passphrase space
+            // if left behind.
+            const errorDetail = e instanceof Error ? e.message : String(e);
+            throw new IncorrectPasswordError(
+              `failed to decrypt keychain ${key.id} with the old passphrase: ${errorDetail}`
+            );
+          }
+          updates.push({
+            keyId: key.id,
+            encryptedPrv: await session.encrypt(decryptedPrv),
+            // Compare-and-swap against the exact envelope we decrypted, so an in-flight mint
+            // racing the rotation is detected instead of silently mixing envelopes.
+            expectedOldEncryptedPrv: oldEncryptedPrv,
+          });
+        }
+        if (result.nextBatchPrevId) {
+          prevId = result.nextBatchPrevId;
+        } else {
+          keysLeft = false;
+        }
+      }
+
+      if (updates.length === 0) {
+        return { updates: [] };
+      }
+
+      const responses: KeyBulkUpdateResponse[] = [];
+      for (const chunk of _.chunk(updates, BULK_KEY_UPDATE_BATCH_SIZE)) {
+        const response = await this.bitgo.put(this.bitgo.url('/key/bulk', 2)).send({ updates: chunk }).result();
+        // Validate the wire contract instead of trusting whatever shape the transport hands back.
+        responses.push(
+          decodeOrElse(KeyBulkUpdateResponse.name, KeyBulkUpdateResponse, response, (errors) => {
+            throw new Error(`invalid key bulk update response: ${errors}`);
+          })
+        );
+      }
+      return { updates: responses.flatMap((response) => response.updates) };
+    } finally {
+      if (ownSession) {
+        session?.destroy();
+      }
+    }
   }
 
   /**
