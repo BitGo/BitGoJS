@@ -12,8 +12,10 @@ import {
   CantonExerciseCommandPrepareResponse,
   CantonCreateCommandPrepareResponse,
   CantonTokenPreApprovalPrepareResponse,
+  CancelParty,
   OneStepEnablement,
   OneStepPreApprovalPrepareResponse,
+  TransferPreapprovalCancelPrepareResponse,
 } from '../resources';
 
 /**
@@ -261,6 +263,141 @@ describe('Canton verifyTransaction:', function () {
           })
           .should.be.rejectedWith(/OneStepPreApproval receiver mismatch/);
       });
+    });
+  });
+
+  describe('TransferPreapprovalCancel (disable token flow):', function () {
+    // Real captured TransferPreapproval_Cancel exercise-node fixture: parsed sender === receiver
+    // === CancelParty, matching the actual on-chain choice/actingParties shape.
+    it('should return true when txParams has no type (non-disabletoken flow)', async function () {
+      const txHex = buildRawTx(
+        'TransferPreapprovalCancel',
+        TransferPreapprovalCancelPrepareResponse,
+        OneStepEnablement.commandId
+      );
+      const result = await basecoin.verifyTransaction({
+        txPrebuild: { txHex },
+        txParams: {},
+        wallet: {} as unknown as IWallet,
+      });
+      result.should.equal(true);
+    });
+
+    it('should return true when enableTokens is absent', async function () {
+      const txHex = buildRawTx(
+        'TransferPreapprovalCancel',
+        TransferPreapprovalCancelPrepareResponse,
+        OneStepEnablement.commandId
+      );
+      const result = await basecoin.verifyTransaction({
+        txPrebuild: { txHex },
+        txParams: { type: 'disabletoken' },
+        wallet: {} as IWallet,
+      });
+      result.should.equal(true);
+    });
+
+    it('should return true when enableTokens is empty', async function () {
+      const txHex = buildRawTx(
+        'TransferPreapprovalCancel',
+        TransferPreapprovalCancelPrepareResponse,
+        OneStepEnablement.commandId
+      );
+      const result = await basecoin.verifyTransaction({
+        txPrebuild: { txHex },
+        txParams: { type: 'disabletoken', enableTokens: [] },
+        wallet: {} as IWallet,
+      });
+      result.should.equal(true);
+    });
+
+    it('should return true when wallet has no coinSpecific and no explicit address (receiver check skipped)', async function () {
+      const txHex = buildRawTx(
+        'TransferPreapprovalCancel',
+        TransferPreapprovalCancelPrepareResponse,
+        OneStepEnablement.commandId
+      );
+      const result = await basecoin.verifyTransaction({
+        txPrebuild: { txHex },
+        txParams: {
+          type: 'disabletoken',
+          enableTokens: [{ name: 'canton' }],
+        },
+        wallet: {} as IWallet,
+      });
+      result.should.equal(true);
+    });
+
+    it('should return true when wallet rootAddress matches the parsed receiver', async function () {
+      const txHex = buildRawTx(
+        'TransferPreapprovalCancel',
+        TransferPreapprovalCancelPrepareResponse,
+        OneStepEnablement.commandId
+      );
+      const result = await basecoin.verifyTransaction({
+        txPrebuild: { txHex },
+        txParams: {
+          type: 'disabletoken',
+          enableTokens: [{ name: 'canton' }],
+        },
+        wallet: walletWithRootAddress(CancelParty),
+      });
+      result.should.equal(true);
+    });
+
+    it('should return true when explicit enableToken.address matches the parsed receiver', async function () {
+      const txHex = buildRawTx(
+        'TransferPreapprovalCancel',
+        TransferPreapprovalCancelPrepareResponse,
+        OneStepEnablement.commandId
+      );
+      const result = await basecoin.verifyTransaction({
+        txPrebuild: { txHex },
+        txParams: {
+          type: 'disabletoken',
+          enableTokens: [{ name: 'canton', address: CancelParty }],
+        },
+        wallet: {} as IWallet,
+      });
+      result.should.equal(true);
+    });
+
+    it('should throw when wallet rootAddress does not match the parsed receiver', async function () {
+      const txHex = buildRawTx(
+        'TransferPreapprovalCancel',
+        TransferPreapprovalCancelPrepareResponse,
+        OneStepEnablement.commandId
+      );
+      const someAddress = 'some-party::1220aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+      await basecoin
+        .verifyTransaction({
+          txPrebuild: { txHex },
+          txParams: {
+            type: 'disabletoken',
+            enableTokens: [{ name: 'canton' }],
+          },
+          wallet: walletWithRootAddress(someAddress),
+        })
+        .should.be.rejectedWith(/TransferPreapprovalCancel receiver mismatch/);
+    });
+
+    it('should throw when explicit enableToken.address does not match the parsed receiver', async function () {
+      const txHex = buildRawTx(
+        'TransferPreapprovalCancel',
+        TransferPreapprovalCancelPrepareResponse,
+        OneStepEnablement.commandId
+      );
+      const someAddress = 'some-party::1220aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+      await basecoin
+        .verifyTransaction({
+          txPrebuild: { txHex },
+          txParams: {
+            type: 'disabletoken',
+            enableTokens: [{ name: 'canton', address: someAddress }],
+          },
+          wallet: {} as IWallet,
+        })
+        .should.be.rejectedWith(/TransferPreapprovalCancel receiver mismatch/);
     });
   });
 });

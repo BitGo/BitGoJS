@@ -14,6 +14,7 @@ import { EndInvestorOnboardingOfferBuilder } from './endInvestorOnboardingOfferB
 import { CosignDelegationAcceptBuilder } from './cosignDelegationAcceptBuilder';
 import { CosignDelegationProposalBuilder } from './cosignDelegationProposalBuilder';
 import { OneStepPreApprovalBuilder } from './oneStepPreApprovalBuilder';
+import { TransferPreapprovalCancelBuilder } from './transferPreapprovalCancelBuilder';
 import { TransferAcceptanceBuilder } from './transferAcceptanceBuilder';
 import { TransferAcknowledgeBuilder } from './transferAcknowledgeBuilder';
 import { TransactionBuilder } from './transactionBuilder';
@@ -40,6 +41,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
       switch (tx.type) {
         case TransactionType.OneStepPreApproval: {
           return this.getOneStepPreapprovalBuilder(tx);
+        }
+        case TransactionType.TransferPreapprovalCancel: {
+          return this.getTransferPreapprovalCancelBuilder(tx);
         }
         case TransactionType.Send: {
           return this.getTransferBuilder(tx);
@@ -113,6 +117,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getOneStepPreapprovalBuilder(tx?: Transaction): OneStepPreApprovalBuilder {
     return TransactionBuilderFactory.initializeBuilder(tx, new OneStepPreApprovalBuilder(this._coinConfig));
+  }
+
+  getTransferPreapprovalCancelBuilder(tx?: Transaction): TransferPreapprovalCancelBuilder {
+    return TransactionBuilderFactory.initializeBuilder(tx, new TransferPreapprovalCancelBuilder(this._coinConfig));
   }
 
   getTransferAcceptanceBuilder(tx?: Transaction): TransferAcceptanceBuilder {

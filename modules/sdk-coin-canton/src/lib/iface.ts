@@ -153,6 +153,16 @@ export interface CantonOneStepEnablementRequest extends CantonPrepareCommandRequ
   tokenName?: string;
 }
 
+/**
+ * Request to revert an active 1-step TransferPreapproval back to 2-step approval (exercises
+ * TransferPreapproval_Cancel on Splice.AmuletRules:TransferPreapproval). Mirrors
+ * CantonOneStepEnablementRequest's shape — same receiverId/tokenName fields, opposite direction.
+ */
+export interface CantonTransferPreapprovalCancelRequest extends CantonPrepareCommandRequest {
+  receiverId: string;
+  tokenName?: string;
+}
+
 export interface CantonTransferAcceptRejectRequest extends CantonPrepareCommandRequest {
   contractId: string;
 }

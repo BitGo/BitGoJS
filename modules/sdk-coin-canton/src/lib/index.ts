@@ -11,6 +11,7 @@ export { CosignDelegationAcceptBuilder } from './cosignDelegationAcceptBuilder';
 export { CosignDelegationProposalBuilder } from './cosignDelegationProposalBuilder';
 export { KeyPair } from './keyPair';
 export { OneStepPreApprovalBuilder } from './oneStepPreApprovalBuilder';
+export { TransferPreapprovalCancelBuilder } from './transferPreapprovalCancelBuilder';
 export { Transaction } from './transaction/transaction';
 export { TransferAcceptanceBuilder } from './transferAcceptanceBuilder';
 export { TransferAcknowledgeBuilder } from './transferAcknowledgeBuilder';

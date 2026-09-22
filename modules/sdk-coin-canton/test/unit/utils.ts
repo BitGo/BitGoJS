@@ -10,6 +10,7 @@ import {
   CANTON_BLOCK_HEIGHT,
   CantonAllocationAllocatePrepareResponse,
   CantonExerciseCommandPrepareResponse,
+  CoinTransferPreapprovalCancelPrepareResponse,
   CosignDelegationAcceptTemplePrepareResponse,
   GenerateTopologyResponse,
   OneStepPreApprovalPrepareResponse,
@@ -18,6 +19,7 @@ import {
   PreparedTxn1StepReceiver,
   PreparedTxn2StepReceiver,
   PrepareSubmissionResponse,
+  TokenTransferPreapprovalCancelPrepareResponse,
   TransferAcceptancePrepareResponse,
   TransferRejectionPrepareResponse,
 } from '../resources';
@@ -116,6 +118,30 @@ describe('Canton Util', function () {
         parsedData.receiver,
         'ravi-test-party-1::12205b4e3537a95126d90604592344d8ad3c3ddccda4f79901954280ee19c576714d'
       );
+      assert.equal(parsedData.amount, '0');
+    });
+
+    it('should parse the coin TransferPreapproval_Cancel prepared transaction', () => {
+      const parsedData = utils.parseRawCantonTransactionData(
+        CoinTransferPreapprovalCancelPrepareResponse.preparedTransaction,
+        TransactionType.TransferPreapprovalCancel
+      );
+      should.exist(parsedData);
+      const party = 'ravi-testnet-party::122092e7d33ac10c0f3d55976342f37555df05da5b742956d56a62ae2367769079d2';
+      assert.equal(parsedData.sender, party);
+      assert.equal(parsedData.receiver, party);
+      assert.equal(parsedData.amount, '0');
+    });
+
+    it('should parse the token TransferPreapproval Archive (cancel) prepared transaction', () => {
+      const parsedData = utils.parseRawCantonTransactionData(
+        TokenTransferPreapprovalCancelPrepareResponse.preparedTransaction,
+        TransactionType.TransferPreapprovalCancel
+      );
+      should.exist(parsedData);
+      const party = 'ravi-testnet-party::122092e7d33ac10c0f3d55976342f37555df05da5b742956d56a62ae2367769079d2';
+      assert.equal(parsedData.sender, party);
+      assert.equal(parsedData.receiver, party);
       assert.equal(parsedData.amount, '0');
     });
 

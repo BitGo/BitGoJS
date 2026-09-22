@@ -177,6 +177,35 @@ export class Canton extends BaseCoin {
           }
         }
         return true;
+      case TransactionType.TransferPreapprovalCancel:
+        // Mirrors OneStepPreApproval's receiver/token validation above, opposite direction.
+        // The cancel is self-service (the wallet's own party exercises the choice on its own
+        // TransferPreapproval), so sender === receiver on the parsed transaction; both must match
+        // the wallet's rootAddress (or the explicit enableToken.address, if provided).
+        if (
+          txParams.type === 'disabletoken' &&
+          txParams.enableTokens !== undefined &&
+          txParams.enableTokens.length > 0
+        ) {
+          const txData = transaction.toJson() as TxData;
+          const disableToken = txParams.enableTokens[0];
+          const walletRootAddress = params.wallet?.coinSpecific?.()?.rootAddress;
+          const expectedParty = disableToken.address ?? walletRootAddress;
+          if (expectedParty) {
+            const [expectedPartyBase] = expectedParty.split('?memoId=');
+            if (txData.receiver !== expectedPartyBase) {
+              throw new Error(
+                `TransferPreapprovalCancel receiver mismatch: expected '${expectedPartyBase}', got '${txData.receiver}'`
+              );
+            }
+          }
+          if (txData.token !== undefined && txData.token !== disableToken.name) {
+            throw new Error(
+              `TransferPreapprovalCancel token name mismatch: expected '${disableToken.name}', got '${txData.token}'`
+            );
+          }
+        }
+        return true;
       case TransactionType.Send:
         if (txParams.recipients !== undefined) {
           const filteredRecipients = txParams.recipients?.map((recipient) => {

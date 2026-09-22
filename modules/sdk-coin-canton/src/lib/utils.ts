@@ -468,6 +468,37 @@ export class Utils implements BaseUtils {
         break;
       }
 
+      case TransactionType.TransferPreapprovalCancel: {
+        // Coin cancel: TransferPreapproval_Cancel exercise on Splice.AmuletRules:TransferPreapproval.
+        // Self-service — the acting party (or, as a fallback, the exercised choiceArgument.p) is
+        // both sender and receiver.
+        const actingParty = findExerciseActingParty('TransferPreapproval_Cancel');
+        if (actingParty) {
+          sender = actingParty;
+          receiver = actingParty;
+        } else {
+          const cancelFields = findExerciseNodeFields('TransferPreapproval_Cancel');
+          if (cancelFields) {
+            const partyData = getField(cancelFields, 'p');
+            if (partyData?.oneofKind === 'party') {
+              sender = partyData.party ?? '';
+              receiver = sender;
+            }
+          } else {
+            // Token cancel: Archive exercise on Utility.Registry.App.V0.Model.TransferPreapproval.
+            // The built-in Archive choice has empty choiceArgument {}, so the acting party is
+            // the only way to recover the cancelling party.
+            const tokenArchiveParty = findExerciseActingParty('Archive');
+            if (tokenArchiveParty) {
+              sender = tokenArchiveParty;
+              receiver = tokenArchiveParty;
+            }
+          }
+        }
+        amount = '0';
+        break;
+      }
+
       default: {
         // Initial transfer (1-step and 2-step, coin and token): TransferFactory_Transfer exercise node
         // → transfer.{sender, receiver, amount, instrumentId.{admin, id}, meta}
