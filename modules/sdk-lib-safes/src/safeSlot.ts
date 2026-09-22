@@ -5,7 +5,7 @@
  *
  * Maps a coin chain + minting model to the safe root slot that derives it. The slot
  * is a signing scheme, not a coin: slot ① secp256k1Multisig serves UTXO + XRP + TRX + …,
- * slot ④ ed25519Multisig serves ALGO/XLM/HBAR, and ecdsaMpc serves TSS coins.
+ * slot ④ ed25519Multisig serves ALGO/XLM/HBAR, and the MPC slots serve TSS coins.
  *
  * The multisigType-vs-coin validation stays in sdk-core (it needs IBaseCoin); these
  * functions take only the chain so this leaf never imports sdk-core.
@@ -14,7 +14,7 @@ import { coins, KeyCurve } from '@bitgo/statics';
 import type { RootKeyType } from '@bitgo/public-types';
 
 type OnchainSafeRootKeySlot = Extract<RootKeyType, 'secp256k1Multisig' | 'ed25519Multisig'>;
-type TssSafeRootKeySlot = Extract<RootKeyType, 'ecdsaMpc'>;
+type TssSafeRootKeySlot = Extract<RootKeyType, 'ecdsaMpc' | 'eddsaMpc'>;
 
 export function onchainSlotForCoin(chain: string): OnchainSafeRootKeySlot {
   const curve = coins.get(chain).primaryKeyCurve;
@@ -33,7 +33,7 @@ export function tssSlotForCoin(chain: string): TssSafeRootKeySlot {
     return 'ecdsaMpc';
   }
   if (curve === KeyCurve.Ed25519) {
-    throw new Error('ed25519 MPC safe wallet minting is not yet supported');
+    return 'eddsaMpc';
   }
   throw new Error(`Coin '${chain}' is not supported for safe wallet minting`);
 }

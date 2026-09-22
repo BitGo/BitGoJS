@@ -15,6 +15,7 @@ import {
 import { EddsaMPCv2KeyGenCallbacks } from '../../../wallet/iWallets';
 import { ed25519 } from '@noble/curves/ed25519';
 import { EddsaMPSDkg, EddsaMPSDsg, MPSComms, MPSTypes, MPSUtil } from '@bitgo/sdk-lib-mpc';
+import { DerivedFromParentWithHardenedPath } from '@bitgo/sdk-lib-safes';
 import { KeychainsTriplet } from '../../../baseCoin';
 import {
   AddKeychainOptions,
@@ -333,7 +334,8 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     webauthnInfo?: WebauthnKeyEncryptionInfo,
     encryptionVersion?: EncryptionVersion,
     enterprise?: string,
-    safeId?: string
+    safeId?: string,
+    child?: { parentKeyId: string; index: number }
   ): Promise<Keychain> {
     let source: string;
     let encryptedPrv: string | undefined = undefined;
@@ -344,6 +346,17 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
       case MPCv2PartiesEnum.USER:
       case MPCv2PartiesEnum.BACKUP:
         source = participantIndex === MPCv2PartiesEnum.USER ? 'user' : 'backup';
+        if (privateMaterial === undefined) {
+          assert(
+            participantIndex === MPCv2PartiesEnum.BACKUP &&
+              safeId !== undefined &&
+              child !== undefined &&
+              reducedPrivateMaterial === undefined,
+            `Private material is required for ${source} keychain`
+          );
+          assert(passphrase, `Passphrase is required for ${source} keychain`);
+          break;
+        }
         assert(privateMaterial, `Private material is required for ${source} keychain`);
         assert(reducedPrivateMaterial, `Reduced private material is required for ${source} keychain`);
         assert(passphrase, `Passphrase is required for ${source} keychain`);
@@ -383,6 +396,17 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
       enterprise,
     };
 
+    if (child !== undefined) {
+      assert(NonEmptyString.is(safeId), 'Safe ID is required for a derived keychain');
+      assert(NonEmptyString.is(child.parentKeyId), 'Parent key ID is required for a derived keychain');
+      keychainParams.parent = child.parentKeyId;
+      keychainParams.derivedFromParentWithPath = decodeWithCodec(
+        DerivedFromParentWithHardenedPath,
+        `m/${child.index}'`,
+        'derivedFromParentWithPath'
+      );
+    }
+
     if (webauthnInfo && participantIndex === MPCv2PartiesEnum.USER && privateMaterialBase64) {
       // Send the passkey as `webauthnInfo`; the deprecated `webauthnDevices` array is ignored by POST /key.
       assert(enterprise, 'enterprise is required to attach a webauthn device to the user keychain');
@@ -411,7 +435,8 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     webauthnInfo?: WebauthnKeyEncryptionInfo,
     encryptionVersion?: EncryptionVersion,
     enterprise?: string,
-    safeId?: string
+    safeId?: string,
+    child?: { parentKeyId: string; index: number }
   ): Promise<Keychain> {
     return this.createParticipantKeychain(
       MPCv2PartiesEnum.USER,
@@ -423,19 +448,21 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
       webauthnInfo,
       encryptionVersion,
       enterprise,
-      safeId
+      safeId,
+      child
     );
   }
 
   protected async addBackupKeychain(
     commonKeychain: string,
-    privateMaterial: Buffer,
-    reducedPrivateMaterial: Buffer,
+    privateMaterial: Buffer | undefined,
+    reducedPrivateMaterial: Buffer | undefined,
     passphrase: string,
     originalPasscodeEncryptionCode?: string,
     encryptionVersion?: EncryptionVersion,
     enterprise?: string,
-    safeId?: string
+    safeId?: string,
+    child?: { parentKeyId: string; index: number }
   ): Promise<Keychain> {
     return this.createParticipantKeychain(
       MPCv2PartiesEnum.BACKUP,
@@ -447,11 +474,16 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
       undefined,
       encryptionVersion,
       enterprise,
-      safeId
+      safeId,
+      child
     );
   }
 
-  protected async addBitgoKeychain(commonKeychain: string, safeId?: string): Promise<Keychain> {
+  protected async addBitgoKeychain(
+    commonKeychain: string,
+    safeId?: string,
+    child?: { parentKeyId: string; index: number }
+  ): Promise<Keychain> {
     return this.createParticipantKeychain(
       MPCv2PartiesEnum.BITGO,
       commonKeychain,
@@ -462,7 +494,8 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
       undefined,
       undefined,
       undefined,
-      safeId
+      safeId,
+      child
     );
   }
   // #endregion

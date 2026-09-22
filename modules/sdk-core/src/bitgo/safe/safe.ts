@@ -10,7 +10,7 @@ import { IBaseCoin } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { IncorrectPasswordError } from '../errors';
 import { decryptKeychainPrivateKey } from '../keychain';
-import { ECDSAUtils } from '../utils';
+import { ECDSAUtils, EDDSAUtils } from '../utils';
 import { boundedInt, decodeWithCodec } from '../utils/codecs';
 import { postWithCodec } from '../utils/postWithCodec';
 import { Wallet } from '../wallet';
@@ -52,7 +52,7 @@ const CreateWalletInSafeBody = t.union([
     multisigType: t.literal('onchain'),
     keys: t.tuple([t.string]),
   }),
-  // TSS mint uses ordered user and backup child documents.
+  // TSS mint uses ordered user, backup, and BitGo child documents.
   t.strict({
     coin: t.string,
     label: t.string,
@@ -157,7 +157,7 @@ export class Safe implements ISafe {
       if (bitgoRootId === undefined) {
         throw new Error(`Safe ${this.id()} is missing rootKeys.hot.${slot} bitgo key`);
       }
-      return this.createTssWalletInSafe(coin, userRootId, backupRootId, bitgoRootId, index, params);
+      return this.createTssWalletInSafe(coin, slot, userRootId, backupRootId, bitgoRootId, index, params);
     }
 
     const keychains = coin.keychains();
@@ -210,12 +210,17 @@ export class Safe implements ISafe {
    */
   private async createTssWalletInSafe(
     coin: IBaseCoin,
+    slot: RootKeyType,
     userRootId: string,
     backupRootId: string,
     bitgoRootId: string,
     index: number,
     params: CreateSafeWalletOptions
   ): Promise<Wallet> {
+    if (slot !== 'ecdsaMpc' && slot !== 'eddsaMpc') {
+      throw new Error(`Expected an MPC safe root slot, got '${slot}'`);
+    }
+
     const keychains = coin.keychains();
     const userRootKeychain = await keychains.get({ id: userRootId });
     if (userRootKeychain.source !== 'user') {
@@ -228,7 +233,10 @@ export class Safe implements ISafe {
     }
     const userRootMaterial = ECDSAUtils.parseVrfKeyEnvelopes(userRootPrv);
 
-    const tssUtils = new ECDSAUtils.EcdsaVrfMPCv2Utils(this.bitgo, coin);
+    const tssUtils =
+      slot === 'eddsaMpc'
+        ? new EDDSAUtils.EddsaVrfMPCv2Utils(this.bitgo, coin)
+        : new ECDSAUtils.EcdsaVrfMPCv2Utils(this.bitgo, coin);
     const { userKeychain, backupKeychain, bitgoKeychain } = await tssUtils.createSafeChildKeychains({
       passphrase: params.passphrase,
       enterprise: this.enterpriseId(),
