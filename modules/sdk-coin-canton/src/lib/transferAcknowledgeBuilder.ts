@@ -1,13 +1,14 @@
 import { PublicKey, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { CantonPrepareCommandResponse, TransferAcknowledge } from './iface';
+import { CantonAmount, CantonAmountInput, CantonPrepareCommandResponse, TransferAcknowledge } from './iface';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction/transaction';
+import { normalizeCantonAmount } from './amount';
 
 export class TransferAcknowledgeBuilder extends TransactionBuilder {
   private _contractId: string;
   private _senderPartyId: string;
-  private _amount: number;
+  private _amount: CantonAmount;
   private _updateId: string;
   private _expiryEpoch: number;
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -65,16 +66,13 @@ export class TransferAcknowledgeBuilder extends TransactionBuilder {
   }
 
   /**
-   * Sets the amount to accept or reject
-   * @param amount - incoming deposit amount
+   * Sets the amount to accept or reject.
+   * @param amount - incoming deposit amount. Use a string or bigint above Number.MAX_SAFE_INTEGER.
    * @returns The current builder instance for chaining.
    * @throws Error if amount <= 0
    */
-  amount(amount: number): this {
-    if (isNaN(amount) || amount <= 0) {
-      throw new Error('amount must be positive number');
-    }
-    this._amount = amount;
+  amount(amount: CantonAmountInput): this {
+    this._amount = normalizeCantonAmount(amount, 'amount must be positive number');
     return this;
   }
 

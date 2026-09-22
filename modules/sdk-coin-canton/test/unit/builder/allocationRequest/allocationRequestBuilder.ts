@@ -63,6 +63,38 @@ describe('AllocationRequest Builder', () => {
     assert.equal(requestObj.settleBefore, settleBefore);
     assert.equal(requestObj.comment, comment);
   });
+  it('should preserve large allocation amounts through serialized request data', function () {
+    const txBuilder = new AllocationRequestBuilder(coins.get('tcanton'));
+    const tx = new Transaction(coins.get('tcanton'));
+    txBuilder.initBuilder(tx);
+    const amount = '36868615888941900';
+    const receiveAmount = '123456789012345678901234567890';
+    txBuilder
+      .updateId(updateId)
+      .operatorId(operatorId)
+      .contractId(contractId)
+      .tradeId(tradeId)
+      .transferLegId(transferLegId)
+      .senderPartyId(senderPartyId)
+      .receiverPartyId(receiverPartyId)
+      .amount(amount)
+      .token(token)
+      .receiveToken(receiveToken)
+      .receiveAmount(receiveAmount)
+      .allocateBefore(allocateBefore)
+      .settleBefore(settleBefore);
+
+    const requestObj = txBuilder.toRequestObject();
+    assert.strictEqual(requestObj.amount, amount);
+    assert.strictEqual(requestObj.receiveAmount, receiveAmount);
+    tx.allocationRequestData = requestObj;
+
+    const parsedTx = new Transaction(coins.get('tcanton'));
+    parsedTx.fromRawTransaction(tx.toBroadcastFormat());
+    const parsedData = parsedTx.toJson().allocationRequestData;
+    assert.strictEqual(parsedData?.amount, amount);
+    assert.strictEqual(parsedData?.receiveAmount, receiveAmount);
+  });
 
   it('should build the allocation request object without optional comment', function () {
     const txBuilder = new AllocationRequestBuilder(coins.get('tcanton'));

@@ -52,6 +52,23 @@ describe('Transfer Builder', () => {
     assert.equal(requestObj.amount, amount);
     assert.equal(requestObj.expiryEpoch, expiryEpoch);
   });
+  it('should preserve a large transfer amount', function () {
+    const txBuilder = new TransferBuilder(coins.get('tcanton'));
+    const transferTx = new Transaction(coins.get('tcanton'));
+    txBuilder.initBuilder(transferTx);
+    txBuilder.setTransaction(TrasferPrepareResponse);
+    const { commandId, senderPartyId, receiverPartyId, sendOneStep, expiryEpoch } = TransferObj;
+    const amount = '36868615888941900';
+    txBuilder
+      .commandId(commandId)
+      .senderId(senderPartyId)
+      .receiverId(receiverPartyId)
+      .amount(amount)
+      .sendOneStep(sendOneStep)
+      .expiryEpoch(expiryEpoch);
+
+    assert.strictEqual(txBuilder.toRequestObject().amount, amount);
+  });
 
   it('should validate raw transaction', function () {
     const txBuilder = new TransferBuilder(coins.get('tcanton'));

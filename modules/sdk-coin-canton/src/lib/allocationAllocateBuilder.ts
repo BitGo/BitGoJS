@@ -2,12 +2,18 @@ import { InvalidTransactionError, PublicKey, TransactionType } from '@bitgo/sdk-
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction/transaction';
-import { CantonAllocationAllocateRequest, CantonPrepareCommandResponse } from './iface';
+import {
+  CantonAmount,
+  CantonAmountInput,
+  CantonAllocationAllocateRequest,
+  CantonPrepareCommandResponse,
+} from './iface';
 import utils from './utils';
+import { normalizeCantonAmount } from './amount';
 
 export class AllocationAllocateBuilder extends TransactionBuilder {
   private _commandId: string;
-  private _amount: number;
+  private _amount: CantonAmount;
   private _token: string;
   private _operatorId: string;
   private _contractId: string | null | undefined;
@@ -69,16 +75,13 @@ export class AllocationAllocateBuilder extends TransactionBuilder {
   }
 
   /**
-   * Sets the allocation amount
-   * @param amount - allocation amount
+   * Sets the allocation amount.
+   * @param amount - allocation amount. Use a string or bigint above Number.MAX_SAFE_INTEGER.
    * @returns The current builder instance for chaining.
    * @throws Error if amount is not positive
    */
-  amount(amount: number): this {
-    if (!amount || amount < 0) {
-      throw new Error('amount must be a positive number');
-    }
-    this._amount = amount;
+  amount(amount: CantonAmountInput): this {
+    this._amount = normalizeCantonAmount(amount, 'amount must be a positive number');
     return this;
   }
 
