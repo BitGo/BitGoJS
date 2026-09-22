@@ -1471,8 +1471,7 @@ class Pearl extends Mainnet implements UtxoNetwork {
   family = CoinFamily.PEARL;
   /** wasm-utxo CoinName, not a utxo-lib network - see note above */
   utxolibName = 'pearl';
-  // No mainnet Pearl block explorer exists yet - the chain has not launched mainnet.
-  explorerUrl = undefined;
+  explorerUrl = 'https://blockbook.pearlresearch.ai/tx/';
 }
 
 class PearlTestnet extends Testnet implements UtxoNetwork {
