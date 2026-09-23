@@ -152,16 +152,22 @@ const ZEC_FEATURES = [
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   /**
    * Zcash also supports a RedPallas/Orchard shielded pool, selectable via
-   * `otherSupportedKeyCurves` (see the `zec`/`tzec` entries below). TSS/TSS_COLD/MPCV2 are added
+   * `otherSupportedKeyCurves` (see the `zec`/`tzec` entries below). TSS/TSS_COLD are added
    * here (alongside the existing MULTISIG/MULTISIG_COLD used for transparent addresses) so
    * downstream OVC/BitGo tooling can treat this coin as TSS-eligible for shielded DKG, without
    * touching the existing transparent multisig flows which remain keyed on `primaryKeyCurve`
    * (secp256k1).
+   *
+   * TSS_SUPPORT_GATED hides the MPC wallet-creation option in bitgo-ui for mainnet zec until
+   * shielded MPC wallet creation ships (CSHLD-1763 / T1-3922); TZEC_FEATURES drops the gate below so the
+   * option remains enabled on testnet.
    */
   CoinFeature.TSS,
   CoinFeature.TSS_COLD,
   CoinFeature.MPCV2,
+  CoinFeature.TSS_SUPPORT_GATED,
 ];
+const TZEC_FEATURES = [...ZEC_FEATURES.filter((feature) => feature !== CoinFeature.TSS_SUPPORT_GATED)];
 const PEARL_FEATURES = [
   ...UtxoCoin.DEFAULT_FEATURES,
   CoinFeature.BULK_TRANSACTION,
@@ -374,7 +380,7 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     Networks.test.zCash,
     UnderlyingAsset.ZEC,
     BaseUnit.ZEC,
-    ZEC_FEATURES,
+    TZEC_FEATURES,
     '',
     'TZEC',
     KeyCurve.Secp256k1,

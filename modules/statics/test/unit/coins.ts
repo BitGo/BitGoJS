@@ -1362,6 +1362,11 @@ describe('ZEC RedPallas otherSupportedKeyCurves (shielded pool DKG)', () => {
     });
   });
 
+  it('TSS should be gated for ZEC only', () => {
+    coins.get('tzec').features.includes(CoinFeature.TSS_SUPPORT_GATED).should.eql(false);
+    coins.get('zec').features.includes(CoinFeature.TSS_SUPPORT_GATED).should.eql(true);
+  });
+
   it('coins without an explicit otherSupportedKeyCurves should leave it undefined', () => {
     const btc = coins.get('btc');
     (btc.otherSupportedKeyCurves === undefined).should.be.true();
