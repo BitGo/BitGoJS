@@ -2545,6 +2545,92 @@ describe('EddsaMPCv2Utils.getMpcV2RetrofitDataFromMpcV1Keys', () => {
   });
 });
 
+describe('EddsaMPCv2Utils.getKeyDataForRetrofit', () => {
+  let userSigningMaterial: Record<string, unknown>;
+  let backupSigningMaterial: Record<string, unknown>;
+  let expectedUserPShare: { y: string; u: string; chaincode: string };
+  let expectedBackupPShare: { y: string; u: string; chaincode: string };
+
+  before(async () => {
+    const MPC = await getInitializedMpcInstance();
+    const user = MPC.keyShare(1, 2, 3);
+    const backup = MPC.keyShare(2, 2, 3);
+    const bitgo = MPC.keyShare(3, 2, 3);
+
+    expectedUserPShare = MPC.keyCombine(user.uShare, [backup.yShares[1], bitgo.yShares[1]]).pShare;
+    expectedBackupPShare = MPC.keyCombine(backup.uShare, [user.yShares[2], bitgo.yShares[2]]).pShare;
+
+    userSigningMaterial = {
+      uShare: user.uShare,
+      bitgoYShare: bitgo.yShares[1],
+      backupYShare: backup.yShares[1],
+    };
+    backupSigningMaterial = {
+      uShare: backup.uShare,
+      bitgoYShare: bitgo.yShares[2],
+      userYShare: user.yShares[2],
+    };
+  });
+
+  it('derives USER retrofit data matching keyCombine pShare fields', async () => {
+    const retrofitData = await EddsaMPCv2Utils.getKeyDataForRetrofit(
+      JSON.stringify(userSigningMaterial),
+      MPCv2PartiesEnum.USER
+    );
+
+    assert.strictEqual(retrofitData.s_i_0, expectedUserPShare.u);
+    assert.strictEqual(retrofitData.expectedPk, expectedUserPShare.y);
+    assert.strictEqual(retrofitData.chainCode, expectedUserPShare.chaincode);
+  });
+
+  it('derives BACKUP retrofit data matching keyCombine pShare fields', async () => {
+    const retrofitData = await EddsaMPCv2Utils.getKeyDataForRetrofit(
+      JSON.stringify(backupSigningMaterial),
+      MPCv2PartiesEnum.BACKUP
+    );
+
+    assert.strictEqual(retrofitData.s_i_0, expectedBackupPShare.u);
+    assert.strictEqual(retrofitData.expectedPk, expectedBackupPShare.y);
+    assert.strictEqual(retrofitData.chainCode, expectedBackupPShare.chaincode);
+  });
+
+  it('throws if USER material is missing backupYShare', async () => {
+    const keyNoBackupYShare = JSON.stringify({
+      uShare: userSigningMaterial.uShare,
+      bitgoYShare: userSigningMaterial.bitgoYShare,
+    });
+    await assert.rejects(
+      () => EddsaMPCv2Utils.getKeyDataForRetrofit(keyNoBackupYShare, MPCv2PartiesEnum.USER),
+      /User MPCv1 key material missing backupYShare/
+    );
+  });
+
+  it('throws if BACKUP material is missing userYShare', async () => {
+    const keyNoUserYShare = JSON.stringify({
+      uShare: backupSigningMaterial.uShare,
+      bitgoYShare: backupSigningMaterial.bitgoYShare,
+    });
+    await assert.rejects(
+      () => EddsaMPCv2Utils.getKeyDataForRetrofit(keyNoUserYShare, MPCv2PartiesEnum.BACKUP),
+      /Backup MPCv1 key material missing userYShare/
+    );
+  });
+
+  it('USER and BACKUP expectedPk and chainCode match when built from the same three keyShares', async () => {
+    const userRetrofitData = await EddsaMPCv2Utils.getKeyDataForRetrofit(
+      JSON.stringify(userSigningMaterial),
+      MPCv2PartiesEnum.USER
+    );
+    const backupRetrofitData = await EddsaMPCv2Utils.getKeyDataForRetrofit(
+      JSON.stringify(backupSigningMaterial),
+      MPCv2PartiesEnum.BACKUP
+    );
+
+    assert.strictEqual(userRetrofitData.expectedPk, backupRetrofitData.expectedPk);
+    assert.strictEqual(userRetrofitData.chainCode, backupRetrofitData.chainCode);
+  });
+});
+
 describe('EddsaMPCv2Utils.getUserAndBackupSession', () => {
   let utils: EddsaMPCv2Utils;
   let userSigningMaterial: Record<string, unknown>;
