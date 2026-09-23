@@ -1030,6 +1030,12 @@ describe('Constructor', function () {
       }
       thrownError!.message.should.match(/had failed keychains/);
     });
+
+    it('issues one empty PUT when both keychain maps are empty', async function () {
+      const scope = nock(ROOT).put('/api/v2/user/keychains', { keychains: {}, v2_keychains: {} }).reply(200, {});
+      await runBatches({}, {}, 1024);
+      scope.isDone().should.be.true();
+    });
   });
 
   describe('changePassword batching flow', function () {
@@ -1093,6 +1099,24 @@ describe('Constructor', function () {
 
       await bitgo.changePassword({ oldPassword: 'oldpw', newPassword: 'newpw' });
 
+      batchPutScope.isDone().should.be.true();
+      changePassScope.isDone().should.be.true();
+    });
+
+    it('stages an empty batch and changes password when no keychains are re-encryptable', async function () {
+      v1UpdatePasswordStub.resolves({ keychains: {}, version: 25 });
+      v2UpdatePasswordStub.resolves({});
+      nock(ROOT)
+        .get('/api/v2/user/checkBatchingPasswordFlow')
+        .query(true)
+        .reply(200, { isBatchingFlowEnabled: true, maxBatchSizeKB: 900 });
+      const batchPutScope = nock(ROOT)
+        .put('/api/v2/user/keychains', { keychains: {}, v2_keychains: {} })
+        .reply(200, {});
+      const changePassScope = nock(ROOT)
+        .post('/api/v1/user/changepassword', (body: any) => !body.keychains && !body.v2_keychains)
+        .reply(200, {});
+      await bitgo.changePassword({ oldPassword: 'oldpw', newPassword: 'newpw' });
       batchPutScope.isDone().should.be.true();
       changePassScope.isDone().should.be.true();
     });
