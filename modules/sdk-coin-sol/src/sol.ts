@@ -9,6 +9,7 @@ import * as base58 from 'bs58';
 import * as _ from 'lodash';
 import * as request from 'superagent';
 import { logger } from '@bitgo/logger';
+import nacl from 'tweetnacl';
 import assert from 'assert';
 
 import {
@@ -1317,19 +1318,15 @@ export class Sol extends BaseCoin {
     for (let i = 0; i < req.length; i++) {
       const MPC = await EDDSAMethods.getInitializedMpcInstance();
       const transaction = req[i].txRequest.transactions[0].unsignedTx;
-      if (!req[i].ovc || !req[i].ovc[0].eddsaSignature) {
+      const ovc = req[i].ovc?.[0];
+      const mpcv2SignatureHex = ovc?.eddsaMpcv2Signature;
+      if (!ovc || (!mpcv2SignatureHex && !ovc.eddsaSignature)) {
         throw new Error('Missing signature(s)');
       }
-      const signature = req[i].ovc[0].eddsaSignature;
       if (!transaction.signableHex) {
         throw new Error('Missing signable hex');
       }
       const messageBuffer = Buffer.from(transaction.signableHex!, 'hex');
-      const result = MPC.verify(messageBuffer, signature);
-      if (!result) {
-        throw new Error('Invalid signature');
-      }
-      const signatureHex = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
       const txBuilder = this.getBuilder().from(transaction.serializedTx as string);
       if (!transaction.coinSpecific?.commonKeychain) {
         throw new Error('Missing common keychain');
@@ -1341,6 +1338,27 @@ export class Sol extends BaseCoin {
       const derivationPath = transaction.derivationPath as string;
       const accountId = MPC.deriveUnhardened(commonKeychain, derivationPath).slice(0, 64);
       const bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
+
+      let signatureHex: Buffer;
+      if (mpcv2SignatureHex) {
+        // MPCv2 (OVC 5-pass): raw 64-byte Ed25519 signature. Verify against the
+        // same derived public key the transaction is signed under, then embed as-is.
+        const signature = Buffer.from(mpcv2SignatureHex, 'hex');
+        const isValid = nacl.sign.detached.verify(messageBuffer, signature, Buffer.from(accountId, 'hex'));
+        if (!isValid) {
+          throw new Error('Invalid signature');
+        }
+        signatureHex = signature;
+      } else {
+        const result = MPC.verify(messageBuffer, ovc.eddsaSignature);
+        if (!result) {
+          throw new Error('Invalid signature');
+        }
+        signatureHex = Buffer.concat([
+          Buffer.from(ovc.eddsaSignature.R, 'hex'),
+          Buffer.from(ovc.eddsaSignature.sigma, 'hex'),
+        ]);
+      }
 
       // add combined signature from ovc
       const publicKeyObj = { pub: bs58EncodedPublicKey };
