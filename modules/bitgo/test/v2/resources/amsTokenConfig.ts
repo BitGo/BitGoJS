@@ -37,7 +37,7 @@ export const reducedAmsTokenConfig = {
       decimalPlaces: 18,
       asset: 'tip:faketoken',
       network: {
-        name: 'BaseChainTestnet',
+        name: 'Data Network Testnet',
       },
       primaryKeyCurve: 'secp256k1',
       contractAddress: '0x1234567890123456789012345678901234567890',
@@ -59,10 +59,32 @@ export const reducedAmsTokenConfig = {
       decimalPlaces: 18,
       asset: 'thypeevm:faketoken',
       network: {
-        name: 'HyperliquidTestnet',
+        name: 'HyperliquidEVMTestnet',
       },
       primaryKeyCurve: 'secp256k1',
       contractAddress: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
+    },
+  ],
+  'tbsc:faketoken': [
+    {
+      id: 'c3d4e5f6-a7b8-4901-9cde-f123456789ab',
+      fullName: 'Testnet BNB fake token',
+      name: 'tbsc:faketoken',
+      prefix: '',
+      suffix: 'TBSC:FAKETOKEN',
+      baseUnit: 'wei',
+      kind: 'crypto',
+      family: 'bsc',
+      isToken: true,
+      additionalFeatures: [],
+      excludedFeatures: [],
+      decimalPlaces: 18,
+      asset: 'tbsc:faketoken',
+      network: {
+        name: 'BinanceSmartChainTestnet',
+      },
+      primaryKeyCurve: 'secp256k1',
+      contractAddress: '0x9876543210987654321098765432109876543210',
     },
   ],
 };

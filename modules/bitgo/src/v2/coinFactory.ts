@@ -17,6 +17,9 @@ import {
   CoinMap,
   coins,
   getFormattedTokens,
+  getEvmTokensByFamily,
+  TokenTypeEnum,
+  NetworkType,
   TokenConfig,
   Erc20TokenConfig,
   StellarTokenConfig,
@@ -46,6 +49,8 @@ import {
   CantonTokenConfig,
   Erc7984TokenConfig,
   Erc7984Coin,
+  EthLikeERC721Token,
+  BaseCoin as StaticsBaseCoin,
 } from '@bitgo/statics';
 import {
   Ada,
@@ -602,33 +607,81 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
     coinFactory.register(name, coinConstructor);
   });
 
-  // Generic ERC20 token registration for coins with SUPPORTS_ERC20 feature
+  // Generic ERC20 token registration for coins with SUPPORTS_ERC20 feature.
+  // Token configs come from the runtime coin map (statics + AMS), so AMS-only tokens on these
+  // families resolve through the family-agnostic EthLikeErc20Token constructor.
+  // Only mainnet base coins are iterated: their configs cover both networks, and iterating the
+  // testnet siblings would re-register the same token names with testnet-derived coinNames.
+  const evmErc20TokensByFamily = getEvmTokensByFamily(coinMap, TokenTypeEnum.ERC20);
   coins
-    .filter((coin) => coin.features.includes(CoinFeature.SUPPORTS_ERC20) && !coin.isToken)
+    .filter(
+      (coin) =>
+        coin.features.includes(CoinFeature.SUPPORTS_ERC20) && !coin.isToken && coin.network.type === NetworkType.MAINNET
+    )
     .forEach((coin) => {
       const coinNames = {
         Mainnet: `${coin.name}`,
         Testnet: `t${coin.name}`,
       };
 
-      EthLikeErc20Token.createTokenConstructors(coinNames).forEach(({ name, coinConstructor }) => {
-        coinFactory.register(name, coinConstructor);
-      });
+      EthLikeErc20Token.createTokenConstructors(coinNames, evmErc20TokensByFamily[coin.family] ?? []).forEach(
+        ({ name, coinConstructor }) => {
+          coinFactory.register(name, coinConstructor);
+        }
+      );
     });
 
   // Generic ERC721 token registration for coins with SUPPORTS_ERC721 feature
+  const evmErc721TokensByFamily = getEvmTokensByFamily(coinMap, TokenTypeEnum.ERC721);
   coins
-    .filter((coin) => coin.features.includes(CoinFeature.SUPPORTS_ERC721) && !coin.isToken)
+    .filter(
+      (coin) =>
+        coin.features.includes(CoinFeature.SUPPORTS_ERC721) &&
+        !coin.isToken &&
+        coin.network.type === NetworkType.MAINNET
+    )
     .forEach((coin) => {
       const coinNames = {
         Mainnet: `${coin.name}`,
         Testnet: `t${coin.name}`,
       };
 
-      EthLikeErc721Token.createTokenConstructors(coinNames).forEach(({ name, coinConstructor }) => {
-        coinFactory.register(name, coinConstructor);
-      });
+      EthLikeErc721Token.createTokenConstructors(coinNames, evmErc721TokensByFamily[coin.family] ?? []).forEach(
+        ({ name, coinConstructor }) => {
+          coinFactory.register(name, coinConstructor);
+        }
+      );
     });
+
+  // AMS-only tokens on EVM families whose base coin does not carry SUPPORTS_ERC20 (legacy
+  // families with per-family token classes, e.g. bsc, polygon, arbeth, ...) are not covered by
+  // the loop above. Register them through the family-agnostic EthLikeErc20Token /
+  // EthLikeErc721Token constructors, skipping names that already have a constructor so bundled
+  // statics tokens keep their family-specific class.
+  const registerDynamicEvmTokens = (
+    evmTokensByFamily: { [family: string]: EthLikeTokenConfig[] },
+    TokenClass: typeof EthLikeErc20Token | typeof EthLikeErc721Token
+  ): void => {
+    for (const [family, familyTokens] of Object.entries(evmTokensByFamily)) {
+      const baseCoin = coins.getOrUndefined(family);
+      // The generic token classes resolve their statics base coin by name, so skip families
+      // without a statics base coin (dynamically onboarded chains are out of scope here).
+      if (!baseCoin || baseCoin.isToken || baseCoin.features.includes(CoinFeature.SUPPORTS_ERC20)) {
+        continue;
+      }
+      const coinNames = { Mainnet: family, Testnet: `t${family}` };
+      for (const tokenConfig of familyTokens) {
+        if (coinFactory.hasCoinConstructor(tokenConfig.type)) {
+          continue;
+        }
+        const tokenConstructor = TokenClass.createTokenConstructor(tokenConfig, coinNames);
+        coinFactory.register(tokenConfig.type, tokenConstructor);
+        coinFactory.register(tokenConfig.tokenContractAddress, tokenConstructor);
+      }
+    }
+  };
+  registerDynamicEvmTokens(evmErc20TokensByFamily, EthLikeErc20Token);
+  registerDynamicEvmTokens(evmErc721TokensByFamily, EthLikeErc721Token);
 }
 
 export function getCoinConstructor(coinName: string): CoinConstructor | undefined {
@@ -983,26 +1036,28 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
   }
 }
 
-export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor | undefined {
-  const coin = coins.get(tokenConfig.coin);
+export function getTokenConstructor(
+  tokenConfig: TokenConfig,
+  staticsCoin?: Readonly<StaticsBaseCoin>
+): CoinConstructor | undefined {
+  const coin = coins.getOrUndefined(tokenConfig.coin);
+  const supportsErc20 = coin?.features.includes(CoinFeature.SUPPORTS_ERC20);
+  const supportsErc721 = coin?.features.includes(CoinFeature.SUPPORTS_ERC721);
+  // Preserve the token kind from the source statics coin: families supporting both ERC20 and
+  // ERC721 (e.g. hbarevm) cannot be discriminated from the token config or feature flags alone.
+  const isErc721Token = staticsCoin instanceof EthLikeERC721Token;
+  const GenericTokenClass =
+    isErc721Token || (supportsErc721 && !supportsErc20) ? EthLikeErc721Token : EthLikeErc20Token;
 
-  if (
-    'network' in tokenConfig &&
-    tokenConfig.network === 'Mainnet' &&
-    coin?.features.includes(CoinFeature.SUPPORTS_ERC20)
-  ) {
-    return EthLikeErc20Token.createTokenConstructor(tokenConfig as EthLikeTokenConfig, {
+  if ('network' in tokenConfig && tokenConfig.network === 'Mainnet' && (supportsErc20 || isErc721Token)) {
+    return GenericTokenClass.createTokenConstructor(tokenConfig as EthLikeTokenConfig, {
       Mainnet: tokenConfig.coin,
       Testnet: `t${tokenConfig.coin}`,
     });
   }
 
-  if (
-    'network' in tokenConfig &&
-    tokenConfig.network === 'Mainnet' &&
-    coin?.features.includes(CoinFeature.SUPPORTS_ERC721)
-  ) {
-    return EthLikeErc721Token.createTokenConstructor(tokenConfig as EthLikeTokenConfig, {
+  if ('network' in tokenConfig && tokenConfig.network === 'Mainnet' && supportsErc721) {
+    return GenericTokenClass.createTokenConstructor(tokenConfig as EthLikeTokenConfig, {
       Mainnet: tokenConfig.coin,
       Testnet: `t${tokenConfig.coin}`,
     });
@@ -1011,7 +1066,7 @@ export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor |
   switch (tokenConfig.coin) {
     case 'eth':
     case 'hteth': {
-      const staticCoin = coins.get(tokenConfig.type);
+      const staticCoin = coins.getOrUndefined(tokenConfig.type);
       if (staticCoin instanceof Erc7984Coin) {
         return Erc7984Token.createTokenConstructor(tokenConfig as Erc7984TokenConfig);
       } else if (tokenConfig.type.includes('erc721')) {
@@ -1152,8 +1207,27 @@ export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor |
     case 'canton':
     case 'tcanton':
       return CantonToken.createTokenConstructor(tokenConfig as CantonTokenConfig);
-    default:
+    default: {
+      // Generic EVM fallthrough: tokens on families whose base coin supports ERC20/ERC721 but
+      // which have no case above (e.g. testnet tokens on newly added EVM families). Resolves
+      const baseCoin = coins.getOrUndefined(tokenConfig.coin);
+      // ERC20/ERC721 support is a family-level property; the testnet sibling of a mainnet base
+      // coin does not always carry the feature flags itself, so resolve the mainnet family coin.
+      const familyBaseCoin =
+        baseCoin && baseCoin.network.type === NetworkType.MAINNET
+          ? baseCoin
+          : baseCoin && coins.getOrUndefined(baseCoin.family);
+      const supportsErc20 = familyBaseCoin?.features.includes(CoinFeature.SUPPORTS_ERC20);
+      const supportsErc721 = familyBaseCoin?.features.includes(CoinFeature.SUPPORTS_ERC721);
+      if (familyBaseCoin && 'network' in tokenConfig && (supportsErc20 || supportsErc721 || isErc721Token)) {
+        // Only the entry matching the token's own network is read by the token constructor;
+        // derive the sibling name from the base coin so both entries are valid.
+        const coinNames = { Mainnet: familyBaseCoin.name, Testnet: `t${familyBaseCoin.name}` };
+        const TokenClass = isErc721Token || (supportsErc721 && !supportsErc20) ? EthLikeErc721Token : EthLikeErc20Token;
+        return TokenClass.createTokenConstructor(tokenConfig as EthLikeTokenConfig, coinNames);
+      }
       return undefined;
+    }
   }
 }
 

@@ -43,6 +43,16 @@ export class CoinFactory {
   }
 
   /**
+   * Checks if a constructor is registered for the given coin or token name,
+   * regardless of whether the name is present in the coin map.
+   * @param name Name of coin or token
+   * @returns {boolean}
+   */
+  public hasCoinConstructor(name: string): boolean {
+    return this.getCoinConstructor(name) !== undefined;
+  }
+
+  /**
    * Checks if the coin is present in both coin map and constructor map
    * @param name Name of coin
    * @returns {boolean}

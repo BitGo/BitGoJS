@@ -38,6 +38,7 @@ export {
   AdaToken,
   JettonToken,
   CantonToken,
+  EthLikeERC721Token,
   Erc7984Coin,
   SolTokenExtensionType,
   SolTokenExtensions,
