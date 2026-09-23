@@ -22,6 +22,9 @@ export interface EddsaMPCv2RecoveryKeyShares {
   userKeyShare: Buffer;
   backupKeyShare: Buffer;
   commonKeyChain: string;
+  /** Serialized VRF keyshares from safe-root envelopes, when present. */
+  userVrfKeyShare?: Buffer;
+  backupVrfKeyShare?: Buffer;
 }
 
 export type CreateEddsaBitGoKeychainParams = Omit<CreateEddsaKeychainParams, 'bitgoKeychain'>;

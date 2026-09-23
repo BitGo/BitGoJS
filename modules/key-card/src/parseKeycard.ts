@@ -34,7 +34,8 @@ const SafeKeycardBoxFromString = JsonFromString.pipe(SafeKeycardRootsCodec);
  * `{"secp256k1Multisig":"…","ecdsaMpc":"…",…}` — into its four roots. Throws if the value is
  * not valid JSON or any root is missing/non-string. Recovery tooling calls this on the A/B/C
  * box value returned by {@link parseKeycardFromLines}, then decrypts each root value with the
- * safe password.
+ * safe password. An MPC root value is an opaque versioned envelope; recovery must unwrap its
+ * `prvKeyShare` and `vrf` fields instead of treating the decrypted bytes as a bare share.
  */
 export function parseSafeKeycardBox(data: string): SafeKeycardRoots {
   const decoded = SafeKeycardBoxFromString.decode(data);
