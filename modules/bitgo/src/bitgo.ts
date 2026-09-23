@@ -140,7 +140,7 @@ export class BitGo extends BitGoAPI {
         throw new UnsupportedCoinError(tokenName);
       }
 
-      const tokenConstructor = getTokenConstructor(formattedTokenConfig);
+      const tokenConstructor = getTokenConstructor(formattedTokenConfig, staticsBaseCoin);
       if (!tokenConstructor) {
         throw new UnsupportedCoinError(tokenName);
       }

@@ -1299,9 +1299,13 @@ export const getFormattedEthLikeTokenConfig = (
 };
 
 /* Get all tokens of a given eth like coin for a given network */
-export const getEthLikeTokens = (network: 'Mainnet' | 'Testnet', tokenType: TokenTypeEnum): EthLikeTokenMap => {
+export const getEthLikeTokens = (
+  network: 'Mainnet' | 'Testnet',
+  tokenType: TokenTypeEnum,
+  coinMap: typeof coins = coins
+): EthLikeTokenMap => {
   let feature: CoinFeature;
-  const networkTokens = getFormattedEthLikeTokenConfig(coins, tokenType).filter((token) => token.network === network);
+  const networkTokens = getFormattedEthLikeTokenConfig(coinMap, tokenType).filter((token) => token.network === network);
 
   if (tokenType === TokenTypeEnum.ERC20) {
     feature = CoinFeature.SUPPORTS_ERC20;
@@ -1311,7 +1315,7 @@ export const getEthLikeTokens = (network: 'Mainnet' | 'Testnet', tokenType: Toke
 
   const ethLikeTokenMap = {} as EthLikeTokenMap;
 
-  coins.forEach((coin) => {
+  coinMap.forEach((coin) => {
     if (coin instanceof AccountCoin && coin.features.includes(feature)) {
       const coinName = coin.family;
       const coinNameForNetwork = network === 'Testnet' ? `t${coinName}` : coinName;
@@ -1323,6 +1327,27 @@ export const getEthLikeTokens = (network: 'Mainnet' | 'Testnet', tokenType: Toke
   });
 
   return ethLikeTokenMap;
+};
+
+/**
+ * Enumerate EVM token configs per family from a coin map (defaults to the bundled statics map).
+ * Unlike getEthLikeTokens, families are resolved from each token's own entry in the passed map,
+ * so AMS-only tokens on families whose base coin lacks CoinFeature.SUPPORTS_ERC20 (e.g. bsc,
+ * polygon) are included. Reads the passed map only, never the static coins import.
+ */
+export const getEvmTokensByFamily = (
+  coinMap: typeof coins = coins,
+  tokenType: TokenTypeEnum = TokenTypeEnum.ERC20
+): { [family: string]: EthLikeTokenConfig[] } => {
+  const tokensByFamily: { [family: string]: EthLikeTokenConfig[] } = {};
+  for (const tokenConfig of getFormattedEthLikeTokenConfig(coinMap, tokenType)) {
+    const family = coinMap.getOrUndefined(tokenConfig.type)?.family;
+    if (!family) {
+      continue;
+    }
+    tokensByFamily[family] = [...(tokensByFamily[family] ?? []), tokenConfig];
+  }
+  return tokensByFamily;
 };
 
 const mergeEthLikeTokenMap = (...maps: EthLikeTokenMap[]): EthLikeTokenMap => {
@@ -1342,8 +1367,8 @@ const mergeEthLikeTokenMap = (...maps: EthLikeTokenMap[]): EthLikeTokenMap => {
 export const getFormattedTokensByNetwork = (network: 'Mainnet' | 'Testnet', coinMap: typeof coins) => {
   const networkType = network === 'Mainnet' ? NetworkType.MAINNET : NetworkType.TESTNET;
 
-  const ethLikeTokenMap = getEthLikeTokens(network, TokenTypeEnum.ERC20);
-  const ethLikeErc721TokenMap = getEthLikeTokens(network, TokenTypeEnum.ERC721);
+  const ethLikeTokenMap = getEthLikeTokens(network, TokenTypeEnum.ERC20, coinMap);
+  const ethLikeErc721TokenMap = getEthLikeTokens(network, TokenTypeEnum.ERC721, coinMap);
   const zkethTokens = getFormattedZkethTokens(coinMap).filter((token) => token.network === network);
 
   return {

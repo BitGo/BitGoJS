@@ -5,6 +5,8 @@ import { Environments } from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo, BitGoOptions } from '../../../../src';
 import { reducedAmsTokenConfig } from '../../resources/amsTokenConfig';
+import { EthLikeErc20Token, EthLikeErc721Token } from '@bitgo/sdk-coin-evm';
+import { BscToken } from '@bitgo/sdk-coin-bsc';
 
 describe('Asset metadata service', () => {
   const microservicesUri = Environments['mock'].uri;
@@ -155,6 +157,46 @@ describe('Asset metadata service', () => {
       staticsCoin.family.should.equal('hypeevm');
     });
 
+    it('should register an AMS-only token on a new-gen EVM family via the lazy path', async () => {
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri, useAms: true } as BitGoOptions);
+      bitgo.initializeTestVars();
+
+      const tokenName = 'thypeevm:faketoken';
+
+      // Setup nocks for AMS API call
+      nock(microservicesUri).get(`/api/v1/assets/name/${tokenName}`).reply(200, reducedAmsTokenConfig[tokenName][0]);
+
+      await bitgo.registerToken(tokenName);
+      const coin = bitgo.coin(tokenName);
+      should.exist(coin);
+      coin.type.should.equal(tokenName);
+      (coin as EthLikeErc20Token).tokenContractAddress.should.equal('0xabcdefabcdefabcdefabcdefabcdefabcdefabcd');
+    });
+
+    it('should register a statics ERC721 token on a dual-standard EVM family via the lazy path', async () => {
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri, useAms: true } as BitGoOptions);
+      bitgo.initializeTestVars();
+
+      const tokenName = 'erc721:hbarevmtoken';
+      await bitgo.registerToken(tokenName);
+      const coin = bitgo.coin(tokenName);
+      should.exist(coin);
+      coin.type.should.equal(tokenName);
+      coin.should.be.an.instanceOf(EthLikeErc721Token);
+    });
+
+    it('should register a testnet ERC721 token on a dual-standard EVM family via the lazy path', async () => {
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri, useAms: true } as BitGoOptions);
+      bitgo.initializeTestVars();
+
+      const tokenName = 'thbarevm:tmnft';
+      await bitgo.registerToken(tokenName);
+      const coin = bitgo.coin(tokenName);
+      should.exist(coin);
+      coin.type.should.equal(tokenName);
+      coin.should.be.an.instanceOf(EthLikeErc721Token);
+    });
+
     it('should register a SOL token from statics library if available', async () => {
       const bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri, useAms: true } as BitGoOptions);
       bitgo.initializeTestVars();
@@ -172,5 +214,34 @@ describe('Asset metadata service', () => {
     should.exist(coin);
     coin.type.should.equal('tsol:usdc');
     coin.getBaseFactor().should.equal(1e9);
+  });
+
+  it('should resolve an AMS-only token on a new-gen EVM family after initCoinFactory', () => {
+    bitgo.initCoinFactory(reducedAmsTokenConfig);
+    const coin = bitgo.coin('thypeevm:faketoken');
+    should.exist(coin);
+    coin.type.should.equal('thypeevm:faketoken');
+    coin.name.should.equal('Hyperliquid EVM Testnet Faketoken');
+    coin.decimalPlaces.should.equal(18);
+    coin.tokenContractAddress.should.equal('0xabcdefabcdefabcdefabcdefabcdefabcdefabcd');
+  });
+  it('should resolve an AMS-only token on a legacy EVM family after initCoinFactory', () => {
+    bitgo.initCoinFactory(reducedAmsTokenConfig);
+    const coin = bitgo.coin('tbsc:faketoken');
+    should.exist(coin);
+    coin.type.should.equal('tbsc:faketoken');
+    coin.name.should.equal('Testnet BNB fake token');
+    coin.decimalPlaces.should.equal(18);
+    coin.tokenContractAddress.should.equal('0x9876543210987654321098765432109876543210');
+    // AMS-only tokens on legacy families are registered through the family-agnostic
+    // EthLikeErc20Token, not the legacy BscToken class.
+    coin.should.be.an.instanceOf(EthLikeErc20Token);
+  });
+
+  it('should not flip a statics token on a legacy EVM family to the generic token class', () => {
+    bitgo.initCoinFactory(reducedAmsTokenConfig);
+    const coin = bitgo.coin('bsc:solv');
+    should.exist(coin);
+    coin.should.be.an.instanceOf(BscToken);
   });
 });

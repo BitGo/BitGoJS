@@ -20,8 +20,8 @@ export class EthLikeErc721Token extends EthLikeToken {
     return (bitgo: BitGoBase) => new this(bitgo, config, coinNames);
   }
 
-  static createTokenConstructors(coinNames: CoinNames): NamedCoinConstructor[] {
-    return super.createTokenConstructors(coinNames);
+  static createTokenConstructors(coinNames: CoinNames, tokenConfigs?: EthLikeTokenConfig[]): NamedCoinConstructor[] {
+    return super.createTokenConstructors(coinNames, tokenConfigs);
   }
 
   protected getTransactionBuilder(): TransactionBuilder {
