@@ -4,7 +4,7 @@ import { GenerateEddsaMPCv2KeyRequestBody, GenerateEddsaMPCv2KeyRequestResponse 
 
 export type EddsaMPCv2KeyGenSendFn<T extends GenerateEddsaMPCv2KeyRequestResponse> = (
   round: MPCv2KeyGenState,
-  payload: GenerateEddsaMPCv2KeyRequestBody
+  payload: GenerateEddsaMPCv2KeyRequestBody & { walletId?: string }
 ) => Promise<T>;
 
 export function KeyGenSenderForEnterprise<T extends GenerateEddsaMPCv2KeyRequestResponse>(

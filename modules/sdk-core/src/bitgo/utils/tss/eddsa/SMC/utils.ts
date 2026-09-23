@@ -24,9 +24,10 @@ export class MPCv2SMCUtils {
 
   public async keyGenRound1(
     enterprise: string,
-    payload: EddsaOVC1ToBitgoRound1Payload
+    payload: EddsaOVC1ToBitgoRound1Payload,
+    walletId?: string
   ): Promise<EddsaBitgoToOVC1Round1Response> {
-    return this.keyGenRound1BySender(KeyGenSenderForEnterprise(this.bitgo, enterprise), payload);
+    return this.keyGenRound1BySender(KeyGenSenderForEnterprise(this.bitgo, enterprise), payload, walletId);
   }
 
   public async keyGenRound2(
@@ -38,7 +39,8 @@ export class MPCv2SMCUtils {
 
   public async keyGenRound1BySender(
     senderFn: EddsaMPCv2KeyGenSendFn<EddsaMPCv2KeyGenRound1Response>,
-    payload: EddsaOVC1ToBitgoRound1Payload
+    payload: EddsaOVC1ToBitgoRound1Payload,
+    walletId?: string
   ): Promise<EddsaBitgoToOVC1Round1Response> {
     assert(
       payload.state === EddsaKeyCreationMPCv2StateEnum.WaitingForBitgoRound1Data,
@@ -55,6 +57,7 @@ export class MPCv2SMCUtils {
       backupGpgPublicKey: ovc2.gpgPubKey,
       userMsg1: ovc1.ovcMsg1,
       backupMsg1: ovc2.ovcMsg1,
+      ...(walletId ? { walletId } : {}),
     });
 
     const response = {
