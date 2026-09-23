@@ -4564,6 +4564,9 @@ export enum UnderlyingAsset {
   // ERC-7984 confidential tokens (Zama fhEVM - testnet / hteth)
   'hteth:ctest1' = 'hteth:ctest1',
   'hteth:cusdt' = 'hteth:cusdt',
+  // ERC-7984 underlying plain ERC-20 tokens (Zama fhEVM - testnet / hteth)
+  'hteth:tusdtmock' = 'hteth:tusdtmock',
+  'hteth:ttest1' = 'hteth:ttest1',
   'eth:mony' = 'eth:mony',
   'eth:architectgvi' = 'eth:architectgvi',
   'eth:zk' = 'eth:zk',
