@@ -169,6 +169,9 @@ export enum TransactionType {
   FinalizeUnwrapERC7984,
   // Solana Token-2022 confidential transfer (deposits, transfers, conversions)
   ConfidentialTransfer,
+  // canton: revert an active 1-step TransferPreapproval back to 2-step approval
+  // (exercises TransferPreapproval_Cancel on Splice.AmuletRules:TransferPreapproval)
+  TransferPreapprovalCancel,
 }
 
 /**

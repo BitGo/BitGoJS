@@ -443,6 +443,22 @@ export class Transaction extends BaseTransaction {
           type: this.type,
         };
       }
+      case TransactionType.OneStepPreApproval:
+      case TransactionType.TransferPreapprovalCancel: {
+        // Both are zero-amount self-service operations on the wallet's own preapproval contract.
+        // Show the party address as an input so callers can identify whose preapproval is affected.
+        const txData = this.toJson();
+        const input: ITransactionRecipient = {
+          address: txData.receiver,
+          amount: txData.amount,
+        };
+        if (txData.token) {
+          input.tokenName = txData.token;
+        }
+        inputs.push(input);
+        inputAmount = txData.amount;
+        break;
+      }
     }
     return {
       id: this.id,
