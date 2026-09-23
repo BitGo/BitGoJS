@@ -847,6 +847,56 @@ export function handleV2CreateLocalKeyChain(req: ExpressApiRouteRequest<'express
 }
 
 /**
+ * Retrofit a wallet's MPCv1 keys to MPCv2. Runs the MPCv2 key ceremony locally, uploads the new
+ * keychains, then finalizes the wallet key swap through Wallet Platform before returning.
+ *
+ * The wallet's passcodeEncryptionCode is fetched server-side via passcoderecovery, which requires
+ * an unlocked login session: the request must carry a short-lived access token and a valid otp
+ * (long-lived API tokens lack the required user_manage scope).
+ * @param req
+ */
+export async function handleV2WalletRetrofit(req: ExpressApiRouteRequest<'express.wallet.retrofit', 'post'>) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.decoded.coin);
+  const { id: walletId, ...params } = req.decoded;
+  const keychains = await coin.keychains().recreateMpc({ ...params, walletId });
+  const keyIds = {
+    userKeyId: keychains.userKeychain.id,
+    backupKeyId: keychains.backupKeychain.id,
+    bitGoKeyId: keychains.bitgoKeychain.id,
+  };
+
+  try {
+    const wallet = await bitgo
+      .post(bitgo.microservicesUrl(`/api/v2/wallet/${walletId}/retrofit`))
+      .send(keyIds)
+      .result();
+    return { ...keychains, wallet };
+  } catch (error) {
+    const cause = error as {
+      message?: string;
+      name?: string;
+      response?: unknown;
+      result?: unknown;
+      status?: number;
+    };
+    const message = `Wallet key finalization failed after keychain recreation (${Object.entries(keyIds)
+      .map(([name, id]) => `${name}=${id}`)
+      .join(', ')}). ${cause.message ?? String(error)}`;
+    const enrichedError = new Error(message);
+    enrichedError.name = cause.name ?? 'RetrofitFinalizationError';
+    const result =
+      typeof cause.result === 'object' && cause.result !== null ? (cause.result as Record<string, unknown>) : {};
+    Object.assign(enrichedError, {
+      response: cause.response,
+      result: { ...result, error: message, keyIds },
+      status: cause.status ?? 502,
+    });
+    throw enrichedError;
+  }
+}
+
+/**
  * handle wallet share
  * @param req
  */
@@ -2102,6 +2152,9 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
 
   // generate wallet
   router.post('express.wallet.generate', [prepareBitGo(config), typedPromiseWrapper(handleV2GenerateWallet)]);
+
+  // retrofit wallet keys (MPCv1 to MPCv2)
+  router.post('express.wallet.retrofit', [prepareBitGo(config), typedPromiseWrapper(handleV2WalletRetrofit)]);
 
   router.put('express.wallet.update', [prepareBitGo(config), typedPromiseWrapper(handleWalletUpdate)]);
 
