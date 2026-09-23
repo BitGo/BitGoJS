@@ -124,15 +124,10 @@ export class Safe implements ISafe {
     if (params.type !== undefined && params.type !== 'hot') {
       throw new Error('Safe wallets are hot-only in v1');
     }
-    const isTss = params.multisigType === 'tss';
+    const multisigType = params.multisigType ?? 'onchain';
+    const isTss = multisigType === 'tss';
 
     const coin = this.bitgo.coin(params.coin);
-    if (isTss && coin.getDefaultMultisigType() !== 'tss') {
-      throw new Error(`Coin '${coin.getChain()}' is not a TSS coin; cannot mint a tss safe wallet for it`);
-    }
-    if (!isTss && coin.getDefaultMultisigType() === 'tss') {
-      throw new Error('MPC safe wallet minting requires multisigType "tss"; use "onchain" for non-MPC minting');
-    }
     const slot = isTss ? tssSlotForCoin(coin.getChain()) : onchainSlotForCoin(coin.getChain());
 
     const indexResponse = await this.bitgo.get(this.url('/derivation-index')).query({ slot }).result();
@@ -198,7 +193,7 @@ export class Safe implements ISafe {
       coin: params.coin,
       label: params.label,
       type: 'hot',
-      multisigType: 'onchain',
+      multisigType,
       keys,
     }).result();
     return new Wallet(this.bitgo, coin, response);
