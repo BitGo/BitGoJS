@@ -77,6 +77,8 @@ describe('Token Naming Convention Tests', function () {
       'hteth:htusdl',
       'hteth:htusdlt',
       'hteth:tprn',
+      'hteth:tusdtmock',
+      'hteth:ttest1',
       'hterc6dp',
       'hterc2dp',
       'sepeth:usdc',
