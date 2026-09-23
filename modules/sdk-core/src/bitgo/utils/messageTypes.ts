@@ -18,6 +18,13 @@ export type MessagePayload = string;
 export type MessageMetadata = Record<string, unknown>;
 
 /**
+ * Maximum UTF-8 byte length of a Solana message payload, measured with Buffer.byteLength
+ * on the raw string. This is the hard rule enforced by the HSM (BGM_SOL_MESSAGE); enforced
+ * identically by UI, SDK, Wallet Platform, and HSM API.
+ */
+export const MAX_SOL_MESSAGE_BYTES = 1232;
+
+/**
  * Format for broadcasting a signed message
  */
 export interface BroadcastableMessage {

@@ -19,6 +19,7 @@ import {
   Keychains,
   KeyType,
   ManageUnspentsOptions,
+  MAX_SOL_MESSAGE_BYTES,
   MessageStandardType,
   MessageTypes,
   PopulatedIntent,
@@ -4639,6 +4640,224 @@ describe('V2 Wallet:', function () {
               prv: '',
             })
             .should.be.rejectedWith('keychain does not have property encryptedPrv');
+        });
+      });
+
+      describe('SOL message signing (UTF-8 string path)', function () {
+        const solMessageRaw = 'hello from solana';
+        const solMessageEncoded = Buffer.from(solMessageRaw, 'utf8').toString('hex');
+        const solSignerAddress = 'J8TEPFqNJjFTp2NGHuWgijyuF45Lrzo2feZ61kS7yY2q';
+        const solTxHash = 'rrrsss1b';
+        const txRequestForSolMessageSigning: TxRequest = {
+          txRequestId: reqId.toString(),
+          transactions: [],
+          intent: {
+            intentType: 'signMessage',
+          },
+          date: new Date().toISOString(),
+          latest: true,
+          state: 'pendingUserSignature',
+          userId: 'userId',
+          walletType: 'hot',
+          policiesChecked: false,
+          version: 1,
+          walletId: 'walletId',
+          unsignedTxs: [],
+          unsignedMessages: [],
+          messages: [
+            {
+              state: 'signed',
+              messageRaw: solMessageRaw,
+              derivationPath: 'm/0',
+              signatureShares: [{ from: SignatureShareType.USER, to: SignatureShareType.USER, share: '' }],
+              txHash: solTxHash,
+              messageEncoded: solMessageEncoded,
+            },
+          ],
+        };
+        const solExpectedSignedMessage: SignedMessage = {
+          txRequestId: reqId.toString(),
+          txHash: solTxHash,
+          signature: solTxHash,
+          messageRaw: solMessageRaw,
+          coin: 'tsol',
+          messageEncoded: solMessageEncoded,
+        };
+        const solMessage = {
+          messageRaw: solMessageRaw,
+          messageStandardType: MessageStandardType.SIMPLE,
+          signerAddress: solSignerAddress,
+        };
+
+        let signTxRequestForMessageStub: sinon.SinonStub;
+
+        beforeEach(function () {
+          signTxRequestForMessageStub = sandbox
+            .stub(EDDSAUtils.default.prototype, 'signTxRequestForMessage')
+            .resolves(txRequestForSolMessageSigning);
+        });
+
+        it('should create msg request carrying messageRaw, SIMPLE and signerAddress unchanged', async function () {
+          let capturedBody: any;
+          nock(bgUrl)
+            .post(`/api/v2/wallet/${tssSolWallet.id()}/msgrequests`, (body) => {
+              capturedBody = body;
+              return true;
+            })
+            .reply(200, txRequestForSolMessageSigning);
+
+          await tssSolWallet.buildSignMessageRequest({ message: solMessage });
+
+          capturedBody.intent.messageRaw.should.equal(solMessageRaw);
+          capturedBody.intent.messageStandardType.should.equal(MessageStandardType.SIMPLE);
+          capturedBody.intent.signerAddress.should.equal(solSignerAddress);
+          capturedBody.intent.messageEncoded.should.equal('');
+          capturedBody.intent.intentType.should.equal('signMessage');
+          capturedBody.intent.isTss.should.equal(true);
+        });
+
+        it('should sign message without encodeMessage transformation, handing EdDSA the UTF-8 bytes', async function () {
+          const signMessageTssSpy = sandbox.spy(tssSolWallet, 'signMessageTss' as any);
+          nock(bgUrl).post(`/api/v2/wallet/${tssSolWallet.id()}/msgrequests`).reply(200, txRequestForSolMessageSigning);
+
+          const signedMessage = await tssSolWallet.signMessage({
+            reqId,
+            message: { ...solMessage },
+            prv: 'secretKey',
+          });
+          signedMessage.should.deepEqual(solExpectedSignedMessage);
+          const actualArg = signMessageTssSpy.getCalls()[0].args[0] as WalletSignMessageOptions;
+          should(actualArg.message?.messageEncoded).be.undefined();
+          signTxRequestForMessageStub.getCalls().length.should.equal(1);
+          signTxRequestForMessageStub.getCalls()[0].args[0].messageEncoded.should.equal(solMessageEncoded);
+          signTxRequestForMessageStub
+            .getCalls()[0]
+            .args[0].bufferToSign.should.deepEqual(Buffer.from(solMessageRaw, 'utf8'));
+        });
+
+        it('should sign message when txRequestId is provided, returning the WP-persisted messageRaw', async function () {
+          nock(bgUrl)
+            .get(
+              `/api/v2/wallet/${tssSolWallet.id()}/txrequests?txRequestIds=${
+                txRequestForSolMessageSigning.txRequestId
+              }&latest=true`
+            )
+            .reply(200, { txRequests: [txRequestForSolMessageSigning] });
+
+          const signedMessage = await tssSolWallet.signMessage({
+            reqId,
+            message: {
+              ...solMessage,
+              messageRaw: 'client-stale-echo',
+              txRequestId: txRequestForSolMessageSigning.txRequestId,
+            },
+            prv: 'secretKey',
+          });
+          signedMessage.should.deepEqual(solExpectedSignedMessage);
+          signedMessage.messageRaw.should.equal(solMessageRaw);
+        });
+
+        it('should fall back to the caller messageRaw when the signed request carries none', async function () {
+          const legacyTxRequest = {
+            ...txRequestForSolMessageSigning,
+            messages: [
+              {
+                ...txRequestForSolMessageSigning.messages![0],
+                messageRaw: undefined,
+              },
+            ],
+          } as unknown as TxRequest;
+          nock(bgUrl)
+            .get(
+              `/api/v2/wallet/${tssSolWallet.id()}/txrequests?txRequestIds=${
+                txRequestForSolMessageSigning.txRequestId
+              }&latest=true`
+            )
+            .reply(200, { txRequests: [legacyTxRequest] });
+
+          const signedMessage = await tssSolWallet.signMessage({
+            reqId,
+            message: { ...solMessage, txRequestId: txRequestForSolMessageSigning.txRequestId },
+            prv: 'secretKey',
+          });
+          signedMessage.messageRaw.should.equal(solMessageRaw);
+        });
+
+        it('should reject empty messageRaw', async function () {
+          await tssSolWallet
+            .buildSignMessageRequest({
+              message: { ...solMessage, messageRaw: '' },
+            })
+            .should.be.rejectedWith('message and type required to create message sign request');
+
+          await tssSolWallet
+            .signMessage({
+              reqId,
+              message: { ...solMessage, messageRaw: '' },
+              prv: 'secretKey',
+            })
+            .should.be.rejectedWith(/messageRaw is required to sign a SOL message/);
+        });
+
+        it('should reject messageRaw over MAX_SOL_MESSAGE_BYTES and accept exactly MAX_SOL_MESSAGE_BYTES', async function () {
+          await tssSolWallet
+            .buildSignMessageRequest({
+              message: { ...solMessage, messageRaw: 'a'.repeat(MAX_SOL_MESSAGE_BYTES + 1) },
+            })
+            .should.be.rejectedWith(/SOL message exceeds maximum size/);
+
+          let capturedBody: any;
+          nock(bgUrl)
+            .post(`/api/v2/wallet/${tssSolWallet.id()}/msgrequests`, (body) => {
+              capturedBody = body;
+              return true;
+            })
+            .reply(200, txRequestForSolMessageSigning);
+
+          await tssSolWallet.buildSignMessageRequest({
+            message: { ...solMessage, messageRaw: 'a'.repeat(MAX_SOL_MESSAGE_BYTES) },
+          });
+          capturedBody.intent.messageRaw.length.should.equal(MAX_SOL_MESSAGE_BYTES);
+        });
+
+        it('should measure multi-byte messageRaw in UTF-8 bytes, not characters', async function () {
+          const twoByteChars = 'é';
+          await tssSolWallet
+            .buildSignMessageRequest({
+              message: { ...solMessage, messageRaw: twoByteChars.repeat(MAX_SOL_MESSAGE_BYTES) },
+            })
+            .should.be.rejectedWith(/SOL message exceeds maximum size/);
+
+          let capturedBody: any;
+          nock(bgUrl)
+            .post(`/api/v2/wallet/${tssSolWallet.id()}/msgrequests`, (body) => {
+              capturedBody = body;
+              return true;
+            })
+            .reply(200, txRequestForSolMessageSigning);
+
+          await tssSolWallet.buildSignMessageRequest({
+            message: { ...solMessage, messageRaw: twoByteChars.repeat(MAX_SOL_MESSAGE_BYTES / 2) },
+          });
+          capturedBody.intent.messageRaw.length.should.equal(MAX_SOL_MESSAGE_BYTES / 2);
+        });
+
+        it('should reject non-SIMPLE message standards and missing signerAddress', async function () {
+          await tssSolWallet
+            .buildSignMessageRequest({
+              message: { ...solMessage, messageStandardType: MessageStandardType.EIP191 },
+            })
+            .should.be.rejectedWith(/SOL message signing supports only the SIMPLE standard/);
+
+          await tssSolWallet
+            .buildSignMessageRequest({
+              message: { ...solMessage, signerAddress: undefined },
+            })
+            .should.be.rejectedWith(/signerAddress is required to sign a SOL message/);
+        });
+
+        it('should not implement encodeMessage', function () {
+          should((tsol as any).encodeMessage).be.undefined();
         });
       });
     });

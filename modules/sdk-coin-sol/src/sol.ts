@@ -26,7 +26,10 @@ import {
   Environments,
   ITokenEnablement,
   KeyPair,
+  MAX_SOL_MESSAGE_BYTES,
   Memo,
+  Message,
+  MessageStandardType,
   MPCAlgorithm,
   MPCConsolidationRecoveryOptions,
   MPCRecoveryOptions,
@@ -286,6 +289,25 @@ export class Sol extends BaseCoin {
   /** @inheritDoc */
   supportsMessageSigning(): boolean {
     return true;
+  }
+
+  /** @inheritDoc */
+  validateSignableMessage(message: Pick<Message, 'messageRaw' | 'messageStandardType' | 'signerAddress'>): void {
+    if (message.messageStandardType !== MessageStandardType.SIMPLE) {
+      throw new Error(
+        `SOL message signing supports only the ${MessageStandardType.SIMPLE} standard, got ${message.messageStandardType}`
+      );
+    }
+    if (!message.signerAddress) {
+      throw new Error('signerAddress is required to sign a SOL message');
+    }
+    if (!message.messageRaw) {
+      throw new Error('messageRaw is required to sign a SOL message');
+    }
+    const messageBytes = Buffer.byteLength(message.messageRaw);
+    if (messageBytes > MAX_SOL_MESSAGE_BYTES) {
+      throw new Error(`SOL message exceeds maximum size: ${messageBytes} > ${MAX_SOL_MESSAGE_BYTES} bytes`);
+    }
   }
 
   /** inherited doc */
@@ -842,10 +864,6 @@ export class Sol extends BaseCoin {
 
   async signMessage(key: KeyPair, message: string | Buffer): Promise<Buffer> {
     const solKeypair = new SolKeyPair({ prv: key.prv });
-    if (Buffer.isBuffer(message)) {
-      message = base58.encode(message);
-    }
-
     return Buffer.from(solKeypair.signMessage(message));
   }
 

@@ -2556,6 +2556,11 @@ export class Wallet implements IWallet {
       throw new Error('Message signing only supported for TSS wallets');
     }
     if (_.isFunction((this.baseCoin as any).encodeMessage)) {
+      // Solana messages are signed as the exact UTF-8 bytes of messageRaw; no coin-specific
+      // encoder may transform them (WalletConnect UTF-8-first contract).
+      if (this.baseCoin.getFamily() === CoinFamily.SOL) {
+        throw new Error(`encodeMessage is not supported for ${this.baseCoin.getFullName()}`);
+      }
       params.message.messageEncoded = (this.baseCoin as any).encodeMessage(params.message.messageRaw);
     }
     const keychains = await this.baseCoin.keychains().getKeysForSigning({ wallet: this, reqId: params.reqId });
@@ -5301,11 +5306,14 @@ export class Wallet implements IWallet {
         );
       }
       assert(signedMessageRequest.messages[0].txHash, 'Unable to find txHash in signedMessageRequest.messages');
+      // messageRaw on the signed request is the WP-persisted payload that was validated and
+      // encoded before signing; the caller's echo is unverifiable on the resume path.
+      const signedMessageRaw = signedMessageRequest.messages[0].messageRaw ?? messageRaw;
       return {
         coin: this.coin(),
         txHash: signedMessageRequest.messages[0].txHash,
         signature: signedMessageRequest.messages[0].txHash,
-        messageRaw,
+        messageRaw: signedMessageRaw,
         messageEncoded,
         txRequestId: signedMessageRequest.txRequestId,
       };

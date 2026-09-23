@@ -6,6 +6,8 @@ import * as sinon from 'sinon';
 
 import { getExtraAccountMetaAddress, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { PublicKey, SystemProgram } from '@solana/web3.js';
+import * as base58 from 'bs58';
+import * as nacl from 'tweetnacl';
 
 import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
 import {
@@ -14,6 +16,8 @@ import {
   Environments,
   generateRandomPassword,
   IWallet,
+  MAX_SOL_MESSAGE_BYTES,
+  MessageStandardType,
   MPCSweepRecoveryOptions,
   MPCSweepTxs,
   MPCTx,
@@ -2059,12 +2063,92 @@ describe('SOL:', function () {
         .toString('base64')
         .should.equal('s+7d/8aW/twfM/0wLSKOGxd9+LhDIiz/g0FfJ39ylJhQIkjK0RYPm/Y+gdeJ5DIy6K6h6gCXXESDomlv12DBBQ==');
     });
+
+    it('should sign string as its UTF-8 bytes', async function () {
+      const message = 'hello from solana';
+      const signed = await basecoin.signMessage(keypair, message);
+      const pub = new PublicKey(keypair.pub).toBytes();
+      nacl.sign.detached
+        .verify(new Uint8Array(Buffer.from(message, 'utf8')), new Uint8Array(signed), pub)
+        .should.be.true();
+    });
+
+    it('should sign buffer bytes exactly, never their base58 rendering', async function () {
+      const message = Buffer.from('hello from solana', 'utf8');
+      const signed = await basecoin.signMessage(keypair, message);
+      const pub = new PublicKey(keypair.pub).toBytes();
+      nacl.sign.detached.verify(new Uint8Array(message), new Uint8Array(signed), pub).should.be.true();
+      const base58StringBytes = Buffer.from(base58.encode(message), 'utf8');
+      nacl.sign.detached.verify(new Uint8Array(base58StringBytes), new Uint8Array(signed), pub).should.be.false();
+    });
     it('shouldnt sign message when message is undefined', async function () {
       await basecoin
         .signMessage(keypair, undefined as any)
         .should.be.rejectedWith(
           'The first argument must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object. Received undefined'
         );
+    });
+  });
+
+  describe('Validate signable message', () => {
+    const validMessage = {
+      messageRaw: 'hello from solana',
+      messageStandardType: MessageStandardType.SIMPLE,
+      signerAddress: keypair.pub,
+    };
+
+    it('should accept a valid SIMPLE message', function () {
+      (() => basecoin.validateSignableMessage(validMessage)).should.not.throw();
+    });
+
+    it('should accept messageRaw of exactly MAX_SOL_MESSAGE_BYTES', function () {
+      (() =>
+        basecoin.validateSignableMessage({
+          ...validMessage,
+          messageRaw: 'a'.repeat(MAX_SOL_MESSAGE_BYTES),
+        })).should.not.throw();
+    });
+
+    it('should reject empty messageRaw', function () {
+      (() => basecoin.validateSignableMessage({ ...validMessage, messageRaw: '' })).should.throw(
+        /messageRaw is required to sign a SOL message/
+      );
+    });
+
+    it('should reject messageRaw over MAX_SOL_MESSAGE_BYTES', function () {
+      (() =>
+        basecoin.validateSignableMessage({
+          ...validMessage,
+          messageRaw: 'a'.repeat(MAX_SOL_MESSAGE_BYTES + 1),
+        })).should.throw(/SOL message exceeds maximum size/);
+    });
+
+    it('should measure messageRaw in UTF-8 bytes, not characters', function () {
+      const twoByteChars = 'é';
+      (() =>
+        basecoin.validateSignableMessage({
+          ...validMessage,
+          messageRaw: twoByteChars.repeat(MAX_SOL_MESSAGE_BYTES),
+        })).should.throw(/SOL message exceeds maximum size/);
+      (() =>
+        basecoin.validateSignableMessage({
+          ...validMessage,
+          messageRaw: twoByteChars.repeat(MAX_SOL_MESSAGE_BYTES / 2),
+        })).should.not.throw();
+    });
+
+    it('should reject non-SIMPLE message standards', function () {
+      (() =>
+        basecoin.validateSignableMessage({
+          ...validMessage,
+          messageStandardType: MessageStandardType.EIP191,
+        })).should.throw(/SOL message signing supports only the SIMPLE standard/);
+    });
+
+    it('should reject missing signerAddress', function () {
+      (() => basecoin.validateSignableMessage({ ...validMessage, signerAddress: undefined })).should.throw(
+        /signerAddress is required to sign a SOL message/
+      );
     });
   });
 

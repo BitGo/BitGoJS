@@ -462,6 +462,11 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
       params.intentType === 'signMessage',
       'Intent type must be signMessage for createMsgRequestWithSignMessageIntent'
     );
+    this.baseCoin.validateSignableMessage?.({
+      messageRaw: params.messageRaw,
+      messageStandardType: params.messageStandardType,
+      signerAddress: params.signerAddress,
+    });
     const intent: PopulatedIntentForMessageSigning = {
       custodianMessageId: params.custodianMessageId,
       intentType: params.intentType,
