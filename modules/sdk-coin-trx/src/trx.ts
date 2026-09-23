@@ -25,6 +25,7 @@ import {
   TransactionFee,
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionRecipient as Recipient,
+  TransactionParams,
   VerifyAddressOptions,
   VerifyTransactionOptions,
   BaseTransaction,
@@ -37,7 +38,7 @@ import {
 } from '@bitgo/sdk-core';
 import { auditEcdsaPrivateKey } from '@bitgo/sdk-lib-mpc';
 import { Enum, Interface, Utils, WrappedBuilder, KeyPair as TronKeyPair } from './lib';
-import { ValueFields, TransactionReceipt } from './lib/iface';
+import { ValueFields, TransactionReceipt, RawData } from './lib/iface';
 import { getBuilder } from './lib/builder';
 import { isInteger, isUndefined } from 'lodash';
 
@@ -417,12 +418,12 @@ export class Trx extends BaseCoin {
       }
 
       if (decodedTx.contractType === Enum.ContractType.TriggerSmartContract) {
-        // TRC20 token transfers (TriggerSmartContract) must be verified via TrxToken.verifyTransaction,
-        // not here. Fail closed to prevent unvalidated token transfers from being silently signed.
-        throw new Error(
-          'TriggerSmartContract verification is not supported by native TRX. ' +
-            'TRC20 token transfers must be verified via TrxToken.verifyTransaction.'
-        );
+        // TRC20 token transfers are TriggerSmartContract transactions. Wallets are sometimes
+        // constructed with the native coin instance (e.g. bitgo.coin('trx').wallets().get() on a
+        // trx:<token> wallet), which routes their verification here, so validate the recipient
+        // and amount instead of throwing (CECHO-2248). This is the same validation performed by
+        // TrxToken.verifyTransaction and still fails closed on any mismatch.
+        return this.validateTriggerSmartContract(decodedTx, txParams, txPrebuild);
       }
 
       return true;
@@ -505,6 +506,67 @@ export class Trx extends BaseCoin {
       if (expectedDestination.toLowerCase() !== actualDestination.toLowerCase()) {
         throw new Error('destination address does not match with the recipient address');
       }
+    }
+
+    return true;
+  }
+
+  /**
+   * Validate a TriggerSmartContract (TRC20 token transfer) on the TSS path.
+   * Shared by native Trx.verifyTransaction (which receives token transfers whose verification
+   * was routed through the native coin) and TrxToken.verifyTransaction.
+   *
+   * Always verifies contract structure and ABI decodability. Intent validation (address + amount
+   * comparison) is performed only when recipients are present — absent recipients indicates a
+   * server-determined transfer (e.g. consolidation) where the server owns the intent.
+   */
+  protected validateTriggerSmartContract(
+    decodedTx: RawData,
+    txParams: TransactionParams,
+    txPrebuild: BaseTransactionPrebuild
+  ): boolean {
+    if (!Array.isArray(decodedTx.contract) || decodedTx.contract.length !== 1) {
+      throw new Error('Invalid TriggerSmartContract structure');
+    }
+
+    const triggerContract = decodedTx.contract[0] as Interface.TriggerSmartContract;
+    // data is base64-encoded from protobuf decoding; convert to hex for decodeDataParams
+    const contractData = Buffer.from(triggerContract.parameter.value.data, 'base64').toString('hex');
+
+    let recipientHex: string;
+    let transferAmount: { toString(): string };
+    try {
+      [recipientHex, transferAmount] = Utils.decodeDataParams(['address', 'uint256'], contractData) as [
+        string,
+        { toString(): string }
+      ];
+    } catch (e) {
+      throw new Error(`Failed to decode TRC20 transfer ABI data: ${e instanceof Error ? e.message : String(e)}`);
+    }
+
+    const recipients =
+      txParams.recipients || (txPrebuild.txInfo as { recipients?: Recipient[] } | undefined)?.recipients;
+    if (!recipients || recipients.length === 0) {
+      // No recipients — server-determined transfer (e.g. consolidation); structural check above is sufficient.
+      return true;
+    }
+    if (recipients.length !== 1) {
+      throw new Error('invalid required property recipients');
+    }
+
+    // recipientHex has '41' hex prefix; convert to base58 for comparison.
+    // Canonicalize the client-supplied address too so 0x... / 41... match base58 outputs (COINS-1575).
+    const actualDestination = Utils.getBase58AddressFromHex(recipientHex);
+    const actualAmount = transferAmount.toString();
+    const expectedDestination = Utils.getBase58AddressFromHexAddress(recipients[0].address);
+    const expectedAmount = recipients[0].amount.toString();
+
+    if (actualAmount !== expectedAmount) {
+      throw new Error('transaction amount in txPrebuild does not match the value given by client');
+    }
+
+    if (expectedDestination.toLowerCase() !== actualDestination.toLowerCase()) {
+      throw new Error('destination address does not match with the recipient address');
     }
 
     return true;
