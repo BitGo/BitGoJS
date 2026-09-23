@@ -3,7 +3,7 @@
  */
 import * as secp256k1 from 'secp256k1';
 import { createHash, Hash, randomBytes } from 'crypto';
-import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { CoinFamily, BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { bip32 } from '@bitgo/secp256k1';
 import * as request from 'superagent';
 import {
@@ -46,6 +46,8 @@ export const SAFE_TRON_TRANSACTION_FEE = 2.1 * 1e6; // TRON foundation recommend
 export const SAFE_TRON_TOKEN_TRANSACTION_FEE = 100 * 1e6; // TRON foundation recommends 100 TRX as fees for guaranteed transaction
 export const RECOVER_TRANSACTION_EXPIRY = 86400000; // 24 hour
 export const DEFAULT_SCAN_FACTOR = 20; // default number of receive addresses to scan for funds
+/** First 4 bytes of keccak256("transfer(address,uint256)") — TRC20 transfer selector. */
+export const TRC20_TRANSFER_SELECTOR = 'a9059cbb';
 
 export interface TronSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -417,12 +419,11 @@ export class Trx extends BaseCoin {
       }
 
       if (decodedTx.contractType === Enum.ContractType.TriggerSmartContract) {
-        // TRC20 token transfers (TriggerSmartContract) must be verified via TrxToken.verifyTransaction,
-        // not here. Fail closed to prevent unvalidated token transfers from being silently signed.
-        throw new Error(
-          'TriggerSmartContract verification is not supported by native TRX. ' +
-            'TRC20 token transfers must be verified via TrxToken.verifyTransaction.'
-        );
+        // Token wallets are sometimes constructed with the native coin instance,
+        // which routes TRC20 verification through Trx instead of TrxToken (CECHO-2248).
+        // Validate recipient and amount here rather than throwing — still fails closed
+        // on amount/destination mismatch, undecodable ABI data, or invalid structure.
+        return this.validateTriggerSmartContract(decodedTx.contract, txParams, txPrebuild);
       }
 
       return true;
@@ -508,6 +509,117 @@ export class Trx extends BaseCoin {
     }
 
     return true;
+  }
+
+  /**
+   * Validate TriggerSmartContract (TRC20 transfer) for TSS wallets.
+   *
+   * Token wallets are sometimes constructed with the native coin instance, which
+   * routes verification through Trx instead of TrxToken (CECHO-2248). Validating
+   * here keeps the fail-closed amount/destination checks without throwing a
+   * transient "unsupported" error on a correct TRC20 withdrawal.
+   *
+   * Always verifies structure and ABI decodability. Intent validation (address +
+   * amount comparison) runs only when recipients are present — absent recipients
+   * indicates a server-determined transfer (e.g. consolidation).
+   */
+  protected validateTriggerSmartContract(
+    contract: unknown,
+    txParams: VerifyTransactionOptions['txParams'],
+    txPrebuild: VerifyTransactionOptions['txPrebuild'],
+    expectedContractAddress?: string
+  ): boolean {
+    if (!Array.isArray(contract) || contract.length !== 1) {
+      throw new Error('Invalid TriggerSmartContract structure');
+    }
+
+    const triggerContract = contract[0] as Interface.TriggerSmartContract;
+    // data is base64-encoded from protobuf decoding; convert to hex for decodeDataParams
+    const contractData = Buffer.from(triggerContract.parameter.value.data, 'base64').toString('hex');
+
+    // decodeDataParams strips the 4-byte selector, so approve(address,uint256) would
+    // otherwise decode as a transfer. Require the TRC20 transfer selector first.
+    const selector = contractData.slice(0, 8).toLowerCase();
+    if (selector !== TRC20_TRANSFER_SELECTOR) {
+      throw new Error(
+        `TriggerSmartContract data is not a TRC20 transfer (selector ${selector}); expected ${TRC20_TRANSFER_SELECTOR}`
+      );
+    }
+
+    const intendedContract = expectedContractAddress ?? this.resolveIntendedTokenContract(txParams);
+    if (!intendedContract) {
+      throw new Error(
+        'TriggerSmartContract verification requires token identity (tokenName or tokenAddress) on the recipient'
+      );
+    }
+    const actualContract = Utils.getBase58AddressFromHexAddress(triggerContract.parameter.value.contract_address);
+    const expectedContract = Utils.getBase58AddressFromHexAddress(intendedContract);
+    if (actualContract.toLowerCase() !== expectedContract.toLowerCase()) {
+      throw new Error('token contract address does not match the intended token');
+    }
+
+    let recipientHex: string;
+    let transferAmount: { toString(): string };
+    try {
+      [recipientHex, transferAmount] = Utils.decodeDataParams(['address', 'uint256'], contractData) as [
+        string,
+        { toString(): string }
+      ];
+    } catch (e) {
+      throw new Error(`Failed to decode TRC20 transfer ABI data: ${e instanceof Error ? e.message : String(e)}`);
+    }
+
+    const recipients =
+      txParams.recipients || (txPrebuild.txInfo as { recipients?: Recipient[] } | undefined)?.recipients;
+    if (!recipients || recipients.length === 0) {
+      // No recipients — server-determined transfer (e.g. consolidation); structural check above is sufficient.
+      return true;
+    }
+    if (recipients.length !== 1) {
+      throw new Error('invalid required property recipients');
+    }
+
+    // recipientHex has '41' hex prefix; convert to base58 for comparison.
+    // Canonicalize the client-supplied address too so 0x... / 41... match base58 outputs (COINS-1575).
+    const actualDestination = Utils.getBase58AddressFromHex(recipientHex);
+    const actualAmount = transferAmount.toString();
+    const expectedDestination = Utils.getBase58AddressFromHexAddress(recipients[0].address);
+    const expectedAmount = recipients[0].amount.toString();
+
+    if (actualAmount !== expectedAmount) {
+      throw new Error('transaction amount in txPrebuild does not match the value given by client');
+    }
+
+    if (expectedDestination.toLowerCase() !== actualDestination.toLowerCase()) {
+      throw new Error('destination address does not match with the recipient address');
+    }
+
+    return true;
+  }
+
+  /**
+   * Resolve the intended TRC20 contract from txParams when native Trx is used
+   * to verify a token transfer (CECHO-2248 coin-routing mismatch).
+   */
+  private resolveIntendedTokenContract(txParams: VerifyTransactionOptions['txParams']): string | undefined {
+    const recipient = txParams.recipients?.[0];
+    if (!recipient) {
+      return undefined;
+    }
+    if (recipient.tokenAddress) {
+      return recipient.tokenAddress;
+    }
+    if (recipient.tokenName) {
+      try {
+        const coin = coins.get(recipient.tokenName);
+        if ('contractAddress' in coin && coin.contractAddress) {
+          return String(coin.contractAddress);
+        }
+      } catch {
+        throw new Error(`unknown token ${recipient.tokenName}`);
+      }
+    }
+    return undefined;
   }
 
   /** @inheritDoc */
