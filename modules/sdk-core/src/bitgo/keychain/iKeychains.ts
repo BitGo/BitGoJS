@@ -102,6 +102,15 @@ export interface ListKeychainOptions {
   safeId?: string;
 }
 
+export type KeychainPasswordUpdateStatus = 'updated' | 'skipped';
+
+export interface KeychainPasswordUpdateProgress {
+  status: KeychainPasswordUpdateStatus;
+  currentKeychainId?: string;
+}
+
+export type KeychainPasswordUpdateProgressCallback = (progress: KeychainPasswordUpdateProgress) => void;
+
 export interface UpdatePasswordOptions {
   oldPassword: string;
   newPassword: string;
@@ -131,6 +140,8 @@ export interface UpdatePasswordOptions {
    *   per-keychain source versions.
    */
   safeId?: string;
+  /** Optional observer invoked once per nonfatal keychain outcome during password rotation. */
+  progressCallback?: KeychainPasswordUpdateProgressCallback;
 }
 
 export interface UpdateSingleKeychainPasswordOptions {

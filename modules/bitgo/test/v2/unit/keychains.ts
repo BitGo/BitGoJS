@@ -567,6 +567,106 @@ describe('V2 Keychains', function () {
         const keys = await keychains.updatePassword({ oldPassword: oldPassword, newPassword: newPassword });
         await validateKeys(keys, newPassword, 1);
       });
+
+      it('should emit progressCallback outcomes in cursor order across every page', async function () {
+        const prevId = 'prevId';
+        const encXprv1 = await bitgo.encrypt({ input: 'xprv1', password: oldPassword });
+        const encXprv2 = await bitgo.encrypt({ input: 'xprv2', password: otherPassword });
+        const encXprv3 = await bitgo.encrypt({ input: 'xprv3', password: oldPassword });
+        nock(bgUrl)
+          .get('/api/v2/tltc/key')
+          .query(true)
+          .reply(200, {
+            nextBatchPrevId: prevId,
+            keys: [
+              { pub: 'xpub1', encryptedPrv: encXprv1 },
+              { pub: 'xpub2', encryptedPrv: encXprv2 },
+            ],
+          });
+        nock(bgUrl)
+          .get('/api/v2/tltc/key')
+          .query(function queryNextPageMatch(queryObject) {
+            return queryObject.prevId === prevId;
+          })
+          .reply(200, {
+            keys: [{ pub: 'xpub3', encryptedPrv: encXprv3 }],
+          });
+
+        const events: Array<{ status: string; currentKeychainId?: string }> = [];
+        await keychains.updatePassword({
+          oldPassword,
+          newPassword,
+          progressCallback: (progress) => events.push(progress),
+        });
+
+        events.should.deepEqual([
+          { status: 'updated', currentKeychainId: 'xpub1' },
+          { status: 'skipped', currentKeychainId: 'xpub2' },
+          { status: 'updated', currentKeychainId: 'xpub3' },
+        ]);
+      });
+
+      it('should emit skipped when a key has no encryptedPrv', async function () {
+        const encXprv1 = await bitgo.encrypt({ input: 'xprv1', password: oldPassword });
+        nock(bgUrl)
+          .get('/api/v2/tltc/key')
+          .query(true)
+          .reply(200, {
+            keys: [{ pub: 'xpub1', encryptedPrv: encXprv1 }, { pub: 'xpub2' }],
+          });
+
+        const events: Array<{ status: string; currentKeychainId?: string }> = [];
+        await keychains.updatePassword({
+          oldPassword,
+          newPassword,
+          progressCallback: (progress) => events.push(progress),
+        });
+
+        events.should.containEql({ status: 'updated', currentKeychainId: 'xpub1' });
+        events.should.containEql({ status: 'skipped', currentKeychainId: 'xpub2' });
+      });
+
+      it('should emit skipped for a known decrypt-failure and never mislabel a fatal error as skipped', async function () {
+        const encXprv1 = await bitgo.encrypt({ input: 'xprv1', password: oldPassword });
+        const encXprv2 = await bitgo.encrypt({ input: 'xprv2', password: otherPassword });
+        nock(bgUrl)
+          .get('/api/v2/tltc/key')
+          .query(true)
+          .reply(200, {
+            keys: [
+              { pub: 'xpub1', encryptedPrv: encXprv1 },
+              { pub: 'xpub2', encryptedPrv: encXprv2 },
+            ],
+          });
+
+        const events: Array<{ status: string; currentKeychainId?: string }> = [];
+        await keychains.updatePassword({
+          oldPassword,
+          newPassword,
+          progressCallback: (progress) => events.push(progress),
+        });
+
+        events.should.containEql({ status: 'updated', currentKeychainId: 'xpub1' });
+        events.should.containEql({ status: 'skipped', currentKeychainId: 'xpub2' });
+
+        const sandbox = sinon.createSandbox();
+        try {
+          nock(bgUrl)
+            .get('/api/v2/tltc/key')
+            .query(true)
+            .reply(200, {
+              keys: [{ pub: 'xpub3', encryptedPrv: encXprv1 }],
+            });
+          sandbox.stub(keychains, 'updateSingleKeychainPassword').throws(new Error('some random error'));
+          const fatalEvents: Array<{ status: string; currentKeychainId?: string }> = [];
+          await keychains
+            .updatePassword({ oldPassword, newPassword, progressCallback: (progress) => fatalEvents.push(progress) })
+            .should.be.rejectedWith('some random error');
+          fatalEvents.should.have.length(0);
+        } finally {
+          sandbox.restore();
+        }
+      });
     });
 
     describe('Create TSS Keychains', function () {

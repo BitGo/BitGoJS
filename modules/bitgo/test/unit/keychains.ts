@@ -73,6 +73,63 @@ describe('Keychains', function v2keychains() {
       }
       result.should.hasOwnProperty('version');
     });
+
+    it('should emit progressCallback outcomes for updated and skipped keychains', async function () {
+      const oldPassword = 'oldPassword';
+      const newPassword = 'newPassword';
+      const otherPassword = 'otherPassword';
+
+      const encryptedXprv1 = await bitgo.encrypt({ input: 'xprv1', password: oldPassword });
+      const encryptedXprv2 = await bitgo.encrypt({ input: 'xprv2', password: otherPassword });
+
+      nock(bgUrl)
+        .post('/api/v1/user/encrypted')
+        .reply(200, {
+          keychains: {
+            xpub1: encryptedXprv1,
+            xpub2: encryptedXprv2,
+          },
+          version: 1,
+        });
+
+      const events: Array<{ status: string; currentKeychainId?: string }> = [];
+      await keychains.updatePassword({
+        oldPassword,
+        newPassword,
+        progressCallback: (progress) => events.push(progress),
+      });
+
+      events.should.have.length(2);
+      events.should.containEql({ status: 'updated', currentKeychainId: 'xpub1' });
+      events.should.containEql({ status: 'skipped', currentKeychainId: 'xpub2' });
+    });
+
+    it('should not let a throwing progressCallback affect the rotation result', async function () {
+      const oldPassword = 'oldPassword';
+      const newPassword = 'newPassword';
+
+      const encryptedXprv1 = await bitgo.encrypt({ input: 'xprv1', password: oldPassword });
+
+      nock(bgUrl)
+        .post('/api/v1/user/encrypted')
+        .reply(200, {
+          keychains: {
+            xpub1: encryptedXprv1,
+          },
+          version: 1,
+        });
+
+      const result = await keychains.updatePassword({
+        oldPassword,
+        newPassword,
+        progressCallback: () => {
+          throw new Error('observer boom');
+        },
+      });
+
+      const decryptedPrv = await bitgo.decrypt({ input: result.keychains.xpub1, password: newPassword });
+      decryptedPrv.should.equal('xprv1');
+    });
   });
 
   after(function afterKeychains() {
