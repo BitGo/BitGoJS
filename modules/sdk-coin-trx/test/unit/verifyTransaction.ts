@@ -619,28 +619,83 @@ describe('TRON Verify Transaction:', function () {
       assert.strictEqual(result, true);
     });
 
-    it('should throw when TSS native TRX verifyTransaction encounters a TriggerSmartContract', async function () {
-      // Defense-in-depth: native TRX (Trx) should never verify TriggerSmartContract.
-      // TRC20 token transfers must go through TrxToken.verifyTransaction.
-      // The raw_data_hex below is a real TRC20 TriggerSmartContract protobuf.
+    describe('TriggerSmartContract (TRC20) routed through native Trx', () => {
+      // CECHO-2248: token wallets are sometimes constructed with the native coin instance
+      // (e.g. bitgo.coin('trx').wallets().get() on a trx:<token> wallet), so a TRC20
+      // TriggerSmartContract prebuild can reach the native Trx verifier. It must validate
+      // recipient and amount (same as TrxToken.verifyTransaction) instead of throwing.
       const trc20RawDataHex =
         '0a02578b22086113bb9ac351432b4088eae7a6de305aae01081f12a9010a31747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e54726967676572536d617274436f6e747261637412740a1541c51fbeea78910b15b1d3e8a9b62914ca94d1a4ac12154142a1e39aefa49290f2b3f9ed688d7cecf86cd6e02244a9059cbb0000000000000000000000008483618ca85c35a9b923d98bebca718f5a1db2790000000000000000000000000000000000000000000000000000000005f5e10070888d8ca5de309001c0c39307';
 
-      const params = {
-        txParams: {
-          recipients: [{ address: 'TLWh67P93KgtnZNCtGnEHM1H33Nhq2uvvN', amount: '100000000' }],
-        },
-        txPrebuild: {
-          txHex: trc20RawDataHex,
-        },
-        wallet: {},
-        walletType: 'tss',
-      };
+      // Recipient address decoded from the ABI data in the protobuf above (41 prefix → base58)
+      const trc20RecipientHex = '418483618ca85c35a9b923d98bebca718f5a1db279';
+      const trc20RecipientBase58 = Utils.getBase58AddressFromHex(trc20RecipientHex);
+      const trc20Amount = '100000000';
 
-      await assert.rejects(basecoin.verifyTransaction(params), {
-        message:
-          'TriggerSmartContract verification is not supported by native TRX. ' +
-          'TRC20 token transfers must be verified via TrxToken.verifyTransaction.',
+      it('should validate a matching TRC20 transfer instead of throwing', async function () {
+        const params = {
+          txParams: {
+            recipients: [{ address: trc20RecipientBase58, amount: trc20Amount }],
+          },
+          txPrebuild: {
+            txHex: trc20RawDataHex,
+          },
+          wallet: {},
+          walletType: 'tss',
+        };
+
+        const result = await basecoin.verifyTransaction(params);
+        assert.strictEqual(result, true);
+      });
+
+      it('should fail when TRC20 amount does not match', async function () {
+        const params = {
+          txParams: {
+            recipients: [{ address: trc20RecipientBase58, amount: '999' }],
+          },
+          txPrebuild: {
+            txHex: trc20RawDataHex,
+          },
+          wallet: {},
+          walletType: 'tss',
+        };
+
+        await assert.rejects(basecoin.verifyTransaction(params), {
+          message: 'transaction amount in txPrebuild does not match the value given by client',
+        });
+      });
+
+      it('should fail when TRC20 destination does not match', async function () {
+        const params = {
+          txParams: {
+            recipients: [{ address: 'TLWh67P93KgtnZNCtGnEHM1H33Nhq2uvvN', amount: trc20Amount }],
+          },
+          txPrebuild: {
+            txHex: trc20RawDataHex,
+          },
+          wallet: {},
+          walletType: 'tss',
+        };
+
+        await assert.rejects(basecoin.verifyTransaction(params), {
+          message: 'destination address does not match with the recipient address',
+        });
+      });
+
+      it('should return true when no recipients are provided (consolidation path)', async function () {
+        const params = {
+          txParams: {
+            recipients: [],
+          },
+          txPrebuild: {
+            txHex: trc20RawDataHex,
+          },
+          wallet: {},
+          walletType: 'tss',
+        };
+
+        const result = await basecoin.verifyTransaction(params);
+        assert.strictEqual(result, true);
       });
     });
 
