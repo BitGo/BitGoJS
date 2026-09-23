@@ -111,6 +111,18 @@ export class Keychains implements IKeychains {
   async updatePassword(params: UpdatePasswordOptions): Promise<ChangedKeychains> {
     common.validateParams(params, ['oldPassword', 'newPassword'], []);
     const changedKeys: ChangedKeychains = {};
+    const notifyProgress = (status: 'updated' | 'skipped', currentKeychainId?: string) => {
+      if (!_.isFunction(params.progressCallback)) {
+        return;
+      }
+      try {
+        params.progressCallback({ status, currentKeychainId });
+      } catch (e) {
+        // ignore observer exceptions so a throwing callback never affects rotation results
+      }
+    };
+    const observationId = (key: Keychain): string | undefined =>
+      key.type === 'tss' || Keychains.isMultiUserKey(key) ? key.id : key.pub;
     let prevId;
     let keysLeft = true;
     while (keysLeft) {
@@ -118,6 +130,7 @@ export class Keychains implements IKeychains {
       for (const key of result.keys) {
         const oldEncryptedPrv = key.encryptedPrv;
         if (_.isUndefined(oldEncryptedPrv)) {
+          notifyProgress('skipped', observationId(key));
           continue;
         }
         try {
@@ -136,7 +149,12 @@ export class Keychains implements IKeychains {
                 : updatedKeychain.pub;
             if (changedKeyIdentifier) {
               changedKeys[changedKeyIdentifier] = updatedKeychain.encryptedPrv;
+              notifyProgress('updated', changedKeyIdentifier);
+            } else {
+              notifyProgress('skipped', observationId(key));
             }
+          } else {
+            notifyProgress('skipped', observationId(key));
           }
         } catch (e) {
           // if the password was incorrect, silence the error, throw otherwise.
@@ -148,6 +166,7 @@ export class Keychains implements IKeychains {
           ) {
             throw e;
           }
+          notifyProgress('skipped', observationId(key));
         }
       }
       if (result.nextBatchPrevId) {
