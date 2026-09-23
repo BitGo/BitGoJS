@@ -10,7 +10,16 @@ import nacl from 'tweetnacl';
 import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { coins } from '@bitgo/statics';
-import { common, EDDSAMethods, MPCTx, TransactionPrebuild, Wallet } from '@bitgo/sdk-core';
+import {
+  common,
+  EDDSAMethods,
+  MPCSweepRecoveryOptions,
+  MPCSweepTxs,
+  MPCTx,
+  signRecoveryEddsaMPCv2,
+  TransactionPrebuild,
+  Wallet,
+} from '@bitgo/sdk-core';
 import { MPSUtil } from '@bitgo/sdk-lib-mpc';
 
 import * as nearAPI from 'near-api-js';
@@ -1899,6 +1908,132 @@ describe('NEAR:', function () {
         new Uint8Array(Buffer.from(mpcV2TokenAccountId, 'hex'))
       );
       isValidSignature.should.be.true();
+    });
+  });
+
+  describe('createBroadcastableSweepTransaction (MPCv2):', () => {
+    const sandBox = sinon.createSandbox();
+    let userKeyShare: Buffer;
+    let backupKeyShare: Buffer;
+    let commonKeychain: string;
+    let mpcv2SweepTxRequest: any;
+    let mpcv2SignatureHex: string;
+
+    before(async function () {
+      const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+      commonKeychain = userDkg.getCommonKeychain();
+      userKeyShare = userDkg.getKeyShare();
+      backupKeyShare = backupDkg.getKeyShare();
+
+      const mpc = await EDDSAMethods.getInitializedMpcInstance();
+      const accountId = mpc.deriveUnhardened(commonKeychain, 'm/0').slice(0, 64);
+      const bs58EncodedPublicKey = nearAPI.utils.serialize.base_encode(new Uint8Array(Buffer.from(accountId, 'hex')));
+
+      const callBack = sandBox.stub(Near.prototype, 'getDataFromNode' as keyof Near);
+      callBack.withArgs().resolves(NearResponses.getProtocolConfigResp);
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'gas_price',
+            params: [accountInfo.blockHash],
+          },
+        })
+        .resolves(NearResponses.getGasPriceResponse);
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'query',
+            params: {
+              request_type: 'view_access_key',
+              finality: 'final',
+              account_id: accountId,
+              public_key: bs58EncodedPublicKey,
+            },
+          },
+        })
+        .resolves(NearResponses.getAccessKeyResponse);
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'query',
+            params: {
+              request_type: 'view_account',
+              finality: 'final',
+              account_id: accountId,
+            },
+          },
+        })
+        .resolves(NearResponses.getAccountResponse);
+
+      // no walletPassphrase -> unsigned sweep path returns MPCSweepTxs
+      const sweep = (await basecoin.recover({
+        bitgoKey: commonKeychain,
+        recoveryDestination: accountInfo.recoveryDestination,
+      })) as MPCSweepTxs;
+      sandBox.restore();
+
+      mpcv2SweepTxRequest = sweep.txRequests[0];
+      const unsignedTx = mpcv2SweepTxRequest.transactions[0].unsignedTx;
+      const signature = await signRecoveryEddsaMPCv2(
+        Buffer.from(unsignedTx.signableHex, 'hex'),
+        unsignedTx.derivationPath,
+        userKeyShare,
+        backupKeyShare,
+        commonKeychain
+      );
+      mpcv2SignatureHex = signature.toString('hex');
+    });
+
+    function buildParams(ovc: any): MPCSweepRecoveryOptions {
+      return {
+        signatureShares: [
+          {
+            txRequest: mpcv2SweepTxRequest,
+            tssVersion: '0.0.1',
+            ovc: [ovc],
+          },
+        ],
+      } as MPCSweepRecoveryOptions;
+    }
+
+    it('should take MPCv2 OVC output and generate a signed sweep transaction', async function () {
+      const params = buildParams({ eddsaMpcv2Signature: mpcv2SignatureHex });
+      const recoveryTxn = await basecoin.createBroadcastableSweepTransaction(params);
+
+      recoveryTxn.transactions[0].serializedTx.should.not.equal(
+        mpcv2SweepTxRequest.transactions[0].unsignedTx.serializedTx
+      );
+      recoveryTxn.transactions[0].serializedTx.should.not.be.empty();
+      (recoveryTxn.transactions[0].scanIndex ?? 0).should.equal(0);
+      (recoveryTxn.lastScanIndex ?? 0).should.equal(0);
+    });
+
+    it('should reject a tampered MPCv2 signature', async function () {
+      const unsignedTx = mpcv2SweepTxRequest.transactions[0].unsignedTx;
+      const tamperedMessage = Buffer.concat([Buffer.from(unsignedTx.signableHex, 'hex'), Buffer.from('00', 'hex')]);
+      const tamperedSignature = await signRecoveryEddsaMPCv2(
+        tamperedMessage,
+        unsignedTx.derivationPath,
+        userKeyShare,
+        backupKeyShare,
+        commonKeychain
+      );
+
+      await basecoin
+        .createBroadcastableSweepTransaction(buildParams({ eddsaMpcv2Signature: tamperedSignature.toString('hex') }))
+        .should.be.rejectedWith('Invalid signature');
+    });
+
+    it('should throw when MPCv2 OVC is missing signature(s)', async function () {
+      await basecoin
+        .createBroadcastableSweepTransaction(buildParams({}))
+        .should.be.rejectedWith('Missing signature(s)');
     });
   });
 });
