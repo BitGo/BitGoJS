@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { base64UrlToBuffer, bufferToBase64Url, toBase64Url } from '../../src/base64url';
+import { base64UrlToBuffer, bufferToBase64Url, toBase64Url } from '@bitgo/sdk-core';
 
 describe('base64url helpers', function () {
   describe('toBase64Url', function () {

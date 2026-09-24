@@ -1,6 +1,5 @@
 import * as assert from 'assert';
-import { derivePassword } from '../../src/derivePassword';
-import { deriveEnterpriseSalt } from '../../src/deriveEnterpriseSalt';
+import { deriveEnterpriseSalt, derivePassword } from '@bitgo/sdk-core';
 import { registerPasskey } from '../../src/registerPasskey';
 import { attachPasskeyToWallet } from '../../src/attachPasskeyToWallet';
 import { derivePasskeyPrfKey } from '../../src/derivePasskeyPrfKey';

@@ -437,4 +437,147 @@ describe('Safe', function () {
         .should.be.rejectedWith(IncorrectPasswordError);
     });
   });
+
+  describe('registerPasskey / removePasskey (WCN-2033)', function () {
+    const device = {
+      id: 'device-id-123',
+      credentialId: 'credentialId-abc',
+      prfSalt: 'ZqJ64M2dL65zn2-Jxd58SMN2ILc9QjbCFxUTGHd_LC8',
+      isPasskey: true,
+    };
+    const prfResult = new Uint8Array([0x1e, 0x5c, 0xb4, 0x78]).buffer;
+
+    let keychainsGet: sinon.SinonStub;
+    let encryptStub: sinon.SinonStub;
+    let decryptStub: sinon.SinonStub;
+    let delResult: sinon.SinonStub;
+    let postSend: sinon.SinonStub;
+    let providerGet: sinon.SinonStub;
+
+    function stubCoinCryptoAndProvider() {
+      keychainsGet = sinon
+        .stub()
+        .callsFake(({ id }: { id: string }) =>
+          Promise.resolve({ id, source: 'user', encryptedPrv: `enc:${id}`, pub: 'xpub', type: 'independent' })
+        );
+      mockBitGo.coin = sinon.stub().returns({ keychains: () => ({ get: keychainsGet }) });
+      mockBitGo.getEnv = sinon.stub().returns('test');
+      decryptStub = sinon
+        .stub()
+        .callsFake(({ input }: { input: string }) =>
+          Promise.resolve(input.startsWith('enc:') ? input.slice(4) : undefined)
+        );
+      encryptStub = sinon.stub().resolves('re-encrypted-prv');
+      mockBitGo.decrypt = decryptStub;
+      mockBitGo.encrypt = encryptStub;
+      postSend = sinon.stub().returns({ result: sinon.stub().resolves({ otpDeviceId: device.id, updatedKeys: [] }) });
+      mockBitGo.post.returns({ send: postSend });
+      delResult = sinon.stub().resolves({ removedKeys: [] });
+      mockBitGo.del = sinon.stub().returns({ result: delResult });
+      providerGet = sinon.stub().resolves({ prfResult, credentialId: device.credentialId, otpCode: '123456' });
+    }
+
+    function provider() {
+      return { get: providerGet, create: sinon.stub() };
+    }
+
+    it('registers a passkey on each user root and never wraps backup/bitgo roots', async function () {
+      stubCoinCryptoAndProvider();
+
+      await safe.registerPasskey({ device, safePassphrase: 'pw', provider: provider() as never });
+
+      sinon.assert.callCount(keychainsGet, 4);
+      sinon.assert.callCount(encryptStub, 4);
+      sinon.assert.alwaysCalledWithMatch(encryptStub, { adata: 'test-enterprise-id' });
+
+      sinon.assert.calledOnce(postSend);
+      const body = postSend.firstCall.args[0];
+      body.otpDeviceId.should.equal('device-id-123');
+      body.entries.should.have.length(4);
+      const keyIds = body.entries.map((e: { keyId: string }) => e.keyId);
+      keyIds.sort().should.eql(['ecdsa-user', 'ed-user', 'eddsa-user', 'user-root-id']);
+      // no backup / bitgo id may ever be wrapped
+      [
+        'backup-root-id',
+        'bitgo-root-id',
+        'ecdsa-backup',
+        'ecdsa-bitgo',
+        'eddsa-backup',
+        'eddsa-bitgo',
+        'ed-backup',
+        'ed-bitgo',
+      ].forEach((id) => keyIds.should.not.containEql(id));
+    });
+
+    it('wraps only the populated slots (partial safe)', async function () {
+      stubCoinCryptoAndProvider();
+      safe = new Safe(mockBitGo, {
+        ...safeData,
+        rootKeys: {
+          hot: {
+            secp256k1Multisig: ['user-root-id', 'backup-root-id', 'bitgo-root-id'],
+            ecdsaMpc: ['ecdsa-user', 'ecdsa-backup', 'ecdsa-bitgo'],
+          },
+        },
+      });
+
+      await safe.registerPasskey({ device, safePassphrase: 'pw', provider: provider() as never });
+
+      sinon.assert.callCount(keychainsGet, 2);
+      const body = postSend.firstCall.args[0];
+      body.entries.should.have.length(2);
+      body.entries
+        .map((e: { keyId: string }) => e.keyId)
+        .sort()
+        .should.eql(['ecdsa-user', 'user-root-id']);
+    });
+
+    it('rejects a wrong safePassphrase before posting', async function () {
+      stubCoinCryptoAndProvider();
+      decryptStub.rejects(new Error('bad password'));
+
+      await safe
+        .registerPasskey({ device, safePassphrase: 'nope', provider: provider() as never })
+        .should.be.rejectedWith(IncorrectPasswordError);
+
+      sinon.assert.notCalled(postSend);
+      sinon.assert.notCalled(encryptStub);
+    });
+
+    it('rejects a device without a PRF salt before any fetch', async function () {
+      stubCoinCryptoAndProvider();
+
+      await safe
+        .registerPasskey({
+          device: { ...device, prfSalt: undefined },
+          safePassphrase: 'pw',
+          provider: provider() as never,
+        })
+        .should.be.rejectedWith(/PRF extension not supported/);
+
+      sinon.assert.notCalled(mockBitGo.coin);
+      sinon.assert.notCalled(postSend);
+    });
+
+    it('removes the passkey after verifying the safePassphrase', async function () {
+      stubCoinCryptoAndProvider();
+
+      await safe.removePasskey({ device, safePassphrase: 'pw' });
+
+      sinon.assert.calledWithMatch(
+        mockBitGo.del,
+        `/enterprise/test-enterprise-id/safes/test-safe-id/passkeys/${device.id}`
+      );
+      sinon.assert.calledOnce(delResult);
+    });
+
+    it('rejects removal with a wrong safePassphrase before deleting', async function () {
+      stubCoinCryptoAndProvider();
+      decryptStub.rejects(new Error('bad password'));
+
+      await safe.removePasskey({ device, safePassphrase: 'nope' }).should.be.rejectedWith(IncorrectPasswordError);
+
+      sinon.assert.notCalled(mockBitGo.del);
+    });
+  });
 });

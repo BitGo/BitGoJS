@@ -1,4 +1,4 @@
-import { PasskeyAuthResult, PasskeyGetOptions, WebAuthnProvider } from '../../../src/webAuthnTypes';
+import { type PasskeyAuthResult, type PasskeyGetOptions, type WebAuthnProvider } from '@bitgo/sdk-core';
 import { CREDENTIAL_ID, PRF_OUTPUT } from './fixtures';
 
 export function makeMockProvider(): WebAuthnProvider & { lastEvalByCredential: Record<string, string> | undefined } {

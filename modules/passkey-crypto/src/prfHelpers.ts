@@ -1,5 +1,5 @@
 import type { WebauthnDevice } from '@bitgo/public-types';
-import { toBase64Url } from './base64url';
+import { toBase64Url } from '@bitgo/sdk-core';
 
 /**
  * Builds the PRF eval map and credential-to-device lookup from a wallet

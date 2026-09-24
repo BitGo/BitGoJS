@@ -1,5 +1,4 @@
-import { BitGoBase, decryptKeychainPrivateKey } from '@bitgo/sdk-core';
-import { WebAuthnOtpDevice } from './webAuthnTypes';
+import { BitGoBase, decryptKeychainPrivateKey, type WebAuthnOtpDevice } from '@bitgo/sdk-core';
 
 export async function removePasskeyFromWallet(params: {
   bitgo: BitGoBase;

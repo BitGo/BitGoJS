@@ -14,8 +14,6 @@ import {
   RootKeyType,
   SafeData,
 } from '@bitgo/public-types';
-import { Environments } from '../../common';
-import { IBaseCoin } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { ApiResponseError } from '../errors';
 import { decodeWithCodec } from '../utils/codecs';
@@ -23,33 +21,8 @@ import { isDerivableEd25519Pub } from '@bitgo/sdk-lib-safes';
 import { postWithCodec } from '../utils/postWithCodec';
 import { FinalizeSafeOptions, InitializeSafeOptions } from './iSafe';
 import { CreateSafeOptions, GetSafeOptions, ISafes, ListSafesOptions, SafeCreationHandle, SafeKeys } from './iSafes';
+import { coinForRoot, SAFE_ROOT_SLOTS } from './rootCoin';
 import { Safe } from './safe';
-
-/**
- * Representative coin per root slot, by network. Safe roots are curve/scheme-scoped, not
- * coin-scoped — WP stamps `curve` server-side from the coin's key curve, so any coin of the
- * right (curve, scheme) works. These are stable, always-available choices used only to route
- * the key-generation ceremony; the resulting root is interchangeable across coins of the slot.
- * @experimental
- */
-const ROOT_COIN_BY_NETWORK: Record<'mainnet' | 'testnet', Record<RootKeyType, string>> = {
-  mainnet: {
-    // multisig roots
-    secp256k1Multisig: 'btc',
-    ed25519Multisig: 'xlm',
-    // MPC roots
-    ecdsaMpc: 'eth',
-    eddsaMpc: 'sol',
-  },
-  testnet: {
-    // multisig roots
-    secp256k1Multisig: 'tbtc',
-    ed25519Multisig: 'txlm',
-    // MPC roots
-    ecdsaMpc: 'hteth',
-    eddsaMpc: 'tsol',
-  },
-};
 
 /**
  * Wire shape of the paginated `GET /enterprise/:eId/safes` response. WP paginates with the v2
@@ -136,9 +109,8 @@ export class Safes implements ISafes {
 
     // Absent `enabledRootSlots` (older WP, pre-gating) ⇒ all 4, preserving current behavior.
     // Ordered by scheme: the two multisig roots first, then the two MPC roots.
-    const allSlots: RootKeyType[] = ['secp256k1Multisig', 'ed25519Multisig', 'ecdsaMpc', 'eddsaMpc'];
-    const enabled = new Set(enabledRootSlots ?? allSlots);
-    const slots = allSlots.filter((slot) => enabled.has(slot));
+    const enabled = new Set(enabledRootSlots ?? SAFE_ROOT_SLOTS);
+    const slots = SAFE_ROOT_SLOTS.filter((slot) => enabled.has(slot));
     const ceremonies: Record<RootKeyType, () => Promise<RootKeyTriplet>> = {
       // Phase 2.1 — multisig roots (①④): local user/backup keypairs + BitGo key, all safeId-tagged.
       secp256k1Multisig: () => this.createMultisigRoot('secp256k1Multisig', safeId, passphrase, enterprise),
@@ -219,17 +191,6 @@ export class Safes implements ISafes {
   }
 
   /**
-   * Coin used to route a given root's key ceremony (see ROOT_COIN_BY_NETWORK).
-   * @experimental
-   */
-  private coinForRoot(slot: RootKeyType): IBaseCoin {
-    // V1Network is exactly 'bitcoin' | 'testnet', so this branch is exhaustive over every
-    // environment: 'bitcoin' is mainnet and every other value is a testnet.
-    const network = Environments[this.bitgo.getEnv()].network === 'bitcoin' ? 'mainnet' : 'testnet';
-    return this.bitgo.coin(ROOT_COIN_BY_NETWORK[network][slot]);
-  }
-
-  /**
    * Phase 2.1 helper — mint one onchain-multisig root (cold model, as wallet creation does today):
    * generate user/backup keypairs locally, encrypt with `passphrase`, register via POST /:coin/key
    * with `safeId`; the BitGo key is created through the same route's `source:'bitgo'` path.
@@ -242,7 +203,7 @@ export class Safes implements ISafes {
     passphrase: string,
     enterprise: string
   ): Promise<RootKeyTriplet> {
-    const keychains = this.coinForRoot(slot).keychains();
+    const keychains = coinForRoot(this.bitgo, slot).keychains();
 
     const userKeyPair = keychains.create();
     const userKeychainPromise = keychains.add({
@@ -288,7 +249,7 @@ export class Safes implements ISafes {
     passphrase: string,
     enterprise: string
   ): Promise<RootKeyTriplet> {
-    const { userKeychain, backupKeychain, bitgoKeychain } = await this.coinForRoot(slot)
+    const { userKeychain, backupKeychain, bitgoKeychain } = await coinForRoot(this.bitgo, slot)
       .keychains()
       .createMpc({ multisigType: 'tss', passphrase, enterprise, safeId });
     return [userKeychain.id, backupKeychain.id, bitgoKeychain.id];

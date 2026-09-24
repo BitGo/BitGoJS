@@ -15,15 +15,20 @@ import { boundedInt, decodeWithCodec } from '../utils/codecs';
 import { postWithCodec } from '../utils/postWithCodec';
 import { Wallet } from '../wallet';
 import { InvalidRootKeychainSourceError } from '../wallet/safeKeychain';
+import { base64UrlToBuffer, deriveEnterpriseSalt, derivePassword, toBase64Url } from '../webauthn';
 import {
   AcceptSafeShareOptions,
   AddSafeMemberOptions,
   AddSafeWalletMemberOptions,
   CreateSafeWalletOptions,
   ISafe,
+  RegisterSafePasskeyOptions,
+  RegisterSafePasskeyResponse,
+  RemoveSafePasskeyOptions,
   UpdateSafeOptions,
   WalletShareData,
 } from './iSafe';
+import { coinForRoot, SAFE_ROOT_SLOTS } from './rootCoin';
 import {
   deriveAndSelfCheckSafeChildHardened,
   deriveSafeChildEd25519Hardened,
@@ -61,6 +66,22 @@ const CreateWalletInSafeBody = t.union([
     keys: t.tuple([t.string, t.string, t.string]),
   }),
 ]);
+
+const PasskeyEntryCodec = t.type({
+  keyId: t.string,
+  encryptedPrv: t.string,
+});
+
+const RegisterSafePasskeyBody = t.type({
+  otpDeviceId: t.string,
+  prfSalt: t.string,
+  entries: t.array(PasskeyEntryCodec),
+});
+
+const RegisterSafePasskeyResponseCodec = t.type({
+  otpDeviceId: t.string,
+  updatedKeys: t.array(t.string),
+});
 
 function rootIdFromSafe(safe: SafeData, slot: RootKeyType, position: 0 | 1 | 2): string | undefined {
   const triplet = safe.rootKeys?.hot?.[slot];
@@ -307,6 +328,119 @@ export class Safe implements ISafe {
   async archive(): Promise<SafeData> {
     const response = await this.bitgo.post(this.url('/archive')).send().result();
     return decodeWithCodec(SafeData, response, 'SafeData');
+  }
+
+  /**
+   * Register a PRF passkey on every user root of the safe.
+   *
+   * For each user root (position 0 of each populated slot), decrypt the root with the Safe
+   * password, then re-encrypt it under the PRF-derived password (bound to the enterprise via
+   * AES-GCM AAD). One PRF assertion serves the whole safe; the write set is the user roots only
+   * — backup and BitGo roots are never wrapped.
+   */
+  async registerPasskey(params: RegisterSafePasskeyOptions): Promise<RegisterSafePasskeyResponse> {
+    const { device, safePassphrase, provider, encryptionVersion } = params;
+
+    if (!device.id) {
+      throw new Error('device.id is required to register a passkey on the safe');
+    }
+    if (!device.prfSalt) {
+      throw new Error('PRF extension not supported by this device. Please use a different passkey.');
+    }
+    const enterpriseId = this.enterpriseId();
+    const prfSalt = deriveEnterpriseSalt(device.prfSalt, enterpriseId);
+
+    const entries: { keyId: string; encryptedPrv: string }[] = [];
+    for (const slot of SAFE_ROOT_SLOTS) {
+      const userRootId = rootIdFromSafe(this._safe, slot, 0);
+      if (userRootId === undefined) {
+        continue;
+      }
+      const keychain = await coinForRoot(this.bitgo, slot).keychains().get({ id: userRootId });
+      if (keychain.source !== 'user') {
+        throw new InvalidRootKeychainSourceError(keychain.id, keychain.source);
+      }
+      const rootPrv = await decryptKeychainPrivateKey(this.bitgo, keychain, safePassphrase);
+      if (!rootPrv) {
+        throw new IncorrectPasswordError();
+      }
+      entries.push({ keyId: userRootId, encryptedPrv: rootPrv });
+    }
+
+    if (entries.length === 0) {
+      throw new Error(`Safe ${this.id()} has no user roots to attach a passkey to`);
+    }
+
+    const nodeBuf = base64UrlToBuffer(device.credentialId);
+    const credentialIdBuffer = nodeBuf.buffer.slice(nodeBuf.byteOffset, nodeBuf.byteOffset + nodeBuf.byteLength);
+    const authResult = await provider.get({
+      publicKey: {
+        allowCredentials: [{ type: 'public-key', id: credentialIdBuffer }],
+      } as PublicKeyCredentialRequestOptions,
+      evalByCredential: { [device.credentialId]: prfSalt },
+    });
+    if (!authResult.prfResult) {
+      throw new Error('PRF assertion did not return a result.');
+    }
+    if (toBase64Url(authResult.credentialId) !== toBase64Url(device.credentialId)) {
+      throw new Error('PRF assertion returned an unexpected credential.');
+    }
+    const prfPassword = derivePassword(authResult.prfResult);
+
+    const wrappedEntries = await Promise.all(
+      entries.map(async ({ keyId, encryptedPrv }) => ({
+        keyId,
+        encryptedPrv: await this.bitgo.encrypt({
+          password: prfPassword,
+          input: encryptedPrv,
+          encryptionVersion,
+          adata: enterpriseId,
+        }),
+      }))
+    );
+
+    const response = await postWithCodec(this.bitgo, this.url('/passkeys'), RegisterSafePasskeyBody, {
+      otpDeviceId: device.id,
+      prfSalt,
+      entries: wrappedEntries,
+    }).result();
+    return decodeWithCodec(RegisterSafePasskeyResponseCodec, response, 'RegisterSafePasskeyResponse');
+  }
+
+  /**
+   * Remove a PRF passkey from every user root of the safe.
+   *
+   * The Safe password is verified client-side (decrypt one user root) before the server is
+   * called; the server enforces owner authorization and performs the idempotent per-root `$pull`.
+   */
+  async removePasskey(params: RemoveSafePasskeyOptions): Promise<void> {
+    const { device, safePassphrase } = params;
+    if (!device.id) {
+      throw new Error('device.id is required to remove a passkey from the safe');
+    }
+
+    const userRoots = SAFE_ROOT_SLOTS.flatMap((slot) => {
+      const userRootId = rootIdFromSafe(this._safe, slot, 0);
+      return userRootId === undefined ? [] : [{ slot, userRootId }];
+    });
+    if (userRoots.length === 0) {
+      throw new Error(`Safe ${this.id()} has no user roots to remove a passkey from`);
+    }
+
+    let verified = false;
+    for (const { slot, userRootId } of userRoots) {
+      const keychain = await coinForRoot(this.bitgo, slot).keychains().get({ id: userRootId });
+      const decrypted = await decryptKeychainPrivateKey(this.bitgo, keychain, safePassphrase);
+      if (decrypted) {
+        verified = true;
+        break;
+      }
+    }
+    if (!verified) {
+      throw new IncorrectPasswordError();
+    }
+
+    await this.bitgo.del(this.url(`/passkeys/${device.id}`)).result();
   }
 
   toJSON(): SafeData {
