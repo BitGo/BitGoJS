@@ -61,6 +61,8 @@ export class Transaction extends BaseTransaction {
   private _useTokenAddressTokenName = false;
   private _versionedTransaction: VersionedTransaction | undefined;
   private _versionedTransactionData: VersionedTransactionData | undefined;
+  private _v1TransactionBytes: Uint8Array | undefined;
+  private _v1MessageBytes: Uint8Array | undefined;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -86,6 +88,9 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritDoc */
   get signablePayload(): Buffer {
+    if (this._v1MessageBytes) {
+      return Buffer.from(this._v1MessageBytes);
+    }
     if (this._versionedTransaction) {
       return Buffer.from(this._versionedTransaction.message.serialize());
     }
@@ -95,6 +100,18 @@ export class Transaction extends BaseTransaction {
   /** @inheritDoc **/
   get id(): string {
     // Solana transaction ID === first signature: https://docs.solana.com/terminology#transaction-id
+    if (this._v1TransactionBytes) {
+      // v1 wire format: messageBytes followed by 64-byte signatures; the first signature is the tx id
+      const numRequired = this._v1TransactionBytes[1];
+      const sigStart = this._v1TransactionBytes.length - numRequired * 64;
+      if (numRequired > 0 && sigStart >= 0) {
+        const sig = this._v1TransactionBytes.slice(sigStart, sigStart + 64);
+        if (sig.some((byte) => byte !== 0)) {
+          return base58.encode(sig);
+        }
+      }
+    }
+
     if (this._versionedTransaction) {
       const sig = this._versionedTransaction.signatures?.[0];
       // Check if signature exists and is not a placeholder signature (all zeros)
@@ -181,7 +198,39 @@ export class Transaction extends BaseTransaction {
    * @returns {boolean} True if this is a VersionedTransaction
    */
   isVersionedTransaction(): boolean {
-    return !!this._versionedTransaction || !!this._versionedTransactionData;
+    return !!this._versionedTransaction || !!this._versionedTransactionData || !!this._v1TransactionBytes;
+  }
+
+  /**
+   * Get the serialized v1 wire transaction bytes (message + signatures), if this transaction is v1
+   * @returns {Uint8Array | undefined} The v1 wire bytes or undefined
+   */
+  get v1TransactionBytes(): Uint8Array | undefined {
+    return this._v1TransactionBytes;
+  }
+
+  /**
+   * Set the serialized v1 wire transaction bytes (message + signatures)
+   * @param {Uint8Array | undefined} bytes The v1 wire bytes to store, or undefined to clear
+   */
+  set v1TransactionBytes(bytes: Uint8Array | undefined) {
+    this._v1TransactionBytes = bytes;
+  }
+
+  /**
+   * Get the serialized v1 message bytes (without signatures), if this transaction is v1
+   * @returns {Uint8Array | undefined} The v1 message bytes or undefined
+   */
+  get v1MessageBytes(): Uint8Array | undefined {
+    return this._v1MessageBytes;
+  }
+
+  /**
+   * Set the serialized v1 message bytes (without signatures)
+   * @param {Uint8Array | undefined} bytes The v1 message bytes to store, or undefined to clear
+   */
+  set v1MessageBytes(bytes: Uint8Array | undefined) {
+    this._v1MessageBytes = bytes;
   }
 
   /**
@@ -257,6 +306,11 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc */
   toBroadcastFormat(): string {
+    if (this._v1TransactionBytes) {
+      // v1 wire format is message-first with signatures appended (no length prefix)
+      return Buffer.from(this._v1TransactionBytes).toString('base64');
+    }
+
     if (this._versionedTransaction) {
       // VersionedTransaction.serialize() doesn't need requireAllSignatures parameter
       // It automatically handles whatever signatures are present

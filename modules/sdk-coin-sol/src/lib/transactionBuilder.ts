@@ -309,6 +309,15 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /**
+   * Get the externally-added signatures (via addSignature) in order.
+   *
+   * @returns {Signature[]} The list of external signatures
+   */
+  protected getAdditionalSignatures(): Signature[] {
+    return this._signatures;
+  }
+
+  /**
    * Sets the sender of this transaction.
    * This account will be responsible for paying transaction fees.
    *
