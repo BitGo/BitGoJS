@@ -1129,6 +1129,25 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     return { userRetrofitData, backupRetrofitData };
   }
 
+  /**
+   * Converts a User or Backup MPCv1 SigningMaterial to EddsaRetrofitData needed by MPCv2 DKG.
+   *
+   * Public static single-party helper for air-gapped OVC: no BitGo instance and no
+   * second-party share required. Unlike ECDSA's equivalent this is async because
+   * EdDSA MPC initialization is async.
+   *
+   * @param decryptedKeyshare - MPCv1 decrypted signing material for user or backup as a JSON string
+   * @param partyId - The party ID of the MPCv1 keyshare
+   * @returns The retrofit data needed to start an MPCv2 DKG session
+   */
+  static async getKeyDataForRetrofit(
+    decryptedKeyshare: string,
+    partyId: MPCv2PartiesEnum.BACKUP | MPCv2PartiesEnum.USER
+  ): Promise<MPSTypes.EddsaRetrofitData> {
+    const mpc = await getInitializedMpcInstance();
+    return EddsaMPCv2Utils.getMpcV2RetrofitDataFromMpcV1Key(decryptedKeyshare, partyId, mpc);
+  }
+
   private static getMpcV2RetrofitDataFromMpcV1Key(
     mpcv1PartyKeyShare: string,
     mpcv1PartyIndex: MPCv2PartiesEnum.USER | MPCv2PartiesEnum.BACKUP,
