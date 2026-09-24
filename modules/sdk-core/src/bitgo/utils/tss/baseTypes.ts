@@ -860,6 +860,7 @@ interface SignatureShare {
 interface Ovc {
   eddsaSignature: Signature;
   ecdsaSignature?: EcdsaSignature;
+  eddsaMpcv2Signature?: string; // raw 64-byte Ed25519 signature, hex-encoded (OVC 5-pass output)
 }
 
 export interface MPCTxs {
