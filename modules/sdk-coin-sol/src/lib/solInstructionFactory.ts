@@ -546,16 +546,17 @@ function stakingDeactivateInstruction(data: StakingDeactivate): TransactionInstr
  */
 function stakingWithdrawInstruction(data: StakingWithdraw): TransactionInstruction[] {
   const {
-    params: { fromAddress, stakingAddress, amount },
+    params: { fromAddress, stakingAddress, toAddress, amount },
   } = data;
   assert(fromAddress, 'Missing fromAddress param');
   assert(stakingAddress, 'Missing stakingAddress param');
+  assert(toAddress, 'Missing toAddress param');
   assert(amount, 'Missing amount param');
 
   const withdrawStaking = StakeProgram.withdraw({
     stakePubkey: new PublicKey(stakingAddress),
     authorizedPubkey: new PublicKey(fromAddress),
-    toPubkey: new PublicKey(fromAddress),
+    toPubkey: new PublicKey(toAddress),
     lamports: new BigNumber(amount).toNumber(),
   });
 

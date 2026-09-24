@@ -1089,6 +1089,7 @@ describe('Instruction Parser Staking Tests: ', function () {
         params: {
           fromAddress: fromAccount.toString(),
           stakingAddress: stakingAccount.toString(),
+          toAddress: fromAccount.toString(),
           amount,
         },
       };
@@ -1102,6 +1103,30 @@ describe('Instruction Parser Staking Tests: ', function () {
       const instructionsData = [nonceAdvanceParams, withdrawStakeParams, memoParams];
       const result = instructionParamsFactory(TransactionType.StakingWithdraw, instructions);
       should.deepEqual(result, instructionsData);
+    });
+
+    it('Should parse a recipient distinct from the withdraw authority', () => {
+      const fromAccount = new PublicKey(testData.authAccount.pub);
+      const stakingAccount = new PublicKey(testData.stakeAccount.pub);
+      const toAddress = new PublicKey(testData.validator.pub);
+      const amount = '100000';
+      const instructions = StakeProgram.withdraw({
+        authorizedPubkey: fromAccount,
+        stakePubkey: stakingAccount,
+        toPubkey: toAddress,
+        lamports: new BigNumber(amount).toNumber(),
+      }).instructions;
+      const expected: StakingWithdraw = {
+        type: InstructionBuilderTypes.StakingWithdraw,
+        params: {
+          fromAddress: fromAccount.toString(),
+          stakingAddress: stakingAccount.toString(),
+          toAddress: toAddress.toString(),
+          amount,
+        },
+      };
+
+      should.deepEqual(instructionParamsFactory(TransactionType.StakingWithdraw, instructions), [expected]);
     });
 
     it('Should parse withdraw stake tx instructions with memo and durable nonce with instructions in any order', () => {
@@ -1141,6 +1166,7 @@ describe('Instruction Parser Staking Tests: ', function () {
         params: {
           fromAddress: fromAccount.toString(),
           stakingAddress: stakingAccount.toString(),
+          toAddress: fromAccount.toString(),
           amount,
         },
       };
@@ -1175,6 +1201,7 @@ describe('Instruction Parser Staking Tests: ', function () {
         params: {
           fromAddress: fromAccount.toString(),
           stakingAddress: stakingAccount.toString(),
+          toAddress: fromAccount.toString(),
           amount,
         },
       };
@@ -1222,6 +1249,7 @@ describe('Instruction Parser Staking Tests: ', function () {
         params: {
           fromAddress: fromAccount.toString(),
           stakingAddress: stakingAccount.toString(),
+          toAddress: fromAccount.toString(),
           amount,
         },
       };

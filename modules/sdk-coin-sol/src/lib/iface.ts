@@ -247,7 +247,7 @@ export interface StakingDeactivate {
 
 export interface StakingWithdraw {
   type: InstructionBuilderTypes.StakingWithdraw;
-  params: { fromAddress: string; stakingAddress: string; amount: string };
+  params: { fromAddress: string; stakingAddress: string; toAddress: string; amount: string };
 }
 
 export interface StakingAuthorize {

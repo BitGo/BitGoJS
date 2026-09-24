@@ -289,8 +289,14 @@ export function explainSolTransaction(params: ExplainTransactionWasmOptions): So
           inputs.push({ address: instr.fromAddress, value: instr.amount });
           break;
         case 'StakingWithdraw':
-          // Withdraw: SOL flows FROM staking address TO the recipient (fromAddress)
-          outputs.push({ address: instr.fromAddress, amount: instr.amount });
+          if (
+            !('toAddress' in instr) ||
+            typeof instr.toAddress !== 'string' ||
+            instr.toAddress.length === 0
+          ) {
+            throw new Error('Missing recipient address for Solana stake withdrawal');
+          }
+          outputs.push({ address: instr.toAddress, amount: instr.amount });
           inputs.push({ address: instr.stakingAddress, value: instr.amount });
           break;
         case 'StakePoolDepositSol':

@@ -587,7 +587,7 @@ export class Transaction extends BaseTransaction {
         case InstructionBuilderTypes.StakingWithdraw:
           const stakingWithdrawInstruction = instruction as StakingWithdraw;
           outputs.push({
-            address: stakingWithdrawInstruction.params.fromAddress,
+            address: stakingWithdrawInstruction.params.toAddress,
             amount: stakingWithdrawInstruction.params.amount,
           });
           outputAmount = outputAmount.plus(stakingWithdrawInstruction.params.amount);

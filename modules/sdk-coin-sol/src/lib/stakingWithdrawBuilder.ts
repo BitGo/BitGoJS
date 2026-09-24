@@ -10,6 +10,7 @@ import { isValidStakingAmount, validateAddress } from './utils';
 
 export class StakingWithdrawBuilder extends TransactionBuilder {
   protected _stakingAddress: string;
+  protected _toAddress?: string;
   protected _amount: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -28,6 +29,7 @@ export class StakingWithdrawBuilder extends TransactionBuilder {
         const withdrawInstruction: StakingWithdraw = instruction;
         this.sender(withdrawInstruction.params.fromAddress);
         this.stakingAddress(withdrawInstruction.params.stakingAddress);
+        this._toAddress = withdrawInstruction.params.toAddress;
         this.amount(withdrawInstruction.params.amount);
       }
     }
@@ -76,6 +78,7 @@ export class StakingWithdrawBuilder extends TransactionBuilder {
       params: {
         fromAddress: this._sender,
         stakingAddress: this._stakingAddress,
+        toAddress: this._toAddress ?? this._sender,
         amount: this._amount,
       },
     };

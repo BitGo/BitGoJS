@@ -2,7 +2,10 @@
  * Tests for explainTransactionWasm (WASM-based Solana transaction explanation).
  */
 import 'should';
+import { parseTransaction, Transaction as WasmTransaction } from '@bitgo/wasm-solana';
+import { PublicKey, StakeProgram, Transaction as SolanaTransaction } from '@solana/web3.js';
 import { explainSolTransaction } from '../../src/lib/explainTransactionWasm';
+import * as resources from '../resources/sol';
 
 describe('explainTransactionWasm', function () {
   describe('deriveTransactionType', function () {
@@ -74,6 +77,46 @@ describe('explainTransactionWasm', function () {
       });
 
       explained.type.should.equal('Send');
+    });
+  });
+
+  describe('StakingWithdraw recipient', function () {
+    it('uses the decoded recipient and fails closed when it is missing', function () {
+      const fromAddress = resources.authAccount.pub;
+      const stakingAddress = resources.stakeAccount.pub;
+      const toAddress = resources.authAccount2.pub;
+      const tx = new SolanaTransaction({
+        feePayer: new PublicKey(fromAddress),
+        recentBlockhash: resources.blockHashes.validBlockHashes[0],
+      }).add(
+        ...StakeProgram.withdraw({
+          authorizedPubkey: new PublicKey(fromAddress),
+          stakePubkey: new PublicKey(stakingAddress),
+          toPubkey: new PublicKey(toAddress),
+          lamports: 10000,
+        }).instructions
+      );
+      const bytes = tx.serialize({ requireAllSignatures: false, verifySignatures: false });
+      const txBase64 = Buffer.from(bytes).toString('base64');
+      const parsed = parseTransaction(WasmTransaction.fromBytes(bytes));
+      const withdraw = parsed.instructionsData.find((instruction) => instruction.type === 'StakingWithdraw');
+      if (!withdraw || withdraw.type !== 'StakingWithdraw') {
+        throw new Error('Expected StakingWithdraw instruction');
+      }
+
+      if (
+        !('toAddress' in withdraw) ||
+        typeof withdraw.toAddress !== 'string' ||
+        withdraw.toAddress.length === 0
+      ) {
+        (() => explainSolTransaction({ txBase64, feeInfo: { fee: '5000' }, coinName: 'tsol' })).should.throw(
+          'Missing recipient address for Solana stake withdrawal'
+        );
+        return;
+      }
+
+      const explained = explainSolTransaction({ txBase64, feeInfo: { fee: '5000' }, coinName: 'tsol' });
+      explained.outputs[0].address.should.equal(toAddress);
     });
   });
 });

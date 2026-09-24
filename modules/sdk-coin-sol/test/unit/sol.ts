@@ -5,7 +5,7 @@ import * as should from 'should';
 import * as sinon from 'sinon';
 
 import { getExtraAccountMetaAddress, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import { PublicKey, SystemProgram } from '@solana/web3.js';
+import { PublicKey, StakeProgram, SystemProgram, Transaction as SolanaTransaction } from '@solana/web3.js';
 
 import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
 import {
@@ -49,6 +49,27 @@ import * as testData from '../fixtures/sol';
 import * as resources from '../resources/sol';
 import { solBackupKey } from './fixtures/solBackupKey';
 import { getBuilderFactory } from './getBuilderFactory';
+
+function createStakeWithdrawTxBase64(
+  fromAddress: string,
+  stakingAddress: string,
+  toAddress: string,
+  lamports: number,
+  recentBlockhash: string
+): string {
+  const transaction = new SolanaTransaction({
+    feePayer: new PublicKey(fromAddress),
+    recentBlockhash,
+  }).add(
+    ...StakeProgram.withdraw({
+      authorizedPubkey: new PublicKey(fromAddress),
+      stakePubkey: new PublicKey(stakingAddress),
+      toPubkey: new PublicKey(toAddress),
+      lamports,
+    }).instructions
+  );
+  return transaction.serialize({ requireAllSignatures: false, verifySignatures: false }).toString('base64');
+}
 
 describe('SOL:', function () {
   let bitgo: TestBitGoAPI;
@@ -242,6 +263,28 @@ describe('SOL:', function () {
       multisigType: 'tss',
     };
     const walletObj = new Wallet(bitgo, basecoin, walletData);
+
+    it('should verify stake withdrawal recipients against the decoded recipient', async function () {
+      const toAddress = testData.authAccount2.pub;
+      const txBase64 = createStakeWithdrawTxBase64(wallet.pub, stakeAccount.pub, toAddress, 10000, blockHash);
+      const txPrebuild = { txBase64, coin: 'tsol' };
+
+      const valid = await basecoin.verifyTransaction({
+        txParams: { recipients: [{ address: toAddress, amount: '10000' }] },
+        txPrebuild,
+        wallet: walletObj,
+      } as any);
+      valid.should.be.true();
+
+      await assert.rejects(
+        basecoin.verifyTransaction({
+          txParams: { recipients: [{ address: wallet.pub, amount: '10000' }] },
+          txPrebuild,
+          wallet: walletObj,
+        } as any),
+        /Tx outputs does not match with expected txParams recipients/
+      );
+    });
 
     it('should verify transactions', async function () {
       const txParams = newTxParams();
@@ -1803,6 +1846,16 @@ describe('SOL:', function () {
         tokenEnablements: [],
         ataOwnerMap: {},
       });
+    });
+
+    it('should explain a stake withdrawal to its recipient on mainnet', async function () {
+      const toAddress = testData.authAccount2.pub;
+      const txBase64 = createStakeWithdrawTxBase64(wallet.pub, stakeAccount.pub, toAddress, 10000, blockHash);
+      const sol = bitgo.coin('sol') as Sol;
+      const explained = await sol.explainTransaction({ txBase64, feeInfo: { fee: '5000' } });
+
+      explained.outputs[0].address.should.equal(toAddress);
+      explained.outputs[0].amount.should.equal('10000');
     });
 
     it('should explain create ATA transaction', async function () {

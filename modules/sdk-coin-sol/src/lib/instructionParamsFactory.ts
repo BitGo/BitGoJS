@@ -1030,6 +1030,7 @@ function parseStakingWithdrawInstructions(
           params: {
             fromAddress: withdrawInstruction.authorizedPubkey.toString(),
             stakingAddress: withdrawInstruction.stakePubkey.toString(),
+            toAddress: withdrawInstruction.toPubkey.toString(),
             amount: withdrawInstruction.lamports.toString(),
           },
         };
