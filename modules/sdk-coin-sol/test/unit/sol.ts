@@ -265,7 +265,7 @@ describe('SOL:', function () {
     const walletObj = new Wallet(bitgo, basecoin, walletData);
 
     it('should verify stake withdrawal recipients against the decoded recipient', async function () {
-      const toAddress = testData.authAccount2.pub;
+      const toAddress = resources.authAccount2.pub;
       const txBase64 = createStakeWithdrawTxBase64(wallet.pub, stakeAccount.pub, toAddress, 10000, blockHash);
       const txPrebuild = { txBase64, coin: 'tsol' };
 
@@ -1849,7 +1849,7 @@ describe('SOL:', function () {
     });
 
     it('should explain a stake withdrawal to its recipient on mainnet', async function () {
-      const toAddress = testData.authAccount2.pub;
+      const toAddress = resources.authAccount2.pub;
       const txBase64 = createStakeWithdrawTxBase64(wallet.pub, stakeAccount.pub, toAddress, 10000, blockHash);
       const sol = bitgo.coin('sol') as Sol;
       const explained = await sol.explainTransaction({ txBase64, feeInfo: { fee: '5000' } });
