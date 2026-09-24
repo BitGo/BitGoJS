@@ -129,6 +129,68 @@ describe('EdDSA MPCv2 SMC Utils:', function () {
       assert.strictEqual(senderPayload.backupGpgPublicKey, payload.ovc[OVCIndexEnum.TWO].gpgPubKey);
       assert.deepStrictEqual(senderPayload.userMsg1, payload.ovc[OVCIndexEnum.ONE].ovcMsg1);
       assert.deepStrictEqual(senderPayload.backupMsg1, payload.ovc[OVCIndexEnum.TWO].ovcMsg1);
+      assert.ok(!('walletId' in senderPayload));
+    });
+
+    it('forwards walletId on the sender payload when provided', async function () {
+      const payload = buildRound1Payload();
+      const senderFn = sinon.stub().resolves({
+        sessionId: 'session-abc' as NonEmptyString,
+        bitgoMsg1: fakeSignedMessage('bitgo-r1'),
+      } as EddsaMPCv2KeyGenRound1Response);
+
+      await smcUtils.keyGenRound1BySender(senderFn as never, payload, 'wallet-123');
+
+      assert.ok(senderFn.calledOnce);
+      const [, senderPayload] = senderFn.firstCall.args as [unknown, Record<string, unknown>];
+      assert.strictEqual(senderPayload.walletId, 'wallet-123');
+      assert.strictEqual(senderPayload.userGpgPublicKey, payload.ovc[OVCIndexEnum.ONE].gpgPubKey);
+      assert.strictEqual(senderPayload.backupGpgPublicKey, payload.ovc[OVCIndexEnum.TWO].gpgPubKey);
+      assert.deepStrictEqual(senderPayload.userMsg1, payload.ovc[OVCIndexEnum.ONE].ovcMsg1);
+      assert.deepStrictEqual(senderPayload.backupMsg1, payload.ovc[OVCIndexEnum.TWO].ovcMsg1);
+    });
+
+    it('omits walletId from the sender payload when not provided', async function () {
+      const payload = buildRound1Payload();
+      const senderFn = sinon.stub().resolves({
+        sessionId: 'session-abc' as NonEmptyString,
+        bitgoMsg1: fakeSignedMessage('bitgo-r1'),
+      } as EddsaMPCv2KeyGenRound1Response);
+
+      await smcUtils.keyGenRound1BySender(senderFn as never, payload);
+
+      assert.ok(senderFn.calledOnce);
+      const [, senderPayload] = senderFn.firstCall.args as [unknown, Record<string, unknown>];
+      assert.deepStrictEqual(Object.keys(senderPayload).sort(), [
+        'backupGpgPublicKey',
+        'backupMsg1',
+        'userGpgPublicKey',
+        'userMsg1',
+      ]);
+      assert.ok(!('walletId' in senderPayload));
+    });
+
+    it('does not leak a stray walletId from the OVC payload into the sender payload', async function () {
+      const payload = {
+        ...buildRound1Payload(),
+        walletId: 'leaked-from-ovc',
+      } as EddsaOVC1ToBitgoRound1Payload & { walletId: string };
+      const senderFn = sinon.stub().resolves({
+        sessionId: 'session-abc' as NonEmptyString,
+        bitgoMsg1: fakeSignedMessage('bitgo-r1'),
+      } as EddsaMPCv2KeyGenRound1Response);
+
+      await smcUtils.keyGenRound1BySender(senderFn as never, payload);
+
+      assert.ok(senderFn.calledOnce);
+      const [, senderPayload] = senderFn.firstCall.args as [unknown, Record<string, unknown>];
+      assert.ok(!('walletId' in senderPayload));
+      assert.deepStrictEqual(Object.keys(senderPayload).sort(), [
+        'backupGpgPublicKey',
+        'backupMsg1',
+        'userGpgPublicKey',
+        'userMsg1',
+      ]);
     });
 
     it('rejects when the payload state is not WaitingForBitgoRound1Data', async function () {
@@ -264,6 +326,24 @@ describe('EdDSA MPCv2 SMC Utils:', function () {
 
       assert.strictEqual(response.state, EddsaKeyCreationMPCv2StateEnum.WaitingForOVC1Round2Data);
       assert.strictEqual(response.platform.sessionId, 'enterprise-session');
+      assert.ok(!('walletId' in sentBody.payload));
+    });
+
+    it('includes walletId on the generatekey R1 body when provided', async function () {
+      const payload = buildRound1Payload();
+      postChain.result.resolves({
+        sessionId: 'enterprise-session',
+        bitgoMsg1: fakeSignedMessage('bitgo-r1'),
+      });
+
+      await smcUtils.keyGenRound1(enterpriseId, payload, 'wallet-123');
+
+      const sentBody = postChain.send.firstCall.args[0] as {
+        round: string;
+        payload: { walletId?: string };
+      };
+      assert.strictEqual(sentBody.round, 'MPCv2-R1');
+      assert.strictEqual(sentBody.payload.walletId, 'wallet-123');
     });
   });
 
