@@ -406,6 +406,8 @@ export interface WalletSignTransactionOptions extends WalletSignBaseOptions {
     txParams: TransactionParams;
     verification?: VerificationOptions;
   };
+  /** Populated by wallet.verifyTxParams TSS path so signing uses the same txRequest that was verified. */
+  resolvedTxRequestForSigning?: TxRequest;
   [index: string]: unknown;
 }
 

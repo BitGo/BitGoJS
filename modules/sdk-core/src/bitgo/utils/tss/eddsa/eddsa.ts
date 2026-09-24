@@ -48,6 +48,7 @@ import { envRequiresBitgoPubGpgKeyConfig, getBitgoMpcGpgPubKey, isBitgoMpcPubKey
 import { EnvironmentName } from '../../../environments';
 import { readKey } from 'openpgp';
 import type { EddsaKeyGenCallbacks } from '../../../wallet/iWallets';
+import { resolveEffectiveTxParams } from '../recipientUtils';
 
 /**
  * Utility functions for TSS work flows.
@@ -766,6 +767,14 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       );
       unsignedTx =
         apiVersion === 'full' ? txRequestResolved.transactions![0].unsignedTx : txRequestResolved.unsignedTxs[0];
+      assert(unsignedTx.signableHex, 'Missing signableHex in unsignedTx');
+      const txParams = 'txParams' in params ? params.txParams : undefined;
+      await this.baseCoin.verifyTransaction({
+        txPrebuild: { txHex: unsignedTx.serializedTxHex ?? unsignedTx.signableHex },
+        txParams: resolveEffectiveTxParams(txRequestResolved, txParams, this.baseCoin.getChain()),
+        wallet: this.wallet,
+        walletType: this.wallet.multisigType(),
+      });
     } else if (requestType === RequestType.message) {
       assert(txRequestResolved.messages?.length, 'Unable to find messages in txRequest for message signing');
       const message = txRequestResolved.messages[0];

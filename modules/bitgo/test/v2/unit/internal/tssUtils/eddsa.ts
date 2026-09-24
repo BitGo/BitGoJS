@@ -21,6 +21,7 @@ import {
   Eddsa,
   EncryptedSignerShareType,
   ExchangeCommitmentResponse,
+  InvalidTransactionError,
   Keychain,
   KeyShare,
   RequestTracer,
@@ -127,9 +128,14 @@ describe('TSS Utils:', async function () {
     },
   };
 
+  // Sol TSS unsigned tx bytes — same fixtures as eddsaMPCv2/signTxRequest.ts
+  const solTssSignableHex =
+    '02010206c2d5b5f4fb9a9bcd8a2f303e4d06f78d8ded300713f456da2abff0b3ea0185aa051a34bc8acd438763976f96876115050f73828553566d111d7ac8bffebf587c4f5f5987bfe26aa66013efd96d36360f2b4336c91f993259fb56051305614d42f2ea13f8ff9d7958dbf269c6e36bfdf5cb5c43de4b4e1d3efb7dab3d5d028604000000000000000000000000000000000000000000000000000000000000000006a7d517192c568ee08a845f73d29788cf035c3145b21ab344d8062ea94000003a621f6d1cc4b8fb2a739aa08e4034da0fc588ece3bd857630de30f7edde45dd0204030205010404000000040200030c02000000f0a29a3b00000000';
+  const solTssSerializedTxHex = `02000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003bc9df0b397bec2ed3b6444a8c33f38267cc08b5fb2a7d37e26b6c487e26d15b7c07830eb78e26a88db5de4aa6986a327f09aed8c01533e5b972748ddf60b80f${solTssSignableHex}`;
+
   const txRequest = {
     txRequestId: 'randomId',
-    unsignedTxs: [{ signableHex: 'MPC on a Friday night', serializedTxHex: 'MPC on a Friday night' }],
+    unsignedTxs: [{ signableHex: solTssSignableHex, serializedTxHex: solTssSerializedTxHex }],
     signatureShares: [
       {
         from: 'bitgo',
@@ -656,13 +662,21 @@ describe('TSS Utils:', async function () {
       txRequestId: 'v2-signing-test',
       unsignedTxs: [
         {
-          serializedTxHex: 'test-payload',
-          signableHex: 'deadbeef',
+          serializedTxHex: solTssSerializedTxHex,
+          signableHex: solTssSignableHex,
           derivationPath: 'm/0',
         },
       ],
       date: new Date().toISOString(),
-      intent: { intentType: 'payment' },
+      intent: {
+        intentType: 'payment',
+        recipients: [
+          {
+            address: { address: 'HMEgbR4S2hLKfst2VZUVpHVUu4FioFPyW5iUuJvZdMvs' },
+            amount: { value: '999990000', symbol: 'tsol' },
+          },
+        ],
+      },
       latest: true,
       state: 'pendingUserSignature',
       walletType: 'hot',
@@ -716,14 +730,20 @@ describe('TSS Utils:', async function () {
       transactions: [],
       unsignedTxs: [
         {
-          serializedTxHex: 'MPC on a Friday night',
-          signableHex: 'MPC on a Friday night',
+          serializedTxHex: solTssSerializedTxHex,
+          signableHex: solTssSignableHex,
           derivationPath: 'm/0',
         },
       ],
       date: new Date().toISOString(),
       intent: {
         intentType: 'payment',
+        recipients: [
+          {
+            address: { address: 'HMEgbR4S2hLKfst2VZUVpHVUu4FioFPyW5iUuJvZdMvs' },
+            amount: { value: '999990000', symbol: 'tsol' },
+          },
+        ],
       },
       latest: true,
       state: 'pendingUserSignature',
@@ -735,6 +755,8 @@ describe('TSS Utils:', async function () {
     };
 
     beforeEach(async function () {
+      sandbox.stub(baseCoin, 'verifyTransaction').resolves(true);
+
       const userSignShare = validUserSignShare;
       const rShare = userSignShare.rShares[3];
       const signatureShare: SignatureShareRecord = {
@@ -805,14 +827,20 @@ describe('TSS Utils:', async function () {
       transactions: [],
       unsignedTxs: [
         {
-          serializedTxHex: 'MPC on a Friday night',
-          signableHex: 'MPC on a Friday night',
+          serializedTxHex: solTssSerializedTxHex,
+          signableHex: solTssSignableHex,
           derivationPath: 'm/0',
         },
       ],
       date: new Date().toISOString(),
       intent: {
         intentType: 'payment',
+        recipients: [
+          {
+            address: { address: 'HMEgbR4S2hLKfst2VZUVpHVUu4FioFPyW5iUuJvZdMvs' },
+            amount: { value: '999990000', symbol: 'tsol' },
+          },
+        ],
       },
       latest: true,
       state: 'pendingUserSignature',
@@ -824,6 +852,8 @@ describe('TSS Utils:', async function () {
     };
 
     beforeEach(async function () {
+      sandbox.stub(baseCoin, 'verifyTransaction').resolves(true);
+
       const userSignShare = validUserSignShare;
       const rShare = userSignShare.rShares[3];
       const signatureShare: SignatureShareRecord = {
@@ -883,6 +913,149 @@ describe('TSS Utils:', async function () {
       signedTxRequest.unsignedTxs.should.deepEqual(txRequest.unsignedTxs);
 
       sandbox.verifyAndRestore();
+    });
+  });
+
+  describe('signTxRequest resolveEffectiveTxParams guard:', function () {
+    const txRequestId = 'randomid-guard';
+    const baseTxRequest: TxRequest = {
+      txRequestId,
+      transactions: [],
+      unsignedTxs: [
+        {
+          serializedTxHex: solTssSerializedTxHex,
+          signableHex: solTssSignableHex,
+          derivationPath: 'm/0',
+        },
+      ],
+      date: new Date().toISOString(),
+      intent: {
+        intentType: 'payment',
+        recipients: [
+          {
+            address: { address: 'HMEgbR4S2hLKfst2VZUVpHVUu4FioFPyW5iUuJvZdMvs' },
+            amount: { value: '999990000', symbol: 'tsol' },
+          },
+        ],
+      },
+      latest: true,
+      state: 'pendingUserSignature',
+      walletType: 'hot',
+      walletId: 'walletId',
+      policiesChecked: true,
+      version: 1,
+      userId: 'userId',
+    };
+
+    it('throws InvalidTransactionError when txParams is absent and intent has no recipients', async function () {
+      const maliciousTxRequest: TxRequest = {
+        ...baseTxRequest,
+        intent: { intentType: 'stakingAuthorize' },
+      };
+      await tssUtils
+        .signTxRequest({
+          txRequest: maliciousTxRequest,
+          prv: JSON.stringify(validUserSigningMaterial),
+          reqId,
+        })
+        .should.be.rejectedWith(InvalidTransactionError);
+    });
+
+    it('uses intent recipients when txParams is absent', async function () {
+      const verifyStub = sandbox.stub(baseCoin, 'verifyTransaction').resolves(true);
+
+      const userSignShare = validUserSignShare;
+      const rShare = userSignShare.rShares[3];
+      const signatureShare: SignatureShareRecord = {
+        from: SignatureShareType.USER,
+        to: SignatureShareType.BITGO,
+        share: rShare.r + rShare.R,
+      };
+      await nockSendSignatureShare({
+        walletId: wallet.id(),
+        txRequestId: baseTxRequest.txRequestId,
+        signatureShare,
+      });
+      const signatureShare2: SignatureShareRecord = {
+        from: SignatureShareType.BITGO,
+        to: SignatureShareType.USER,
+        share: validBitgoToUserSignShare.rShares[1].r + validBitgoToUserSignShare.rShares[1].R,
+      };
+      const response = { txRequests: [{ ...baseTxRequest, signatureShares: [signatureShare2] }] };
+      await nockGetTxRequest({ walletId: wallet.id(), txRequestId: baseTxRequest.txRequestId, response });
+      const bitgoToUserCommitmentShare: CommitmentShareRecord = {
+        from: SignatureShareType.BITGO,
+        to: SignatureShareType.USER,
+        type: CommitmentType.COMMITMENT,
+        share: validBitgoToUserSignShare.rShares[1].commitment,
+      };
+      await nockExchangeCommitments({
+        walletId: wallet.id(),
+        txRequestId: baseTxRequest.txRequestId,
+        response: { commitmentShare: bitgoToUserCommitmentShare },
+      });
+
+      await tssUtils.signTxRequest({
+        txRequest: baseTxRequest,
+        prv: JSON.stringify(validUserSigningMaterial),
+        reqId,
+      });
+
+      verifyStub.calledOnce.should.be.true();
+      const verifyArgs = verifyStub.firstCall.args[0];
+      verifyArgs.txParams.recipients?.[0].address.should.equal('HMEgbR4S2hLKfst2VZUVpHVUu4FioFPyW5iUuJvZdMvs');
+    });
+
+    it('does not throw for allowlisted no-recipient intentType (deactivate)', async function () {
+      const verifyStub = sandbox.stub(baseCoin, 'verifyTransaction').resolves(true);
+
+      const deactivateTxRequest: TxRequest = {
+        ...baseTxRequest,
+        intent: { intentType: 'deactivate' },
+      };
+
+      const userSignShare = validUserSignShare;
+      const rShare = userSignShare.rShares[3];
+      const signatureShare: SignatureShareRecord = {
+        from: SignatureShareType.USER,
+        to: SignatureShareType.BITGO,
+        share: rShare.r + rShare.R,
+      };
+      await nockSendSignatureShare({
+        walletId: wallet.id(),
+        txRequestId: deactivateTxRequest.txRequestId,
+        signatureShare,
+      });
+      const signatureShare2: SignatureShareRecord = {
+        from: SignatureShareType.BITGO,
+        to: SignatureShareType.USER,
+        share: validBitgoToUserSignShare.rShares[1].r + validBitgoToUserSignShare.rShares[1].R,
+      };
+      const response = { txRequests: [{ ...deactivateTxRequest, signatureShares: [signatureShare2] }] };
+      await nockGetTxRequest({
+        walletId: wallet.id(),
+        txRequestId: deactivateTxRequest.txRequestId,
+        response,
+      });
+      const bitgoToUserCommitmentShare: CommitmentShareRecord = {
+        from: SignatureShareType.BITGO,
+        to: SignatureShareType.USER,
+        type: CommitmentType.COMMITMENT,
+        share: validBitgoToUserSignShare.rShares[1].commitment,
+      };
+      await nockExchangeCommitments({
+        walletId: wallet.id(),
+        txRequestId: deactivateTxRequest.txRequestId,
+        response: { commitmentShare: bitgoToUserCommitmentShare },
+      });
+
+      await tssUtils.signTxRequest({
+        txRequest: deactivateTxRequest,
+        prv: JSON.stringify(validUserSigningMaterial),
+        reqId,
+      });
+
+      verifyStub.calledOnce.should.be.true();
     });
   });
 
