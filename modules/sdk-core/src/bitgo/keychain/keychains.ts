@@ -99,6 +99,10 @@ export class Keychains implements IKeychains {
    * This should be called when a user changes their login password, and are expecting
    * that their wallet passwords are changed to match the new login password.
    *
+   * Keychains that cannot be decrypted with `oldPassword` are silently skipped
+   * (absent from the result): wrong password, a different passphrase, or
+   * corrupt input. An empty result is not an error.
+   *
    * @param params
    * @param params.oldPassword - The old password used for encrypting the key
    * @param params.newPassword - The new password to be used for encrypting the key
@@ -139,9 +143,9 @@ export class Keychains implements IKeychains {
             }
           }
         } catch (e) {
-          // if the password was incorrect, silence the error, throw otherwise.
-          // updateSingleKeychainPassword wraps a wrong-password (or corrupt input) failure as
-          // 'failed to update keychain password: ...', so treat that as a skip-able error.
+          // A decrypt failure is usually not a wrong password — the keychain may be
+          // encrypted under a different passphrase. updateSingleKeychainPassword wraps
+          // such failures as 'failed to update keychain password: ...'; rethrow the rest.
           if (
             !e.message.includes('private key is incorrect') &&
             !e.message.includes('failed to update keychain password')
@@ -219,7 +223,7 @@ export class Keychains implements IKeychains {
           });
       return _.assign({}, params.keychain, { encryptedPrv: newEncryptedPrv });
     } catch (e) {
-      // catching an error here means that the password was incorrect or, less likely, the input to decrypt is corrupted
+      // decryption failed: wrong password, different passphrase, or corrupt input
       const errorDetail = e instanceof Error ? e.message : String(e);
       throw new Error(`failed to update keychain password: ${errorDetail}`);
     }

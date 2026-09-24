@@ -2408,6 +2408,13 @@ export class BitGoAPI implements BitGoBase {
     const maxBatchSizeBytes = maxBatchSizeKB * 1024;
     const bins = this.packKeychainsFFD(keychains, v2Keychains, maxBatchSizeBytes);
 
+    // Both maps empty (e.g. no keychain decrypts under the login password) is a
+    // legitimate terminal state; the server gates on staging-doc presence, so
+    // always emit at least one (empty) batch to signal staging completed.
+    if (bins.length === 0) {
+      bins.push({ v1Batch: {}, v2Batch: {}, sizeBytes: 0 });
+    }
+
     for (let i = 0; i < bins.length; i++) {
       const { v1Batch, v2Batch } = bins[i];
 
