@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-lib-safes",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Pure Safe key derivation and slot mapping shared by mint, sign, and recovery",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@bitgo/public-types": "6.75.0",
-    "@bitgo/statics": "^59.17.1",
+    "@bitgo/statics": "^59.18.0",
     "@bitgo/utxo-lib": "^11.24.4",
     "create-hmac": "^1.1.7",
     "fp-ts": "^2.12.2",

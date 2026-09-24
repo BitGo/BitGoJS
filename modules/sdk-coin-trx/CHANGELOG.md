@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.0.23](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@4.0.22...@bitgo/sdk-coin-trx@4.0.23) (2026-09-24)
+
+
+### Bug Fixes
+
+* **sdk-coin-trx:** validate TRC20 transfers in native Trx TSS verifier instead of throwing ([1762e9a](https://github.com/BitGo/BitGoJS/commit/1762e9acd6614d7a0d187d9e67836689dbbcf5a6))
+
+
+
+
+
 ## [4.0.22](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@4.0.21...@bitgo/sdk-coin-trx@4.0.22) (2026-09-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-trx
