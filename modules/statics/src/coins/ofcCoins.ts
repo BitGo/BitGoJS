@@ -6920,6 +6920,7 @@ export const ofcCoins = [
     UnderlyingAsset['sol:usdpt'],
     [...SOL_OFC_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
+  ofcsolToken('7826627c-7358-47ff-ac6f-03a2e9eff95c', 'ofcsol:jlp', 'Jupiter Perps LP', 6, UnderlyingAsset['sol:jlp']),
   ofcBscToken('3a9daeda-7e08-494d-a47c-d2c89dd1c735', 'ofcbsc:godl', 'GODL', 18, UnderlyingAsset['bsc:godl']),
   ofcBscToken('93a459bc-c661-4001-be26-9175046c9a36', 'ofcbsc:gdl', 'GDL', 18, UnderlyingAsset['bsc:gdl']),
   ofcBscToken('9febc919-85af-48eb-9821-e9d18e4cd98e', 'ofcbsc:usgd', 'USGD', 18, UnderlyingAsset['bsc:usgd']),
