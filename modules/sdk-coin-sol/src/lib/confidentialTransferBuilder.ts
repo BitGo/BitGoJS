@@ -294,6 +294,13 @@ export class ConfidentialTransferBuilder extends TransactionBuilder {
     assert(this._recentBlockhash, new BuildTransactionError('recent blockhash is required before building'));
     assert(this._v1TransactionConfig, 'transactionConfig is required to build a v1 confidential transfer transaction');
 
+    // ApplyPendingBalance must remain instruction #1 in v1 spend txs (it is idempotent),
+    // regardless of the order the caller added instructions.
+    this._ctInstructions = [
+      ...this._ctInstructions.filter((i) => i.type === InstructionBuilderTypes.ApplyPendingBalance),
+      ...this._ctInstructions.filter((i) => i.type !== InstructionBuilderTypes.ApplyPendingBalance),
+    ];
+
     const instructions: TransactionInstruction[] = [];
     for (const instruction of this._ctInstructions) {
       instructions.push(...solInstructionFactory(instruction, this._zkProofProgramId));
