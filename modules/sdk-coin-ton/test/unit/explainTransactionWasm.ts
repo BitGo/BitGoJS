@@ -43,6 +43,22 @@ describe('TON WASM explainTransaction', function () {
       });
     }
 
+    it('rejects carry semantics that conflict with an exact mode', function () {
+      const carriesInboundValue = {
+        ...action(3),
+        effectiveAmountKind: 'CarryInboundValue' as const,
+        carriesInboundValue: true,
+      };
+      const carriesAllBalance = {
+        ...action(3),
+        effectiveAmountKind: 'AllRemainingBalance' as const,
+        carriesAllBalance: true,
+      };
+
+      assert.throws(() => extractOutputs({ sendActions: [carriesInboundValue] }, true), /mode 3/);
+      assert.throws(() => extractOutputs({ sendActions: [carriesAllBalance] }, true), /mode 3/);
+    });
+
     it('rejects a destruction marker even when mode claims an exact amount', function () {
       const actionWithDestruction = { ...action(3), destroyAccountIfZero: true };
 
