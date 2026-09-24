@@ -1,9 +1,61 @@
+import assert from 'assert';
 import should from 'should';
 import { Transaction as WasmTonTransaction, parseTransaction } from '@bitgo/wasm-ton';
-import { explainTonTransaction } from '../../src/lib/explainTransactionWasm';
+import { explainTonTransaction, extractOutputs } from '../../src/lib/explainTransactionWasm';
 import * as testData from '../resources/ton';
 
 describe('TON WASM explainTransaction', function () {
+  describe('send mode semantics', function () {
+    const action = (mode: number, jettonTransfer?: { destination: string; amount: bigint }) => ({
+      mode,
+      nominalAmount: 10n,
+      effectiveAmountKind: mode === 3 ? ('Exact' as const) : ('AllRemainingBalance' as const),
+      carriesInboundValue: false,
+      carriesAllBalance: mode !== 3,
+      destroyAccountIfZero: mode === 160,
+      destination: 'native-destination',
+      destinationBounceable: 'native-bounceable-destination',
+      ...(jettonTransfer ? { jettonTransfer } : {}),
+    });
+
+    it('uses nominalAmount for an exact mode-3 native send', function () {
+      const explained = extractOutputs({ sendActions: [action(3)] }, true);
+
+      assert.deepStrictEqual(explained.outputs, [{ address: 'native-bounceable-destination', amount: '10' }]);
+      explained.outputAmount.should.equal('10');
+    });
+
+    it('retains the jetton amount for an exact mode-3 token send', function () {
+      const explained = extractOutputs(
+        { sendActions: [action(3, { destination: 'jetton-destination', amount: 25n })] },
+        true
+      );
+
+      assert.deepStrictEqual(explained.outputs, [{ address: 'jetton-destination', amount: '25' }]);
+      explained.outputAmount.should.equal('25');
+    });
+
+    for (const mode of [128, 160]) {
+      it(`rejects mode ${mode} jetton sends before exposing token amounts`, function () {
+        const sendAction = action(mode, { destination: 'attacker', amount: 1n });
+
+        assert.throws(() => extractOutputs({ sendActions: [sendAction] }, true), /mode 3/);
+      });
+    }
+
+    it('rejects a destruction marker even when mode claims an exact amount', function () {
+      const actionWithDestruction = { ...action(3), destroyAccountIfZero: true };
+
+      assert.throws(() => extractOutputs({ sendActions: [actionWithDestruction] }, true), /mode 3/);
+    });
+
+    it('checks every action, including a dangerous later jetton action', function () {
+      const actions = [action(3), action(128, { destination: 'attacker', amount: 1n })];
+
+      assert.throws(() => extractOutputs({ sendActions: actions }, true), /mode 3/);
+    });
+  });
+
   describe('explainTonTransaction', function () {
     it('should explain a signed send transaction', async function () {
       const txBase64 = testData.signedSendTransaction.tx;
@@ -80,7 +132,8 @@ describe('TON WASM explainTransaction', function () {
 
       parsed.transactionType.should.equal('Transfer');
       parsed.sendActions.length.should.be.greaterThan(0);
-      (typeof parsed.sendActions[0].amount).should.equal('bigint');
+      const parsedAction = parsed.sendActions[0] as unknown as { nominalAmount?: bigint; amount?: bigint };
+      (typeof (parsedAction.nominalAmount ?? parsedAction.amount)).should.equal('bigint');
       parsed.seqno.should.be.a.Number();
       (typeof parsed.expireAt).should.equal('bigint');
     });
