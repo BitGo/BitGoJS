@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.33.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.32.2...@bitgo/sdk-coin-canton@1.33.0) (2026-09-24)
+
+
+### Features
+
+* **sdk-coin-canton:** add dedicated TransferPreapprovalCancel builder ([20160cc](https://github.com/BitGo/BitGoJS/commit/20160ccdc542397e6aa5a09013077ddc54f6eb05))
+
+
+
+
+
 ## [1.32.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.32.1...@bitgo/sdk-coin-canton@1.32.2) (2026-09-22)
 
 

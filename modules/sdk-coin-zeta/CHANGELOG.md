@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.7.45](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-zeta@3.7.44...@bitgo/sdk-coin-zeta@3.7.45) (2026-09-24)
+
+
+### Bug Fixes
+
+* **sdk-coin-zeta:** normalize memo-suffixed recipients in verifyTransaction ([51d997c](https://github.com/BitGo/BitGoJS/commit/51d997c5d71998233c2e76fdbf7d236da0c6b1a1))
+
+
+
+
+
 ## [3.7.44](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-zeta@3.7.43...@bitgo/sdk-coin-zeta@3.7.44) (2026-09-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-zeta

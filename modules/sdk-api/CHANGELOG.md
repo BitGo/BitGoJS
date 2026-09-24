@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@3.0.2...@bitgo/sdk-api@3.0.3) (2026-09-24)
+
+
+### Bug Fixes
+
+* **sdk-api:** always stage a batch when batching flow is enabled ([b16a838](https://github.com/BitGo/BitGoJS/commit/b16a8381412297a6f8b2c56228345923a96d2e5c))
+
+
+
+
+
 ## [3.0.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@3.0.1...@bitgo/sdk-api@3.0.2) (2026-09-22)
 
 **Note:** Version bump only for package @bitgo/sdk-api

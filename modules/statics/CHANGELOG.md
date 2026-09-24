@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.17.1...@bitgo/statics@59.18.0) (2026-09-24)
+
+
+### Bug Fixes
+
+* **sdk-coin-zec:** drop MPCV2 feature from prod zec ([d218c82](https://github.com/BitGo/BitGoJS/commit/d218c82cc14be965ce62b11f0fb154e6127b8fd9))
+* **statics:** add Pearl custody entities and mainnet explorer URL ([7bc8201](https://github.com/BitGo/BitGoJS/commit/7bc8201f66a77608ec623b5703a29c2757c9874f))
+
+
+### Features
+
+* add new tokens from AMS API ([b60ca20](https://github.com/BitGo/BitGoJS/commit/b60ca208717764c696a80ba3fe0e3ea56781dcfa))
+* add new tokens from AMS API ([239efc3](https://github.com/BitGo/BitGoJS/commit/239efc3a130d8ae28a056da399e3ac8424c7c8d8))
+* add new tokens from AMS API ([ef1c7e0](https://github.com/BitGo/BitGoJS/commit/ef1c7e0ffff315f48c0bfeb9053a9ceda9d3503a))
+* add new tokens from AMS API ([18ee0d1](https://github.com/BitGo/BitGoJS/commit/18ee0d176ae522667e38ff6dc85e50490abca747))
+* add new tokens from AMS API ([e8b5508](https://github.com/BitGo/BitGoJS/commit/e8b5508d13fdc8d008578c08da2bede7761fee44))
+* add new tokens from AMS API ([a4cdc52](https://github.com/BitGo/BitGoJS/commit/a4cdc529dbb735e12219232ba84bdd2f3a0f3553))
+* **bitgo:** thread dynamic AMS coin map into non-eth EVM token constructors ([f258c98](https://github.com/BitGo/BitGoJS/commit/f258c98cc592a3906266371192021ab6d256fe67))
+* **statics:** add go-account support for sol:jlp ([2e914b6](https://github.com/BitGo/BitGoJS/commit/2e914b602378d9cd9c6cc8deed4b29db3d1a2c9e))
+* **statics:** add hteth underlying ERC-20 tokens for ERC-7984 ([f49e0dd](https://github.com/BitGo/BitGoJS/commit/f49e0ddc6a8d594e2e67d14298ee13354909ae37))
+
+
+
+
+
 ## [59.17.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.17.0...@bitgo/statics@59.17.1) (2026-09-22)
 
 

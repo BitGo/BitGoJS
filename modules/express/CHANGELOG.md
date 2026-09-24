@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [17.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@17.0.2...@bitgo/express@17.1.0) (2026-09-24)
+
+
+### Features
+
+* **express:** add batch 1 endpoints to openapi-index.ts and remove update-api-docs workflow ([019a090](https://github.com/BitGo/BitGoJS/commit/019a09065264799589fc67138b1120600a4bef20))
+
+
+
+
+
 ## [17.0.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@17.0.1...@bitgo/express@17.0.2) (2026-09-22)
 
 **Note:** Version bump only for package @bitgo/express

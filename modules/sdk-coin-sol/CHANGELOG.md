@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.10.1...@bitgo/sdk-coin-sol@8.11.0) (2026-09-24)
+
+
+### Features
+
+* **sdk-coin-sol:** support MPCv2 OVC output in broadcastable sweep ([3df8ffd](https://github.com/BitGo/BitGoJS/commit/3df8ffd9acb979ed201344692e568b46a662f9e5))
+
+
+
+
+
 ## [8.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.10.0...@bitgo/sdk-coin-sol@8.10.1) (2026-09-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

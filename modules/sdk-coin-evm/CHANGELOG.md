@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.15.40...@bitgo/sdk-coin-evm@1.16.0) (2026-09-24)
+
+
+### Features
+
+* **bitgo:** thread dynamic AMS coin map into non-eth EVM token constructors ([f258c98](https://github.com/BitGo/BitGoJS/commit/f258c98cc592a3906266371192021ab6d256fe67))
+
+
+
+
+
 ## [1.15.40](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.15.39...@bitgo/sdk-coin-evm@1.15.40) (2026-09-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-evm

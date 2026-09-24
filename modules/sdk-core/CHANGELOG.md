@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.18.0...@bitgo/sdk-core@38.19.0) (2026-09-24)
+
+
+### Bug Fixes
+
+* **key-card:** carry VRF material through safe recovery ([157be5b](https://github.com/BitGo/BitGoJS/commit/157be5bc950fb96b375a463a95a15a81de878b76))
+* **sdk-core:** allow onchain safe mint on TSS-default coins ([4faa8ce](https://github.com/BitGo/BitGoJS/commit/4faa8ce9ab5a7b8d9b1c59d68e9b928b14d620e6))
+
+
+### Features
+
+* **bitgo:** thread dynamic AMS coin map into non-eth EVM token constructors ([f258c98](https://github.com/BitGo/BitGoJS/commit/f258c98cc592a3906266371192021ab6d256fe67))
+* **sdk-coin-canton:** add dedicated TransferPreapprovalCancel builder ([20160cc](https://github.com/BitGo/BitGoJS/commit/20160ccdc542397e6aa5a09013077ddc54f6eb05))
+* **sdk-core:** add eddsaMpcv2Signature to Ovc type ([3679f56](https://github.com/BitGo/BitGoJS/commit/3679f569317e5ed7b584d159e7fec063b2ba03a4))
+* **sdk-core:** add optional walletId to EdDSA SMC keyGenRound1 ([c9fc0f9](https://github.com/BitGo/BitGoJS/commit/c9fc0f92cc735e4c738fe4935c916244ddbe619f))
+* **sdk-core:** add public static EdDSA getKeyDataForRetrofit ([36a1481](https://github.com/BitGo/BitGoJS/commit/36a1481f4d2cffa3fb2171408431e3883218a079))
+
+
+
+
+
 # [38.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.17.0...@bitgo/sdk-core@38.18.0) (2026-09-22)
 
 

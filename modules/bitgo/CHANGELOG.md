@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [53.2.0](https://github.com/BitGo/BitGoJS/compare/bitgo@53.1.0...bitgo@53.2.0) (2026-09-24)
+
+
+### Features
+
+* **bitgo:** thread dynamic AMS coin map into non-eth EVM token constructors ([f258c98](https://github.com/BitGo/BitGoJS/commit/f258c98cc592a3906266371192021ab6d256fe67))
+
+
+
+
+
 # [53.1.0](https://github.com/BitGo/BitGoJS/compare/bitgo@53.0.1...bitgo@53.1.0) (2026-09-22)
 
 
