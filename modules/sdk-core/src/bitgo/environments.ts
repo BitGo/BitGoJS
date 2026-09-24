@@ -351,7 +351,7 @@ const mainnetBase: EnvironmentTemplate = {
       baseUrl: 'https://blockscout.testnet.dogeos.com', //TODO: WIN-8082 => add mainnet url when available
     },
     arcusdc: {
-      baseUrl: 'https://explorer.arc.io/api', // WIN-8844 => add mainnet url when available
+      baseUrl: 'https://api.etherscan.io/v2',
     },
     xdc: {
       baseUrl: 'https://api.etherscan.io/v2',
