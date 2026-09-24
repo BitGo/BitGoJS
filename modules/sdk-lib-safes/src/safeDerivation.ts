@@ -1,10 +1,10 @@
 /**
  * @prettier
  *
- * @experimental Shared safe child derivation for mint and sign.
+ * @experimental Shared safe child derivation for mint, sign, and recovery.
  *
  * User child: hardened `m/<index>'` from the sequential `safe.derivationIndex[slot]`.
- * Backup / BitGo children are soft-derived server-side at `m/<index>` (not here).
+ * Backup / BitGo children are soft-derived at `m/<index>` client-side for recovery.
  *
  * Do not use `derivedFromParentWithSeed` / `deriveKeyWithSeed` (`m/999999/a/b`) —
  * that is the custody hashed path and cannot reproduce a safe child.
@@ -18,6 +18,13 @@ import { decodeEd25519StrKeySecretSeed, encodeEd25519StrKeyPublicKey } from './e
 
 const MAX_BIP32_INDEX = 0x7fffffff;
 export const DERIVED_FROM_PARENT_WITH_HARDENED_PATH = /^m\/(\d+)'$/;
+
+type ChildKeyShape<K> = K extends 'bitgo' ? { pub: string } : { prv: string; pub: string };
+export type SafeChildTriplet = {
+  index: number;
+} & {
+  [K in 'user' | 'backup' | 'bitgo']: ChildKeyShape<K>;
+};
 
 export function parseSafeDerivationIndex(index: string | number): number {
   let idx: number;
@@ -102,6 +109,46 @@ export function deriveAndSelfCheckSafeChildHardened(rootXprv: string, index: str
     throw new Error(`Safe child self-check failed at ${first.derivationPath}: derivation was not deterministic`);
   }
   return first;
+}
+
+function deriveSafeChildSoftFromXprv(rootXprv: string, index: number): { prv: string; pub: string } {
+  const child = bip32.fromBase58(rootXprv).derive(index);
+  if (!child.privateKey) {
+    throw new Error(`Failed to soft-derive safe child at m/${index}: root has no private key`);
+  }
+  return { prv: child.toBase58(), pub: child.neutered().toBase58() };
+}
+
+function deriveSafeChildSoftFromXpub(rootXpub: string, index: number): { pub: string } {
+  const child = bip32.fromBase58(rootXpub).derive(index);
+  if (child.privateKey) {
+    throw new Error(`Failed to soft-derive safe child at m/${index}: root has a private key`);
+  }
+  return { pub: child.neutered().toBase58() };
+}
+
+/**
+ * Derives slot-1 child key material for a caller-supplied Safe index.
+ *
+ * Index discovery belongs to the outer recovery scan (WCN-2741/WCN-2742).
+ * This pure function reproduces the triplet for one candidate index.
+ */
+export function deriveSafeSecp256k1MultisigTriplet(params: {
+  userRootXprv: string;
+  backupRootXprv: string;
+  bitgoRootXpub: string;
+  index: string | number;
+}): SafeChildTriplet {
+  const derivationIdx = parseSafeDerivationIndex(params.index);
+  const user = deriveSafeChildHardenedFromXprv(params.userRootXprv, derivationIdx);
+  const backup = deriveSafeChildSoftFromXprv(params.backupRootXprv, derivationIdx);
+  const bitgo = deriveSafeChildSoftFromXpub(params.bitgoRootXpub, derivationIdx);
+  return {
+    backup,
+    bitgo,
+    user: { prv: user.prv, pub: user.pub },
+    index: derivationIdx,
+  };
 }
 
 /**
