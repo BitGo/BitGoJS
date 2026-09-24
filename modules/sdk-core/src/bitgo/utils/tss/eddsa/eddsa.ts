@@ -40,7 +40,7 @@ import { InvalidTransactionError } from '../../../errors';
 import { CreateEddsaBitGoKeychainParams, CreateEddsaKeychainParams, KeyShare, YShare } from './types';
 import baseTSSUtils from '../baseTSSUtils';
 import { BaseEddsaUtils } from './base';
-import { KeychainsTriplet } from '../../../baseCoin';
+import { KeychainsTriplet, TransactionParams } from '../../../baseCoin';
 import { exchangeEddsaCommitments } from '../../../tss/common';
 import { Ed25519Bip32HdTree } from '@bitgo/sdk-lib-mpc';
 import { EncryptionVersion, IRequestTracer } from '../../../../api';
@@ -658,7 +658,8 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     externalSignerCommitmentGenerator: CustomCommitmentGeneratingFunction,
     externalSignerRShareGenerator: CustomRShareGeneratingFunction,
     externalSignerGShareGenerator: CustomGShareGeneratingFunction,
-    reqId?: IRequestTracer
+    reqId?: IRequestTracer,
+    txParams?: TransactionParams
   ): Promise<TxRequest> {
     let txRequestResolved: TxRequest;
     let txRequestId: string;
@@ -669,6 +670,8 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       txRequestResolved = txRequest;
       txRequestId = txRequest.txRequestId;
     }
+
+    await this.verifyEdDsaTxRequestBeforeSigning(txRequestResolved, txParams);
 
     const { apiVersion } = txRequestResolved;
     const bitgoGpgKey = await this.pickBitgoPubGpgKeyForSigning(false, reqId, txRequestResolved.enterpriseId);
@@ -767,14 +770,8 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       );
       unsignedTx =
         apiVersion === 'full' ? txRequestResolved.transactions![0].unsignedTx : txRequestResolved.unsignedTxs[0];
-      assert(unsignedTx.signableHex, 'Missing signableHex in unsignedTx');
       const txParams = 'txParams' in params ? params.txParams : undefined;
-      await this.baseCoin.verifyTransaction({
-        txPrebuild: { txHex: unsignedTx.serializedTxHex ?? unsignedTx.signableHex },
-        txParams: resolveEffectiveTxParams(txRequestResolved, txParams, this.baseCoin.getChain()),
-        wallet: this.wallet,
-        walletType: this.wallet.multisigType(),
-      });
+      await this.verifyEdDsaTxRequestBeforeSigning(txRequestResolved, txParams);
     } else if (requestType === RequestType.message) {
       assert(txRequestResolved.messages?.length, 'Unable to find messages in txRequest for message signing');
       const message = txRequestResolved.messages[0];
@@ -879,6 +876,24 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
    */
   static getPublicKeyFromCommonKeychain(commonKeychain: string): string {
     return BaseEddsaUtils.getPublicKeyFromCommonKeychain(commonKeychain);
+  }
+
+  private async verifyEdDsaTxRequestBeforeSigning(
+    txRequestResolved: TxRequest,
+    txParams?: TransactionParams
+  ): Promise<void> {
+    assert(txRequestResolved.transactions || txRequestResolved.unsignedTxs, 'Unable to find transactions in txRequest');
+    const unsignedTx =
+      txRequestResolved.apiVersion === 'full'
+        ? txRequestResolved.transactions![0].unsignedTx
+        : txRequestResolved.unsignedTxs[0];
+    assert(unsignedTx.signableHex, 'Missing signableHex in unsignedTx');
+    await this.baseCoin.verifyTransaction({
+      txPrebuild: { txHex: unsignedTx.serializedTxHex ?? unsignedTx.signableHex },
+      txParams: resolveEffectiveTxParams(txRequestResolved, txParams, this.baseCoin.getChain()),
+      wallet: this.wallet,
+      walletType: this.wallet.multisigType(),
+    });
   }
 
   createUserToBitgoCommitmentShare(commitment: string): CommitmentShareRecord {

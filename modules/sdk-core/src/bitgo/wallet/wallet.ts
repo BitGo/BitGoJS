@@ -5005,13 +5005,16 @@ export class Wallet implements IWallet {
     const reqId = params.reqId || undefined;
     await this.tssUtils.deleteSignatureShares(txRequestId, reqId);
 
+    const txParams = params.verifyTxParams?.txParams ?? params.txPrebuild?.buildParams;
+
     try {
       return await this.tssUtils.signEddsaTssUsingExternalSigner(
         txRequestId,
         params.customCommitmentGeneratingFunction,
         params.customRShareGeneratingFunction,
         params.customGShareGeneratingFunction,
-        reqId
+        reqId,
+        txParams
       );
     } catch (e) {
       debug('failed to sign transaction %O', e);

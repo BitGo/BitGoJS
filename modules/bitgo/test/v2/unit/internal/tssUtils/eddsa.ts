@@ -686,6 +686,10 @@ describe('TSS Utils:', async function () {
       userId: 'userId',
     };
 
+    beforeEach(function () {
+      sandbox.stub(baseCoin, 'verifyTransaction').resolves(true);
+    });
+
     it('v2 R-share round-trip: encrypt via commitment, verify envelope, decrypt via createRShare', async function () {
       const passphrase = 'test-passphrase';
       const prv = JSON.stringify(validUserSigningMaterial);
@@ -1056,6 +1060,58 @@ describe('TSS Utils:', async function () {
       });
 
       verifyStub.calledOnce.should.be.true();
+    });
+  });
+
+  describe('signEddsaTssUsingExternalSigner resolveEffectiveTxParams guard:', function () {
+    const externalGuardTxRequest: TxRequest = {
+      txRequestId: 'randomid-external-guard',
+      transactions: [],
+      unsignedTxs: [
+        {
+          serializedTxHex: solTssSerializedTxHex,
+          signableHex: solTssSignableHex,
+          derivationPath: 'm/0',
+        },
+      ],
+      date: new Date().toISOString(),
+      intent: {
+        intentType: 'payment',
+        recipients: [
+          {
+            address: { address: 'HMEgbR4S2hLKfst2VZUVpHVUu4FioFPyW5iUuJvZdMvs' },
+            amount: { value: '999990000', symbol: 'tsol' },
+          },
+        ],
+      },
+      latest: true,
+      state: 'pendingUserSignature',
+      walletType: 'hot',
+      walletId: 'walletId',
+      policiesChecked: true,
+      version: 1,
+      userId: 'userId',
+    };
+
+    it('throws InvalidTransactionError before external signer callbacks when intent has no recipients', async function () {
+      const commitmentGen = sandbox.stub().rejects(new Error('should not run'));
+      const maliciousTxRequest: TxRequest = {
+        ...externalGuardTxRequest,
+        intent: { intentType: 'stakingAuthorize' },
+      };
+      await tssUtils
+        .signEddsaTssUsingExternalSigner(
+          maliciousTxRequest,
+          commitmentGen,
+          async function () {
+            throw new Error('should not run');
+          },
+          async function () {
+            throw new Error('should not run');
+          }
+        )
+        .should.be.rejectedWith(InvalidTransactionError);
+      commitmentGen.notCalled.should.be.true();
     });
   });
 
