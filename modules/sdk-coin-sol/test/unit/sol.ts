@@ -267,20 +267,22 @@ describe('SOL:', function () {
     it('should verify stake withdrawal recipients against the decoded recipient', async function () {
       const toAddress = resources.authAccount2.pub;
       const txBase64 = createStakeWithdrawTxBase64(wallet.pub, stakeAccount.pub, toAddress, 10000, blockHash);
-      const txPrebuild = { txBase64, coin: 'tsol' };
+      const txPrebuild = { txBase64, coin: 'sol' };
+      const sol = bitgo.coin('sol') as Sol;
+      const walletForSol = new Wallet(bitgo, sol, walletData);
 
-      const valid = await basecoin.verifyTransaction({
+      const valid = await sol.verifyTransaction({
         txParams: { recipients: [{ address: toAddress, amount: '10000' }] },
         txPrebuild,
-        wallet: walletObj,
+        wallet: walletForSol,
       } as any);
       valid.should.be.true();
 
       await assert.rejects(
-        basecoin.verifyTransaction({
+        sol.verifyTransaction({
           txParams: { recipients: [{ address: wallet.pub, amount: '10000' }] },
           txPrebuild,
-          wallet: walletObj,
+          wallet: walletForSol,
         } as any),
         /Tx outputs does not match with expected txParams recipients/
       );
