@@ -9,7 +9,7 @@ export type RequestMethods = (typeof patchedRequestMethods)[number];
 export type AdditionalHeadersCallback = (
   method: RequestMethods,
   url: string,
-  data?: string
+  data?: string | Buffer
 ) => Array<{ key: string; value: string }>;
 
 export {

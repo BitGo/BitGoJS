@@ -125,12 +125,30 @@ function createResponseErrorString(res: superagent.Response): string {
 
 /**
  * Serialize request data based on the request content type.
+ *
+ * Multipart requests (built with superagent's `.field()`/`.attach()`) populate
+ * `req._formData` rather than `req._data`. For those, return the final multipart
+ * body as a Buffer so the HMAC is computed over the exact bytes superagent will
+ * transmit. `Buffer#toString('utf8')` must NOT be used here: raw file content
+ * (e.g. JPEG bytes) contains invalid UTF-8 sequences that would be replaced with
+ * U+FFFD and corrupt the hash.
+ *
+ * Otherwise:
  * If data is already a string, returns it as-is to preserve exact bytes for HMAC.
  * If data is a Buffer, converts to UTF-8 string.
  * If data is an object, serializes it based on Content-Type.
  * @param req
  */
-export function serializeRequestData(req: superagent.Request): string | undefined {
+export function serializeRequestData(req: superagent.Request): string | Buffer | undefined {
+  // `_formData` is created lazily by superagent's `.field()`/`.attach()` and is an
+  // instance of the `form-data` package's FormData, which exposes a synchronous
+  // `getBuffer()` returning the exact multipart body (boundary + content) as a
+  // Buffer. This runs after all `.attach()`/`.field()` calls (see requestPatch).
+  const formData = (req as { _formData?: { getBuffer?: () => Buffer } })._formData;
+  if (formData && typeof formData.getBuffer === 'function') {
+    return formData.getBuffer();
+  }
+
   const data: string | Buffer | Record<string, unknown> | undefined = (req as any)._data;
 
   if (typeof data === 'string') {

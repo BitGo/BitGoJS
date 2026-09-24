@@ -125,7 +125,7 @@ export interface VerifyV4ResponseInfo {
  * (e.g. WebCryptoHmacStrategy with a CryptoKey) may ignore it.
  */
 export interface IHmacAuthStrategy {
-  calculateRequestHeaders(params: CalculateRequestHeadersOptions): Promise<RequestHeaders>;
+  calculateRequestHeaders(params: CalculateRequestHeadersOptions<string | Buffer>): Promise<RequestHeaders>;
 
   verifyResponse(params: VerifyResponseOptions): Promise<VerifyResponseInfo>;
 

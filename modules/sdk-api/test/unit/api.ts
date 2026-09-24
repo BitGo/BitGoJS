@@ -179,6 +179,34 @@ describe('bitgo:api unit tests', function () {
       // text/plain doesn't have a JSON serializer, so returns undefined
       assert.strictEqual(result, undefined);
     });
+
+    it('should return the multipart body buffer when _formData is present, without touching _data', function () {
+      const multipartBody = Buffer.from('--boundary\r\n...multipart body...\r\n--boundary--\r\n');
+      const mockReq: any = {
+        _formData: { getBuffer: () => multipartBody },
+        _data: undefined,
+        get: () => 'multipart/form-data; boundary=boundary',
+      };
+
+      const result = serializeRequestData(mockReq);
+      assert.ok(Buffer.isBuffer(result));
+      assert.strictEqual((result as Buffer).toString('utf8'), multipartBody.toString('utf8'));
+      // _data must remain untouched: superagent throws if `.send()` and `.attach()` are mixed.
+      assert.strictEqual(mockReq._data, undefined);
+    });
+
+    it('should prefer _formData over _data when both are present', function () {
+      const multipartBody = Buffer.from('multipart-body');
+      const mockReq: any = {
+        _formData: { getBuffer: () => multipartBody },
+        _data: { shouldNot: 'be-serialized' },
+        get: () => 'application/json',
+      };
+
+      const result = serializeRequestData(mockReq);
+      assert.ok(Buffer.isBuffer(result));
+      assert.strictEqual((result as Buffer).toString('utf8'), 'multipart-body');
+    });
   });
 
   describe('handleResponseResult', function () {

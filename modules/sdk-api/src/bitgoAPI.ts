@@ -527,7 +527,7 @@ export class BitGoAPI implements BitGoBase {
     req: superagent.SuperAgentRequest;
     method: RequestMethods;
     url: string;
-    data: string | undefined;
+    data: string | Buffer | undefined;
     strategyAuthenticated: boolean;
     onfulfilled: ((response: superagent.Response) => any) | null | undefined;
     originalThen: (onfulfilled: any, onrejected?: any) => Promise<any>;
