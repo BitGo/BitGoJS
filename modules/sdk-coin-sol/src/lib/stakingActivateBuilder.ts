@@ -126,7 +126,16 @@ export class StakingActivateBuilder extends TransactionBuilder {
         extraParams: this._extraParams,
       },
     };
-    this._instructionsData = [stakingAccountData];
+    this._instructionsData =
+      this._priorityFee && this._priorityFee !== Number(0)
+        ? [
+            {
+              type: InstructionBuilderTypes.SetPriorityFee,
+              params: { fee: this._priorityFee },
+            },
+            stakingAccountData,
+          ]
+        : [stakingAccountData];
 
     return await super.buildImplementation();
   }

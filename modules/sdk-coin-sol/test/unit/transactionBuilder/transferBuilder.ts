@@ -1,5 +1,6 @@
 import { getBuilderFactory } from '../getBuilderFactory';
 import { KeyPair, Utils } from '../../../src';
+import { TransactionType } from '@bitgo/sdk-core';
 import should from 'should';
 import * as testData from '../../resources/sol';
 
@@ -230,6 +231,24 @@ describe('Sol Transfer Builder', () => {
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
       should.equal(rawTx, testData.MULTI_TRANSFER_SIGNED);
+    });
+
+    it('build a signed transfer with priority fee', async () => {
+      const txBuilder = transferBuilder();
+      txBuilder.sender(authAccount.pub);
+      txBuilder.send({ address: nonceAccount.pub, amount });
+      txBuilder.setPriorityFee({ amount: 50000 });
+      txBuilder.sign({ key: authAccount.prv });
+      const tx = await txBuilder.build();
+      tx.type.should.equal(TransactionType.Send);
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(Utils.isValidRawTransaction(rawTx), true);
+      const onChainInstructions = (tx as any).solTransaction.instructions;
+      onChainInstructions
+        .some(
+          (ix: any) => ix.programId.toString() === 'ComputeBudget111111111111111111111111111111' && ix.data.length > 0
+        )
+        .should.equal(true);
     });
   });
   describe('Fail', () => {
