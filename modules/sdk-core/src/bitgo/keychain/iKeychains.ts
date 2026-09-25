@@ -80,6 +80,8 @@ export interface ChangedKeychains {
 export interface ListKeychainsResult {
   keys: Keychain[];
   nextBatchPrevId?: string;
+  /** Count of this user's keychains with encrypted private key material set (WCN-2084 total-count support). */
+  encryptedTotalCount?: number;
 }
 
 export interface GetKeychainOptions {
@@ -99,6 +101,13 @@ export type KeychainPasswordUpdateStatus = 'updated' | 'skipped';
 export interface KeychainPasswordUpdateProgress {
   status: KeychainPasswordUpdateStatus;
   currentKeychainId?: string;
+  /**
+   * Truthful total of keychains with encrypted user key material (`encryptedTotalCount`
+   * from the backend, WCN-2084). Records without an `encryptedPrv` are outside this
+   * unit and emit no progress event — the denominator must never be undershot or
+   * overshot by `completed`.
+   */
+  total?: number;
 }
 
 export type KeychainPasswordUpdateProgressCallback = (progress: KeychainPasswordUpdateProgress) => void;

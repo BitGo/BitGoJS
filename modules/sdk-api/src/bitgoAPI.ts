@@ -2051,7 +2051,8 @@ export class BitGoAPI implements BitGoBase {
     emitProgress({ phase: 'keychains', status: 'started', ...counters });
 
     const makeKeychainProgressCallback =
-      (keychainVersion: 'v1' | 'v2') => (progress: { status: 'updated' | 'skipped'; currentKeychainId?: string }) => {
+      (keychainVersion: 'v1' | 'v2') =>
+      (progress: { status: 'updated' | 'skipped'; currentKeychainId?: string; total?: number }) => {
         counters.attempted++;
         counters.completed++;
         if (progress.status === 'updated') {
@@ -2063,6 +2064,7 @@ export class BitGoAPI implements BitGoBase {
           phase: 'keychains',
           status: 'updated',
           ...counters,
+          total: progress.total,
           currentKeychainId: progress.currentKeychainId,
           keychainVersion,
         });

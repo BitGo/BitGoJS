@@ -115,12 +115,13 @@ export class Keychains implements IKeychains {
   async updatePassword(params: UpdatePasswordOptions): Promise<ChangedKeychains> {
     common.validateParams(params, ['oldPassword', 'newPassword'], []);
     const changedKeys: ChangedKeychains = {};
+    let total: number | undefined;
     const notifyProgress = (status: 'updated' | 'skipped', currentKeychainId?: string) => {
       if (!_.isFunction(params.progressCallback)) {
         return;
       }
       try {
-        params.progressCallback({ status, currentKeychainId });
+        params.progressCallback({ status, currentKeychainId, total });
       } catch (e) {
         // ignore observer exceptions so a throwing callback never affects rotation results
       }
@@ -131,10 +132,16 @@ export class Keychains implements IKeychains {
     let keysLeft = true;
     while (keysLeft) {
       const result: ListKeychainsResult = await this.list({ limit: 500, prevId });
+      if (total === undefined && result.encryptedTotalCount !== undefined) {
+        total = result.encryptedTotalCount;
+      }
       for (const key of result.keys) {
         const oldEncryptedPrv = key.encryptedPrv;
         if (_.isUndefined(oldEncryptedPrv)) {
-          notifyProgress('skipped', observationId(key));
+          // Outside the progress unit (WCN-2084 option B): the denominator is
+          // `encryptedTotalCount` — records with no encryptedPrv are not counted
+          // by the backend and must not emit progress, or `completed` would
+          // overshoot `total` on any page containing placeholder records.
           continue;
         }
         try {
