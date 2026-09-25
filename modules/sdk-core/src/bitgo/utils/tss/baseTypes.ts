@@ -61,6 +61,15 @@ export interface SolAddressLookupTable {
   readonlyIndexes: number[];
 }
 
+export type SolTransactionVersion = 0 | 1;
+
+export interface SolV1TransactionConfig {
+  computeUnitLimit: number | null;
+  heapSize: number | null;
+  loadedAccountsDataSizeLimit: number | null;
+  priorityFee: number | null; // lamports (total)
+}
+
 export interface SolVersionedTransactionData {
   versionedInstructions: SolVersionedInstruction[];
   addressLookupTables: SolAddressLookupTable[];
@@ -71,6 +80,8 @@ export interface SolVersionedTransactionData {
     numReadonlyUnsignedAccounts: number;
   };
   recentBlockhash?: string;
+  version?: SolTransactionVersion; // absent/0 = v0 (existing), 1 = v1
+  transactionConfig?: SolV1TransactionConfig; // required when version === 1
 }
 
 export interface aptosCustomTransactionParams {

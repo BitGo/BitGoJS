@@ -270,6 +270,15 @@ export interface PrebuildTransactionOptions {
       numReadonlyUnsignedAccounts: number;
     };
     recentBlockhash?: string;
+    /** Transaction version. Absent or 0 = v0 (existing), 1 = v1 */
+    version?: 0 | 1;
+    /** V1 transaction config. Required when version === 1 */
+    transactionConfig?: {
+      computeUnitLimit: number | null;
+      heapSize: number | null;
+      loadedAccountsDataSizeLimit: number | null;
+      priorityFee: number | null;
+    };
   };
   /**
    * Custom transaction parameters for Aptos entry function calls.

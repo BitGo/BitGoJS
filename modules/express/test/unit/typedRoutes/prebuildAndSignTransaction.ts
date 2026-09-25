@@ -1,7 +1,10 @@
 import * as assert from 'assert';
 import * as t from 'io-ts';
 import { TransactionRequest as TxRequestResponse } from '@bitgo/public-types';
-import { PrebuildAndSignTransactionParams } from '../../../src/typedRoutes/api/v2/prebuildAndSignTransaction';
+import {
+  PrebuildAndSignTransactionParams,
+  SolVersionedTransactionData,
+} from '../../../src/typedRoutes/api/v2/prebuildAndSignTransaction';
 import {
   FullySignedTransactionResponse,
   HalfSignedAccountTransactionResponse,
@@ -731,6 +734,59 @@ describe('PrebuildAndSignTransaction codec tests', function () {
       assert.throws(() => {
         assertDecode(t.type(PrebuildAndSignTransactionParams), invalidParams);
       });
+    });
+  });
+
+  describe('SolVersionedTransactionData codec validation', function () {
+    it('should validate v1 data with version and transactionConfig', function () {
+      const v1Data = {
+        versionedInstructions: [],
+        addressLookupTables: [],
+        staticAccountKeys: ['test'],
+        messageHeader: { numRequiredSignatures: 1, numReadonlySignedAccounts: 0, numReadonlyUnsignedAccounts: 0 },
+        recentBlockhash: 'test',
+        version: 1,
+        transactionConfig: {
+          computeUnitLimit: 200000,
+          heapSize: 32768,
+          loadedAccountsDataSizeLimit: 65536,
+          priorityFee: 5000,
+        },
+      };
+      const decoded = assertDecode(SolVersionedTransactionData, v1Data);
+      assert.deepStrictEqual(decoded.version, 1);
+      assert.deepStrictEqual(decoded.transactionConfig, v1Data.transactionConfig);
+    });
+
+    it('should validate v1 data with null config fields', function () {
+      const v1Data = {
+        versionedInstructions: [],
+        addressLookupTables: [],
+        staticAccountKeys: ['test'],
+        messageHeader: { numRequiredSignatures: 1, numReadonlySignedAccounts: 0, numReadonlyUnsignedAccounts: 0 },
+        recentBlockhash: 'test',
+        version: 1,
+        transactionConfig: {
+          computeUnitLimit: null,
+          heapSize: null,
+          loadedAccountsDataSizeLimit: null,
+          priorityFee: null,
+        },
+      };
+      const decoded = assertDecode(SolVersionedTransactionData, v1Data);
+      assert.deepStrictEqual(decoded.version, 1);
+    });
+
+    it('should validate existing v0 data without version fields', function () {
+      const v0Data = {
+        versionedInstructions: [],
+        addressLookupTables: [],
+        staticAccountKeys: ['test'],
+        messageHeader: { numRequiredSignatures: 1, numReadonlySignedAccounts: 0, numReadonlyUnsignedAccounts: 0 },
+        recentBlockhash: 'test',
+      };
+      const decoded = assertDecode(SolVersionedTransactionData, v0Data);
+      assert.strictEqual(decoded.version, undefined);
     });
   });
 
