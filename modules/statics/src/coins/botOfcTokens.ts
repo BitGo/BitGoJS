@@ -3585,4 +3585,58 @@ export const botOfcTokens = [
     undefined,
     'eth'
   ),
+  AccountCtors.ofcerc20(
+    '4bda1c88-5e54-44a9-8444-25b6aa6f755a',
+    'ofceth:ctm',
+    'c8ntinuum',
+    18,
+    'eth:ctm' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    'e40370d8-2b5e-468f-8399-ce9bb3dc0f2d',
+    'ofceth:gwei',
+    'ETHGas',
+    18,
+    'eth:gwei' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    'f6fb3b6a-025a-4192-8d9d-6c8b30909a88',
+    'ofceth:now',
+    'ChangeNOW',
+    8,
+    'eth:now' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcsolToken(
+    'aec5605a-cfe3-4f86-8a6b-546cd3d74f1b',
+    'ofcsol:cate',
+    'ofcCatecoin',
+    6,
+    'sol:cate' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
 ];
