@@ -19,6 +19,7 @@ import {
   signTransaction,
   isBase58Address,
   isHexAddress,
+  getNonBase58Characters,
   decodeTransaction,
   VALID_RESOURCE_TYPES,
   getHexAddressFromBase58Address,
@@ -209,6 +210,13 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     // TRON addresses are accepted in base58 (T...) or hex (0x... / 41...) form;
     // they are alternative encodings of the same 21-byte address.
     if (!isBase58Address(address.address) && !isHexAddress(address.address)) {
+      const invalidChars = getNonBase58Characters(address.address || '');
+      if (invalidChars.length > 0) {
+        const formatted = invalidChars.map((c) => (c === ' ' ? '<space>' : `"${c}"`)).join(', ');
+        throw new Error(
+          `${address.address} is not a valid base58 address: contains invalid Base58 character(s): ${formatted}.`
+        );
+      }
       throw new Error(address.address + ' is not a valid base58 address.');
     }
   }

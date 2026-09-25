@@ -97,7 +97,10 @@ describe('TRX Token Transfer Builder', () => {
         const txBuilder = initTxBuilder();
         assert.throws(
           () => txBuilder.tokenTransferData('not-an-address', '1000000000'),
-          (e: unknown) => e instanceof Error && e.message === 'not-an-address is not a valid base58 address.'
+          (e: unknown) =>
+            e instanceof Error &&
+            e.message ===
+              'not-an-address is not a valid base58 address: contains invalid Base58 character(s): "o", "-".'
         );
       });
     });

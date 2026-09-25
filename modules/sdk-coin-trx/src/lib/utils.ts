@@ -53,6 +53,22 @@ export type ByteArray = number[];
 export type TronBinaryLike = ByteArray | Buffer | Uint8Array | string;
 
 export const VALID_RESOURCE_TYPES = ['ENERGY', 'BANDWIDTH'];
+export const BASE58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+
+/**
+ * Returns an array of unique characters in the input string that do not belong to the Base58 alphabet.
+ *
+ * @param value
+ */
+export function getNonBase58Characters(value: string): string[] {
+  const invalid = new Set<string>();
+  for (const ch of value) {
+    if (!BASE58_ALPHABET.includes(ch)) {
+      invalid.add(ch);
+    }
+  }
+  return Array.from(invalid);
+}
 
 /**
  * @param address
