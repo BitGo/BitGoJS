@@ -1,5 +1,7 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { TransactionType } from '@bitgo/sdk-core';
+import { BuildTransactionError, SolTransactionVersion, SolV1TransactionConfig, TransactionType } from '@bitgo/sdk-core';
+import { PublicKey, Transaction as SolTransaction, TransactionInstruction } from '@solana/web3.js';
+import nacl from 'tweetnacl';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { InstructionBuilderTypes } from './constants';
@@ -10,11 +12,15 @@ import {
   ConfidentialWithdraw,
   ConfigureConfidentialTransferAccount,
   InstructionParams,
+  Memo,
   VerifyEqualityProof,
   VerifyPubkeyValidity,
   VerifyRangeProof,
   VerifyValidityProof,
 } from './iface';
+import { compileV1Message } from './v1/compileV1Message';
+import { serializeV1Transaction } from './v1/serializeV1Transaction';
+import { solInstructionFactory } from './solInstructionFactory';
 import assert from 'assert';
 
 /**
@@ -43,6 +49,8 @@ import assert from 'assert';
  */
 export class ConfidentialTransferBuilder extends TransactionBuilder {
   private _ctInstructions: InstructionParams[] = [];
+  private _version?: SolTransactionVersion;
+  private _v1TransactionConfig?: SolV1TransactionConfig;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -51,6 +59,35 @@ export class ConfidentialTransferBuilder extends TransactionBuilder {
 
   protected get transactionType(): TransactionType {
     return TransactionType.ConfidentialTransfer;
+  }
+
+  /**
+   * Set the Solana transaction version.
+   *
+   * Defaults to legacy until set. When set to `1`, the builder assembles a v1
+   * (SIMD-0296/0385) transaction: version byte `0x81`, an inline `transactionConfig`
+   * instead of ComputeBudget instructions, no address lookup tables, and a
+   * message-first wire format with signatures appended.
+   *
+   * @param version - the transaction version (0 = v0, 1 = v1)
+   * @returns {this} This builder
+   */
+  version(version: SolTransactionVersion): this {
+    this._version = version;
+    return this;
+  }
+
+  /**
+   * Set the v1 transaction config (compute unit limit, heap size, loaded accounts
+   * data size limit, and priority fee as total lamports). Required when
+   * `version(1)` is set.
+   *
+   * @param config - the v1 transaction config
+   * @returns {this} This builder
+   */
+  transactionConfig(config: SolV1TransactionConfig): this {
+    this._v1TransactionConfig = config;
+    return this;
   }
 
   /**
@@ -232,8 +269,79 @@ export class ConfidentialTransferBuilder extends TransactionBuilder {
   protected async buildImplementation(): Promise<Transaction> {
     assert(this._ctInstructions.length > 0, 'At least one confidential transfer instruction must be specified');
 
+    if (this._version === 1) {
+      return this.buildV1();
+    }
+
     this._instructionsData = [...this._ctInstructions];
 
     return await super.buildImplementation();
+  }
+
+  /**
+   * Build a v1 (SIMD-0296/0385) confidential transfer transaction.
+   *
+   * Assembles the CT instructions via the shared instruction factory, compiles
+   * and serializes a v1 message with the inline transaction config, signs the
+   * message bytes with the builder's signers, and stores the resulting wire
+   * bytes for broadcast. Also populates a metadata-only SolTransaction so the
+   * transaction JSON and input/output extraction remain usable.
+   *
+   * @returns {Transaction} The built transaction holding the v1 wire bytes
+   */
+  private buildV1(): Transaction {
+    assert(this._sender, new BuildTransactionError('sender is required before building'));
+    assert(this._recentBlockhash, new BuildTransactionError('recent blockhash is required before building'));
+    assert(this._v1TransactionConfig, 'transactionConfig is required to build a v1 confidential transfer transaction');
+
+    const instructions: TransactionInstruction[] = [];
+    for (const instruction of this._ctInstructions) {
+      instructions.push(...solInstructionFactory(instruction, this._zkProofProgramId));
+    }
+
+    if (this._memo) {
+      const memoData: Memo = {
+        type: InstructionBuilderTypes.Memo,
+        params: { memo: this._memo },
+      };
+      this._ctInstructions.push(memoData);
+      instructions.push(...solInstructionFactory(memoData));
+    }
+
+    const feePayer = this._feePayer ? new PublicKey(this._feePayer) : new PublicKey(this._sender);
+    const messageBytes = compileV1Message({
+      instructions,
+      feePayer,
+      recentBlockhash: this._recentBlockhash,
+      transactionConfig: this._v1TransactionConfig,
+    });
+
+    const signatures: Uint8Array[] = [];
+    for (const signer of this._signers) {
+      const secretKey = signer.getKeys(true).prv;
+      assert(secretKey instanceof Uint8Array, 'Missing private key');
+      signatures.push(nacl.sign.detached(messageBytes, secretKey));
+    }
+    for (const signature of this.getAdditionalSignatures()) {
+      signatures.push(new Uint8Array(signature.signature));
+    }
+
+    const v1Wire = serializeV1Transaction(messageBytes, signatures);
+
+    this._transaction.v1TransactionBytes = v1Wire;
+    this._transaction.v1MessageBytes = messageBytes;
+
+    // Populate a metadata-only SolTransaction so toJson / loadInputsAndOutputs work.
+    const metaTx = new SolTransaction();
+    metaTx.feePayer = feePayer;
+    metaTx.recentBlockhash = this._recentBlockhash;
+    metaTx.add(...instructions);
+    this._transaction.solTransaction = metaTx;
+
+    this._transaction.setTransactionType(this.transactionType);
+    this._transaction.setInstructionsData(this._ctInstructions);
+    this._transaction.loadInputsAndOutputs();
+
+    return this._transaction;
   }
 }

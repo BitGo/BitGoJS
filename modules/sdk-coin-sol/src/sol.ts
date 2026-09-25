@@ -222,6 +222,8 @@ export interface SolConsolidationRecoveryOptions extends MPCConsolidationRecover
 
 const HEX_REGEX = /^[0-9a-fA-F]+$/;
 const BLIND_SIGNING_TX_TYPES_TO_CHECK = { enabletoken: 'AssociatedTokenAccountInitialization' };
+// Maximum wire size of a v1 (SIMD-0296/0385) transaction in bytes.
+const V1_TRANSACTION_SIZE_LIMIT = 4096;
 
 /**
  * Get amount string corrected for architecture-specific endianness issues.
@@ -2141,7 +2143,21 @@ export class Sol extends BaseCoin {
   async broadcastTransaction({
     serializedSignedTransaction,
   }: BaseBroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult> {
-    validateRawTransaction(serializedSignedTransaction, true, true);
+    const rawBytes = Buffer.from(serializedSignedTransaction, 'base64');
+    // v1 (SIMD-0296/0385) transactions start with the 0x81 version prefix; the legacy
+    // parser cannot deserialize them, so validate the v1 size limit directly instead.
+    const isV1 = rawBytes.length > 0 && rawBytes[0] === 0x81;
+
+    if (isV1) {
+      if (rawBytes.length > V1_TRANSACTION_SIZE_LIMIT) {
+        throw new Error(
+          `v1 transaction exceeds the ${V1_TRANSACTION_SIZE_LIMIT}-byte size limit: ${rawBytes.length} bytes`
+        );
+      }
+    } else {
+      validateRawTransaction(serializedSignedTransaction, true, true);
+    }
+
     const response = await this.getDataFromNode({
       payload: {
         id: '1',
