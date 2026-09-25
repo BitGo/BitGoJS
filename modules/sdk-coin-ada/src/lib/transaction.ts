@@ -505,6 +505,21 @@ export class Transaction extends BaseTransaction {
   }
 
   /**
+   * Detects a prebuilt native-script spend (e.g. RealFi timelock claim): witness native
+   * scripts or a validity start slot. The generic builder rebuilds neither and requires a
+   * TTL, so such txs must also use the sign-only passthrough path.
+   */
+  hasNativeScriptData(): boolean {
+    if (!this._transaction) {
+      return false;
+    }
+    return (
+      this._transaction.witness_set().native_scripts() !== undefined ||
+      this._transaction.body().validity_start_interval_bignum() !== undefined
+    );
+  }
+
+  /**
    * Get transaction fee
    */
   get getFee(): string {
