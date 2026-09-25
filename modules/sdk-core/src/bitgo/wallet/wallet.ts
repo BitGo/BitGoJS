@@ -157,6 +157,16 @@ type ManageUnspents = 'consolidate' | 'fanout';
 
 const whitelistedSendParams = TxSendBody.type.types.flatMap((t) => Object.keys(t.props));
 
+// Go Account submissions carry the JSON build payload alongside the signature. The
+// published TxSendBody codec predates that field, so extend only this SDK request
+// codec until the public type package includes it.
+const TxSendBodyWithGoAccountPayload = t.intersection([
+  TxSendBody,
+  t.partial({
+    halfSigned: t.partial({ payload: t.string }),
+  }),
+]);
+
 export enum ManageUnspentsOptions {
   BUILD_ONLY,
   BUILD_SIGN_SEND,
@@ -5502,7 +5512,7 @@ export class Wallet implements IWallet {
     return postWithCodec(
       this.bitgo,
       this.baseCoin.url('/wallet/' + this.id() + '/tx/send'),
-      t.intersection([TxSendBody, t.partial({ locktime: t.number })]),
+      t.intersection([TxSendBodyWithGoAccountPayload, t.partial({ locktime: t.number })]),
       whitelistedParams
     ).result();
   }
