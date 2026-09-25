@@ -103,6 +103,37 @@ describe('SendCoins V2 codec tests', function () {
       assert.strictEqual(mockWallet.send.calledOnce, true);
     });
 
+    it('should send to a Go Account walletId without an address', async function () {
+      const requestBody = {
+        walletId: 'destination-wallet-id',
+        amount: '1000000',
+        walletPassphrase: 'test_passphrase_12345',
+      };
+
+      const mockWallet = {
+        send: sinon.stub().resolves(mockSendResponse),
+        _wallet: { type: 'trading', multisigType: 'onchain' },
+      };
+      const walletsGetStub = sinon.stub().resolves(mockWallet);
+      const mockCoin = {
+        wallets: sinon.stub().returns({ get: walletsGetStub }),
+      };
+
+      sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+      const result = await agent
+        .post(`/api/v2/ofctbtc/wallet/${walletId}/sendcoins`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+      const callArgs = mockWallet.send.firstCall.args[0];
+      assert.strictEqual(callArgs.walletId, requestBody.walletId);
+      assert.strictEqual(callArgs.amount, requestBody.amount);
+      assert.strictEqual(callArgs.address, undefined);
+    });
+
     it('should successfully send with amount as string', async function () {
       const requestBody = {
         address: 'mzKTJw3XJNb7VfkFP77mzPJJz4Dkp4M1T6',
@@ -918,14 +949,15 @@ describe('SendCoins V2 codec tests', function () {
         assert.strictEqual(decoded.tokenName, 'terc');
       });
 
-      it('should reject body with missing address', function () {
-        const invalidBody = {
+      it('should validate body with walletId instead of address', function () {
+        const validBody = {
+          walletId: 'destination-wallet-id',
           amount: 1000000,
         };
 
-        assert.throws(() => {
-          assertDecode(t.type(SendCoinsRequestBody), invalidBody);
-        });
+        const decoded = assertDecode(t.type(SendCoinsRequestBody), validBody);
+        assert.strictEqual(decoded.walletId, validBody.walletId);
+        assert.strictEqual(decoded.address, undefined);
       });
 
       it('should reject body with missing amount', function () {
