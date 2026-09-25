@@ -10,6 +10,7 @@ import * as nearAPI from 'near-api-js';
 import * as request from 'superagent';
 
 import { auditEddsaPrivateKey } from '@bitgo/sdk-lib-mpc';
+import nacl from 'tweetnacl';
 import {
   AuditDecryptedKeyParams,
   BaseCoin,
@@ -722,24 +723,15 @@ export class Near extends BaseCoin {
       const MPC = await EDDSAMethods.getInitializedMpcInstance();
       const transaction = req[i].txRequest.transactions[0].unsignedTx;
 
-      // Validate signature shares
-      if (!req[i].ovc || !req[i].ovc[0].eddsaSignature) {
+      const ovc = req[i].ovc?.[0];
+      const mpcv2SignatureHex = ovc?.eddsaMpcv2Signature;
+      if (!ovc || (!mpcv2SignatureHex && !ovc.eddsaSignature)) {
         throw new Error('Missing signature(s)');
       }
-      const signature = req[i].ovc[0].eddsaSignature;
-
-      // Validate signable hex
       if (!transaction.signableHex) {
         throw new Error('Missing signable hex');
       }
       const messageBuffer = Buffer.from(transaction.signableHex!, 'hex');
-      const result = MPC.verify(messageBuffer, signature);
-      if (!result) {
-        throw new Error('Invalid signature');
-      }
-
-      // Prepare the signature in hex format
-      const signatureHex = Buffer.concat([Buffer.from(signature.R, 'hex'), Buffer.from(signature.sigma, 'hex')]);
 
       // Validate transaction-specific fields
       if (!transaction.coinSpecific?.commonKeychain) {
@@ -755,6 +747,26 @@ export class Near extends BaseCoin {
       // Derive account ID and sender address
       const accountId = MPC.deriveUnhardened(commonKeychain, derivationPath).slice(0, 64);
       const txnBuilder = this.getBuilder().from(transaction.serializedTx as string);
+      let signatureHex: Buffer;
+      if (mpcv2SignatureHex) {
+        // MPCv2 (OVC 5-pass): raw 64-byte Ed25519 signature. Verify against the
+        // same derived public key the transaction is signed under, then embed as-is.
+        const signature = Buffer.from(mpcv2SignatureHex, 'hex');
+        const isValid = nacl.sign.detached.verify(messageBuffer, signature, Buffer.from(accountId, 'hex'));
+        if (!isValid) {
+          throw new Error('Invalid signature');
+        }
+        signatureHex = signature;
+      } else {
+        const result = MPC.verify(messageBuffer, ovc.eddsaSignature);
+        if (!result) {
+          throw new Error('Invalid signature');
+        }
+        signatureHex = Buffer.concat([
+          Buffer.from(ovc.eddsaSignature.R, 'hex'),
+          Buffer.from(ovc.eddsaSignature.sigma, 'hex'),
+        ]);
+      }
 
       // Add the signature
       const nearKeyPair = new NearKeyPair({ pub: accountId });
