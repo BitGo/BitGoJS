@@ -17,11 +17,11 @@ const TEST_URI = 'https://app.example.local';
  * Mock strategy that records calls and returns predictable values.
  */
 class MockHmacAuthStrategy implements IHmacAuthStrategy {
-  public calculateRequestHeadersCalls: CalculateRequestHeadersOptions[] = [];
+  public calculateRequestHeadersCalls: CalculateRequestHeadersOptions<string | Buffer>[] = [];
   public verifyResponseCalls: VerifyResponseOptions[] = [];
   public calculateHMACCalls: Array<{ key: string; message: string }> = [];
 
-  async calculateRequestHeaders(params: CalculateRequestHeadersOptions): Promise<RequestHeaders> {
+  async calculateRequestHeaders(params: CalculateRequestHeadersOptions<string | Buffer>): Promise<RequestHeaders> {
     this.calculateRequestHeadersCalls.push(params);
     return {
       hmac: 'mock-hmac-value',

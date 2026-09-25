@@ -12,7 +12,7 @@ import type {
  * functions. This is used when no custom strategy is provided to BitGoAPI.
  */
 export class DefaultHmacAuthStrategy implements IHmacAuthStrategy {
-  async calculateRequestHeaders(params: CalculateRequestHeadersOptions): Promise<RequestHeaders> {
+  async calculateRequestHeaders(params: CalculateRequestHeadersOptions<string | Buffer>): Promise<RequestHeaders> {
     return calculateRequestHeaders(params);
   }
 

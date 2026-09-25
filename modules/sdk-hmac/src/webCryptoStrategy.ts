@@ -26,8 +26,8 @@ function arrayBufToHex(buffer: ArrayBuffer): string {
   return hexParts.join('');
 }
 
-async function webCryptoHmacSign(key: CryptoKey, data: string): Promise<string> {
-  const encoded = new TextEncoder().encode(data);
+async function webCryptoHmacSign(key: CryptoKey, data: string | Buffer): Promise<string> {
+  const encoded = typeof data === 'string' ? new TextEncoder().encode(data) : new Uint8Array(data);
   const sig = await crypto.subtle.sign('HMAC', key, encoded);
   return arrayBufToHex(sig);
 }
@@ -135,7 +135,9 @@ export class WebCryptoHmacStrategy implements IHmacAuthStrategy {
 
   // --- IHmacAuthStrategy implementation -----------------------------------
 
-  async calculateRequestHeaders(params: CalculateRequestHeadersWebCryptoOptions): Promise<RequestHeaders> {
+  async calculateRequestHeaders(
+    params: CalculateRequestHeadersWebCryptoOptions<string | Buffer>
+  ): Promise<RequestHeaders> {
     if (!this.cryptoKey || !this.tokenHashHex) {
       throw new Error('No token available. Call setToken() or restoreToken() first.');
     }
