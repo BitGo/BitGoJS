@@ -1223,6 +1223,7 @@ describe('Constructor', function () {
           attempted: 1,
           succeeded: 1,
           skipped: 0,
+          total: undefined,
           currentKeychainId: 'xpub1',
           keychainVersion: 'v1',
         },
@@ -1233,6 +1234,7 @@ describe('Constructor', function () {
           attempted: 2,
           succeeded: 1,
           skipped: 1,
+          total: undefined,
           currentKeychainId: 'xpub2',
           keychainVersion: 'v1',
         },
@@ -1243,12 +1245,40 @@ describe('Constructor', function () {
           attempted: 3,
           succeeded: 2,
           skipped: 1,
+          total: undefined,
           currentKeychainId: 'xpub3',
           keychainVersion: 'v2',
         },
         { phase: 'finalizing', status: 'started' },
         { phase: 'finalizing', status: 'completed' },
       ]);
+    });
+
+    it('forwards a truthful total from the v2 lower-level callback into every keychains/updated event', async function () {
+      nock(ROOT).get('/api/v2/user/checkBatchingPasswordFlow').query(true).reply(200, { isBatchingFlowEnabled: false });
+      nock(ROOT)
+        .post('/api/v1/user/changepassword', (body: any) => !!body.keychains && !!body.v2_keychains)
+        .reply(200, {});
+
+      v2UpdatePasswordStub.callsFake(async (params: { progressCallback?: (p: unknown) => void }) => {
+        params.progressCallback?.({ status: 'updated', currentKeychainId: 'xpub1', total: 2 });
+        params.progressCallback?.({ status: 'updated', currentKeychainId: 'xpub2', total: 2 });
+        return { v2k1: 'v2enc', v2k2: 'v2enc2' };
+      });
+
+      const events: PasswordRotationProgress[] = [];
+      await bitgo.changePassword({
+        oldPassword: 'oldpw',
+        newPassword: 'newpw',
+        progressCallback: (progress) => events.push(progress),
+      });
+
+      const v2Events = events.filter(
+        (e): e is Extract<PasswordRotationProgress, { phase: 'keychains' }> =>
+          e.phase === 'keychains' && e.status === 'updated' && e.keychainVersion === 'v2'
+      );
+      v2Events.should.have.length(2);
+      v2Events.every((e) => e.total === 2).should.be.true();
     });
 
     it('does not let a throwing progressCallback abort the rotation', async function () {

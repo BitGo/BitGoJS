@@ -600,19 +600,47 @@ describe('V2 Keychains', function () {
         });
 
         events.should.deepEqual([
-          { status: 'updated', currentKeychainId: 'xpub1' },
-          { status: 'skipped', currentKeychainId: 'xpub2' },
-          { status: 'updated', currentKeychainId: 'xpub3' },
+          { status: 'updated', currentKeychainId: 'xpub1', total: undefined },
+          { status: 'skipped', currentKeychainId: 'xpub2', total: undefined },
+          { status: 'updated', currentKeychainId: 'xpub3', total: undefined },
         ]);
       });
 
-      it('should emit skipped when a key has no encryptedPrv', async function () {
+      it('threads encryptedTotalCount from the first page into total on every emitted event', async function () {
+        const encXprv1 = await bitgo.encrypt({ input: 'xprv1', password: oldPassword });
+        const encXprv2 = await bitgo.encrypt({ input: 'xprv2', password: oldPassword });
+        nock(bgUrl)
+          .get('/api/v2/tltc/key')
+          .query(true)
+          .reply(200, {
+            keys: [
+              { pub: 'xpub1', encryptedPrv: encXprv1 },
+              { pub: 'xpub2', encryptedPrv: encXprv2 },
+            ],
+            encryptedTotalCount: 2,
+          });
+
+        const events: Array<{ status: string; currentKeychainId?: string; total?: number }> = [];
+        await keychains.updatePassword({
+          oldPassword,
+          newPassword,
+          progressCallback: (progress) => events.push(progress),
+        });
+
+        events.should.deepEqual([
+          { status: 'updated', currentKeychainId: 'xpub1', total: 2 },
+          { status: 'updated', currentKeychainId: 'xpub2', total: 2 },
+        ]);
+      });
+
+      it('should not emit progress for a key with no encryptedPrv (outside the encryptedTotalCount unit)', async function () {
         const encXprv1 = await bitgo.encrypt({ input: 'xprv1', password: oldPassword });
         nock(bgUrl)
           .get('/api/v2/tltc/key')
           .query(true)
           .reply(200, {
             keys: [{ pub: 'xpub1', encryptedPrv: encXprv1 }, { pub: 'xpub2' }],
+            encryptedTotalCount: 1,
           });
 
         const events: Array<{ status: string; currentKeychainId?: string }> = [];
@@ -622,8 +650,9 @@ describe('V2 Keychains', function () {
           progressCallback: (progress) => events.push(progress),
         });
 
-        events.should.containEql({ status: 'updated', currentKeychainId: 'xpub1' });
-        events.should.containEql({ status: 'skipped', currentKeychainId: 'xpub2' });
+        // Only the encrypted record is in the unit; the placeholder record must not
+        // emit, or `completed` would overshoot `encryptedTotalCount` in the UI.
+        events.should.deepEqual([{ status: 'updated', currentKeychainId: 'xpub1', total: 1 }]);
       });
 
       it('should emit skipped for a known decrypt-failure and never mislabel a fatal error as skipped', async function () {
@@ -646,8 +675,8 @@ describe('V2 Keychains', function () {
           progressCallback: (progress) => events.push(progress),
         });
 
-        events.should.containEql({ status: 'updated', currentKeychainId: 'xpub1' });
-        events.should.containEql({ status: 'skipped', currentKeychainId: 'xpub2' });
+        events.should.containEql({ status: 'updated', currentKeychainId: 'xpub1', total: undefined });
+        events.should.containEql({ status: 'skipped', currentKeychainId: 'xpub2', total: undefined });
 
         const sandbox = sinon.createSandbox();
         try {
