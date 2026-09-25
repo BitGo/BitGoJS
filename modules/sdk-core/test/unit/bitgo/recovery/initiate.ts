@@ -1,6 +1,8 @@
 import 'should';
 import * as sinon from 'sinon';
 import * as sjcl from '@bitgo/sjcl';
+import { bip32 } from '@bitgo/utxo-lib';
+import { deriveSafeSecp256k1MultisigTriplet } from '@bitgo/sdk-lib-safes';
 import { validateKey, getBip32Keys } from '../../../../src/bitgo/recovery/initiate';
 import { BitGoBase } from '../../../../src/bitgo/bitgoBase';
 
@@ -9,6 +11,9 @@ const TEST_XPRV =
   'xprv9s21ZrQH143K2fJ91S4BRsupcYrE6mmY96fcX5HkhoTrrwmwjd16Cn87cWinJjByrfpojjx7ezsJLx7TAKLT8m8hM5Kax9YcoxnBeJZ3t2k';
 const TEST_XPUB =
   'xpub661MyMwAqRbcF9Nc7TbBo1rZAagiWEVPWKbDKThNG8zqjk76HAKLkaSbTn6dK2dQPfuD7xjicxCZVWvj67fP5nQ9W7QURmoMVAX8m6jZsGp';
+const SAFE_USER_ROOT_SEED = '000102030405060708090a0b0c0d0e0f';
+const SAFE_BACKUP_ROOT_SEED = '000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f';
+const SAFE_BITGO_ROOT_SEED = '1f1e1d1c1b1a191817161514131211100f0e0d0c0b0a09080706050403020100';
 
 /**
  * Encrypt plaintext with SJCL (legacy v1 envelope, matching `encryptionVersion: 1`).
@@ -121,6 +126,37 @@ describe('getBip32Keys', () => {
     );
     keys.should.have.length(3);
     keys[2].neutered().toBase58().should.equal(TEST_XPUB);
+  });
+
+  it('accepts a derived slot-1 triplet without decrypting user or backup keys', async () => {
+    const userRoot = bip32.fromSeed(Buffer.from(SAFE_USER_ROOT_SEED, 'hex'));
+    const backupRoot = bip32.fromSeed(Buffer.from(SAFE_BACKUP_ROOT_SEED, 'hex'));
+    const bitgoRoot = bip32.fromSeed(Buffer.from(SAFE_BITGO_ROOT_SEED, 'hex'));
+    const triplet = deriveSafeSecp256k1MultisigTriplet({
+      userRootXprv: userRoot.toBase58(),
+      backupRootXprv: backupRoot.toBase58(),
+      bitgoRootXpub: bitgoRoot.neutered().toBase58(),
+      index: 999,
+    });
+    const bitgo = makeMockBitGo(() => {
+      throw new Error('derived raw keys must bypass decrypt');
+    });
+
+    const keys = await getBip32Keys(
+      bitgo,
+      {
+        userKey: triplet.user.prv,
+        backupKey: triplet.backup.prv,
+        bitgoKey: triplet.bitgo.pub,
+        recoveryDestination: 'addr',
+      },
+      { requireBitGoXpub: true }
+    );
+
+    keys[0].toBase58().should.equal(triplet.user.prv);
+    keys[1].toBase58().should.equal(triplet.backup.prv);
+    keys[2].neutered().toBase58().should.equal(triplet.bitgo.pub);
+    (bitgo.decrypt as sinon.SinonStub).callCount.should.equal(0);
   });
 
   it('calls decrypt for encrypted user key', async () => {

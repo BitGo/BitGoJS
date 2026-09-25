@@ -4,6 +4,7 @@ import {
   deriveAndSelfCheckSafeChildHardened,
   deriveSafeChildEd25519Hardened,
   deriveSafeChildHardenedFromXprv,
+  deriveSafeSecp256k1MultisigTriplet,
   getSafeHardenedDerivationPath,
   parseDerivedFromParentWithHardenedPath,
   parseSafeDerivationIndex,
@@ -14,6 +15,32 @@ import {
 const BIP32_VECTOR_1_SEED = '000102030405060708090a0b0c0d0e0f';
 const BIP32_VECTOR_1_M0_PUB =
   'xpub68Gmy5EdvgibQVfPdqkBBCHxA5htiqg55crXYuXoQRKfDBFA1WEjWgP6LHhwBZeNK1VTsfTFUHCdrfp1bgwQ9xv5ski8PX9rL2dZXvgGDnw';
+const SECP256K1_TRIPLET_PUBLIC_VECTORS = [
+  {
+    index: 0,
+    user: BIP32_VECTOR_1_M0_PUB,
+    backup:
+      'xpub68YxEXm6MzDfDNxMgxAWL5SKgtrrRhW9SYd4LCgP5GKNNemcdKZGoiU7V51zYjB7UZ4rdPpNrmgvCDjUrbUGb5SAofxstu7qxrDmMrxqV61',
+    bitgo:
+      'xpub687FEQo7o7DuVC9qPhkmoSSUbHuKvuWWhbs9CgRPZKAZ27oSWMrPDQPU9fe6wAP5jwzMWPuLtTFJVPbZVYe1EG7ub3ucFLsESKeaJB1t8PP',
+  },
+  {
+    index: 1,
+    user: 'xpub68Gmy5EdvgibUN4mNXdMAcCZh4jpWiebYvh9WkKTkqvGD6tu4ZtXUAwuKSyF5DFZVmotf9UHFTGqSXo9qyDBSn47RkaN6Aedt9JbL7zcgSL',
+    backup:
+      'xpub68YxEXm6MzDfGe5ER7y35vVg8JJRY2WLRWExPNbzoB6aCk1VuqK7PYGZEGKM9BPwH6WhA1JUhgMSPKw6C5fn34FCy1zQCQR9QtX9PnZ53ww',
+    bitgo:
+      'xpub687FEQo7o7DuVgeFdizaRUU2jhFCZcqPRnXWu7fX53ueveisfRzMQrPxQ56AMhUFBwUyqB8pJngQBYPD4xfp3wGEePqgPPaftPawwkBsCKr',
+  },
+  {
+    index: 999,
+    user: 'xpub68Gmy5EdvgjMJhzRpW22GYfmwmpq4akLBvu6Z4PPq2L4RBZ6Nb7g6puhW5yhfru6oKGvThy9eSkvS9w4jowaCc93qovhFos1Ea2s2reuUrF',
+    backup:
+      'xpub68YxEXm6MzER6qMSqgQSKcD8bk7ngWx1QJgoUwf77KfmgM7kmEJKUzZSL6GvTBFC43djxkgX326UPpVkNvVuZkUGPGcnvynqiaETXECGcTm',
+    bitgo:
+      'xpub687FEQo7o7EfNS18VHgmmZkYf1hUhM17kqWscMskC5ZGTP6BxVsHfrm1Kfij3HdqnTfJr2meAe7fRBKKQBxBZULjdHLeVKvu9bvQXB88NtH',
+  },
+] as const;
 
 // 32-byte synthetic root seed. The StrKey spelling was generated with stellar-sdk; the pinned
 // SLIP-0010 outputs below match sdk-core's safeDerivation test vectors.
@@ -106,6 +133,89 @@ describe('safeDerivation', function () {
 
     it('rejects an invalid index', function () {
       (() => deriveSafeChildEd25519Hardened(ROOT_SEED_STRKEY, -1)).should.throw(/Invalid safe derivation index/);
+    });
+  });
+
+  describe('deriveSafeSecp256k1MultisigTriplet', function () {
+    const BACKUP_ROOT_SEED = '000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f';
+    const BITGO_ROOT_SEED = '1f1e1d1c1b1a191817161514131211100f0e0d0c0b0a09080706050403020100';
+
+    const userRoot = () => bip32.fromSeed(Buffer.from(BIP32_VECTOR_1_SEED, 'hex'));
+    const backupRoot = () => bip32.fromSeed(Buffer.from(BACKUP_ROOT_SEED, 'hex'));
+    const bitgoRoot = () => bip32.fromSeed(Buffer.from(BITGO_ROOT_SEED, 'hex'));
+
+    const deriveTriplet = (index: string | number) =>
+      deriveSafeSecp256k1MultisigTriplet({
+        userRootXprv: userRoot().toBase58(),
+        backupRootXprv: backupRoot().toBase58(),
+        bitgoRootXpub: bitgoRoot().neutered().toBase58(),
+        index,
+      });
+
+    it('derives the user child hardened at m/n', function () {
+      const triplet = deriveTriplet(0);
+      triplet.index.should.equal(0);
+      triplet.user.pub.should.equal(BIP32_VECTOR_1_M0_PUB);
+      bip32.fromBase58(triplet.user.prv).neutered().toBase58().should.equal(triplet.user.pub);
+    });
+
+    it('derives the backup child soft', function () {
+      const backup = backupRoot();
+      const triplet = deriveTriplet(0);
+      bip32.fromBase58(triplet.backup.prv).neutered().toBase58().should.equal(triplet.backup.pub);
+      triplet.backup.pub.should.equal(backup.derive(0).neutered().toBase58());
+      triplet.backup.pub.should.not.equal(backup.deriveHardened(0).neutered().toBase58());
+    });
+
+    it('derives the bitgo child public-only from the xpub', function () {
+      const bitgo = bitgoRoot();
+      const triplet = deriveTriplet(0);
+      triplet.bitgo.should.eql({ pub: bitgo.derive(0).neutered().toBase58() });
+    });
+
+    it('matches pinned public vectors at indices 0, 1, and 999', function () {
+      for (const vector of SECP256K1_TRIPLET_PUBLIC_VECTORS) {
+        const triplet = deriveTriplet(vector.index);
+        triplet.index.should.equal(vector.index);
+        triplet.user.pub.should.equal(vector.user);
+        triplet.backup.pub.should.equal(vector.backup);
+        triplet.bitgo.pub.should.equal(vector.bitgo);
+        bip32.fromBase58(triplet.user.prv).neutered().toBase58().should.equal(vector.user);
+        bip32.fromBase58(triplet.backup.prv).neutered().toBase58().should.equal(vector.backup);
+      }
+    });
+
+    it('emits xprv/xpub from BitGo-format roots', function () {
+      const triplet = deriveTriplet(999);
+      triplet.user.prv.startsWith('xprv').should.equal(true);
+      triplet.user.pub.startsWith('xpub').should.equal(true);
+      triplet.backup.prv.startsWith('xprv').should.equal(true);
+      triplet.backup.pub.startsWith('xpub').should.equal(true);
+      triplet.bitgo.pub.startsWith('xpub').should.equal(true);
+    });
+
+    it('fails closed when a public root is passed as backupRootXprv', function () {
+      (() =>
+        deriveSafeSecp256k1MultisigTriplet({
+          userRootXprv: userRoot().toBase58(),
+          backupRootXprv: backupRoot().neutered().toBase58(),
+          bitgoRootXpub: bitgoRoot().neutered().toBase58(),
+          index: 0,
+        })).should.throw(/root has no private key/);
+    });
+
+    it('fails closed when a private root is passed as bitgoRootXpub', function () {
+      (() =>
+        deriveSafeSecp256k1MultisigTriplet({
+          userRootXprv: userRoot().toBase58(),
+          backupRootXprv: backupRoot().toBase58(),
+          bitgoRootXpub: bitgoRoot().toBase58(),
+          index: 0,
+        })).should.throw(/root has a private key/);
+    });
+
+    it('rejects an invalid index', function () {
+      (() => deriveTriplet(-1)).should.throw(/Invalid safe derivation index/);
     });
   });
 });
