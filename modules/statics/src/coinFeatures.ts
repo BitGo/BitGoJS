@@ -190,7 +190,6 @@ export const CSPR_FEATURES = [
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
   CoinFeature.MULTISIG_COLD,
   CoinFeature.MULTISIG,
-  CoinFeature.STAKING,
 ];
 export const ALGO_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
