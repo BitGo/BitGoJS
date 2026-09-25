@@ -4571,6 +4571,21 @@ export class Wallet implements IWallet {
           params.preview
         );
         break;
+      case 'eip7702':
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'eip7702',
+            sequenceId: params.sequenceId,
+            comment: params.comment,
+            eip7702Params: params.eip7702Params,
+            feeOptions,
+            feeToken: params.feeToken,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
       case 'wrapApprove':
       case 'wrap':
         txRequest = await this.tssUtils!.prebuildTxWithIntent(
