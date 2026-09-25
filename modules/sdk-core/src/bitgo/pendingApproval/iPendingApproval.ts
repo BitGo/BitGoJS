@@ -16,6 +16,7 @@ export enum State {
   APPROVED = 'approved',
   PROCESSING = 'processing',
   REJECTED = 'rejected',
+  CANCELED = 'canceled',
 }
 
 export enum Type {
