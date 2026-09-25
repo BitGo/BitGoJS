@@ -15,6 +15,7 @@ import {
   createPox5LockupDescriptor,
   createPox5LockupScriptPubKey,
   derivePox5StakerKeys,
+  getPox5UnlockBytes,
   parsePox5LockupDescriptor,
   Pox5LockupDescriptorParams,
 } from '../../../src/pox5';
@@ -95,7 +96,8 @@ describe('PoX-5 lockup descriptors', function () {
     const definite = { ...derivable, stakerKeys };
     const descriptor = createPox5LockupDescriptor(definite);
     const localWitnessScript = asmToScript(descriptor.toAsmString());
-    const unlockBytes = encodeTwoOfThreeUnlock(stakerKeys);
+    const unlockBytes = getPox5UnlockBytes(descriptor);
+    assert.deepStrictEqual(unlockBytes, encodeTwoOfThreeUnlock(stakerKeys));
     const earlyUnlockBytes = buildUnlockScript(definite.earlyExitKey);
     const sdkWitnessScript = Buffer.from(
       buildLockScript({
@@ -148,6 +150,12 @@ describe('PoX-5 lockup descriptors', function () {
       derived?.stakerKeys,
       derivePox5StakerKeys(value.stakerKeys as [BIP32Interface, BIP32Interface, BIP32Interface], 4)
     );
+    assert.ok(derived?.stakerKeys);
+    assert.deepStrictEqual(
+      getPox5UnlockBytes(descriptor.atDerivationIndex(4)),
+      encodeTwoOfThreeUnlock(derived.stakerKeys)
+    );
+    assert.throws(() => getPox5UnlockBytes(descriptor), /keys must be concrete/);
   });
 
   it('rejects noncanonical parameter values and descriptor templates', function () {
@@ -161,6 +169,8 @@ describe('PoX-5 lockup descriptors', function () {
       )
     );
     const validKey = params().earlyExitKey.toString('hex');
-    assert.strictEqual(parsePox5LockupDescriptor(Descriptor.fromString(`wsh(pk(${validKey}))`, 'definite')), undefined);
+    const nonPox5Descriptor = Descriptor.fromString(`wsh(pk(${validKey}))`, 'definite');
+    assert.strictEqual(parsePox5LockupDescriptor(nonPox5Descriptor), undefined);
+    assert.throws(() => getPox5UnlockBytes(nonPox5Descriptor), /not a canonical PoX-5/);
   });
 });
