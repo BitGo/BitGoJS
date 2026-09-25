@@ -749,6 +749,11 @@ export interface IBaseCoin {
   supportsLightning(): boolean;
   supportsMessageSigning(): boolean;
   supportsSigningTypedData(): boolean;
+  /**
+   * Coin-specific validation of a message payload before it is forwarded for signing.
+   * Implementations must throw when the message is not signable for this coin.
+   */
+  validateSignableMessage?(message: Pick<Message, 'messageRaw' | 'messageStandardType' | 'signerAddress'>): void;
   supplementGenerateWallet(walletParams: SupplementGenerateWalletOptions, keychains: KeychainsTriplet): Promise<any>;
   getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions): Promise<Record<string, unknown>>;
   postProcessPrebuild(prebuildResponse: TransactionPrebuild): Promise<TransactionPrebuild>;

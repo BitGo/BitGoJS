@@ -1,5 +1,6 @@
 import { Keypair as SolKeypair } from '@solana/web3.js';
-import { DefaultKeys, KeyPairOptions, Ed25519KeyPair } from '@bitgo/sdk-core';
+import * as nacl from 'tweetnacl';
+import { DefaultKeys, KeyPairOptions, Ed25519KeyPair, toUint8Array } from '@bitgo/sdk-core';
 import { SolanaKeys } from './iface';
 import { base58ToUint8Array, Uint8ArrayTobase58 } from './utils';
 
@@ -65,5 +66,21 @@ export class KeyPair extends Ed25519KeyPair {
   getAddress(): string {
     const keys = this.getKeys();
     return keys.pub;
+  }
+
+  /**
+   * Signs the message bytes exactly as given: Buffers are signed byte-for-byte and strings
+   * as their UTF-8 encoding. The base Ed25519KeyPair only accepts strings, which corrupts
+   * arbitrary-byte messages.
+   */
+  signMessage(message: string | Buffer): Uint8Array {
+    const messageToSign = Buffer.isBuffer(message)
+      ? new Uint8Array(message)
+      : toUint8Array(Buffer.from(message).toString('hex'));
+    const prv = this.keyPair?.prv;
+    if (!prv) {
+      throw new Error('Missing private key');
+    }
+    return nacl.sign.detached(messageToSign, nacl.sign.keyPair.fromSeed(toUint8Array(prv)).secretKey);
   }
 }
