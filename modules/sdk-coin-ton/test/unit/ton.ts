@@ -4,7 +4,14 @@ import { Ton, TonParseTransactionOptions, Tton } from '../../src';
 import * as sinon from 'sinon';
 import assert from 'assert';
 import * as testData from '../resources/ton';
-import { EDDSAMethods, MPCRecoveryOptions, MPCTx, TransactionExplanation } from '@bitgo/sdk-core';
+import {
+  EDDSAMethods,
+  MPCRecoveryOptions,
+  MPCSweepRecoveryOptions,
+  MPCTx,
+  signRecoveryEddsaMPCv2,
+  TransactionExplanation,
+} from '@bitgo/sdk-core';
 import should from 'should';
 import utils from '../../src/lib/utils';
 import Tonweb from 'tonweb';
@@ -993,6 +1000,115 @@ describe('TON:', function () {
           .recover(mismatchedParams)
           .should.be.rejectedWith('EdDSA MPCv2 recovery: commonKeyChain from keycard does not match bitgoKey');
       });
+    });
+  });
+
+  describe('createBroadcastableSweepTransaction (MPCv2):', () => {
+    const sandBox = sinon.createSandbox();
+    let userKeyShare: Buffer;
+    let backupKeyShare: Buffer;
+    let commonKeychain: string;
+    let mpcv2SweepTxRequest: any;
+    let mpcv2SignatureHex: string;
+
+    before(async function () {
+      // Unwind any stubs leaked by earlier tests (some describes stub without restoring).
+      (Tonweb.HttpProvider as any).restore?.();
+      const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+      commonKeychain = userDkg.getCommonKeychain();
+      userKeyShare = userDkg.getKeyShare();
+      backupKeyShare = backupDkg.getKeyShare();
+
+      const mockProvider = {
+        getBalance: sandBox.stub().resolves('1000000000'),
+        getEstimateFee: sandBox.stub().resolves({
+          source_fees: { in_fwd_fee: 1000, storage_fee: 1000, gas_fee: 1000, fwd_fee: 1000 },
+        }),
+        call: sandBox.stub(),
+        send: sandBox.stub().callsFake((method: string) => {
+          if (method === 'runGetMethod') {
+            return Promise.resolve({ gas_used: 0, stack: [['num', '0']] });
+          }
+          return Promise.resolve({});
+        }),
+      };
+      sandBox.stub(Tonweb, 'HttpProvider').returns(mockProvider as any);
+
+      // ton's recover() unsigned path returns a bare MPCTx (no txRequests wrapper),
+      // so build the txRequest shape createBroadcastableSweepTransaction expects.
+      const unsignedTx = (await basecoin.recover({
+        bitgoKey: commonKeychain,
+        recoveryDestination: 'UQBL2idCXR4ATdQtaNa4VpofcpSxuxIgHH7_slOZfdOXSadJ',
+        apiKey: 'db2554641c61e60a979cc6c0053f2ec91da9b13e71d287768c93c2fb556be53b',
+      })) as MPCTx;
+      sandBox.restore();
+
+      mpcv2SweepTxRequest = { transactions: [{ unsignedTx, signatureShares: [] }], walletCoin: 'tton' };
+      const signature = await signRecoveryEddsaMPCv2(
+        Buffer.from(unsignedTx.signableHex!, 'hex'),
+        unsignedTx.derivationPath!,
+        userKeyShare,
+        backupKeyShare,
+        commonKeychain
+      );
+      mpcv2SignatureHex = signature.toString('hex');
+    });
+    function buildParams(ovc: any): MPCSweepRecoveryOptions {
+      return {
+        signatureShares: [
+          {
+            txRequest: mpcv2SweepTxRequest,
+            tssVersion: '0.0.1',
+            ovc: [ovc],
+          },
+        ],
+      } as MPCSweepRecoveryOptions;
+    }
+
+    it('should take MPCv2 OVC output and generate a signed sweep transaction', async function () {
+      const params = buildParams({ eddsaMpcv2Signature: mpcv2SignatureHex });
+      const recoveryTxn = await basecoin.createBroadcastableSweepTransaction(params);
+
+      recoveryTxn.transactions[0].serializedTx.should.not.equal(
+        mpcv2SweepTxRequest.transactions[0].unsignedTx.serializedTx
+      );
+      recoveryTxn.transactions[0].serializedTx.should.not.be.empty();
+      (recoveryTxn.transactions[0].scanIndex ?? 0).should.equal(0);
+      (recoveryTxn.lastScanIndex ?? 0).should.equal(0);
+    });
+
+    it('should reject a tampered MPCv2 signature', async function () {
+      const unsignedTx = mpcv2SweepTxRequest.transactions[0].unsignedTx;
+      const tamperedMessage = Buffer.concat([Buffer.from(unsignedTx.signableHex, 'hex'), Buffer.from('00', 'hex')]);
+      const tamperedSignature = await signRecoveryEddsaMPCv2(
+        tamperedMessage,
+        unsignedTx.derivationPath,
+        userKeyShare,
+        backupKeyShare,
+        commonKeychain
+      );
+
+      await basecoin
+        .createBroadcastableSweepTransaction(buildParams({ eddsaMpcv2Signature: tamperedSignature.toString('hex') }))
+        .should.be.rejectedWith('Invalid signature');
+    });
+
+    it('should throw when MPCv2 OVC is missing signature(s)', async function () {
+      await basecoin
+        .createBroadcastableSweepTransaction(buildParams({}))
+        .should.be.rejectedWith('Missing signature(s)');
+    });
+
+    it('should route MPCv1-shaped ovc to the MPCv1 verify branch and reject an invalid signature', async function () {
+      const mpc = await EDDSAMethods.getInitializedMpcInstance();
+      const derivedPubKey = mpc.deriveUnhardened(commonKeychain, 'm/0').slice(0, 64);
+      await basecoin
+        .createBroadcastableSweepTransaction(
+          buildParams({
+            eddsaSignature: { R: '00'.repeat(32), sigma: '00'.repeat(32), y: derivedPubKey },
+          })
+        )
+        .should.be.rejectedWith('Invalid signature');
     });
   });
 });
