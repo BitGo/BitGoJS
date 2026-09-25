@@ -232,7 +232,7 @@ BitGo Express is able to take configuration options from either command line arg
 | N/A             | --disableproxy                  | `BITGO_DISABLE_PROXY` <sup>0</sup>        | N/A           | Disable proxying of routes not explicitly handled by bitgo-express                                                                                                                                                                                                                                                                                   |
 | N/A             | --disableenvcheck               | `BITGO_DISABLE_ENV_CHECK` <sup>0</sup>    | N/A           | Disable checking for correct `NODE_ENV` environment variable when running against BitGo production environment.                                                                                                                                                                                                                                      |
 | -i              | --ipc                           | `BITGO_IPC`                               | N/A           | If set, bind to the given IPC (unix domain) socket. Binding to an IPC socket can be useful if the caller of bitgo-express resides on the same host as the bitgo-express instance itself, since the socket can be secured using normal file permissions and ownership semantics. Note: This is not supported on Windows platforms.                    |
-| N/A             | --authversion                   | `BITGO_AUTH_VERSION`                      | 2             | BitGo Authentication scheme version which should be used form making requests to the BitGo server. For more info on authentication scheme versions, view the API reference on the BitGo [Developer Portal](https://developers.bitgo.com/reference/overview#/).                                                                                                                             |
+| N/A             | --authversion                   | `BITGO_AUTH_VERSION`                      | 2             | BitGo Authentication scheme version which should be used form making requests to the BitGo server. For more info on authentication scheme versions, view the API reference on the BitGo [Developer Portal](https://developers.bitgo.com/reference/overview#/).                                                                                       |
 | N/A             | --externalSignerUrl             | `BITGO_EXTERNAL_SIGNER_URL`               | N/A           | URL specifying the external API to call for remote signing.                                                                                                                                                                                                                                                                                          |
 | N/A             | --signerMode                    | `BITGO_SIGNER_MODE `                      | N/A           | If set, run Express as a remote signer.                                                                                                                                                                                                                                                                                                              |
 | N/A             | --signerFileSystemPath          | `BITGO_SIGNER_FILE_SYSTEM_PATH `          | N/A           | Local path specifying where an Express signer machine keeps the encrypted user private keys. Required when signerMode is set.                                                                                                                                                                                                                        |
@@ -264,6 +264,22 @@ In addition to the debug namespaces defined in the [`bitgo` package README](http
 To enable the `bitgo:v2:utxo` and `bitgo:express` debug namespaces, start BitGo Express with `--debug-namespace bitgo:v2:utxo,bitgo:express`.
 
 Wildcards using `*` are also supported. For example, all bitgo debug namespaces can be enabled with `--debug-namespace bitgo:*`, but beware, this can be very noisy.
+
+## Wallet Safes (client-side generation)
+
+Safe creation and child-wallet minting run local key ceremonies, so they must be called through BitGo Express rather than the BitGo API. The passphrase never leaves the Express host. Production Express requires TLS.
+
+| Method | Path                                                                | SDK method             |
+| ------ | ------------------------------------------------------------------- | ---------------------- |
+| POST   | `/api/v2/enterprise/{enterpriseId}/safes/generate`                  | `Safes.generateSafe`   |
+| POST   | `/api/v2/enterprise/{enterpriseId}/safes/{safeId}/wallets/generate` | `Safe.createWallet`    |
+| POST   | `/api/v2/enterprise/{enterpriseId}/safes/{safeId}/keys/generate`    | `Safes.createSafeKeys` |
+
+`POST /api/v2/enterprise/{enterpriseId}/safes` (without `/generate`) is initialize-only and is proxied to the BitGo API. Listing, get, finalize, archive, freeze, and update are also proxied.
+
+Default Express timeout is 305 seconds. `generateSafe` can run up to four parallel root-key ceremonies; raise `--timeout` if a run is cut off.
+
+When signing a safe child wallet through existing Express send/sign routes, `WALLET_{walletId}_PASSPHRASE` is the **safe** passphrase (it decrypts the root user keychain).
 
 # Release Notes
 
