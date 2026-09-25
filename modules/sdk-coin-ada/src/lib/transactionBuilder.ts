@@ -577,7 +577,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /**
-   * Sign-only path for prebuilt Plutus transactions (e.g. RealFi order CBOR from WP).
+   * Sign-only path for prebuilt Plutus or native-script transactions (e.g. RealFi order
+   * and timelock-claim CBOR from WP).
    *
    * Does not rebuild body or recompute fees/outputs — reuses the parsed body and
    * auxiliary data verbatim so Plutus fields survive. Only regenerates vkeys;
@@ -636,7 +637,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    if (this._transaction.hasPlutusData()) {
+    if (this._transaction.hasPlutusData() || this._transaction.hasNativeScriptData()) {
       return this.buildPlutusPassthrough();
     }
     if (this._explicitOutputs.length > 0) {
