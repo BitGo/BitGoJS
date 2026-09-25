@@ -1,9 +1,13 @@
 import assert from 'assert';
 
 import * as sinon from 'sinon';
-import { Wallet } from '@bitgo/sdk-core';
+import { Keychain, Wallet } from '@bitgo/sdk-core';
 
-import { defaultBitGo, getUtxoCoin } from './util';
+import { ParsedTransaction } from '../../src/transaction/types';
+import { verifyUserPublicKey } from '../../src/verifyKey';
+import { UtxoWallet } from '../../src/wallet';
+
+import { defaultBitGo, getUtxoCoin, keychainsBase58 } from './util';
 
 describe('Verify Transaction', function () {
   const coin = getUtxoCoin('tbtc');
@@ -23,6 +27,17 @@ describe('Verify Transaction', function () {
   const signOther = (key) => sign(key, otherKeychain);
   const passphrase = 'test_passphrase';
 
+  // the wallet's backup/bitgo keychains, as fetchKeychains would return them
+  const walletBackupKeychain = coin.keychains().create();
+  const walletBitgoKeychain = coin.keychains().create();
+  const walletKeychains: Record<'user' | 'backup' | 'bitgo', Keychain> = {
+    user: { ...userKeychain, id: 'user', type: 'independent' },
+    backup: { ...walletBackupKeychain, id: 'backup', type: 'independent' },
+    bitgo: { ...walletBitgoKeychain, id: 'bitgo', type: 'independent' },
+  };
+  const walletKeySignatures = { backupPub: '', bitgoPub: '' };
+  const attackerKeySignatures = { backupPub: '', bitgoPub: '' };
+
   const stubData = {
     unsignedSendingWallet: {
       keyIds: sinon.stub().returns(['0', '1', '2']),
@@ -35,21 +50,28 @@ describe('Verify Transaction', function () {
             pub: otherKeychain.pub,
             encryptedPrv: '' as string, // set in before()
           },
+          backup: walletBackupKeychain,
+          bitgo: walletBitgoKeychain,
         },
+        // signatures consistent with the substituted user public key
+        keySignatures: attackerKeySignatures,
         needsCustomChangeKeySignatureVerification: true,
       },
       noCustomChange: {
-        keychains: { user: userKeychain },
+        keychains: walletKeychains,
+        keySignatures: walletKeySignatures,
         needsCustomChangeKeySignatureVerification: true,
       },
       emptyCustomChange: {
-        keychains: { user: userKeychain },
+        keychains: walletKeychains,
+        keySignatures: walletKeySignatures,
         needsCustomChangeKeySignatureVerification: true,
         customChange: {},
       },
       // needs to be async function to create signatures
       badSigs: async () => ({
-        keychains: { user: userKeychain },
+        keychains: walletKeychains,
+        keySignatures: walletKeySignatures,
         needsCustomChangeKeySignatureVerification: true,
         customChange: {
           keys: [changeKeys.user, changeKeys.backup, changeKeys.bitgo],
@@ -61,7 +83,8 @@ describe('Verify Transaction', function () {
         },
       }),
       goodSigs: async () => ({
-        keychains: { user: userKeychain },
+        keychains: walletKeychains,
+        keySignatures: walletKeySignatures,
         needsCustomChangeKeySignatureVerification: true,
         customChange: {
           keys: [changeKeys.user, changeKeys.backup, changeKeys.bitgo],
@@ -81,9 +104,16 @@ describe('Verify Transaction', function () {
       input: userKeychain.prv,
       password: passphrase,
     });
+    walletKeySignatures.backupPub = await signUser(walletBackupKeychain);
+    walletKeySignatures.bitgoPub = await signUser(walletBitgoKeychain);
+    // signatures consistent with a substituted user public key
+    attackerKeySignatures.backupPub = await signOther(walletBackupKeychain);
+    attackerKeySignatures.bitgoPub = await signOther(walletBitgoKeychain);
   });
 
   const unsignedSendingWallet = sinon.createStubInstance(Wallet, stubData.unsignedSendingWallet as any);
+  // sinon stub instances don't structurally satisfy UtxoWallet (private class members)
+  const stubWallet = unsignedSendingWallet as unknown as UtxoWallet;
 
   it('should fail if the user private key cannot be verified to match the user public key', async () => {
     sinon.stub(coin, 'parseTransaction').resolves(stubData.parseTransactionData.badKey as any);
@@ -178,6 +208,176 @@ describe('Verify Transaction', function () {
     (coin.parseTransaction as any).restore();
   });
 
+  describe('keychain anchoring (WCN-2114)', function () {
+    let sandbox: sinon.SinonSandbox;
+
+    const baseParsedTransaction = {
+      keychains: walletKeychains,
+      keySignatures: {},
+      outputs: [],
+      missingOutputs: [],
+      explicitExternalOutputs: [],
+      implicitExternalOutputs: [],
+      changeOutputs: [],
+      explicitExternalSpendAmount: 0,
+      implicitExternalSpendAmount: 0,
+      needsCustomChangeKeySignatureVerification: false,
+    };
+
+    function stubParsedTransaction(overrides: Record<string, unknown>) {
+      const parsed = { ...baseParsedTransaction, ...overrides } as unknown as ParsedTransaction<number>;
+      return sandbox.stub(coin, 'parseTransaction').resolves(parsed);
+    }
+
+    beforeEach(function () {
+      sandbox = sinon.createSandbox();
+    });
+
+    afterEach(function () {
+      // a failed assertion must not leave parseTransaction wrapped for later tests
+      sandbox.restore();
+    });
+
+    it('should fail when wallet keySignatures are missing for server-obtained keychains', async () => {
+      stubParsedTransaction({});
+      await assert.rejects(
+        coin.verifyTransaction({
+          txParams: {},
+          txPrebuild: {},
+          wallet: stubWallet,
+          verification: {},
+        }),
+        /wallet keySignatures missing; cannot verify server-supplied keychains/
+      );
+    });
+
+    it('should fail when wallet keySignatures are invalid', async () => {
+      stubParsedTransaction({ keySignatures: attackerKeySignatures });
+      await assert.rejects(
+        coin.verifyTransaction({
+          txParams: {},
+          txPrebuild: {},
+          wallet: stubWallet,
+          verification: {},
+        }),
+        /secondary public key signatures invalid/
+      );
+    });
+
+    it('should fail when the user public key cannot be verified for server-obtained keychains', async () => {
+      // user pub substituted; signatures self-consistent with the substituted key
+      stubParsedTransaction({
+        keychains: {
+          user: { pub: otherKeychain.pub },
+          backup: walletBackupKeychain,
+          bitgo: walletBitgoKeychain,
+        },
+        keySignatures: attackerKeySignatures,
+      });
+      await assert.rejects(
+        coin.verifyTransaction({
+          txParams: {},
+          txPrebuild: {},
+          wallet: stubWallet,
+          verification: {},
+        }),
+        /failed to verify user public key against the wallet user key/
+      );
+    });
+
+    it('should skip keychain anchoring when allowUnsignedKeys is set', async () => {
+      stubParsedTransaction({});
+      await assert.rejects(
+        coin.verifyTransaction({
+          txParams: {},
+          txPrebuild: {},
+          wallet: stubWallet,
+          verification: { allowUnsignedKeys: true },
+        }),
+        /txPrebuild\.txHex not set/
+      );
+    });
+
+    it('should accept caller-supplied keychains without wallet keySignatures', async () => {
+      stubParsedTransaction({});
+      await assert.rejects(
+        coin.verifyTransaction({
+          txParams: {},
+          txPrebuild: {},
+          wallet: stubWallet,
+          verification: { keychains: walletKeychains },
+        }),
+        /txPrebuild\.txHex not set/
+      );
+    });
+
+    it('should reject wallet keySignatures that do not match the caller-pinned keychains', async () => {
+      stubParsedTransaction({ keySignatures: attackerKeySignatures });
+      await assert.rejects(
+        coin.verifyTransaction({
+          txParams: {},
+          txPrebuild: {},
+          wallet: stubWallet,
+          verification: { keychains: walletKeychains },
+        }),
+        /secondary public key signatures invalid/
+      );
+    });
+
+    it('should accept wallet keySignatures that match the caller-pinned keychains', async () => {
+      stubParsedTransaction({ keySignatures: walletKeySignatures });
+      await assert.rejects(
+        coin.verifyTransaction({
+          txParams: {},
+          txPrebuild: {},
+          wallet: stubWallet,
+          verification: { keychains: walletKeychains },
+        }),
+        /txPrebuild\.txHex not set/
+      );
+    });
+
+    it('should reject non-boolean allowUnsignedKeys', async () => {
+      stubParsedTransaction({});
+      await assert.rejects(
+        coin.verifyTransaction({
+          txParams: {},
+          txPrebuild: {},
+          wallet: stubWallet,
+          verification: { allowUnsignedKeys: 'yes' as unknown as boolean }, // deliberately wrong type: exercises the runtime guard
+        }),
+        /verification.allowUnsignedKeys must be a boolean/
+      );
+    });
+
+    it('should still require user public key verification for custom change with allowUnsignedKeys', async () => {
+      stubParsedTransaction({
+        keySignatures: walletKeySignatures,
+        needsCustomChangeKeySignatureVerification: true,
+      });
+      await assert.rejects(
+        coin.verifyTransaction({
+          txParams: {},
+          txPrebuild: {},
+          wallet: stubWallet,
+          verification: { allowUnsignedKeys: true },
+        }),
+        /transaction requires verification of user public key, but it was unable to be verified/
+      );
+    });
+
+    it('should fail to verify the user public key when offline without a user private key', async () => {
+      await assert.rejects(
+        verifyUserPublicKey(defaultBitGo, {
+          userKeychain: { pub: keychainsBase58[0].pub },
+          disableNetworking: true,
+          txParams: {},
+        }),
+        /user private key unavailable for verification/
+      );
+    });
+  });
+
   it('should not allow more than 150 basis points of implicit external outputs (for paygo outputs)', async () => {
     const coinMock = sinon.stub(coin, 'parseTransaction').resolves({
       keychains: {} as any,
@@ -199,6 +399,7 @@ describe('Verify Transaction', function () {
         },
         txPrebuild: {},
         wallet: unsignedSendingWallet as any,
+        verification: { allowUnsignedKeys: true },
       }),
       /prebuild attempts to spend to unintended external recipients/
     );
@@ -228,6 +429,7 @@ describe('Verify Transaction', function () {
         txHex: '00',
       },
       wallet: unsignedSendingWallet as any,
+      verification: { allowUnsignedKeys: true },
     });
 
     assert.strictEqual(result, true);
@@ -260,6 +462,7 @@ describe('Verify Transaction', function () {
         wallet: unsignedSendingWallet as any,
         verification: {
           allowPaygoOutput: false,
+          allowUnsignedKeys: true,
         },
       }),
       /prebuild attempts to spend to unintended external recipients/
@@ -290,7 +493,7 @@ describe('Verify Transaction', function () {
         txHex: '00',
       },
       wallet: unsignedSendingWallet as any,
-      verification: {},
+      verification: { allowUnsignedKeys: true },
     });
 
     assert.strictEqual(result, true);
@@ -332,7 +535,7 @@ describe('Verify Transaction', function () {
         txHex: '00',
       },
       wallet: unsignedSendingWallet as any,
-      verification: {},
+      verification: { allowUnsignedKeys: true },
     });
 
     assert.strictEqual(result, true);
@@ -370,7 +573,7 @@ describe('Verify Transaction', function () {
           txHex: '00',
         },
         wallet: unsignedSendingWallet as any,
-        verification: {},
+        verification: { allowUnsignedKeys: true },
       }),
       /bridging output amount \(50000\) does not match intended bridge amount \(22000\)/
     );
@@ -407,7 +610,7 @@ describe('Verify Transaction', function () {
           txHex: '00',
         },
         wallet: unsignedSendingWallet as any,
-        verification: {},
+        verification: { allowUnsignedKeys: true },
       }),
       /bridging transaction is missing bridgingParams.sbtc.amount/
     );
@@ -445,7 +648,7 @@ describe('Verify Transaction', function () {
           txHex: '00',
         },
         wallet: unsignedSendingWallet as any,
-        verification: {},
+        verification: { allowUnsignedKeys: true },
       }),
       /prebuild attempts to spend to unintended external recipients/
     );
@@ -473,7 +676,7 @@ describe('Verify Transaction', function () {
           txParams: { walletPassphrase: passphrase, qr: true },
           txPrebuild: {},
           wallet: unsignedSendingWallet as any,
-          verification: {},
+          verification: { allowUnsignedKeys: true },
         }),
         /quantum-resistant sweep transactions must only contain wallet-internal outputs/
       );
@@ -500,7 +703,7 @@ describe('Verify Transaction', function () {
           txParams: { walletPassphrase: passphrase, qr: true },
           txPrebuild: {},
           wallet: unsignedSendingWallet as any,
-          verification: {},
+          verification: { allowUnsignedKeys: true },
         }),
         /quantum-resistant sweep transactions must only contain wallet-internal outputs/
       );
@@ -526,7 +729,7 @@ describe('Verify Transaction', function () {
         txParams: { walletPassphrase: passphrase, qr: true },
         txPrebuild: {},
         wallet: unsignedSendingWallet as any,
-        verification: {},
+        verification: { allowUnsignedKeys: true },
       });
 
       assert.strictEqual(result, true);
@@ -552,7 +755,7 @@ describe('Verify Transaction', function () {
         txParams: { walletPassphrase: passphrase },
         txPrebuild: { txHex: '00' },
         wallet: unsignedSendingWallet as any,
-        verification: {},
+        verification: { allowUnsignedKeys: true },
       });
 
       assert.strictEqual(result, true);
@@ -596,7 +799,7 @@ describe('Verify Transaction', function () {
         txHex: '00',
       },
       wallet: unsignedSendingWallet as any,
-      verification: {},
+      verification: { allowUnsignedKeys: true },
     });
 
     assert.strictEqual(result, true);

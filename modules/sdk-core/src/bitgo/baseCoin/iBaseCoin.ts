@@ -303,6 +303,19 @@ export interface VerificationOptions {
     backup?: Keychain;
     bitgo?: Keychain;
   };
+  /**
+   * User-key signatures over the backup and bitgo extended public keys, in the same format as the
+   * wallet payload's `keySignatures`. Takes precedence over the wallet payload when provided.
+   * Supply together with `keychains` to pin a key triple offline (WCN-2114).
+   */
+  keySignatures?: { backupPub: string; bitgoPub: string };
+  /**
+   * Explicitly accept key material that cannot be anchored to the wallet's user private key:
+   * verification proceeds even when `keySignatures` are missing or the user public key cannot be
+   * verified against the user private key. Intended for wallets whose keys are pinned by other
+   * means (cold or external-signer wallets).
+   */
+  allowUnsignedKeys?: boolean;
   addresses?: { [address: string]: AddressVerificationData };
   allowPaygoOutput?: boolean;
   considerMigratedFromAddressInternal?: boolean;

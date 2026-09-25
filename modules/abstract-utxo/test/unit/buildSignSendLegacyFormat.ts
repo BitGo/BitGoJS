@@ -3,7 +3,7 @@ import * as assert from 'assert';
 import * as utxolib from '@bitgo/utxo-lib';
 import { hasPsbtMagic } from '@bitgo/wasm-utxo';
 import nock = require('nock');
-import { common, HalfSignedUtxoTransaction } from '@bitgo/sdk-core';
+import { common, HalfSignedUtxoTransaction, Wallet } from '@bitgo/sdk-core';
 import { getSeed } from '@bitgo/sdk-test';
 
 import {
@@ -33,11 +33,7 @@ const keyDocumentObjects = rootWalletKeys.triple.map((bip32, keyIdx) => ({
 describe('prebuildAndSign-returnLegacyFormat', function () {
   const coin = getMinUtxoCoins().find((c) => c.getChain() === 'btc')!;
   const inputScripts = getScriptTypes(coin, 'legacy');
-  const wallet = getUtxoWallet(coin, {
-    coinSpecific: { addressVersion: 'base58' },
-    keys: keyDocumentObjects.map((k) => k.id),
-    id: 'walletId',
-  });
+  let wallet: Wallet;
   const bgUrl = common.Environments[defaultBitGo.getEnv()].uri;
   let prebuild: utxolib.bitgo.UtxoPsbt;
   let recipient: { address: string; amount: string };
@@ -49,6 +45,17 @@ describe('prebuildAndSign-returnLegacyFormat', function () {
         doc.encryptedPrv = await encryptKeychain(walletPassphrase, keychainsBase58[keyIdx]);
       })
     );
+    // user-key signatures over the backup/bitgo xpubs, as stored on a real wallet payload (WCN-2114)
+    const [userKeychain, backupKeychain, bitgoKeychain] = keychainsBase58;
+    wallet = getUtxoWallet(coin, {
+      coinSpecific: { addressVersion: 'base58' },
+      keys: keyDocumentObjects.map((k) => k.id),
+      id: 'walletId',
+      keySignatures: {
+        backupPub: (await coin.signMessage(userKeychain, backupKeychain.pub)).toString('hex'),
+        bitgoPub: (await coin.signMessage(userKeychain, bitgoKeychain.pub)).toString('hex'),
+      },
+    });
     const outputAmount = BigInt(inputScripts.length) * BigInt(1e8) - fee;
     const outputScriptType: utxolib.bitgo.outputScripts.ScriptType = 'p2sh';
     const outputChain = utxolib.bitgo.getExternalChainCode(outputScriptType);
