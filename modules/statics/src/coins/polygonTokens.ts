@@ -1467,6 +1467,15 @@ export const polygonTokens = [
     POLYGON_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   polygonErc20(
+    '54ba0096-83be-4336-860b-54c92bb8777b',
+    'polygon:lsrc0',
+    'The Lighter Side of RC CRT',
+    18,
+    '0x4e6c14d8debd133e39a2460b4afa7301b74d8906',
+    UnderlyingAsset['polygon:lsrc0'],
+    POLYGON_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  polygonErc20(
     'bcfc2aaf-0010-4281-bbf4-c8f9fa49f8e1',
     'polygon:ltm0',
     "Let's Talk Money CRT",
@@ -1491,6 +1500,15 @@ export const polygonTokens = [
     18,
     '0x438cd816a49f7a9b9de67f9f70fda3f9e1ad42c9',
     UnderlyingAsset['polygon:mrhp0'],
+    POLYGON_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  polygonErc20(
+    'd2aa8626-f478-4dd7-9596-ac7a214b554f',
+    'polygon:nazk0',
+    'Naziyah Kahliya CRT',
+    18,
+    '0x7b86989ec89ff634d58b733aba811fe57f159c1f',
+    UnderlyingAsset['polygon:nazk0'],
     POLYGON_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   polygonErc20(

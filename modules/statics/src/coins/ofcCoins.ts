@@ -4506,6 +4506,13 @@ export const ofcCoins = [
     UnderlyingAsset['polygon:jpe0']
   ),
   ofcPolygonErc20(
+    '656352c9-dcca-4bd5-b8ee-ee768741bf84',
+    'ofcpolygon:lsrc0',
+    'The Lighter Side of RC CRT',
+    18,
+    UnderlyingAsset['polygon:lsrc0']
+  ),
+  ofcPolygonErc20(
     '558ab8b0-827b-4bfd-9f7b-2f7730a62cb9',
     'ofcpolygon:ltm0',
     "Let's Talk Money CRT",
@@ -4525,6 +4532,13 @@ export const ofcCoins = [
     'Mr. Hand Pay CRT',
     18,
     UnderlyingAsset['polygon:mrhp0']
+  ),
+  ofcPolygonErc20(
+    '63d2afea-8fe1-42be-a5b7-3a6b68fee8aa',
+    'ofcpolygon:nazk0',
+    'Naziyah Kahliya CRT',
+    18,
+    UnderlyingAsset['polygon:nazk0']
   ),
   ofcPolygonErc20(
     '3c0e03b3-9fb7-45a3-abd4-db1c8a4cad64',
