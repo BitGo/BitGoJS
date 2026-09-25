@@ -112,3 +112,23 @@ export function parsePox5LockupDescriptor(descriptor: Descriptor | ast.Descripto
     miniscriptNode,
   };
 }
+
+/** Serialize the canonical 2-of-3 staker subscript for a concrete PoX-5 descriptor. */
+export function getPox5UnlockBytes(descriptor: Descriptor): Buffer {
+  const parsed = parsePox5LockupDescriptor(descriptor);
+  if (!parsed) {
+    throw new Error('Descriptor is not a canonical PoX-5 lockup descriptor');
+  }
+  if (!parsed.stakerKeys) {
+    throw new Error('PoX-5 descriptor keys must be concrete before deriving unlockBytes');
+  }
+
+  const keyPushes = parsed.stakerKeys.map((key, index) => {
+    if (key.length !== 33 || (key[0] !== 0x02 && key[0] !== 0x03)) {
+      throw new Error(`PoX-5 staker key ${index} must be a 33-byte compressed public key`);
+    }
+    return Buffer.concat([Buffer.of(key.length), key]);
+  });
+
+  return Buffer.concat([Buffer.of(0x52), ...keyPushes, Buffer.of(0x53, 0xae)]);
+}
