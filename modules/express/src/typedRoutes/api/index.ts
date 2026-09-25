@@ -63,6 +63,7 @@ import { GetAccountResources } from './v2/accountResources';
 import { GetResourceDelegations } from './v2/resourceDelegations';
 import { PostDelegateResources } from './v2/delegateResources';
 import { PostUndelegateResources } from './v2/undelegateResources';
+import { PostWalletRetrofit } from './v2/walletRetrofit';
 
 // Too large types can cause the following error
 //
@@ -356,6 +357,12 @@ export const ExpressWalletManagementApiSpec = apiSpec({
   },
 });
 
+export const ExpressWalletRetrofitApiSpec = apiSpec({
+  'express.wallet.retrofit': {
+    post: PostWalletRetrofit,
+  },
+});
+
 export const ExpressV2CanonicalAddressApiSpec = apiSpec({
   'express.canonicaladdress': {
     post: PostCanonicalAddress,
@@ -426,9 +433,10 @@ export type ExpressApi = typeof ExpressPingApiSpec &
   typeof ExpressV2WalletSweepApiSpec &
   typeof ExpressV2WalletAccelerateTxApiSpec &
   typeof ExpressV2WalletAccountResourcesApiSpec &
-  typeof ExpressV2WalletResourceDelegationsApiSpec &
   typeof ExpressV2WalletDelegateResourcesApiSpec &
+  typeof ExpressV2WalletResourceDelegationsApiSpec &
   typeof ExpressV2WalletUndelegateResourcesApiSpec &
+  typeof ExpressWalletRetrofitApiSpec &
   typeof ExpressWalletManagementApiSpec;
 
 export const ExpressApi: ExpressApi = {
@@ -475,6 +483,7 @@ export const ExpressApi: ExpressApi = {
   ...ExpressV2WalletResourceDelegationsApiSpec,
   ...ExpressV2WalletDelegateResourcesApiSpec,
   ...ExpressV2WalletUndelegateResourcesApiSpec,
+  ...ExpressWalletRetrofitApiSpec,
   ...ExpressWalletManagementApiSpec,
 };
 
