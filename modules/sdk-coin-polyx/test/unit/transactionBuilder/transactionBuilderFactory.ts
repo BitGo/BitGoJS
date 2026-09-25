@@ -3,6 +3,7 @@ import should from 'should';
 import {
   TransactionBuilderFactory,
   TransferBuilder,
+  RegisterDidWithCDDBuilder,
   V8TransferBuilder,
   V8HexTransferBuilder,
   V8TokenTransferBuilder,
@@ -244,6 +245,26 @@ describe('Tao Transaction Builder Factory', function () {
         rebuiltTx.signablePayload.toString('hex'),
         originalSignable,
         'signablePayload must match: factory must forward live material to V8TokenTransferBuilder'
+      );
+    });
+  });
+
+  describe('getWalletInitializationBuilder', function () {
+    it('returns a RegisterDidWithCDDBuilder instance for tpolyx', function () {
+      const factory = new TransactionBuilderFactory(coins.get('tpolyx'));
+      const builder = factory.getWalletInitializationBuilder();
+      should.ok(
+        builder instanceof RegisterDidWithCDDBuilder,
+        'expected RegisterDidWithCDDBuilder from getWalletInitializationBuilder'
+      );
+    });
+
+    it('returns a RegisterDidWithCDDBuilder instance for polyx', function () {
+      const factory = new TransactionBuilderFactory(coins.get('polyx'));
+      const builder = factory.getWalletInitializationBuilder();
+      should.ok(
+        builder instanceof RegisterDidWithCDDBuilder,
+        'expected RegisterDidWithCDDBuilder from getWalletInitializationBuilder'
       );
     });
   });

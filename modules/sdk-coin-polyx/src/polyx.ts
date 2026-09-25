@@ -354,4 +354,9 @@ export class Polyx extends SubstrateCoin {
       },
     };
   }
+
+  /** @inheritDoc */
+  requiresWalletInitializationTransaction(): boolean {
+    return true;
+  }
 }
