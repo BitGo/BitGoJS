@@ -375,6 +375,7 @@ export interface VerifyKeySignaturesOptions {
 
 export interface VerifyUserPublicKeyOptions {
   userKeychain?: UtxoKeychain;
+  /** retained for API compatibility; verification failures are no longer suppressed when offline (WCN-2114) */
   disableNetworking: boolean;
   txParams: TransactionParams;
 }
@@ -631,6 +632,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
    * @param params.verification Object specifying some verification parameters
    * @param params.verification.disableNetworking Disallow fetching any data from the internet for verification purposes
    * @param params.verification.keychains Pass keychains manually rather than fetching them by id
+   * @param params.verification.keySignatures User-key signatures over the backup/bitgo xpubs; overrides the wallet payload (WCN-2114)
+   * @param params.verification.allowUnsignedKeys Accept key material that cannot be anchored to the wallet's user key (WCN-2114)
    * @param params.verification.addresses Address details to pass in for out-of-band verification
    * @returns {boolean} True if verification passes
    * @throws {TxIntentMismatchError} if transaction validation fails

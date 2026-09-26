@@ -224,6 +224,8 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[]): void {
       const res = (await wallet.prebuildAndSignTransaction({
         recipients: [recipient],
         prv: keychainsBase58[0].prv,
+        // keychain fixtures are public-key-only (cold/external-signer shape): skip key anchoring (WCN-2114)
+        verification: { allowUnsignedKeys: true },
       })) as HalfSignedUtxoTransaction;
 
       nocks.forEach((nock) => assert.ok(nock.isDone()));
@@ -254,6 +256,8 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[]): void {
         const res = (await wallet.prebuildAndSignTransaction({
           recipients: [recipient],
           prv: keychainsBase58[0].prv,
+          // keychain fixtures are public-key-only (cold/external-signer shape): skip key anchoring (WCN-2114)
+          verification: { allowUnsignedKeys: true },
           rbfTxIds,
           feeMultiplier,
         })) as HalfSignedUtxoTransaction;

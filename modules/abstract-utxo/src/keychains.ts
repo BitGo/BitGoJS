@@ -126,6 +126,12 @@ export const KeySignatures = t.partial({
 
 export type KeySignatures = t.TypeOf<typeof KeySignatures>;
 
+/**
+ * Read the wallet payload's `keySignatures` — user-key signatures over the backup and bitgo
+ * extended public keys. Returns undefined when the payload omits them (e.g. cold or
+ * external-signer wallets). Absence is fatal during transaction verification unless the caller
+ * pins the keychains or explicitly opts out via `verification.allowUnsignedKeys` (WCN-2114).
+ */
 export function getKeySignatures(wallet: UtxoWallet): KeySignatures | undefined {
   if (t.partial({ keySignatures: KeySignatures }).is(wallet._wallet)) {
     return wallet._wallet.keySignatures;

@@ -83,19 +83,15 @@ export function verifyCustomChangeKeySignatures<TNumber extends number | bigint>
 
 function verifyUserPublicKeyWithPrv(
   userKeychain: NonNullable<VerifyUserPublicKeyOptions['userKeychain']>,
-  userPrv: string | undefined,
-  disableNetworking: boolean | undefined
+  userPrv: string | undefined
 ): boolean {
   const userPub = userKeychain.pub;
 
   if (!userPrv) {
-    const errorMessage = 'user private key unavailable for verification';
-    if (disableNetworking) {
-      console.log(errorMessage);
-      return false;
-    } else {
-      throw new Error(errorMessage);
-    }
+    // WCN-2114: a missing user private key must fail loudly — the previous soft-fail
+    // (console.log + return false for offline verification) let unverifiable user public
+    // keys through
+    throw new Error('user private key unavailable for verification');
   }
 
   const userPrivateKey = BIP32.fromBase58(userPrv);
@@ -114,7 +110,7 @@ function verifyUserPublicKeyWithPrv(
  * Supports both v1 (SJCL) and v2 (Argon2id) envelopes.
  */
 export async function verifyUserPublicKey(bitgo: BitGoBase, params: VerifyUserPublicKeyOptions): Promise<boolean> {
-  const { userKeychain, txParams, disableNetworking } = params;
+  const { userKeychain, txParams } = params;
   if (!userKeychain) {
     throw new Error('user keychain is required');
   }
@@ -124,5 +120,5 @@ export async function verifyUserPublicKey(bitgo: BitGoBase, params: VerifyUserPu
     userPrv = await decryptKeychainPrivateKey(bitgo, userKeychain, txParams.walletPassphrase);
   }
 
-  return verifyUserPublicKeyWithPrv(userKeychain, userPrv, disableNetworking);
+  return verifyUserPublicKeyWithPrv(userKeychain, userPrv);
 }

@@ -60,11 +60,18 @@ export async function verifyTransaction<TNumber extends bigint | number>(
   if (!_.isUndefined(verification.disableNetworking) && !_.isBoolean(verification.disableNetworking)) {
     throw new TypeError('verification.disableNetworking must be a boolean');
   }
+  if (!_.isUndefined(verification.allowUnsignedKeys) && !_.isBoolean(verification.allowUnsignedKeys)) {
+    throw new TypeError('verification.allowUnsignedKeys must be a boolean');
+  }
   const isPsbt = txPrebuild.txHex && hasPsbtMagic(stringToBufferTryFormats(txPrebuild.txHex, ['hex', 'base64']));
   if (isPsbt && txPrebuild.txInfo?.unspents) {
     throw new Error('should not have unspents in txInfo for psbt');
   }
   const disableNetworking = !!verification.disableNetworking;
+  const allowUnsignedKeys = verification.allowUnsignedKeys === true;
+  // keychains pinned by the caller are their own trust anchor and don't need to be re-anchored
+  // to the wallet's user key (WCN-2114)
+  const callerSuppliedKeychains = !_.isUndefined(verification.keychains);
   const isBridging = txParams.type === 'bridging';
   const parsedTransaction: ParsedTransaction<TNumber> = await coin.parseTransaction<TNumber>({
     txParams,
@@ -76,22 +83,38 @@ export async function verifyTransaction<TNumber extends bigint | number>(
 
   const keychains = parsedTransaction.keychains;
 
-  // verify that the claimed user public key corresponds to the wallet's user private key
+  // verify that the claimed user public key corresponds to the wallet's user private key.
+  // this anchors the server-supplied user xpub to a client-held secret (WCN-2114) — without it,
+  // the fetched xpub triple is only ever checked against itself.
   let userPublicKeyVerified = false;
-  try {
-    // verify the user public key matches the private key - this will throw if there is no match
-    userPublicKeyVerified = await verifyUserPublicKey(bitgo, {
-      userKeychain: keychains.user,
-      disableNetworking,
-      txParams,
-    });
-  } catch (e) {
-    debug('failed to verify user public key!', e);
+  if (allowUnsignedKeys) {
+    debug('skipping user public key verification: verification.allowUnsignedKeys is set');
+  } else if (callerSuppliedKeychains && !parsedTransaction.needsCustomChangeKeySignatureVerification) {
+    // caller-pinned keychains are their own trust anchor; custom-change outputs still require
+    // the anchor below because the custom-change key set is always fetched from the platform
+    debug('skipping user public key verification: keychains were supplied by the caller');
+  } else {
+    try {
+      // verify the user public key matches the private key - this will throw if there is no match
+      userPublicKeyVerified = await verifyUserPublicKey(bitgo, {
+        userKeychain: keychains.user,
+        disableNetworking,
+        txParams,
+      });
+    } catch (e) {
+      debug('failed to verify user public key!', e);
+    }
+    if (!userPublicKeyVerified && !parsedTransaction.needsCustomChangeKeySignatureVerification) {
+      // custom-change transactions surface this failure via the dedicated check below
+      throwTxMismatch('failed to verify user public key against the wallet user key');
+    }
   }
 
-  // let's verify these keychains
+  // verify the user-key signatures over the backup and bitgo keys, anchoring the fetched xpub triple
   const keySignatures = parsedTransaction.keySignatures;
-  if (!_.isEmpty(keySignatures)) {
+  if (allowUnsignedKeys) {
+    debug('skipping key signature verification: verification.allowUnsignedKeys is set');
+  } else if (!_.isEmpty(keySignatures)) {
     const verify = (key, pub) => {
       if (!keychains.user || !keychains.user.pub) {
         throwTxMismatch('missing user keychain');
@@ -105,13 +128,15 @@ export async function verifyTransaction<TNumber extends bigint | number>(
     const isBackupKeySignatureValid = verify(keychains.backup, keySignatures.backupPub);
     const isBitgoKeySignatureValid = verify(keychains.bitgo, keySignatures.bitgoPub);
     if (!isBackupKeySignatureValid || !isBitgoKeySignatureValid) {
-      throw new Error('secondary public key signatures invalid');
+      throwTxMismatch('secondary public key signatures invalid');
     }
     debug('successfully verified backup and bitgo key signatures');
-  } else if (!disableNetworking) {
-    // these keys were obtained online and their signatures were not verified
-    // this could be dangerous
-    console.log('unsigned keys obtained online are being used for address verification');
+  } else if (callerSuppliedKeychains) {
+    debug('wallet keySignatures missing; keychains were supplied by the caller');
+  } else {
+    // these keys were obtained online and cannot be tied back to the wallet's user key,
+    // so the platform could have substituted any of them (WCN-2114)
+    throwTxMismatch('wallet keySignatures missing; cannot verify server-supplied keychains');
   }
 
   if (parsedTransaction.needsCustomChangeKeySignatureVerification) {

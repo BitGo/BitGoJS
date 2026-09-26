@@ -304,7 +304,7 @@ export async function parseTransaction<TNumber extends bigint | number>(
 
   return {
     keychains,
-    keySignatures: getKeySignatures(wallet) ?? {},
+    keySignatures: verification.keySignatures ?? getKeySignatures(wallet) ?? {},
     outputs: allOutputDetails,
     missingOutputs: toOutputs(missingOutputs),
     explicitExternalOutputs: toOutputs(explicitExternalOutputs),
