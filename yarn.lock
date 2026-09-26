@@ -1052,10 +1052,10 @@
   resolved "https://registry.npmjs.org/@bitgo/wasm-ton/-/wasm-ton-1.1.1.tgz"
   integrity sha512-Y4x2V2ZcYWlmx42v7dlrKDtT2DuUt8smk8E98mh7RhpiifJhLk2v5RmXDwBl0A3v9TzUOU6qMOnSS/iZ8Pq52w==
 
-"@bitgo/wasm-utxo@^5.3.0":
-  version "5.3.0"
-  resolved "https://registry.npmjs.org/@bitgo/wasm-utxo/-/wasm-utxo-5.3.0.tgz#fddd2f4bcabacc3a5c20fad3c169da9d9a67b3d4"
-  integrity sha512-JEsVbiTMNvOvhOwAYjRRMXM+fz8O2lduPKjviRetLhXh1ZS+M0c078Yy2xoW2A0KyBis/9HtWuDK2UlgZyui8g==
+"@bitgo/wasm-utxo@^5.5.0":
+  version "5.5.0"
+  resolved "https://registry.npmjs.org/@bitgo/wasm-utxo/-/wasm-utxo-5.5.0.tgz#5049334c839c0a92e9c25a757a3b8e6c3a6d576a"
+  integrity sha512-E0zgc73pDhGANXFcALsH3RmMXf8yfprZJ1HmHcVciP82azOYa7JrAGdxKb69VeOIwXX8c8e7v9S7dqNUxfwEMg==
 
 "@brandonblack/musig@^0.0.1-alpha.0":
   version "0.0.1-alpha.1"
