@@ -915,7 +915,9 @@ export interface ITssUtils<KeyShare = EDDSA.KeyShare> {
     txRequest: string | TxRequest,
     externalSignerCommitmentGenerator: CustomCommitmentGeneratingFunction,
     externalSignerRShareGenerator: CustomRShareGeneratingFunction,
-    externalSignerGShareGenerator: CustomGShareGeneratingFunction
+    externalSignerGShareGenerator: CustomGShareGeneratingFunction,
+    reqId?: IRequestTracer,
+    txParams?: TransactionParams
   ): Promise<TxRequest>;
   signEcdsaTssUsingExternalSigner(
     params: TSSParams | TSSParamsForMessage,

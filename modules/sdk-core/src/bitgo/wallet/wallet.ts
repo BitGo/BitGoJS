@@ -27,6 +27,7 @@ import { getSharedSecret } from '../ecdh';
 import {
   AddressGenerationError,
   IncorrectPasswordError,
+  InvalidTransactionError,
   MethodNotImplementedError,
   MissingEncryptedKeychainError,
   NeedUserSignupError,
@@ -56,6 +57,7 @@ import { decodeWithCodec } from '../utils/codecs';
 import { postWithCodec } from '../utils/postWithCodec';
 import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
 import EddsaUtils, { EddsaMPCv2Utils } from '../utils/tss/eddsa';
+import { resolveEffectiveTxParams } from '../utils/tss/recipientUtils';
 import { RedpallasMPCv2Utils } from '../utils/tss/redpallas';
 import { getTxRequestApiVersion, validateTxRequestApiVersion } from '../utils/txRequest';
 import { buildParamKeys, BuildParams } from './BuildParams';
@@ -2386,18 +2388,41 @@ export class Wallet implements IWallet {
       params.txPrebuild = { txRequestId };
     }
 
-    // Verify transaction if verifyTxParams is provided
-    if (params.verifyTxParams && txPrebuild?.txHex) {
-      const verifyParams = {
-        txPrebuild: { ...txPrebuild },
-        txParams: params.verifyTxParams.txParams,
-        wallet: this as IWallet,
-        verification: params.verifyTxParams.verification,
-        reqId: params.reqId,
-        walletType: this.multisigType() as 'onchain' | 'tss',
-      };
+    // Verify transaction if verifyTxParams is provided (fail closed — never skip silently).
+    if (params.verifyTxParams) {
+      const prebuild = params.txPrebuild;
+      if (prebuild?.txHex) {
+        const verifyParams = {
+          txPrebuild: { ...prebuild },
+          txParams: params.verifyTxParams.txParams,
+          wallet: this,
+          verification: params.verifyTxParams.verification,
+          reqId: params.reqId,
+          walletType: this.multisigType(),
+        };
 
-      await this.baseCoin.verifyTransaction(verifyParams);
+        await this.baseCoin.verifyTransaction(verifyParams);
+      } else if (this.multisigType() === 'tss' && prebuild?.txRequestId && typeof prebuild.txRequestId === 'string') {
+        const txRequest = await getTxRequest(this.bitgo, this.id(), prebuild.txRequestId, params.reqId);
+        assert(txRequest.transactions || txRequest.unsignedTxs, 'Unable to find transactions in txRequest');
+        const unsignedTx =
+          txRequest.apiVersion === 'full' ? txRequest.transactions![0].unsignedTx : txRequest.unsignedTxs![0];
+        assert(unsignedTx.signableHex, 'Missing signableHex in unsignedTx');
+        await this.baseCoin.verifyTransaction({
+          txPrebuild: { txHex: unsignedTx.serializedTxHex ?? unsignedTx.signableHex },
+          txParams: resolveEffectiveTxParams(txRequest, params.verifyTxParams.txParams, this.baseCoin.getChain()),
+          wallet: this,
+          verification: params.verifyTxParams.verification,
+          reqId: params.reqId,
+          walletType: this.multisigType(),
+        });
+        // Sign the same resolved txRequest (avoid TOCTOU re-fetch before signing).
+        params.resolvedTxRequestForSigning = txRequest;
+      } else {
+        throw new InvalidTransactionError(
+          'verifyTxParams was provided but txPrebuild does not include txHex or a TSS txRequestId.'
+        );
+      }
     }
 
     if (
@@ -4985,13 +5010,16 @@ export class Wallet implements IWallet {
     const reqId = params.reqId || undefined;
     await this.tssUtils.deleteSignatureShares(txRequestId, reqId);
 
+    const txParams = params.verifyTxParams?.txParams ?? params.txPrebuild?.buildParams;
+
     try {
       return await this.tssUtils.signEddsaTssUsingExternalSigner(
         txRequestId,
         params.customCommitmentGeneratingFunction,
         params.customRShareGeneratingFunction,
         params.customGShareGeneratingFunction,
-        reqId
+        reqId,
+        txParams
       );
     } catch (e) {
       debug('failed to sign transaction %O', e);
@@ -5231,7 +5259,7 @@ export class Wallet implements IWallet {
       throw new Error('prv required to sign transactions with TSS');
     }
 
-    const txRequest: string | TxRequest = params.txPrebuild.txRequestId;
+    const txRequest: string | TxRequest = params.resolvedTxRequestForSigning ?? params.txPrebuild.txRequestId;
     const txParams: TransactionParams | undefined = params.txPrebuild.buildParams;
 
     try {
