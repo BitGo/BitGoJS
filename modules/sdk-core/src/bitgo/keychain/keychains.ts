@@ -115,13 +115,33 @@ export class Keychains implements IKeychains {
   async updatePassword(params: UpdatePasswordOptions): Promise<ChangedKeychains> {
     common.validateParams(params, ['oldPassword', 'newPassword'], []);
     const changedKeys: ChangedKeychains = {};
+    let total: number | undefined;
+    const notifyProgress = (status: 'updated' | 'skipped', currentKeychainId?: string) => {
+      if (!_.isFunction(params.progressCallback)) {
+        return;
+      }
+      try {
+        params.progressCallback({ status, currentKeychainId, total });
+      } catch (e) {
+        // ignore observer exceptions so a throwing callback never affects rotation results
+      }
+    };
+    const observationId = (key: Keychain): string | undefined =>
+      key.type === 'tss' || Keychains.isMultiUserKey(key) ? key.id : key.pub;
     let prevId;
     let keysLeft = true;
     while (keysLeft) {
       const result: ListKeychainsResult = await this.list({ limit: 500, prevId });
+      if (total === undefined && result.encryptedTotalCount !== undefined) {
+        total = result.encryptedTotalCount;
+      }
       for (const key of result.keys) {
         const oldEncryptedPrv = key.encryptedPrv;
         if (_.isUndefined(oldEncryptedPrv)) {
+          // Outside the progress unit (WCN-2084 option B): the denominator is
+          // `encryptedTotalCount` — records with no encryptedPrv are not counted
+          // by the backend and must not emit progress, or `completed` would
+          // overshoot `total` on any page containing placeholder records.
           continue;
         }
         try {
@@ -140,7 +160,12 @@ export class Keychains implements IKeychains {
                 : updatedKeychain.pub;
             if (changedKeyIdentifier) {
               changedKeys[changedKeyIdentifier] = updatedKeychain.encryptedPrv;
+              notifyProgress('updated', changedKeyIdentifier);
+            } else {
+              notifyProgress('skipped', observationId(key));
             }
+          } else {
+            notifyProgress('skipped', observationId(key));
           }
         } catch (e) {
           // A decrypt failure is usually not a wrong password — the keychain may be
@@ -152,6 +177,7 @@ export class Keychains implements IKeychains {
           ) {
             throw e;
           }
+          notifyProgress('skipped', observationId(key));
         }
       }
       if (result.nextBatchPrevId) {

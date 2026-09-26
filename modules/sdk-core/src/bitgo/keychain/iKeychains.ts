@@ -80,6 +80,8 @@ export interface ChangedKeychains {
 export interface ListKeychainsResult {
   keys: Keychain[];
   nextBatchPrevId?: string;
+  /** Count of this user's keychains with encrypted private key material set (WCN-2084 total-count support). */
+  encryptedTotalCount?: number;
 }
 
 export interface GetKeychainOptions {
@@ -94,6 +96,22 @@ export interface ListKeychainOptions {
   prevId?: string;
 }
 
+export type KeychainPasswordUpdateStatus = 'updated' | 'skipped';
+
+export interface KeychainPasswordUpdateProgress {
+  status: KeychainPasswordUpdateStatus;
+  currentKeychainId?: string;
+  /**
+   * Truthful total of keychains with encrypted user key material (`encryptedTotalCount`
+   * from the backend, WCN-2084). Records without an `encryptedPrv` are outside this
+   * unit and emit no progress event — the denominator must never be undershot or
+   * overshot by `completed`.
+   */
+  total?: number;
+}
+
+export type KeychainPasswordUpdateProgressCallback = (progress: KeychainPasswordUpdateProgress) => void;
+
 export interface UpdatePasswordOptions {
   oldPassword: string;
   newPassword: string;
@@ -106,6 +124,8 @@ export interface UpdatePasswordOptions {
   encryptionVersion?: EncryptionVersion;
   /** Reuse one password-derived session across all matching keychains. */
   encryptionSession?: IEncryptionSession;
+  /** Optional observer invoked once per nonfatal keychain outcome during password rotation. */
+  progressCallback?: KeychainPasswordUpdateProgressCallback;
 }
 
 export interface UpdateSingleKeychainPasswordOptions {
