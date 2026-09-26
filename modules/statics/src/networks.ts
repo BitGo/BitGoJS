@@ -202,6 +202,13 @@ export interface StacksNetwork extends AccountNetwork {
   readonly sendmanymemoContractAddress: string;
   readonly stakingContractAddress: string;
   readonly sbtcWithdrawalContractAddress: string;
+  /**
+   * Chain ID carried in the serialized transaction. Omitted for the stock Stacks mainnet/testnet
+   * deployments, whose chain ID is implied by the network type.
+   */
+  readonly chainId?: number;
+  /** Transaction version byte. Omitted for the stock Stacks mainnet/testnet deployments. */
+  readonly transactionVersion?: number;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -1356,6 +1363,27 @@ class StxTestnet extends Testnet implements StacksNetwork {
   sendmanymemoContractAddress = 'ST3F1X4QGV2SM8XD96X45M6RTQXKA1PZJZZCQAB4B';
   stakingContractAddress = 'ST000000000000000000002AMW42H';
   sbtcWithdrawalContractAddress = 'SN69P7RZRKK8ERQCCABHT2JWKB2S4DHH9H74231T';
+}
+
+/**
+ * Stacks Foundation `staking-testnet`: a PoX-5 testnet running on a private Bitcoin signet.
+ *
+ * It is a distinct Stacks network (chain ID 1280) that shares the public testnet transaction
+ * version and address versions, so a transaction built for the public testnet is rejected by its
+ * node with `invalid chain ID 2147483648 (expected 1280)`. The chain ID therefore travels in
+ * statics rather than being implied by the network type.
+ */
+class StxStakingTestnet extends Testnet implements StacksNetwork {
+  name = 'StxStakingTestnet';
+  family = CoinFamily.STX;
+  explorerUrl = 'https://explorer.hiro.so/txid/?chain=testnet';
+  // Boot address on this network; the PoX-5 contract is `<boot>.pox-5` (verified via /v2/pox).
+  stakingContractAddress = 'ST000000000000000000002AMW42H';
+  // Verified deployed on staking-testnet on 2026-09-26. `send-many-memo` is NOT deployed there.
+  sbtcWithdrawalContractAddress = 'SN3R84XZYA63QS28932XQF3G1J8R9PC3W76P9CSQS';
+  sendmanymemoContractAddress = '';
+  chainId = 1280;
+  transactionVersion = 0x80;
 }
 
 class SUSD extends Mainnet implements AccountNetwork {
@@ -3177,6 +3205,7 @@ export const Networks = {
     sui: Object.freeze(new SuiTestnet()),
     near: Object.freeze(new NearTestnet()),
     stx: Object.freeze(new StxTestnet()),
+    stxStakingTestnet: Object.freeze(new StxStakingTestnet()),
     stt: Object.freeze(new SomniaTestnet()),
     scrolleth: Object.freeze(new ScrollEthTestnet()),
     soneium: Object.freeze(new SoneiumTestnet()),
