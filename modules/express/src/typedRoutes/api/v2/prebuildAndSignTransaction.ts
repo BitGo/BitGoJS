@@ -164,6 +164,19 @@ export const SolVersionedTransactionData = t.partial({
   messageHeader: SolMessageHeader,
   /** Recent blockhash */
   recentBlockhash: t.string,
+  /** Transaction version. Absent or 0 = v0 (existing), 1 = v1 */
+  version: t.union([t.literal(0), t.literal(1)]),
+  /** V1 transaction config. Required when version === 1 */
+  transactionConfig: t.partial({
+    /** Compute unit limit, or null if unset */
+    computeUnitLimit: t.union([t.number, t.null]),
+    /** Requested heap size, or null if unset */
+    heapSize: t.union([t.number, t.null]),
+    /** Loaded accounts data size limit, or null if unset */
+    loadedAccountsDataSizeLimit: t.union([t.number, t.null]),
+    /** Priority fee in total lamports, or null if unset */
+    priorityFee: t.union([t.number, t.null]),
+  }),
 });
 
 /**
