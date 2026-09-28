@@ -226,6 +226,8 @@ export interface SolConsolidationRecoveryOptions extends MPCConsolidationRecover
 
 const HEX_REGEX = /^[0-9a-fA-F]+$/;
 const BLIND_SIGNING_TX_TYPES_TO_CHECK = { enabletoken: 'AssociatedTokenAccountInitialization' };
+// Maximum wire size of a v1 (SIMD-0296/0385) transaction in bytes.
+const V1_TRANSACTION_SIZE_LIMIT = 4096;
 
 /**
  * Get amount string corrected for architecture-specific endianness issues.
