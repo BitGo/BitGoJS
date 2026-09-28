@@ -340,6 +340,13 @@ export const AccelerateTxRequestBody = {
         numReadonlyUnsignedAccounts: t.number,
       }),
       recentBlockhash: t.string,
+      version: t.union([t.literal(0), t.literal(1)]),
+      transactionConfig: t.partial({
+        computeUnitLimit: t.union([t.number, t.null]),
+        heapSize: t.union([t.number, t.null]),
+        loadedAccountsDataSizeLimit: t.union([t.number, t.null]),
+        priorityFee: t.union([t.number, t.null]),
+      }),
     })
   ),
 
