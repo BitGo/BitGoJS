@@ -3714,7 +3714,7 @@ export const solTokens = [
   tsolToken(
     '70f8706b-d4c8-49ac-a8ae-ea1c3c60249e',
     'tsol:stggospcx',
-    'Test SPCX goStock',
+    'Test SpaceX',
     9,
     'CKn9Tx1BjUozxmwZMBjeu9ZGSzehacCnCj3GyJmZJT1u',
     'CKn9Tx1BjUozxmwZMBjeu9ZGSzehacCnCj3GyJmZJT1u',
@@ -3725,7 +3725,7 @@ export const solTokens = [
   tsolToken(
     '44e9960a-e7ed-4ae5-8cc9-f16de5744866',
     'tsol:gospcx',
-    'Test SPCX goStock',
+    'Test SpaceX',
     9,
     'E8Z8jW31ajxxE1F4QW1Rh7aCnYqauvqCvXTRRBwhR4uY',
     'E8Z8jW31ajxxE1F4QW1Rh7aCnYqauvqCvXTRRBwhR4uY',
@@ -3736,7 +3736,7 @@ export const solTokens = [
   solToken(
     '83ec93bc-e142-4c32-874a-65f5b8974548',
     'sol:gospcx',
-    'SPCX goStock',
+    'SpaceX',
     9,
     '7UJQ8jX4awxTuceDqfqZ2MYWGTu9jU2uh6MbLBXgkLDT',
     '7UJQ8jX4awxTuceDqfqZ2MYWGTu9jU2uh6MbLBXgkLDT',
@@ -3747,7 +3747,7 @@ export const solTokens = [
   tsolToken(
     'ecfcbfc6-15f2-4b0b-8232-d8ba278b9e05',
     'tsol:goamzn',
-    'Test AMZN goStock',
+    'Test Amazon',
     9,
     '5Phkmora7ncX3qFySfoxfrGWn1HqH7xRnGeNbh3kBiCn',
     '5Phkmora7ncX3qFySfoxfrGWn1HqH7xRnGeNbh3kBiCn',
@@ -3758,7 +3758,7 @@ export const solTokens = [
   tsolToken(
     'bc3195d8-a86b-42d9-9093-13b73e224692',
     'tsol:stggoamzn',
-    'Test AMZN goStock',
+    'Test Amazon',
     9,
     '7v66dJQHBnzvCNjJdybb4UL3EkcbCoRM15rz9ET6Fob3',
     '7v66dJQHBnzvCNjJdybb4UL3EkcbCoRM15rz9ET6Fob3',
@@ -3769,7 +3769,7 @@ export const solTokens = [
   solToken(
     '503ad770-112e-4f3b-8a07-b82985f08c2b',
     'sol:goamzn',
-    'AMZN goStock',
+    'Amazon',
     9,
     '7xCxfZF1wovgpcBsXKFXA2U1TK5FDCaDEw7r5fEj3X5C',
     '7xCxfZF1wovgpcBsXKFXA2U1TK5FDCaDEw7r5fEj3X5C',
@@ -3780,7 +3780,7 @@ export const solTokens = [
   tsolToken(
     '7e7664a7-6c3c-4190-8396-acc8b8ba8d1e',
     'tsol:gobtgo',
-    'Test BTGO goStock',
+    'Test BitGo',
     9,
     'Eb4rNuoVxPMo28n6xmbhb1QLdXaXgyhaEwvJworKR1X2',
     'Eb4rNuoVxPMo28n6xmbhb1QLdXaXgyhaEwvJworKR1X2',
@@ -3791,7 +3791,7 @@ export const solTokens = [
   tsolToken(
     '6f1d755f-a367-4653-8c01-a56a2269f044',
     'tsol:stggobtgo',
-    'Test BTGO goStock',
+    'Test BitGo',
     9,
     'CQv1SE4kZLwe9Hc2x8B2q18dxyE9aFbMprqgRsoKKCwX',
     'CQv1SE4kZLwe9Hc2x8B2q18dxyE9aFbMprqgRsoKKCwX',
@@ -3802,7 +3802,7 @@ export const solTokens = [
   solToken(
     '205676a9-5fa6-434e-b696-97b6accda23d',
     'sol:gobtgo',
-    'BTGO goStock',
+    'BitGo',
     9,
     'EW2ExCfE1RFub6akDmfubL1muvX1SmMq4RbmMnyubCwi',
     'EW2ExCfE1RFub6akDmfubL1muvX1SmMq4RbmMnyubCwi',
@@ -3813,7 +3813,7 @@ export const solTokens = [
   tsolToken(
     '16e6e878-5af1-4e48-878e-dfa09dc6387f',
     'tsol:gogoogl',
-    'Test GOOGL goStock',
+    'Test Alphabet',
     9,
     'CbhUzLgRhZ4iSLi8S9Eo3mVWxkp2Z2xH557BvXVR5HQN',
     'CbhUzLgRhZ4iSLi8S9Eo3mVWxkp2Z2xH557BvXVR5HQN',
@@ -3824,7 +3824,7 @@ export const solTokens = [
   tsolToken(
     '2463d043-20bb-4ad2-b3dd-0ad6c0a2da29',
     'tsol:stggogoogl',
-    'Test GOOGL goStock',
+    'Test Alphabet',
     9,
     'HzojQqyv1AEGCwatZbHmAHkJU8rdQ2qTXNgG1Uw5byKj',
     'HzojQqyv1AEGCwatZbHmAHkJU8rdQ2qTXNgG1Uw5byKj',
@@ -3835,7 +3835,7 @@ export const solTokens = [
   solToken(
     '3090440e-c1fa-42b8-a70b-24fb480d4b6c',
     'sol:gogoogl',
-    'GOOGL goStock',
+    'Alphabet',
     9,
     'GGYL6secBGRBSQyfkABj4d7RcdMuuwTpmF94LJTs8ofh',
     'GGYL6secBGRBSQyfkABj4d7RcdMuuwTpmF94LJTs8ofh',
@@ -3846,7 +3846,7 @@ export const solTokens = [
   tsolToken(
     'f1ac3211-d483-47a2-b038-d670fa74ad45',
     'tsol:gometa',
-    'Test META goStock',
+    'Test Meta',
     9,
     'BTgDs9N7zeMj2HB3KNrjStSQVFkWd2ohy2KpdjxsojUf',
     'BTgDs9N7zeMj2HB3KNrjStSQVFkWd2ohy2KpdjxsojUf',
@@ -3857,7 +3857,7 @@ export const solTokens = [
   tsolToken(
     'e208b7c4-6860-4cfc-86a1-83c14093d471',
     'tsol:stggometa',
-    'Test META goStock',
+    'Test Meta',
     9,
     '8ZeCzwzPXgc7kiPxQCa839p6CxjAsZE59wntwr8yGg62',
     '8ZeCzwzPXgc7kiPxQCa839p6CxjAsZE59wntwr8yGg62',
@@ -3868,7 +3868,7 @@ export const solTokens = [
   solToken(
     '9ede2ad4-dc6c-462b-bdfb-f9e1eef574ea',
     'sol:gometa',
-    'META goStock',
+    'Meta',
     9,
     '2P63qfU3v7EF9dA11Mbi2bMT5RoUJUSHTN59qnWpnPTh',
     '2P63qfU3v7EF9dA11Mbi2bMT5RoUJUSHTN59qnWpnPTh',
@@ -3879,7 +3879,7 @@ export const solTokens = [
   tsolToken(
     '5b08a13e-80c8-4f76-8700-2748d4d5efff',
     'tsol:gomsft',
-    'Test MSFT goStock',
+    'Test Microsoft',
     9,
     '3MbtPeWB7xVD692Sj1sMkJQtydraxhduG4hUmgcVEpLE',
     '3MbtPeWB7xVD692Sj1sMkJQtydraxhduG4hUmgcVEpLE',
@@ -3890,7 +3890,7 @@ export const solTokens = [
   tsolToken(
     'bb920c51-dffa-4490-9167-1be275735418',
     'tsol:stggomsft',
-    'Test MSFT goStock',
+    'Test Microsoft',
     9,
     'EuRLSdQegQxvKaY6rejVVyBoVXGo2geff5FzkWrZYGE',
     'EuRLSdQegQxvKaY6rejVVyBoVXGo2geff5FzkWrZYGE',
@@ -3901,7 +3901,7 @@ export const solTokens = [
   solToken(
     'e9ae1c65-9928-4d25-8217-9287a1db1162',
     'sol:gomsft',
-    'MSFT goStock',
+    'Microsoft',
     9,
     '7ekwHTnCt4QvjKJopee7Qx5itghKQPSLqJvmvCdeJjry',
     '7ekwHTnCt4QvjKJopee7Qx5itghKQPSLqJvmvCdeJjry',
@@ -3912,7 +3912,7 @@ export const solTokens = [
   tsolToken(
     '7958385a-c764-4d51-9f79-01aa0effb0a3',
     'tsol:gonvda',
-    'Test NVDA goStock',
+    'Test NVIDIA',
     9,
     'DsUYtPf6WhBYBzzHuCfZBT4jbCT9GKYYAxR6AmSn31V8',
     'DsUYtPf6WhBYBzzHuCfZBT4jbCT9GKYYAxR6AmSn31V8',
@@ -3923,7 +3923,7 @@ export const solTokens = [
   tsolToken(
     '00ffa0b2-14d8-4024-95be-32c9d9099ac6',
     'tsol:stggonvda',
-    'Test NVDA goStock',
+    'Test NVIDIA',
     9,
     '6c1FqcFXXc2Uhrg3Nn3VYRdahntU9CPDfBmPNTiVffFG',
     '6c1FqcFXXc2Uhrg3Nn3VYRdahntU9CPDfBmPNTiVffFG',
@@ -3934,7 +3934,7 @@ export const solTokens = [
   solToken(
     'bd5d3392-9000-43a9-919b-d5251bb90ba5',
     'sol:gonvda',
-    'NVDA goStock',
+    'NVIDIA',
     9,
     '5kNLxs64GUX394XY5nAu61gLuMWJdGVF3kPF3xfuhbHz',
     '5kNLxs64GUX394XY5nAu61gLuMWJdGVF3kPF3xfuhbHz',
@@ -3945,7 +3945,7 @@ export const solTokens = [
   tsolToken(
     '988cd919-fe80-4c74-a4b4-890547f304ba',
     'tsol:gotsla',
-    'Test TSLA goStock',
+    'Test Tesla',
     9,
     'H13R3bR6RhYL9wNstd3X8qHFcbQBpucjEZydsdbuxE8Q',
     'H13R3bR6RhYL9wNstd3X8qHFcbQBpucjEZydsdbuxE8Q',
@@ -3956,7 +3956,7 @@ export const solTokens = [
   tsolToken(
     'f22f9e1e-f606-487c-98e2-50396c9675a5',
     'tsol:stggotsla',
-    'Test TSLA goStock',
+    'Test Tesla',
     9,
     'H2jKNJzk1xNtMTwo9kU8gjbvWcVxNxY8JacNfE1TpA6B',
     'H2jKNJzk1xNtMTwo9kU8gjbvWcVxNxY8JacNfE1TpA6B',
@@ -3967,7 +3967,7 @@ export const solTokens = [
   solToken(
     '714b1040-78b2-4748-ac5a-54b5d1333ae2',
     'sol:gotsla',
-    'TSLA goStock',
+    'Tesla',
     9,
     '9ibrz1Jf1X1yyj2yEq8f6uXPJgvquBbQRQSHUAbZoi8n',
     '9ibrz1Jf1X1yyj2yEq8f6uXPJgvquBbQRQSHUAbZoi8n',
