@@ -310,6 +310,14 @@ export interface PrebuildTransactionOptions {
     amount: string;
   };
   /**
+   * ERC-7984 unwrap (unshield) parameters (`type: 'unwrap'`).
+   * Passed through to WP as tokenName + amount on the intent.
+   */
+  unwrapParams?: {
+    tokenName: string;
+    amount: string;
+  };
+  /**
    * Parameters for executing DAML commands on Canton.
    */
   cantonCommandParams?: CantonCommandParams;
@@ -1006,6 +1014,13 @@ export interface SendManyOptions extends PrebuildAndSignTransactionOptions {
    * ERC-7984 wrap / wrapApprove parameters. WP builds approve/wrap calldata from these.
    */
   wrapParams?: {
+    tokenName: string;
+    amount: string;
+  };
+  /**
+   * ERC-7984 unwrap (unshield) parameters. WP builds unwrap calldata from these.
+   */
+  unwrapParams?: {
     tokenName: string;
     amount: string;
   };

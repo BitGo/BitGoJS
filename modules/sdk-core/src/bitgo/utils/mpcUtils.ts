@@ -226,6 +226,7 @@ export abstract class MpcUtils {
         'unwrap-native',
         'wrapApprove',
         'wrap',
+        'unwrap',
       ].includes(params.intentType)
     ) {
       assert(params.recipients, `'recipients' is a required parameter for ${params.intentType} intent`);
@@ -365,6 +366,24 @@ export abstract class MpcUtils {
             ...baseIntent,
             tokenName: params.wrapParams.tokenName,
             amount: params.wrapParams.amount,
+            feeOptions: params.feeOptions,
+            feeToken: params.feeToken,
+          };
+        }
+        case 'unwrap': {
+          assert(params.unwrapParams, `'unwrapParams' is required for ${params.intentType} intent`);
+          assert(
+            typeof params.unwrapParams.tokenName === 'string' && params.unwrapParams.tokenName.length > 0,
+            `'unwrapParams.tokenName' is required for ${params.intentType} intent`
+          );
+          assert(
+            typeof params.unwrapParams.amount === 'string' && /^[1-9]\d*$/.test(params.unwrapParams.amount),
+            `'unwrapParams.amount' must be a positive integer string for ${params.intentType} intent`
+          );
+          return {
+            ...baseIntent,
+            tokenName: params.unwrapParams.tokenName,
+            amount: params.unwrapParams.amount,
             feeOptions: params.feeOptions,
             feeToken: params.feeToken,
           };

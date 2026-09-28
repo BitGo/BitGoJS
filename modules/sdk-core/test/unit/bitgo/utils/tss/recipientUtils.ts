@@ -37,6 +37,7 @@ describe('recipientUtils', function () {
         'unwrap-native',
         'wrapApprove',
         'wrap',
+        'unwrap',
         'contractCall',
         // Staking — 'delegate' also covers SOL solDelegateIntent
         'delegate',
@@ -179,6 +180,21 @@ describe('recipientUtils', function () {
       const result = resolveEffectiveTxParams(txRequest, {});
 
       assert.strictEqual(result.type, 'wrap');
+      assert.strictEqual(result.recipients, undefined);
+    });
+
+    it('does not require recipients for an unwrap intent', function () {
+      const txRequest = makeTxRequest({
+        intent: {
+          intentType: 'unwrap',
+          tokenName: 'hteth:cusdt',
+          amount: '1000000',
+        },
+      });
+
+      const result = resolveEffectiveTxParams(txRequest, {});
+
+      assert.strictEqual(result.type, 'unwrap');
       assert.strictEqual(result.recipients, undefined);
     });
 
