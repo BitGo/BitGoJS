@@ -381,6 +381,12 @@ function handleV2VerifyAddress(req: ExpressApiRouteRequest<'express.verifycoinad
     };
   }
 
+  if (coin instanceof Coin.Trx) {
+    return {
+      isValid: coin.isValidAddress(req.decoded.address, { strictBase58: req.decoded.strictBase58 }),
+    };
+  }
+
   return {
     isValid: coin.isValidAddress(req.decoded.address),
   };

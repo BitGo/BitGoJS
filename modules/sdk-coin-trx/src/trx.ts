@@ -235,10 +235,19 @@ export class Trx extends BaseCoin {
   /**
    * Checks if this is a valid TRON address in any accepted representation:
    * base58 (T...), 41-prefixed hex, or 0x-prefixed EVM-style hex (COINS-1575).
+   *
+   * @param address - the address to validate
+   * @param opts - optional validation options
+   * @param opts.strictBase58 - when true, only the canonical Base58 form is accepted and
+   *   hex representations (0x-prefixed EVM-style or 41-prefixed) are rejected
    */
-  isValidAddress(address: string): boolean {
+  isValidAddress(address: string, opts?: { strictBase58?: boolean }): boolean {
     if (!address) {
       return false;
+    }
+
+    if (opts?.strictBase58) {
+      return Utils.isBase58Address(address);
     }
 
     return Utils.isBase58Address(address) || Utils.isHexAddress(address);

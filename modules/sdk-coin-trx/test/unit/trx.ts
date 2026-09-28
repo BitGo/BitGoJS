@@ -116,6 +116,27 @@ describe('TRON:', function () {
     assert.equal(basecoin.canonicalAddress('not-an-address'), 'not-an-address');
   });
 
+  it('should reject hex forms in strict Base58 mode', function () {
+    const base58 = 'TGai5uHgBcoLERrzDXMepqZB8Et7D8nV8K';
+    const hex41 = '414887974f42a789ef6d4dfc7ba28b1583219434b3';
+    const hex0x = '0x4887974f42a789ef6d4dfc7ba28b1583219434b3';
+
+    // default behavior unchanged: all three forms accepted
+    assert.equal(basecoin.isValidAddress(base58), true);
+    assert.equal(basecoin.isValidAddress(hex41), true);
+    assert.equal(basecoin.isValidAddress(hex0x), true);
+
+    // strictBase58: only canonical Base58 accepted
+    assert.equal(basecoin.isValidAddress(base58, { strictBase58: true }), true);
+    assert.equal(basecoin.isValidAddress(hex41, { strictBase58: true }), false);
+    assert.equal(basecoin.isValidAddress(hex0x, { strictBase58: true }), false);
+    assert.equal(basecoin.isValidAddress('', { strictBase58: true }), false);
+    assert.equal(basecoin.isValidAddress('TBChwKYNaTo4a4N68Me1qEiiKsRDspXqLLZ', { strictBase58: true }), false);
+
+    // explicit false keeps lenient behavior
+    assert.equal(basecoin.isValidAddress(hex0x, { strictBase58: false }), true);
+  });
+
   it('should throw if the params object is missing parameters', async function () {
     const explainParams = {
       feeInfo: { fee: 1 },
