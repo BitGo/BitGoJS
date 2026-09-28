@@ -19,11 +19,18 @@ import { decodeEd25519StrKeySecretSeed, encodeEd25519StrKeyPublicKey } from './e
 const MAX_BIP32_INDEX = 0x7fffffff;
 export const DERIVED_FROM_PARENT_WITH_HARDENED_PATH = /^m\/(\d+)'$/;
 
-type ChildKeyShape<K> = K extends 'bitgo' ? { pub: string } : { prv: string; pub: string };
+export type SafeChildKeyName = 'user' | 'backup' | 'bitgo';
+
+type ChildKeyShape<K extends SafeChildKeyName> = K extends 'bitgo' ? { pub: string } : { prv: string; pub: string };
+
 export type SafeChildTriplet = {
   index: number;
 } & {
-  [K in 'user' | 'backup' | 'bitgo']: ChildKeyShape<K>;
+  [K in SafeChildKeyName]: ChildKeyShape<K>;
+};
+
+export type SafeChildTripletPubs = {
+  [K in SafeChildKeyName]: { pub: string };
 };
 
 export function parseSafeDerivationIndex(index: string | number): number {
