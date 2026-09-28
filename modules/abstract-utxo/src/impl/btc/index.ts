@@ -5,4 +5,5 @@ export * from './tbtcsig';
 export * from './tbtcbgsig';
 export * from './tbtcstx';
 export * from './tbtcstxprivate1';
+export * from './tbtcstxsignet';
 export * from './inscriptionBuilder';
