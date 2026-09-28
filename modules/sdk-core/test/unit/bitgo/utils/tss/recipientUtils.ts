@@ -25,6 +25,7 @@ describe('recipientUtils', function () {
         'bridgeFunds',
         'enableToken',
         'enabletoken',
+        'disableToken',
         'disabletoken',
         'customTx',
         'defiApprove',

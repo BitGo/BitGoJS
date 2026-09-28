@@ -26,6 +26,7 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
   'bridgeFunds',
   'enableToken',
   'enabletoken',
+  'disableToken',
   'disabletoken',
   'customTx',
   // DeFi vault operations — recipients/calldata built server-side from defiParams
