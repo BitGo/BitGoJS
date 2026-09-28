@@ -459,6 +459,20 @@ export interface GetUserPrvOptions {
   walletPassphrase?: string;
 }
 
+export interface VerifyKeyOptions {
+  /**
+   * User TSS signing material: the same string that would be passed as `prv` when signing a
+   * transaction. TSS EdDSA (MPCv1) wallets only.
+   */
+  prv: string;
+  reqId?: IRequestTracer;
+}
+
+export interface VerifyKeyResult {
+  /** Whether the signing material recombines to the wallet's commonKeychain */
+  match: boolean;
+}
+
 export interface WalletCoinSpecific {
   tokenFlushThresholds?: any;
   addressVersion?: number;
@@ -1319,6 +1333,7 @@ export interface IWallet {
   prebuildTransaction(params?: PrebuildTransactionOptions): Promise<PrebuildTransactionResult>;
   signTransaction(params?: WalletSignTransactionOptions): Promise<SignedTransaction>;
   getUserPrv(params?: GetUserPrvOptions): Promise<string>;
+  verifyKey(params: VerifyKeyOptions): Promise<VerifyKeyResult>;
   prebuildAndSignTransaction(params?: PrebuildAndSignTransactionOptions): Promise<SignedTransaction>;
   signAndSendTxRequest(params?: SignAndSendTxRequestOptions): Promise<SignedTransaction>;
   accelerateTransaction(params?: AccelerateTransactionOptions): Promise<any>;

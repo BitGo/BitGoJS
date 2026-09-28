@@ -138,6 +138,8 @@ import {
   UpdateWalletOptions,
   UpgradeEncryptionOptions,
   UpgradeEncryptionResult,
+  VerifyKeyOptions,
+  VerifyKeyResult,
   WalletCoinSpecific,
   WalletData,
   WalletEcdsaChallenges,
@@ -2719,6 +2721,41 @@ export class Wallet implements IWallet {
       userPrv = derivation.key;
     }
     return userPrv;
+  }
+
+  /**
+   * Verify that user-held TSS signing material belongs to this wallet.
+   *
+   * Recombines the shares locally and compares the result against the user keychain's
+   * `commonKeychain`, answering up front whether the material can sign for this wallet
+   * instead of discovering a mismatch only when a signature fails. Supported for TSS EdDSA
+   * (MPCv1) wallets; other wallet types are rejected.
+   *
+   * `walletPassphrase` is deliberately not accepted: decrypting the BitGo-held `encryptedPrv`
+   * and comparing it against the BitGo-held keychain is circular, and callers that hold their
+   * own key material do not need it.
+   *
+   * @param params.prv - user signing material, the same string that would be passed as `prv` when signing
+   * @param params.reqId - request tracer
+   * @returns whether the recombined key matches the wallet's commonKeychain
+   */
+  async verifyKey(params: VerifyKeyOptions): Promise<VerifyKeyResult> {
+    if (this.multisigType() !== 'tss' || !this.tssUtils?.supportsVerifyKey()) {
+      throw new Error('Key verification is not supported for this wallet type');
+    }
+    const userKeyId = this.keyIds()?.[KeyIndices.USER];
+    if (!userKeyId) {
+      throw new Error('wallet is missing a user keychain id');
+    }
+    const userKeychain = await this.baseCoin.keychains().get({
+      id: userKeyId,
+      reqId: params.reqId,
+    });
+    const { commonKeychain } = userKeychain;
+    if (!commonKeychain) {
+      throw new Error('wallet keychain is missing commonKeychain');
+    }
+    return { match: await this.tssUtils.verifyKey({ prv: params.prv, commonKeychain }) };
   }
 
   /**

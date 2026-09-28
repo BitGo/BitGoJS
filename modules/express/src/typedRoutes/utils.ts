@@ -1,6 +1,7 @@
 import * as t from 'io-ts';
 
 import { ValidationError } from '../errors';
+import { SENSITIVE_REQUEST_KEYS } from '../sensitiveRequestKeys';
 
 /**
  * Formats io-ts validation errors into clear, human-readable messages.
@@ -25,7 +26,15 @@ export function formatValidationErrors(errors: t.Errors): string {
     if (error.value === undefined) {
       messages.push(`Missing required field '${path}'`);
     } else {
-      const value = typeof error.value === 'object' ? JSON.stringify(error.value) : String(error.value);
+      // values on a sensitive path are redacted rather than interpolated: they can carry
+      // request material a caller must never get echoed back (e.g. key material sent with
+      // the wrong field type)
+      const isSensitive = path.split('.').some((segment) => SENSITIVE_REQUEST_KEYS.has(segment.toLowerCase()));
+      const value = isSensitive
+        ? '[REDACTED]'
+        : error.value !== null && typeof error.value === 'object'
+        ? JSON.stringify(error.value)
+        : String(error.value);
       messages.push(`Invalid value for '${path}': expected ${expected}, got '${value}'`);
     }
   }

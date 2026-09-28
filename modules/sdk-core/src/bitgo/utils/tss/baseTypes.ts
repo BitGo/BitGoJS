@@ -979,4 +979,6 @@ export interface ITssUtils<KeyShare = EDDSA.KeyShare> {
   recreateTxRequest(txRequestId: string, decryptedPrv: string, reqId: IRequestTracer): Promise<TxRequest>;
   getTxRequest(txRequestId: string): Promise<TxRequest>;
   supportedTxRequestVersions(): TxRequestVersion[];
+  supportsVerifyKey(): boolean;
+  verifyKey(params: { prv: string; commonKeychain: string }): Promise<boolean>;
 }

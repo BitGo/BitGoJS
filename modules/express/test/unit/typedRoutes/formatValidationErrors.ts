@@ -14,6 +14,27 @@ describe('formatValidationErrors', function () {
     assert.strictEqual(formatValidationErrors(errors), "Invalid value for 'field': expected string, got '123'.");
   });
 
+  it('should redact values on a sensitive path instead of interpolating them', function () {
+    const errors: t.Errors = [{ value: { uShare: { seed: 'deadbeef' } }, context: [{ key: 'prv', type: t.string }] }];
+    assert.strictEqual(formatValidationErrors(errors), "Invalid value for 'prv': expected string, got '[REDACTED]'.");
+  });
+
+  it('should redact a sensitive path regardless of value type', function () {
+    const errors: t.Errors = [{ value: 'hunter2', context: [{ key: 'walletPassphrase', type: t.number }] }];
+    assert.strictEqual(
+      formatValidationErrors(errors),
+      "Invalid value for 'walletPassphrase': expected number, got '[REDACTED]'."
+    );
+  });
+
+  it('should interpolate structured values on a non-sensitive path', function () {
+    const errors: t.Errors = [{ value: { invalid: 'object' }, context: [{ key: 'webauthnInfo', type: t.string }] }];
+    assert.strictEqual(
+      formatValidationErrors(errors),
+      'Invalid value for \'webauthnInfo\': expected string, got \'{"invalid":"object"}\'.'
+    );
+  });
+
   it('should format nested paths', function () {
     const errors: t.Errors = [
       {
