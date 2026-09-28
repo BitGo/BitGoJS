@@ -117,6 +117,23 @@ describe('BuildParams', function () {
     assert.ok(buildParamKeys.includes('wrapParams'), 'buildParamKeys must include wrapParams');
   });
 
+  it('should whitelist unwrapParams while stripping unknown params', function () {
+    const unwrapParams = { tokenName: 'hteth:cusdt', amount: '1000000' };
+    // unknownField is intentionally excess — the codec must strip it
+    assert.deepStrictEqual(
+      BuildParams.encode({
+        type: 'unwrap',
+        unwrapParams,
+        unknownField: 'should be stripped',
+      } as unknown as Parameters<typeof BuildParams.encode>[0]),
+      {
+        type: 'unwrap',
+        unwrapParams,
+      }
+    );
+    assert.ok(buildParamKeys.includes('unwrapParams'), 'buildParamKeys must include unwrapParams');
+  });
+
   it('AttestationPayload codec requires all four fields', function () {
     const valid = {
       signature: 'sig',

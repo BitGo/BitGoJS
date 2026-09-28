@@ -305,6 +305,12 @@ export interface WrapIntentParams {
   amount: string;
 }
 
+/** ERC-7984 unwrap (unshield) parameters (input container for unwrapParams). */
+export interface UnwrapIntentParams {
+  tokenName: string;
+  amount: string;
+}
+
 export interface IntentOptionsForMessage extends IntentOptionsBase {
   messageRaw: string;
   messageEncoded?: string;
@@ -385,6 +391,8 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
   defiParams?: DefiIntentParams;
   /** ERC-7984 wrap / wrapApprove fields flattened onto the WP intent. */
   wrapParams?: WrapIntentParams;
+  /** ERC-7984 unwrap (unshield) fields flattened onto the WP intent. */
+  unwrapParams?: UnwrapIntentParams;
   /** Canton party ID of the end investor to onboard (cantonEndInvestorOnboardingOffer intent). */
   endInvestorPartyId?: string;
   /** Reason for rejecting the onboarding offer (cantonEndInvestorOnboardingReject intent). */

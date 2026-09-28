@@ -3673,6 +3673,26 @@ describe('V2 Wallet:', function () {
         args[1]!.should.equal('full');
       });
 
+      it('should call prebuildTxWithIntent with the correct params for unwrap', async function () {
+        const unwrapParams = { tokenName: 'hteth:cusdt', amount: '1000000' };
+
+        const prebuildTxWithIntent = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequestFull);
+
+        await tssEthWallet.prebuildTransaction({
+          reqId,
+          type: 'unwrap',
+          unwrapParams,
+        });
+
+        sinon.assert.calledOnce(prebuildTxWithIntent);
+        const args = prebuildTxWithIntent.args[0];
+        args[0]!.should.not.have.property('recipients');
+        args[0]!.intentType.should.equal('unwrap');
+        args[0]!.unwrapParams!.should.deepEqual(unwrapParams);
+        args[1]!.should.equal('full');
+      });
+
       it('should call prebuildTxWithIntent with the correct params for eth fillNonce for receive address nonce filling tx', async function () {
         const feeOptions = {
           maxFeePerGas: 3000000000,

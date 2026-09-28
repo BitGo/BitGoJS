@@ -168,6 +168,8 @@ export const BuildParams = t.exact(
       defiParams: t.unknown,
       // ERC-7984 wrap / wrapApprove: { tokenName, amount } passthrough to WP
       wrapParams: t.unknown,
+      // ERC-7984 unwrap (unshield): { tokenName, amount } passthrough to WP
+      unwrapParams: t.unknown,
       // WebAuthn attestation for the withdrawal intent (WCN-539) — pass-through only.
       attestation: AttestationPayload,
     }),
