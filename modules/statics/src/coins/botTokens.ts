@@ -5293,4 +5293,22 @@ export const botTokens = [
     undefined,
     undefined
   ),
+  AccountCtors.erc20(
+    'cac9c294-e9e6-45e1-96d1-0d291ff6ccc9',
+    'eth:real1',
+    'REAL1',
+    0,
+    '0xae8f7f0d2f141557aef53592206d3458c73e5154',
+    'eth:real1' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-switzerland' as CoinFeature,
+      'custody-bitgo-sister-trust-one' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    undefined
+  ),
 ];

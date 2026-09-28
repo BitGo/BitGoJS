@@ -3751,4 +3751,18 @@ export const botOfcTokens = [
     undefined,
     'eth'
   ),
+  AccountCtors.ofcerc20(
+    '18690404-9ef6-4517-bba1-70467118acfe',
+    'ofceth:real1',
+    'REAL1',
+    0,
+    'eth:real1' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
 ];
