@@ -4523,6 +4523,19 @@ export class Wallet implements IWallet {
           params.preview
         );
         break;
+      case 'disabletoken':
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'disableToken',
+            recipients: params.recipients || [],
+            enableTokens: params.enableTokens,
+            memo: params.memo,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
       case 'closeAssociatedTokenAccount':
         txRequest = await this.tssUtils!.prebuildTxWithIntent(
           {
