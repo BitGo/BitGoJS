@@ -200,6 +200,12 @@ export abstract class MpcUtils {
       );
     }
 
+    if (params.intentType === 'finalizeUnwrap') {
+      // WP auto-creates finalizeUnwrap at READY_TO_FINALIZE (CHALO-1139); the client
+      // only signs the WP-created txnRequest — there is no client-side create path.
+      throw new Error('finalizeUnwrap intents are created by Wallet Platform; sign the WP-created txnRequest instead');
+    }
+
     if (
       ![
         'acceleration',

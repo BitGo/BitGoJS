@@ -38,6 +38,7 @@ describe('recipientUtils', function () {
         'wrapApprove',
         'wrap',
         'unwrap',
+        'finalizeUnwrap',
         'contractCall',
         // Staking — 'delegate' also covers SOL solDelegateIntent
         'delegate',
@@ -195,6 +196,22 @@ describe('recipientUtils', function () {
       const result = resolveEffectiveTxParams(txRequest, {});
 
       assert.strictEqual(result.type, 'unwrap');
+      assert.strictEqual(result.recipients, undefined);
+    });
+
+    it('does not require recipients for a WP-created finalizeUnwrap intent', function () {
+      // WP creates the finalize txnReq at READY_TO_FINALIZE (CHALO-1139); the client
+      // signs it — requestId/cleartextAmount/decryptionProof live in the calldata,
+      // verification decodes them from txHex, and no SDK-level recipients exist.
+      const txRequest = makeTxRequest({
+        intent: {
+          intentType: 'finalizeUnwrap',
+        },
+      });
+
+      const result = resolveEffectiveTxParams(txRequest, {});
+
+      assert.strictEqual(result.type, 'finalizeUnwrap');
       assert.strictEqual(result.recipients, undefined);
     });
 
