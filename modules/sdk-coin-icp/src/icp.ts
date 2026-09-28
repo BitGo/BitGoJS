@@ -133,10 +133,12 @@ export class Icp extends BaseCoin {
 
       const output = explainedTx.outputs[0];
       const recipient = txParams.recipients[0];
+      const recipientRootAddress =
+        typeof recipient.address === 'string' ? utils.validateMemoAndReturnRootAddress(recipient.address) : undefined;
       assert(
-        typeof recipient.address === 'string' &&
+        recipientRootAddress !== undefined &&
           typeof output.address === 'string' &&
-          output.address === recipient.address &&
+          output.address === recipientRootAddress &&
           BigNumber(output.amount).eq(BigNumber(recipient.amount)),
         'Tx outputs does not match with expected txParams recipients'
       );
