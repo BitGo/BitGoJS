@@ -1,3 +1,4 @@
+import type { KeyBulkUpdateResponse } from '@bitgo/public-types';
 import { EncryptionVersion, IEncryptionSession, IRequestTracer } from '../../api';
 import { KeychainsTriplet, KeyPair } from '../baseCoin';
 import { BitgoPubKeyType } from '../utils/tss/baseTypes';
@@ -92,6 +93,13 @@ export interface GetKeychainOptions {
 export interface ListKeychainOptions {
   limit?: number;
   prevId?: string;
+  /**
+   * When present, the listing is scoped to the keys of the safe with this public id instead of
+   * the caller's coin-wide key set. Requires safe admin; the response still carries only the
+   * caller's own `users[]` envelopes. The result set is coin-independent (the same safe yields
+   * the same keys for any coin's keychains()), so any coin may be used for the walk.
+   */
+  safeId?: string;
 }
 
 export interface UpdatePasswordOptions {
@@ -106,6 +114,23 @@ export interface UpdatePasswordOptions {
   encryptionVersion?: EncryptionVersion;
   /** Reuse one password-derived session across all matching keychains. */
   encryptionSession?: IEncryptionSession;
+  /**
+   * Rotate the passphrase of the safe with this public id instead of the caller's
+   * coin-wide key set. This flips the method's contract — the two modes are NOT interchangeable:
+   *
+   * - WITHOUT `safeId` (legacy): walks all of the caller's coin-scoped keychains, silently
+   *   skips keychains that fail to decrypt, returns a `changedKeys` map, and persists NOTHING —
+   *   persistence is the caller's job.
+   * - WITH `safeId` (safe mode): walks only the safe's keychains (requires safe admin),
+   *   decrypts every envelope up-front and fails FAST with `IncorrectPasswordError` on the
+   *   first undecryptable one (zero writes), re-encrypts with a single shared encryption
+   *   session, and persists everything ATOMICALLY server-side via the batch endpoint
+   *   (`PUT /api/v2/key/bulk`, per-key compare-and-swap against the old envelope). Resolves
+   *   with the batch response, not a `changedKeys` map. Note that in this mode the envelopes
+   *   are emitted at the shared session's version (`encryptionVersion`, default v2), not
+   *   per-keychain source versions.
+   */
+  safeId?: string;
 }
 
 export interface UpdateSingleKeychainPasswordOptions {
@@ -280,6 +305,7 @@ export enum KeyIndices {
 export interface IKeychains {
   get(params: GetKeychainOptions): Promise<Keychain>;
   list(params?: ListKeychainOptions): Promise<ListKeychainsResult>;
+  updatePassword(params: UpdatePasswordOptions & { safeId: string }): Promise<KeyBulkUpdateResponse>;
   updatePassword(params: UpdatePasswordOptions): Promise<ChangedKeychains>;
   updateSingleKeychainPassword(params?: UpdateSingleKeychainPasswordOptions): Promise<Keychain>;
   getEncryptionVersion(ciphertext: string): EncryptionVersion;
