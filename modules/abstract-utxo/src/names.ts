@@ -10,6 +10,7 @@ export const utxoCoinsTestnet = [
   'tbtcbgsig',
   'tbtcstx',
   'tbtcstxprivate1',
+  'tbtcstxsignet',
   'tbch',
   'tbcha',
   'tbsv',
@@ -28,7 +29,8 @@ export type UtxoCoinNameTestnet =
   | 'tbtc4'
   | 'tbtcbgsig'
   | 'tbtcstx'
-  | 'tbtcstxprivate1';
+  | 'tbtcstxprivate1'
+  | 'tbtcstxsignet';
 export type UtxoCoinName = UtxoCoinNameMainnet | UtxoCoinNameTestnet;
 
 export function toWasmUtxoCoinName(coinName: UtxoCoinName | WasmUtxoCoinName): WasmUtxoCoinName {
@@ -60,6 +62,7 @@ export function getMainnetCoinName(coinName: UtxoCoinName): UtxoCoinNameMainnet 
     case 'tbtcbgsig':
     case 'tbtcstx':
     case 'tbtcstxprivate1':
+    case 'tbtcstxsignet':
       return 'btc';
     default:
       return coinName.slice(1) as UtxoCoinNameMainnet;
@@ -94,6 +97,10 @@ function getBaseNameFromMainnet(coinName: UtxoCoinNameMainnet): string {
 export function getFullNameFromCoinName(coinName: UtxoCoinName): string {
   if (coinName === 'tbtcstxprivate1') {
     return 'Stacks Bitcoin (Private-1 Regtest)';
+  }
+
+  if (coinName === 'tbtcstxsignet') {
+    return 'Stacks Bitcoin (Signet)';
   }
 
   let prefix: string;

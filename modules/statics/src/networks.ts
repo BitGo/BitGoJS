@@ -554,6 +554,14 @@ class BitcoinStxPrivate1 extends BitcoinStx {
   // Stacks private-1 regtest uses testnet transaction semantics in utxo-lib.
 }
 
+class BitcoinStxSignet extends Testnet implements UtxoNetwork {
+  name = 'BitcoinStxSignet';
+  family = CoinFamily.BTC;
+  // Stacks staking-testnet runs on a private Bitcoin signet (BIP-325) with testnet address encoding.
+  utxolibName = 'bitcoinPublicSignet';
+  explorerUrl = undefined;
+}
+
 class BitcoinCash extends Mainnet implements UtxoNetwork {
   name = 'BitcoinCash';
   family = CoinFamily.BCH;
@@ -3085,6 +3093,7 @@ export const Networks = {
     bitcoinBitGoSignet: Object.freeze(new BitcoinBitGoSignet()),
     bitcoinStx: Object.freeze(new BitcoinStx()),
     bitcoinStxPrivate1: Object.freeze(new BitcoinStxPrivate1()),
+    bitcoinStxSignet: Object.freeze(new BitcoinStxSignet()),
     bitcoinCash: Object.freeze(new BitcoinCashTestnet()),
     bitcoinGold: Object.freeze(new BitcoinGoldTestnet()),
     bitcoinSV: Object.freeze(new BitcoinSVTestnet()),

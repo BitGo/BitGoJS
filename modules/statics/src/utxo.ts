@@ -300,6 +300,16 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     BTC_FEATURES
   ),
   utxo(
+    '086a53bc-052a-4ab4-b812-3f6f13d66c88',
+    'tbtcstxsignet',
+    // Stacks staking-testnet Bitcoin signet (BIP-325), represented by the public signet network in utxo-lib.
+    'Stacks Bitcoin (Signet)',
+    Networks.test.bitcoinStxSignet,
+    UnderlyingAsset.BTC,
+    BaseUnit.BTC,
+    BTC_FEATURES
+  ),
+  utxo(
     '8feb110d-0d68-44ce-ae97-b8c30ec870a9',
     'btg',
     'Bitcoin Gold',

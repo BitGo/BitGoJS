@@ -51,6 +51,7 @@ export const expectedColdFeatures = {
     'tbtcbgsig',
     'tbtcstx',
     'tbtcstxprivate1',
+    'tbtcstxsignet',
     'tcelo',
     'tcspr',
     'tdash',
