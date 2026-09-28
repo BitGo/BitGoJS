@@ -1,5 +1,9 @@
 import * as t from 'io-ts';
 import {
+  type EddsaMPCv2DeriveRound1Request,
+  type EddsaMPCv2DeriveRound1Response,
+  type EddsaMPCv2DeriveRound2Request,
+  type EddsaMPCv2DeriveRound2Response,
   EddsaMPCv2KeyGenRound1Request,
   EddsaMPCv2KeyGenRound1Response,
   EddsaMPCv2KeyGenRound2Request,
@@ -34,3 +38,8 @@ export const generateEddsaMPCv2KeyRequestResponse = t.union([
 
 export type GenerateEddsaMPCv2KeyRequestResponse = t.TypeOf<typeof generateEddsaMPCv2KeyRequestResponse> &
   EddsaMPCv2VrfKeyGenResponseFields;
+
+export type GenerateEddsaMPCv2DeriveKeyRequest = EddsaMPCv2DeriveRound1Request | EddsaMPCv2DeriveRound2Request;
+export type GenerateEddsaMPCv2DeriveKeyRequestResponse =
+  | EddsaMPCv2DeriveRound1Response
+  | EddsaMPCv2DeriveRound2Response;

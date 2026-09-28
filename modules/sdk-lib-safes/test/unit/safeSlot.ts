@@ -24,8 +24,9 @@ describe('safeSlot', function () {
       tssSlotForCoin('teth').should.equal('ecdsaMpc');
     });
 
-    it('rejects ed25519 TSS chains', function () {
-      (() => tssSlotForCoin('txlm')).should.throw(/ed25519 MPC safe wallet minting is not yet supported/);
+    it('maps ed25519 TSS chains to eddsaMpc', function () {
+      tssSlotForCoin('sol').should.equal('eddsaMpc');
+      tssSlotForCoin('tsol').should.equal('eddsaMpc');
     });
 
     it('rejects unknown chains', function () {
