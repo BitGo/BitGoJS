@@ -83,4 +83,15 @@ describe('populateIntent unwrap', function () {
       /unwrapParams.amount/
     );
   });
+
+  it('rejects client-side finalizeUnwrap creation (WP-created only, CHALO-1139)', function () {
+    assert.throws(
+      () =>
+        mpcUtils.populateIntent(coin, {
+          reqId,
+          intentType: 'finalizeUnwrap',
+        }),
+      /created by Wallet Platform/
+    );
+  });
 });
