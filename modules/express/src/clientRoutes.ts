@@ -30,6 +30,7 @@ import {
   IncorrectPasswordError,
   MPCType,
   multisigTypes,
+  Safes,
   ShareType,
   SignShare,
   SShare,
@@ -702,6 +703,50 @@ export async function handleV2GenerateWallet(req: ExpressApiRouteRequest<'expres
     return result.wallet.toJSON();
   }
   return { ...result, wallet: result.wallet.toJSON() };
+}
+
+/**
+ * One-shot Wallet Safe creation: initialize → local root-key ceremonies → finalize.
+ */
+export async function handleV2GenerateSafe(
+  req: ExpressApiRouteRequest<'express.v2.safes.generate', 'post'>
+): Promise<any> {
+  const safes = new Safes(req.bitgo, req.decoded.enterpriseId);
+  const safe = await safes.generateSafe({
+    label: req.decoded.label,
+    passphrase: req.decoded.passphrase,
+  });
+  return safe.toJSON();
+}
+
+/**
+ * Mint a hot child wallet from a Wallet Safe (onchain hardened derive or TSS ceremony).
+ */
+export async function handleV2GenerateSafeWallet(
+  req: ExpressApiRouteRequest<'express.v2.safes.wallet.generate', 'post'>
+) {
+  const safes = new Safes(req.bitgo, req.decoded.enterpriseId);
+  const safe = await safes.get({ id: req.decoded.safeId });
+  const wallet = await safe.createWallet({
+    coin: req.decoded.coin,
+    label: req.decoded.label,
+    passphrase: req.decoded.passphrase,
+    multisigType: req.decoded.multisigType,
+  });
+  return wallet.toJSON();
+}
+
+/**
+ * Phase-2-only Safe key ceremonies for an already-initialized safe.
+ */
+export async function handleV2GenerateSafeKeys(req: ExpressApiRouteRequest<'express.v2.safes.keys.generate', 'post'>) {
+  const safes = new Safes(req.bitgo, req.decoded.enterpriseId);
+  return safes.createSafeKeys({
+    label: '',
+    passphrase: req.decoded.passphrase,
+    safeId: req.decoded.safeId,
+    enabledRootSlots: req.decoded.enabledRootSlots,
+  });
 }
 
 /**
@@ -2102,6 +2147,14 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
 
   // generate wallet
   router.post('express.wallet.generate', [prepareBitGo(config), typedPromiseWrapper(handleV2GenerateWallet)]);
+
+  // generate wallet safe / mint a child wallet from a safe / phase-2 key ceremonies
+  router.post('express.v2.safes.generate', [prepareBitGo(config), typedPromiseWrapper(handleV2GenerateSafe)]);
+  router.post('express.v2.safes.wallet.generate', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleV2GenerateSafeWallet),
+  ]);
+  router.post('express.v2.safes.keys.generate', [prepareBitGo(config), typedPromiseWrapper(handleV2GenerateSafeKeys)]);
 
   router.put('express.wallet.update', [prepareBitGo(config), typedPromiseWrapper(handleWalletUpdate)]);
 

@@ -35,6 +35,9 @@ import { PutFanoutUnspents } from './v1/fanoutUnspents';
 import { PostOfcSignPayload } from './v2/ofcSignPayload';
 import { PostWalletRecoverToken } from './v2/walletRecoverToken';
 import { PostGenerateWallet } from './v2/generateWallet';
+import { PostGenerateSafe } from './v2/generateSafe';
+import { PostGenerateSafeWallet } from './v2/generateSafeWallet';
+import { PostGenerateSafeKeys } from './v2/generateSafeKeys';
 import { PostSignerMacaroon } from './v2/signerMacaroon';
 import { PostCoinSignTx } from './v2/coinSignTx';
 import { PostWalletSignTx } from './v2/walletSignTx';
@@ -356,6 +359,18 @@ export const ExpressWalletManagementApiSpec = apiSpec({
   },
 });
 
+export const ExpressSafesApiSpec = apiSpec({
+  'express.v2.safes.generate': {
+    post: PostGenerateSafe,
+  },
+  'express.v2.safes.wallet.generate': {
+    post: PostGenerateSafeWallet,
+  },
+  'express.v2.safes.keys.generate': {
+    post: PostGenerateSafeKeys,
+  },
+});
+
 export const ExpressV2CanonicalAddressApiSpec = apiSpec({
   'express.canonicaladdress': {
     post: PostCanonicalAddress,
@@ -429,7 +444,8 @@ export type ExpressApi = typeof ExpressPingApiSpec &
   typeof ExpressV2WalletResourceDelegationsApiSpec &
   typeof ExpressV2WalletDelegateResourcesApiSpec &
   typeof ExpressV2WalletUndelegateResourcesApiSpec &
-  typeof ExpressWalletManagementApiSpec;
+  typeof ExpressWalletManagementApiSpec &
+  typeof ExpressSafesApiSpec;
 
 export const ExpressApi: ExpressApi = {
   ...ExpressPingApiSpec,
@@ -476,6 +492,7 @@ export const ExpressApi: ExpressApi = {
   ...ExpressV2WalletDelegateResourcesApiSpec,
   ...ExpressV2WalletUndelegateResourcesApiSpec,
   ...ExpressWalletManagementApiSpec,
+  ...ExpressSafesApiSpec,
 };
 
 type ExtractDecoded<T> = T extends t.Type<any, infer O, any> ? O : never;
