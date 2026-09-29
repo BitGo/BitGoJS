@@ -6,7 +6,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'e141dac4-9eb6-477e-b3ca-753cca3dac0d',
     'ofchoodeth:amd',
-    'Advanced Micro Devices, Inc.',
+    'Advanced Micro Devices, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:amd'],
     undefined,
@@ -20,7 +20,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '869113be-3294-4bc5-8d96-a07ffe247b8c',
     'ofchoodeth:baba',
-    'Alibaba',
+    'Alibaba • Robinhood',
     18,
     UnderlyingAsset['hoodeth:baba'],
     undefined,
@@ -34,7 +34,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '1afcbe16-afd1-41ba-b666-a128cbd08d0b',
     'ofchoodeth:googl',
-    'Alphabet Inc.',
+    'Alphabet Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:googl'],
     undefined,
@@ -48,7 +48,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'ae54304e-e45c-4d55-a091-3e53650b043d',
     'ofchoodeth:amzn',
-    'Amazon.com, Inc.',
+    'Amazon.com, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:amzn'],
     undefined,
@@ -62,7 +62,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '728d1e53-f757-4072-88aa-bb2488192f5a',
     'ofchoodeth:aapl',
-    'Apple Inc.',
+    'Apple Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:aapl'],
     undefined,
@@ -76,7 +76,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '9788a78e-bea6-4783-972e-d9f5be7a155a',
     'ofchoodeth:apld',
-    'Applied Digital',
+    'Applied Digital • Robinhood',
     18,
     UnderlyingAsset['hoodeth:apld'],
     undefined,
@@ -90,7 +90,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '8711bd9d-31e7-4a89-be9e-c2d5b076ee0a',
     'ofchoodeth:amat',
-    'Applied Materials',
+    'Applied Materials • Robinhood',
     18,
     UnderlyingAsset['hoodeth:amat'],
     undefined,
@@ -104,7 +104,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '87cf010a-b97b-4372-b7f0-f26d28213969',
     'ofchoodeth:aaoi',
-    'Applied Optoelectronics',
+    'Applied Optoelectronics • Robinhood',
     18,
     UnderlyingAsset['hoodeth:aaoi'],
     undefined,
@@ -118,7 +118,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '39ea4698-34b7-407c-86e4-0174540f98c1',
     'ofchoodeth:arm',
-    'Arm Holdings plc',
+    'Arm Holdings plc • Robinhood',
     18,
     UnderlyingAsset['hoodeth:arm'],
     undefined,
@@ -132,7 +132,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '689843bf-c7af-4fe2-9762-ebbe2f8f1a04',
     'ofchoodeth:asml',
-    'ASML Holding NV',
+    'ASML Holding NV • Robinhood',
     18,
     UnderlyingAsset['hoodeth:asml'],
     undefined,
@@ -146,7 +146,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '76392f2e-7e29-4ea8-bbff-66fa5a933a5f',
     'ofchoodeth:asts',
-    'AST SpaceMobile',
+    'AST SpaceMobile • Robinhood',
     18,
     UnderlyingAsset['hoodeth:asts'],
     undefined,
@@ -160,7 +160,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'ec1fb872-22e4-4b82-a7e7-ce876c4f1316',
     'ofchoodeth:be',
-    'Bloom Energy Corporation',
+    'Bloom Energy Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:be'],
     undefined,
@@ -174,7 +174,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '9d39d53c-f3fc-4749-b233-628bd05ee84b',
     'ofchoodeth:ba',
-    'Boeing',
+    'Boeing • Robinhood',
     18,
     UnderlyingAsset['hoodeth:ba'],
     undefined,
@@ -188,7 +188,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'f260d613-b8c8-47a4-a5b6-f0278e0c3c93',
     'ofchoodeth:avgo',
-    'Broadcom',
+    'Broadcom • Robinhood',
     18,
     UnderlyingAsset['hoodeth:avgo'],
     undefined,
@@ -202,7 +202,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'f9a6462c-a18b-4cb8-a1d0-04b3a0fd644e',
     'ofchoodeth:ccl',
-    'Carnival Corporation',
+    'Carnival Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:ccl'],
     undefined,
@@ -216,7 +216,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '3254e97a-5522-4995-b1a9-07891a282cc4',
     'ofchoodeth:celh',
-    'Celsius',
+    'Celsius • Robinhood',
     18,
     UnderlyingAsset['hoodeth:celh'],
     undefined,
@@ -230,7 +230,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'e42f4dbd-4466-4682-8944-a62d26ecc8a9',
     'ofchoodeth:cbrs',
-    'Cerebras Systems',
+    'Cerebras Systems • Robinhood',
     18,
     UnderlyingAsset['hoodeth:cbrs'],
     undefined,
@@ -244,7 +244,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '99f4f2e1-39c7-4422-a751-4e02af80600c',
     'ofchoodeth:crcl',
-    'Circle Internet Group Inc',
+    'Circle Internet Group Inc • Robinhood',
     18,
     UnderlyingAsset['hoodeth:crcl'],
     undefined,
@@ -258,7 +258,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'fdd7bcb1-455d-43cc-8c1d-265aefdce75b',
     'ofchoodeth:clsk',
-    'CleanSpark',
+    'CleanSpark • Robinhood',
     18,
     UnderlyingAsset['hoodeth:clsk'],
     undefined,
@@ -272,7 +272,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '6794aec2-76b3-4a08-966c-626748ffe98d',
     'ofchoodeth:coin',
-    'Coinbase',
+    'Coinbase • Robinhood',
     18,
     UnderlyingAsset['hoodeth:coin'],
     undefined,
@@ -286,7 +286,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '0c879212-b6fa-4ffa-98b1-725afc63784c',
     'ofchoodeth:crwv',
-    'CoreWeave',
+    'CoreWeave • Robinhood',
     18,
     UnderlyingAsset['hoodeth:crwv'],
     undefined,
@@ -300,7 +300,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '152d206b-4d86-465e-8e9c-a28a33304cb6',
     'ofchoodeth:glw',
-    'Corning',
+    'Corning • Robinhood',
     18,
     UnderlyingAsset['hoodeth:glw'],
     undefined,
@@ -314,7 +314,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '8a90d594-e313-4660-ab44-58a57cb44025',
     'ofchoodeth:cost',
-    'Costco',
+    'Costco • Robinhood',
     18,
     UnderlyingAsset['hoodeth:cost'],
     undefined,
@@ -328,7 +328,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '0d450091-4b05-45ea-8515-5c468217f979',
     'ofchoodeth:crwd',
-    'CrowdStrike Holdings',
+    'CrowdStrike Holdings • Robinhood',
     18,
     UnderlyingAsset['hoodeth:crwd'],
     undefined,
@@ -342,7 +342,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'bff74e88-5447-4feb-a7ce-78ded2f964b4',
     'ofchoodeth:qbts',
-    'D-Wave Quantum',
+    'D-Wave Quantum • Robinhood',
     18,
     UnderlyingAsset['hoodeth:qbts'],
     undefined,
@@ -356,7 +356,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '09e7c164-7200-46d8-b5a7-fe4c2628ac24',
     'ofchoodeth:ddog',
-    'Datadog',
+    'Datadog • Robinhood',
     18,
     UnderlyingAsset['hoodeth:ddog'],
     undefined,
@@ -370,7 +370,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '15dcb80c-b313-4540-86db-1a3883e80f7b',
     'ofchoodeth:dram',
-    'Dataram Corporation',
+    'Dataram Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:dram'],
     undefined,
@@ -384,7 +384,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '44160adf-20cf-4892-acd6-952fc4dfc8f8',
     'ofchoodeth:dell',
-    'Dell',
+    'Dell • Robinhood',
     18,
     UnderlyingAsset['hoodeth:dell'],
     undefined,
@@ -398,7 +398,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '5af831db-9401-4e4f-a74b-1e31da809a3c',
     'ofchoodeth:elf',
-    'e.l.f. Beauty',
+    'e.l.f. Beauty • Robinhood',
     18,
     UnderlyingAsset['hoodeth:elf'],
     undefined,
@@ -412,7 +412,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '414542f5-2434-458b-87d8-3b2aeefa770e',
     'ofchoodeth:sats',
-    'EchoStar',
+    'EchoStar • Robinhood',
     18,
     UnderlyingAsset['hoodeth:sats'],
     undefined,
@@ -426,7 +426,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '29306178-0431-45b0-ad5a-ac09bee8f940',
     'ofchoodeth:lly',
-    'Eli Lilly',
+    'Eli Lilly • Robinhood',
     18,
     UnderlyingAsset['hoodeth:lly'],
     undefined,
@@ -440,7 +440,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'ec257f07-f575-4215-8c53-d8b8ee06ed5b',
     'ofchoodeth:p',
-    'Everpure',
+    'Everpure • Robinhood',
     18,
     UnderlyingAsset['hoodeth:p'],
     undefined,
@@ -454,7 +454,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '96a4b90a-6289-453b-9029-bf78b237bb8f',
     'ofchoodeth:xom',
-    'Exxon Mobil',
+    'Exxon Mobil • Robinhood',
     18,
     UnderlyingAsset['hoodeth:xom'],
     undefined,
@@ -468,7 +468,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '4a7a515c-96db-480c-bf62-314f486db01a',
     'ofchoodeth:flnc',
-    'Fluence Energy',
+    'Fluence Energy • Robinhood',
     18,
     UnderlyingAsset['hoodeth:flnc'],
     undefined,
@@ -482,7 +482,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '9f9461a8-a51f-4025-a1c3-871930c073e9',
     'ofchoodeth:f',
-    'Ford Motor',
+    'Ford Motor • Robinhood',
     18,
     UnderlyingAsset['hoodeth:f'],
     undefined,
@@ -496,7 +496,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '66bb6bdc-f442-4787-bf5e-faef3307b375',
     'ofchoodeth:futu',
-    'Futu Holdings',
+    'Futu Holdings • Robinhood',
     18,
     UnderlyingAsset['hoodeth:futu'],
     undefined,
@@ -510,7 +510,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '50d09cad-25a8-4c27-b450-f08928823111',
     'ofchoodeth:gme',
-    'GameStop',
+    'GameStop • Robinhood',
     18,
     UnderlyingAsset['hoodeth:gme'],
     undefined,
@@ -524,7 +524,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '367a6db8-36b9-42ac-a44d-48c2ba1628fe',
     'ofchoodeth:inod',
-    'Innodata',
+    'Innodata • Robinhood',
     18,
     UnderlyingAsset['hoodeth:inod'],
     undefined,
@@ -538,7 +538,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '3fbefdcc-930a-4795-8ceb-824d54a0c4e2',
     'ofchoodeth:intc',
-    'Intel Corporation',
+    'Intel Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:intc'],
     undefined,
@@ -552,7 +552,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '87828bfa-61d4-4956-8655-9df105ea8c2f',
     'ofchoodeth:intu',
-    'Intuit',
+    'Intuit • Robinhood',
     18,
     UnderlyingAsset['hoodeth:intu'],
     undefined,
@@ -566,7 +566,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '63fe81e6-75ae-4069-b64b-c2377217ec07',
     'ofchoodeth:lunr',
-    'Intuitive Machines',
+    'Intuitive Machines • Robinhood',
     18,
     UnderlyingAsset['hoodeth:lunr'],
     undefined,
@@ -580,7 +580,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'a607c169-9b53-4d91-b4a7-0a4e4c0604df',
     'ofchoodeth:qqq',
-    'Invesco QQQ Trust',
+    'Invesco QQQ Trust • Robinhood',
     18,
     UnderlyingAsset['hoodeth:qqq'],
     undefined,
@@ -594,7 +594,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '559b7236-228d-4ed7-86ac-02f6b2e807e4',
     'ofchoodeth:spmo',
-    'Invesco S&P 500 Momentum ETF',
+    'Invesco S&P 500 Momentum ETF • Robinhood',
     18,
     UnderlyingAsset['hoodeth:spmo'],
     undefined,
@@ -608,7 +608,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'e02b9e82-2910-4954-b4d3-100615699e26',
     'ofchoodeth:ionq',
-    'IonQ',
+    'IonQ • Robinhood',
     18,
     UnderlyingAsset['hoodeth:ionq'],
     undefined,
@@ -622,7 +622,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '140ef60f-3a90-4104-939b-074faf73bcce',
     'ofchoodeth:iren',
-    'IREN Limited',
+    'IREN Limited • Robinhood',
     18,
     UnderlyingAsset['hoodeth:iren'],
     undefined,
@@ -636,7 +636,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '53cbf6aa-a7e4-42e9-abae-2201a39238e9',
     'ofchoodeth:sgov',
-    'iShares 0-3 Month Treasury Bond ETF',
+    'iShares 0-3 Month Treasury Bond ETF • Robinhood',
     18,
     UnderlyingAsset['hoodeth:sgov'],
     undefined,
@@ -650,7 +650,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '2e99e01c-a271-422d-ade0-8eb7a9538997',
     'ofchoodeth:ewy',
-    'iShares MSCI South Korea fund',
+    'iShares MSCI South Korea fund • Robinhood',
     18,
     UnderlyingAsset['hoodeth:ewy'],
     undefined,
@@ -664,7 +664,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '7a1da129-1922-4bd0-973f-aeb1261c8236',
     'ofchoodeth:soxx',
-    'iShares Semiconductor ETF',
+    'iShares Semiconductor ETF • Robinhood',
     18,
     UnderlyingAsset['hoodeth:soxx'],
     undefined,
@@ -678,7 +678,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '33ba08c6-75bd-4b76-b158-a2b6505ce48b',
     'ofchoodeth:slv',
-    'iShares Silver Trust',
+    'iShares Silver Trust • Robinhood',
     18,
     UnderlyingAsset['hoodeth:slv'],
     undefined,
@@ -692,7 +692,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'f77abccc-5864-4911-96a0-9bc27566a178',
     'ofchoodeth:lulu',
-    'Lululemon',
+    'Lululemon • Robinhood',
     18,
     UnderlyingAsset['hoodeth:lulu'],
     undefined,
@@ -706,7 +706,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '806e2e61-31a8-4c29-aa9d-c6f08c291dc3',
     'ofchoodeth:lite',
-    'Lumentum',
+    'Lumentum • Robinhood',
     18,
     UnderlyingAsset['hoodeth:lite'],
     undefined,
@@ -720,7 +720,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'd6eb0ad3-4138-4a6b-aadd-6bf36634fbfc',
     'ofchoodeth:mrvl',
-    'Marvell Technology',
+    'Marvell Technology • Robinhood',
     18,
     UnderlyingAsset['hoodeth:mrvl'],
     undefined,
@@ -734,7 +734,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'e089470c-2335-4c10-acfe-67698e5d415b',
     'ofchoodeth:mxl',
-    'MaxLinear',
+    'MaxLinear • Robinhood',
     18,
     UnderlyingAsset['hoodeth:mxl'],
     undefined,
@@ -748,7 +748,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'bf014246-5a76-4b2d-a351-c989506eea95',
     'ofchoodeth:meta',
-    'Meta Platforms, Inc.',
+    'Meta Platforms, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:meta'],
     undefined,
@@ -762,7 +762,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'ae355bf8-423c-4bd7-90ba-fa41664927a9',
     'ofchoodeth:mu',
-    'Micron Technology',
+    'Micron Technology • Robinhood',
     18,
     UnderlyingAsset['hoodeth:mu'],
     undefined,
@@ -776,7 +776,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '2610fc79-c281-4624-9975-c2b23f0e4ed1',
     'ofchoodeth:msft',
-    'Microsoft Corporation',
+    'Microsoft Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:msft'],
     undefined,
@@ -790,7 +790,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'fe4033de-fe0a-4a07-a5a5-7e8cb31eb695',
     'ofchoodeth:mdb',
-    'MongoDB',
+    'MongoDB • Robinhood',
     18,
     UnderlyingAsset['hoodeth:mdb'],
     undefined,
@@ -804,7 +804,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '0e371b9a-8bf4-469a-8657-d9b833d1541a',
     'ofchoodeth:nne',
-    'Nano Nuclear Energy',
+    'Nano Nuclear Energy • Robinhood',
     18,
     UnderlyingAsset['hoodeth:nne'],
     undefined,
@@ -818,7 +818,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '1b570888-8891-4984-9643-9a63f377f1c6',
     'ofchoodeth:nvts',
-    'Navitas Semiconductor',
+    'Navitas Semiconductor • Robinhood',
     18,
     UnderlyingAsset['hoodeth:nvts'],
     undefined,
@@ -832,7 +832,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'f135e04d-f250-4d47-936d-a01f4977fddf',
     'ofchoodeth:nbis',
-    'Nebius Group',
+    'Nebius Group • Robinhood',
     18,
     UnderlyingAsset['hoodeth:nbis'],
     undefined,
@@ -846,7 +846,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'e37613c1-1de7-4cef-9a97-40b0998f2c35',
     'ofchoodeth:nflx',
-    'Netflix',
+    'Netflix • Robinhood',
     18,
     UnderlyingAsset['hoodeth:nflx'],
     undefined,
@@ -860,7 +860,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '9b50f9d1-725d-4002-8563-8ad131bcdb60',
     'ofchoodeth:nok',
-    'Nokia',
+    'Nokia • Robinhood',
     18,
     UnderlyingAsset['hoodeth:nok'],
     undefined,
@@ -874,7 +874,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '06f838b4-f6b3-4c8d-a395-e8a0557b021f',
     'ofchoodeth:nu',
-    'Nu',
+    'Nu • Robinhood',
     18,
     UnderlyingAsset['hoodeth:nu'],
     undefined,
@@ -888,7 +888,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '9c927821-eed5-45d6-900e-0d6a119a5f6d',
     'ofchoodeth:nvda',
-    'NVIDIA Corporation',
+    'NVIDIA Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:nvda'],
     undefined,
@@ -902,7 +902,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '564305d1-da1d-401b-bd56-9203b823e60c',
     'ofchoodeth:orcl',
-    'Oracle Corporation',
+    'Oracle Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:orcl'],
     undefined,
@@ -916,7 +916,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '2c7e60eb-f9dc-48cd-b169-2acd0fef56e5',
     'ofchoodeth:pltr',
-    'Palantir Technologies Inc.',
+    'Palantir Technologies Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:pltr'],
     undefined,
@@ -930,7 +930,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '1e4f6f3a-804f-465d-b1f6-e90e5f7bf314',
     'ofchoodeth:peng',
-    'Penguin Solutions',
+    'Penguin Solutions • Robinhood',
     18,
     UnderlyingAsset['hoodeth:peng'],
     undefined,
@@ -944,7 +944,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'b664491f-4ef3-45ad-90e8-feb8d59d98eb',
     'ofchoodeth:pr',
-    'Permian Resources',
+    'Permian Resources • Robinhood',
     18,
     UnderlyingAsset['hoodeth:pr'],
     undefined,
@@ -958,7 +958,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'd72221d5-3971-42e1-b8bb-1f143f7bfc4f',
     'ofchoodeth:poet',
-    'POET Technologies',
+    'POET Technologies • Robinhood',
     18,
     UnderlyingAsset['hoodeth:poet'],
     undefined,
@@ -972,7 +972,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '3161808a-d31f-4f73-b6a7-f8f61d34112c',
     'ofchoodeth:qcom',
-    'Qualcomm',
+    'Qualcomm • Robinhood',
     18,
     UnderlyingAsset['hoodeth:qcom'],
     undefined,
@@ -986,7 +986,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'd178081c-d93a-4fe7-ae7e-25585b968919',
     'ofchoodeth:qubt',
-    'Quantum Computing, Inc',
+    'Quantum Computing, Inc • Robinhood',
     18,
     UnderlyingAsset['hoodeth:qubt'],
     undefined,
@@ -1000,7 +1000,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '52cae056-b9d9-4033-8d34-5654b76c155b',
     'ofchoodeth:rddt',
-    'Reddit',
+    'Reddit • Robinhood',
     18,
     UnderlyingAsset['hoodeth:rddt'],
     undefined,
@@ -1014,7 +1014,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'ea38b5db-5528-45a3-a9c7-d21b65a3bb89',
     'ofchoodeth:rdw',
-    'Redwire',
+    'Redwire • Robinhood',
     18,
     UnderlyingAsset['hoodeth:rdw'],
     undefined,
@@ -1028,7 +1028,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '29e5acf4-05a9-45c9-90fc-922754eeb48a',
     'ofchoodeth:rgti',
-    'Rigetti Computing',
+    'Rigetti Computing • Robinhood',
     18,
     UnderlyingAsset['hoodeth:rgti'],
     undefined,
@@ -1042,7 +1042,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'f803588d-4e07-4b16-aa7d-d35c4f1d67aa',
     'ofchoodeth:rivn',
-    'Rivian Automotive',
+    'Rivian Automotive • Robinhood',
     18,
     UnderlyingAsset['hoodeth:rivn'],
     undefined,
@@ -1056,7 +1056,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'be82fd79-ba3b-4d1f-b311-6039e0317825',
     'ofchoodeth:rblx',
-    'Roblox',
+    'Roblox • Robinhood',
     18,
     UnderlyingAsset['hoodeth:rblx'],
     undefined,
@@ -1070,7 +1070,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '6e09f0ab-1fa0-44fe-889e-33494dab5b61',
     'ofchoodeth:rklb',
-    'Rocket Lab Corporation',
+    'Rocket Lab Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:rklb'],
     undefined,
@@ -1084,7 +1084,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '06de2415-8bb7-48c9-8453-8ac2da35f591',
     'ofchoodeth:rvi',
-    'RVI',
+    'RVI • Robinhood',
     18,
     UnderlyingAsset['hoodeth:rvi'],
     undefined,
@@ -1098,7 +1098,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '20ab47b6-f825-4ec3-bc9e-1173588676c4',
     'ofchoodeth:sndk',
-    'SanDisk',
+    'SanDisk • Robinhood',
     18,
     UnderlyingAsset['hoodeth:sndk'],
     undefined,
@@ -1112,7 +1112,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '5c32486f-dbc3-4e0f-a0de-07630f29145b',
     'ofchoodeth:now',
-    'ServiceNow',
+    'ServiceNow • Robinhood',
     18,
     UnderlyingAsset['hoodeth:now'],
     undefined,
@@ -1126,7 +1126,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '0ea0ca53-9ae7-4016-8101-4b09a478c904',
     'ofchoodeth:shop',
-    'Shopify',
+    'Shopify • Robinhood',
     18,
     UnderlyingAsset['hoodeth:shop'],
     undefined,
@@ -1140,7 +1140,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '63cecf35-0c22-461e-99f6-2e2b4c3b3fd0',
     'ofchoodeth:sofi',
-    'SoFi Technologies',
+    'SoFi Technologies • Robinhood',
     18,
     UnderlyingAsset['hoodeth:sofi'],
     undefined,
@@ -1154,7 +1154,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'c35c8bbc-84c2-4fbd-9371-fe0098bdb49c',
     'ofchoodeth:spy',
-    'SPDR S&P 500 ETF Trust',
+    'SPDR S&P 500 ETF Trust • Robinhood',
     18,
     UnderlyingAsset['hoodeth:spy'],
     undefined,
@@ -1168,7 +1168,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '832e7edc-8ba9-4e7f-a865-98570bb71331',
     'ofchoodeth:xlk',
-    'State Street Technology Select Sector SPDR ETF',
+    'State Street Technology Select Sector SPDR ETF • Robinhood',
     18,
     UnderlyingAsset['hoodeth:xlk'],
     undefined,
@@ -1182,7 +1182,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '6b9fec79-284e-4b76-9276-12a9d9ba997c',
     'ofchoodeth:mstr',
-    'Strategy Inc.',
+    'Strategy Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:mstr'],
     undefined,
@@ -1196,7 +1196,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'eb20c03f-cedb-4585-a952-6d90210b139e',
     'ofchoodeth:smci',
-    'Super Micro Computer',
+    'Super Micro Computer • Robinhood',
     18,
     UnderlyingAsset['hoodeth:smci'],
     undefined,
@@ -1210,7 +1210,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '5a57aa8e-31f2-4cf8-88ee-cf74ba3d7298',
     'ofchoodeth:tsm',
-    'Taiwan Semiconductor Manufacturing',
+    'Taiwan Semiconductor Manufacturing • Robinhood',
     18,
     UnderlyingAsset['hoodeth:tsm'],
     undefined,
@@ -1224,7 +1224,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'e58b5516-cfae-4417-b4ca-2ffb45b4a160',
     'ofchoodeth:ttwo',
-    'Take-Two Interactive Software',
+    'Take-Two Interactive Software • Robinhood',
     18,
     UnderlyingAsset['hoodeth:ttwo'],
     undefined,
@@ -1238,7 +1238,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'a85e99d4-d6bf-4b08-b659-ea363197d4e4',
     'ofchoodeth:nasa',
-    'Tema Space Innovators ETF',
+    'Tema Space Innovators ETF • Robinhood',
     18,
     UnderlyingAsset['hoodeth:nasa'],
     undefined,
@@ -1252,7 +1252,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '1806a1c6-56b1-4107-89af-8c93159905b9',
     'ofchoodeth:tsla',
-    'Tesla',
+    'Tesla • Robinhood',
     18,
     UnderlyingAsset['hoodeth:tsla'],
     undefined,
@@ -1266,7 +1266,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '1d4ad8ac-a6fa-4825-9f3f-0c5c9d4c6c47',
     'ofchoodeth:tsem',
-    'Tower Semiconductor',
+    'Tower Semiconductor • Robinhood',
     18,
     UnderlyingAsset['hoodeth:tsem'],
     undefined,
@@ -1280,7 +1280,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'a8282f20-6734-4df6-91e1-859f34288e3b',
     'ofchoodeth:umc',
-    'United Microelectronics',
+    'United Microelectronics • Robinhood',
     18,
     UnderlyingAsset['hoodeth:umc'],
     undefined,
@@ -1294,7 +1294,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '7ca62551-0f32-47c2-9e35-a55f5a782ed6',
     'ofchoodeth:uso',
-    'United States Oil Fund, LP',
+    'United States Oil Fund, LP • Robinhood',
     18,
     UnderlyingAsset['hoodeth:uso'],
     undefined,
@@ -1308,7 +1308,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'af4c4cea-d9a9-4f75-807c-22c7e4a0ecc7',
     'ofchoodeth:ups',
-    'UPS',
+    'UPS • Robinhood',
     18,
     UnderlyingAsset['hoodeth:ups'],
     undefined,
@@ -1322,7 +1322,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'd1f75f57-9f62-4c30-bfd9-8ed76884f884',
     'ofchoodeth:usar',
-    'USA Rare Earth Inc.',
+    'USA Rare Earth Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:usar'],
     undefined,
@@ -1350,7 +1350,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '43fb356f-8b1e-4569-b6b8-982f8bfb0465',
     'ofchoodeth:week',
-    'Weekly T-Bill ETF',
+    'Weekly T-Bill ETF • Robinhood',
     18,
     UnderlyingAsset['hoodeth:week'],
     undefined,
@@ -1364,7 +1364,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '0e82cc04-8f20-4623-b1ac-7c9e90b5d5d0',
     'ofchoodeth:wday',
-    'Workday',
+    'Workday • Robinhood',
     18,
     UnderlyingAsset['hoodeth:wday'],
     undefined,
@@ -1378,7 +1378,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '755abf18-75ff-4f43-9500-6f5e33089210',
     'ofchoodeth:xndu',
-    'Xanadu Quantum',
+    'Xanadu Quantum • Robinhood',
     18,
     UnderlyingAsset['hoodeth:xndu'],
     undefined,
@@ -1392,7 +1392,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '1448c582-1250-490f-9c3c-476442ac55ca',
     'ofchoodeth:zm',
-    'Zoom',
+    'Zoom • Robinhood',
     18,
     UnderlyingAsset['hoodeth:zm'],
     undefined,
@@ -1406,7 +1406,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'a92cd45a-5dff-409a-a5ab-167927318021',
     'ofchoodeth:zs',
-    'Zscaler',
+    'Zscaler • Robinhood',
     18,
     UnderlyingAsset['hoodeth:zs'],
     undefined,
@@ -1420,7 +1420,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'daab9b7a-20fe-493a-b98e-74ca16498634',
     'ofchoodeth:wdc',
-    'Western Digital Corporation',
+    'Western Digital Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:wdc'],
     undefined,
@@ -1434,7 +1434,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'c2a8ddeb-e9a7-4948-8aac-73eeaa4fc467',
     'ofchoodeth:alab',
-    'Astera Labs, Inc.',
+    'Astera Labs, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:alab'],
     undefined,
@@ -1448,7 +1448,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'f8e1583e-b0f0-4bdf-936f-307c89648e2f',
     'ofchoodeth:crdo',
-    'Credo Technology Group Holding Ltd Ordinary Shares',
+    'Credo Technology Group Holding Ltd Ordinary Shares • Robinhood',
     18,
     UnderlyingAsset['hoodeth:crdo'],
     undefined,
@@ -1462,7 +1462,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '0b527d6c-7b28-4315-b76f-cc4c467f763c',
     'ofchoodeth:avav',
-    'AeroVironment, Inc.',
+    'AeroVironment, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:avav'],
     undefined,
@@ -1476,7 +1476,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'fc2a3e50-d42e-4d02-a2d3-b7ebbc454f20',
     'ofchoodeth:adbe',
-    'Adobe Inc.',
+    'Adobe Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:adbe'],
     undefined,
@@ -1490,7 +1490,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '9cadbde2-42a3-49b3-9f79-e67e26087d6d',
     'ofchoodeth:wulf',
-    'TeraWulf Inc.',
+    'TeraWulf Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:wulf'],
     undefined,
@@ -1504,7 +1504,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'a635493f-c328-4f0e-9327-bfffa1e33567',
     'ofchoodeth:bnd',
-    'Vanguard Total Bond Market ETF',
+    'Vanguard Total Bond Market ETF • Robinhood',
     18,
     UnderlyingAsset['hoodeth:bnd'],
     undefined,
@@ -1518,7 +1518,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '741054b2-d716-4b45-9a5d-c20659128287',
     'ofchoodeth:fig',
-    'Figma, Inc.',
+    'Figma, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:fig'],
     undefined,
@@ -1532,7 +1532,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '643de216-1a76-4607-9598-de31c5547d91',
     'ofchoodeth:smr',
-    'NuScale Power Corporation',
+    'NuScale Power Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:smr'],
     undefined,
@@ -1546,7 +1546,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '95914c60-b442-4ded-855e-6439f0965b04',
     'ofchoodeth:klac',
-    'KLA Corporation',
+    'KLA Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:klac'],
     undefined,
@@ -1560,7 +1560,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '1d0f1947-9bd0-4e23-b47d-03437659f5e2',
     'ofchoodeth:pl',
-    'Planet Labs PBC',
+    'Planet Labs PBC • Robinhood',
     18,
     UnderlyingAsset['hoodeth:pl'],
     undefined,
@@ -1574,7 +1574,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '5ccb6e7c-c4ca-466e-9c95-1bdcbdfdcfae',
     'ofchoodeth:axti',
-    'AXT Inc',
+    'AXT Inc • Robinhood',
     18,
     UnderlyingAsset['hoodeth:axti'],
     undefined,
@@ -1588,7 +1588,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'c0beb745-453d-4da6-9c42-bfe5c1064722',
     'ofchoodeth:te',
-    'T1 Energy Inc.',
+    'T1 Energy Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:te'],
     undefined,
@@ -1602,7 +1602,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '2136d313-e60b-419a-898c-6511d777e66b',
     'ofchoodeth:bull',
-    'Webull Corporation',
+    'Webull Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:bull'],
     undefined,
@@ -1616,7 +1616,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '63e618e0-1f69-4337-a8b0-6461f0865e19',
     'ofchoodeth:joby',
-    'Joby Aviation, Inc.',
+    'Joby Aviation, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:joby'],
     undefined,
@@ -1630,7 +1630,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'bdcb9ed5-2aed-4cc3-a981-01757d2d6add',
     'ofchoodeth:tem',
-    'Tempus AI, Inc.',
+    'Tempus AI, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:tem'],
     undefined,
@@ -1644,7 +1644,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '16534046-2071-497b-a917-2f41d607dea6',
     'ofchoodeth:lrcx',
-    'Lam Research Corporation',
+    'Lam Research Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:lrcx'],
     undefined,
@@ -1658,7 +1658,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'fb5ff992-df35-4069-baaa-93d471f376c1',
     'ofchoodeth:cohr',
-    'Coherent Corp.',
+    'Coherent Corp. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:cohr'],
     undefined,
@@ -1672,7 +1672,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '31f6e8ae-9670-41da-89c5-9d77e5389885',
     'ofchoodeth:ktos',
-    'Kratos Defense & Security Solutions, Inc.',
+    'Kratos Defense & Security Solutions, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:ktos'],
     undefined,
@@ -1686,7 +1686,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '253b075f-a049-4e82-a3c6-8083b09635fe',
     'ofchoodeth:zeta',
-    'Zeta Global Holdings Corp.',
+    'Zeta Global Holdings Corp. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:zeta'],
     undefined,
@@ -1700,7 +1700,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '8e6d4dca-fad2-4cee-af5a-b2f342b4e1cd',
     'ofchoodeth:axon',
-    'Axon Enterprise, Inc.',
+    'Axon Enterprise, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:axon'],
     undefined,
@@ -1714,7 +1714,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '27b5a508-cb49-4a34-9451-d2a680bbc5fb',
     'ofchoodeth:crm',
-    'Salesforce, Inc.',
+    'Salesforce, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:crm'],
     undefined,
@@ -1728,7 +1728,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'a64abe9b-8521-4e81-b4ac-84165d42bc7f',
     'ofchoodeth:fly',
-    'Firefly Aerospace Inc.',
+    'Firefly Aerospace Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:fly'],
     undefined,
@@ -1742,7 +1742,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '0bc71628-5f41-4597-be9d-a4306c6b36b9',
     'ofchoodeth:wyfi',
-    'WhiteFiber, Inc.',
+    'WhiteFiber, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:wyfi'],
     undefined,
@@ -1756,7 +1756,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '4baa123c-8d63-4c46-b215-bbb928b6b80f',
     'ofchoodeth:ttd',
-    'The Trade Desk, Inc.',
+    'The Trade Desk, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:ttd'],
     undefined,
@@ -1770,7 +1770,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '602c46e5-4d41-4ece-895b-ba99293c5c2d',
     'ofchoodeth:rcat',
-    'Red Cat Holdings, Inc.',
+    'Red Cat Holdings, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:rcat'],
     undefined,
@@ -1784,7 +1784,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'aa2828da-ba2e-4fc9-976b-e85ebb1cc294',
     'ofchoodeth:infq',
-    'Infleqtion, Inc.',
+    'Infleqtion, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:infq'],
     undefined,
@@ -1798,7 +1798,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '8e6dd8b1-ead7-4f55-bd0b-8e8f9b3030a0',
     'ofchoodeth:oust',
-    'Ouster, Inc.',
+    'Ouster, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:oust'],
     undefined,
@@ -1812,7 +1812,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '663144b0-0d94-4cb9-8c74-5702f853c8ec',
     'ofchoodeth:on',
-    'ON Semiconductor Corporation',
+    'ON Semiconductor Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:on'],
     undefined,
@@ -1826,7 +1826,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '5fc7f609-948f-400e-b9e2-39693631d945',
     'ofchoodeth:fico',
-    'Fair Isaac Corporation',
+    'Fair Isaac Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:fico'],
     undefined,
@@ -1840,7 +1840,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'bef0e9e8-e583-4bd0-9113-5f26fa15bd57',
     'ofchoodeth:ibm',
-    'International Business Machines Corporation',
+    'International Business Machines Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:ibm'],
     undefined,
@@ -1854,7 +1854,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'c65be142-3309-4ddb-a7c6-14c2525f6c20',
     'ofchoodeth:amkr',
-    'Amkor Technology, Inc.',
+    'Amkor Technology, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:amkr'],
     undefined,
@@ -1868,7 +1868,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'b5e74abc-039a-405c-9109-2b0d32e1a365',
     'ofchoodeth:cien',
-    'Ciena Corporation',
+    'Ciena Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:cien'],
     undefined,
@@ -1882,7 +1882,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'e347c7a8-236d-4df2-913a-f3a33fbdabee',
     'ofchoodeth:hims',
-    'Hims & Hers Health, Inc.',
+    'Hims & Hers Health, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:hims'],
     undefined,
@@ -1896,7 +1896,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'c7beca35-d6d7-4bb8-be49-4d795cf980a8',
     'ofchoodeth:cls',
-    'Celestica, Inc.',
+    'Celestica, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:cls'],
     undefined,
@@ -1910,7 +1910,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'a41ae8d9-57f9-4758-bc3a-b3e4d32d5e1f',
     'ofchoodeth:ter',
-    'Teradyne, Inc.',
+    'Teradyne, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:ter'],
     undefined,
@@ -1924,7 +1924,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'e4583f2f-d464-4b4d-9d58-df1176551ce8',
     'ofchoodeth:soun',
-    'SoundHound AI, Inc',
+    'SoundHound AI, Inc • Robinhood',
     18,
     UnderlyingAsset['hoodeth:soun'],
     undefined,
@@ -1938,7 +1938,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '0cce5e58-cfc8-4956-a317-1fb2cdabd41f',
     'ofchoodeth:path',
-    'UiPath, Inc.',
+    'UiPath, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:path'],
     undefined,
@@ -1952,7 +1952,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '80803444-0973-4df5-a4d0-e7c4d56cdc3c',
     'ofchoodeth:aehr',
-    'Aehr Test Systems',
+    'Aehr Test Systems • Robinhood',
     18,
     UnderlyingAsset['hoodeth:aehr'],
     undefined,
@@ -1966,7 +1966,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '49131c01-262c-4ddd-9115-172e614a416c',
     'ofchoodeth:mrna',
-    'Moderna, Inc.',
+    'Moderna, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:mrna'],
     undefined,
@@ -1980,7 +1980,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'a5b55dac-557a-4f98-b413-1291bde207e1',
     'ofchoodeth:oklo',
-    'Oklo Inc.',
+    'Oklo Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:oklo'],
     undefined,
@@ -1994,7 +1994,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '3db358b2-c8e9-44ec-bba3-d3cbfdbdbdba',
     'ofchoodeth:vrt',
-    'Vertiv Holdings Co',
+    'Vertiv Holdings Co • Robinhood',
     18,
     UnderlyingAsset['hoodeth:vrt'],
     undefined,
@@ -2008,7 +2008,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '97a53225-f6f9-4747-8740-3101b9850c74',
     'ofchoodeth:mpwr',
-    'Monolithic Power Systems, Inc.',
+    'Monolithic Power Systems, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:mpwr'],
     undefined,
@@ -2022,7 +2022,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '6117d5b5-2d41-4268-887e-05697d6792fd',
     'ofchoodeth:fisv',
-    'Fiserv, Inc.',
+    'Fiserv, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:fisv'],
     undefined,
@@ -2036,7 +2036,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'e2d586f9-eca2-45fb-9ce4-59848c58b126',
     'ofchoodeth:glxy',
-    'Galaxy Digital Inc.',
+    'Galaxy Digital Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:glxy'],
     undefined,
@@ -2050,7 +2050,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '82d8901a-7c04-4a16-b303-468d4a711b1c',
     'ofchoodeth:snow',
-    'Snowflake Inc.',
+    'Snowflake Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:snow'],
     undefined,
@@ -2064,7 +2064,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'f6e6cab2-758f-4900-8638-ff661811d059',
     'ofchoodeth:team',
-    'Atlassian Corporation',
+    'Atlassian Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:team'],
     undefined,
@@ -2078,7 +2078,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'f2d08e3f-104b-4083-b5a8-0ba8d88eae6b',
     'ofchoodeth:snap',
-    'Snap Inc.',
+    'Snap Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:snap'],
     undefined,
@@ -2092,7 +2092,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '5a81afa0-9d09-4d9d-ba6b-ae60ade0b16f',
     'ofchoodeth:run',
-    'Sunrun Inc.',
+    'Sunrun Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:run'],
     undefined,
@@ -2106,7 +2106,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '31a5b0d2-17a7-4d3d-acc8-bbd962db3b27',
     'ofchoodeth:bb',
-    'BlackBerry Limited',
+    'BlackBerry Limited • Robinhood',
     18,
     UnderlyingAsset['hoodeth:bb'],
     undefined,
@@ -2120,7 +2120,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '39dd1b50-653d-4506-8d55-3a4c5be150ff',
     'ofchoodeth:sls',
-    'SELLAS Life Sciences Group, Inc.',
+    'SELLAS Life Sciences Group, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:sls'],
     undefined,
@@ -2134,7 +2134,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'e7f4fa8a-a58b-4386-9086-3cc9e852aaba',
     'ofchoodeth:gev',
-    'GE Vernova Inc.',
+    'GE Vernova Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:gev'],
     undefined,
@@ -2148,7 +2148,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '6ab08080-f986-4d7b-9408-aa0be813cb9a',
     'ofchoodeth:app',
-    'Applovin Corporation',
+    'Applovin Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:app'],
     undefined,
@@ -2162,7 +2162,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '7ad9b426-b599-45f7-b8df-ef160a4ee2ed',
     'ofchoodeth:lmt',
-    'Lockheed Martin Corp.',
+    'Lockheed Martin Corp. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:lmt'],
     undefined,
@@ -2176,7 +2176,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '85bc07a8-57c2-463a-a839-fc1bc6009979',
     'ofchoodeth:ceg',
-    'Constellation Energy Corporation',
+    'Constellation Energy Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:ceg'],
     undefined,
@@ -2190,7 +2190,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'fa4dbca1-601b-4f52-9aa1-caed4ae52bd3',
     'ofchoodeth:ge',
-    'GE Aerospace',
+    'GE Aerospace • Robinhood',
     18,
     UnderlyingAsset['hoodeth:ge'],
     undefined,
@@ -2204,7 +2204,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '20de783f-0412-4366-98da-5ec82e1bf190',
     'ofchoodeth:hwm',
-    'Howmet Aerospace Inc.',
+    'Howmet Aerospace Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:hwm'],
     undefined,
@@ -2218,7 +2218,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'ccedd527-e8b6-4101-a0b5-1f9c917bb8bd',
     'ofchoodeth:hpe',
-    'Hewlett Packard Enterprise Company',
+    'Hewlett Packard Enterprise Company • Robinhood',
     18,
     UnderlyingAsset['hoodeth:hpe'],
     undefined,
@@ -2232,7 +2232,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '232bdc92-e54d-426a-8dd9-6cc851951434',
     'ofchoodeth:vsat',
-    'ViaSat, Inc.',
+    'ViaSat, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:vsat'],
     undefined,
@@ -2246,7 +2246,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '5ebf1ee3-9455-4964-8337-a0743cad0aa8',
     'ofchoodeth:vst',
-    'Vistra Corp.',
+    'Vistra Corp. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:vst'],
     undefined,
@@ -2260,7 +2260,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'ee5fd89d-d4e3-4619-a831-6e4f8ad5cef4',
     'ofchoodeth:navn',
-    'Navan, Inc.',
+    'Navan, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:navn'],
     undefined,
@@ -2274,7 +2274,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '60048752-1e31-43ca-8cbf-ce836c2d2306',
     'ofchoodeth:ibrx',
-    'ImmunityBio, Inc.',
+    'ImmunityBio, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:ibrx'],
     undefined,
@@ -2288,7 +2288,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'c00eb9c0-7eb6-4693-9c0b-6da23b309c34',
     'ofchoodeth:fix',
-    'Comfort Systems USA, Inc.',
+    'Comfort Systems USA, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:fix'],
     undefined,
@@ -2302,7 +2302,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '05be2e71-e46d-48c9-a97b-74291d1c405f',
     'ofchoodeth:lhx',
-    'L3Harris Technologies, Inc.',
+    'L3Harris Technologies, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:lhx'],
     undefined,
@@ -2316,7 +2316,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '718fbabb-4c3d-4e42-a30e-c3561935bd96',
     'ofchoodeth:ftnt',
-    'Fortinet, Inc.',
+    'Fortinet, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:ftnt'],
     undefined,
@@ -2330,7 +2330,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'e9284408-7654-4711-b924-06a993c82546',
     'ofchoodeth:panw',
-    'Palo Alto Networks, Inc.',
+    'Palo Alto Networks, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:panw'],
     undefined,
@@ -2344,7 +2344,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '86053545-18ec-4daa-b6d9-4f1bd0e975a5',
     'ofchoodeth:onto',
-    'Onto Innovation Inc.',
+    'Onto Innovation Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:onto'],
     undefined,
@@ -2358,7 +2358,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '8e70bd0b-df49-41b3-8f06-a3583aa8b685',
     'ofchoodeth:anet',
-    'Arista Networks',
+    'Arista Networks • Robinhood',
     18,
     UnderlyingAsset['hoodeth:anet'],
     undefined,
@@ -2372,7 +2372,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'e8fa4965-0bbe-4fe3-8887-e91c434b498d',
     'ofchoodeth:aur',
-    'Aurora Innovation, Inc.',
+    'Aurora Innovation, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:aur'],
     undefined,
@@ -2386,7 +2386,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'a98e73c5-759f-4e77-a2f0-81f9634aa2cc',
     'ofchoodeth:ctsh',
-    'Cognizant Technology Solutions Corporation Class A',
+    'Cognizant Technology Solutions Corporation Class A • Robinhood',
     18,
     UnderlyingAsset['hoodeth:ctsh'],
     undefined,
@@ -2400,7 +2400,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'cb0cc48b-a0b7-43a4-a09d-e581970269a0',
     'ofchoodeth:vicr',
-    'Vicor Corporation',
+    'Vicor Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:vicr'],
     undefined,
@@ -2414,7 +2414,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '68320e6d-82cb-47f4-8ecd-54879869035e',
     'ofchoodeth:mtsi',
-    'MACOM Technology Solutions Holdings, Inc.',
+    'MACOM Technology Solutions Holdings, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:mtsi'],
     undefined,
@@ -2428,7 +2428,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'f663197f-01e0-44d5-9130-02167934c9aa',
     'ofchoodeth:hii',
-    'Huntington Ingalls Industries, Inc.',
+    'Huntington Ingalls Industries, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:hii'],
     undefined,
@@ -2442,7 +2442,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '52921d60-3790-48aa-80db-b021b5415f50',
     'ofchoodeth:csco',
-    'Cisco Systems, Inc.',
+    'Cisco Systems, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:csco'],
     undefined,
@@ -2456,7 +2456,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '849a505c-fec9-4d95-9b8d-1fed3062486f',
     'ofchoodeth:pfe',
-    'Pfizer Inc.',
+    'Pfizer Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:pfe'],
     undefined,
@@ -2470,7 +2470,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '8e67f048-2ba1-4bfe-b64c-81beb130712f',
     'ofchoodeth:qnt',
-    'Quantinuum Inc.',
+    'Quantinuum Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:qnt'],
     undefined,
@@ -2484,7 +2484,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '240582c0-c70a-4b90-b9be-e348f907890f',
     'ofchoodeth:simo',
-    'Silicon Motion Technology Corporation ADS',
+    'Silicon Motion Technology Corporation ADS • Robinhood',
     18,
     UnderlyingAsset['hoodeth:simo'],
     undefined,
@@ -2498,7 +2498,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'bd9b555e-75d1-4d61-85da-c0b229f82fa1',
     'ofchoodeth:docn',
-    'DigitalOcean Holdings, Inc.',
+    'DigitalOcean Holdings, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:docn'],
     undefined,
@@ -2512,7 +2512,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '164f0849-953d-45a4-81de-99d9bd9dfb6a',
     'ofchoodeth:jnj',
-    'Johnson & Johnson',
+    'Johnson & Johnson • Robinhood',
     18,
     UnderlyingAsset['hoodeth:jnj'],
     undefined,
@@ -2526,7 +2526,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'ec0b68a4-ab46-4f2f-a96a-e67e00a46c8b',
     'ofchoodeth:unh',
-    'UnitedHealth Group Incorporated',
+    'UnitedHealth Group Incorporated • Robinhood',
     18,
     UnderlyingAsset['hoodeth:unh'],
     undefined,
@@ -2540,7 +2540,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'c6c971d7-50d8-47da-8bf5-7be0de271ea7',
     'ofchoodeth:net',
-    'Cloudflare, Inc.',
+    'Cloudflare, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:net'],
     undefined,
@@ -2554,7 +2554,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '29f53da8-7319-4934-b9b0-a77f94fcaa61',
     'ofchoodeth:amba',
-    'Ambarella, Inc.',
+    'Ambarella, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:amba'],
     undefined,
@@ -2568,7 +2568,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'bf0d8ad6-21a6-466f-b1b7-770a555e40d6',
     'ofchoodeth:abcl',
-    'AbCellera Biologics Inc.',
+    'AbCellera Biologics Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:abcl'],
     undefined,
@@ -2582,7 +2582,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '80970b80-9f72-4d59-bdef-1a495d4d4edd',
     'ofchoodeth:smh',
-    'VanEck Semiconductor ETF',
+    'VanEck Semiconductor ETF • Robinhood',
     18,
     UnderlyingAsset['hoodeth:smh'],
     undefined,
@@ -2596,7 +2596,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'e968d154-32ae-4265-8845-411d5aa88812',
     'ofchoodeth:vti',
-    'Vanguard Total Stock Market ETF',
+    'Vanguard Total Stock Market ETF • Robinhood',
     18,
     UnderlyingAsset['hoodeth:vti'],
     undefined,
@@ -2610,7 +2610,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '50fb45fe-9c09-49cc-b90f-f4816a807123',
     'ofchoodeth:gld',
-    'SPDR Gold Shares',
+    'SPDR Gold Shares • Robinhood',
     18,
     UnderlyingAsset['hoodeth:gld'],
     undefined,
@@ -2624,7 +2624,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '010d1101-a935-4047-93b3-f925ce71eb76',
     'ofchoodeth:schd',
-    'Schwab US Dividend Equity ETF',
+    'Schwab US Dividend Equity ETF • Robinhood',
     18,
     UnderlyingAsset['hoodeth:schd'],
     undefined,
@@ -2638,7 +2638,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'ed9d54a3-89a6-4163-9359-c19ae9752cd2',
     'ofchoodeth:jepq',
-    'JPMorgan Nasdaq Equity Premium Income ETF',
+    'JPMorgan Nasdaq Equity Premium Income ETF • Robinhood',
     18,
     UnderlyingAsset['hoodeth:jepq'],
     undefined,
@@ -2652,7 +2652,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '0b6bd354-14d3-483f-8e11-6c7a1887fa38',
     'ofchoodeth:inda',
-    'iShares MSCI India ETF',
+    'iShares MSCI India ETF • Robinhood',
     18,
     UnderlyingAsset['hoodeth:inda'],
     undefined,
@@ -2666,7 +2666,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'b004ccb3-f8dc-48df-8deb-0c92b9b2a37c',
     'ofchoodeth:ewt',
-    'iShares MSCI Taiwan ETF',
+    'iShares MSCI Taiwan ETF • Robinhood',
     18,
     UnderlyingAsset['hoodeth:ewt'],
     undefined,
@@ -2680,7 +2680,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '8f7262f7-7881-4058-bfda-3234e6c488f7',
     'ofchoodeth:amc',
-    'AMC Entertainment Holdings, Inc.',
+    'AMC Entertainment Holdings, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:amc'],
     undefined,
@@ -2694,7 +2694,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '3118c18e-568c-48bd-b05d-d8eada7773f7',
     'ofchoodeth:cvna',
-    'Carvana Co.',
+    'Carvana Co. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:cvna'],
     undefined,
@@ -2708,7 +2708,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '7e945adf-7ab8-4e31-8522-2f88ee4e376a',
     'ofchoodeth:shy',
-    'iShares 1-3 Year Treasury Bond ETF',
+    'iShares 1-3 Year Treasury Bond ETF • Robinhood',
     18,
     UnderlyingAsset['hoodeth:shy'],
     undefined,
@@ -2722,7 +2722,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'a1999eaf-00f3-42f1-9005-3b00ee7f8b3b',
     'ofchoodeth:djt',
-    'Trump Media & Technology Group Corp.',
+    'Trump Media & Technology Group Corp. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:djt'],
     undefined,
@@ -2736,7 +2736,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '10ecb100-49b8-442c-834a-ee2d7650a0cc',
     'ofchoodeth:kss',
-    "Kohl's Corporation",
+    "Kohl's Corporation • Robinhood",
     18,
     UnderlyingAsset['hoodeth:kss'],
     undefined,
@@ -2750,7 +2750,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'ad58a820-83c2-4576-8cf1-3cf39c1f132b',
     'ofchoodeth:clov',
-    'Clover Health Investments, Corp.',
+    'Clover Health Investments, Corp. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:clov'],
     undefined,
@@ -2764,7 +2764,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'de789d67-ce1f-4c74-a234-718d3c02e090',
     'ofchoodeth:mod',
-    'Modine Manufacturing Co',
+    'Modine Manufacturing Co • Robinhood',
     18,
     UnderlyingAsset['hoodeth:mod'],
     undefined,
@@ -2778,7 +2778,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'e9850296-bce4-4683-86c0-8bb248531cef',
     'ofchoodeth:pwr',
-    'Quanta Services, Inc.',
+    'Quanta Services, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:pwr'],
     undefined,
@@ -2792,7 +2792,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'e94c8e6a-09ff-4fae-bf55-d55da6e43c48',
     'ofchoodeth:aeis',
-    'Advanced Energy Industries, Inc.',
+    'Advanced Energy Industries, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:aeis'],
     undefined,
@@ -2806,7 +2806,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '8e3da382-5288-4d00-87f3-579b3667398d',
     'ofchoodeth:powl',
-    'Powell Industries, Inc.',
+    'Powell Industries, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:powl'],
     undefined,
@@ -2820,7 +2820,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'c7b0b3d3-e4db-4c63-8801-b20c79208834',
     'ofchoodeth:jbl',
-    'Jabil Inc.',
+    'Jabil Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:jbl'],
     undefined,
@@ -2877,7 +2877,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '1c1827db-2217-4769-990b-e5820d02396f',
     'ofchoodeth:skhy',
-    'SK Hynix Inc ADR',
+    'SK Hynix Inc ADR • Robinhood',
     18,
     UnderlyingAsset['hoodeth:skhy'],
     undefined,
@@ -2905,7 +2905,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '96c10810-9587-43b2-a498-796f81d437b5',
     'ofchoodeth:cifr',
-    'Cipher Digital Inc.',
+    'Cipher Digital Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:cifr'],
     undefined,
@@ -2919,7 +2919,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'e57dc016-8371-4bde-a450-9d9724496823',
     'ofchoodeth:mara',
-    'MARA Holdings, Inc.',
+    'MARA Holdings, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:mara'],
     undefined,
@@ -2933,7 +2933,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '3f3d4986-ed48-46ce-8fa0-469cee4a368d',
     'ofchoodeth:bmnr',
-    'Bitmine Immersion Technologies, Inc.',
+    'Bitmine Immersion Technologies, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:bmnr'],
     undefined,
@@ -2947,7 +2947,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '35ccc679-d596-4cc9-93b4-70d07d4679ca',
     'ofchoodeth:ebay',
-    'eBay Inc.',
+    'eBay Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:ebay'],
     undefined,
@@ -2961,7 +2961,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'b804a378-6e2e-4d75-a7a3-aa695bf0bf94',
     'ofchoodeth:lcid',
-    'Lucid Group, Inc.',
+    'Lucid Group, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:lcid'],
     undefined,
@@ -2975,7 +2975,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '70151517-2a17-4302-b7d7-01bd72b69a9e',
     'ofchoodeth:nclh',
-    'Norwegian Cruise Line Holdings Ltd.',
+    'Norwegian Cruise Line Holdings Ltd. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:nclh'],
     undefined,
@@ -2989,7 +2989,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '970dfb8f-36f1-4303-886e-3355141e121c',
     'ofchoodeth:open',
-    'Opendoor Technologies Inc.',
+    'Opendoor Technologies Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:open'],
     undefined,
@@ -3003,7 +3003,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'af72142b-da3e-4815-a311-55b0ce5d249e',
     'ofchoodeth:riot',
-    'Riot Platforms, Inc.',
+    'Riot Platforms, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:riot'],
     undefined,
@@ -3017,7 +3017,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '1173e1fe-d379-4494-8f7e-63f70e90fce8',
     'ofchoodeth:onds',
-    'Ondas Inc.',
+    'Ondas Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:onds'],
     undefined,
@@ -3031,7 +3031,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'eb82e798-46fb-4d41-9411-786d30c4a863',
     'ofchoodeth:achr',
-    'Archer Aviation Inc.',
+    'Archer Aviation Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:achr'],
     undefined,
@@ -3045,7 +3045,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '74df29ee-1209-46d1-8d4d-27dde073fab2',
     'ofchoodeth:mnst',
-    'Monster Beverage Corporation',
+    'Monster Beverage Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:mnst'],
     undefined,
@@ -3059,7 +3059,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '251392c5-af44-4e0a-9f09-0bd03d0d14aa',
     'ofchoodeth:gdx',
-    'VanEck Gold Miners ETF',
+    'VanEck Gold Miners ETF • Robinhood',
     18,
     UnderlyingAsset['hoodeth:gdx'],
     undefined,
@@ -3073,7 +3073,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '3fdde9ea-d799-4c7e-8bb5-9f8718734f8b',
     'ofchoodeth:corz',
-    'Core Scientific, Inc.',
+    'Core Scientific, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:corz'],
     undefined,
@@ -3087,7 +3087,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'bf6da900-9e67-4c5a-b942-2288b10670db',
     'ofchoodeth:has',
-    'Hasbro, Inc.',
+    'Hasbro, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:has'],
     undefined,
@@ -3101,7 +3101,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'd1d0a4bc-847d-4672-b07e-477132d87fce',
     'ofchoodeth:mcd',
-    "McDonald's Corporation",
+    "McDonald's Corporation • Robinhood",
     18,
     UnderlyingAsset['hoodeth:mcd'],
     undefined,
@@ -3115,7 +3115,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '4bd08bde-b8d4-4cb9-b6c1-1d8d057dfa88',
     'ofchoodeth:aal',
-    'American Airlines Group Inc.',
+    'American Airlines Group Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:aal'],
     undefined,
@@ -3129,7 +3129,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'd01b2bd6-0463-468f-883b-6cf52e5e673f',
     'ofchoodeth:ual',
-    'United Airlines Holdings, Inc.',
+    'United Airlines Holdings, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:ual'],
     undefined,
@@ -3143,7 +3143,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'f1ec01be-bf7b-4b37-9643-a3b4cc3a92b5',
     'ofchoodeth:ampx',
-    'Amprius Technologies, Inc.',
+    'Amprius Technologies, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:ampx'],
     undefined,
@@ -3157,7 +3157,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '55143382-3c8a-46ef-bb4e-0b6616e4af1e',
     'ofchoodeth:cvx',
-    'Chevron Corporation',
+    'Chevron Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:cvx'],
     undefined,
@@ -3171,7 +3171,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'c7ac1f4f-7a7b-48e3-9b85-74a5b2216a82',
     'ofchoodeth:grnd',
-    'Grindr Inc.',
+    'Grindr Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:grnd'],
     undefined,
@@ -3185,7 +3185,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '6dcd0508-1ba4-47ed-b3cc-8f8ca87fd9a0',
     'ofchoodeth:uber',
-    'Uber Technologies, Inc.',
+    'Uber Technologies, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:uber'],
     undefined,
@@ -3199,7 +3199,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '3a4b0947-e094-4131-bf40-1a834ecd0902',
     'ofchoodeth:u',
-    'Unity Software Inc.',
+    'Unity Software Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:u'],
     undefined,
@@ -3213,7 +3213,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'd29e4590-5aa2-4644-ae50-3ef2db5bc076',
     'ofchoodeth:dkng',
-    'DraftKings Inc.',
+    'DraftKings Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:dkng'],
     undefined,
@@ -3227,7 +3227,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '2412321d-f2d8-4317-bb1d-2c42c7edf662',
     'ofchoodeth:dis',
-    'The Walt Disney Company',
+    'The Walt Disney Company • Robinhood',
     18,
     UnderlyingAsset['hoodeth:dis'],
     undefined,
@@ -3241,7 +3241,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'a7750aa6-57bf-4f20-802d-81ac7ea8ece3',
     'ofchoodeth:car',
-    'Avis Budget Group, Inc.',
+    'Avis Budget Group, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:car'],
     undefined,
@@ -3255,7 +3255,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'e27a8cc7-0e9b-4a2a-9b19-26bb7a74f83b',
     'ofchoodeth:rtx',
-    'RTX Corporation',
+    'RTX Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:rtx'],
     undefined,
@@ -3269,7 +3269,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '641dc17e-88ef-48c4-be36-b9c711dccaf1',
     'ofchoodeth:hut',
-    'Hut 8 Corp.',
+    'Hut 8 Corp. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:hut'],
     undefined,
@@ -3283,7 +3283,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '86d7970a-ca92-4f29-8226-7c402381be80',
     'ofchoodeth:m',
-    "Macy's, Inc.",
+    "Macy's, Inc. • Robinhood",
     18,
     UnderlyingAsset['hoodeth:m'],
     undefined,
@@ -3297,7 +3297,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'dc717b22-d670-4225-bd00-b4c49f3fb3ff',
     'ofchoodeth:gap',
-    'The Gap, Inc.',
+    'The Gap, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:gap'],
     undefined,
@@ -3311,7 +3311,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'f8ed7611-435a-4762-a76b-245ee52c3256',
     'ofchoodeth:aph',
-    'Amphenol Corporation',
+    'Amphenol Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:aph'],
     undefined,
@@ -3325,7 +3325,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '49fa81cb-e7fe-48fe-9755-a607863fffb5',
     'ofchoodeth:pypl',
-    'PayPal Holdings, Inc.',
+    'PayPal Holdings, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:pypl'],
     undefined,
@@ -3339,7 +3339,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'e64cc385-1f7a-4e57-9eb2-f87bbe32775b',
     'ofchoodeth:hl',
-    'Hecla Mining Company',
+    'Hecla Mining Company • Robinhood',
     18,
     UnderlyingAsset['hoodeth:hl'],
     undefined,
@@ -3353,7 +3353,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '5278d154-5d86-445a-ac4e-793232344d24',
     'ofchoodeth:cenx',
-    'Century Aluminum Company',
+    'Century Aluminum Company • Robinhood',
     18,
     UnderlyingAsset['hoodeth:cenx'],
     undefined,
@@ -3367,7 +3367,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '0d24c9cc-90ca-42dc-8238-f4ac67ca0fa0',
     'ofchoodeth:spot',
-    'Spotify Technology S.A.',
+    'Spotify Technology S.A. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:spot'],
     undefined,
@@ -3381,7 +3381,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '770d7367-d119-40ec-894e-d9ea3901af7e',
     'ofchoodeth:ntdoy',
-    'Nintendo Co., Ltd.',
+    'Nintendo Co., Ltd. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:ntdoy'],
     undefined,
@@ -3395,7 +3395,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'e36a3e24-a5ba-4605-b6f5-c9819274307a',
     'ofchoodeth:jpm',
-    'JPMorgan Chase & Co.',
+    'JPMorgan Chase & Co. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:jpm'],
     undefined,
@@ -3409,7 +3409,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'd581c900-4b97-4606-8e6d-bad7382b10c5',
     'ofchoodeth:abnb',
-    'Airbnb, Inc.',
+    'Airbnb, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:abnb'],
     undefined,
@@ -3423,7 +3423,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '7ca8b457-7faa-4389-a9a5-1d3ab9936521',
     'ofchoodeth:vsh',
-    'Vishay Intertechnology, Inc.',
+    'Vishay Intertechnology, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:vsh'],
     undefined,
@@ -3437,7 +3437,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '04f351e2-898c-4766-a883-0f05aeea8f5c',
     'ofchoodeth:d',
-    'Dominion Energy, Inc.',
+    'Dominion Energy, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:d'],
     undefined,
@@ -3451,7 +3451,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '71f24bcc-128e-4a50-ae51-0e28e3ed2816',
     'ofchoodeth:tpl',
-    'Texas Pacific Land Corporation',
+    'Texas Pacific Land Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:tpl'],
     undefined,
@@ -3465,7 +3465,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'c6cd11bc-dfdc-482b-bdef-99aeb5acb0bd',
     'ofchoodeth:pins',
-    'Pinterest, Inc.',
+    'Pinterest, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:pins'],
     undefined,
@@ -3479,7 +3479,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'f4025b5b-96b1-4d7c-af0a-9d59834f91fd',
     'ofchoodeth:fslr',
-    'First Solar, Inc.',
+    'First Solar, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:fslr'],
     undefined,
@@ -3493,7 +3493,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'a2c3ce09-be14-4e32-8bec-517331b43625',
     'ofchoodeth:xop',
-    'State Street SPDR S&P Oil & Gas Exploration & Production ETF',
+    'State Street SPDR S&P Oil & Gas Exploration & Production ETF • Robinhood',
     18,
     UnderlyingAsset['hoodeth:xop'],
     undefined,
@@ -3507,7 +3507,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '370d9e5b-5da5-4cea-9e3c-b0245a99fb4a',
     'ofchoodeth:umac',
-    'Unusual Machines, Inc.',
+    'Unusual Machines, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:umac'],
     undefined,
@@ -3521,7 +3521,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '091cd2cb-b38c-488a-a43a-8ed571bd9c27',
     'ofchoodeth:silj',
-    'Amplify Junior Silver Miners ETF',
+    'Amplify Junior Silver Miners ETF • Robinhood',
     18,
     UnderlyingAsset['hoodeth:silj'],
     undefined,
@@ -3535,7 +3535,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '29e15557-b0f2-4875-afd9-95820bb6b0fb',
     'ofchoodeth:oscr',
-    'Oscar Health, Inc.',
+    'Oscar Health, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:oscr'],
     undefined,
@@ -3549,7 +3549,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '3547a56d-0006-462f-b86d-fa0dc42a7602',
     'ofchoodeth:voyg',
-    'Voyager Technologies, Inc.',
+    'Voyager Technologies, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:voyg'],
     undefined,
@@ -3563,7 +3563,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '33b110a4-c103-4379-874a-b2c8a74874cb',
     'ofchoodeth:ura',
-    'Global X Uranium ETF',
+    'Global X Uranium ETF • Robinhood',
     18,
     UnderlyingAsset['hoodeth:ura'],
     undefined,
@@ -3577,7 +3577,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'cce74055-3934-425f-ab3e-3d7f8c43375f',
     'ofchoodeth:ibkr',
-    'Interactive Brokers Group, Inc.',
+    'Interactive Brokers Group, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:ibkr'],
     undefined,
@@ -3591,7 +3591,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'f16ecef1-08d6-4714-a132-c7edd2cfef9b',
     'ofchoodeth:hon',
-    'Honeywell International Inc.',
+    'Honeywell International Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:hon'],
     undefined,
@@ -3605,7 +3605,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'cf0a5ae6-2010-42ee-9ce2-d74e2df52e23',
     'ofchoodeth:afrm',
-    'Affirm Holdings, Inc.',
+    'Affirm Holdings, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:afrm'],
     undefined,
@@ -3619,7 +3619,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '09b1a014-bbbf-43cc-9423-25d03b59302e',
     'ofchoodeth:fun',
-    'Six Flags Entertainment Corporation',
+    'Six Flags Entertainment Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:fun'],
     undefined,
@@ -3633,7 +3633,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '7bc1645b-386f-4c62-8f3b-5427b90e1757',
     'ofchoodeth:v',
-    'Visa Inc.',
+    'Visa Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:v'],
     undefined,
@@ -3647,7 +3647,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '6f45ebdc-4a1a-4f6f-a8cc-37d89ed0e0df',
     'ofchoodeth:twst',
-    'Twist Bioscience Corporation',
+    'Twist Bioscience Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:twst'],
     undefined,
@@ -3661,7 +3661,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '330cbd8a-8382-4fac-bd60-d63a3641b2f2',
     'ofchoodeth:ccj',
-    'Cameco Corporation',
+    'Cameco Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:ccj'],
     undefined,
@@ -3675,7 +3675,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'a069f9a1-9cd9-4516-9c9f-c68c63f5edf7',
     'ofchoodeth:wst',
-    'West Pharmaceutical Services, Inc.',
+    'West Pharmaceutical Services, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:wst'],
     undefined,
@@ -3689,7 +3689,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '04b56627-e1f4-4f76-9943-3831b5a7e884',
     'ofchoodeth:psky',
-    'Paramount Skydance Corporation',
+    'Paramount Skydance Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:psky'],
     undefined,
@@ -3703,7 +3703,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '910b1d38-bf70-45d1-966f-c47b61732a00',
     'ofchoodeth:gs',
-    'The Goldman Sachs Group, Inc.',
+    'The Goldman Sachs Group, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:gs'],
     undefined,
@@ -3717,7 +3717,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'e525ce3a-b162-472d-a14a-73429536bbe2',
     'ofchoodeth:txg',
-    '10x Genomics, Inc.',
+    '10x Genomics, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:txg'],
     undefined,
@@ -3731,7 +3731,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '347a8ddc-211b-4be7-9d99-d98b52eedad0',
     'ofchoodeth:cmg',
-    'Chipotle Mexican Grill, Inc.',
+    'Chipotle Mexican Grill, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:cmg'],
     undefined,
@@ -3745,7 +3745,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '178e415e-6d20-4cfa-b270-8c4169992b1d',
     'ofchoodeth:cmi',
-    'Cummins Inc.',
+    'Cummins Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:cmi'],
     undefined,
@@ -3759,7 +3759,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '6e60f3e7-857a-4d48-8372-8f00f1f47448',
     'ofchoodeth:btu',
-    'Peabody Energy Corporation',
+    'Peabody Energy Corporation • Robinhood',
     18,
     UnderlyingAsset['hoodeth:btu'],
     undefined,
@@ -3773,7 +3773,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'fc3f78c3-3672-413f-8df7-9f23d8de6405',
     'ofchoodeth:pton',
-    'Peloton Interactive, Inc.',
+    'Peloton Interactive, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:pton'],
     undefined,
@@ -3787,7 +3787,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'ad05ca07-93be-432a-9d53-99a59f76fea5',
     'ofchoodeth:gm',
-    'General Motors Company',
+    'General Motors Company • Robinhood',
     18,
     UnderlyingAsset['hoodeth:gm'],
     undefined,
@@ -3801,7 +3801,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '4d625148-c7ba-405e-b24c-3fb9d1f832d8',
     'ofchoodeth:roku',
-    'Roku, Inc.',
+    'Roku, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:roku'],
     undefined,
@@ -3815,7 +3815,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '02577c4e-406b-4bb9-b620-f3875f71d8cd',
     'ofchoodeth:bksy',
-    'BlackSky Technology Inc.',
+    'BlackSky Technology Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:bksy'],
     undefined,
@@ -3829,7 +3829,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'a70fedbd-67d1-4e37-b27a-7c7d2df24735',
     'ofchoodeth:ma',
-    'Mastercard Incorporated',
+    'Mastercard Incorporated • Robinhood',
     18,
     UnderlyingAsset['hoodeth:ma'],
     undefined,
@@ -3843,7 +3843,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'e13ab397-60c8-4e6b-90d9-45af8ecbb3df',
     'ofchoodeth:chym',
-    'Chime Financial, Inc.',
+    'Chime Financial, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:chym'],
     undefined,
@@ -3857,7 +3857,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '86ab078d-5138-4085-a151-44b3420d1441',
     'ofchoodeth:sols',
-    'Solstice Advanced Materials, Inc.',
+    'Solstice Advanced Materials, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:sols'],
     undefined,
@@ -3871,7 +3871,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '501f4040-23ee-4cc6-a4c7-00265a07a740',
     'ofchoodeth:bw',
-    'Babcock & Wilcox Enterprises, Inc.',
+    'Babcock & Wilcox Enterprises, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:bw'],
     undefined,
@@ -3885,7 +3885,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '25a0d2b2-4612-43a3-a8b8-9221d29458be',
     'ofchoodeth:dnn',
-    'Denison Mines Corp.',
+    'Denison Mines Corp. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:dnn'],
     undefined,
@@ -3899,7 +3899,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'f4b27338-e70b-4e15-a118-b9f5b2b7b43d',
     'ofchoodeth:frmi',
-    'Fermi Inc.',
+    'Fermi Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:frmi'],
     undefined,
@@ -3913,7 +3913,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '3c97a39a-2322-46d5-92ce-ee785c5789a8',
     'ofchoodeth:rbrk',
-    'Rubrik, Inc.',
+    'Rubrik, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:rbrk'],
     undefined,
@@ -3927,7 +3927,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'af40e5d2-9bee-47cb-861e-ce917afb43c0',
     'ofchoodeth:aap',
-    'Advance Auto Parts, Inc.',
+    'Advance Auto Parts, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:aap'],
     undefined,
@@ -3941,7 +3941,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '1e76c87b-b1c7-46b6-b265-3450c4c6a6c9',
     'ofchoodeth:vvv',
-    'Valvoline Inc.',
+    'Valvoline Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:vvv'],
     undefined,
@@ -3955,7 +3955,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '3dec1530-73d1-4a87-83ac-74142bd16fea',
     'ofchoodeth:hubs',
-    'HubSpot, Inc.',
+    'HubSpot, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:hubs'],
     undefined,
@@ -3969,7 +3969,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '281124ac-729c-436f-810a-1b15aeb906a4',
     'ofchoodeth:ntla',
-    'Intellia Therapeutics, Inc.',
+    'Intellia Therapeutics, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:ntla'],
     undefined,
@@ -3983,7 +3983,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'a5d3715c-59d0-421f-b83c-c414522bbbee',
     'ofchoodeth:wu',
-    'The Western Union Company',
+    'The Western Union Company • Robinhood',
     18,
     UnderlyingAsset['hoodeth:wu'],
     undefined,
@@ -3997,7 +3997,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '2cc4c2ef-5882-4855-abe4-a091f7d4211d',
     'ofchoodeth:cc',
-    'The Chemours Company',
+    'The Chemours Company • Robinhood',
     18,
     UnderlyingAsset['hoodeth:cc'],
     undefined,
@@ -4011,7 +4011,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '34b46c53-5c00-47c4-bb24-d93060ed0737',
     'ofchoodeth:sdgr',
-    'Schrödinger, Inc.',
+    'Schrödinger, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:sdgr'],
     undefined,
@@ -4025,7 +4025,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'a649f9dc-b937-4f5c-a317-5b1693a6d1f8',
     'ofchoodeth:azta',
-    'Azenta, Inc.',
+    'Azenta, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:azta'],
     undefined,
@@ -4039,7 +4039,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '97b745be-574c-4680-bdd8-a7fa4c4c5786',
     'ofchoodeth:bfly',
-    'Butterfly Network, Inc.',
+    'Butterfly Network, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:bfly'],
     undefined,
@@ -4053,7 +4053,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '4a4b8b2f-c14c-455d-bfc9-18a35c9ede88',
     'ofchoodeth:lbrx',
-    'LB Pharmaceuticals Inc',
+    'LB Pharmaceuticals Inc • Robinhood',
     18,
     UnderlyingAsset['hoodeth:lbrx'],
     undefined,
@@ -4067,7 +4067,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '2f6a8021-6e3f-4ec1-b9ad-4acd42cfd6b5',
     'ofchoodeth:nuvb',
-    'Nuvation Bio Inc.',
+    'Nuvation Bio Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:nuvb'],
     undefined,
@@ -4081,7 +4081,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '45d3a6b4-04a5-413f-b5e4-6c343338804b',
     'ofchoodeth:wen',
-    "The Wendy's Company",
+    "The Wendy's Company • Robinhood",
     18,
     UnderlyingAsset['hoodeth:wen'],
     undefined,
@@ -4095,7 +4095,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '1fa7f9c5-3d45-4cf9-8080-c00f03db1611',
     'ofchoodeth:lac',
-    'Lithium Americas Corp.',
+    'Lithium Americas Corp. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:lac'],
     undefined,
@@ -4109,7 +4109,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     'd455d1ed-1114-48fc-9bd1-4c097de03f86',
     'ofchoodeth:xxi',
-    'Twenty One Capital, Inc.',
+    'Twenty One Capital, Inc. • Robinhood',
     18,
     UnderlyingAsset['hoodeth:xxi'],
     undefined,
@@ -4123,7 +4123,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '327615fd-8bbc-4fbb-994b-1b910590caa4',
     'ofchoodeth:dpz',
-    "Domino's Pizza Inc.",
+    "Domino's Pizza Inc. • Robinhood",
     18,
     UnderlyingAsset['hoodeth:dpz'],
     undefined,
@@ -4137,7 +4137,7 @@ export const ofcHoodethTokens = [
   ofcerc20(
     '3e376e48-0837-48d6-90fe-32242aad15a7',
     'ofchoodeth:hodu',
-    'Direxion Daily HOOD Bull 2X ETF',
+    'Direxion Daily HOOD Bull 2X ETF • Robinhood',
     18,
     UnderlyingAsset['hoodeth:hodu'],
     undefined,
