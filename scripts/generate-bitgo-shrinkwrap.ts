@@ -4,36 +4,155 @@
  * `npm install bitgo` installs its workspace siblings correctly (WCI-1200).
  *
  * Runs as bitgo's `prepack` script, gated on BITGO_GENERATE_SHRINKWRAP=true.
- * Assumes siblings are already published on the registry — the release
- * workflow guarantees this by publishing siblings first, then bitgo via
- * `--include-private` (WCN-1818). An unresolvable sibling fails the release
- * loudly rather than shipping a broken shrinkwrap.
+ * Before npm resolves the isolated package, it verifies that every exact workspace
+ * sibling version is visible on the public registry. Missing versions are retried
+ * three times to absorb npm propagation delay before the release fails loudly.
  */
 
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import execa from 'execa';
-
+import { setTimeout as setTimeoutPromise } from 'node:timers/promises';
 const rootDir = path.resolve(__dirname, '..');
 const bitgoDir = path.join(rootDir, 'modules/bitgo');
 const modulesDir = path.join(rootDir, 'modules');
+const npmRegistryUrl = 'https://registry.npmjs.org';
+const siblingAvailabilityAttempts = 3;
+const siblingAvailabilityDelayMs = 30_000;
+
+type PackageJson = {
+  name?: unknown;
+  version?: unknown;
+  dependencies?: Record<string, string>;
+  overrides?: Record<string, unknown>;
+};
+
+export type WorkspaceSibling = {
+  name: string;
+  version: string;
+};
+
+export type RegistryResponse = {
+  status: number;
+  statusText?: string;
+};
+
+export type RegistryFetcher = (url: string) => Promise<RegistryResponse>;
+export type Sleep = (delayMs: number) => Promise<void>;
 
 /**
- * Workspace package names, read from disk rather than a hardcoded `@bitgo/`
- * prefix — on alpha/beta these get rescoped to `@bitgo-beta/*`, and a fixed
- * prefix would silently match nothing there.
+ * Workspace package versions, read from disk rather than a hardcoded `@bitgo/`
+ * prefix — on alpha/beta these get rescoped to `@bitgo-beta/*`.
  */
-function getWorkspacePackageNames(): Set<string> {
-  const names = new Set<string>();
-  for (const entry of fs.readdirSync(modulesDir, { withFileTypes: true })) {
+export function getWorkspacePackageVersions(modulesDirectory = modulesDir): Map<string, string> {
+  const versions = new Map<string, string>();
+  for (const entry of fs.readdirSync(modulesDirectory, { withFileTypes: true })) {
     if (!entry.isDirectory()) continue;
-    const pkgPath = path.join(modulesDir, entry.name, 'package.json');
+    const pkgPath = path.join(modulesDirectory, entry.name, 'package.json');
     if (!fs.existsSync(pkgPath)) continue;
-    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
-    if (typeof pkg.name === 'string') names.add(pkg.name);
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8')) as PackageJson;
+    if (typeof pkg.name !== 'string') continue;
+    if (typeof pkg.version !== 'string') {
+      throw new Error(`Workspace package ${pkg.name} at ${pkgPath} has no valid version.`);
+    }
+    versions.set(pkg.name, pkg.version);
   }
-  return names;
+  return versions;
+}
+
+export function getWorkspaceSiblingDependencies(
+  dependencies: Record<string, string> | undefined,
+  workspacePackageVersions: ReadonlyMap<string, string>
+): WorkspaceSibling[] {
+  return Object.keys(dependencies ?? {}).flatMap((name) => {
+    const version = workspacePackageVersions.get(name);
+    return version === undefined ? [] : [{ name, version }];
+  });
+}
+
+const fetchRegistry: RegistryFetcher = async (url) => {
+  const response = await fetch(url, { method: 'HEAD' });
+  return { status: response.status, statusText: response.statusText };
+};
+
+function registryUrlFor(sibling: WorkspaceSibling): string {
+  return `${npmRegistryUrl}/${encodeURIComponent(sibling.name)}/${encodeURIComponent(sibling.version)}`;
+}
+
+export async function findUnavailableWorkspaceSiblings(
+  siblings: readonly WorkspaceSibling[],
+  registryFetcher: RegistryFetcher = fetchRegistry
+): Promise<WorkspaceSibling[]> {
+  const results = await Promise.all(
+    siblings.map(async (sibling) => {
+      const url = registryUrlFor(sibling);
+      let response: RegistryResponse;
+      try {
+        response = await registryFetcher(url);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`Failed to check npm availability for ${sibling.name}@${sibling.version}: ${message}`);
+      }
+
+      if (response.status === 404 || response.status === 410) {
+        return sibling;
+      }
+      if (response.status < 200 || response.status >= 300) {
+        const statusText = response.statusText ? ` ${response.statusText}` : '';
+        throw new Error(
+          `Failed to check npm availability for ${sibling.name}@${sibling.version}: ` +
+            `HTTP ${response.status}${statusText}`
+        );
+      }
+      return undefined;
+    })
+  );
+
+  return results.filter((sibling): sibling is WorkspaceSibling => sibling !== undefined);
+}
+
+export interface WorkspaceSiblingAvailabilityOptions {
+  registryFetcher?: RegistryFetcher;
+  sleep?: Sleep;
+  attempts?: number;
+  delayMs?: number;
+}
+
+const sleep: Sleep = (delayMs) => setTimeoutPromise(delayMs);
+
+export async function ensureWorkspaceSiblingVersionsAvailable(
+  siblings: readonly WorkspaceSibling[],
+  options: WorkspaceSiblingAvailabilityOptions = {}
+): Promise<void> {
+  if (siblings.length === 0) return;
+
+  const registryFetcher = options.registryFetcher ?? fetchRegistry;
+  const sleepFn = options.sleep ?? sleep;
+  const attempts = options.attempts ?? siblingAvailabilityAttempts;
+  const delayMs = options.delayMs ?? siblingAvailabilityDelayMs;
+  if (attempts < 1) {
+    throw new Error(`Workspace sibling availability checks require at least one attempt, got ${attempts}.`);
+  }
+
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    console.log(`Checking npm availability for workspace siblings (attempt ${attempt}/${attempts}).`);
+    const missing = await findUnavailableWorkspaceSiblings(siblings, registryFetcher);
+    if (missing.length === 0) return;
+
+    const missingPackages = missing.map(({ name, version }) => `${name}@${version}`);
+    console.warn(`Missing workspace sibling versions: ${missingPackages.join(', ')}`);
+    if (attempt === attempts) {
+      throw new Error(
+        `Workspace sibling versions are still unavailable from npm after ${attempts} checks: ` +
+          `${missingPackages.join(', ')}. This is likely npm registry propagation delay; ` +
+          'retry the release in recovery mode after these versions become visible.'
+      );
+    }
+
+    console.log(`Waiting ${delayMs}ms before the next npm availability check.`);
+    await sleepFn(delayMs);
+  }
 }
 
 /**
@@ -65,14 +184,14 @@ async function npmInstallWithRetry(cwd: string, attempts = 5, delayMs = 5000): P
   }
 }
 
-async function main() {
+export async function main() {
   if (process.env.BITGO_GENERATE_SHRINKWRAP !== 'true') {
     console.log('BITGO_GENERATE_SHRINKWRAP not set to "true" — skipping npm-shrinkwrap.json generation.');
     return;
   }
 
-  const rootPackageJson = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf-8'));
-  const bitgoPackageJson = JSON.parse(fs.readFileSync(path.join(bitgoDir, 'package.json'), 'utf-8'));
+  const rootPackageJson = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf-8')) as PackageJson;
+  const bitgoPackageJson = JSON.parse(fs.readFileSync(path.join(bitgoDir, 'package.json'), 'utf-8')) as PackageJson;
 
   if (!rootPackageJson.overrides) {
     throw new Error('Root package.json has no "overrides" block to propagate into the bitgo shrinkwrap.');
@@ -82,10 +201,12 @@ async function main() {
   console.log(`Generating npm-shrinkwrap.json for bitgo@${bitgoPackageJson.version} in ${tempDir}`);
 
   try {
-    const workspacePackageNames = getWorkspacePackageNames();
-    const siblingNames = Object.keys(bitgoPackageJson.dependencies ?? {}).filter((name) =>
-      workspacePackageNames.has(name)
+    const workspacePackageVersions = getWorkspacePackageVersions();
+    const siblingDependencies = getWorkspaceSiblingDependencies(
+      bitgoPackageJson.dependencies,
+      workspacePackageVersions
     );
+    const siblingNames = siblingDependencies.map(({ name }) => name);
     if (siblingNames.length > 0) {
       console.log(`Resolving ${siblingNames.length} workspace siblings as part of the shrinkwrap:`);
       siblingNames.forEach((name) => console.log(`  - ${name}`));
@@ -114,6 +235,7 @@ async function main() {
 
     fs.writeFileSync(path.join(tempDir, 'package.json'), JSON.stringify(isolatedPackageJson, null, 2) + '\n');
 
+    await ensureWorkspaceSiblingVersionsAvailable(siblingDependencies);
     await npmInstallWithRetry(tempDir);
     await execa('npm', ['shrinkwrap'], { cwd: tempDir, stdio: 'inherit' });
 
@@ -151,7 +273,9 @@ async function main() {
   }
 }
 
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });
+}

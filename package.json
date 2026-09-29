@@ -323,6 +323,7 @@
     "lint-fix": "lerna run lint --parallel -- --fix",
     "prepare-commit-msg": "node ./scripts/prepare-commit-msg.js",
     "test:prepare-release": "mocha --require tsx ./scripts/tests/prepareRelease/prepare-release-main.test.ts",
+    "test:shrinkwrap": "mocha --require tsx ./scripts/tests/generate-bitgo-shrinkwrap.test.ts",
     "test:scripts": "mocha './scripts/tests/**/*.test.js'"
   },
   "dependencies": {
