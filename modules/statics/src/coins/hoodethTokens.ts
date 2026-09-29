@@ -3045,6 +3045,16 @@ export const hoodethTokens = [
     EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20Token(
+    'c7de2206-a081-4ada-a1e0-01228cb49c47',
+    'hoodeth:tteq',
+    'T Rowe Price Technology ETF • Robinhood Token',
+    18,
+    '0x80e10255a83b257f5a8674d363f547842aa53b8e',
+    UnderlyingAsset['hoodeth:tteq'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
     '3493d608-fd3e-45dc-926d-783d54a8fe4d',
     'thoodeth:amzn',
     'Amazon',

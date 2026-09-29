@@ -7662,6 +7662,20 @@ export const tOfcErc20Coins = [
     'baseeth'
   ),
   ofcerc20(
+    '992b4dfc-aab5-4242-bc00-fdde140ca469',
+    'ofcbaseeth:ousd',
+    'OpenUSD',
+    6,
+    UnderlyingAsset['baseeth:ousd'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
+  ofcerc20(
     'e5ffd11d-59b4-4c95-a4c7-bebaf57222f0',
     'ofczketh:zk',
     'zkSync',

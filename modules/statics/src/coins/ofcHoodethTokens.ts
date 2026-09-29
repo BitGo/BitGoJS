@@ -4288,4 +4288,18 @@ export const ofcHoodethTokens = [
     true,
     'hoodeth'
   ),
+  ofcerc20(
+    '923ed21b-337a-4808-a1b9-464309a21f66',
+    'ofchoodeth:tteq',
+    'T Rowe Price Technology ETF • Robinhood Token',
+    18,
+    UnderlyingAsset['hoodeth:tteq'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'hoodeth'
+  ),
 ];

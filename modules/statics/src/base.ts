@@ -2318,6 +2318,7 @@ export enum UnderlyingAsset {
   'hoodeth:goose' = 'hoodeth:goose',
   'hoodeth:ai' = 'hoodeth:ai',
   'hoodeth:pipedog' = 'hoodeth:pipedog',
+  'hoodeth:tteq' = 'hoodeth:tteq',
   'hemieth:hemi' = 'hemieth:hemi',
   'hemieth:hemibtc' = 'hemieth:hemibtc',
   'usdt0:stable' = 'usdt0:stable',
@@ -4732,6 +4733,7 @@ export enum UnderlyingAsset {
   'tempo:cusd' = 'tempo:cusd',
   'tempo:stcusd' = 'tempo:stcusd',
   'tempo:sofid' = 'tempo:sofid',
+  'tempo:ousd' = 'tempo:ousd',
 
   // Tempo testnet tokens
   'ttempo:pathusd' = 'ttempo:pathusd',
@@ -4819,6 +4821,7 @@ export enum UnderlyingAsset {
   'baseeth:zen' = 'baseeth:zen',
   'baseeth:tel' = 'baseeth:tel',
   'baseeth:svvv' = 'baseeth:svvv',
+  'baseeth:ousd' = 'baseeth:ousd',
   'arbeth:rain' = 'arbeth:rain',
   'arbeth:mlk' = 'arbeth:mlk',
   'polygon:apepe' = 'polygon:apepe',

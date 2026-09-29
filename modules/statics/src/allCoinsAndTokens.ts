@@ -3818,6 +3818,20 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
+  tip20Token(
+    '20ce6bde-6e8f-4c60-9902-171f12edf8bb',
+    'tempo:ousd',
+    'OpenUSD',
+    6,
+    '0x20c0000000000000000000006a37da5c996874be',
+    UnderlyingAsset['tempo:ousd'],
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
+  ),
   // Tempo TIP20 testnet tokens
   ttip20Token(
     'e1872fd8-14ee-4dc9-bc5e-fd52552d9c60',
@@ -5286,6 +5300,16 @@ export const allCoinsAndTokens = [
     '0x6b84dcd57ac5ed6e1d0881fad73c4f61c554dddb',
     UnderlyingAsset['baseeth:glx'],
     Networks.main.basechain
+  ),
+  erc20Token(
+    'dc6c4608-c1bb-436f-beeb-19055bd9c358',
+    'baseeth:ousd',
+    'OpenUSD',
+    6,
+    '0xb2000000000000000000002feb517dfec7415344',
+    UnderlyingAsset['baseeth:ousd'],
+    Networks.main.basechain,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
 
   // ARC mainnet tokens
