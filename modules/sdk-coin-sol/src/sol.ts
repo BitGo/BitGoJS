@@ -103,8 +103,6 @@ import { validateRawTransactionV1 } from './lib/serialization/parseWireTransacti
 
 export const DEFAULT_SCAN_FACTOR = 20; // default number of receive addresses to scan for funds
 
-const V1_TRANSACTION_SIZE_LIMIT = 4096; // v1 (SIMD-0296/0385) wire size limit in bytes
-
 export interface TransactionFee {
   fee: string;
 }
@@ -2168,13 +2166,9 @@ export class Sol extends BaseCoin {
     const isV1 = rawBytes.length > 0 && rawBytes[0] === 0x81;
 
     if (isV1) {
-      if (rawBytes.length > V1_TRANSACTION_SIZE_LIMIT) {
-        throw new Error(
-          `v1 transaction exceeds the ${V1_TRANSACTION_SIZE_LIMIT}-byte size limit: ${rawBytes.length} bytes`
-        );
-      }
       // Structural + signature validation parity with the legacy path (which uses
-      // validateRawTransaction(raw, true, true)).
+      // validateRawTransaction(raw, true, true)). The 4096-byte v1 size limit is
+      // enforced inside validateRawTransactionV1 (parseWireTransaction).
       validateRawTransactionV1(rawBytes);
     } else {
       validateRawTransaction(serializedSignedTransaction, true, true);

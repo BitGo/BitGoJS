@@ -28,7 +28,9 @@ export function parseWireTransaction(wireBytes: Uint8Array): ParsedWireTransacti
     throw new BuildTransactionError('Invalid v1 transaction: too short');
   }
   if (wireBytes.length > V1_TRANSACTION_SIZE_LIMIT) {
-    throw new BuildTransactionError(`Invalid v1 transaction: exceeds the ${V1_TRANSACTION_SIZE_LIMIT}-byte size limit`);
+    throw new BuildTransactionError(
+      `Invalid v1 transaction: exceeds the ${V1_TRANSACTION_SIZE_LIMIT}-byte size limit: ${wireBytes.length} bytes`
+    );
   }
   const decoded = decodeV1Message(wireBytes);
   const messageLength = decoded.byteLength;
