@@ -151,7 +151,8 @@ class CoinFactory {
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'stx':
-      case 'tstx': {
+      case 'tstx':
+      case 'tstxsignet': {
         const { register } = await import('@bitgo/sdk-coin-stx');
         return this.cacheAndRegister(name, sdk, register);
       }

@@ -974,6 +974,8 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return Starknet.createInstance;
     case 'tstx':
       return Tstx.createInstance;
+    case 'tstxsignet':
+      return Tstxsignet.createInstance;
     case 'tstt':
       return Tstt.createInstance;
     case 'tsui':
@@ -1186,6 +1188,7 @@ export function getTokenConstructor(
     }
     case 'stx':
     case 'tstx':
+    case 'tstxsignet':
       return Sip10Token.createTokenConstructor(tokenConfig as Sip10TokenConfig);
     case 'near':
     case 'tnear':
