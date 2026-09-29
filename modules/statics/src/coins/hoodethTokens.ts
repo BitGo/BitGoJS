@@ -8,7 +8,7 @@ export const hoodethTokens = [
   erc20Token(
     '2597a273-8103-4e42-89cd-da241c231bc0',
     'hoodeth:amd',
-    'Advanced Micro Devices, Inc.',
+    'Advanced Micro Devices, Inc. • Robinhood',
     18,
     '0x86923f96303d656e4aa86d9d42d1e57ad2023fdc',
     UnderlyingAsset['hoodeth:amd'],
@@ -18,7 +18,7 @@ export const hoodethTokens = [
   erc20Token(
     '47c1c9fe-8904-4d3c-afb6-7b6070dd9d50',
     'hoodeth:baba',
-    'Alibaba',
+    'Alibaba • Robinhood',
     18,
     '0xad25ac6c84d497db898fa1e8387bf6af3532a1c4',
     UnderlyingAsset['hoodeth:baba'],
@@ -28,7 +28,7 @@ export const hoodethTokens = [
   erc20Token(
     '31baa733-4e2b-4fc6-82ea-2653cbd083ff',
     'hoodeth:googl',
-    'Alphabet Inc.',
+    'Alphabet Inc. • Robinhood',
     18,
     '0x2e0847e8910a9732eb3fb1bb4b70a580adad4fe3',
     UnderlyingAsset['hoodeth:googl'],
@@ -38,7 +38,7 @@ export const hoodethTokens = [
   erc20Token(
     '6852e072-48ec-41e7-b0ad-c8594c560f5c',
     'hoodeth:amzn',
-    'Amazon.com, Inc.',
+    'Amazon.com, Inc. • Robinhood',
     18,
     '0x12f190a9f9d7d37a250758b26824b97ce941bf54',
     UnderlyingAsset['hoodeth:amzn'],
@@ -48,7 +48,7 @@ export const hoodethTokens = [
   erc20Token(
     'da8769ad-98d5-4349-bea9-8fee3be83c9a',
     'hoodeth:aapl',
-    'Apple Inc.',
+    'Apple Inc. • Robinhood',
     18,
     '0xaf3d76f1834a1d425780943c99ea8a608f8a93f9',
     UnderlyingAsset['hoodeth:aapl'],
@@ -58,7 +58,7 @@ export const hoodethTokens = [
   erc20Token(
     '58de73d2-1337-4c9f-b936-e9d250104744',
     'hoodeth:apld',
-    'Applied Digital',
+    'Applied Digital • Robinhood',
     18,
     '0xb8dbf92f9741c9ac1c32115e78581f23509916fd',
     UnderlyingAsset['hoodeth:apld'],
@@ -68,7 +68,7 @@ export const hoodethTokens = [
   erc20Token(
     '4e7ca8a7-ee2d-4a39-9bb8-96aca2da5fbf',
     'hoodeth:amat',
-    'Applied Materials',
+    'Applied Materials • Robinhood',
     18,
     '0x36046893810a7e7fce501229d57dc3fc8c8716d0',
     UnderlyingAsset['hoodeth:amat'],
@@ -78,7 +78,7 @@ export const hoodethTokens = [
   erc20Token(
     'bd7463c6-df6c-46ac-9c4b-2ec87e10d1f1',
     'hoodeth:aaoi',
-    'Applied Optoelectronics',
+    'Applied Optoelectronics • Robinhood',
     18,
     '0x521cf887e6531c6f667b5bc4d896e5d9bfe8eb2e',
     UnderlyingAsset['hoodeth:aaoi'],
@@ -88,7 +88,7 @@ export const hoodethTokens = [
   erc20Token(
     'cf303c78-5738-4b67-86f7-14a44b3d2515',
     'hoodeth:arm',
-    'Arm Holdings plc',
+    'Arm Holdings plc • Robinhood',
     18,
     '0x666716999e75d2652398ff830bbc2e485946e140',
     UnderlyingAsset['hoodeth:arm'],
@@ -98,7 +98,7 @@ export const hoodethTokens = [
   erc20Token(
     '7545f551-bf07-41f1-9396-97544813dfd0',
     'hoodeth:asml',
-    'ASML Holding NV',
+    'ASML Holding NV • Robinhood',
     18,
     '0x47f93d52cbec7c6d2cfc080e154002370a60daea',
     UnderlyingAsset['hoodeth:asml'],
@@ -108,7 +108,7 @@ export const hoodethTokens = [
   erc20Token(
     'f3a07447-c8e4-4806-9db5-ebbfc7a077b0',
     'hoodeth:asts',
-    'AST SpaceMobile',
+    'AST SpaceMobile • Robinhood',
     18,
     '0x1af6446f07eb1d97c546afc8c9544cbdf3ad5137',
     UnderlyingAsset['hoodeth:asts'],
@@ -118,7 +118,7 @@ export const hoodethTokens = [
   erc20Token(
     'ffb9fa51-e51b-40f0-a2c9-3f735bab7d7c',
     'hoodeth:be',
-    'Bloom Energy Corporation',
+    'Bloom Energy Corporation • Robinhood',
     18,
     '0x822cc93ffd030293e9842c30bbd678f530701867',
     UnderlyingAsset['hoodeth:be'],
@@ -128,7 +128,7 @@ export const hoodethTokens = [
   erc20Token(
     '9c1fa204-5ba9-42a4-9dbd-52382a7b6a03',
     'hoodeth:ba',
-    'Boeing',
+    'Boeing • Robinhood',
     18,
     '0x4d21483a44bf67a86b77e3da301411880797d452',
     UnderlyingAsset['hoodeth:ba'],
@@ -138,7 +138,7 @@ export const hoodethTokens = [
   erc20Token(
     '80680cca-eb8a-418e-9e7f-5616d7fcf987',
     'hoodeth:shy',
-    'iShares 1-3 Year Treasury Bond ETF',
+    'iShares 1-3 Year Treasury Bond ETF • Robinhood',
     18,
     '0xbe274710bf3d9567e1b290ef6a5f9f90ca016fd8',
     UnderlyingAsset['hoodeth:shy'],
@@ -148,7 +148,7 @@ export const hoodethTokens = [
   erc20Token(
     'd83afbd0-22a5-4d09-88e8-4ae3aa2b76b4',
     'hoodeth:bnd',
-    'Vanguard Total Bond Market ETF',
+    'Vanguard Total Bond Market ETF • Robinhood',
     18,
     '0x2f62fc9fabb470c690f141c28340ed832bb27020',
     UnderlyingAsset['hoodeth:bnd'],
@@ -158,7 +158,7 @@ export const hoodethTokens = [
   erc20Token(
     '9d7ae82e-0452-4f84-a395-0cc26aa7281b',
     'hoodeth:avgo',
-    'Broadcom',
+    'Broadcom • Robinhood',
     18,
     '0x156e175dd063a8ce274c50654ef40e0032b3fbcf',
     UnderlyingAsset['hoodeth:avgo'],
@@ -168,7 +168,7 @@ export const hoodethTokens = [
   erc20Token(
     '1c9fdfbc-6633-4b64-9155-5a868dedb978',
     'hoodeth:ccl',
-    'Carnival Corporation',
+    'Carnival Corporation • Robinhood',
     18,
     '0x9651342cea770ae9a2969ba2a52611523146aef9',
     UnderlyingAsset['hoodeth:ccl'],
@@ -178,7 +178,7 @@ export const hoodethTokens = [
   erc20Token(
     '7382f839-5584-417e-b9a7-5d96425e0afd',
     'hoodeth:celh',
-    'Celsius',
+    'Celsius • Robinhood',
     18,
     '0x8cf07c5a878945185d327aaa6e33faa95f95e7bf',
     UnderlyingAsset['hoodeth:celh'],
@@ -188,7 +188,7 @@ export const hoodethTokens = [
   erc20Token(
     '3bbd36d8-db82-4c07-8df9-00f3d58f9872',
     'hoodeth:cbrs',
-    'Cerebras Systems',
+    'Cerebras Systems • Robinhood',
     18,
     '0x5c90450bbb4273d7b2f17cf6917aeb237a569679',
     UnderlyingAsset['hoodeth:cbrs'],
@@ -198,7 +198,7 @@ export const hoodethTokens = [
   erc20Token(
     'c7491c49-a509-4791-aa18-2ab12130c518',
     'hoodeth:crcl',
-    'Circle Internet Group Inc',
+    'Circle Internet Group Inc • Robinhood',
     18,
     '0xdf0992e440dd0be65bd8439b609d6d4366bf1cb5',
     UnderlyingAsset['hoodeth:crcl'],
@@ -208,7 +208,7 @@ export const hoodethTokens = [
   erc20Token(
     '24dec65f-d2f5-433c-bf6e-a3840b96e950',
     'hoodeth:clsk',
-    'CleanSpark',
+    'CleanSpark • Robinhood',
     18,
     '0xcbb95bbf36099d34da091dc6fa6f49efa257cee3',
     UnderlyingAsset['hoodeth:clsk'],
@@ -218,7 +218,7 @@ export const hoodethTokens = [
   erc20Token(
     '22bffb7c-8a2c-4ed4-84ae-7a8e2e0734e2',
     'hoodeth:coin',
-    'Coinbase',
+    'Coinbase • Robinhood',
     18,
     '0x6330d8c3178a418788df01a47479c0ce7ccf450b',
     UnderlyingAsset['hoodeth:coin'],
@@ -228,7 +228,7 @@ export const hoodethTokens = [
   erc20Token(
     '9c12894d-62c6-4e9c-bea7-9d909a23c496',
     'hoodeth:crwv',
-    'CoreWeave',
+    'CoreWeave • Robinhood',
     18,
     '0x5f10a1c971b69e47e059e1dc91901b59b3fb49c3',
     UnderlyingAsset['hoodeth:crwv'],
@@ -238,7 +238,7 @@ export const hoodethTokens = [
   erc20Token(
     '5f160ec9-f074-4bf3-a7ef-9b9273fce1fe',
     'hoodeth:glw',
-    'Corning',
+    'Corning • Robinhood',
     18,
     '0x7c04e6a3368f2a1de3874f0e80d2e0a1a9915da6',
     UnderlyingAsset['hoodeth:glw'],
@@ -248,7 +248,7 @@ export const hoodethTokens = [
   erc20Token(
     'caa02fb7-45ba-4af2-a0b3-827a2f550b72',
     'hoodeth:cost',
-    'Costco',
+    'Costco • Robinhood',
     18,
     '0x4ea005168d7f09a7a0ba9d1def21a479950e44c2',
     UnderlyingAsset['hoodeth:cost'],
@@ -258,7 +258,7 @@ export const hoodethTokens = [
   erc20Token(
     '764b6de2-2eea-4c5e-90ec-99f76984c828',
     'hoodeth:crwd',
-    'CrowdStrike Holdings',
+    'CrowdStrike Holdings • Robinhood',
     18,
     '0xea72ecca2d0f6bfa1394dbbcff85b52cd4233931',
     UnderlyingAsset['hoodeth:crwd'],
@@ -268,7 +268,7 @@ export const hoodethTokens = [
   erc20Token(
     'ed88737d-e4e6-4721-b227-59dc307794a3',
     'hoodeth:qbts',
-    'D-Wave Quantum',
+    'D-Wave Quantum • Robinhood',
     18,
     '0xc583c60aef9dc401da72cec1b404743a93cea1cc',
     UnderlyingAsset['hoodeth:qbts'],
@@ -278,7 +278,7 @@ export const hoodethTokens = [
   erc20Token(
     '7a839eb5-a23e-4894-b0c6-d482b8da5044',
     'hoodeth:ddog',
-    'Datadog',
+    'Datadog • Robinhood',
     18,
     '0x27c99fbde9d0d2aa4f4bfb4943f237843ddf6958',
     UnderlyingAsset['hoodeth:ddog'],
@@ -288,7 +288,7 @@ export const hoodethTokens = [
   erc20Token(
     '7e955555-9504-4173-b9a6-2799b88e38f0',
     'hoodeth:dram',
-    'Dataram Corporation',
+    'Dataram Corporation • Robinhood',
     18,
     '0x33c18e2cc8ae9ae486e785090d86b2ce632ff994',
     UnderlyingAsset['hoodeth:dram'],
@@ -298,7 +298,7 @@ export const hoodethTokens = [
   erc20Token(
     'b09de291-c9d8-405f-98fd-3b0ca9096186',
     'hoodeth:dell',
-    'Dell',
+    'Dell • Robinhood',
     18,
     '0x941ae714ec6d8130c7b75d67160ca08f1e7d11dd',
     UnderlyingAsset['hoodeth:dell'],
@@ -308,7 +308,7 @@ export const hoodethTokens = [
   erc20Token(
     '6cca71d6-1d1c-4822-a050-dea1f2c9a73b',
     'hoodeth:elf',
-    'e.l.f. Beauty',
+    'e.l.f. Beauty • Robinhood',
     18,
     '0x39ec44bee4f6a116c6f9b8de566848a985c53c60',
     UnderlyingAsset['hoodeth:elf'],
@@ -318,7 +318,7 @@ export const hoodethTokens = [
   erc20Token(
     'b76595b5-8c3a-4acc-8dad-54ee025fe972',
     'hoodeth:sats',
-    'EchoStar',
+    'EchoStar • Robinhood',
     18,
     '0x95052ddcd5dc25641657424a8cf04834997e1730',
     UnderlyingAsset['hoodeth:sats'],
@@ -328,7 +328,7 @@ export const hoodethTokens = [
   erc20Token(
     '7fb04506-28aa-41e3-b2db-4b5d38065eff',
     'hoodeth:lly',
-    'Eli Lilly',
+    'Eli Lilly • Robinhood',
     18,
     '0x8005d266423c7ea827372c9c864491e5786600ea',
     UnderlyingAsset['hoodeth:lly'],
@@ -338,7 +338,7 @@ export const hoodethTokens = [
   erc20Token(
     'deb752dc-726b-42e9-8ffb-07c55cfd261b',
     'hoodeth:p',
-    'Everpure',
+    'Everpure • Robinhood',
     18,
     '0x1cdad396db64bda184d5182a97dd9b3c62100b7d',
     UnderlyingAsset['hoodeth:p'],
@@ -348,7 +348,7 @@ export const hoodethTokens = [
   erc20Token(
     '57c5305e-364b-4e17-8910-f9cc96e036c3',
     'hoodeth:xom',
-    'Exxon Mobil',
+    'Exxon Mobil • Robinhood',
     18,
     '0xf9b46d3d1b22199d4d1025a9cedb540a33f1a2d5',
     UnderlyingAsset['hoodeth:xom'],
@@ -358,7 +358,7 @@ export const hoodethTokens = [
   erc20Token(
     '5efde6dc-176a-4a21-bd1f-f88f6607d088',
     'hoodeth:flnc',
-    'Fluence Energy',
+    'Fluence Energy • Robinhood',
     18,
     '0x282e87451e10fa6679bc7d76c69be44cd3fc777c',
     UnderlyingAsset['hoodeth:flnc'],
@@ -368,7 +368,7 @@ export const hoodethTokens = [
   erc20Token(
     '6e4eca40-dfec-4c55-a04d-39ce43f9ba20',
     'hoodeth:f',
-    'Ford Motor',
+    'Ford Motor • Robinhood',
     18,
     '0x25c288e6d899b9bc30160965ad9644c67e73be0c',
     UnderlyingAsset['hoodeth:f'],
@@ -378,7 +378,7 @@ export const hoodethTokens = [
   erc20Token(
     '36cd2763-2402-44a7-b5bc-f985b3a74f76',
     'hoodeth:futu',
-    'Futu Holdings',
+    'Futu Holdings • Robinhood',
     18,
     '0xeb30663bdff0622ef4e4e5cbb4e975f19f33f51d',
     UnderlyingAsset['hoodeth:futu'],
@@ -388,7 +388,7 @@ export const hoodethTokens = [
   erc20Token(
     '33be21dd-9315-4139-9f1a-0f1c738e3699',
     'hoodeth:gme',
-    'GameStop',
+    'GameStop • Robinhood',
     18,
     '0x1b0e319c6a659f002271b69db8a7df2f911c153e',
     UnderlyingAsset['hoodeth:gme'],
@@ -398,7 +398,7 @@ export const hoodethTokens = [
   erc20Token(
     '7be6dd43-5273-42b6-8a67-63d7650a2d72',
     'hoodeth:inod',
-    'Innodata',
+    'Innodata • Robinhood',
     18,
     '0xf1953dab6fad537488d5a022361ffaa8b4c95ec6',
     UnderlyingAsset['hoodeth:inod'],
@@ -408,7 +408,7 @@ export const hoodethTokens = [
   erc20Token(
     '8aa38d75-8f24-4fe4-8642-072e3e0529bd',
     'hoodeth:intc',
-    'Intel Corporation',
+    'Intel Corporation • Robinhood',
     18,
     '0xc72b96e0e48ecd4dc75e1e45396e26300bc39681',
     UnderlyingAsset['hoodeth:intc'],
@@ -418,7 +418,7 @@ export const hoodethTokens = [
   erc20Token(
     '2bc23c79-4bce-47d3-89c9-1b21d49dea63',
     'hoodeth:intu',
-    'Intuit',
+    'Intuit • Robinhood',
     18,
     '0x56d23bee5f41a7120170b0c603dae30128e460e9',
     UnderlyingAsset['hoodeth:intu'],
@@ -428,7 +428,7 @@ export const hoodethTokens = [
   erc20Token(
     '36b30d22-1fdf-45ee-ae32-9162a2f8d9f0',
     'hoodeth:lunr',
-    'Intuitive Machines',
+    'Intuitive Machines • Robinhood',
     18,
     '0xa5d4968421ba94814be3b136b15cf422101ac1a3',
     UnderlyingAsset['hoodeth:lunr'],
@@ -438,7 +438,7 @@ export const hoodethTokens = [
   erc20Token(
     '92f0c908-efa9-490a-a344-15511d54ce57',
     'hoodeth:qqq',
-    'Invesco QQQ Trust',
+    'Invesco QQQ Trust • Robinhood',
     18,
     '0xd5f3879160bc7c32ebb4dc785f8a4f505888de68',
     UnderlyingAsset['hoodeth:qqq'],
@@ -448,7 +448,7 @@ export const hoodethTokens = [
   erc20Token(
     'e9a5d68d-12a6-49a8-9d6a-165ed226bb84',
     'hoodeth:spmo',
-    'Invesco S&P 500 Momentum ETF',
+    'Invesco S&P 500 Momentum ETF • Robinhood',
     18,
     '0xad622320e520de39e72d41ef07438c3fd3354875',
     UnderlyingAsset['hoodeth:spmo'],
@@ -458,7 +458,7 @@ export const hoodethTokens = [
   erc20Token(
     'd438050e-10b8-48f8-854c-932ab589eb53',
     'hoodeth:ionq',
-    'IonQ',
+    'IonQ • Robinhood',
     18,
     '0x558378e000d634a36593e338ebacdd6207640efe',
     UnderlyingAsset['hoodeth:ionq'],
@@ -468,7 +468,7 @@ export const hoodethTokens = [
   erc20Token(
     '94d2f2b1-7311-47b0-814e-d928e69e2de8',
     'hoodeth:iren',
-    'IREN Limited',
+    'IREN Limited • Robinhood',
     18,
     '0xf0ab0c93be6f41369d302e55db1a96b3c430212d',
     UnderlyingAsset['hoodeth:iren'],
@@ -478,7 +478,7 @@ export const hoodethTokens = [
   erc20Token(
     'be7d01f7-12e9-4e19-91be-56d894c9fa9c',
     'hoodeth:sgov',
-    'iShares 0-3 Month Treasury Bond ETF',
+    'iShares 0-3 Month Treasury Bond ETF • Robinhood',
     18,
     '0x92fd66527192e3e61d4ddd13322aa222de86f9b5',
     UnderlyingAsset['hoodeth:sgov'],
@@ -488,7 +488,7 @@ export const hoodethTokens = [
   erc20Token(
     '90bbef61-423a-4a28-a6e6-bd9009fbc93e',
     'hoodeth:ewy',
-    'iShares MSCI South Korea fund',
+    'iShares MSCI South Korea fund • Robinhood',
     18,
     '0x7f0abef0c07280f82c6a08ead09ded6bae2c13fc',
     UnderlyingAsset['hoodeth:ewy'],
@@ -498,7 +498,7 @@ export const hoodethTokens = [
   erc20Token(
     'fdbdd87b-e67d-491f-8d51-7534090d9857',
     'hoodeth:soxx',
-    'iShares Semiconductor ETF',
+    'iShares Semiconductor ETF • Robinhood',
     18,
     '0x75742c18bc1f1c5c5f448f4c9d9c6f66dafaaa38',
     UnderlyingAsset['hoodeth:soxx'],
@@ -508,7 +508,7 @@ export const hoodethTokens = [
   erc20Token(
     '326f35b5-d998-4851-81b3-fcb5c0ccf0ec',
     'hoodeth:slv',
-    'iShares Silver Trust',
+    'iShares Silver Trust • Robinhood',
     18,
     '0x411efb0e7f985935daec3d4c3ebaea0d0ad7d89f',
     UnderlyingAsset['hoodeth:slv'],
@@ -518,7 +518,7 @@ export const hoodethTokens = [
   erc20Token(
     '18e487a4-d55a-4875-bde4-3aeb34cb3f1b',
     'hoodeth:lulu',
-    'Lululemon',
+    'Lululemon • Robinhood',
     18,
     '0x4e62068525ab11fe768e29dfd00ef909b9803016',
     UnderlyingAsset['hoodeth:lulu'],
@@ -528,7 +528,7 @@ export const hoodethTokens = [
   erc20Token(
     '90a9b87d-6a35-4825-b5d0-29d1405f494d',
     'hoodeth:lite',
-    'Lumentum',
+    'Lumentum • Robinhood',
     18,
     '0x8ef20885f94e3d9bc7eb3080279188bd5ed7c08c',
     UnderlyingAsset['hoodeth:lite'],
@@ -538,7 +538,7 @@ export const hoodethTokens = [
   erc20Token(
     '4929fd2c-ecf9-472a-9dcb-c48afc66fb5e',
     'hoodeth:mrvl',
-    'Marvell Technology',
+    'Marvell Technology • Robinhood',
     18,
     '0x62fd0668e10d8b72339be2dcf7643001688ff13b',
     UnderlyingAsset['hoodeth:mrvl'],
@@ -548,7 +548,7 @@ export const hoodethTokens = [
   erc20Token(
     '6c88bc15-c425-40ae-85a2-af9bf6e0966c',
     'hoodeth:mxl',
-    'MaxLinear',
+    'MaxLinear • Robinhood',
     18,
     '0x48961813349333209994750ffa89b3c5c22ec969',
     UnderlyingAsset['hoodeth:mxl'],
@@ -558,7 +558,7 @@ export const hoodethTokens = [
   erc20Token(
     'df3845bb-bab1-49d4-a040-c81a768d244a',
     'hoodeth:meta',
-    'Meta Platforms, Inc.',
+    'Meta Platforms, Inc. • Robinhood',
     18,
     '0xc0d6457c16cc70d6790dd43521c899c87ce02f35',
     UnderlyingAsset['hoodeth:meta'],
@@ -568,7 +568,7 @@ export const hoodethTokens = [
   erc20Token(
     '13ebc2ae-5bee-4433-b5f1-94d823c0db20',
     'hoodeth:mu',
-    'Micron Technology',
+    'Micron Technology • Robinhood',
     18,
     '0xff080c8ce2e5feadaca0da81314ae59d232d4afd',
     UnderlyingAsset['hoodeth:mu'],
@@ -578,7 +578,7 @@ export const hoodethTokens = [
   erc20Token(
     '49c855b1-0d85-4f79-9756-7ecf28440225',
     'hoodeth:msft',
-    'Microsoft Corporation',
+    'Microsoft Corporation • Robinhood',
     18,
     '0xe93237c50d904957cf27e7b1133b510c669c2e74',
     UnderlyingAsset['hoodeth:msft'],
@@ -588,7 +588,7 @@ export const hoodethTokens = [
   erc20Token(
     'c4558e1c-6a89-4e16-9c87-72f89de9caea',
     'hoodeth:mdb',
-    'MongoDB',
+    'MongoDB • Robinhood',
     18,
     '0xddf2266b79abf0b48898959b0ed6e6adf512be74',
     UnderlyingAsset['hoodeth:mdb'],
@@ -598,7 +598,7 @@ export const hoodethTokens = [
   erc20Token(
     'bd2d8f22-d16a-4849-8cec-c79c26730c88',
     'hoodeth:nne',
-    'Nano Nuclear Energy',
+    'Nano Nuclear Energy • Robinhood',
     18,
     '0xbef75684c43c4ea7bd18dd532a2244674ee8b926',
     UnderlyingAsset['hoodeth:nne'],
@@ -608,7 +608,7 @@ export const hoodethTokens = [
   erc20Token(
     'f1b05e08-a29c-40cc-886b-8fcaa4208a1c',
     'hoodeth:nvts',
-    'Navitas Semiconductor',
+    'Navitas Semiconductor • Robinhood',
     18,
     '0xbe6702d7b70315376dc48a3293f24f0982f86386',
     UnderlyingAsset['hoodeth:nvts'],
@@ -618,7 +618,7 @@ export const hoodethTokens = [
   erc20Token(
     '0f93c0dc-17b2-4362-a8e3-4162ad3f0ec9',
     'hoodeth:nbis',
-    'Nebius Group',
+    'Nebius Group • Robinhood',
     18,
     '0x9d9c6684f596f66a64c030b93a886d51fd4d7931',
     UnderlyingAsset['hoodeth:nbis'],
@@ -628,7 +628,7 @@ export const hoodethTokens = [
   erc20Token(
     '2f603edd-ef7e-471f-87f0-6203e0ea381b',
     'hoodeth:nflx',
-    'Netflix',
+    'Netflix • Robinhood',
     18,
     '0xe0444ef8bf4ed74f74fd73686e2ddf4c1c5591e8',
     UnderlyingAsset['hoodeth:nflx'],
@@ -638,7 +638,7 @@ export const hoodethTokens = [
   erc20Token(
     '5898820c-7d6f-47d8-9ff6-4786891a7bcd',
     'hoodeth:nok',
-    'Nokia',
+    'Nokia • Robinhood',
     18,
     '0x25ee805ac369b6e3f8bf5764c682d34a37cb7175',
     UnderlyingAsset['hoodeth:nok'],
@@ -648,7 +648,7 @@ export const hoodethTokens = [
   erc20Token(
     '9d8234a1-12cb-4a87-845b-28f03c70e92f',
     'hoodeth:nu',
-    'Nu',
+    'Nu • Robinhood',
     18,
     '0x408c14038a04f7bd235329e26d2bf569ee20e250',
     UnderlyingAsset['hoodeth:nu'],
@@ -658,7 +658,7 @@ export const hoodethTokens = [
   erc20Token(
     'eada9a10-3d17-465f-978b-5a183e73f4c6',
     'hoodeth:nvda',
-    'NVIDIA Corporation',
+    'NVIDIA Corporation • Robinhood',
     18,
     '0xd0601ce157db5bdc3162bbac2a2c8af5320d9eec',
     UnderlyingAsset['hoodeth:nvda'],
@@ -668,7 +668,7 @@ export const hoodethTokens = [
   erc20Token(
     '0519b754-a119-4431-9d00-490522e2a4d1',
     'hoodeth:orcl',
-    'Oracle Corporation',
+    'Oracle Corporation • Robinhood',
     18,
     '0xb0992820e760d836549ba69bc7598b4af75dee03',
     UnderlyingAsset['hoodeth:orcl'],
@@ -678,7 +678,7 @@ export const hoodethTokens = [
   erc20Token(
     'f4e2c9a2-130f-4080-ba53-d43d5494ee2b',
     'hoodeth:pltr',
-    'Palantir Technologies Inc.',
+    'Palantir Technologies Inc. • Robinhood',
     18,
     '0x894e1ec2d74ffe5aef8dc8a9e84686accb964f2a',
     UnderlyingAsset['hoodeth:pltr'],
@@ -688,7 +688,7 @@ export const hoodethTokens = [
   erc20Token(
     '36707ef0-d481-497e-97e3-41e0ccc4ed40',
     'hoodeth:peng',
-    'Penguin Solutions',
+    'Penguin Solutions • Robinhood',
     18,
     '0x9b23573b156b52565012f5ce02cdf60afbaa70be',
     UnderlyingAsset['hoodeth:peng'],
@@ -698,7 +698,7 @@ export const hoodethTokens = [
   erc20Token(
     '1eaaf957-8f86-40fc-9b17-8a784cb616fb',
     'hoodeth:pr',
-    'Permian Resources',
+    'Permian Resources • Robinhood',
     18,
     '0x4189f0c66ebbb0bfef1c31f763131361ef32f77c',
     UnderlyingAsset['hoodeth:pr'],
@@ -708,7 +708,7 @@ export const hoodethTokens = [
   erc20Token(
     '66fbc7cd-9c90-42e5-89e0-0e60c3a47159',
     'hoodeth:poet',
-    'POET Technologies',
+    'POET Technologies • Robinhood',
     18,
     '0xcf6b2d875361be807eafa57458c80f28521f9333',
     UnderlyingAsset['hoodeth:poet'],
@@ -718,7 +718,7 @@ export const hoodethTokens = [
   erc20Token(
     '32fe957d-c234-4566-b286-ed197950d811',
     'hoodeth:qcom',
-    'Qualcomm',
+    'Qualcomm • Robinhood',
     18,
     '0x0f17206447090e464c277571124dd2688e48aea9',
     UnderlyingAsset['hoodeth:qcom'],
@@ -728,7 +728,7 @@ export const hoodethTokens = [
   erc20Token(
     'ec67a659-b880-42ec-8ecb-229b9e41a9ed',
     'hoodeth:qubt',
-    'Quantum Computing, Inc',
+    'Quantum Computing, Inc • Robinhood',
     18,
     '0x59818904ab4ce163b3ce4ffb64f2d6ca02c434b4',
     UnderlyingAsset['hoodeth:qubt'],
@@ -738,7 +738,7 @@ export const hoodethTokens = [
   erc20Token(
     '8dbb4221-e7f9-452d-9a52-2993f12bb3dd',
     'hoodeth:rddt',
-    'Reddit',
+    'Reddit • Robinhood',
     18,
     '0x05b37fb53a299a1b874a619e1c4c404d52c36f4c',
     UnderlyingAsset['hoodeth:rddt'],
@@ -748,7 +748,7 @@ export const hoodethTokens = [
   erc20Token(
     '8e2781f1-5f63-4d1d-86f7-93a66a4cf407',
     'hoodeth:rdw',
-    'Redwire',
+    'Redwire • Robinhood',
     18,
     '0x92ef19e82bd8ff36661de838d5eae7e5cef0effe',
     UnderlyingAsset['hoodeth:rdw'],
@@ -758,7 +758,7 @@ export const hoodethTokens = [
   erc20Token(
     '19ec73dc-8c6a-4a7b-87c4-7b55104a75ee',
     'hoodeth:rgti',
-    'Rigetti Computing',
+    'Rigetti Computing • Robinhood',
     18,
     '0x284358abc07f9359f19f4b5b4ac91901be2597ba',
     UnderlyingAsset['hoodeth:rgti'],
@@ -768,7 +768,7 @@ export const hoodethTokens = [
   erc20Token(
     '8069f925-3f3f-4ace-8941-29e5737d4c19',
     'hoodeth:rivn',
-    'Rivian Automotive',
+    'Rivian Automotive • Robinhood',
     18,
     '0xb1bf26c1d20ff267a4f93550d1e0d06ac40a114b',
     UnderlyingAsset['hoodeth:rivn'],
@@ -778,7 +778,7 @@ export const hoodethTokens = [
   erc20Token(
     'bd91e41f-94db-4513-bcdf-4c3e4ee69257',
     'hoodeth:rblx',
-    'Roblox',
+    'Roblox • Robinhood',
     18,
     '0xf0c4bf4c582cb3836e98394b1d4e7b7281101be8',
     UnderlyingAsset['hoodeth:rblx'],
@@ -788,7 +788,7 @@ export const hoodethTokens = [
   erc20Token(
     '7f2bf2e8-98a9-4219-b691-7b4235b22909',
     'hoodeth:rklb',
-    'Rocket Lab Corporation',
+    'Rocket Lab Corporation • Robinhood',
     18,
     '0x3b14c39e89d60d627b42a1a4ca45b5bb45fc12e2',
     UnderlyingAsset['hoodeth:rklb'],
@@ -798,7 +798,7 @@ export const hoodethTokens = [
   erc20Token(
     '8b56fae8-badd-41e8-bde6-db9efd64b50a',
     'hoodeth:rvi',
-    'RVI',
+    'RVI • Robinhood',
     18,
     '0xb02e3e1b7f68559427c2d9100566e4f3cc5b7611',
     UnderlyingAsset['hoodeth:rvi'],
@@ -808,7 +808,7 @@ export const hoodethTokens = [
   erc20Token(
     'b3a25405-760f-4578-bbe8-14ddfbe3aacd',
     'hoodeth:sndk',
-    'SanDisk',
+    'SanDisk • Robinhood',
     18,
     '0xb90a19ff0af67f7779aff50a882a9cff42446400',
     UnderlyingAsset['hoodeth:sndk'],
@@ -818,7 +818,7 @@ export const hoodethTokens = [
   erc20Token(
     '19723e25-53be-4213-8d70-d203b7f607c5',
     'hoodeth:now',
-    'ServiceNow',
+    'ServiceNow • Robinhood',
     18,
     '0x0c3260af4b8f13a69c4c2dfb84fd667890cdfa14',
     UnderlyingAsset['hoodeth:now'],
@@ -828,7 +828,7 @@ export const hoodethTokens = [
   erc20Token(
     '8f6274aa-7dca-4b22-b6ce-b2aa46046a4f',
     'hoodeth:shop',
-    'Shopify',
+    'Shopify • Robinhood',
     18,
     '0xf53f66751b1eff985311b693531e3290f600c410',
     UnderlyingAsset['hoodeth:shop'],
@@ -838,7 +838,7 @@ export const hoodethTokens = [
   erc20Token(
     '894c579e-328f-496e-a4d6-f6a3486a177d',
     'hoodeth:sofi',
-    'SoFi Technologies',
+    'SoFi Technologies • Robinhood',
     18,
     '0x98e75885157c80992a8d41b696d8c9c6fb30a926',
     UnderlyingAsset['hoodeth:sofi'],
@@ -848,7 +848,7 @@ export const hoodethTokens = [
   erc20Token(
     'e3613375-49ff-4279-9c57-e5fb9728a931',
     'hoodeth:spy',
-    'SPDR S&P 500 ETF Trust',
+    'SPDR S&P 500 ETF Trust • Robinhood',
     18,
     '0x117cc2133c37b721f49de2a7a74833232b3b4c0c',
     UnderlyingAsset['hoodeth:spy'],
@@ -858,7 +858,7 @@ export const hoodethTokens = [
   erc20Token(
     '760f1041-7aad-4fcb-9c5e-bb9bc92d90d6',
     'hoodeth:xlk',
-    'State Street Technology Select Sector SPDR ETF',
+    'State Street Technology Select Sector SPDR ETF • Robinhood',
     18,
     '0x15cd20759ce7f3285c29a319de2d1a2e098c6f43',
     UnderlyingAsset['hoodeth:xlk'],
@@ -868,7 +868,7 @@ export const hoodethTokens = [
   erc20Token(
     '07b9f60b-c690-47c3-8bb9-1d60670eddea',
     'hoodeth:mstr',
-    'Strategy Inc.',
+    'Strategy Inc. • Robinhood',
     18,
     '0xec262a75e413fafd0df80480274532c79d42da09',
     UnderlyingAsset['hoodeth:mstr'],
@@ -878,7 +878,7 @@ export const hoodethTokens = [
   erc20Token(
     'c3c305bc-9bfe-40be-95fd-8262f2488fac',
     'hoodeth:smci',
-    'Super Micro Computer',
+    'Super Micro Computer • Robinhood',
     18,
     '0xc01aa1fecec0605b13bc84874ff7256c0f5f562a',
     UnderlyingAsset['hoodeth:smci'],
@@ -888,7 +888,7 @@ export const hoodethTokens = [
   erc20Token(
     '3f76a5f6-32a0-4f99-abdb-6b32a6b10163',
     'hoodeth:tsm',
-    'Taiwan Semiconductor Manufacturing',
+    'Taiwan Semiconductor Manufacturing • Robinhood',
     18,
     '0x58ffe4a942d3885baa22d7520691f611ef09e7aa',
     UnderlyingAsset['hoodeth:tsm'],
@@ -898,7 +898,7 @@ export const hoodethTokens = [
   erc20Token(
     '0f996c54-d540-4006-b61d-706a3b234a3c',
     'hoodeth:ttwo',
-    'Take-Two Interactive Software',
+    'Take-Two Interactive Software • Robinhood',
     18,
     '0x5e81213613b6b86eab4c6c50d718d34359459786',
     UnderlyingAsset['hoodeth:ttwo'],
@@ -908,7 +908,7 @@ export const hoodethTokens = [
   erc20Token(
     'b60c70d4-69d5-461e-8dc6-955184c7c3f1',
     'hoodeth:nasa',
-    'Tema Space Innovators ETF',
+    'Tema Space Innovators ETF • Robinhood',
     18,
     '0x6ddb95405db6179012bff2fff7e0f8d49cf00137',
     UnderlyingAsset['hoodeth:nasa'],
@@ -918,7 +918,7 @@ export const hoodethTokens = [
   erc20Token(
     '71bfcfbb-0e1d-4712-9836-8e7c481b9d87',
     'hoodeth:tsla',
-    'Tesla',
+    'Tesla • Robinhood',
     18,
     '0x322f0929c4625ed5bad873c95208d54e1c003b2d',
     UnderlyingAsset['hoodeth:tsla'],
@@ -927,7 +927,7 @@ export const hoodethTokens = [
   erc20Token(
     'e21a1de5-b81d-4b17-97dc-af8d30fd9db2',
     'hoodeth:tsem',
-    'Tower Semiconductor',
+    'Tower Semiconductor • Robinhood',
     18,
     '0x89776d4cd68193597a2fc132cfac1fde36ccea8a',
     UnderlyingAsset['hoodeth:tsem'],
@@ -937,7 +937,7 @@ export const hoodethTokens = [
   erc20Token(
     'c403a16c-6f8e-4ac4-9504-f9cc810f90de',
     'hoodeth:umc',
-    'United Microelectronics',
+    'United Microelectronics • Robinhood',
     18,
     '0x0e6e67ba88e7b5d9b67636a215c76779b948de79',
     UnderlyingAsset['hoodeth:umc'],
@@ -947,7 +947,7 @@ export const hoodethTokens = [
   erc20Token(
     'f6f0a6f8-fea8-4306-baaf-c88a96b071de',
     'hoodeth:uso',
-    'United States Oil Fund, LP',
+    'United States Oil Fund, LP • Robinhood',
     18,
     '0xa30fa36db767ad9ed3f7a60fc79526fb4d56d344',
     UnderlyingAsset['hoodeth:uso'],
@@ -957,7 +957,7 @@ export const hoodethTokens = [
   erc20Token(
     '10538982-e986-4745-bdd4-dc3833754316',
     'hoodeth:ups',
-    'UPS',
+    'UPS • Robinhood',
     18,
     '0xf23250dac154d05bb671cb0d0ebef3c635c79ce2',
     UnderlyingAsset['hoodeth:ups'],
@@ -967,7 +967,7 @@ export const hoodethTokens = [
   erc20Token(
     '7d0446f2-929f-4bea-b9b7-cb9f40dc0786',
     'hoodeth:usar',
-    'USA Rare Earth Inc.',
+    'USA Rare Earth Inc. • Robinhood',
     18,
     '0xd917b029c761d264c6a312bbbcda868658ef86a6',
     UnderlyingAsset['hoodeth:usar'],
@@ -986,7 +986,7 @@ export const hoodethTokens = [
   erc20Token(
     'ea09a0ff-059b-4527-8e7b-75dfc750218b',
     'hoodeth:week',
-    'Weekly T-Bill ETF',
+    'Weekly T-Bill ETF • Robinhood',
     18,
     '0xc93a8c440cea26d7445df01729f193b27965099f',
     UnderlyingAsset['hoodeth:week'],
@@ -996,7 +996,7 @@ export const hoodethTokens = [
   erc20Token(
     'f694acee-378c-463e-980c-96d9a746a06d',
     'hoodeth:wday',
-    'Workday',
+    'Workday • Robinhood',
     18,
     '0x82da4646242e1d962e96e932269dc644c94a9caa',
     UnderlyingAsset['hoodeth:wday'],
@@ -1006,7 +1006,7 @@ export const hoodethTokens = [
   erc20Token(
     'd6fef21f-be3c-48c4-a76b-20b1bc054761',
     'hoodeth:xndu',
-    'Xanadu Quantum',
+    'Xanadu Quantum • Robinhood',
     18,
     '0xa8eb3bccbf2017ee7cbfb652eb51cf2e1b153289',
     UnderlyingAsset['hoodeth:xndu'],
@@ -1016,7 +1016,7 @@ export const hoodethTokens = [
   erc20Token(
     'd9230584-28ac-46a2-8d7c-4be8c67ecdb1',
     'hoodeth:zm',
-    'Zoom',
+    'Zoom • Robinhood',
     18,
     '0x44c4f142009036cf477ed2d09932051843137cf1',
     UnderlyingAsset['hoodeth:zm'],
@@ -1026,7 +1026,7 @@ export const hoodethTokens = [
   erc20Token(
     'd10286e7-0226-4bb2-b414-bf29ba9d5111',
     'hoodeth:zs',
-    'Zscaler',
+    'Zscaler • Robinhood',
     18,
     '0x7dc013eb55e436f30d7ed1afe4e36d6e45e3c3f7',
     UnderlyingAsset['hoodeth:zs'],
@@ -1036,7 +1036,7 @@ export const hoodethTokens = [
   erc20Token(
     'd24014ac-e038-4c8b-8fba-c6792433191d',
     'hoodeth:spcx',
-    'Space Exploration Technologies Corp',
+    'Space Exploration Technologies Corp • Robinhood',
     18,
     '0x4a0e65a3eccec6dbe60ae065f2e7bb85fae35eea',
     UnderlyingAsset['hoodeth:spcx'],
@@ -1046,7 +1046,7 @@ export const hoodethTokens = [
   erc20Token(
     '7871813c-80d5-412a-82ac-a3fe5f4ea1da',
     'hoodeth:skhy',
-    'SK Hynix Inc ADR',
+    'SK Hynix Inc ADR • Robinhood',
     18,
     '0x84cab63bc87912e71ad199ff14a0ba45de68fef8',
     UnderlyingAsset['hoodeth:skhy'],
@@ -1066,7 +1066,7 @@ export const hoodethTokens = [
   erc20Token(
     'e6b96f44-df26-4097-9e7c-a1d75a7f3c6f',
     'hoodeth:wdc',
-    'Western Digital Corporation',
+    'Western Digital Corporation • Robinhood',
     18,
     '0xf52597345a8edf418bc4071b4a35112472277d3e',
     UnderlyingAsset['hoodeth:wdc'],
@@ -1076,7 +1076,7 @@ export const hoodethTokens = [
   erc20Token(
     'a1f45037-8d6a-42a5-9cd7-55f2e1ba17bc',
     'hoodeth:alab',
-    'Astera Labs, Inc.',
+    'Astera Labs, Inc. • Robinhood',
     18,
     '0x748c32c3ca24edf31ea597db1f3d330a7a6da3dc',
     UnderlyingAsset['hoodeth:alab'],
@@ -1086,7 +1086,7 @@ export const hoodethTokens = [
   erc20Token(
     '542c97d9-59e9-443e-b122-e7b21483b3a9',
     'hoodeth:crdo',
-    'Credo Technology Group Holding Ltd Ordinary Shares',
+    'Credo Technology Group Holding Ltd Ordinary Shares • Robinhood',
     18,
     '0x4d67253bc223e6b0e104f1084c1fb2b669ddc41b',
     UnderlyingAsset['hoodeth:crdo'],
@@ -1096,7 +1096,7 @@ export const hoodethTokens = [
   erc20Token(
     '0e01c481-7d6f-4f1e-a802-6089d7c7925b',
     'hoodeth:avav',
-    'AeroVironment, Inc.',
+    'AeroVironment, Inc. • Robinhood',
     18,
     '0xf6290b5e7c26502e2da514c31509849718ea76a5',
     UnderlyingAsset['hoodeth:avav'],
@@ -1106,7 +1106,7 @@ export const hoodethTokens = [
   erc20Token(
     'c8126bc4-7a29-40ac-8c0a-7a350529a98d',
     'hoodeth:adbe',
-    'Adobe Inc.',
+    'Adobe Inc. • Robinhood',
     18,
     '0x232b8ed6377be97813853b0ac104c4cda8378d1b',
     UnderlyingAsset['hoodeth:adbe'],
@@ -1116,7 +1116,7 @@ export const hoodethTokens = [
   erc20Token(
     '1f17b69e-e536-4f68-9e41-e3f45bc9c997',
     'hoodeth:wulf',
-    'TeraWulf Inc.',
+    'TeraWulf Inc. • Robinhood',
     18,
     '0x348be1a8663f15edde5cdf8a96bb69078f7ab6fd',
     UnderlyingAsset['hoodeth:wulf'],
@@ -1126,7 +1126,7 @@ export const hoodethTokens = [
   erc20Token(
     '4cc2b153-18c6-44b6-948a-272b1c31b3ee',
     'hoodeth:fig',
-    'Figma, Inc.',
+    'Figma, Inc. • Robinhood',
     18,
     '0x41f4267525a8aff329540ef24fd83d9044758b33',
     UnderlyingAsset['hoodeth:fig'],
@@ -1136,7 +1136,7 @@ export const hoodethTokens = [
   erc20Token(
     'd489393b-c4b4-4d52-9bd2-c7240d49ea17',
     'hoodeth:smr',
-    'NuScale Power Corporation',
+    'NuScale Power Corporation • Robinhood',
     18,
     '0x1eebee7f74517e0279dfb09d25b0407beec3fdd6',
     UnderlyingAsset['hoodeth:smr'],
@@ -1146,7 +1146,7 @@ export const hoodethTokens = [
   erc20Token(
     'fd0ed8a7-ecef-4758-a718-42ae51d34f8f',
     'hoodeth:klac',
-    'KLA Corporation',
+    'KLA Corporation • Robinhood',
     18,
     '0x96b933c74ecb4a0926b9210cef7b743ef46be2e9',
     UnderlyingAsset['hoodeth:klac'],
@@ -1156,7 +1156,7 @@ export const hoodethTokens = [
   erc20Token(
     'de220bd2-a678-4ed4-a6a6-979e9cd1f588',
     'hoodeth:pl',
-    'Planet Labs PBC',
+    'Planet Labs PBC • Robinhood',
     18,
     '0xaa4d64474c172010ab57719cb9951e6142a100d3',
     UnderlyingAsset['hoodeth:pl'],
@@ -1166,7 +1166,7 @@ export const hoodethTokens = [
   erc20Token(
     '5c3f4dc6-31f6-4f7c-9083-428e2b40eae6',
     'hoodeth:axti',
-    'AXT Inc',
+    'AXT Inc • Robinhood',
     18,
     '0x141eea040c2250eec0314e336975e81f85f6585e',
     UnderlyingAsset['hoodeth:axti'],
@@ -1176,7 +1176,7 @@ export const hoodethTokens = [
   erc20Token(
     '59d98a87-c25c-4a25-9395-7f5a6f72bbc7',
     'hoodeth:te',
-    'T1 Energy Inc.',
+    'T1 Energy Inc. • Robinhood',
     18,
     '0xb1969f6604ca1ae7a2cd3f1827876e914594ca2d',
     UnderlyingAsset['hoodeth:te'],
@@ -1186,7 +1186,7 @@ export const hoodethTokens = [
   erc20Token(
     '4cbe5acb-c114-49b3-9cbe-9c3598ecca9e',
     'hoodeth:bull',
-    'Webull Corporation',
+    'Webull Corporation • Robinhood',
     18,
     '0xcef9027c7d6985b85f0ba431125073529a947a68',
     UnderlyingAsset['hoodeth:bull'],
@@ -1196,7 +1196,7 @@ export const hoodethTokens = [
   erc20Token(
     'fd0239c1-3534-478d-8d44-900a16ff1dda',
     'hoodeth:joby',
-    'Joby Aviation, Inc.',
+    'Joby Aviation, Inc. • Robinhood',
     18,
     '0xb334c5ce741b80b5b671f47f5c269cb193fe8e24',
     UnderlyingAsset['hoodeth:joby'],
@@ -1206,7 +1206,7 @@ export const hoodethTokens = [
   erc20Token(
     'd5b97c34-08db-4955-810e-2571deb16692',
     'hoodeth:tem',
-    'Tempus AI, Inc.',
+    'Tempus AI, Inc. • Robinhood',
     18,
     '0xb1cc0ec7db69cf43539119814df40071b9d61793',
     UnderlyingAsset['hoodeth:tem'],
@@ -1216,7 +1216,7 @@ export const hoodethTokens = [
   erc20Token(
     '2b67258b-3f51-4414-bc45-3ac54db19aa0',
     'hoodeth:lrcx',
-    'Lam Research Corporation',
+    'Lam Research Corporation • Robinhood',
     18,
     '0x57b0030166db0c31690d1a5aa167e2e26e2c29a4',
     UnderlyingAsset['hoodeth:lrcx'],
@@ -1226,7 +1226,7 @@ export const hoodethTokens = [
   erc20Token(
     '71a2a3d6-679c-403f-8f2a-8f6061b7e420',
     'hoodeth:cohr',
-    'Coherent Corp.',
+    'Coherent Corp. • Robinhood',
     18,
     '0x92f9f459f1a9a5ad266b182be7bffd1c6c666894',
     UnderlyingAsset['hoodeth:cohr'],
@@ -1236,7 +1236,7 @@ export const hoodethTokens = [
   erc20Token(
     '1644c46f-166e-4831-8802-c861d8c5bcbd',
     'hoodeth:ktos',
-    'Kratos Defense & Security Solutions, Inc.',
+    'Kratos Defense & Security Solutions, Inc. • Robinhood',
     18,
     '0x7fd06a4d81ccfa3f351394e144d5191874c31313',
     UnderlyingAsset['hoodeth:ktos'],
@@ -1246,7 +1246,7 @@ export const hoodethTokens = [
   erc20Token(
     '720ec462-9523-4c76-b713-503bb1a32c96',
     'hoodeth:zeta',
-    'Zeta Global Holdings Corp.',
+    'Zeta Global Holdings Corp. • Robinhood',
     18,
     '0xe674c5c071821f48bb2d12cadb83617eff438f9e',
     UnderlyingAsset['hoodeth:zeta'],
@@ -1256,7 +1256,7 @@ export const hoodethTokens = [
   erc20Token(
     '4e701fec-8259-4a46-8016-f81c111a2666',
     'hoodeth:axon',
-    'Axon Enterprise, Inc.',
+    'Axon Enterprise, Inc. • Robinhood',
     18,
     '0xc27dbd474af5181c5a8777903690d8d262d12648',
     UnderlyingAsset['hoodeth:axon'],
@@ -1266,7 +1266,7 @@ export const hoodethTokens = [
   erc20Token(
     'b03eb704-756e-461a-85e1-62f088cf47a1',
     'hoodeth:crm',
-    'Salesforce, Inc.',
+    'Salesforce, Inc. • Robinhood',
     18,
     '0xd95b44124e475743a7589e68f3d74008a5536d44',
     UnderlyingAsset['hoodeth:crm'],
@@ -1276,7 +1276,7 @@ export const hoodethTokens = [
   erc20Token(
     '37d99ce2-710c-4205-bc3e-6f4b1af5b16f',
     'hoodeth:fly',
-    'Firefly Aerospace Inc.',
+    'Firefly Aerospace Inc. • Robinhood',
     18,
     '0x03bc731ffb162cdd7b98d3c6542bfc291126075d',
     UnderlyingAsset['hoodeth:fly'],
@@ -1286,7 +1286,7 @@ export const hoodethTokens = [
   erc20Token(
     '2dfb4e3e-1656-43e0-8361-9274ce1e387a',
     'hoodeth:wyfi',
-    'WhiteFiber, Inc.',
+    'WhiteFiber, Inc. • Robinhood',
     18,
     '0x9e7abd3c9139d14e4c86dce0e455aab7a0c2fb3e',
     UnderlyingAsset['hoodeth:wyfi'],
@@ -1296,7 +1296,7 @@ export const hoodethTokens = [
   erc20Token(
     '39731f59-e10f-49a4-8049-2605449eee8b',
     'hoodeth:ttd',
-    'The Trade Desk, Inc.',
+    'The Trade Desk, Inc. • Robinhood',
     18,
     '0x0b5fb4031cae9163db10b169ee72685f0edc8545',
     UnderlyingAsset['hoodeth:ttd'],
@@ -1306,7 +1306,7 @@ export const hoodethTokens = [
   erc20Token(
     'bdcd1b9f-41bf-4e98-90c8-a2038f0d0afb',
     'hoodeth:rcat',
-    'Red Cat Holdings, Inc.',
+    'Red Cat Holdings, Inc. • Robinhood',
     18,
     '0xfde6b5d9bb419b10c23268c74e369abff39c0460',
     UnderlyingAsset['hoodeth:rcat'],
@@ -1316,7 +1316,7 @@ export const hoodethTokens = [
   erc20Token(
     '52a6d49f-0fa5-4574-b69e-4ce4c83c95ac',
     'hoodeth:infq',
-    'Infleqtion, Inc.',
+    'Infleqtion, Inc. • Robinhood',
     18,
     '0xb853bc83a753342a4f8320ea680b4b1e84118d21',
     UnderlyingAsset['hoodeth:infq'],
@@ -1326,7 +1326,7 @@ export const hoodethTokens = [
   erc20Token(
     'ef646ecc-8fe4-4eef-bc51-8a5e8bacfe1b',
     'hoodeth:oust',
-    'Ouster, Inc.',
+    'Ouster, Inc. • Robinhood',
     18,
     '0x40e7a279850e443f582059ae5dc1c3b6563e6395',
     UnderlyingAsset['hoodeth:oust'],
@@ -1336,7 +1336,7 @@ export const hoodethTokens = [
   erc20Token(
     'e46eb096-01e0-41d7-8db1-e7982cdd73d5',
     'hoodeth:on',
-    'ON Semiconductor Corporation',
+    'ON Semiconductor Corporation • Robinhood',
     18,
     '0xbbd09f72b025360fee5c928053dca6248d35be54',
     UnderlyingAsset['hoodeth:on'],
@@ -1346,7 +1346,7 @@ export const hoodethTokens = [
   erc20Token(
     '4d7dd73d-963d-4e4f-98fb-0a5b17d18a83',
     'hoodeth:fico',
-    'Fair Isaac Corporation',
+    'Fair Isaac Corporation • Robinhood',
     18,
     '0xa48f22a46c0f1c46ca7d111cb6c137c271987180',
     UnderlyingAsset['hoodeth:fico'],
@@ -1356,7 +1356,7 @@ export const hoodethTokens = [
   erc20Token(
     'f3a8f048-64d2-42ec-b290-529d7465ae30',
     'hoodeth:ibm',
-    'International Business Machines Corporation',
+    'International Business Machines Corporation • Robinhood',
     18,
     '0x980dcf6766fa79f5cf0c4aadb3ab477ff15a9619',
     UnderlyingAsset['hoodeth:ibm'],
@@ -1366,7 +1366,7 @@ export const hoodethTokens = [
   erc20Token(
     '9c483bf4-7475-4205-ad62-d4a8bd58763a',
     'hoodeth:amkr',
-    'Amkor Technology, Inc.',
+    'Amkor Technology, Inc. • Robinhood',
     18,
     '0xdd356aa38f40a7b7076755ac854b6fbb1f0d305b',
     UnderlyingAsset['hoodeth:amkr'],
@@ -1376,7 +1376,7 @@ export const hoodethTokens = [
   erc20Token(
     'e672bc11-aabc-4ea9-a7aa-cb5a0886d481',
     'hoodeth:cien',
-    'Ciena Corporation',
+    'Ciena Corporation • Robinhood',
     18,
     '0x44f6d488021f8233b9416294d1fe9b1fee28382d',
     UnderlyingAsset['hoodeth:cien'],
@@ -1386,7 +1386,7 @@ export const hoodethTokens = [
   erc20Token(
     '7bdaafc8-570d-4273-bc24-d1b85f111bfd',
     'hoodeth:hims',
-    'Hims & Hers Health, Inc.',
+    'Hims & Hers Health, Inc. • Robinhood',
     18,
     '0xccee82fe024c36fa15e1005ede3e9e4787e23d09',
     UnderlyingAsset['hoodeth:hims'],
@@ -1396,7 +1396,7 @@ export const hoodethTokens = [
   erc20Token(
     '25b52c79-3d82-4536-81f3-ea0c8a80dad3',
     'hoodeth:cls',
-    'Celestica, Inc.',
+    'Celestica, Inc. • Robinhood',
     18,
     '0xbf449977089c718c004a66c554b26b94ef3ad4de',
     UnderlyingAsset['hoodeth:cls'],
@@ -1406,7 +1406,7 @@ export const hoodethTokens = [
   erc20Token(
     'a59a547e-372a-4d6c-ae67-2f854c210f7c',
     'hoodeth:ter',
-    'Teradyne, Inc.',
+    'Teradyne, Inc. • Robinhood',
     18,
     '0x2778c5024d5ca2cdb0f8ead671ffc69963adcd9c',
     UnderlyingAsset['hoodeth:ter'],
@@ -1416,7 +1416,7 @@ export const hoodethTokens = [
   erc20Token(
     'b83fd572-8ee4-4771-b924-7dd8a31e47cc',
     'hoodeth:soun',
-    'SoundHound AI, Inc',
+    'SoundHound AI, Inc • Robinhood',
     18,
     '0x6e3dfd9f7e1649baa14d25cac18c94d62db10a54',
     UnderlyingAsset['hoodeth:soun'],
@@ -1426,7 +1426,7 @@ export const hoodethTokens = [
   erc20Token(
     'cc6084d6-2c4f-4eab-bbd8-3c9f3725e53c',
     'hoodeth:path',
-    'UiPath, Inc.',
+    'UiPath, Inc. • Robinhood',
     18,
     '0xfb2664f07b6aadd29ea7a59d8859b1aeb8645cda',
     UnderlyingAsset['hoodeth:path'],
@@ -1436,7 +1436,7 @@ export const hoodethTokens = [
   erc20Token(
     'cbd85966-cf48-44e1-a0ef-4057e235b062',
     'hoodeth:aehr',
-    'Aehr Test Systems',
+    'Aehr Test Systems • Robinhood',
     18,
     '0x5f604fba1162193a4388a5dfa56f556f3e133cc2',
     UnderlyingAsset['hoodeth:aehr'],
@@ -1446,7 +1446,7 @@ export const hoodethTokens = [
   erc20Token(
     '224ebc1c-fb37-49db-854c-10de90d0ba9b',
     'hoodeth:mrna',
-    'Moderna, Inc.',
+    'Moderna, Inc. • Robinhood',
     18,
     '0x43b07d15ce533bec5476d70c22a78a1b2b662155',
     UnderlyingAsset['hoodeth:mrna'],
@@ -1456,7 +1456,7 @@ export const hoodethTokens = [
   erc20Token(
     'dccb637d-2174-4961-ab8d-e5adb42ed641',
     'hoodeth:oklo',
-    'Oklo Inc.',
+    'Oklo Inc. • Robinhood',
     18,
     '0x8b2f88497f15a18e9d4ffa1a8ffb8538399ae774',
     UnderlyingAsset['hoodeth:oklo'],
@@ -1466,7 +1466,7 @@ export const hoodethTokens = [
   erc20Token(
     'ca829ec0-0028-4c35-9008-116befff68fa',
     'hoodeth:vrt',
-    'Vertiv Holdings Co',
+    'Vertiv Holdings Co • Robinhood',
     18,
     '0xfa78c12e6488814a0262e4e802749a4a737d5fb7',
     UnderlyingAsset['hoodeth:vrt'],
@@ -1476,7 +1476,7 @@ export const hoodethTokens = [
   erc20Token(
     'dac54fd2-ffc7-4c9f-94a5-f4328692ba03',
     'hoodeth:mpwr',
-    'Monolithic Power Systems, Inc.',
+    'Monolithic Power Systems, Inc. • Robinhood',
     18,
     '0x52d50d0280ad1054b43f052bd70a49a212a1b128',
     UnderlyingAsset['hoodeth:mpwr'],
@@ -1486,7 +1486,7 @@ export const hoodethTokens = [
   erc20Token(
     'bcec04e6-11b4-4b6e-b4a0-b65ce1e5a54e',
     'hoodeth:fisv',
-    'Fiserv, Inc.',
+    'Fiserv, Inc. • Robinhood',
     18,
     '0x9ece29a4a2397c0a35fb5fa8ee2b9509130a98cc',
     UnderlyingAsset['hoodeth:fisv'],
@@ -1496,7 +1496,7 @@ export const hoodethTokens = [
   erc20Token(
     '05aa07d4-a9e6-4f08-b72d-54a70d16749b',
     'hoodeth:glxy',
-    'Galaxy Digital Inc.',
+    'Galaxy Digital Inc. • Robinhood',
     18,
     '0x2d427692e928fa156ec22acfabafa0447c5805b7',
     UnderlyingAsset['hoodeth:glxy'],
@@ -1506,7 +1506,7 @@ export const hoodethTokens = [
   erc20Token(
     '19dffba0-5550-4e3d-b79d-5e55dfb05b69',
     'hoodeth:snow',
-    'Snowflake Inc.',
+    'Snowflake Inc. • Robinhood',
     18,
     '0xba0cab75495255d0cb58e22b648bfed4ecd1f47e',
     UnderlyingAsset['hoodeth:snow'],
@@ -1516,7 +1516,7 @@ export const hoodethTokens = [
   erc20Token(
     '3dc57f8e-6e1a-4cae-9956-591307457cb7',
     'hoodeth:team',
-    'Atlassian Corporation',
+    'Atlassian Corporation • Robinhood',
     18,
     '0x5b97476b922f3305131b8f0b9d333172e87f4aae',
     UnderlyingAsset['hoodeth:team'],
@@ -1526,7 +1526,7 @@ export const hoodethTokens = [
   erc20Token(
     '340b06e7-d0ce-408b-8f1c-a3a768e516cf',
     'hoodeth:snap',
-    'Snap Inc.',
+    'Snap Inc. • Robinhood',
     18,
     '0xf6589f11bc40b669e584073f428b05562f568733',
     UnderlyingAsset['hoodeth:snap'],
@@ -1536,7 +1536,7 @@ export const hoodethTokens = [
   erc20Token(
     '05b62b06-a9da-4e94-aed4-7d5e72595589',
     'hoodeth:run',
-    'Sunrun Inc.',
+    'Sunrun Inc. • Robinhood',
     18,
     '0x756bc80af765c82da966a788858d65adf14f3793',
     UnderlyingAsset['hoodeth:run'],
@@ -1546,7 +1546,7 @@ export const hoodethTokens = [
   erc20Token(
     'd80a927c-9e6d-4aaa-8bb2-96a13a0d834d',
     'hoodeth:bb',
-    'BlackBerry Limited',
+    'BlackBerry Limited • Robinhood',
     18,
     '0x48e39e56acdba37b09020c0b734a613c9a2f100a',
     UnderlyingAsset['hoodeth:bb'],
@@ -1556,7 +1556,7 @@ export const hoodethTokens = [
   erc20Token(
     '994918ec-792d-45e8-bd29-3bfa480d65cf',
     'hoodeth:sls',
-    'SELLAS Life Sciences Group, Inc.',
+    'SELLAS Life Sciences Group, Inc. • Robinhood',
     18,
     '0x285b231728c7e4333799183df1094d775246a535',
     UnderlyingAsset['hoodeth:sls'],
@@ -1566,7 +1566,7 @@ export const hoodethTokens = [
   erc20Token(
     '1303634a-789e-4ab4-86e0-73a446ca2ba7',
     'hoodeth:gev',
-    'GE Vernova Inc.',
+    'GE Vernova Inc. • Robinhood',
     18,
     '0x94b8aae43a1ccc08aa64b7d1f29b4d920af4a0c9',
     UnderlyingAsset['hoodeth:gev'],
@@ -1576,7 +1576,7 @@ export const hoodethTokens = [
   erc20Token(
     '9c058d3c-ffba-4736-b6c4-097b72cbd9fc',
     'hoodeth:app',
-    'Applovin Corporation',
+    'Applovin Corporation • Robinhood',
     18,
     '0xa249baf1063af884807c1e1400aef7784836917e',
     UnderlyingAsset['hoodeth:app'],
@@ -1586,7 +1586,7 @@ export const hoodethTokens = [
   erc20Token(
     '2a19420f-ef19-46b0-9d10-57b2255a6bf1',
     'hoodeth:lmt',
-    'Lockheed Martin Corp.',
+    'Lockheed Martin Corp. • Robinhood',
     18,
     '0x329fcaceb9ad6f9580dd5f643fed0646900d043c',
     UnderlyingAsset['hoodeth:lmt'],
@@ -1596,7 +1596,7 @@ export const hoodethTokens = [
   erc20Token(
     '30cb08ce-10e9-4262-8759-def028b714f4',
     'hoodeth:ceg',
-    'Constellation Energy Corporation',
+    'Constellation Energy Corporation • Robinhood',
     18,
     '0xae517a2903e68bd929dfd15be875f8369d53e94a',
     UnderlyingAsset['hoodeth:ceg'],
@@ -1606,7 +1606,7 @@ export const hoodethTokens = [
   erc20Token(
     'b461a71e-6504-4926-a8cb-7a92eed4e091',
     'hoodeth:ge',
-    'GE Aerospace',
+    'GE Aerospace • Robinhood',
     18,
     '0x63b814ddbd6bf339f25fed8c36158a008d5b373e',
     UnderlyingAsset['hoodeth:ge'],
@@ -1616,7 +1616,7 @@ export const hoodethTokens = [
   erc20Token(
     '75620425-ee7d-4c8c-b43c-6afd9f48f890',
     'hoodeth:hwm',
-    'Howmet Aerospace Inc.',
+    'Howmet Aerospace Inc. • Robinhood',
     18,
     '0xaea445c5f3db1a462998ccc422a875a361ee5d99',
     UnderlyingAsset['hoodeth:hwm'],
@@ -1626,7 +1626,7 @@ export const hoodethTokens = [
   erc20Token(
     '70fd0f4a-5e6c-444c-abfd-df2a442ecc3e',
     'hoodeth:hpe',
-    'Hewlett Packard Enterprise Company',
+    'Hewlett Packard Enterprise Company • Robinhood',
     18,
     '0x59dd09d4900c2e4b5f75b7c0d4e6796fcc234cb1',
     UnderlyingAsset['hoodeth:hpe'],
@@ -1636,7 +1636,7 @@ export const hoodethTokens = [
   erc20Token(
     '9b221129-8dfd-401f-9e32-ff8986cc299f',
     'hoodeth:vsat',
-    'ViaSat, Inc.',
+    'ViaSat, Inc. • Robinhood',
     18,
     '0x26dcbfb34fc83cabd6990f449674efdc6097ff85',
     UnderlyingAsset['hoodeth:vsat'],
@@ -1646,7 +1646,7 @@ export const hoodethTokens = [
   erc20Token(
     'f911e52f-e90b-444f-b8d6-569f9490fd29',
     'hoodeth:vst',
-    'Vistra Corp.',
+    'Vistra Corp. • Robinhood',
     18,
     '0x561e2a49212b7ccf47f2744ccb83e200722fadbc',
     UnderlyingAsset['hoodeth:vst'],
@@ -1656,7 +1656,7 @@ export const hoodethTokens = [
   erc20Token(
     '95665087-2985-459b-8234-d0b17af1e680',
     'hoodeth:navn',
-    'Navan, Inc.',
+    'Navan, Inc. • Robinhood',
     18,
     '0xf7181b63fdb858558a74ba96bc42732684cd7965',
     UnderlyingAsset['hoodeth:navn'],
@@ -1666,7 +1666,7 @@ export const hoodethTokens = [
   erc20Token(
     '2d4f244b-b33f-4b72-9ae5-57bd8892df16',
     'hoodeth:ibrx',
-    'ImmunityBio, Inc.',
+    'ImmunityBio, Inc. • Robinhood',
     18,
     '0x7c148f74ac7445d1f28366b7fcdc6792a9fcd0cf',
     UnderlyingAsset['hoodeth:ibrx'],
@@ -1676,7 +1676,7 @@ export const hoodethTokens = [
   erc20Token(
     '5cfbbe3c-0397-4b9a-8e87-e2d7659f7e18',
     'hoodeth:fix',
-    'Comfort Systems USA, Inc.',
+    'Comfort Systems USA, Inc. • Robinhood',
     18,
     '0x93dbb1d2dc5d63f4abacff30485273f538df68ac',
     UnderlyingAsset['hoodeth:fix'],
@@ -1686,7 +1686,7 @@ export const hoodethTokens = [
   erc20Token(
     'e6fd37a9-d874-4ef0-beae-11e6ec946f83',
     'hoodeth:lhx',
-    'L3Harris Technologies, Inc.',
+    'L3Harris Technologies, Inc. • Robinhood',
     18,
     '0x48d60243c66437c6ac3c2495be94747aed5dfe25',
     UnderlyingAsset['hoodeth:lhx'],
@@ -1696,7 +1696,7 @@ export const hoodethTokens = [
   erc20Token(
     '155c64d6-a4f5-47d7-b3aa-a1ea0cfdec1b',
     'hoodeth:ftnt',
-    'Fortinet, Inc.',
+    'Fortinet, Inc. • Robinhood',
     18,
     '0x3fb8976980d486084b2eb4a404bd12e72823958f',
     UnderlyingAsset['hoodeth:ftnt'],
@@ -1706,7 +1706,7 @@ export const hoodethTokens = [
   erc20Token(
     '0dd16308-2afe-4b34-95d2-97e4cbbf99e6',
     'hoodeth:panw',
-    'Palo Alto Networks, Inc.',
+    'Palo Alto Networks, Inc. • Robinhood',
     18,
     '0xb039597ed45cba7b6e2fb9e8be51802969cee5be',
     UnderlyingAsset['hoodeth:panw'],
@@ -1716,7 +1716,7 @@ export const hoodethTokens = [
   erc20Token(
     '8022d5e8-920c-4a04-b150-9e35728237d8',
     'hoodeth:onto',
-    'Onto Innovation Inc.',
+    'Onto Innovation Inc. • Robinhood',
     18,
     '0x8ff63eaeee3fe54ba450c4f5538064ec5a893aef',
     UnderlyingAsset['hoodeth:onto'],
@@ -1726,7 +1726,7 @@ export const hoodethTokens = [
   erc20Token(
     '67f90871-6b4a-446d-8968-3ca3c74a1ac4',
     'hoodeth:anet',
-    'Arista Networks',
+    'Arista Networks • Robinhood',
     18,
     '0x28babd556b60e53663b8615036479a29c2cdd1bf',
     UnderlyingAsset['hoodeth:anet'],
@@ -1736,7 +1736,7 @@ export const hoodethTokens = [
   erc20Token(
     '56ac0f67-aea6-4d59-8380-e64e0242e048',
     'hoodeth:aur',
-    'Aurora Innovation, Inc.',
+    'Aurora Innovation, Inc. • Robinhood',
     18,
     '0x373c06c4f7bde527d7dae4ba169e42b55e393ced',
     UnderlyingAsset['hoodeth:aur'],
@@ -1746,7 +1746,7 @@ export const hoodethTokens = [
   erc20Token(
     '80d20da3-11eb-43bd-85a2-1285dfe021e4',
     'hoodeth:ctsh',
-    'Cognizant Technology Solutions Corporation Class A',
+    'Cognizant Technology Solutions Corporation Class A • Robinhood',
     18,
     '0x63d5a3b6939a33f1e75d8bcd85759858239600db',
     UnderlyingAsset['hoodeth:ctsh'],
@@ -1756,7 +1756,7 @@ export const hoodethTokens = [
   erc20Token(
     'b5774d29-d78f-4a0c-8adc-c5e97bca581d',
     'hoodeth:vicr',
-    'Vicor Corporation',
+    'Vicor Corporation • Robinhood',
     18,
     '0x6006ed4b2f94110851ff7509d97d034f0eed9226',
     UnderlyingAsset['hoodeth:vicr'],
@@ -1766,7 +1766,7 @@ export const hoodethTokens = [
   erc20Token(
     '01d8683d-0d63-4750-8919-881f8be1c588',
     'hoodeth:mtsi',
-    'MACOM Technology Solutions Holdings, Inc.',
+    'MACOM Technology Solutions Holdings, Inc. • Robinhood',
     18,
     '0xc93f4d80e268ab922e871bd169156c3cc41894e6',
     UnderlyingAsset['hoodeth:mtsi'],
@@ -1776,7 +1776,7 @@ export const hoodethTokens = [
   erc20Token(
     '528833cf-2ed1-4d85-ad18-380d4e930a9c',
     'hoodeth:hii',
-    'Huntington Ingalls Industries, Inc.',
+    'Huntington Ingalls Industries, Inc. • Robinhood',
     18,
     '0xeb61c0ed490a367d4e3631ccf8a74b3bfc7e775d',
     UnderlyingAsset['hoodeth:hii'],
@@ -1786,7 +1786,7 @@ export const hoodethTokens = [
   erc20Token(
     '7262cc27-0a89-4740-ae0f-aa5511b26e46',
     'hoodeth:csco',
-    'Cisco Systems, Inc.',
+    'Cisco Systems, Inc. • Robinhood',
     18,
     '0xf543967eebb6f1917992ef0e68de63ab07a5a0da',
     UnderlyingAsset['hoodeth:csco'],
@@ -1796,7 +1796,7 @@ export const hoodethTokens = [
   erc20Token(
     '54b5246e-e854-40ba-8398-7e7e42b1aadc',
     'hoodeth:pfe',
-    'Pfizer Inc.',
+    'Pfizer Inc. • Robinhood',
     18,
     '0x7066a64c24e4206cd62e83bf198c1e7eb361f51e',
     UnderlyingAsset['hoodeth:pfe'],
@@ -1806,7 +1806,7 @@ export const hoodethTokens = [
   erc20Token(
     'c363b4fe-62d1-440c-a1f8-3c2faea0729a',
     'hoodeth:qnt',
-    'Quantinuum Inc.',
+    'Quantinuum Inc. • Robinhood',
     18,
     '0xb7edfe2f33c1ac06830a971dfb559bde8a2a3d76',
     UnderlyingAsset['hoodeth:qnt'],
@@ -1816,7 +1816,7 @@ export const hoodethTokens = [
   erc20Token(
     '9bd161e5-4cf7-4b59-a8a8-825e7593d5bb',
     'hoodeth:simo',
-    'Silicon Motion Technology Corporation ADS',
+    'Silicon Motion Technology Corporation ADS • Robinhood',
     18,
     '0x77e655e37f4d913fb9540e0d541d824171a60e81',
     UnderlyingAsset['hoodeth:simo'],
@@ -1826,7 +1826,7 @@ export const hoodethTokens = [
   erc20Token(
     '9cc67d16-476f-41b4-8309-a7d4b2a728fd',
     'hoodeth:docn',
-    'DigitalOcean Holdings, Inc.',
+    'DigitalOcean Holdings, Inc. • Robinhood',
     18,
     '0xc02f12b9fe9e707079ec0d546f3050d3f6c1f8bd',
     UnderlyingAsset['hoodeth:docn'],
@@ -1836,7 +1836,7 @@ export const hoodethTokens = [
   erc20Token(
     '6ffa0633-3332-4cbb-9741-a2de0c1ef3a1',
     'hoodeth:jnj',
-    'Johnson & Johnson',
+    'Johnson & Johnson • Robinhood',
     18,
     '0x03dfbbe0ac4e7bcdafd08ed41a400326b77d8c80',
     UnderlyingAsset['hoodeth:jnj'],
@@ -1846,7 +1846,7 @@ export const hoodethTokens = [
   erc20Token(
     '969b7f77-6e01-44e0-8524-e773fd9d3b77',
     'hoodeth:unh',
-    'UnitedHealth Group Incorporated',
+    'UnitedHealth Group Incorporated • Robinhood',
     18,
     '0xcf364ea52787e289de6f32077834056e3e70d6a8',
     UnderlyingAsset['hoodeth:unh'],
@@ -1856,7 +1856,7 @@ export const hoodethTokens = [
   erc20Token(
     '3b05cf20-8f7c-4908-b63c-919344cba472',
     'hoodeth:net',
-    'Cloudflare, Inc.',
+    'Cloudflare, Inc. • Robinhood',
     18,
     '0x116f00968269b7bfbad4109ce591d6e74c0601d4',
     UnderlyingAsset['hoodeth:net'],
@@ -1866,7 +1866,7 @@ export const hoodethTokens = [
   erc20Token(
     '79d3406b-c1e5-425b-846a-a9334409a393',
     'hoodeth:amba',
-    'Ambarella, Inc.',
+    'Ambarella, Inc. • Robinhood',
     18,
     '0x99d9d8663545151603863c5acbd6fc3218899009',
     UnderlyingAsset['hoodeth:amba'],
@@ -1876,7 +1876,7 @@ export const hoodethTokens = [
   erc20Token(
     'c149eb7b-7a52-4532-afd5-3d1bd10db5ed',
     'hoodeth:abcl',
-    'AbCellera Biologics Inc.',
+    'AbCellera Biologics Inc. • Robinhood',
     18,
     '0x3139d77ace0cbaa5bdfd38bd1f1911a794af0b0e',
     UnderlyingAsset['hoodeth:abcl'],
@@ -1886,7 +1886,7 @@ export const hoodethTokens = [
   erc20Token(
     '999396fb-ba02-4ee0-9ed0-dfa620c88ce6',
     'hoodeth:smh',
-    'VanEck Semiconductor ETF',
+    'VanEck Semiconductor ETF • Robinhood',
     18,
     '0x072f979c2cac8e1391b0162a87fee094bf8744a0',
     UnderlyingAsset['hoodeth:smh'],
@@ -1896,7 +1896,7 @@ export const hoodethTokens = [
   erc20Token(
     'efa045ac-5db0-4992-b854-bb0874480478',
     'hoodeth:vti',
-    'Vanguard Total Stock Market ETF',
+    'Vanguard Total Stock Market ETF • Robinhood',
     18,
     '0x0594134df3f171a354d9c85ebd65b7a6148f6d09',
     UnderlyingAsset['hoodeth:vti'],
@@ -1906,7 +1906,7 @@ export const hoodethTokens = [
   erc20Token(
     '1c48652e-d9f1-4484-8afb-cb995acb96f4',
     'hoodeth:gld',
-    'SPDR Gold Shares',
+    'SPDR Gold Shares • Robinhood',
     18,
     '0xc9a981fee1f9dec688bb123ccdecc63d0debfc4e',
     UnderlyingAsset['hoodeth:gld'],
@@ -1916,7 +1916,7 @@ export const hoodethTokens = [
   erc20Token(
     '9577f7c5-9124-4d60-8bcf-020c4e3c7ebc',
     'hoodeth:schd',
-    'Schwab US Dividend Equity ETF',
+    'Schwab US Dividend Equity ETF • Robinhood',
     18,
     '0xd63abb2c13d7a8421a8017a712802053568e3c1d',
     UnderlyingAsset['hoodeth:schd'],
@@ -1926,7 +1926,7 @@ export const hoodethTokens = [
   erc20Token(
     'b4ce52dc-5cd0-4001-8b60-1ea213828326',
     'hoodeth:jepq',
-    'JPMorgan Nasdaq Equity Premium Income ETF',
+    'JPMorgan Nasdaq Equity Premium Income ETF • Robinhood',
     18,
     '0x565d3ff42d7d880287e5796b4c708632be0ca098',
     UnderlyingAsset['hoodeth:jepq'],
@@ -1936,7 +1936,7 @@ export const hoodethTokens = [
   erc20Token(
     'f296b843-8bfc-43e0-9b8b-e8584985d201',
     'hoodeth:inda',
-    'iShares MSCI India ETF',
+    'iShares MSCI India ETF • Robinhood',
     18,
     '0xacef2e09adb47ad6abebad9ff06689e60615c2b6',
     UnderlyingAsset['hoodeth:inda'],
@@ -1946,7 +1946,7 @@ export const hoodethTokens = [
   erc20Token(
     '4ba57870-9383-4e24-b9c6-397a102bcfa8',
     'hoodeth:ewt',
-    'iShares MSCI Taiwan ETF',
+    'iShares MSCI Taiwan ETF • Robinhood',
     18,
     '0x1c690498150252222c275a5ced69d3a6b1f52d5e',
     UnderlyingAsset['hoodeth:ewt'],
@@ -1956,7 +1956,7 @@ export const hoodethTokens = [
   erc20Token(
     '2584e415-5493-4e25-b15e-4d476ece0e63',
     'hoodeth:amc',
-    'AMC Entertainment Holdings, Inc.',
+    'AMC Entertainment Holdings, Inc. • Robinhood',
     18,
     '0x05a3d1cd21d0c88145e82600e62e7e496e0f222b',
     UnderlyingAsset['hoodeth:amc'],
@@ -1966,7 +1966,7 @@ export const hoodethTokens = [
   erc20Token(
     'e31d5fe0-cb4e-44fb-8782-975b4cc64406',
     'hoodeth:cvna',
-    'Carvana Co.',
+    'Carvana Co. • Robinhood',
     18,
     '0xa4f319104089fe321dc8093c6e707d4fe190a988',
     UnderlyingAsset['hoodeth:cvna'],
@@ -1976,7 +1976,7 @@ export const hoodethTokens = [
   erc20Token(
     '422518a5-02c9-4645-b107-bdc7de34d4af',
     'hoodeth:djt',
-    'Trump Media & Technology Group Corp.',
+    'Trump Media & Technology Group Corp. • Robinhood',
     18,
     '0x1d11f0496982706c5e14a514d4e79f2e6bde4516',
     UnderlyingAsset['hoodeth:djt'],
@@ -1986,7 +1986,7 @@ export const hoodethTokens = [
   erc20Token(
     '016e077a-fa0f-4cb1-88bd-119ffed412bd',
     'hoodeth:kss',
-    "Kohl's Corporation",
+    "Kohl's Corporation • Robinhood",
     18,
     '0x12e3c047bf9aecaf9ddc98c05c31bfd1dd043993',
     UnderlyingAsset['hoodeth:kss'],
@@ -1996,7 +1996,7 @@ export const hoodethTokens = [
   erc20Token(
     'ca44a086-a488-41cc-ac45-03a852c8ecf4',
     'hoodeth:clov',
-    'Clover Health Investments, Corp.',
+    'Clover Health Investments, Corp. • Robinhood',
     18,
     '0x62200915e7deab1ec7f79fb246dadbb80eacddd0',
     UnderlyingAsset['hoodeth:clov'],
@@ -2006,7 +2006,7 @@ export const hoodethTokens = [
   erc20Token(
     '8df82c58-a66e-4ad8-a73e-47c66eedf737',
     'hoodeth:mod',
-    'Modine Manufacturing Co',
+    'Modine Manufacturing Co • Robinhood',
     18,
     '0xc6cbad1016b38b797610c25e1dc7d95988b1f362',
     UnderlyingAsset['hoodeth:mod'],
@@ -2016,7 +2016,7 @@ export const hoodethTokens = [
   erc20Token(
     '597a50a1-5969-4bd0-b46d-0b3ee48189fe',
     'hoodeth:pwr',
-    'Quanta Services, Inc.',
+    'Quanta Services, Inc. • Robinhood',
     18,
     '0x9ab02ead789b6903c3c44d0ed32f9c707cdf12fd',
     UnderlyingAsset['hoodeth:pwr'],
@@ -2026,7 +2026,7 @@ export const hoodethTokens = [
   erc20Token(
     '95e21f82-e6a9-4705-8f17-ac8b1a980702',
     'hoodeth:aeis',
-    'Advanced Energy Industries, Inc.',
+    'Advanced Energy Industries, Inc. • Robinhood',
     18,
     '0xfaf9cb261b5fcc1f404bb10cd39c5c6c1974e612',
     UnderlyingAsset['hoodeth:aeis'],
@@ -2036,7 +2036,7 @@ export const hoodethTokens = [
   erc20Token(
     '18aa1731-88d4-4824-888d-f220ed617f77',
     'hoodeth:powl',
-    'Powell Industries, Inc.',
+    'Powell Industries, Inc. • Robinhood',
     18,
     '0x237c16d66590f67b886d978acd362eaead8b18c7',
     UnderlyingAsset['hoodeth:powl'],
@@ -2046,7 +2046,7 @@ export const hoodethTokens = [
   erc20Token(
     '6d946a34-acc7-4e5b-bb1b-db126d037a6e',
     'hoodeth:jbl',
-    'Jabil Inc.',
+    'Jabil Inc. • Robinhood',
     18,
     '0xeaf2512dfc1beac608f8794b3793cd4e02894aa6',
     UnderlyingAsset['hoodeth:jbl'],
@@ -2057,7 +2057,7 @@ export const hoodethTokens = [
   erc20Token(
     'ab26af0e-2c48-4dcb-addc-bc9da4a99a50',
     'hoodeth:cifr',
-    'Cipher Digital Inc.',
+    'Cipher Digital Inc. • Robinhood',
     18,
     '0x214fe11788f01b6e9c272e16922bf2849dea4147',
     UnderlyingAsset['hoodeth:cifr'],
@@ -2067,7 +2067,7 @@ export const hoodethTokens = [
   erc20Token(
     '3072abf3-7073-4d1c-b92b-7447d97b9d92',
     'hoodeth:mara',
-    'MARA Holdings, Inc.',
+    'MARA Holdings, Inc. • Robinhood',
     18,
     '0x66738460ba073287f64d4161ddc464586d72eea1',
     UnderlyingAsset['hoodeth:mara'],
@@ -2077,7 +2077,7 @@ export const hoodethTokens = [
   erc20Token(
     'a6e0e21c-5c9b-4f74-9151-49e45a6025fb',
     'hoodeth:bmnr',
-    'Bitmine Immersion Technologies, Inc.',
+    'Bitmine Immersion Technologies, Inc. • Robinhood',
     18,
     '0x9a7842eded60b0fe1e03eec342c82a397c821ed0',
     UnderlyingAsset['hoodeth:bmnr'],
@@ -2087,7 +2087,7 @@ export const hoodethTokens = [
   erc20Token(
     'c510b7ec-c806-4081-8c81-475540ccbe3f',
     'hoodeth:ebay',
-    'eBay Inc.',
+    'eBay Inc. • Robinhood',
     18,
     '0x7c1b91fa6e8e9131c6cac2057957994e7fd47f09',
     UnderlyingAsset['hoodeth:ebay'],
@@ -2097,7 +2097,7 @@ export const hoodethTokens = [
   erc20Token(
     '373f71c7-82f2-4386-89ab-4ec94f016829',
     'hoodeth:lcid',
-    'Lucid Group, Inc.',
+    'Lucid Group, Inc. • Robinhood',
     18,
     '0xa03ff46bf392714a7557bfdfa5bc8c617d6783a3',
     UnderlyingAsset['hoodeth:lcid'],
@@ -2107,7 +2107,7 @@ export const hoodethTokens = [
   erc20Token(
     '448d12b1-729b-4414-a5f6-7b6b0757b48f',
     'hoodeth:nclh',
-    'Norwegian Cruise Line Holdings Ltd.',
+    'Norwegian Cruise Line Holdings Ltd. • Robinhood',
     18,
     '0xbc36a649dd60980dc94db438433ce77ef540c0db',
     UnderlyingAsset['hoodeth:nclh'],
@@ -2117,7 +2117,7 @@ export const hoodethTokens = [
   erc20Token(
     'a27033b9-c96a-4c07-936f-944b8b0c32b1',
     'hoodeth:open',
-    'Opendoor Technologies Inc.',
+    'Opendoor Technologies Inc. • Robinhood',
     18,
     '0xc239684e3394fcb678a7b8c5858f7e1cfa94bee7',
     UnderlyingAsset['hoodeth:open'],
@@ -2127,7 +2127,7 @@ export const hoodethTokens = [
   erc20Token(
     'a935dd35-c086-46ca-bf16-3e30b6ba1dbe',
     'hoodeth:riot',
-    'Riot Platforms, Inc.',
+    'Riot Platforms, Inc. • Robinhood',
     18,
     '0x6ecf880d08745ffc23f57cc137c2c1fffe68b86e',
     UnderlyingAsset['hoodeth:riot'],
@@ -2137,7 +2137,7 @@ export const hoodethTokens = [
   erc20Token(
     'c76cb2b2-a3ba-44ad-b81e-09a0db66148d',
     'hoodeth:onds',
-    'Ondas Inc.',
+    'Ondas Inc. • Robinhood',
     18,
     '0xbef24fe205a54458fe30090922b512e18c5b0602',
     UnderlyingAsset['hoodeth:onds'],
@@ -2147,7 +2147,7 @@ export const hoodethTokens = [
   erc20Token(
     'eaf574b3-8877-4af7-b862-6aa3fadbc97f',
     'hoodeth:achr',
-    'Archer Aviation Inc.',
+    'Archer Aviation Inc. • Robinhood',
     18,
     '0xdc6ae38699eb681a0de65a066d9938946baed43b',
     UnderlyingAsset['hoodeth:achr'],
@@ -2157,7 +2157,7 @@ export const hoodethTokens = [
   erc20Token(
     'e7952d75-5f6a-44da-a6f0-e8328b1f52d5',
     'hoodeth:mnst',
-    'Monster Beverage Corporation',
+    'Monster Beverage Corporation • Robinhood',
     18,
     '0x22d8e3b004288da6da60195a17031eba47d537e7',
     UnderlyingAsset['hoodeth:mnst'],
@@ -2167,7 +2167,7 @@ export const hoodethTokens = [
   erc20Token(
     'a0577992-becc-408f-8a2d-115afe97f3fb',
     'hoodeth:gdx',
-    'VanEck Gold Miners ETF',
+    'VanEck Gold Miners ETF • Robinhood',
     18,
     '0xbdfa7a06458aa26b8e736e0fc87ad37c3bb8ac2e',
     UnderlyingAsset['hoodeth:gdx'],
@@ -2177,7 +2177,7 @@ export const hoodethTokens = [
   erc20Token(
     'f4f87c21-cd85-4dfb-b51b-ff8411fb510f',
     'hoodeth:corz',
-    'Core Scientific, Inc.',
+    'Core Scientific, Inc. • Robinhood',
     18,
     '0xda968f65dadb6489cbcd4afe22511afe430f64fb',
     UnderlyingAsset['hoodeth:corz'],
@@ -2187,7 +2187,7 @@ export const hoodethTokens = [
   erc20Token(
     'e251f14e-4d6f-4003-a539-47ca3734eacf',
     'hoodeth:has',
-    'Hasbro, Inc.',
+    'Hasbro, Inc. • Robinhood',
     18,
     '0x4cb1967bf60deeb4be4d3274dc319958eff2f0aa',
     UnderlyingAsset['hoodeth:has'],
@@ -2197,7 +2197,7 @@ export const hoodethTokens = [
   erc20Token(
     '783a321e-80aa-4339-a172-43de0d141516',
     'hoodeth:mcd',
-    "McDonald's Corporation",
+    "McDonald's Corporation • Robinhood",
     18,
     '0x2fdaa4604f10f4ae7f66fa48a174bcd25b1ece20',
     UnderlyingAsset['hoodeth:mcd'],
@@ -2207,7 +2207,7 @@ export const hoodethTokens = [
   erc20Token(
     '5ce63d9a-7168-4728-a0b5-4d1ff6466463',
     'hoodeth:aal',
-    'American Airlines Group Inc.',
+    'American Airlines Group Inc. • Robinhood',
     18,
     '0xa5f7bde015db6c967d5029015dd78cd3a9e9cd00',
     UnderlyingAsset['hoodeth:aal'],
@@ -2217,7 +2217,7 @@ export const hoodethTokens = [
   erc20Token(
     '7df1d2fa-9d49-40fa-8c84-a9993aca7e7f',
     'hoodeth:ual',
-    'United Airlines Holdings, Inc.',
+    'United Airlines Holdings, Inc. • Robinhood',
     18,
     '0x7b86ca230145d077a783d0410e999ad6ee86de52',
     UnderlyingAsset['hoodeth:ual'],
@@ -2227,7 +2227,7 @@ export const hoodethTokens = [
   erc20Token(
     'eb92a5c2-2fb4-47a6-9251-eaa2cfdf0fed',
     'hoodeth:ampx',
-    'Amprius Technologies, Inc.',
+    'Amprius Technologies, Inc. • Robinhood',
     18,
     '0x0a6da86ada2606f7d90415b5d431aa5f378ea798',
     UnderlyingAsset['hoodeth:ampx'],
@@ -2237,7 +2237,7 @@ export const hoodethTokens = [
   erc20Token(
     'a35dccad-804b-4297-8b9b-42a594e3cc5b',
     'hoodeth:cvx',
-    'Chevron Corporation',
+    'Chevron Corporation • Robinhood',
     18,
     '0x1a1d789e79fe42d1ff65fae659bb2d58fd2e4110',
     UnderlyingAsset['hoodeth:cvx'],
@@ -2247,7 +2247,7 @@ export const hoodethTokens = [
   erc20Token(
     'b14e64ba-e757-41f4-be47-7ccad0951d2a',
     'hoodeth:grnd',
-    'Grindr Inc.',
+    'Grindr Inc. • Robinhood',
     18,
     '0x555e14ec1fb18e35c3f01f5d8e34af9cfd730f00',
     UnderlyingAsset['hoodeth:grnd'],
@@ -2257,7 +2257,7 @@ export const hoodethTokens = [
   erc20Token(
     'eb97bd26-6958-480d-97ca-1b63847271b4',
     'hoodeth:uber',
-    'Uber Technologies, Inc.',
+    'Uber Technologies, Inc. • Robinhood',
     18,
     '0xbd335aa5a1693f0121a5c0ef18a080e9958da78b',
     UnderlyingAsset['hoodeth:uber'],
@@ -2267,7 +2267,7 @@ export const hoodethTokens = [
   erc20Token(
     'a26e9b37-01d0-40da-a1bb-0c806ab2e37c',
     'hoodeth:u',
-    'Unity Software Inc.',
+    'Unity Software Inc. • Robinhood',
     18,
     '0x79fa4d9aabc058f3449f25e373e2f8f0a34f9ae0',
     UnderlyingAsset['hoodeth:u'],
@@ -2277,7 +2277,7 @@ export const hoodethTokens = [
   erc20Token(
     '7089198c-de08-46c1-97a9-5f01f58808b7',
     'hoodeth:dkng',
-    'DraftKings Inc.',
+    'DraftKings Inc. • Robinhood',
     18,
     '0x0ef754390ff70ee1f2326b3be86f3e51bd0e425c',
     UnderlyingAsset['hoodeth:dkng'],
@@ -2287,7 +2287,7 @@ export const hoodethTokens = [
   erc20Token(
     'e1a9f4a2-056e-4c36-a1ca-a5bb5a289c3c',
     'hoodeth:dis',
-    'The Walt Disney Company',
+    'The Walt Disney Company • Robinhood',
     18,
     '0x501b1b3b79750313ad2c4cccd08586c4c17d7283',
     UnderlyingAsset['hoodeth:dis'],
@@ -2297,7 +2297,7 @@ export const hoodethTokens = [
   erc20Token(
     '8a6a27ef-d2d0-43b5-8831-b27e2fb58762',
     'hoodeth:car',
-    'Avis Budget Group, Inc.',
+    'Avis Budget Group, Inc. • Robinhood',
     18,
     '0x92c3f36749bc625df940ce81282ee2013ab11e71',
     UnderlyingAsset['hoodeth:car'],
@@ -2307,7 +2307,7 @@ export const hoodethTokens = [
   erc20Token(
     '2aca0eed-1a78-4a98-8c1f-88d02326a00a',
     'hoodeth:rtx',
-    'RTX Corporation',
+    'RTX Corporation • Robinhood',
     18,
     '0xba623c473df0bbc7ebe175fc3ce96dec47ca0125',
     UnderlyingAsset['hoodeth:rtx'],
@@ -2317,7 +2317,7 @@ export const hoodethTokens = [
   erc20Token(
     '5c7b256b-03a8-4cd6-aa07-a4ece3d6c1b9',
     'hoodeth:hut',
-    'Hut 8 Corp.',
+    'Hut 8 Corp. • Robinhood',
     18,
     '0x05a0b68e36eaa371049c9f711cbc34c0b201af51',
     UnderlyingAsset['hoodeth:hut'],
@@ -2327,7 +2327,7 @@ export const hoodethTokens = [
   erc20Token(
     'a9524551-5d4c-4309-8927-8b96121e09b5',
     'hoodeth:m',
-    "Macy's, Inc.",
+    "Macy's, Inc. • Robinhood",
     18,
     '0x914337bed5caa75ba1726037207dd88b33926e04',
     UnderlyingAsset['hoodeth:m'],
@@ -2337,7 +2337,7 @@ export const hoodethTokens = [
   erc20Token(
     'c80f2bc1-7dab-4135-8ce4-c8619a04ae4d',
     'hoodeth:gap',
-    'The Gap, Inc.',
+    'The Gap, Inc. • Robinhood',
     18,
     '0x8325b27fc0193411a80c71fc0e45f423a970630f',
     UnderlyingAsset['hoodeth:gap'],
@@ -2347,7 +2347,7 @@ export const hoodethTokens = [
   erc20Token(
     '5e3c1c97-b82e-4d15-8d8a-3bf89df6b75b',
     'hoodeth:aph',
-    'Amphenol Corporation',
+    'Amphenol Corporation • Robinhood',
     18,
     '0xd225d2a1dc20b01a2a36e8905e589f3a337401d9',
     UnderlyingAsset['hoodeth:aph'],
@@ -2357,7 +2357,7 @@ export const hoodethTokens = [
   erc20Token(
     '6e45de50-f326-427d-b22d-7c9a79c27ae7',
     'hoodeth:pypl',
-    'PayPal Holdings, Inc.',
+    'PayPal Holdings, Inc. • Robinhood',
     18,
     '0xa45abdc77918f7b9199b022eee400c0bc5712bd2',
     UnderlyingAsset['hoodeth:pypl'],
@@ -2367,7 +2367,7 @@ export const hoodethTokens = [
   erc20Token(
     '2de7f5a3-ea5f-4157-a7cb-7de9c78534fc',
     'hoodeth:hl',
-    'Hecla Mining Company',
+    'Hecla Mining Company • Robinhood',
     18,
     '0x5d90f9920add2f55dde36046c845b12d7a7c006c',
     UnderlyingAsset['hoodeth:hl'],
@@ -2377,7 +2377,7 @@ export const hoodethTokens = [
   erc20Token(
     '6f4ba7a1-897f-4ca1-828b-7b96fbcde2ca',
     'hoodeth:cenx',
-    'Century Aluminum Company',
+    'Century Aluminum Company • Robinhood',
     18,
     '0xebb4ef36d2bc8e47484cdd7794328e02ddc113d0',
     UnderlyingAsset['hoodeth:cenx'],
@@ -2387,7 +2387,7 @@ export const hoodethTokens = [
   erc20Token(
     'ceaa3d7b-cbb5-4171-a8bf-e3e032463c8b',
     'hoodeth:spot',
-    'Spotify Technology S.A.',
+    'Spotify Technology S.A. • Robinhood',
     18,
     '0x94e1c8e6009f4e4717388c02bed4c08f1fce7407',
     UnderlyingAsset['hoodeth:spot'],
@@ -2397,7 +2397,7 @@ export const hoodethTokens = [
   erc20Token(
     '2431bc90-220e-48e8-8d03-349f0b2902f0',
     'hoodeth:ntdoy',
-    'Nintendo Co., Ltd.',
+    'Nintendo Co., Ltd. • Robinhood',
     18,
     '0xbd7de9a41f3e40b73d23994f8563869dacd40fc7',
     UnderlyingAsset['hoodeth:ntdoy'],
@@ -2407,7 +2407,7 @@ export const hoodethTokens = [
   erc20Token(
     'ec2b87b9-3bbb-45f4-8c4e-20c41d4e7613',
     'hoodeth:jpm',
-    'JPMorgan Chase & Co.',
+    'JPMorgan Chase & Co. • Robinhood',
     18,
     '0x07c44da0848960bff894f17584db8b2f60b2409e',
     UnderlyingAsset['hoodeth:jpm'],
@@ -2417,7 +2417,7 @@ export const hoodethTokens = [
   erc20Token(
     '03a53610-b6e0-4907-a0e0-947e1b51260b',
     'hoodeth:abnb',
-    'Airbnb, Inc.',
+    'Airbnb, Inc. • Robinhood',
     18,
     '0x3fa09cc6b73d4419ab5660743d8a7ded3385fdb4',
     UnderlyingAsset['hoodeth:abnb'],
@@ -2427,7 +2427,7 @@ export const hoodethTokens = [
   erc20Token(
     '71232e54-a335-42e9-b83d-cbf901772fb4',
     'hoodeth:vsh',
-    'Vishay Intertechnology, Inc.',
+    'Vishay Intertechnology, Inc. • Robinhood',
     18,
     '0x9226bbec110fbd4701817f2db55280f43a08822e',
     UnderlyingAsset['hoodeth:vsh'],
@@ -2437,7 +2437,7 @@ export const hoodethTokens = [
   erc20Token(
     'efc238a3-e368-49ed-aa6a-b58e6e408231',
     'hoodeth:d',
-    'Dominion Energy, Inc.',
+    'Dominion Energy, Inc. • Robinhood',
     18,
     '0x867e4279755008a341591c4805ba59795924ca44',
     UnderlyingAsset['hoodeth:d'],
@@ -2447,7 +2447,7 @@ export const hoodethTokens = [
   erc20Token(
     'fdf572bf-c1d1-4ea0-b803-7de9796d3c13',
     'hoodeth:tpl',
-    'Texas Pacific Land Corporation',
+    'Texas Pacific Land Corporation • Robinhood',
     18,
     '0x410ca9f26f71adc9cdb44077fa3c86f7196ae1b7',
     UnderlyingAsset['hoodeth:tpl'],
@@ -2457,7 +2457,7 @@ export const hoodethTokens = [
   erc20Token(
     '9d70be2a-4e5b-4538-b34d-697e5d61e3fa',
     'hoodeth:pins',
-    'Pinterest, Inc.',
+    'Pinterest, Inc. • Robinhood',
     18,
     '0xebdd6e84cebc34a92b2785bdf65d0b245642d6c1',
     UnderlyingAsset['hoodeth:pins'],
@@ -2467,7 +2467,7 @@ export const hoodethTokens = [
   erc20Token(
     '6af63fdf-3b22-433b-88fa-01da1ce6665f',
     'hoodeth:fslr',
-    'First Solar, Inc.',
+    'First Solar, Inc. • Robinhood',
     18,
     '0xd2b82c42c1f99da66dd5069cac79a0a62ae4df56',
     UnderlyingAsset['hoodeth:fslr'],
@@ -2477,7 +2477,7 @@ export const hoodethTokens = [
   erc20Token(
     '7674f5da-b911-4bfb-a6b4-c3cbf17d515c',
     'hoodeth:xop',
-    'State Street SPDR S&P Oil & Gas Exploration & Production ETF',
+    'State Street SPDR S&P Oil & Gas Exploration & Production ETF • Robinhood',
     18,
     '0xe0a09ecd498f038fd1c6b0c0c581db4c437ff61a',
     UnderlyingAsset['hoodeth:xop'],
@@ -2487,7 +2487,7 @@ export const hoodethTokens = [
   erc20Token(
     '22ef0115-c99b-4098-9dd6-df7f7df4ed25',
     'hoodeth:umac',
-    'Unusual Machines, Inc.',
+    'Unusual Machines, Inc. • Robinhood',
     18,
     '0xc02146a52800d8e5d6a08d410c9f9ccd966b8389',
     UnderlyingAsset['hoodeth:umac'],
@@ -2497,7 +2497,7 @@ export const hoodethTokens = [
   erc20Token(
     '0c81899a-0038-40e7-a97e-394ac40c9392',
     'hoodeth:silj',
-    'Amplify Junior Silver Miners ETF',
+    'Amplify Junior Silver Miners ETF • Robinhood',
     18,
     '0xd521d4b02c9044a952b2ea8dbf2fcecee8300f7d',
     UnderlyingAsset['hoodeth:silj'],
@@ -2507,7 +2507,7 @@ export const hoodethTokens = [
   erc20Token(
     'dd8aee1f-872b-4ed4-8b63-28d2c32e3ce1',
     'hoodeth:oscr',
-    'Oscar Health, Inc.',
+    'Oscar Health, Inc. • Robinhood',
     18,
     '0x2a658404ce167f024bf7c90a18fc4265b1a7667a',
     UnderlyingAsset['hoodeth:oscr'],
@@ -2517,7 +2517,7 @@ export const hoodethTokens = [
   erc20Token(
     '662a5171-b871-41f6-88d5-d65d7df24216',
     'hoodeth:voyg',
-    'Voyager Technologies, Inc.',
+    'Voyager Technologies, Inc. • Robinhood',
     18,
     '0x02ee0b6b6b172eeb66d0939aeb63cb44de66aee1',
     UnderlyingAsset['hoodeth:voyg'],
@@ -2527,7 +2527,7 @@ export const hoodethTokens = [
   erc20Token(
     '2bc0ee01-b702-4050-8ab1-fb9531277696',
     'hoodeth:ura',
-    'Global X Uranium ETF',
+    'Global X Uranium ETF • Robinhood',
     18,
     '0x4f964f87c599eb4e4c2b71b1441d9307d1d12aa3',
     UnderlyingAsset['hoodeth:ura'],
@@ -2537,7 +2537,7 @@ export const hoodethTokens = [
   erc20Token(
     'e3261024-1999-41b1-b249-8d38a6db0e1a',
     'hoodeth:ibkr',
-    'Interactive Brokers Group, Inc.',
+    'Interactive Brokers Group, Inc. • Robinhood',
     18,
     '0x96f57c3cc8928a00fd2dac1a48e83505e599332d',
     UnderlyingAsset['hoodeth:ibkr'],
@@ -2547,7 +2547,7 @@ export const hoodethTokens = [
   erc20Token(
     'ee79cd40-c694-4b6d-9402-d229080bb2d5',
     'hoodeth:hon',
-    'Honeywell International Inc.',
+    'Honeywell International Inc. • Robinhood',
     18,
     '0xb3722e8c446dd66a521ad5bf38578ede7782f833',
     UnderlyingAsset['hoodeth:hon'],
@@ -2557,7 +2557,7 @@ export const hoodethTokens = [
   erc20Token(
     'bf97bd7e-bf00-4847-8d48-1730f7a3e4fb',
     'hoodeth:afrm',
-    'Affirm Holdings, Inc.',
+    'Affirm Holdings, Inc. • Robinhood',
     18,
     '0x14d89afd8ba9aa33a0c7810b30c3f798a1a7f169',
     UnderlyingAsset['hoodeth:afrm'],
@@ -2567,7 +2567,7 @@ export const hoodethTokens = [
   erc20Token(
     '6cf7b65c-111f-425b-b743-e9755a6b4c18',
     'hoodeth:fun',
-    'Six Flags Entertainment Corporation',
+    'Six Flags Entertainment Corporation • Robinhood',
     18,
     '0x0f9783923c3c1b5b573b9105c01a2c88b3f40ffb',
     UnderlyingAsset['hoodeth:fun'],
@@ -2577,7 +2577,7 @@ export const hoodethTokens = [
   erc20Token(
     'cb8fe313-90ff-46ca-9e47-3baedb9cef5a',
     'hoodeth:v',
-    'Visa Inc.',
+    'Visa Inc. • Robinhood',
     18,
     '0x9bff87700337babf5099e99f322f888dafb1d551',
     UnderlyingAsset['hoodeth:v'],
@@ -2587,7 +2587,7 @@ export const hoodethTokens = [
   erc20Token(
     '1c9956b3-22d6-4002-a123-97d7371590ba',
     'hoodeth:twst',
-    'Twist Bioscience Corporation',
+    'Twist Bioscience Corporation • Robinhood',
     18,
     '0x046234ab18e3288df55f4fd6ebc5de581eff8d5e',
     UnderlyingAsset['hoodeth:twst'],
@@ -2597,7 +2597,7 @@ export const hoodethTokens = [
   erc20Token(
     'd91700c1-e7ac-4834-8bbf-1a8694115d57',
     'hoodeth:ccj',
-    'Cameco Corporation',
+    'Cameco Corporation • Robinhood',
     18,
     '0x242b125567bbc6c24a0b48e3ed0e7184ddcea124',
     UnderlyingAsset['hoodeth:ccj'],
@@ -2607,7 +2607,7 @@ export const hoodethTokens = [
   erc20Token(
     'f459d0d9-442b-4a93-98e8-65c330ac0800',
     'hoodeth:wst',
-    'West Pharmaceutical Services, Inc.',
+    'West Pharmaceutical Services, Inc. • Robinhood',
     18,
     '0x68be8735ec63e0b7b2c2ee1e1323fb25a3fa6ab2',
     UnderlyingAsset['hoodeth:wst'],
@@ -2617,7 +2617,7 @@ export const hoodethTokens = [
   erc20Token(
     '0e8a8cb7-ca3e-4a9f-8bf6-7b52a4e98b0a',
     'hoodeth:psky',
-    'Paramount Skydance Corporation',
+    'Paramount Skydance Corporation • Robinhood',
     18,
     '0x7dfce6b37a679184e8cd1711bfa871d06851e379',
     UnderlyingAsset['hoodeth:psky'],
@@ -2627,7 +2627,7 @@ export const hoodethTokens = [
   erc20Token(
     '4227ba52-5edf-4d28-89a2-94ece2b88c41',
     'hoodeth:gs',
-    'The Goldman Sachs Group, Inc.',
+    'The Goldman Sachs Group, Inc. • Robinhood',
     18,
     '0x2af847f8b2c9b9ff745c5dc146e16f2a8a44fd02',
     UnderlyingAsset['hoodeth:gs'],
@@ -2637,7 +2637,7 @@ export const hoodethTokens = [
   erc20Token(
     '2d4faaad-5d10-46c5-ba29-79bbec17b71c',
     'hoodeth:txg',
-    '10x Genomics, Inc.',
+    '10x Genomics, Inc. • Robinhood',
     18,
     '0x473638bb26391bf36a452da8c709a25372ed13d1',
     UnderlyingAsset['hoodeth:txg'],
@@ -2647,7 +2647,7 @@ export const hoodethTokens = [
   erc20Token(
     '9b982436-b1be-4e87-b327-701ee12cb9a9',
     'hoodeth:cmg',
-    'Chipotle Mexican Grill, Inc.',
+    'Chipotle Mexican Grill, Inc. • Robinhood',
     18,
     '0x677406e6d47a78dd9416cad79d93f8551282e5f6',
     UnderlyingAsset['hoodeth:cmg'],
@@ -2657,7 +2657,7 @@ export const hoodethTokens = [
   erc20Token(
     '056f3d88-9cb1-4fb6-b2f3-fd540ff28e90',
     'hoodeth:cmi',
-    'Cummins Inc.',
+    'Cummins Inc. • Robinhood',
     18,
     '0xa2c69024ae1d4af2bf360a0f3339c083026e4988',
     UnderlyingAsset['hoodeth:cmi'],
@@ -2667,7 +2667,7 @@ export const hoodethTokens = [
   erc20Token(
     '3be96781-6bd6-46ec-be35-fbd252a78887',
     'hoodeth:btu',
-    'Peabody Energy Corporation',
+    'Peabody Energy Corporation • Robinhood',
     18,
     '0xb298cf18b2ac9cad05209a22bb9db65909462426',
     UnderlyingAsset['hoodeth:btu'],
@@ -2677,7 +2677,7 @@ export const hoodethTokens = [
   erc20Token(
     '18915a84-d6a6-433e-b0a2-b3d6eb7128fd',
     'hoodeth:pton',
-    'Peloton Interactive, Inc.',
+    'Peloton Interactive, Inc. • Robinhood',
     18,
     '0x1d576d0db5a7dde8cd15e10e058349653f30d26d',
     UnderlyingAsset['hoodeth:pton'],
@@ -2687,7 +2687,7 @@ export const hoodethTokens = [
   erc20Token(
     '7c6a453b-4920-4ca5-a2ed-18970392fc25',
     'hoodeth:gm',
-    'General Motors Company',
+    'General Motors Company • Robinhood',
     18,
     '0x5fcea455a8e722c5a2011d35a92298c7dedbc1a8',
     UnderlyingAsset['hoodeth:gm'],
@@ -2697,7 +2697,7 @@ export const hoodethTokens = [
   erc20Token(
     '92edd95f-9e01-4b51-903d-28fa69a244a0',
     'hoodeth:roku',
-    'Roku, Inc.',
+    'Roku, Inc. • Robinhood',
     18,
     '0xe6514689b5dcaaf5a3dcf70741c3b9c931ebda00',
     UnderlyingAsset['hoodeth:roku'],
@@ -2707,7 +2707,7 @@ export const hoodethTokens = [
   erc20Token(
     'e82db38c-a497-4926-9f44-bb9a257bfb16',
     'hoodeth:bksy',
-    'BlackSky Technology Inc.',
+    'BlackSky Technology Inc. • Robinhood',
     18,
     '0xc4e6f673ad01c5d932199d4e315e0fe45ed1bf93',
     UnderlyingAsset['hoodeth:bksy'],
@@ -2717,7 +2717,7 @@ export const hoodethTokens = [
   erc20Token(
     'e1ac2e36-61f2-4c9d-b4c3-8fb60513fb8a',
     'hoodeth:ma',
-    'Mastercard Incorporated',
+    'Mastercard Incorporated • Robinhood',
     18,
     '0xe5885d12fa0ef15c0493b5f3bc2580d693ded777',
     UnderlyingAsset['hoodeth:ma'],
@@ -2727,7 +2727,7 @@ export const hoodethTokens = [
   erc20Token(
     'cca25dad-10e8-400d-b01c-51544ef73a84',
     'hoodeth:chym',
-    'Chime Financial, Inc.',
+    'Chime Financial, Inc. • Robinhood',
     18,
     '0x96db30b4621ed2488ef85b91c238c29ea2259e08',
     UnderlyingAsset['hoodeth:chym'],
@@ -2737,7 +2737,7 @@ export const hoodethTokens = [
   erc20Token(
     '1fea8704-616b-4bac-ace6-5ebab77727fe',
     'hoodeth:sols',
-    'Solstice Advanced Materials, Inc.',
+    'Solstice Advanced Materials, Inc. • Robinhood',
     18,
     '0xd3c519dcb9c0c7cf7df2e5632f184e6b02fe987c',
     UnderlyingAsset['hoodeth:sols'],
@@ -2747,7 +2747,7 @@ export const hoodethTokens = [
   erc20Token(
     'ffe185c5-823d-4ed0-ac0f-c357d0b8197e',
     'hoodeth:bw',
-    'Babcock & Wilcox Enterprises, Inc.',
+    'Babcock & Wilcox Enterprises, Inc. • Robinhood',
     18,
     '0xd5144c7721e5cbddf8366c14bc739b4616522b5a',
     UnderlyingAsset['hoodeth:bw'],
@@ -2757,7 +2757,7 @@ export const hoodethTokens = [
   erc20Token(
     'cc25a952-ff24-4d1c-a446-042a8453197b',
     'hoodeth:dnn',
-    'Denison Mines Corp.',
+    'Denison Mines Corp. • Robinhood',
     18,
     '0xfcf9bc61f3be40a5b5bdc808e9b4e41748a13123',
     UnderlyingAsset['hoodeth:dnn'],
@@ -2767,7 +2767,7 @@ export const hoodethTokens = [
   erc20Token(
     'ea376d0a-d4df-4cc3-aaa6-0cf51e4d1369',
     'hoodeth:frmi',
-    'Fermi Inc.',
+    'Fermi Inc. • Robinhood',
     18,
     '0x84aa278a7efb969ca01bf534aa0535b353c0be73',
     UnderlyingAsset['hoodeth:frmi'],
@@ -2777,7 +2777,7 @@ export const hoodethTokens = [
   erc20Token(
     'c11fbb63-12dc-4f7e-8f09-348ac20d21ee',
     'hoodeth:rbrk',
-    'Rubrik, Inc.',
+    'Rubrik, Inc. • Robinhood',
     18,
     '0xc60c2c4cc37708622b798e4544376448300ba5f0',
     UnderlyingAsset['hoodeth:rbrk'],
@@ -2787,7 +2787,7 @@ export const hoodethTokens = [
   erc20Token(
     '0a40219f-47a4-44fe-8a8a-66586038d7c3',
     'hoodeth:aap',
-    'Advance Auto Parts, Inc.',
+    'Advance Auto Parts, Inc. • Robinhood',
     18,
     '0x422169967299aa24c947855b61b34dc971134894',
     UnderlyingAsset['hoodeth:aap'],
@@ -2797,7 +2797,7 @@ export const hoodethTokens = [
   erc20Token(
     'cc083ec7-2808-4c6f-a7f4-1c7d1195cc9e',
     'hoodeth:vvv',
-    'Valvoline Inc.',
+    'Valvoline Inc. • Robinhood',
     18,
     '0x1cebc16c2d52fd812412d26d77a0c47c3b5bca23',
     UnderlyingAsset['hoodeth:vvv'],
@@ -2807,7 +2807,7 @@ export const hoodethTokens = [
   erc20Token(
     'a4dc9bd4-09bf-49bd-8bbb-8350a8f51ca0',
     'hoodeth:hubs',
-    'HubSpot, Inc.',
+    'HubSpot, Inc. • Robinhood',
     18,
     '0x1ae07256ccee97689f26af9a0aa5aef1cd20bf99',
     UnderlyingAsset['hoodeth:hubs'],
@@ -2817,7 +2817,7 @@ export const hoodethTokens = [
   erc20Token(
     'fe64bf1b-638b-4db7-9043-6e61c6d2eb26',
     'hoodeth:ntla',
-    'Intellia Therapeutics, Inc.',
+    'Intellia Therapeutics, Inc. • Robinhood',
     18,
     '0x42d8390536040bb194ad3490dc4d379de8e26a45',
     UnderlyingAsset['hoodeth:ntla'],
@@ -2827,7 +2827,7 @@ export const hoodethTokens = [
   erc20Token(
     '97d9f586-19b2-4ec7-9e97-73371ba22968',
     'hoodeth:wu',
-    'The Western Union Company',
+    'The Western Union Company • Robinhood',
     18,
     '0xf44645382b5235e65becc3849f3bbd6f07b40bc7',
     UnderlyingAsset['hoodeth:wu'],
@@ -2837,7 +2837,7 @@ export const hoodethTokens = [
   erc20Token(
     'ada5d565-4abe-4c0c-9542-2f5ce8fac1fd',
     'hoodeth:cc',
-    'The Chemours Company',
+    'The Chemours Company • Robinhood',
     18,
     '0x852183c6bdf42379032d51f2c22dc6e59167cc43',
     UnderlyingAsset['hoodeth:cc'],
@@ -2847,7 +2847,7 @@ export const hoodethTokens = [
   erc20Token(
     'f4c6f4a7-2c3b-447e-91f2-2dff3ecc58b6',
     'hoodeth:sdgr',
-    'Schrödinger, Inc.',
+    'Schrödinger, Inc. • Robinhood',
     18,
     '0xd1d12f9f7200ebe82a58001ee81fcf3717f68271',
     UnderlyingAsset['hoodeth:sdgr'],
@@ -2857,7 +2857,7 @@ export const hoodethTokens = [
   erc20Token(
     'e4794daf-bd18-45d1-970b-78ec0b372450',
     'hoodeth:azta',
-    'Azenta, Inc.',
+    'Azenta, Inc. • Robinhood',
     18,
     '0x42a83ce42ca70a96b559f443790b8f56f551fbdf',
     UnderlyingAsset['hoodeth:azta'],
@@ -2867,7 +2867,7 @@ export const hoodethTokens = [
   erc20Token(
     '043ba7d1-b24c-4f55-9ee7-ddb884d9c990',
     'hoodeth:bfly',
-    'Butterfly Network, Inc.',
+    'Butterfly Network, Inc. • Robinhood',
     18,
     '0xf3f9d3c81d3942e3a975656509f102acf7b56131',
     UnderlyingAsset['hoodeth:bfly'],
@@ -2877,7 +2877,7 @@ export const hoodethTokens = [
   erc20Token(
     'f89fe738-45fd-41ce-a2be-2ad67b194d43',
     'hoodeth:lbrx',
-    'LB Pharmaceuticals Inc',
+    'LB Pharmaceuticals Inc • Robinhood',
     18,
     '0x5a691ef72e60c9fadeb18a99d8935e936c85fd1c',
     UnderlyingAsset['hoodeth:lbrx'],
@@ -2887,7 +2887,7 @@ export const hoodethTokens = [
   erc20Token(
     '7240dbca-525e-4b0a-9e83-31b6d786bfc5',
     'hoodeth:nuvb',
-    'Nuvation Bio Inc.',
+    'Nuvation Bio Inc. • Robinhood',
     18,
     '0x43acec1bee7c2de74bdff5455922afe018acbd2f',
     UnderlyingAsset['hoodeth:nuvb'],
@@ -2897,7 +2897,7 @@ export const hoodethTokens = [
   erc20Token(
     'fe9eeda8-e172-47fb-a3f2-7606f78be37d',
     'hoodeth:wen',
-    "The Wendy's Company",
+    "The Wendy's Company • Robinhood",
     18,
     '0x8356c8acbd81c4e28657090194b4852cf05b6442',
     UnderlyingAsset['hoodeth:wen'],
@@ -2907,7 +2907,7 @@ export const hoodethTokens = [
   erc20Token(
     'fbcc2bcf-2299-4198-b232-0e4bfd5b0076',
     'hoodeth:lac',
-    'Lithium Americas Corp.',
+    'Lithium Americas Corp. • Robinhood',
     18,
     '0x7549013cee32d2f4029fcd5413c9ef99b5797e09',
     UnderlyingAsset['hoodeth:lac'],
@@ -2917,7 +2917,7 @@ export const hoodethTokens = [
   erc20Token(
     '54290b6d-3579-4265-aaf8-8313453ce0dd',
     'hoodeth:xxi',
-    'Twenty One Capital, Inc.',
+    'Twenty One Capital, Inc. • Robinhood',
     18,
     '0xb045f1c2c5a9093efbc26935949ecba818c60692',
     UnderlyingAsset['hoodeth:xxi'],
@@ -2927,7 +2927,7 @@ export const hoodethTokens = [
   erc20Token(
     '8eb13994-6e96-4d1e-a340-b0c23fd97041',
     'hoodeth:dpz',
-    "Domino's Pizza Inc.",
+    "Domino's Pizza Inc. • Robinhood",
     18,
     '0x999129f011665f03516186bbf1a61476bc531323',
     UnderlyingAsset['hoodeth:dpz'],
@@ -2937,7 +2937,7 @@ export const hoodethTokens = [
   erc20Token(
     '66616d78-b15f-4dec-8414-09da2a5d2c2e',
     'hoodeth:hodu',
-    'Direxion Daily HOOD Bull 2X ETF',
+    'Direxion Daily HOOD Bull 2X ETF • Robinhood',
     18,
     '0x843ab718510028c8a8aa5cb8fc447e042506afec',
     UnderlyingAsset['hoodeth:hodu'],
