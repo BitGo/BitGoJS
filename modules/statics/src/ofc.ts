@@ -1383,7 +1383,7 @@ export function ofcStxToken(
   suffix: string = name.replace(/^ofc/, '').toUpperCase(),
   network: OfcNetwork = Networks.main.ofc,
   isToken = true,
-  addressCoin = 'stx',
+  addressCoin = name.replace(/^ofc/, '').split(':')[0],
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   const filteredFeatures = getFilteredFeatures(suffix);
@@ -1438,7 +1438,7 @@ export function tofcStxToken(
   suffix: string = name.replace(/^ofc/, '').toUpperCase(),
   network: OfcNetwork = Networks.test.ofc,
   isToken = true,
-  addressCoin = 'tstx',
+  addressCoin = name.replace(/^ofc/, '').split(':')[0],
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   const filteredFeatures = getFilteredFeatures(suffix);
