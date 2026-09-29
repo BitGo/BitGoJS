@@ -4346,7 +4346,9 @@ export class Wallet implements IWallet {
 
     if (
       typeof params.prebuildTx === 'string' ||
-      (params.prebuildTx?.buildParams?.type !== 'enabletoken' && params.prebuildTx?.buildParams?.type !== 'enableMpt')
+      (params.prebuildTx?.buildParams?.type !== 'enabletoken' &&
+        params.prebuildTx?.buildParams?.type !== 'enableMpt' &&
+        params.prebuildTx?.buildParams?.type !== 'disabletoken')
     ) {
       throw new Error('Invalid build of token enablement.');
     }
