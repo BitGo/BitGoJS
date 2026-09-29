@@ -36,7 +36,38 @@ describe('Trx Contract call Builder', () => {
         () => {
           builder.validateAddress({ address: 'zz73a5993cd182ae152adad8203163f780c65a8aa5' });
         },
-        (e: any) => e.message === 'zz73a5993cd182ae152adad8203163f780c65a8aa5 is not a valid base58 address.'
+        (e: any) =>
+          e.message ===
+          'zz73a5993cd182ae152adad8203163f780c65a8aa5 is not a valid base58 address: contains invalid Base58 character(s): "0".'
+      );
+    });
+
+    it('an address containing non-base58 characters (0, O, I, l)', () => {
+      assert.throws(
+        () => {
+          builder.validateAddress({ address: 'TGai5uHgBcoLERrzDXMepqZB8Et7D8nV80' });
+        },
+        (e: any) =>
+          e.message ===
+          'TGai5uHgBcoLERrzDXMepqZB8Et7D8nV80 is not a valid base58 address: contains invalid Base58 character(s): "0".'
+      );
+
+      assert.throws(
+        () => {
+          builder.validateAddress({ address: 'TGai5uHgBcoLERrzDXMepqZB8Et7D8nV8l' });
+        },
+        (e: any) =>
+          e.message ===
+          'TGai5uHgBcoLERrzDXMepqZB8Et7D8nV8l is not a valid base58 address: contains invalid Base58 character(s): "l".'
+      );
+    });
+
+    it('an address with valid base58 characters but invalid checksum', () => {
+      assert.throws(
+        () => {
+          builder.validateAddress({ address: 'TBChwKYNaTo4a4N68Me1qEiiKsRDspXqLLZ' });
+        },
+        (e: any) => e.message === 'TBChwKYNaTo4a4N68Me1qEiiKsRDspXqLLZ is not a valid base58 address.'
       );
     });
 

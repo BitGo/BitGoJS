@@ -172,4 +172,22 @@ describe('Util library should', function () {
     assert.strictEqual(tokenMainnetContractAddresses.includes('TSSMHYeV2uE9qYH95DqyoCuNCzEL1NvU3S'), true);
     assert.strictEqual(tokenTestnetContractAddresses.includes('TGkfUshdbAiNj5G1mynp2meq2BfF6XSGPf'), true);
   });
+
+  describe('getNonBase58Characters', () => {
+    it('returns empty array for valid base58 strings', () => {
+      assert.deepStrictEqual(Utils.getNonBase58Characters('TGai5uHgBcoLERrzDXMepqZB8Et7D8nV8K'), []);
+      assert.deepStrictEqual(Utils.getNonBase58Characters(Utils.BASE58_ALPHABET), []);
+    });
+
+    it('returns invalid characters for non-base58 characters (0, O, I, l)', () => {
+      assert.deepStrictEqual(Utils.getNonBase58Characters('TGai5uHgBcoLERrzDXMepqZB8Et7D8nV80'), ['0']);
+      assert.deepStrictEqual(Utils.getNonBase58Characters('TGai5uHgBcoLERrzDXMepqZB8Et7D8nV8O'), ['O']);
+      assert.deepStrictEqual(Utils.getNonBase58Characters('TGai5uHgBcoLERrzDXMepqZB8Et7D8nV8I'), ['I']);
+      assert.deepStrictEqual(Utils.getNonBase58Characters('TGai5uHgBcoLERrzDXMepqZB8Et7D8nV8l'), ['l']);
+    });
+
+    it('returns unique non-base58 characters including whitespace and symbols', () => {
+      assert.deepStrictEqual(Utils.getNonBase58Characters('00OOIIll  !!'), ['0', 'O', 'I', 'l', ' ', '!']);
+    });
+  });
 });
