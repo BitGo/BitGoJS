@@ -99,8 +99,11 @@ import {
   isValidPublicKey,
   validateRawTransaction,
 } from './lib/utils';
+import { validateRawTransactionV1 } from './lib/serialization/parseWireTransaction';
 
 export const DEFAULT_SCAN_FACTOR = 20; // default number of receive addresses to scan for funds
+
+const V1_TRANSACTION_SIZE_LIMIT = 4096; // v1 (SIMD-0296/0385) wire size limit in bytes
 
 export interface TransactionFee {
   fee: string;
@@ -2159,7 +2162,24 @@ export class Sol extends BaseCoin {
   async broadcastTransaction({
     serializedSignedTransaction,
   }: BaseBroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult> {
-    validateRawTransaction(serializedSignedTransaction, true, true);
+    const rawBytes = Buffer.from(serializedSignedTransaction, 'base64');
+    // v1 (SIMD-0296/0385) transactions start with the 0x81 version prefix; the legacy
+    // parser cannot deserialize them, so validate the v1 size limit directly instead.
+    const isV1 = rawBytes.length > 0 && rawBytes[0] === 0x81;
+
+    if (isV1) {
+      if (rawBytes.length > V1_TRANSACTION_SIZE_LIMIT) {
+        throw new Error(
+          `v1 transaction exceeds the ${V1_TRANSACTION_SIZE_LIMIT}-byte size limit: ${rawBytes.length} bytes`
+        );
+      }
+      // Structural + signature validation parity with the legacy path (which uses
+      // validateRawTransaction(raw, true, true)).
+      validateRawTransactionV1(rawBytes);
+    } else {
+      validateRawTransaction(serializedSignedTransaction, true, true);
+    }
+
     const response = await this.getDataFromNode({
       payload: {
         id: '1',
