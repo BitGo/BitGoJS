@@ -5,7 +5,7 @@ import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { InstructionBuilderTypes } from './constants';
 import { CustomInstruction, VersionedCustomInstruction, VersionedTransactionData } from './iface';
-import { isSolLegacyInstruction } from './utils';
+import { isSolLegacyInstruction, validateAddress } from './utils';
 import assert from 'assert';
 
 /**
@@ -82,6 +82,17 @@ export class CustomInstructionBuilder extends TransactionBuilder {
 
   /**
    * Build transaction from deconstructed VersionedTransaction data
+   *
+   * When `feePayer()` has been called with an address that differs from `staticAccountKeys[0]`,
+   * the message is rewritten so that the fee payer becomes static account 0 (the fee payer of a
+   * versioned transaction is `staticAccountKeys[0]` as supplied). The rewrite runs before
+   * `injectNonceAdvanceInstruction()`, so when the fee payer is also the nonce authority it is
+   * already a signer. Without `feePayer()` the data is used as supplied and no bytes change.
+   *
+   * wallet-platform must NOT set a fee payer for a versioned transaction that a third party has
+   * already signed: rewriting the message invalidates existing signatures. Those transactions
+   * are built wallet-pays instead.
+   *
    * @param data - VersionedTransactionData containing instructions, ALTs, and account keys
    * @returns This builder instance
    */
@@ -126,8 +137,11 @@ export class CustomInstructionBuilder extends TransactionBuilder {
       }
 
       let processedData = data;
+      if (this._feePayer && this._feePayer !== data.staticAccountKeys[0]) {
+        processedData = this.rewriteFeePayer(processedData);
+      }
       if (this._nonceInfo && this._nonceInfo.params) {
-        processedData = this.injectNonceAdvanceInstruction(data);
+        processedData = this.injectNonceAdvanceInstruction(processedData);
       }
 
       this.addCustomInstructions(processedData.versionedInstructions);
@@ -150,6 +164,105 @@ export class CustomInstructionBuilder extends TransactionBuilder {
       }
       throw new BuildTransactionError(`Failed to process versioned transaction data: ${error.message}`);
     }
+  }
+
+  /**
+   * Rewrite a caller-built versioned message so that the configured fee payer becomes static
+   * account 0, the account that pays the fee.
+   *
+   * The fee payer must be a writable signer, so:
+   * * if it is not among the static account keys it is inserted at index 0 and
+   *   `numRequiredSignatures` is incremented;
+   * * if it is already present at another index it is moved to index 0, `numRequiredSignatures`
+   *   is incremented when it was not a signer, and the read-only count of the section it left
+   *   is decremented when it was read-only (`numReadonlySignedAccounts` for a read-only signer,
+   *   `numReadonlyUnsignedAccounts` for a read-only non-signer).
+   *
+   * Every static and lookup-table index is remapped with one full old → new map, so instructions
+   * keep targeting the same accounts. The fee payer may not be an address lookup table account:
+   * a lookup table account is a data account and can never sign, so such input is rejected.
+   *
+   * This must only be applied to transactions that no third party has signed yet, because the
+   * rewrite changes the message and therefore invalidates existing signatures.
+   *
+   * @param data - Original versioned transaction data
+   * @returns Rewritten versioned transaction data with the fee payer at static account 0
+   * @private
+   */
+  private rewriteFeePayer(data: VersionedTransactionData): VersionedTransactionData {
+    const feePayer = this._feePayer;
+    assert(feePayer, 'fee payer must be set before rewriting');
+    validateAddress(feePayer, 'fee payer');
+
+    if (data.addressLookupTables.some((alt) => alt.accountKey === feePayer)) {
+      throw new BuildTransactionError('Fee payer cannot be an address lookup table account: ' + feePayer);
+    }
+
+    const { staticAccountKeys, messageHeader } = data;
+    const existingIndex = staticAccountKeys.indexOf(feePayer);
+
+    let newStaticAccountKeys: string[];
+    let newMessageHeader: VersionedTransactionData['messageHeader'];
+    // old static index → new static index, plus the shift applied to lookup-table indexes
+    // (they are offset by the, possibly grown, static key count)
+    const staticIndexMap = new Map<number, number>();
+    let lookupTableOffset: number;
+
+    if (existingIndex === -1) {
+      // Not present: insert it at index 0 as a writable signer.
+      newStaticAccountKeys = [feePayer, ...staticAccountKeys];
+      newMessageHeader = {
+        numRequiredSignatures: messageHeader.numRequiredSignatures + 1,
+        numReadonlySignedAccounts: messageHeader.numReadonlySignedAccounts,
+        numReadonlyUnsignedAccounts: messageHeader.numReadonlyUnsignedAccounts,
+      };
+      staticAccountKeys.forEach((_key, oldIdx) => staticIndexMap.set(oldIdx, oldIdx + 1));
+      lookupTableOffset = 1;
+    } else {
+      // Present elsewhere: move it to index 0 as a writable signer.
+      newStaticAccountKeys = [
+        feePayer,
+        ...staticAccountKeys.slice(0, existingIndex),
+        ...staticAccountKeys.slice(existingIndex + 1),
+      ];
+      const isSigner = existingIndex < messageHeader.numRequiredSignatures;
+      const isReadonlySigned =
+        isSigner && existingIndex >= messageHeader.numRequiredSignatures - messageHeader.numReadonlySignedAccounts;
+      const isReadonlyUnsigned =
+        !isSigner && existingIndex >= staticAccountKeys.length - messageHeader.numReadonlyUnsignedAccounts;
+      newMessageHeader = {
+        numRequiredSignatures: isSigner ? messageHeader.numRequiredSignatures : messageHeader.numRequiredSignatures + 1,
+        numReadonlySignedAccounts: isReadonlySigned
+          ? messageHeader.numReadonlySignedAccounts - 1
+          : messageHeader.numReadonlySignedAccounts,
+        numReadonlyUnsignedAccounts: isReadonlyUnsigned
+          ? messageHeader.numReadonlyUnsignedAccounts - 1
+          : messageHeader.numReadonlyUnsignedAccounts,
+      };
+      staticAccountKeys.forEach((_key, oldIdx) =>
+        staticIndexMap.set(oldIdx, oldIdx < existingIndex ? oldIdx + 1 : oldIdx === existingIndex ? 0 : oldIdx)
+      );
+      lookupTableOffset = 0;
+    }
+
+    // One full old → new map: static indexes come from the map, lookup-table indexes shift by
+    // the number of static keys that were inserted.
+    const numStaticKeys = staticAccountKeys.length;
+    const remapIndex = (accountIndex: number): number =>
+      accountIndex < numStaticKeys
+        ? staticIndexMap.get(accountIndex) ?? accountIndex
+        : accountIndex + lookupTableOffset;
+
+    return {
+      ...data,
+      staticAccountKeys: newStaticAccountKeys,
+      messageHeader: newMessageHeader,
+      versionedInstructions: data.versionedInstructions.map((instruction) => ({
+        programIdIndex: remapIndex(instruction.programIdIndex),
+        accountKeyIndexes: instruction.accountKeyIndexes.map(remapIndex),
+        data: instruction.data,
+      })),
+    };
   }
 
   /**
