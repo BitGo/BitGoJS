@@ -1,12 +1,13 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BuildTransactionError, SolInstruction, SolVersionedInstruction, TransactionType } from '@bitgo/sdk-core';
-import { PublicKey, SystemProgram, SYSVAR_RECENT_BLOCKHASHES_PUBKEY } from '@solana/web3.js';
+import { MessageV0, PublicKey, SystemProgram, SYSVAR_RECENT_BLOCKHASHES_PUBKEY } from '@solana/web3.js';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { InstructionBuilderTypes } from './constants';
 import { CustomInstruction, VersionedCustomInstruction, VersionedTransactionData } from './iface';
 import { isSolLegacyInstruction } from './utils';
 import assert from 'assert';
+import base58 from 'bs58';
 
 /**
  * Transaction builder for custom Solana instructions.
@@ -154,9 +155,11 @@ export class CustomInstructionBuilder extends TransactionBuilder {
 
   /**
    * Inject nonce advance instruction into versioned transaction data for durable nonce support.
-   * Reorders accounts so signers appear first (required by Solana MessageV0 format).
+   * Rebuilds the static account keys section by section (writable signers, read-only signers,
+   * writable non-signers, read-only non-signers), remaps every instruction index - static and
+   * lookup-table - to the new key order, and validates that the result compiles to a MessageV0.
    * @param data - Original versioned transaction data
-   * @returns Modified versioned transaction data with nonce advance instruction
+   * @returns Modified versioned transaction data with the nonce advance instruction first
    * @private
    */
   private injectNonceAdvanceInstruction(data: VersionedTransactionData): VersionedTransactionData {
@@ -164,22 +167,100 @@ export class CustomInstructionBuilder extends TransactionBuilder {
     const SYSTEM_PROGRAM = SystemProgram.programId.toBase58();
     const SYSVAR_RECENT_BLOCKHASHES = SYSVAR_RECENT_BLOCKHASHES_PUBKEY.toBase58();
 
-    const numSigners = data.messageHeader.numRequiredSignatures;
-    const originalSigners = data.staticAccountKeys.slice(0, numSigners);
-    const originalNonSigners = data.staticAccountKeys.slice(numSigners);
-
-    if (!originalSigners.includes(authWalletAddress)) {
-      originalSigners.push(authWalletAddress);
+    const { numRequiredSignatures, numReadonlySignedAccounts, numReadonlyUnsignedAccounts } = data.messageHeader;
+    const oldStaticLen = data.staticAccountKeys.length;
+    if (
+      numReadonlySignedAccounts > numRequiredSignatures ||
+      numRequiredSignatures + numReadonlyUnsignedAccounts > oldStaticLen
+    ) {
+      throw new BuildTransactionError(
+        `Invalid message header: readonly counts (${numReadonlySignedAccounts}, ${numReadonlyUnsignedAccounts}) ` +
+          `are inconsistent with ${numRequiredSignatures} required signatures and ${oldStaticLen} static account keys`
+      );
     }
 
-    const nonSigners = [...originalNonSigners];
-    const allKeys = [...originalSigners, ...originalNonSigners];
+    // Split the original static keys into the four MessageV0 header sections.
+    const writableSigners = data.staticAccountKeys.slice(0, numRequiredSignatures - numReadonlySignedAccounts);
+    const readonlySigners = data.staticAccountKeys.slice(
+      numRequiredSignatures - numReadonlySignedAccounts,
+      numRequiredSignatures
+    );
+    const writableNonSigners = data.staticAccountKeys.slice(
+      numRequiredSignatures,
+      oldStaticLen - numReadonlyUnsignedAccounts
+    );
+    const readonlyNonSigners = data.staticAccountKeys.slice(oldStaticLen - numReadonlyUnsignedAccounts);
 
-    if (!allKeys.includes(SYSTEM_PROGRAM)) nonSigners.push(SYSTEM_PROGRAM);
-    if (!allKeys.includes(walletNonceAddress)) nonSigners.push(walletNonceAddress);
-    if (!allKeys.includes(SYSVAR_RECENT_BLOCKHASHES)) nonSigners.push(SYSVAR_RECENT_BLOCKHASHES);
+    // The nonce authority must be a signer for AdvanceNonceAccount. If it is already present
+    // as a non-signer, move it into the signers, keeping its writability (a writable
+    // non-signer becomes a writable signer, a read-only one a read-only signer).
+    const authorityIsSigner =
+      writableSigners.includes(authWalletAddress) || readonlySigners.includes(authWalletAddress);
+    if (!authorityIsSigner) {
+      const asReadonlyNonSigner = readonlyNonSigners.indexOf(authWalletAddress);
+      const asWritableNonSigner = writableNonSigners.indexOf(authWalletAddress);
+      if (asReadonlyNonSigner >= 0) {
+        readonlyNonSigners.splice(asReadonlyNonSigner, 1);
+        readonlySigners.push(authWalletAddress);
+      } else if (asWritableNonSigner >= 0) {
+        writableNonSigners.splice(asWritableNonSigner, 1);
+        writableSigners.push(authWalletAddress);
+      } else {
+        // A brand-new authority is a read-only signer for AdvanceNonceAccount.
+        readonlySigners.push(authWalletAddress);
+      }
+    }
 
-    const newStaticAccountKeys = [...originalSigners, ...nonSigners];
+    // The nonce account must be writable for AdvanceNonceAccount. If it is already present,
+    // keep it in place when writable, or move it into the writable section when read-only.
+    const nonceAsReadonlyNonSigner = readonlyNonSigners.indexOf(walletNonceAddress);
+    const nonceAsReadonlySigner = readonlySigners.indexOf(walletNonceAddress);
+    if (nonceAsReadonlyNonSigner >= 0) {
+      readonlyNonSigners.splice(nonceAsReadonlyNonSigner, 1);
+      writableNonSigners.push(walletNonceAddress);
+    } else if (nonceAsReadonlySigner >= 0) {
+      readonlySigners.splice(nonceAsReadonlySigner, 1);
+      writableSigners.push(walletNonceAddress);
+    } else if (!writableSigners.includes(walletNonceAddress) && !writableNonSigners.includes(walletNonceAddress)) {
+      writableNonSigners.push(walletNonceAddress);
+    }
+
+    // The system program and the recent blockhashes sysvar are read-only non-signers for
+    // AdvanceNonceAccount.
+    const isPresent = (key: string) =>
+      writableSigners.includes(key) ||
+      readonlySigners.includes(key) ||
+      writableNonSigners.includes(key) ||
+      readonlyNonSigners.includes(key);
+    if (!isPresent(SYSTEM_PROGRAM)) {
+      readonlyNonSigners.push(SYSTEM_PROGRAM);
+    }
+    if (!isPresent(SYSVAR_RECENT_BLOCKHASHES)) {
+      readonlyNonSigners.push(SYSVAR_RECENT_BLOCKHASHES);
+    }
+
+    const newStaticAccountKeys = [...writableSigners, ...readonlySigners, ...writableNonSigners, ...readonlyNonSigners];
+
+    // Build one full old-index to new-index map covering static and lookup-table indexes.
+    // Static indexes follow their key to its new position; lookup-table indexes, which are
+    // appended after the static keys, shift by the number of inserted static keys.
+    const indexMap = new Map<number, number>();
+    data.staticAccountKeys.forEach((key, oldIdx) => indexMap.set(oldIdx, newStaticAccountKeys.indexOf(key)));
+    const shift = newStaticAccountKeys.length - oldStaticLen;
+    const lookupKeyCount = data.addressLookupTables.reduce(
+      (sum, alt) => sum + alt.writableIndexes.length + alt.readonlyIndexes.length,
+      0
+    );
+    for (let i = oldStaticLen; i < oldStaticLen + lookupKeyCount; i++) {
+      indexMap.set(i, i + shift);
+    }
+    const remapIndex = (index: number): number => {
+      const mapped = indexMap.get(index);
+      if (mapped === undefined) {
+        throw new BuildTransactionError(`Invalid account key index ${index} in versioned instruction`);
+      }
+      return mapped;
+    };
 
     const nonceAdvanceInstruction: SolVersionedInstruction = {
       programIdIndex: newStaticAccountKeys.indexOf(SYSTEM_PROGRAM),
@@ -191,22 +272,66 @@ export class CustomInstructionBuilder extends TransactionBuilder {
       data: '6vx8P', // SystemProgram AdvanceNonceAccount (0x04000000) in base58
     };
 
-    const indexMap = new Map(data.staticAccountKeys.map((key, oldIdx) => [oldIdx, newStaticAccountKeys.indexOf(key)]));
-    const remappedInstructions = data.versionedInstructions.map((inst) => ({
-      programIdIndex: indexMap.get(inst.programIdIndex) ?? inst.programIdIndex,
-      accountKeyIndexes: inst.accountKeyIndexes.map((idx) => indexMap.get(idx) ?? idx),
-      data: inst.data,
-    }));
-
-    return {
+    const processed: VersionedTransactionData = {
       ...data,
-      versionedInstructions: [nonceAdvanceInstruction, ...remappedInstructions],
+      versionedInstructions: [
+        nonceAdvanceInstruction,
+        ...data.versionedInstructions.map((inst) => ({
+          programIdIndex: remapIndex(inst.programIdIndex),
+          accountKeyIndexes: inst.accountKeyIndexes.map(remapIndex),
+          data: inst.data,
+        })),
+      ],
       staticAccountKeys: newStaticAccountKeys,
       messageHeader: {
-        ...data.messageHeader,
-        numRequiredSignatures: originalSigners.length,
+        numRequiredSignatures: writableSigners.length + readonlySigners.length,
+        numReadonlySignedAccounts: readonlySigners.length,
+        numReadonlyUnsignedAccounts: readonlyNonSigners.length,
       },
     };
+
+    this.validateInjectedMessage(processed);
+    return processed;
+  }
+
+  /**
+   * Validate the result of injectNonceAdvanceInstruction by compiling it: the MessageV0 built
+   * from the new keys, header, lookups and instructions must deserialize and contain no
+   * duplicate keys.
+   * @param data - Processed versioned transaction data
+   * @throws {BuildTransactionError} if the rebuilt message does not compile
+   * @private
+   */
+  private validateInjectedMessage(data: VersionedTransactionData): void {
+    if (new Set(data.staticAccountKeys).size !== data.staticAccountKeys.length) {
+      throw new BuildTransactionError('Injected nonce advance instruction produced duplicate account keys');
+    }
+
+    const message = new MessageV0({
+      header: data.messageHeader,
+      staticAccountKeys: data.staticAccountKeys.map((key) => new PublicKey(key)),
+      recentBlockhash: data.recentBlockhash ?? this._recentBlockhash,
+      compiledInstructions: data.versionedInstructions.map((instruction) => ({
+        programIdIndex: instruction.programIdIndex,
+        accountKeyIndexes: instruction.accountKeyIndexes,
+        data: Buffer.from(base58.decode(instruction.data)),
+      })),
+      addressTableLookups: data.addressLookupTables.map((alt) => ({
+        accountKey: new PublicKey(alt.accountKey),
+        writableIndexes: alt.writableIndexes,
+        readonlyIndexes: alt.readonlyIndexes,
+      })),
+    });
+
+    try {
+      MessageV0.deserialize(message.serialize());
+    } catch (error) {
+      throw new BuildTransactionError(
+        `Injected nonce advance instruction produced an invalid message: ${
+          error instanceof Error ? error.message : error
+        }`
+      );
+    }
   }
 
   /**
