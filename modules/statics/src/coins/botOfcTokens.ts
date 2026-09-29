@@ -3765,4 +3765,58 @@ export const botOfcTokens = [
     undefined,
     'eth'
   ),
+  AccountCtors.ofcerc20(
+    '0c8c0dae-52ba-4d13-b620-ae5ef44109ec',
+    'ofceth:waethusdt',
+    'Wrapped Aave Ethereum USDT',
+    6,
+    'eth:waethusdt' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    '38340fd1-52f8-4fb7-8cf4-0beca32925e6',
+    'ofceth:waethweth',
+    'Wrapped Aave Ethereum WETH',
+    18,
+    'eth:waethweth' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    '8af0bb84-d6a6-44b4-aa6d-db3024a0848d',
+    'ofceth:ousd',
+    'OpenUSD',
+    6,
+    'eth:ousd' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcsolToken(
+    '34ae0520-dc67-4430-aab0-38146bb14eb9',
+    'ofcsol:ousd',
+    'ofcOpenUSD',
+    6,
+    'sol:ousd' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
 ];
