@@ -5,7 +5,14 @@ import { Iota, TransactionBuilderFactory, TransferTransaction } from '../../src'
 import assert from 'assert';
 import { coins, GasTankAccountCoin } from '@bitgo/statics';
 import * as testData from '../resources/iota';
-import { EDDSAMethods, TransactionType } from '@bitgo/sdk-core';
+import {
+  EDDSAMethods,
+  MPCSweepRecoveryOptions,
+  MPCSweepTxs,
+  RecoveryTxRequest,
+  signRecoveryEddsaMPCv2,
+  TransactionType,
+} from '@bitgo/sdk-core';
 import { createTransferBuilderWithGas } from './helpers/testHelpers';
 import sinon from 'sinon';
 import { keys } from '../resources/iota';
@@ -1663,6 +1670,124 @@ describe('IOTA:', function () {
 
       sandBox.assert.callCount(basecoin.fetchOwnedObjects, 1);
       sandBox.restore();
+    });
+  });
+
+  describe('createBroadcastableSweepTransaction (MPCv2):', () => {
+    const sandBox = sinon.createSandbox();
+    let userKeyShare: Buffer;
+    let backupKeyShare: Buffer;
+    let commonKeychain: string;
+    let mpcv2SweepTxRequest: RecoveryTxRequest;
+    let mpcv2SignatureHex: string;
+
+    before(async function () {
+      const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+      commonKeychain = userDkg.getCommonKeychain();
+      userKeyShare = userDkg.getKeyShare();
+      backupKeyShare = backupDkg.getKeyShare();
+
+      const recoveryDestination = '0x' + '22'.repeat(32);
+      const mpc = await EDDSAMethods.getInitializedMpcInstance();
+      const derivedPublicKey = mpc.deriveUnhardened(commonKeychain, 'm/0').slice(0, 64);
+      const senderAddress = utils.getAddressFromPublicKey(derivedPublicKey);
+
+      sandBox
+        .stub(Iota.prototype, 'fetchOwnedObjects' as keyof Iota)
+        .withArgs(senderAddress)
+        .resolves([
+          {
+            objectId: '0x' + '11'.repeat(32),
+            version: '195',
+            digest: '7BJLb32LKN7wt5uv4xgXW4AbFKoMNcPE76o41TQEvUZb',
+            balance: '1900000000',
+          },
+        ]);
+      sandBox.stub(Iota.prototype, 'fetchGasPrice' as keyof Iota).resolves(1000);
+      sandBox.stub(Iota.prototype, 'estimateGas' as keyof Iota).resolves(1997880);
+
+      // no walletPassphrase -> unsigned sweep path returns MPCSweepTxs
+      const sweep = (await basecoin.recover({
+        bitgoKey: commonKeychain,
+        recoveryDestination,
+      })) as MPCSweepTxs;
+      sandBox.restore();
+
+      mpcv2SweepTxRequest = sweep.txRequests[0];
+      const unsignedTx = (
+        mpcv2SweepTxRequest.transactions[0] as unknown as {
+          unsignedTx: { signableHex: string; derivationPath: string };
+        }
+      ).unsignedTx;
+      const signature = await signRecoveryEddsaMPCv2(
+        Buffer.from(unsignedTx.signableHex, 'hex'),
+        unsignedTx.derivationPath,
+        userKeyShare,
+        backupKeyShare,
+        commonKeychain
+      );
+      mpcv2SignatureHex = signature.toString('hex');
+    });
+
+    function buildParams(ovc: unknown): MPCSweepRecoveryOptions {
+      return {
+        signatureShares: [
+          {
+            txRequest: mpcv2SweepTxRequest,
+            tssVersion: '0.0.1',
+            ovc: [ovc],
+          },
+        ],
+      } as unknown as MPCSweepRecoveryOptions;
+    }
+
+    it('should take MPCv2 OVC output and generate a signed sweep transaction', async function () {
+      const params = buildParams({ eddsaMpcv2Signature: mpcv2SignatureHex });
+      const recoveryTxn = await basecoin.createBroadcastableSweepTransaction(params);
+
+      recoveryTxn.transactions[0].serializedTx.should.not.be.empty();
+      (recoveryTxn.transactions[0].scanIndex ?? 0).should.equal(0);
+      (recoveryTxn.lastScanIndex ?? 0).should.equal(0);
+      Buffer.from(recoveryTxn.transactions[0].signature as string, 'base64').length.should.equal(97); // 1 flag + 64 sig + 32 pubkey
+      recoveryTxn.transactions[0].recoveryAmount.should.not.be.empty();
+    });
+
+    it('should reject a tampered MPCv2 signature', async function () {
+      const unsignedTx = (
+        mpcv2SweepTxRequest.transactions[0] as unknown as {
+          unsignedTx: { signableHex: string; derivationPath: string };
+        }
+      ).unsignedTx;
+      const tamperedMessage = Buffer.concat([Buffer.from(unsignedTx.signableHex, 'hex'), Buffer.from('00', 'hex')]);
+      const tamperedSignature = await signRecoveryEddsaMPCv2(
+        tamperedMessage,
+        unsignedTx.derivationPath,
+        userKeyShare,
+        backupKeyShare,
+        commonKeychain
+      );
+
+      await basecoin
+        .createBroadcastableSweepTransaction(buildParams({ eddsaMpcv2Signature: tamperedSignature.toString('hex') }))
+        .should.be.rejectedWith('Invalid signature');
+    });
+
+    it('should throw when MPCv2 OVC is missing signature(s)', async function () {
+      await basecoin
+        .createBroadcastableSweepTransaction(buildParams({}))
+        .should.be.rejectedWith('Missing signature(s)');
+    });
+
+    it('should route MPCv1-shaped ovc to the MPCv1 verify branch and reject an invalid signature', async function () {
+      const mpc = await EDDSAMethods.getInitializedMpcInstance();
+      const derivedPubKey = mpc.deriveUnhardened(commonKeychain, 'm/0').slice(0, 64);
+      await basecoin
+        .createBroadcastableSweepTransaction(
+          buildParams({
+            eddsaSignature: { R: '00'.repeat(32), sigma: '00'.repeat(32), y: derivedPubKey },
+          })
+        )
+        .should.be.rejectedWith('Invalid signature');
     });
   });
 });
