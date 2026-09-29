@@ -1,6 +1,6 @@
 import sinon from 'sinon';
 import 'should';
-import { BuildTokenApprovalResponse, Wallet } from '../../../../src';
+import { BuildTokenApprovalResponse, PrebuildTransactionResult, Wallet } from '../../../../src';
 
 describe('Wallet - Token Approval', function () {
   let wallet: Wallet;
@@ -221,6 +221,18 @@ describe('Wallet - Token Approval', function () {
       });
 
       result.should.eql({ txid: 'mpt456' });
+      sinon.assert.calledOnce(initiateStub);
+    });
+
+    it('should pass validation and proceed when buildParams.type is "disabletoken"', async function () {
+      const initiateStub = sinon.stub(teWallet, 'initiateTransaction' as keyof Wallet).resolves({ txid: 'disable789' });
+
+      const result = await teWallet.sendTokenEnablement({
+        // Partial fixture: only the fields sendTokenEnablement's validation guard reads.
+        prebuildTx: { buildParams: { type: 'disabletoken' } } as unknown as PrebuildTransactionResult,
+      });
+
+      result.should.eql({ txid: 'disable789' });
       sinon.assert.calledOnce(initiateStub);
     });
 
