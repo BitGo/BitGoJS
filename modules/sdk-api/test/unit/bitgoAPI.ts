@@ -1200,7 +1200,8 @@ describe('Constructor', function () {
       v1UpdatePasswordStub.callsFake(async (params: { progressCallback?: (p: unknown) => void }) => {
         params.progressCallback?.({ status: 'updated', currentKeychainId: 'xpub1' });
         params.progressCallback?.({ status: 'skipped', currentKeychainId: 'xpub2' });
-        return { keychains: { k1: 'v1enc' }, version: 25 };
+        // one map entry per emitted event, since the map's size now feeds the v2 total
+        return { keychains: { k1: 'v1enc', k2: 'v1enc2' }, version: 25 };
       });
       v2UpdatePasswordStub.callsFake(async (params: { progressCallback?: (p: unknown) => void }) => {
         params.progressCallback?.({ status: 'updated', currentKeychainId: 'xpub3' });
@@ -1277,8 +1278,54 @@ describe('Constructor', function () {
         (e): e is Extract<PasswordRotationProgress, { phase: 'keychains' }> =>
           e.phase === 'keychains' && e.status === 'updated' && e.keychainVersion === 'v2'
       );
-      v2Events.should.have.length(2);
-      v2Events.every((e) => e.total === 2).should.be.true();
+      // the v1 stub keeps its default 1-entry map, so v2 events forward 1 (v1) + 2 (v2) = 3
+      v2Events.every((e) => e.total === 3).should.be.true();
+    });
+
+    it('covers both keychain sets in the total so mixed v1/v2 accounts complete exactly (2 v1 + 32 v2 = 34 of 34)', async function () {
+      nock(ROOT).get('/api/v2/user/checkBatchingPasswordFlow').query(true).reply(200, { isBatchingFlowEnabled: false });
+      nock(ROOT)
+        .post('/api/v1/user/changepassword', (body: any) => !!body.keychains && !!body.v2_keychains)
+        .reply(200, {});
+
+      v1UpdatePasswordStub.callsFake(async (params: { progressCallback?: (p: unknown) => void }) => {
+        params.progressCallback?.({ status: 'updated', currentKeychainId: 'xpub1' });
+        params.progressCallback?.({ status: 'updated', currentKeychainId: 'xpub2' });
+        return { keychains: { k1: 'v1enc', k2: 'v1enc2' }, version: 25 };
+      });
+      v2UpdatePasswordStub.callsFake(async (params: { progressCallback?: (p: unknown) => void }) => {
+        for (let i = 1; i <= 32; i++) {
+          params.progressCallback?.({ status: 'updated', currentKeychainId: `v2key-${i}`, total: 32 });
+        }
+        return { v2k1: 'v2enc' };
+      });
+
+      const events: PasswordRotationProgress[] = [];
+      await bitgo.changePassword({
+        oldPassword: 'oldpw',
+        newPassword: 'newpw',
+        progressCallback: (progress) => events.push(progress),
+      });
+
+      const keychainEvents = events.filter(
+        (e): e is Extract<PasswordRotationProgress, { phase: 'keychains' }> =>
+          e.phase === 'keychains' && e.status === 'updated'
+      );
+      const v1Events = keychainEvents.filter((e) => e.keychainVersion === 'v1');
+      const v2Events = keychainEvents.filter((e) => e.keychainVersion === 'v2');
+
+      // v1 events stay indeterminate: the v1 set has no server-provided count
+      v1Events.should.have.length(2);
+      v1Events.every((e) => e.total === undefined).should.be.true();
+
+      // v2 events carry the combined denominator: 2 (v1 set) + 32 (encryptedTotalCount)
+      v2Events.should.have.length(32);
+      v2Events.every((e) => e.total === 34).should.be.true();
+
+      // the counter completes exactly instead of overshooting the total
+      const last = v2Events[v2Events.length - 1];
+      last.completed.should.equal(34);
+      last.total.should.equal(34);
     });
 
     it('does not let a throwing progressCallback abort the rotation', async function () {

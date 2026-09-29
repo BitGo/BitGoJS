@@ -2048,6 +2048,11 @@ export class BitGoAPI implements BitGoBase {
 
     // Single counter set shared by both the v1 and v2 lower-level keychain callbacks below.
     const counters = { attempted: 0, completed: 0, succeeded: 0, skipped: 0 };
+    // The v1 set has no server-provided count; its size (the /user/encrypted map) is
+    // known only once v1 processing returns. Captured so v2 events can add it to the
+    // backend-served encryptedTotalCount — without this, a mixed account finishes at
+    // `completed > total` (2 v1 + 32 v2 keychains read "34 of 32").
+    let v1KeychainCount = 0;
     emitProgress({ phase: 'keychains', status: 'started', ...counters });
 
     const makeKeychainProgressCallback =
@@ -2064,7 +2069,13 @@ export class BitGoAPI implements BitGoBase {
           phase: 'keychains',
           status: 'updated',
           ...counters,
-          total: progress.total,
+          // v1 events stay indeterminate: the v1 set has no server count, and surfacing
+          // its client-side size mid-flight would make the denominator jump the moment
+          // v2's encryptedTotalCount arrives. v2 events add the v1 set size so the
+          // counter reaches the denominator exactly on mixed v1/v2 accounts. When the
+          // backend supplies no count, the total stays undefined (never fabricated).
+          total:
+            keychainVersion === 'v2' && progress.total !== undefined ? v1KeychainCount + progress.total : undefined,
           currentKeychainId: progress.currentKeychainId,
           keychainVersion,
         });
@@ -2086,6 +2097,9 @@ export class BitGoAPI implements BitGoBase {
         encryptionSession,
         progressCallback: makeKeychainProgressCallback('v1'),
       });
+      // Every v1 entry emits exactly one progress event, so the returned map's size is
+      // the v1 contribution to the denominator; v2 events below add it to their total.
+      v1KeychainCount = Object.keys(v1KeychainUpdatePWResult.keychains).length;
       const v2Keychains = await this.coin(coin)
         .keychains()
         .updatePassword({
