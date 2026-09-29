@@ -79,7 +79,16 @@ export class StakingWithdrawBuilder extends TransactionBuilder {
         amount: this._amount,
       },
     };
-    this._instructionsData = [stakingWithdrawData];
+    this._instructionsData =
+      this._priorityFee && this._priorityFee !== Number(0)
+        ? [
+            {
+              type: InstructionBuilderTypes.SetPriorityFee,
+              params: { fee: this._priorityFee },
+            },
+            stakingWithdrawData,
+          ]
+        : [stakingWithdrawData];
 
     return await super.buildImplementation();
   }

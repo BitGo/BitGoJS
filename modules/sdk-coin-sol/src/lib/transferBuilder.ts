@@ -75,7 +75,18 @@ export class TransferBuilder extends TransactionBuilder {
         },
       };
     });
-    this._instructionsData = transferData;
+    // Prepend the priority fee instruction (CHALO-485) so native SOL transfers can be
+    // prioritized during network congestion. Omitted when no priority fee is set (0).
+    this._instructionsData =
+      this._priorityFee && this._priorityFee !== Number(0)
+        ? [
+            {
+              type: InstructionBuilderTypes.SetPriorityFee,
+              params: { fee: this._priorityFee },
+            },
+            ...transferData,
+          ]
+        : transferData;
 
     return await super.buildImplementation();
   }

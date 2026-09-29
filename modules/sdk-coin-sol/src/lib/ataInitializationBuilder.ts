@@ -166,6 +166,15 @@ export class AtaInitializationBuilder extends TransactionBuilder {
     }
 
     this._instructionsData = [];
+    if (this._priorityFee && this._priorityFee !== Number(0)) {
+      this._instructionsData.push({
+        type: InstructionBuilderTypes.SetPriorityFee,
+        params: {
+          fee: this._priorityFee,
+        },
+      });
+    }
+
     await Promise.all(
       this._tokenAssociateRecipients.map(async (recipient) => {
         let tokenAddress: string;
