@@ -110,11 +110,23 @@ export function instructionParamsFactory(
  * @param {TransactionInstruction[]} instructions - containing create and initialize nonce solana instructions
  * @returns {InstructionParams[]} An array containing instruction params for Wallet initialization tx
  */
-function parseWalletInitInstructions(instructions: TransactionInstruction[]): Array<WalletInit | Memo> {
-  const instructionData: Array<WalletInit | Memo> = [];
-  const createInstruction = SystemInstruction.decodeCreateAccount(instructions[walletInitInstructionIndexes.Create]);
+function parseWalletInitInstructions(
+  instructions: TransactionInstruction[]
+): Array<WalletInit | Memo | SetComputeUnitLimit | SetPriorityFee> {
+  const instructionData: Array<WalletInit | Memo | SetComputeUnitLimit | SetPriorityFee> = [];
+  // Compute-budget instructions can lead the transaction but are not part of the fixed
+  // wallet-init layout, so parse them apart from the indexed create/initialize instructions
+  const walletInitInstructions = instructions.filter((instruction) => !isComputeBudgetInstruction(instruction));
+  for (const instruction of instructions) {
+    if (isComputeBudgetInstruction(instruction)) {
+      instructionData.push(parseComputeBudgetInstruction(instruction));
+    }
+  }
+  const createInstruction = SystemInstruction.decodeCreateAccount(
+    walletInitInstructions[walletInitInstructionIndexes.Create]
+  );
   const nonceInitInstruction = SystemInstruction.decodeNonceInitialize(
-    instructions[walletInitInstructionIndexes.InitializeNonceAccount]
+    walletInitInstructions[walletInitInstructionIndexes.InitializeNonceAccount]
   );
 
   const walletInit: WalletInit = {
@@ -128,12 +140,58 @@ function parseWalletInitInstructions(instructions: TransactionInstruction[]): Ar
   };
   instructionData.push(walletInit);
 
-  const memo = getMemo(instructions, walletInitInstructionIndexes);
+  const memo = getMemo(walletInitInstructions, walletInitInstructionIndexes);
   if (memo) {
     instructionData.push(memo);
   }
 
   return instructionData;
+}
+
+/**
+ * Returns whether the instruction is a compute-budget instruction (SetComputeUnitLimit or
+ * SetPriorityFee), which can lead any transaction without affecting its type or layout.
+ *
+ * @param {TransactionInstruction} instruction - the instruction to be checked
+ * @returns {boolean} true if the instruction is a compute-budget instruction
+ */
+function isComputeBudgetInstruction(instruction: TransactionInstruction): boolean {
+  const type = getInstructionType(instruction);
+  return type === ValidInstructionTypesEnum.SetComputeUnitLimit || type === ValidInstructionTypesEnum.SetPriorityFee;
+}
+
+/**
+ * Parses a compute-budget instruction (SetComputeUnitLimit or SetPriorityFee) into its
+ * instructions params form.
+ *
+ * Compute-budget instructions are boilerplate that can lead any transaction, so every
+ * parser accepts them: initBuilder relies on them to restore the compute unit limit
+ * and the priority fee on a rebuild from raw, and explain filters them out.
+ *
+ * @param {TransactionInstruction} instruction - the compute-budget instruction to be parsed
+ * @returns {SetComputeUnitLimit | SetPriorityFee} the parsed instruction params
+ */
+function parseComputeBudgetInstruction(instruction: TransactionInstruction): SetComputeUnitLimit | SetPriorityFee {
+  switch (getInstructionType(instruction)) {
+    case ValidInstructionTypesEnum.SetComputeUnitLimit:
+      const setComputeUnitLimitParams = ComputeBudgetInstruction.decodeSetComputeUnitLimit(instruction);
+      return {
+        type: InstructionBuilderTypes.SetComputeUnitLimit,
+        params: {
+          units: setComputeUnitLimitParams.units,
+        },
+      };
+    case ValidInstructionTypesEnum.SetPriorityFee:
+      const setComputeUnitPriceParams = ComputeBudgetInstruction.decodeSetComputeUnitPrice(instruction);
+      return {
+        type: InstructionBuilderTypes.SetPriorityFee,
+        params: {
+          fee: setComputeUnitPriceParams.microLamports,
+        },
+      };
+    default:
+      throw new NotSupported('Invalid transaction, instruction type not supported: ' + getInstructionType(instruction));
+  }
 }
 
 /**
@@ -322,24 +380,8 @@ function parseSendInstructions(
         instructionData.push(ataClose);
         break;
       case ValidInstructionTypesEnum.SetComputeUnitLimit:
-        const setComputeUnitLimitParams = ComputeBudgetInstruction.decodeSetComputeUnitLimit(instruction);
-        const setComputeUnitLimit: SetComputeUnitLimit = {
-          type: InstructionBuilderTypes.SetComputeUnitLimit,
-          params: {
-            units: setComputeUnitLimitParams.units,
-          },
-        };
-        instructionData.push(setComputeUnitLimit);
-        break;
       case ValidInstructionTypesEnum.SetPriorityFee:
-        const setComputeUnitPriceParams = ComputeBudgetInstruction.decodeSetComputeUnitPrice(instruction);
-        const setPriorityFee: SetPriorityFee = {
-          type: InstructionBuilderTypes.SetPriorityFee,
-          params: {
-            fee: setComputeUnitPriceParams.microLamports,
-          },
-        };
-        instructionData.push(setPriorityFee);
+        instructionData.push(parseComputeBudgetInstruction(instruction));
         break;
       case ValidInstructionTypesEnum.MintTo:
         let mintToInstruction: DecodedMintToInstruction;
@@ -485,8 +527,8 @@ function getStakingTypeFromStakingInstructions(si: StakingInstructions): SolStak
  */
 function parseStakingActivateInstructions(
   instructions: TransactionInstruction[]
-): Array<Nonce | StakingActivate | Memo | AtaInit> {
-  const instructionData: Array<Nonce | StakingActivate | Memo | AtaInit> = [];
+): Array<Nonce | StakingActivate | Memo | AtaInit | SetComputeUnitLimit | SetPriorityFee> {
+  const instructionData: Array<Nonce | StakingActivate | Memo | AtaInit | SetComputeUnitLimit | SetPriorityFee> = [];
   const stakingInstructions = {} as StakingInstructions;
   for (const instruction of instructions) {
     const type = getInstructionType(instruction);
@@ -501,6 +543,11 @@ function parseStakingActivateInstructions(
           },
         };
         instructionData.push(nonce);
+        break;
+
+      case ValidInstructionTypesEnum.SetComputeUnitLimit:
+      case ValidInstructionTypesEnum.SetPriorityFee:
+        instructionData.push(parseComputeBudgetInstruction(instruction));
         break;
 
       case ValidInstructionTypesEnum.Memo:
@@ -619,8 +666,10 @@ function parseStakingActivateInstructions(
  * @param {TransactionInstruction[]} instructions - an array of supported Solana instructions
  * @returns {InstructionParams[]} An array containing instruction params for staking delegate tx
  */
-function parseStakingDelegateInstructions(instructions: TransactionInstruction[]): Array<Nonce | StakingDelegate> {
-  const instructionData: Array<Nonce | StakingDelegate> = [];
+function parseStakingDelegateInstructions(
+  instructions: TransactionInstruction[]
+): Array<Nonce | StakingDelegate | SetComputeUnitLimit | SetPriorityFee> {
+  const instructionData: Array<Nonce | StakingDelegate | SetComputeUnitLimit | SetPriorityFee> = [];
   for (const instruction of instructions) {
     const type = getInstructionType(instruction);
     switch (type) {
@@ -634,6 +683,11 @@ function parseStakingDelegateInstructions(instructions: TransactionInstruction[]
           },
         };
         instructionData.push(nonce);
+        break;
+
+      case ValidInstructionTypesEnum.SetComputeUnitLimit:
+      case ValidInstructionTypesEnum.SetPriorityFee:
+        instructionData.push(parseComputeBudgetInstruction(instruction));
         break;
 
       case ValidInstructionTypesEnum.StakingDelegate:
@@ -731,8 +785,8 @@ function getStakingTypeFromUnstakingInstructions(ui: UnstakingInstructions): Sol
 function parseStakingDeactivateInstructions(
   instructions: TransactionInstruction[],
   coinName?: string
-): Array<Nonce | StakingDeactivate | Memo> {
-  const instructionData: Array<Nonce | StakingDeactivate | Memo> = [];
+): Array<Nonce | StakingDeactivate | Memo | SetComputeUnitLimit | SetPriorityFee> {
+  const instructionData: Array<Nonce | StakingDeactivate | Memo | SetComputeUnitLimit | SetPriorityFee> = [];
   const unstakingInstructions: UnstakingInstructions[] = [];
   for (const instruction of instructions) {
     const type = getInstructionType(instruction);
@@ -747,6 +801,11 @@ function parseStakingDeactivateInstructions(
           },
         };
         instructionData.push(nonce);
+        break;
+
+      case ValidInstructionTypesEnum.SetComputeUnitLimit:
+      case ValidInstructionTypesEnum.SetPriorityFee:
+        instructionData.push(parseComputeBudgetInstruction(instruction));
         break;
 
       case ValidInstructionTypesEnum.Memo:
@@ -998,8 +1057,8 @@ function validateUnstakingInstructions(unstakingInstructions: UnstakingInstructi
  */
 function parseStakingWithdrawInstructions(
   instructions: TransactionInstruction[]
-): Array<Nonce | StakingWithdraw | Memo> {
-  const instructionData: Array<Nonce | StakingWithdraw | Memo> = [];
+): Array<Nonce | StakingWithdraw | Memo | SetComputeUnitLimit | SetPriorityFee> {
+  const instructionData: Array<Nonce | StakingWithdraw | Memo | SetComputeUnitLimit | SetPriorityFee> = [];
   for (const instruction of instructions) {
     const type = getInstructionType(instruction);
     switch (type) {
@@ -1013,6 +1072,11 @@ function parseStakingWithdrawInstructions(
           },
         };
         instructionData.push(nonce);
+        break;
+
+      case ValidInstructionTypesEnum.SetComputeUnitLimit:
+      case ValidInstructionTypesEnum.SetPriorityFee:
+        instructionData.push(parseComputeBudgetInstruction(instruction));
         break;
 
       case ValidInstructionTypesEnum.Memo:
@@ -1081,8 +1145,10 @@ function parseAtaInitInstructions(
   instructions: TransactionInstruction[],
   instructionMetadata?: InstructionParams[],
   _useTokenAddressTokenName?: boolean
-): Array<AtaInit | PermissionlessThawIdempotent | Memo | Nonce> {
-  const instructionData: Array<AtaInit | PermissionlessThawIdempotent | Memo | Nonce> = [];
+): Array<AtaInit | PermissionlessThawIdempotent | Memo | Nonce | SetComputeUnitLimit | SetPriorityFee> {
+  const instructionData: Array<
+    AtaInit | PermissionlessThawIdempotent | Memo | Nonce | SetComputeUnitLimit | SetPriorityFee
+  > = [];
   let memo: Memo | undefined;
 
   for (const instruction of instructions) {
@@ -1101,6 +1167,10 @@ function parseAtaInitInstructions(
           },
         };
         instructionData.push(nonce);
+        break;
+      case ValidInstructionTypesEnum.SetComputeUnitLimit:
+      case ValidInstructionTypesEnum.SetPriorityFee:
+        instructionData.push(parseComputeBudgetInstruction(instruction));
         break;
       case ValidInstructionTypesEnum.InitializeAssociatedTokenAccount:
         const mintAddress = instruction.keys[ataInitInstructionKeysIndexes.MintAddress].pubkey.toString();
@@ -1181,8 +1251,10 @@ const ataRecoverNestedInstructionKeysIndexes = {
  * @param {TransactionInstruction[]} instructions - an array of supported Solana instructions
  * @returns {InstructionParams[]} An array containing instruction params for Send tx
  */
-function parseAtaCloseInstructions(instructions: TransactionInstruction[]): Array<AtaClose | AtaRecoverNested | Nonce> {
-  const instructionData: Array<AtaClose | AtaRecoverNested | Nonce> = [];
+function parseAtaCloseInstructions(
+  instructions: TransactionInstruction[]
+): Array<AtaClose | AtaRecoverNested | Nonce | SetComputeUnitLimit | SetPriorityFee> {
+  const instructionData: Array<AtaClose | AtaRecoverNested | Nonce | SetComputeUnitLimit | SetPriorityFee> = [];
   for (const instruction of instructions) {
     const type = getInstructionType(instruction);
     switch (type) {
@@ -1196,6 +1268,10 @@ function parseAtaCloseInstructions(instructions: TransactionInstruction[]): Arra
           },
         };
         instructionData.push(nonce);
+        break;
+      case ValidInstructionTypesEnum.SetComputeUnitLimit:
+      case ValidInstructionTypesEnum.SetPriorityFee:
+        instructionData.push(parseComputeBudgetInstruction(instruction));
         break;
       case ValidInstructionTypesEnum.CloseAssociatedTokenAccount:
         const ataClose: AtaClose = {

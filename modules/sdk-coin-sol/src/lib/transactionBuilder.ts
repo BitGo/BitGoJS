@@ -31,10 +31,18 @@ import {
   validateRawTransaction,
 } from './utils';
 import { KeyPair } from '.';
-import { InstructionBuilderTypes } from './constants';
+import { InstructionBuilderTypes, MAX_COMPUTE_UNIT_LIMIT } from './constants';
 import { solInstructionFactory } from './solInstructionFactory';
 import assert from 'assert';
-import { DurableNonceParams, InstructionParams, Memo, Nonce, SetPriorityFee, Transfer } from './iface';
+import {
+  DurableNonceParams,
+  InstructionParams,
+  Memo,
+  Nonce,
+  SetComputeUnitLimit,
+  SetPriorityFee,
+  Transfer,
+} from './iface';
 import { instructionParamsFactory } from './instructionParamsFactory';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
@@ -51,6 +59,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _memo?: string;
   protected _feePayer?: string;
   protected _priorityFee: number;
+  /** Explicit compute-unit limit requested for the transaction, in compute units */
+  protected _computeUnitLimit?: number;
   /** Optional override for the zk-elgamal-proof program id (used by CT instruction builders) */
   protected _zkProofProgramId?: string;
 
@@ -113,6 +123,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       if (instruction.type === InstructionBuilderTypes.SetPriorityFee) {
         const priorityFeeInstructionsData = filteredPriorityFeeInstructionsData[0] as SetPriorityFee;
         this.setPriorityFee({ amount: Number(priorityFeeInstructionsData.params.fee) });
+      }
+
+      // If compute unit limit instruction exists, restore the compute unit limit
+      if (instruction.type === InstructionBuilderTypes.SetComputeUnitLimit) {
+        const computeUnitLimitInstruction = instruction as SetComputeUnitLimit;
+        this.setComputeUnitLimit(computeUnitLimitInstruction.params.units);
       }
     }
   }
@@ -177,8 +193,29 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     } else {
       tx.recentBlockhash = this._recentBlockhash;
     }
+
+    // The priority fee is charged on the requested compute-unit limit, so an explicit
+    // limit must precede every entry of _instructionsData (including the optional
+    // SetComputeUnitPrice). web3.js serializes the durable-nonce AdvanceNonceAccount
+    // first via nonceInfo, giving [AdvanceNonce, SetComputeUnitLimit, SetComputeUnitPrice?, ...].
+    const computeUnitLimitData: SetComputeUnitLimit | undefined =
+      this._computeUnitLimit !== undefined
+        ? {
+            type: InstructionBuilderTypes.SetComputeUnitLimit,
+            params: {
+              units: this._computeUnitLimit,
+            },
+          }
+        : undefined;
+    if (computeUnitLimitData) {
+      tx.add(...solInstructionFactory(computeUnitLimitData));
+    }
     for (const instruction of this._instructionsData) {
       tx.add(...solInstructionFactory(instruction, this._zkProofProgramId));
+    }
+    if (computeUnitLimitData) {
+      // Record the instruction so explain and parsing see it, mirroring how memo is recorded
+      this._instructionsData.unshift(computeUnitLimitData);
     }
 
     if (this._memo) {
@@ -377,6 +414,34 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   public setPriorityFee(feeOptions: FeeOptions): this {
     this._priorityFee = Number(feeOptions.amount);
     return this;
+  }
+
+  /**
+   * Set an explicit compute-unit limit for this transaction.
+   *
+   * The priority fee is charged on the requested compute-unit limit rather than the
+   * units actually consumed, so every sponsored transaction must set an intent-sized
+   * limit. When set, the built transaction prepends a SetComputeUnitLimit instruction
+   * ahead of all other instructions (after the durable-nonce AdvanceNonceAccount):
+   * [AdvanceNonce?, SetComputeUnitLimit, SetComputeUnitPrice?, ...]. When unset, the
+   * built transaction bytes are unchanged.
+   *
+   * @param {number} units the requested compute-unit limit, an integer between
+   * 1 and 1,400,000 (the on-chain per-transaction maximum)
+   * @returns {TransactionBuilder} This transaction builder
+   */
+  public setComputeUnitLimit(units: number): this {
+    this.validateComputeUnitLimit(units);
+    this._computeUnitLimit = units;
+    return this;
+  }
+
+  private validateComputeUnitLimit(units: number): void {
+    if (!Number.isInteger(units) || units < 1 || units > MAX_COMPUTE_UNIT_LIMIT) {
+      throw new BuildTransactionError(
+        `Invalid compute unit limit, expected an integer between 1 and ${MAX_COMPUTE_UNIT_LIMIT}, got: ${units}`
+      );
+    }
   }
 
   feePayer(feePayer: string): this {
