@@ -63,6 +63,7 @@ export const expectedColdFeatures = {
     'tpearl',
     'trbtc',
     'tstx',
+    'tstxsignet',
     'txlm',
     'txrp',
     'txtz',

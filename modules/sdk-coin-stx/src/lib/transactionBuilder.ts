@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import BigNum from 'bn.js';
-import { BaseCoin as CoinConfig, NetworkType } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import {
   AuthType,
   BufferReader,
@@ -13,7 +13,7 @@ import {
   StacksMessageType,
   PubKeyEncoding,
 } from '@stacks/transactions';
-import { StacksNetwork, StacksTestnet, StacksMainnet } from '@stacks/network';
+import { StacksNetwork } from '@stacks/network';
 import {
   BaseAddress,
   BaseFee,
@@ -31,6 +31,7 @@ import { KeyPair } from './keyPair';
 import { SignatureData } from './iface';
 import { isValidAddress, removeHexPrefix, isValidMemo, isValidPublicKey } from './utils';
 import { ANCHOR_MODE, DEFAULT_MULTISIG_SIG_NUMBER } from './constants';
+import { toStacksNetwork } from './network';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
@@ -51,7 +52,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._fromPubKeys = [];
     this._signatures = [];
     this._numberSignatures = DEFAULT_MULTISIG_SIG_NUMBER;
-    this._network = _coinConfig.network.type === NetworkType.MAINNET ? new StacksMainnet() : new StacksTestnet();
+    this._network = toStacksNetwork(_coinConfig);
     this._transaction = new Transaction(_coinConfig);
   }
 

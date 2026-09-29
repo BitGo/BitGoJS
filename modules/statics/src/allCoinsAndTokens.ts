@@ -844,6 +844,16 @@ export const allCoinsAndTokens = [
     STX_FEATURES
   ),
   account(
+    'ec52d215-34c0-4aca-b49b-2eeaab8f9615',
+    'tstxsignet',
+    'Testnet Stacks (Signet)',
+    Networks.test.stxSignet,
+    6,
+    UnderlyingAsset.STX,
+    BaseUnit.STX,
+    STX_FEATURES
+  ),
+  account(
     '92185a03-356f-4b75-9213-af1c92fe5393',
     'sol',
     'Solana',

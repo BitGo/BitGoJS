@@ -207,6 +207,7 @@ import {
   Tsol,
   Tsoneium,
   Tstx,
+  Tstxsignet,
   Tstt,
   Tsui,
   Tsusd,
@@ -390,6 +391,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('tsoneium', Tsoneium.createInstance);
   coinFactory.register('tstarknet', Starknet.createInstance);
   coinFactory.register('tstx', Tstx.createInstance);
+  coinFactory.register('tstxsignet', Tstxsignet.createInstance);
   coinFactory.register('tstt', Tstt.createInstance);
   coinFactory.register('tsui', Tsui.createInstance);
   coinFactory.register('tsusd', Tsusd.createInstance);

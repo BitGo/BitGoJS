@@ -1096,9 +1096,23 @@ const getFormattedVetNFTCollections = (customCoinMap = coins) =>
   }, []);
 
 function getSip10TokenConfig(coin: Sip10Token): Sip10TokenConfig {
+  let baseCoin: string;
+  switch (coin.network.name) {
+    case Networks.main.stx.name:
+      baseCoin = 'stx';
+      break;
+    case Networks.test.stx.name:
+      baseCoin = 'tstx';
+      break;
+    case Networks.test.stxSignet.name:
+      baseCoin = 'tstxsignet';
+      break;
+    default:
+      throw new Error(`SIP-10 token ${coin.name} has an unsupported network`);
+  }
   return {
     type: coin.name,
-    coin: coin.network.type === NetworkType.MAINNET ? 'stx' : 'tstx',
+    coin: baseCoin,
     network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
     name: coin.fullName,
     assetId: coin.assetId,
