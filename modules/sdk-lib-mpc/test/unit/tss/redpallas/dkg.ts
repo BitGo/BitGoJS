@@ -165,6 +165,23 @@ describe('RedPallas MPS DKG', function () {
       assert.strictEqual(userPk, backupPk, 'User and backup should agree on public key');
       assert.strictEqual(backupPk, bitgoPk, 'Backup and BitGo should agree on public key');
     });
+
+    it('should always produce an Orchard-canonical ak (y-tilde = 0)', async function () {
+      // Orchard requires the spend-validating key ak to have a canonical y-coordinate,
+      // i.e. the sign bit of the compressed encoding must be clear (Zcash Protocol Spec
+      // 4.2.3). @bitgo/wasm-mps enables the crate's Orchard ak sign normalization for the
+      // RedPallas DKG path; before that it was a coin flip, so run enough rounds that a
+      // regression is caught rather than missed.
+      this.timeout(60000);
+      for (let run = 0; run < 16; run++) {
+        const [userDkg, backupDkg, bitgoDkg] = await generateRedPallasDKGKeyShares();
+        for (const party of [userDkg, backupDkg, bitgoDkg]) {
+          const pk = party.getSharePublicKey();
+          assert.strictEqual(pk.length, 32, 'ak should be a 32-byte compressed point');
+          assert.strictEqual(pk[31] & 0x80, 0, `run ${run}: ak sign bit must be clear, got ${pk.toString('hex')}`);
+        }
+      }
+    });
   });
 
   describe('Seed-based Key Generation', function () {
