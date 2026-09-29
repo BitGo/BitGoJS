@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@11.0.0...@bitgo/sdk-lib-mpc@11.1.0) (2026-09-29)
+
+
+### Bug Fixes
+
+* **sdk-lib-mpc:** bump wasm-mps to 1.16.3 for Orchard ak fix ([ffaf4f6](https://github.com/BitGo/BitGoJS/commit/ffaf4f6fc0c1fc737604184b9c5658ce0143ad78))
+
+
+### Features
+
+* bump @bitgo/wasm-mps to 1.16.2 ([458481f](https://github.com/BitGo/BitGoJS/commit/458481f9be692e58806fe644589a0c1feffa964e))
+* **sdk-core:** add EdDSA MPS safe derivation ([c926fc4](https://github.com/BitGo/BitGoJS/commit/c926fc40a0790c6e2460816e385f3775a9d08ec0))
+
+
+
+
+
 # [11.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.21.0...@bitgo/sdk-lib-mpc@11.0.0) (2026-09-17)
 
 

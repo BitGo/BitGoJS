@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/passkey-crypto@0.8.9...@bitgo/passkey-crypto@0.9.0) (2026-09-29)
+
+
+### Features
+
+* add Safe passkey register & remove methods ([2009b6c](https://github.com/BitGo/BitGoJS/commit/2009b6cae973611aa1f3f8a9d4523f716ae2a4ce))
+* **sdk-core:** wire disabletoken prebuild intent for Canton ([f9ce83d](https://github.com/BitGo/BitGoJS/commit/f9ce83d817f51a5124662115016bfc035178fe32))
+
+
+
+
+
 ## [0.8.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/passkey-crypto@0.8.8...@bitgo/passkey-crypto@0.8.9) (2026-09-24)
 
 **Note:** Version bump only for package @bitgo/passkey-crypto

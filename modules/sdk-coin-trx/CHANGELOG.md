@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@4.0.23...@bitgo/sdk-coin-trx@4.1.0) (2026-09-29)
+
+
+### Bug Fixes
+
+* **sdk-coin-trx:** improve non-base58 address error ([2e3df0a](https://github.com/BitGo/BitGoJS/commit/2e3df0ae09268e117514638d441567a52232c3f2))
+
+
+### Features
+
+* **express:** add opt-in strict Base58 flag for TRX verifyaddress ([2025258](https://github.com/BitGo/BitGoJS/commit/2025258d5159789279f7ae3c5d13652aad6e669d))
+
+
+
+
+
 ## [4.0.23](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@4.0.22...@bitgo/sdk-coin-trx@4.0.23) (2026-09-24)
 
 
