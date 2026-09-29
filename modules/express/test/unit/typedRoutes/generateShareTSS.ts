@@ -228,6 +228,12 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
               },
             },
           },
+          encryptedUserToBitgoRShare: {
+            from: 'user',
+            to: 'bitgo',
+            share: 'encrypted-r-share',
+            type: 'encryptedRShare',
+          },
         };
         const decoded = assertDecode(EddsaRShareResponse, validResponse);
         assert.strictEqual(decoded.rShare.i, 1);
@@ -510,6 +516,12 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
             share: 'encrypted-r-share',
             type: 'encryptedRShare',
           },
+          bitgoToUserCommitment: {
+            from: 'bitgo',
+            to: 'user',
+            share: 'bitgo-commitment',
+            type: 'commitment',
+          },
         };
 
         const mockRShareResponse = {
@@ -526,6 +538,12 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
                 commitment: 'commitment-value',
               },
             },
+          },
+          encryptedUserToBitgoRShare: {
+            from: 'user',
+            to: 'bitgo',
+            share: 'encrypted-r-share-with-bitgo-commitment',
+            type: 'encryptedRShare',
           },
         };
 
@@ -576,19 +594,11 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
             to: 'user',
             share: 'bitgo-r-share',
           },
-          userToBitgoRShare: {
-            i: 1,
-            rShares: {
-              2: {
-                i: 1,
-                j: 2,
-                u: 'u-value',
-                v: 'v-value',
-                r: 'r-value',
-                R: 'R-value',
-                commitment: 'commitment-value',
-              },
-            },
+          encryptedUserToBitgoRShare: {
+            from: 'user',
+            to: 'bitgo',
+            share: 'encrypted-r-share-with-bitgo-commitment',
+            type: 'encryptedRShare',
           },
           bitgoToUserCommitment: {
             from: 'bitgo',

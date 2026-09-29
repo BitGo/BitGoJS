@@ -19,6 +19,7 @@ import {
   Ed25519BIP32,
   EDDSAUtils,
   Eddsa,
+  EncryptedSignerShareRecord,
   EncryptedSignerShareType,
   ExchangeCommitmentResponse,
   InvalidTransactionError,
@@ -716,14 +717,143 @@ describe('TSS Utils:', async function () {
       rShareEnvelope.should.have.property('hkdfSalt');
 
       // 3. Round-trip: decrypt the v2 R-share
-      const { rShare } = await tssUtils.createRShareFromTxRequest({
+      const { rShare, encryptedUserToBitgoRShare } = await tssUtils.createRShareFromTxRequest({
         txRequest: signingTxRequest,
         walletPassphrase: passphrase,
         encryptedUserToBitgoRShare: commitResult.encryptedUserToBitgoRShare,
+        bitgoToUserCommitment: {
+          from: SignatureShareType.BITGO,
+          to: SignatureShareType.USER,
+          share: validBitgoToUserSignShare.rShares[1].commitment,
+          type: CommitmentType.COMMITMENT,
+        },
       });
 
       should.exist(rShare.xShare);
       should.exist(rShare.rShares);
+      JSON.parse(encryptedUserToBitgoRShare.share).v.should.equal(2);
+    });
+  });
+
+  describe('EdDSA MPCv1 external signer signing state binding', function () {
+    const walletPassphrase = 'test-passphrase';
+    const prv = JSON.stringify(validUserSigningMaterial);
+    const signingTxRequest: TxRequest = {
+      txRequestId: 'mpcv1-binding-test',
+      transactions: [],
+      unsignedTxs: [{ serializedTxHex: solTssSerializedTxHex, signableHex: solTssSignableHex, derivationPath: 'm/0' }],
+      date: new Date().toISOString(),
+      intent: { intentType: 'payment' },
+      latest: true,
+      state: 'pendingUserSignature',
+      walletType: 'hot',
+      walletId: 'walletId',
+      policiesChecked: true,
+      version: 1,
+      userId: 'userId',
+    };
+    const bitgoToUserCommitment: CommitmentShareRecord = {
+      from: SignatureShareType.BITGO,
+      to: SignatureShareType.USER,
+      share: validBitgoToUserSignShare.rShares[1].commitment,
+      type: CommitmentType.COMMITMENT,
+    };
+    const bitgoToUserRShare: SignatureShareRecord = {
+      from: SignatureShareType.BITGO,
+      to: SignatureShareType.USER,
+      share: validBitgoToUserSignShare.rShares[1].r + validBitgoToUserSignShare.rShares[1].R,
+    };
+
+    async function createRShare(txRequest: TxRequest = signingTxRequest) {
+      const { encryptedUserToBitgoRShare } = await tssUtils.createCommitmentShareFromTxRequest({
+        txRequest: signingTxRequest,
+        prv,
+        walletPassphrase,
+        bitgoGpgPubKey: bitgoGpgKey.publicKey,
+      });
+      return tssUtils.createRShareFromTxRequest({
+        txRequest,
+        walletPassphrase,
+        encryptedUserToBitgoRShare,
+        bitgoToUserCommitment,
+      });
+    }
+
+    function createGShare(
+      encryptedUserToBitgoRShare: EncryptedSignerShareRecord,
+      overrides: { txRequest?: TxRequest; bitgoToUserRShare?: SignatureShareRecord } = {}
+    ) {
+      return tssUtils.createGShareFromTxRequest({
+        txRequest: overrides.txRequest ?? signingTxRequest,
+        prv,
+        walletPassphrase,
+        bitgoToUserRShare: overrides.bitgoToUserRShare ?? bitgoToUserRShare,
+        encryptedUserToBitgoRShare,
+        bitgoToUserCommitment,
+      });
+    }
+
+    it('rejects commitment state replayed against a different txRequest', async function () {
+      await createRShare({ ...signingTxRequest, txRequestId: 'other-tx-request' }).should.be.rejectedWith(
+        'Adata does not match cyphertext adata'
+      );
+      await createRShare({
+        ...signingTxRequest,
+        unsignedTxs: [{ ...signingTxRequest.unsignedTxs[0], signableHex: 'deadbeef' }],
+      }).should.be.rejectedWith('Adata does not match cyphertext adata');
+    });
+
+    it('requires the BitGo commitment before revealing the R share', async function () {
+      const { encryptedUserToBitgoRShare } = await tssUtils.createCommitmentShareFromTxRequest({
+        txRequest: signingTxRequest,
+        prv,
+        walletPassphrase,
+        bitgoGpgPubKey: bitgoGpgKey.publicKey,
+      });
+      await tssUtils
+        .createRShareFromTxRequest({
+          txRequest: signingTxRequest,
+          walletPassphrase,
+          encryptedUserToBitgoRShare,
+          bitgoToUserCommitment: { ...bitgoToUserCommitment, share: '' },
+        })
+        .should.be.rejectedWith('Missing BitGo to user commitment');
+    });
+
+    it('rejects G share generation against a different BitGo commitment or txRequest', async function () {
+      const { encryptedUserToBitgoRShare } = await createRShare();
+      await tssUtils
+        .createGShareFromTxRequest({
+          txRequest: signingTxRequest,
+          prv,
+          walletPassphrase,
+          bitgoToUserRShare,
+          encryptedUserToBitgoRShare,
+          bitgoToUserCommitment: { ...bitgoToUserCommitment, share: validUserSignShare.rShares[3].commitment },
+        })
+        .should.be.rejectedWith('Adata does not match cyphertext adata');
+      await createGShare(encryptedUserToBitgoRShare, {
+        txRequest: { ...signingTxRequest, walletId: 'otherWalletId' },
+      }).should.be.rejectedWith('Adata does not match cyphertext adata');
+    });
+
+    it('rejects G share generation from the commitment state directly', async function () {
+      const { encryptedUserToBitgoRShare } = await tssUtils.createCommitmentShareFromTxRequest({
+        txRequest: signingTxRequest,
+        prv,
+        walletPassphrase,
+        bitgoGpgPubKey: bitgoGpgKey.publicKey,
+      });
+      await createGShare(encryptedUserToBitgoRShare).should.be.rejectedWith('Adata does not match cyphertext adata');
+    });
+
+    it('allows an identical retry but rejects reusing the nonce with a different BitGo R share', async function () {
+      const { encryptedUserToBitgoRShare } = await createRShare();
+      const gShare = await createGShare(encryptedUserToBitgoRShare);
+      (await createGShare(encryptedUserToBitgoRShare)).should.deepEqual(gShare);
+      await createGShare(encryptedUserToBitgoRShare, {
+        bitgoToUserRShare: { ...bitgoToUserRShare, share: validBitgoToUserSignShare.rShares[1].r + gShare.R },
+      }).should.be.rejectedWith('User signing nonce has already been used');
     });
   });
 

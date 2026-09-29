@@ -359,13 +359,15 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    * @param {string} params.prv - user signing material
    * @param {string} [params.walletPassphrase] - wallet passphrase
    * @param {EncryptedSignerShareRecord} [params.encryptedUserToBitgoRShare] - encrypted user to bitgo R share generated in the commitment phase
-   * @returns {Promise<{ rShare: SignShare }>} - R Share to BitGo
+   * @param {CommitmentShareRecord} params.bitgoToUserCommitment - BitGo to User Commitment
+   * @returns {Promise<{ rShare: SignShare, encryptedUserToBitgoRShare: EncryptedSignerShareRecord }>} - R Share to BitGo and the encrypted R share bound to the BitGo commitment
    */
   createRShareFromTxRequest(params: {
     txRequest: TxRequest;
     walletPassphrase: string;
     encryptedUserToBitgoRShare: EncryptedSignerShareRecord;
-  }): Promise<{ rShare: SignShare }> {
+    bitgoToUserCommitment: CommitmentShareRecord;
+  }): Promise<{ rShare: SignShare; encryptedUserToBitgoRShare: EncryptedSignerShareRecord }> {
     throw new Error('Method not implemented.');
   }
 
@@ -375,16 +377,18 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    * @param {Object} params - params object
    * @param {TxRequest} params.txRequest - transaction request with unsigned transaction
    * @param {string} params.prv - user signing material
+   * @param {string} params.walletPassphrase - wallet passphrase
    * @param {SignatureShareRecord} params.bitgoToUserRShare - BitGo to User R Share
-   * @param {SignShare} params.userToBitgoRShare - User to BitGo R Share
+   * @param {EncryptedSignerShareRecord} params.encryptedUserToBitgoRShare - encrypted user to bitgo R share generated in the R share phase
    * @param {CommitmentShareRecord} params.bitgoToUserCommitment - BitGo to User Commitment
    * @returns {Promise<GShare>} - GShare from User to BitGo
    */
   createGShareFromTxRequest(params: {
     txRequest: TxRequest;
     prv: string;
+    walletPassphrase: string;
     bitgoToUserRShare: SignatureShareRecord;
-    userToBitgoRShare: SignShare;
+    encryptedUserToBitgoRShare: EncryptedSignerShareRecord;
     bitgoToUserCommitment: CommitmentShareRecord;
   }): Promise<GShare> {
     throw new Error('Method not implemented.');

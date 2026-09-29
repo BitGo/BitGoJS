@@ -190,15 +190,20 @@ export interface CustomCommitmentGeneratingFunction {
 }
 
 export interface CustomRShareGeneratingFunction {
-  (params: { txRequest: TxRequest; encryptedUserToBitgoRShare: EncryptedSignerShareRecord }): Promise<{
+  (params: {
+    txRequest: TxRequest;
+    encryptedUserToBitgoRShare: EncryptedSignerShareRecord;
+    bitgoToUserCommitment: CommitmentShareRecord;
+  }): Promise<{
     rShare: SignShare;
+    encryptedUserToBitgoRShare: EncryptedSignerShareRecord;
   }>;
 }
 
 export interface CustomGShareGeneratingFunction {
   (params: {
     txRequest: TxRequest;
-    userToBitgoRShare: SignShare;
+    encryptedUserToBitgoRShare: EncryptedSignerShareRecord;
     bitgoToUserRShare: SignatureShareRecord;
     bitgoToUserCommitment: CommitmentShareRecord;
   }): Promise<GShare>;
@@ -960,12 +965,14 @@ export interface ITssUtils<KeyShare = EDDSA.KeyShare> {
     txRequest: TxRequest;
     walletPassphrase: string;
     encryptedUserToBitgoRShare: EncryptedSignerShareRecord;
-  }): Promise<{ rShare: SignShare }>;
+    bitgoToUserCommitment: CommitmentShareRecord;
+  }): Promise<{ rShare: SignShare; encryptedUserToBitgoRShare: EncryptedSignerShareRecord }>;
   createGShareFromTxRequest(params: {
     txRequest: TxRequest;
     prv: string;
+    walletPassphrase: string;
     bitgoToUserRShare: SignatureShareRecord;
-    userToBitgoRShare: SignShare;
+    encryptedUserToBitgoRShare: EncryptedSignerShareRecord;
     bitgoToUserCommitment: CommitmentShareRecord;
   }): Promise<GShare>;
   prebuildTxWithIntent(
