@@ -2160,16 +2160,22 @@ export class Sol extends BaseCoin {
   async broadcastTransaction({
     serializedSignedTransaction,
   }: BaseBroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult> {
-    const rawBytes = Buffer.from(serializedSignedTransaction, 'base64');
-    // v1 (SIMD-0296/0385) transactions start with the 0x81 version prefix; the legacy
-    // parser cannot deserialize them, so validate the v1 size limit directly instead.
-    const isV1 = rawBytes.length > 0 && rawBytes[0] === 0x81;
+    let rawBytes: Buffer | undefined;
+    let isV1 = false;
+    try {
+      rawBytes = Buffer.from(serializedSignedTransaction, 'base64');
+      // v1 (SIMD-0296/0385) transactions start with the 0x81 version prefix.
+      isV1 = rawBytes.length > 0 && rawBytes[0] === 0x81;
+    } catch {
+      // Malformed or non-string input: not a v1 transaction. Fall through to the
+      // legacy validateRawTransaction path, which raises a descriptive error.
+    }
 
     if (isV1) {
       // Structural + signature validation parity with the legacy path (which uses
       // validateRawTransaction(raw, true, true)). The 4096-byte v1 size limit is
       // enforced inside validateRawTransactionV1 (parseWireTransaction).
-      validateRawTransactionV1(rawBytes);
+      validateRawTransactionV1(rawBytes!);
     } else {
       validateRawTransaction(serializedSignedTransaction, true, true);
     }
