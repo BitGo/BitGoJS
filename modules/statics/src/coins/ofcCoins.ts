@@ -6711,6 +6711,7 @@ export const ofcCoins = [
     UnderlyingAsset['tempo:stcusd']
   ),
   ofcTempoToken('003c69c6-5a4a-4768-bea1-cb57718ea719', 'ofctempo:sofid', 'SoFiUSD', 6, UnderlyingAsset['tempo:sofid']),
+  ofcTempoToken('d2741b2a-375b-4dae-98d4-0a5d5586ddb4', 'ofctempo:ousd', 'OpenUSD', 6, UnderlyingAsset['tempo:ousd']),
   // Tempo testnet OFC tokens
   tofcTempoToken(
     '7912e76e-5a5c-4f1b-86e9-1fc2a51f5a98',
