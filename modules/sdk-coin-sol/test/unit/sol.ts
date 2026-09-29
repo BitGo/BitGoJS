@@ -5,9 +5,12 @@ import * as should from 'should';
 import * as sinon from 'sinon';
 
 import { getExtraAccountMetaAddress, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import { PublicKey, SystemProgram } from '@solana/web3.js';
+import { Keypair, PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.js';
 import * as base58 from 'bs58';
 import * as nacl from 'tweetnacl';
+
+import { compileTransactionMessage } from '../../src/lib/serialization/compileTransactionMessage';
+import { serializeWireTransaction } from '../../src/lib/serialization/wire-transaction';
 
 import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
 import {
@@ -4660,6 +4663,92 @@ describe('SOL:', function () {
         },
         { message: 'Invalid raw transaction' }
       );
+    });
+  });
+
+  describe('broadcastTransaction - v1', function () {
+    const sandBox = sinon.createSandbox();
+    const recentBlockhash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
+
+    afterEach(() => {
+      sandBox.restore();
+    });
+
+    // Build a real signed v1 (SIMD-0296/0385) transaction using the PR-A v1
+    // serializer: compile the message (0x81 prefix), sign the message bytes with
+    // the fee payer's ed25519 key, and append the signature at the tail.
+    function buildV1SignedTransaction(): string {
+      const signer = Keypair.generate();
+      const feePayer = signer.publicKey;
+      const tokenAddress = Keypair.generate().publicKey;
+
+      const instruction = new TransactionInstruction({
+        keys: [
+          { pubkey: feePayer, isSigner: true, isWritable: true },
+          { pubkey: tokenAddress, isSigner: false, isWritable: true },
+        ],
+        programId: TOKEN_2022_PROGRAM_ID,
+        data: Buffer.from([27, 5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0f, 6]),
+      });
+
+      const messageBytes = compileTransactionMessage({
+        version: 1,
+        instructions: [instruction],
+        feePayer,
+        recentBlockhash,
+        transactionConfig: {
+          computeUnitLimit: 200_000,
+          heapSize: 32_768,
+          loadedAccountsDataSizeLimit: 65_536,
+          priorityFee: 5_000,
+        },
+      });
+
+      const signature = nacl.sign.detached(messageBytes, signer.secretKey);
+      const wireBytes = serializeWireTransaction(messageBytes, [signature]);
+      return Buffer.from(wireBytes).toString('base64');
+    }
+
+    it('broadcasts a valid signed v1 transaction (0x81)', async function () {
+      const serializedSignedTransaction = buildV1SignedTransaction();
+      const rawBytes = Buffer.from(serializedSignedTransaction, 'base64');
+      assert.strictEqual(rawBytes[0], 0x81);
+
+      const broadcastStub = sandBox
+        .stub(Sol.prototype, 'getDataFromNode' as keyof Sol)
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
+            method: 'sendTransaction',
+            params: [serializedSignedTransaction, { encoding: 'base64' }],
+          },
+        })
+        .resolves(testData.SolResponses.broadcastTransactionResponse);
+
+      const broadcastTxn = await basecoin.broadcastTransaction({ serializedSignedTransaction });
+      assert.ok(broadcastTxn);
+      assert.ok(broadcastTxn.txId);
+      assert.strictEqual(broadcastStub.callCount, 1);
+    });
+
+    it('rejects a v1 transaction with a tampered signature', async function () {
+      const serializedSignedTransaction = buildV1SignedTransaction();
+      const rawBytes = Buffer.from(serializedSignedTransaction, 'base64');
+      // Flip the last byte: it lies inside the trailing signature, so the
+      // structure stays valid but the ed25519 signature no longer verifies.
+      rawBytes[rawBytes.length - 1] ^= 0xff;
+      const tampered = rawBytes.toString('base64');
+
+      const broadcastStub = sandBox
+        .stub(Sol.prototype, 'getDataFromNode' as keyof Sol)
+        .resolves(testData.SolResponses.broadcastTransactionResponse);
+
+      await assert.rejects(async () => {
+        await basecoin.broadcastTransaction({ serializedSignedTransaction: tampered });
+      }, /Signature verification failed/);
+      // Validation must fail before any node call is made.
+      assert.strictEqual(broadcastStub.callCount, 0);
     });
   });
 
