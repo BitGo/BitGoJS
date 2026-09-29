@@ -16,12 +16,15 @@ export const VerifyAddressV2Params = {
  *
  * @property address - The address string to validate.
  * @property supportOldScriptHashVersion - (UTXO only) When true, treat legacy script hash version as acceptable.
+ * @property strictBase58 - (TRX only) When true, reject hex-form (0x-prefixed or 41-prefixed) input and require the canonical Base58 form.
  */
 export const VerifyAddressV2Body = {
   /** Address which should be verified for correct format */
   address: t.string,
   /** Accept legacy script hash version for applicable UTXO coins (optional). */
   supportOldScriptHashVersion: optional(t.boolean),
+  /** Reject hex-form input and require canonical Base58 for TRX (optional). */
+  strictBase58: optional(t.boolean),
 };
 
 /**

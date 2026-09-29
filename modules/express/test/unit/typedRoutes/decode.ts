@@ -135,6 +135,11 @@ describe('io-ts decode tests', function () {
       address: 'some-address',
       supportOldScriptHashVersion: true,
     });
+    // valid body with trx strict base58 flag
+    assertDecode(t.type(VerifyAddressV2Body), {
+      address: 'some-address',
+      strictBase58: true,
+    });
   });
   it('express.v1.wallet.simplecreate', function () {
     // passphrase is required

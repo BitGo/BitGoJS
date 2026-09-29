@@ -148,6 +148,61 @@ describe('Bitgo Express', function () {
         res.body.isValid.should.equal(true);
       });
     });
+
+    describe('trx strict base58', function () {
+      const base58 = 'TBChwKYNaTo4a4N68Me1qEiiKsRDspXqLp';
+      const hex0x = '0x96be113992bdc3be24c11f6017085b605d253649';
+      const hex41 = '41E0C0F581D7D02D40826C1C6CBEE71F625D6344D0';
+
+      it('should accept base58, 0x-hex, and 41-hex by default', async function () {
+        for (const address of [base58, hex0x, hex41]) {
+          const res = await agent.post('/api/v2/trx/verifyaddress').send({ address });
+
+          res.should.have.status(200);
+          res.body.isValid.should.equal(true);
+        }
+      });
+
+      it('should reject hex forms with strictBase58: true', async function () {
+        for (const address of [hex0x, hex41]) {
+          const res = await agent.post('/api/v2/trx/verifyaddress').send({ address, strictBase58: true });
+
+          res.should.have.status(200);
+          res.body.isValid.should.equal(false);
+        }
+      });
+
+      it('should accept base58 with strictBase58: true', async function () {
+        const res = await agent.post('/api/v2/trx/verifyaddress').send({ address: base58, strictBase58: true });
+
+        res.should.have.status(200);
+        res.body.isValid.should.equal(true);
+      });
+
+      it('should keep lenient behavior with strictBase58: false', async function () {
+        const res = await agent.post('/api/v2/trx/verifyaddress').send({ address: hex0x, strictBase58: false });
+
+        res.should.have.status(200);
+        res.body.isValid.should.equal(true);
+      });
+
+      it('should apply strictBase58 for trx tokens', async function () {
+        const res = await agent.post('/api/v2/trx:usdt/verifyaddress').send({ address: hex0x, strictBase58: true });
+
+        res.should.have.status(200);
+        res.body.isValid.should.equal(false);
+      });
+
+      it('should ignore strictBase58 for non-TRX coins', async function () {
+        const res = await agent.post('/api/v2/eth/verifyaddress').send({
+          address: '0xd4a4aa09f57b7e83cd817ec24df9f86daf253d1d',
+          strictBase58: true,
+        });
+
+        res.should.have.status(200);
+        res.body.isValid.should.equal(true);
+      });
+    });
   });
 
   describe('Request body size limits', () => {
