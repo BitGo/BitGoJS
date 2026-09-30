@@ -23,13 +23,27 @@ export const VerifyAddressV2Body = {
   address: t.string,
   /** Accept legacy script hash version for applicable UTXO coins (optional). */
   supportOldScriptHashVersion: optional(t.boolean),
-  /** Reject hex-form input and require canonical Base58 for TRX (optional). */
+  /**
+   * (TRX only) When true, reject hex-form input and require the canonical Base58 form.
+   * TRON addresses are accepted in three forms — canonical Base58 (T...), 41-prefixed hex,
+   * and 0x-prefixed EVM-style hex — which are all encodings of the same address. Set this
+   * flag to reject the hex forms during verification. Ignored for non-TRX coins (optional).
+   */
   strictBase58: optional(t.boolean),
 };
 
 /**
- * Verify address for a given coin.
+ * Verify address for a given coin
  *
+ * Returns whether the address is valid for the specified coin. The response does not convert
+ * or normalize the address; it only validates the format.
+ *
+ * For UTXO coins, the optional supportOldScriptHashVersion flag allows legacy script hash versions.
+ *
+ * For TRON (trx and TRC-20 tokens such as trx:usdt), addresses are accepted in three forms:
+ * canonical Base58 (T...), 41-prefixed hex, and 0x-prefixed EVM-style hex. All three are
+ * alternative encodings of the same address and are accepted by default. Set strictBase58 to
+ * true to reject the hex forms and require canonical Base58.
  *
  * @operationId express.verifycoinaddress
  * @tag Express
