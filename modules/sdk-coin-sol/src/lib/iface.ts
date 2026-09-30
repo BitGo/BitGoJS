@@ -21,6 +21,16 @@ export interface DurableNonceParams {
   authWalletAddress: string;
 }
 
+/**
+ * Identifies the enterprise fee address that pays the network fee (and any account-creation
+ * rent BitGo adds) for a sponsored transaction. Used when a caller-built versioned
+ * transaction (customTx / WalletConnect) has its fee payer rewritten to the enterprise
+ * fee address, which ends up as static account 0 of the message.
+ */
+export interface EnterpriseFeePayerParams {
+  feePayer: string;
+}
+
 export interface TxData {
   id?: TransactionSignature;
   feePayer?: string;

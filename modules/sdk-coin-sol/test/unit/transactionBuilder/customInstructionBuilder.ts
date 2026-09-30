@@ -4,9 +4,9 @@ import {
   PublicKey,
   TransactionInstruction,
   ComputeBudgetProgram,
+  MessageV0,
   VersionedTransaction,
   Keypair,
-  MessageV0,
   AddressLookupTableAccount,
   SYSVAR_RECENT_BLOCKHASHES_PUBKEY,
 } from '@solana/web3.js';
@@ -860,6 +860,341 @@ describe('Sol Custom Instruction Builder', () => {
       const txBuilder = factory.getCustomInstructionBuilder();
       txBuilder.nonce(recentBlockHash, { walletNonceAddress, authWalletAddress });
       should(() => txBuilder.fromVersionedTransactionData(inconsistent)).throwError(/Invalid message header/);
+    });
+  });
+
+  describe('fee payer rewrite for versioned transactions', () => {
+    // the enterprise fee address: has a private key so signatures can be produced for real
+    const feePayerAccount = new KeyPair(testData.feePayerAccount).getKeys();
+    const nonceAccountPub = testData.nonceAccount.pub;
+    const MEMO_PROGRAM = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr';
+    const SYSTEM_PROGRAM = '11111111111111111111111111111111';
+    const SYSVAR_RECENT_BLOCKHASHES = 'SysvarRecentB1ockHashes11111111111111111111';
+
+    /**
+     * Minimal versioned transaction with a single memo instruction that references the
+     * wallet as signer and the memo program.
+     */
+    const memoTxData = (
+      staticAccountKeys: string[],
+      messageHeader: VersionedTransactionData['messageHeader']
+    ): VersionedTransactionData => ({
+      versionedInstructions: [
+        {
+          programIdIndex: staticAccountKeys.indexOf(MEMO_PROGRAM),
+          accountKeyIndexes: [staticAccountKeys.indexOf(authAccount.pub)],
+          data: base58.encode(Buffer.from('Hello Versioned Tx', 'utf-8')),
+        },
+      ],
+      addressLookupTables: [],
+      staticAccountKeys,
+      messageHeader,
+    });
+
+    const feePayerBuilder = (
+      data: VersionedTransactionData,
+      feePayer?: string,
+      durableNonce?: { walletNonceAddress: string; authWalletAddress: string }
+    ) => {
+      const txBuilder = factory.getCustomInstructionBuilder();
+      txBuilder.nonce(recentBlockHash, durableNonce);
+      if (feePayer) {
+        txBuilder.feePayer(feePayer);
+      }
+      txBuilder.fromVersionedTransactionData(data);
+      return txBuilder;
+    };
+
+    it('inserts a fee payer that is not among the static keys as writable signer account 0', async () => {
+      const data = memoTxData([authAccount.pub, MEMO_PROGRAM], {
+        numRequiredSignatures: 1,
+        numReadonlySignedAccounts: 0,
+        numReadonlyUnsignedAccounts: 0,
+      });
+      const tx = (await feePayerBuilder(data, feePayerAccount.pub).build()) as Transaction;
+
+      const built = tx.getVersionedTransactionData()!;
+      should.exist(built);
+      built.staticAccountKeys.should.deepEqual([feePayerAccount.pub, authAccount.pub, MEMO_PROGRAM]);
+      built.messageHeader.should.deepEqual({
+        numRequiredSignatures: 2,
+        numReadonlySignedAccounts: 0,
+        numReadonlyUnsignedAccounts: 0,
+      });
+
+      // the memo instruction keeps targeting the same accounts
+      built.versionedInstructions[0].programIdIndex.should.equal(2);
+      built.versionedInstructions[0].accountKeyIndexes.should.deepEqual([1]);
+      built.versionedInstructions[0].data.should.equal(data.versionedInstructions[0].data);
+
+      // the rewritten message compiles and round-trips
+      should.exist(tx.signablePayload);
+      const deserialized = VersionedTransaction.deserialize(Buffer.from(tx.toBroadcastFormat(), 'base64'));
+      deserialized.message.staticAccountKeys[0].toBase58().should.equal(feePayerAccount.pub);
+      deserialized.message.header.numRequiredSignatures.should.equal(2);
+    });
+
+    it('keeps lookup-table instructions targeting the same accounts when inserting a fee payer', async () => {
+      // real Jupiter swap: 13 static keys plus 4 ALTs loading 26 accounts, so the instructions
+      // mix static indexes (0-12) with lookup-table indexes (13-38)
+      const originalDeserialized = VersionedTransaction.deserialize(
+        Buffer.from(testData.JUPITER_VERSIONED_TX_BYTES, 'base64')
+      );
+      const versionedTxData: VersionedTransactionData = {
+        versionedInstructions: originalDeserialized.message.compiledInstructions.map((ix) => ({
+          programIdIndex: ix.programIdIndex,
+          accountKeyIndexes: ix.accountKeyIndexes,
+          data: base58.encode(ix.data),
+        })),
+        addressLookupTables: originalDeserialized.message.addressTableLookups!.map((lookup) => ({
+          accountKey: lookup.accountKey.toBase58(),
+          writableIndexes: lookup.writableIndexes,
+          readonlyIndexes: lookup.readonlyIndexes,
+        })),
+        staticAccountKeys: originalDeserialized.message.staticAccountKeys.map((key) => key.toBase58()),
+        messageHeader: originalDeserialized.message.header,
+      };
+
+      const tx = (await feePayerBuilder(versionedTxData, feePayerAccount.pub).build()) as Transaction;
+      const built = tx.getVersionedTransactionData()!;
+
+      built.staticAccountKeys.should.deepEqual([feePayerAccount.pub, ...versionedTxData.staticAccountKeys]);
+      built.messageHeader.should.deepEqual({
+        numRequiredSignatures: versionedTxData.messageHeader.numRequiredSignatures + 1,
+        numReadonlySignedAccounts: versionedTxData.messageHeader.numReadonlySignedAccounts,
+        numReadonlyUnsignedAccounts: versionedTxData.messageHeader.numReadonlyUnsignedAccounts,
+      });
+
+      // every static and lookup-table index shifts by exactly one, so every instruction
+      // still targets the same accounts as the caller's original transaction
+      versionedTxData.versionedInstructions.forEach((original, i) => {
+        built.versionedInstructions[i].programIdIndex.should.equal(original.programIdIndex + 1);
+        built.versionedInstructions[i].accountKeyIndexes.should.deepEqual(
+          original.accountKeyIndexes.map((idx) => idx + 1)
+        );
+        built.versionedInstructions[i].data.should.equal(original.data);
+      });
+      built.addressLookupTables.should.deepEqual(versionedTxData.addressLookupTables);
+
+      const deserialized = VersionedTransaction.deserialize(Buffer.from(tx.toBroadcastFormat(), 'base64'));
+      deserialized.message.staticAccountKeys[0].toBase58().should.equal(feePayerAccount.pub);
+    });
+
+    it('moves a fee payer present as a writable non-signer to account 0 without duplicating it', async () => {
+      const data = memoTxData([authAccount.pub, MEMO_PROGRAM, feePayerAccount.pub], {
+        numRequiredSignatures: 1,
+        numReadonlySignedAccounts: 0,
+        numReadonlyUnsignedAccounts: 0,
+      });
+      const tx = (await feePayerBuilder(data, feePayerAccount.pub).build()) as Transaction;
+      const built = tx.getVersionedTransactionData()!;
+
+      built.staticAccountKeys.should.deepEqual([feePayerAccount.pub, authAccount.pub, MEMO_PROGRAM]);
+      built.staticAccountKeys.filter((key) => key === feePayerAccount.pub).length.should.equal(1);
+      built.messageHeader.should.deepEqual({
+        numRequiredSignatures: 2,
+        numReadonlySignedAccounts: 0,
+        numReadonlyUnsignedAccounts: 0,
+      });
+      built.versionedInstructions[0].programIdIndex.should.equal(2);
+      built.versionedInstructions[0].accountKeyIndexes.should.deepEqual([1]);
+    });
+
+    it('decrements numReadonlyUnsignedAccounts when a read-only non-signer fee payer is moved', async () => {
+      const data = memoTxData([authAccount.pub, MEMO_PROGRAM, feePayerAccount.pub], {
+        numRequiredSignatures: 1,
+        numReadonlySignedAccounts: 0,
+        numReadonlyUnsignedAccounts: 1,
+      });
+      const tx = (await feePayerBuilder(data, feePayerAccount.pub).build()) as Transaction;
+      const built = tx.getVersionedTransactionData()!;
+
+      built.staticAccountKeys.should.deepEqual([feePayerAccount.pub, authAccount.pub, MEMO_PROGRAM]);
+      built.messageHeader.should.deepEqual({
+        numRequiredSignatures: 2,
+        numReadonlySignedAccounts: 0,
+        numReadonlyUnsignedAccounts: 0,
+      });
+    });
+
+    it('decrements numReadonlySignedAccounts when a read-only signer fee payer is moved', async () => {
+      const data = memoTxData([authAccount.pub, feePayerAccount.pub, MEMO_PROGRAM], {
+        numRequiredSignatures: 2,
+        numReadonlySignedAccounts: 1,
+        numReadonlyUnsignedAccounts: 0,
+      });
+      const tx = (await feePayerBuilder(data, feePayerAccount.pub).build()) as Transaction;
+      const built = tx.getVersionedTransactionData()!;
+
+      built.staticAccountKeys.should.deepEqual([feePayerAccount.pub, authAccount.pub, MEMO_PROGRAM]);
+      built.messageHeader.should.deepEqual({
+        numRequiredSignatures: 2,
+        numReadonlySignedAccounts: 0,
+        numReadonlyUnsignedAccounts: 0,
+      });
+      built.versionedInstructions[0].programIdIndex.should.equal(2);
+      built.versionedInstructions[0].accountKeyIndexes.should.deepEqual([1]);
+    });
+
+    it('sponsors a durable-nonce transaction whose fee payer is the nonce authority with one signature', async () => {
+      const data = memoTxData([authAccount.pub, MEMO_PROGRAM], {
+        numRequiredSignatures: 1,
+        numReadonlySignedAccounts: 0,
+        numReadonlyUnsignedAccounts: 0,
+      });
+      const txBuilder = factory.getCustomInstructionBuilder();
+      txBuilder.nonce(recentBlockHash, {
+        walletNonceAddress: nonceAccountPub,
+        authWalletAddress: feePayerAccount.pub,
+      });
+      txBuilder.feePayer(feePayerAccount.pub);
+      txBuilder.fromVersionedTransactionData(data);
+      const tx = (await txBuilder.build()) as Transaction;
+      const built = tx.getVersionedTransactionData()!;
+
+      // the fee payer is account 0, a signer, and appears exactly once
+      built.staticAccountKeys[0].should.equal(feePayerAccount.pub);
+      built.staticAccountKeys.filter((key) => key === feePayerAccount.pub).length.should.equal(1);
+      built.messageHeader.numRequiredSignatures.should.equal(2);
+      built.staticAccountKeys.slice(0, 2).should.deepEqual([feePayerAccount.pub, authAccount.pub]);
+
+      // AdvanceNonceAccount is instruction 0 and names the fee payer (already account 0) as authority
+      const nonceAdvance = built.versionedInstructions[0];
+      nonceAdvance.data.should.equal('6vx8P');
+      nonceAdvance.programIdIndex.should.equal(built.staticAccountKeys.indexOf(SYSTEM_PROGRAM));
+      nonceAdvance.accountKeyIndexes.should.deepEqual([
+        built.staticAccountKeys.indexOf(nonceAccountPub),
+        built.staticAccountKeys.indexOf(SYSVAR_RECENT_BLOCKHASHES),
+        0,
+      ]);
+
+      // the original memo instruction follows, still targeting the same accounts
+      built.versionedInstructions[1].programIdIndex.should.equal(built.staticAccountKeys.indexOf(MEMO_PROGRAM));
+      built.versionedInstructions[1].accountKeyIndexes.should.deepEqual([
+        built.staticAccountKeys.indexOf(authAccount.pub),
+      ]);
+      built.versionedInstructions[1].data.should.equal(data.versionedInstructions[0].data);
+    });
+
+    it('addFeePayerSignature() places the fee payer signature in slot 0', async () => {
+      const data = memoTxData([authAccount.pub, MEMO_PROGRAM], {
+        numRequiredSignatures: 1,
+        numReadonlySignedAccounts: 0,
+        numReadonlyUnsignedAccounts: 0,
+      });
+
+      // produce a real fee-payer signature of the unsigned payload through the sign flow
+      const signingBuilder = feePayerBuilder(data, feePayerAccount.pub);
+      signingBuilder.sign({ key: feePayerAccount.prv });
+      const signedTx = (await signingBuilder.build()) as Transaction;
+      const feePayerSignature = base58.decode(signedTx.signature[0]);
+
+      // replay the signature through addFeePayerSignature()
+      const txBuilder = feePayerBuilder(data, feePayerAccount.pub);
+      txBuilder.addFeePayerSignature({ pub: feePayerAccount.pub }, Buffer.from(feePayerSignature));
+      const tx = (await txBuilder.build()) as Transaction;
+
+      // byte-identical to the natively signed transaction: the signature landed in slot 0
+      tx.toBroadcastFormat().should.equal(signedTx.toBroadcastFormat());
+      const deserialized = VersionedTransaction.deserialize(Buffer.from(tx.toBroadcastFormat(), 'base64'));
+      deserialized.message.staticAccountKeys[0].toBase58().should.equal(feePayerAccount.pub);
+      deserialized.signatures.length.should.equal(2);
+      Buffer.from(deserialized.signatures[0])
+        .toString('hex')
+        .should.equal(Buffer.from(feePayerSignature).toString('hex'));
+      // slot 1 (the wallet) is still unsigned
+      deserialized.signatures[1].every((byte) => byte === 0).should.be.true();
+    });
+
+    it('addFeePayerSignature() on a built transaction fills signature slot 0', async () => {
+      const data = memoTxData([authAccount.pub, MEMO_PROGRAM], {
+        numRequiredSignatures: 1,
+        numReadonlySignedAccounts: 0,
+        numReadonlyUnsignedAccounts: 0,
+      });
+      const unsignedTx = (await feePayerBuilder(data, feePayerAccount.pub).build()) as Transaction;
+
+      const signingBuilder = feePayerBuilder(data, feePayerAccount.pub);
+      signingBuilder.sign({ key: feePayerAccount.prv });
+      const signedTx = (await signingBuilder.build()) as Transaction;
+      const feePayerSignature = base58.decode(signedTx.signature[0]);
+
+      unsignedTx.addFeePayerSignature({ pub: feePayerAccount.pub }, Buffer.from(feePayerSignature));
+      unsignedTx.toBroadcastFormat().should.equal(signedTx.toBroadcastFormat());
+
+      // a key that is not account 0 is rejected
+      should(() => unsignedTx.addFeePayerSignature({ pub: authAccount.pub }, Buffer.alloc(64))).throwError(
+        /account 0 of the message/
+      );
+    });
+
+    it('rejects addFeePayerSignature() from a key that is not account 0', async () => {
+      const data = memoTxData([authAccount.pub, MEMO_PROGRAM], {
+        numRequiredSignatures: 1,
+        numReadonlySignedAccounts: 0,
+        numReadonlyUnsignedAccounts: 0,
+      });
+      const txBuilder = feePayerBuilder(data, feePayerAccount.pub);
+      should(() => txBuilder.addFeePayerSignature({ pub: authAccount.pub }, Buffer.alloc(64))).throwError(
+        /account 0 of the message/
+      );
+    });
+
+    it('leaves the transaction bytes unchanged without feePayer()', async () => {
+      const data = memoTxData([authAccount.pub, MEMO_PROGRAM], {
+        numRequiredSignatures: 1,
+        numReadonlySignedAccounts: 0,
+        numReadonlyUnsignedAccounts: 0,
+      });
+      const tx = (await feePayerBuilder(data).build()) as Transaction;
+
+      // the caller's data is used exactly as supplied
+      tx.getVersionedTransactionData()!.should.deepEqual(data);
+
+      // the bytes are identical to a direct MessageV0 construction of the same data
+      const expected = Buffer.from(
+        new VersionedTransaction(
+          new MessageV0({
+            header: data.messageHeader,
+            staticAccountKeys: data.staticAccountKeys.map((key) => new PublicKey(key)),
+            recentBlockhash: recentBlockHash,
+            compiledInstructions: [
+              {
+                programIdIndex: data.versionedInstructions[0].programIdIndex,
+                accountKeyIndexes: data.versionedInstructions[0].accountKeyIndexes,
+                data: Buffer.from(base58.decode(data.versionedInstructions[0].data)),
+              },
+            ],
+            addressTableLookups: [],
+          })
+        ).serialize()
+      ).toString('base64');
+      tx.toBroadcastFormat().should.equal(expected);
+
+      // setting feePayer() to the account that is already account 0 changes nothing
+      const sameFeePayerTx = (await feePayerBuilder(data, authAccount.pub).build()) as Transaction;
+      sameFeePayerTx.toBroadcastFormat().should.equal(expected);
+    });
+
+    it('rejects a fee payer that is an address lookup table account', () => {
+      const data = memoTxData([authAccount.pub, MEMO_PROGRAM], {
+        numRequiredSignatures: 1,
+        numReadonlySignedAccounts: 0,
+        numReadonlyUnsignedAccounts: 0,
+      });
+      data.addressLookupTables = [{ accountKey: feePayerAccount.pub, writableIndexes: [0], readonlyIndexes: [1] }];
+      should(() => feePayerBuilder(data, feePayerAccount.pub)).throwError(
+        'Fee payer cannot be an address lookup table account: ' + feePayerAccount.pub
+      );
+    });
+
+    it('rejects an invalid fee payer address', () => {
+      const data = memoTxData([authAccount.pub, MEMO_PROGRAM], {
+        numRequiredSignatures: 1,
+        numReadonlySignedAccounts: 0,
+        numReadonlyUnsignedAccounts: 0,
+      });
+      should(() => feePayerBuilder(data, 'not-an-address')).throwError(/Invalid or missing fee payer/);
     });
   });
 });

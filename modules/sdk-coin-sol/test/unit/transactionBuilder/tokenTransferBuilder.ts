@@ -3,7 +3,7 @@ import { KeyPair, Utils } from '../../../src';
 import should from 'should';
 import * as testData from '../../resources/sol';
 import { FeeOptions } from '@bitgo/sdk-core';
-import { TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
+import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { ExtraAccountMeta } from '../../../src/lib/iface';
 
 describe('Sol Token Transfer Builder', () => {
@@ -841,6 +841,143 @@ describe('Sol Token Transfer Builder', () => {
       const createAta = tx.toJson().instructionsData.find((i) => i.type === 'CreateAssociatedTokenAccount');
       should.exist(createAta);
       createAta.params.payerAddress.should.equal(walletPK);
+    });
+  });
+
+  describe('fee-payer ATA rent for Token-2022 vs regular SPL', () => {
+    const feePayerAccount = new KeyPair(testData.feePayerAccount).getKeys();
+    const t22Name = testData.sol2022TokenTransfers.name;
+    const t22Mint = testData.sol2022TokenTransfers.mint;
+    const t22Decimals = testData.sol2022TokenTransfers.decimals;
+
+    it('uses the fee payer as Create-ATA rent payer for a regular SPL token', async () => {
+      const ataAddr = await Utils.getAssociatedTokenAccountAddress(mintUSDC, otherAccount.pub);
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.nonce(recentBlockHash);
+      txBuilder.feePayer(feePayerAccount.pub);
+      txBuilder.sender(walletPK);
+      txBuilder.send({ address: otherAccount.pub, amount, tokenName: nameUSDC });
+      txBuilder.createAssociatedTokenAccount({
+        ownerAddress: otherAccount.pub,
+        tokenName: nameUSDC,
+        ataAddress: ataAddr,
+      });
+      const tx = await txBuilder.build();
+      const json = tx.toJson();
+
+      // the fee payer is the tx-level fee payer and the ATA rent payer
+      json.feePayer.should.equal(feePayerAccount.pub);
+      const createAta = json.instructionsData.find((i) => i.type === 'CreateAssociatedTokenAccount');
+      should.exist(createAta);
+      createAta.params.payerAddress.should.equal(feePayerAccount.pub);
+      createAta.params.payerAddress.should.not.equal(walletPK);
+      // regular SPL: the fee payer pays rent; the ATA program is the executor
+      // (programId on the built instruction is always the ATA Program, not the token program)
+      should.exist(createAta);
+    });
+
+    it('uses the fee payer as Create-ATA rent payer for a Token-2022 token', async () => {
+      const t22AtaAddr = await Utils.getAssociatedTokenAccountAddress(
+        t22Mint,
+        otherAccount.pub,
+        false,
+        TOKEN_2022_PROGRAM_ID.toString()
+      );
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.nonce(recentBlockHash);
+      txBuilder.feePayer(feePayerAccount.pub);
+      txBuilder.sender(walletPK);
+      txBuilder.send({
+        address: otherAccount.pub,
+        amount,
+        tokenName: t22Name,
+        tokenAddress: t22Mint,
+        programId: TOKEN_2022_PROGRAM_ID.toString(),
+        decimalPlaces: t22Decimals,
+      });
+      txBuilder.createAssociatedTokenAccount({
+        ownerAddress: otherAccount.pub,
+        tokenName: t22Name,
+        tokenAddress: t22Mint,
+        ataAddress: t22AtaAddr,
+        programId: TOKEN_2022_PROGRAM_ID.toString(),
+      });
+      const tx = await txBuilder.build();
+      const json = tx.toJson();
+
+      // the fee payer is the tx-level fee payer and the ATA rent payer
+      json.feePayer.should.equal(feePayerAccount.pub);
+      const createAta = json.instructionsData.find((i) => i.type === 'CreateAssociatedTokenAccount');
+      should.exist(createAta);
+      createAta.params.payerAddress.should.equal(feePayerAccount.pub);
+      createAta.params.payerAddress.should.not.equal(walletPK);
+
+      // Token-2022: the ATA address is the Token-2022-derived PDA (different from the
+      // regular SPL ATA for the same owner + mint), proving the correct token program
+      // was used for the ATA derivation
+      // Token-2022: the ATA address is the Token-2022-derived PDA (different from the
+      // regular SPL ATA for the same owner + mint when derived with TOKEN_PROGRAM_ID)
+      createAta.params.ataAddress.should.equal(t22AtaAddr);
+      const splAtaForSameMint = await Utils.getAssociatedTokenAccountAddress(
+        t22Mint,
+        otherAccount.pub,
+        false,
+        TOKEN_PROGRAM_ID.toString()
+      );
+      createAta.params.ataAddress.should.not.equal(splAtaForSameMint);
+      // the transfer instruction uses the Token-2022 program
+      const transfer = json.instructionsData.find((i) => i.type === 'TokenTransfer');
+      should.exist(transfer);
+      transfer.params.programId.should.equal(TOKEN_2022_PROGRAM_ID.toString());
+    });
+    it('derives different ATA addresses for the same owner and mint under the two programs', async () => {
+      // pass explicit program IDs to bypass the statics lookup (which already
+      // knows t22Mint is a Token-2022 token and would resolve both to TOKEN_2022)
+      const splAta = await Utils.getAssociatedTokenAccountAddress(
+        t22Mint,
+        otherAccount.pub,
+        false,
+        TOKEN_PROGRAM_ID.toString()
+      );
+      const t22Ata = await Utils.getAssociatedTokenAccountAddress(
+        t22Mint,
+        otherAccount.pub,
+        false,
+        TOKEN_2022_PROGRAM_ID.toString()
+      );
+      splAta.should.not.equal(t22Ata);
+    });
+
+    it('falls back to the sender as rent payer for Token-2022 when feePayer is unset', async () => {
+      const t22AtaAddr = await Utils.getAssociatedTokenAccountAddress(
+        t22Mint,
+        otherAccount.pub,
+        false,
+        TOKEN_2022_PROGRAM_ID.toString()
+      );
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.nonce(recentBlockHash);
+      txBuilder.sender(walletPK);
+      txBuilder.send({
+        address: otherAccount.pub,
+        amount,
+        tokenName: t22Name,
+        tokenAddress: t22Mint,
+        programId: TOKEN_2022_PROGRAM_ID.toString(),
+        decimalPlaces: t22Decimals,
+      });
+      txBuilder.createAssociatedTokenAccount({
+        ownerAddress: otherAccount.pub,
+        tokenName: t22Name,
+        tokenAddress: t22Mint,
+        ataAddress: t22AtaAddr,
+        programId: TOKEN_2022_PROGRAM_ID.toString(),
+      });
+      const tx = await txBuilder.build();
+      const createAta = tx.toJson().instructionsData.find((i) => i.type === 'CreateAssociatedTokenAccount');
+      createAta.params.payerAddress.should.equal(walletPK);
+      createAta.params.ataAddress.should.equal(t22AtaAddr);
+      should.exist(createAta);
     });
   });
 
