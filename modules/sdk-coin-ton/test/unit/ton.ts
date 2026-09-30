@@ -8,6 +8,7 @@ import {
   EDDSAMethods,
   MPCRecoveryOptions,
   MPCSweepRecoveryOptions,
+  MPCSweepTxs,
   MPCTx,
   signRecoveryEddsaMPCv2,
   TransactionExplanation,
@@ -821,6 +822,44 @@ describe('TON:', function () {
       sandbox.restore();
     });
 
+    it('should generate unsigned sweep in MPCSweepTxs format for OVC', async function () {
+      // Mirrors the pattern from sdk-coin-polyx: stub network calls, call real recover(),
+      // assert the MPCSweepTxs shape that OVC's TSS form expects.
+      const mockProvider = {
+        getBalance: sandbox.stub().resolves('1000000000'),
+        getEstimateFee: sandbox.stub().resolves({
+          source_fees: { in_fwd_fee: 1000, storage_fee: 1000, gas_fee: 1000, fwd_fee: 1000 },
+        }),
+        call: sandbox.stub(),
+        send: sandbox.stub().callsFake((method: string) => {
+          if (method === 'runGetMethod') {
+            return Promise.resolve({ gas_used: 0, stack: [['num', '0']] });
+          }
+          return Promise.resolve({});
+        }),
+      };
+      sandbox.stub(Tonweb, 'HttpProvider').returns(mockProvider as any);
+
+      const bitgoKey =
+        '1baafa0d62174bf0c78f3256318613ffc44b6dd54ab1a63c2185232f92ede9dae1b2818dbeb52a8215fd56f5a5f2a9f94c079ce89e4dc3b1ce6ed6e84ce71857';
+      const recoveryDestination = 'UQBL2idCXR4ATdQtaNa4VpofcpSxuxIgHH7_slOZfdOXSadJ';
+
+      // no userKey / backupKey / walletPassphrase → isUnsignedSweep = true
+      const unsigned = await basecoin.recover({ bitgoKey, recoveryDestination, apiKey: 'dummy' });
+
+      (unsigned as any).txRequests.should.not.be.undefined();
+      (unsigned as any).txRequests.length.should.equal(1);
+      (unsigned as any).txRequests[0].walletCoin.should.equal(basecoin.getChain());
+      (unsigned as any).txRequests[0].transactions.length.should.equal(1);
+      (unsigned as any).txRequests[0].transactions[0].unsignedTx.should.not.be.undefined();
+      (unsigned as any).txRequests[0].transactions[0].unsignedTx.serializedTx.should.not.be.undefined();
+      (unsigned as any).txRequests[0].transactions[0].unsignedTx.scanIndex.should.equal(0);
+      (unsigned as any).txRequests[0].transactions[0].unsignedTx.coin.should.equal(basecoin.getChain());
+      (unsigned as any).txRequests[0].transactions[0].unsignedTx.signableHex.should.not.be.undefined();
+      (unsigned as any).txRequests[0].transactions[0].unsignedTx.derivationPath.should.equal('m/0');
+      (unsigned as any).txRequests[0].transactions[0].unsignedTx.coinSpecific.commonKeychain.should.equal(bitgoKey);
+    });
+
     it('should take OVC output and generate a signed sweep transaction', async function () {
       // Define the parameters (mock OVC response)
       const params = {
@@ -1034,13 +1073,15 @@ describe('TON:', function () {
       };
       sandBox.stub(Tonweb, 'HttpProvider').returns(mockProvider as any);
 
-      // ton's recover() unsigned path returns a bare MPCTx (no txRequests wrapper),
-      // so build the txRequest shape createBroadcastableSweepTransaction expects.
-      const unsignedTx = (await basecoin.recover({
+      // ton's recover() unsigned path returns the MPCSweepTxs envelope
+      // ({ txRequests: [{ walletCoin, transactions }] }); unwrap the MPCTx that
+      // createBroadcastableSweepTransaction consumes.
+      const recoverResult = (await basecoin.recover({
         bitgoKey: commonKeychain,
         recoveryDestination: 'UQBL2idCXR4ATdQtaNa4VpofcpSxuxIgHH7_slOZfdOXSadJ',
         apiKey: 'db2554641c61e60a979cc6c0053f2ec91da9b13e71d287768c93c2fb556be53b',
-      })) as MPCTx;
+      })) as MPCSweepTxs;
+      const unsignedTx = recoverResult.txRequests[0].transactions[0].unsignedTx as MPCTx;
       sandBox.restore();
 
       mpcv2SweepTxRequest = { transactions: [{ unsignedTx, signatureShares: [] }], walletCoin: 'tton' };
