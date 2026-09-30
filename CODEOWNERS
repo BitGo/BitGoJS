@@ -137,8 +137,8 @@
 /modules/sdk-api/src/v1 @BitGo/ecosystem
 /modules/sdk-api/test/unit/v1 @BitGo/ecosystem
 /modules/sdk-core/ @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/ecosystem
-/modules/sdk-core/src/bitgo/tss/ @BitGo/hsm
-/modules/sdk-core/src/account-lib/mpc/ @BitGo/hsm
+/modules/sdk-core/src/bitgo/tss/ @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm
+/modules/sdk-core/src/account-lib/mpc/ @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm
 /modules/sdk-core/src/bitgo/lightning/ @BitGo/ecosystem
 /modules/sdk-core/test/unit/bitgo/lightning/ @BitGo/ecosystem
 /modules/sdk-core/test/unit/bitgo/wallet/resourceManagement.ts @BitGo/ecosystem
