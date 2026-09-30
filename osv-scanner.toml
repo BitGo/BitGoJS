@@ -29,10 +29,6 @@ id = "GHSA-hmw2-7cc7-3qxx"
 reason = "form-data CRLF injection via unescaped multipart field names; transitive via superagent and @aptos-labs/ts-sdk; all form-data field names and filenames in our code are code-controlled constants, not derived from user input"
 
 [[IgnoredVulns]]
-id = "GHSA-wcpc-wj8m-hjx6"
-reason = "protobufjs DoS via unbounded Any expansion (parseAny recursion); transitive via @cosmjs and @hashgraph/sdk requiring protobufjs <=7.5.x; input comes from trusted blockchain RPC responses only, not arbitrary user data"
-
-[[IgnoredVulns]]
 id = "GHSA-7c78-jf6q-g5cm"
 reason = "tmp path traversal via type-confusion in _assertPath (non-string args); transitive via cypress/karma/lerna/nx (dev-time only, never in production); all prefix/postfix/template args are hard-coded string constants — type-confusion vector does not apply"
 

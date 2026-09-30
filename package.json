@@ -133,7 +133,7 @@
     "**/iota-sdk/**/valibot": "1.2.0",
     "**/tronweb/**/validator": "13.15.23",
     "@isaacs/brace-expansion": "5.0.1",
-    "brace-expansion": "5.0.9",
+    "brace-expansion": "5.0.11",
     "nx": "22.7.7",
     "basic-ftp": "5.3.1",
     "flatted": "3.4.2",
@@ -165,8 +165,7 @@
     "socket.io-parser": "4.2.7",
     "nanoid": "3.3.18",
     "sanitize-html": "2.17.5",
-    "node-releases": "2.0.52",
-    "smol-toml": "1.7.1"
+    "node-releases": "2.0.52"
   },
   "overrides": {
     "qs": "6.15.2",
@@ -219,7 +218,7 @@
     "webpack-dev-server": "5.2.1",
     "memfs": "4.46.0",
     "@isaacs/brace-expansion": "5.0.1",
-    "brace-expansion": "5.0.9",
+    "brace-expansion": "5.0.11",
     "nx": "22.7.7",
     "basic-ftp": "5.3.1",
     "flatted": "3.4.2",
@@ -329,9 +328,9 @@
   },
   "dependencies": {
     "axios": "1.18.0",
+    "bigint-buffer": "npm:@trufflesuite/bigint-buffer@1.1.10",
     "terser": "^5.14.2",
-    "tmp": "^0.2.3",
-    "bigint-buffer": "npm:@trufflesuite/bigint-buffer@1.1.10"
+    "tmp": "^0.2.3"
   },
   "packageManager": "yarn@1.22.22"
 }
