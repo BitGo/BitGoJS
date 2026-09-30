@@ -198,6 +198,36 @@ describe('Sol Transaction', () => {
     });
   });
 
+  describe('addFeePayerSignature should', () => {
+    it('fill the signature slot of the fee payer (account 0) of a legacy transaction', () => {
+      const tx = new Transaction(coin);
+      tx.fromRawTransaction(testData.RAW_TX_UNSIGNED);
+
+      // accountWithSeed is the fee payer of RAW_TX_UNSIGNED; take its real signature from the signed fixture
+      const signed = SolTransaction.from(Buffer.from(testData.RAW_TX_SIGNED, 'base64'));
+      const feePayerSignature = signed.signatures[0].signature as Buffer;
+      should.exist(feePayerSignature);
+
+      tx.addFeePayerSignature({ pub: testData.accountWithSeed.publicKey }, feePayerSignature);
+      should.equal(tx.toBroadcastFormat(), testData.RAW_TX_SIGNED);
+    });
+
+    it('fail for a key that is not account 0', () => {
+      const tx = new Transaction(coin);
+      tx.fromRawTransaction(testData.RAW_TX_UNSIGNED);
+      should(() => tx.addFeePayerSignature({ pub: testData.authAccount.pub }, Buffer.alloc(64))).throwError(
+        /account 0 of the message/
+      );
+    });
+
+    it('fail on an unbuilt transaction', () => {
+      const tx = new Transaction(coin);
+      should(() => tx.addFeePayerSignature({ pub: testData.authAccount.pub }, Buffer.alloc(64))).throwError(
+        'Fee payer signature requires a built transaction'
+      );
+    });
+  });
+
   describe('transaction parsing', function () {
     it('fromRawTransaction and toBroadcastFormat', async function () {
       const tx = new Transaction(coin);

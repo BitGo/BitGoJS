@@ -40,6 +40,8 @@ import { instructionParamsFactory } from './instructionParamsFactory';
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
   private _signatures: Signature[] = [];
+  /** Signature added via addFeePayerSignature(); must belong to account 0 (the fee payer) */
+  private _feePayerSignature?: Signature;
   private _lamportsPerSignature: number;
   private _tokenAccountRentExemptAmount: string;
 
@@ -201,6 +203,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       tx.partialSign({ publicKey, secretKey });
     }
 
+    this.assertFeePayerSignatureIsAccount0(tx.feePayer?.toBase58());
+
     for (const signature of this._signatures) {
       const solPublicKey = new PublicKey(signature.publicKey.pub);
       tx.addSignature(solPublicKey, signature.signature);
@@ -231,6 +235,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       assert(secretKey instanceof Uint8Array);
       versionedTx.sign([{ publicKey, secretKey }]);
     }
+
+    this.assertFeePayerSignatureIsAccount0(versionedTx.message.staticAccountKeys[0]?.toBase58());
 
     for (const signature of this._signatures) {
       const solPublicKey = new PublicKey(signature.publicKey.pub);
@@ -315,6 +321,21 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   protected getAdditionalSignatures(): Signature[] {
     return this._signatures;
+  }
+
+  /**
+   * Add a signature produced by the fee payer of the transaction being built.
+   *
+   * The fee payer is account 0 of the transaction message, so its signature belongs in slot 0.
+   * Use this for signatures produced by the enterprise fee address key (HSM single-sig) of a
+   * sponsored transaction; the key must match account 0.
+   *
+   * @param {BasePublicKey} publicKey The public key of the fee payer; must be account 0 of the message
+   * @param {Buffer} signature The signature of the transaction payload
+   */
+  addFeePayerSignature(publicKey: BasePublicKey, signature: Buffer): void {
+    this._signatures.push({ publicKey, signature });
+    this._feePayerSignature = { publicKey, signature };
   }
 
   /**
@@ -468,6 +489,19 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         throw new SigningError('Duplicated signer: ' + key.key);
       }
     });
+  }
+
+  /**
+   * Validates that a signature added via addFeePayerSignature() belongs to account 0 of the
+   * message being built: the fee payer of a legacy transaction or the first static account
+   * key of a versioned transaction.
+   *
+   * @param {string} account0 the account 0 key of the message being built
+   */
+  private assertFeePayerSignatureIsAccount0(account0: string | undefined): void {
+    if (this._feePayerSignature && this._feePayerSignature.publicKey.pub !== account0) {
+      throw new BuildTransactionError('fee payer signature key is not account 0');
+    }
   }
 
   /**

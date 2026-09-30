@@ -3,11 +3,13 @@ import * as bs58 from 'bs58';
 
 import { SolStakingTypeEnum } from '@bitgo/public-types';
 import { getBuilderFactory } from '../getBuilderFactory';
-import { KeyPair, TokenTransferBuilder } from '../../../src';
+import { KeyPair, TokenTransferBuilder, Transaction } from '../../../src';
 import { Eddsa, TransactionType } from '@bitgo/sdk-core';
 import * as testData from '../../resources/sol';
 import BigNumber from 'bignumber.js';
 import { Ed25519Bip32HdTree } from '@bitgo/sdk-lib-mpc';
+
+const { VersionedTransaction } = require('@solana/web3.js');
 
 describe('Sol Transaction Builder', async () => {
   let builders;
@@ -523,6 +525,113 @@ describe('Sol Transaction Builder', async () => {
         rebuiltTransaction.id.should.equal(signedTransaction.id);
         rebuiltTransaction.signature.should.deepEqual(signedTransaction.signature);
       }
+    });
+  });
+
+  describe('add fee payer signature', () => {
+    const feePayerKeyPair = new KeyPair(testData.feePayerAccount);
+    const feePayer = feePayerKeyPair.getKeys();
+
+    const buildLegacyTransfer = (durableNonce = false) =>
+      factory
+        .getTransferBuilder()
+        .sender(authAccount.pub)
+        .feePayer(feePayer.pub)
+        .nonce(
+          validBlockhash,
+          durableNonce ? { walletNonceAddress: nonceAccount.pub, authWalletAddress: feePayer.pub } : undefined
+        )
+        .fee({ amount: 5000 })
+        .send({ address: nonceAccount.pub, amount: '1000' });
+
+    it('should place the fee payer signature in slot 0 of a legacy transaction', async () => {
+      const unsignedTx = await buildLegacyTransfer().build();
+      const senderSignature = Buffer.from(new KeyPair(testData.authAccount).signMessage(unsignedTx.signablePayload));
+      const feePayerSignature = Buffer.from(feePayerKeyPair.signMessage(unsignedTx.signablePayload));
+
+      const txBuilder = buildLegacyTransfer();
+      txBuilder.addSignature({ pub: authAccount.pub }, senderSignature);
+      txBuilder.addFeePayerSignature({ pub: feePayer.pub }, feePayerSignature);
+      const tx = (await txBuilder.build()) as Transaction;
+
+      // the fee payer is account 0 of the message, so its signature lands in slot 0
+      tx.solTransaction.signatures.length.should.equal(2);
+      tx.solTransaction.signatures[0].publicKey.toBase58().should.equal(feePayer.pub);
+      should.deepEqual(tx.solTransaction.signatures[0].signature, feePayerSignature);
+      tx.solTransaction.verifySignatures().should.be.true();
+      should.exist(tx.toBroadcastFormat());
+    });
+
+    it('should produce exactly two signatures when the durable nonce authority is the fee payer', async () => {
+      const unsignedTx = await buildLegacyTransfer(true).build();
+      const senderSignature = Buffer.from(new KeyPair(testData.authAccount).signMessage(unsignedTx.signablePayload));
+      const feePayerSignature = Buffer.from(feePayerKeyPair.signMessage(unsignedTx.signablePayload));
+
+      const txBuilder = buildLegacyTransfer(true);
+      txBuilder.addSignature({ pub: authAccount.pub }, senderSignature);
+      txBuilder.addFeePayerSignature({ pub: feePayer.pub }, feePayerSignature);
+      const tx = (await txBuilder.build()) as Transaction;
+
+      // the fee payer (account 0, also the nonce authority) and the sender are the only signers
+      tx.solTransaction.signatures.length.should.equal(2);
+      tx.solTransaction.signatures[0].publicKey.toBase58().should.equal(feePayer.pub);
+      tx.solTransaction.signatures[1].publicKey.toBase58().should.equal(authAccount.pub);
+      tx.solTransaction.verifySignatures().should.be.true();
+      should.exist(tx.toBroadcastFormat());
+    });
+
+    it('should place the fee payer signature in slot 0 of a versioned transaction', async () => {
+      const original = VersionedTransaction.deserialize(Buffer.from(testData.JUPITER_VERSIONED_TX_BYTES, 'base64'));
+      const versionedTransactionData = {
+        staticAccountKeys: original.message.staticAccountKeys.map((key) => key.toBase58()),
+        versionedInstructions: original.message.compiledInstructions.map((ix) => ({
+          programIdIndex: ix.programIdIndex,
+          accountKeyIndexes: ix.accountKeyIndexes,
+          data: bs58.encode(ix.data),
+        })),
+        addressLookupTables:
+          original.message.addressTableLookups?.map((lookup) => ({
+            accountKey: lookup.accountKey.toBase58(),
+            writableIndexes: lookup.writableIndexes,
+            readonlyIndexes: lookup.readonlyIndexes,
+          })) || [],
+        messageHeader: original.message.header,
+        recentBlockhash: original.message.recentBlockhash,
+      };
+      // account 0 of a versioned transaction is the fee payer
+      versionedTransactionData.staticAccountKeys[0] = feePayer.pub;
+
+      const unsignedTxBuilder = factory.getCustomInstructionBuilder();
+      unsignedTxBuilder.fromVersionedTransactionData(versionedTransactionData);
+      unsignedTxBuilder.sender(feePayer.pub);
+      unsignedTxBuilder.nonce(testData.blockHashes.validBlockHashes[0]);
+      const unsignedTx = await unsignedTxBuilder.build();
+      const feePayerSignature = Buffer.from(feePayerKeyPair.signMessage(unsignedTx.signablePayload));
+
+      const txBuilder = factory.getCustomInstructionBuilder();
+      txBuilder.fromVersionedTransactionData(versionedTransactionData);
+      txBuilder.sender(feePayer.pub);
+      txBuilder.nonce(testData.blockHashes.validBlockHashes[0]);
+      txBuilder.addFeePayerSignature({ pub: feePayer.pub }, feePayerSignature);
+      const tx = (await txBuilder.build()) as Transaction;
+
+      tx.isVersionedTransaction().should.be.true();
+      const rawTx = tx.toBroadcastFormat() as string;
+      should.exist(rawTx);
+      const signed = VersionedTransaction.deserialize(Buffer.from(rawTx, 'base64'));
+      signed.message.staticAccountKeys[0].toBase58().should.equal(feePayer.pub);
+      Buffer.from(signed.signatures[0]).toString('hex').should.equal(feePayerSignature.toString('hex'));
+    });
+
+    it('should reject a fee payer signature whose key is not account 0', async () => {
+      const unsignedTx = await buildLegacyTransfer().build();
+      const senderSignature = Buffer.from(new KeyPair(testData.authAccount).signMessage(unsignedTx.signablePayload));
+
+      const txBuilder = buildLegacyTransfer();
+      txBuilder.addSignature({ pub: authAccount.pub }, senderSignature);
+      // authAccount is the sender (account 1), not the fee payer (account 0)
+      txBuilder.addFeePayerSignature({ pub: authAccount.pub }, senderSignature);
+      await txBuilder.build().should.be.rejectedWith('fee payer signature key is not account 0');
     });
   });
 });
