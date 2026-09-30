@@ -844,6 +844,16 @@ export const allCoinsAndTokens = [
     STX_FEATURES
   ),
   account(
+    'ec52d215-34c0-4aca-b49b-2eeaab8f9615',
+    'tstxsignet',
+    'Testnet Stacks (Signet)',
+    Networks.test.stxSignet,
+    6,
+    UnderlyingAsset.STX,
+    BaseUnit.STX,
+    STX_FEATURES
+  ),
+  account(
     '92185a03-356f-4b75-9213-af1c92fe5393',
     'sol',
     'Solana',
@@ -7883,6 +7893,15 @@ export const allCoinsAndTokens = [
     '0x94b008aa00579c1307b0ef2c499ad98a8ce58e58',
     UnderlyingAsset['opeth:usdt'],
     [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  opethErc20(
+    '7ae22984-b3cc-4bdc-978f-68ebbec1dec9',
+    'opeth:usdt0',
+    'USDT0',
+    6,
+    '0x01bff41798a0bcf287b996046ca68b395dbc1071',
+    UnderlyingAsset['opeth:usdt0'],
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.STABLECOIN]
   ),
   opethErc20(
     '949c4e1f-83b8-4ca0-a6dc-72817a8a86e7',

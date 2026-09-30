@@ -115,7 +115,8 @@ export class Polyx extends SubstrateCoin {
 
   protected async getHeaderInfo(): Promise<{ headerNumber: number; headerHash: string }> {
     const api = await this.getInitializedNodeAPI();
-    const { number, hash } = await api.rpc.chain.getHeader();
+    const finalizedHash = await api.rpc.chain.getFinalizedHead();
+    const { number, hash } = await api.rpc.chain.getHeader(finalizedHash);
     return { headerNumber: number.toNumber(), headerHash: hash.toString() };
   }
 

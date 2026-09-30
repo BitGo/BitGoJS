@@ -1,5 +1,6 @@
 export { AddressVersion, AddressHashMode } from '@stacks/transactions';
 export * from './keyPair';
+export * from './network';
 export * from './transaction';
 export * from './transactionBuilderFactory';
 export * from './sbtcWithdrawBuilder';

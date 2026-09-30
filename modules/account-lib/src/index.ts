@@ -249,6 +249,7 @@ const coinBuilderMap = {
   tcspr: Cspr.TransactionBuilderFactory,
   stx: Stx.TransactionBuilderFactory,
   tstx: Stx.TransactionBuilderFactory,
+  tstxsignet: Stx.TransactionBuilderFactory,
   algo: Algo.TransactionBuilderFactory,
   talgo: Algo.TransactionBuilderFactory,
   sol: Sol.TransactionBuilderFactory,

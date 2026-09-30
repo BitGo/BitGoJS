@@ -91,6 +91,11 @@ interface EnvironmentTemplate {
   soneiumExplorerBaseUrl?: string;
   soneiumExplorerApiToken?: string;
   stxNodeUrl: string;
+  /**
+   * Stacks staking-testnet RPC (chain ID 1280 on a private Bitcoin signet). Only testnet-derived
+   * environments configure it; the tstxsignet coin is unusable in environments without it.
+   */
+  stxSignetNodeUrl?: string;
   vetNodeUrl: string;
   // The key here is coinName and it will be same for both mainnet and testnet (eg: 'phrs')
   evm?: {
@@ -619,6 +624,7 @@ const testnetBase: EnvironmentTemplate = {
     },
   },
   stxNodeUrl: 'https://api.testnet.hiro.so',
+  stxSignetNodeUrl: 'https://api.staking-testnet.hiro.so',
   vetNodeUrl: 'https://sync-testnet.vechain.org',
   xtzExplorerBaseUrl: 'https://api.ghostnet.tzkt.io',
   xtzRpcUrl: 'https://rpc.tzkt.io/ghostnet',

@@ -207,6 +207,7 @@ import {
   Tsol,
   Tsoneium,
   Tstx,
+  Tstxsignet,
   Tstt,
   Tsui,
   Tsusd,
@@ -390,6 +391,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('tsoneium', Tsoneium.createInstance);
   coinFactory.register('tstarknet', Starknet.createInstance);
   coinFactory.register('tstx', Tstx.createInstance);
+  coinFactory.register('tstxsignet', Tstxsignet.createInstance);
   coinFactory.register('tstt', Tstt.createInstance);
   coinFactory.register('tsui', Tsui.createInstance);
   coinFactory.register('tsusd', Tsusd.createInstance);
@@ -972,6 +974,8 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return Starknet.createInstance;
     case 'tstx':
       return Tstx.createInstance;
+    case 'tstxsignet':
+      return Tstxsignet.createInstance;
     case 'tstt':
       return Tstt.createInstance;
     case 'tsui':
@@ -1184,6 +1188,7 @@ export function getTokenConstructor(
     }
     case 'stx':
     case 'tstx':
+    case 'tstxsignet':
       return Sip10Token.createTokenConstructor(tokenConfig as Sip10TokenConfig);
     case 'near':
     case 'tnear':

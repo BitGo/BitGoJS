@@ -12,6 +12,7 @@ import {
   MPCAlgorithm,
   MPCConsolidationRecoveryOptions,
   MPCRecoveryOptions,
+  MPCSweepRecoveryOptions,
   MPCSweepTxs,
   MPCTx,
   MPCTxs,
@@ -53,6 +54,7 @@ import {
   MAX_GAS_OBJECTS,
   MAX_OBJECT_LIMIT,
 } from './lib/constants';
+import nacl from 'tweetnacl';
 
 export interface IotaRecoveryOptions extends MPCRecoveryOptions {
   fullnodeRpcUrl?: string; // Override default RPC URL
@@ -1168,5 +1170,79 @@ export class Iota extends BaseCoin {
     } catch (err) {
       throw new Error(`Failed to rebuild transaction: ${err.toString()}`);
     }
+  }
+
+  /** @inheritDoc */
+  async createBroadcastableSweepTransaction(params: MPCSweepRecoveryOptions): Promise<MPCTxs> {
+    const req = params.signatureShares;
+    const broadcastableTransactions: MPCTx[] = [];
+    let lastScanIndex = 0;
+
+    for (let i = 0; i < req.length; i++) {
+      const MPC = await EDDSAMethods.getInitializedMpcInstance();
+      const transaction = req[i].txRequest.transactions[0].unsignedTx;
+      const ovc = req[i].ovc?.[0];
+      const mpcv2SignatureHex = ovc?.eddsaMpcv2Signature;
+      if (!ovc || (!mpcv2SignatureHex && !ovc.eddsaSignature)) {
+        throw new Error('Missing signature(s)');
+      }
+      if (!transaction.signableHex) {
+        throw new Error('Missing signable hex');
+      }
+      const messageBuffer = Buffer.from(transaction.signableHex!, 'hex');
+      if (!transaction.coinSpecific?.commonKeychain) {
+        throw new Error('Missing common keychain');
+      }
+      const commonKeychain = transaction.coinSpecific!.commonKeychain! as string;
+      if (!transaction.derivationPath) {
+        throw new Error('Missing derivation path');
+      }
+      const derivationPath = transaction.derivationPath as string;
+      const derivedPublicKey = MPC.deriveUnhardened(commonKeychain, derivationPath).slice(0, 64);
+
+      let signatureHex: Buffer;
+      if (mpcv2SignatureHex) {
+        // MPCv2 (OVC 5-pass): raw 64-byte Ed25519 signature. Verify against the
+        // same derived public key the transaction is signed under, then embed as-is.
+        const signature = Buffer.from(mpcv2SignatureHex, 'hex');
+        const isValid = nacl.sign.detached.verify(
+          new Uint8Array(messageBuffer),
+          new Uint8Array(signature),
+          new Uint8Array(Buffer.from(derivedPublicKey, 'hex'))
+        );
+        if (!isValid) {
+          throw new Error('Invalid signature');
+        }
+        signatureHex = signature;
+      } else {
+        const result = MPC.verify(messageBuffer, ovc.eddsaSignature);
+        if (!result) {
+          throw new Error('Invalid signature');
+        }
+        signatureHex = Buffer.concat([
+          Buffer.from(ovc.eddsaSignature.R, 'hex'),
+          Buffer.from(ovc.eddsaSignature.sigma, 'hex'),
+        ]);
+      }
+
+      const txBuilder = this.getTxBuilderFactory().from(transaction.serializedTx);
+      txBuilder.addSignature({ pub: derivedPublicKey }, signatureHex);
+      const signedTransaction = (await txBuilder.build()) as TransferTransaction;
+      const serializedTx = await signedTransaction.toBroadcastFormat();
+      const outputAmount = signedTransaction.explainTransaction().outputAmount;
+
+      broadcastableTransactions.push({
+        serializedTx: serializedTx,
+        scanIndex: transaction.scanIndex,
+        signature: signedTransaction.serializedSignature!,
+        recoveryAmount: outputAmount.toString(),
+      });
+
+      if (i === req.length - 1 && transaction.coinSpecific!.lastScanIndex) {
+        lastScanIndex = transaction.coinSpecific!.lastScanIndex as number;
+      }
+    }
+
+    return { transactions: broadcastableTransactions, lastScanIndex };
   }
 }

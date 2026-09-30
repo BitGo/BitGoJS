@@ -7,6 +7,7 @@ import {
   Networks,
   NetworkType,
   PolyxNetwork,
+  StacksNetwork,
 } from '../../src/networks';
 
 Object.entries(Networks).forEach(([category, networks]) => {
@@ -194,5 +195,28 @@ describe('DynamicNetwork and getNetwork', function () {
 
     // Unknown name throws
     (() => getNetwork('NonExistentNetworkXYZ')).should.throw('Network NonExistentNetworkXYZ not found');
+  });
+});
+
+describe('StxSignet network (Stacks staking-testnet)', function () {
+  it('declares chain ID 1280 and testnet transaction version', function () {
+    const network = Networks.test.stxSignet as StacksNetwork;
+    network.should.have.property('chainId', 1280);
+    network.should.have.property('transactionVersion', 0x80);
+  });
+
+  it('has the pox-5 boot and sBTC deployer contract addresses', function () {
+    const network = Networks.test.stxSignet as StacksNetwork;
+    network.stakingContractAddress.should.equal('ST000000000000000000002AMW42H');
+    network.sbtcWithdrawalContractAddress.should.equal('SN3R84XZYA63QS28932XQF3G1J8R9PC3W76P9CSQS');
+  });
+
+  it('keeps the stock stx networks free of a declared chain identity', function () {
+    // stx/tstx transactions must stay byte-identical, so their networks must not declare a
+    // chainId/transactionVersion that would override the stock @stacks/network values.
+    (Networks.main.stx as StacksNetwork).should.not.have.property('chainId');
+    (Networks.main.stx as StacksNetwork).should.not.have.property('transactionVersion');
+    (Networks.test.stx as StacksNetwork).should.not.have.property('chainId');
+    (Networks.test.stx as StacksNetwork).should.not.have.property('transactionVersion');
   });
 });

@@ -151,6 +151,24 @@ export class Utils implements BaseUtils {
       return undefined;
     };
 
+    /** Unwraps a Daml optional (or bare) party value to the party string. */
+    const getPartyFromOptional = (fields: RecordField[], label: string): string | undefined => {
+      const sum = getField(fields, label);
+      if (sum?.oneofKind === 'party') return sum.party ?? '';
+      if (sum?.oneofKind === 'optional') {
+        const inner = sum.optional.value?.sum;
+        if (inner?.oneofKind === 'party') return inner.party ?? '';
+      }
+      return undefined;
+    };
+
+    /** Reads a Daml enum constructor name (e.g. AllocationV2 TransferSide SenderSide/ReceiverSide). */
+    const getEnumConstructor = (fields: RecordField[], label: string): string | undefined => {
+      const sum = getField(fields, label);
+      if (sum?.oneofKind === 'enum') return sum.enum.constructor ?? '';
+      return undefined;
+    };
+
     /**
      * Extracts sender, receiver, amount, and instrument fields from a transfer record.
      * Canton coin transfers and cbtc use instrumentId.admin; regular token transfers use instrumentIdentifier.source.
@@ -333,6 +351,52 @@ export class Utils implements BaseUtils {
       }
 
       case TransactionType.AllocationAllocate: {
+        // V2 (allocation-instruction-v2): AllocationV2 create node
+        // → allocation.{authorizer.owner, admin, transferLegSides[].{side, otherside.owner, amount, instrumentId}}.
+        // The authorizer is the allocating party; its outgoing leg (side=SenderSide) carries the
+        // settlement counterparty (receiver) and amount. A receiver-only allocation has no
+        // SenderSide leg — the authorizer receives, so sender/receiver flip to the otherside of
+        // its (first) ReceiverSide leg. The first matching leg wins for multi-leg allocations.
+        const allocationV2Fields = findCreateNodeFields('AllocationV2');
+        if (allocationV2Fields) {
+          const allocationField = getField(allocationV2Fields, 'allocation');
+          if (allocationField?.oneofKind === 'record') {
+            const allocationRecord = allocationField.record?.fields ?? [];
+            const authorizer = getField(allocationRecord, 'authorizer');
+            const authorizerOwner =
+              authorizer?.oneofKind === 'record'
+                ? getPartyFromOptional(authorizer.record?.fields ?? [], 'owner')
+                : undefined;
+            const adminData = getField(allocationRecord, 'admin');
+            if (adminData?.oneofKind === 'party') instrumentAdmin = adminData.party ?? '';
+            const legsData = getField(allocationRecord, 'transferLegSides');
+            if (legsData?.oneofKind === 'list') {
+              const legRecords = (legsData.list?.elements ?? [])
+                .map((leg) => (leg.sum.oneofKind === 'record' ? leg.sum.record.fields : undefined))
+                .filter((fields): fields is RecordField[] => fields !== undefined);
+              const senderLeg = legRecords.find((leg) => getEnumConstructor(leg, 'side') === 'SenderSide');
+              const leg = senderLeg ?? legRecords.find((leg) => getEnumConstructor(leg, 'side') === 'ReceiverSide');
+              if (leg) {
+                const legOtherside = getField(leg, 'otherside');
+                const othersideOwner =
+                  legOtherside?.oneofKind === 'record'
+                    ? getPartyFromOptional(legOtherside.record?.fields ?? [], 'owner')
+                    : undefined;
+                const legAmount = getField(leg, 'amount');
+                const legInstrumentId = getField(leg, 'instrumentId');
+                if (senderLeg) {
+                  sender = authorizerOwner ?? '';
+                  receiver = othersideOwner ?? '';
+                } else {
+                  sender = othersideOwner ?? '';
+                  receiver = authorizerOwner ?? '';
+                }
+                if (legAmount?.oneofKind === 'numeric') amount = legAmount.numeric ?? '';
+                if (legInstrumentId?.oneofKind === 'text') instrumentId = legInstrumentId.text ?? '';
+              }
+            }
+          }
+        }
         // DvpLegAllocation create node → allocation.transferLeg contains the full settlement transfer details:
         // sender, receiver (the actual settlement counterparty), amount, and instrumentId
         const dvpFields = findCreateNodeFields('DvpLegAllocation');
