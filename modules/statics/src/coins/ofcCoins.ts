@@ -1664,70 +1664,54 @@ export const ofcCoins = [
     ...SOL_TOKEN_FEATURES,
     CoinFeature.STABLECOIN,
   ]),
-  ofcsolToken(
-    'b53025fd-20e7-4a61-8893-2f26ed2daa7b',
-    'ofcsol:gospcx',
-    'SPCX goStock',
-    9,
-    UnderlyingAsset['sol:gospcx'],
-    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
-  ),
-  ofcsolToken(
-    '6c0272a3-e333-4d78-9dd8-0745a0668f9b',
-    'ofcsol:goamzn',
-    'AMZN goStock',
-    9,
-    UnderlyingAsset['sol:goamzn'],
-    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
-  ),
-  ofcsolToken(
-    '352824c8-bcfc-4f7e-9142-59db2cfeb85d',
-    'ofcsol:gobtgo',
-    'BTGO goStock',
-    9,
-    UnderlyingAsset['sol:gobtgo'],
-    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
-  ),
-  ofcsolToken(
-    'b4f4081e-e348-4a59-9a94-e404839afc46',
-    'ofcsol:gogoogl',
-    'GOOGL goStock',
-    9,
-    UnderlyingAsset['sol:gogoogl'],
-    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
-  ),
-  ofcsolToken(
-    'd18af603-8f9a-47b5-9e75-3f0f4cf08938',
-    'ofcsol:gometa',
-    'META goStock',
-    9,
-    UnderlyingAsset['sol:gometa'],
-    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
-  ),
-  ofcsolToken(
-    '84480a34-3c35-4b46-a6f1-004b94df8c0c',
-    'ofcsol:gomsft',
-    'MSFT goStock',
-    9,
-    UnderlyingAsset['sol:gomsft'],
-    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
-  ),
-  ofcsolToken(
-    '7b1df915-0c88-4309-b644-c57555d0d0d9',
-    'ofcsol:gonvda',
-    'NVDA goStock',
-    9,
-    UnderlyingAsset['sol:gonvda'],
-    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
-  ),
-  ofcsolToken(
-    '08a32cc3-6396-4eec-9523-d232d1e885db',
-    'ofcsol:gotsla',
-    'TSLA goStock',
-    9,
-    UnderlyingAsset['sol:gotsla'],
-    [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
-  ),
+  ofcsolToken('b53025fd-20e7-4a61-8893-2f26ed2daa7b', 'ofcsol:gospcx', 'SpaceX', 9, UnderlyingAsset['sol:gospcx'], [
+    ...SOL_TOKEN_FEATURES,
+    CoinFeature.STABLECOIN,
+    CoinFeature.TOKENIZED_EQUITY,
+    CoinFeature.BITGO_TOKENIZED_EQUITY,
+  ]),
+  ofcsolToken('6c0272a3-e333-4d78-9dd8-0745a0668f9b', 'ofcsol:goamzn', 'Amazon', 9, UnderlyingAsset['sol:goamzn'], [
+    ...SOL_TOKEN_FEATURES,
+    CoinFeature.STABLECOIN,
+    CoinFeature.TOKENIZED_EQUITY,
+    CoinFeature.BITGO_TOKENIZED_EQUITY,
+  ]),
+  ofcsolToken('352824c8-bcfc-4f7e-9142-59db2cfeb85d', 'ofcsol:gobtgo', 'BitGo', 9, UnderlyingAsset['sol:gobtgo'], [
+    ...SOL_TOKEN_FEATURES,
+    CoinFeature.STABLECOIN,
+    CoinFeature.TOKENIZED_EQUITY,
+    CoinFeature.BITGO_TOKENIZED_EQUITY,
+  ]),
+  ofcsolToken('b4f4081e-e348-4a59-9a94-e404839afc46', 'ofcsol:gogoogl', 'Alphabet', 9, UnderlyingAsset['sol:gogoogl'], [
+    ...SOL_TOKEN_FEATURES,
+    CoinFeature.STABLECOIN,
+    CoinFeature.TOKENIZED_EQUITY,
+    CoinFeature.BITGO_TOKENIZED_EQUITY,
+  ]),
+  ofcsolToken('d18af603-8f9a-47b5-9e75-3f0f4cf08938', 'ofcsol:gometa', 'Meta', 9, UnderlyingAsset['sol:gometa'], [
+    ...SOL_TOKEN_FEATURES,
+    CoinFeature.STABLECOIN,
+    CoinFeature.TOKENIZED_EQUITY,
+    CoinFeature.BITGO_TOKENIZED_EQUITY,
+  ]),
+  ofcsolToken('84480a34-3c35-4b46-a6f1-004b94df8c0c', 'ofcsol:gomsft', 'Microsoft', 9, UnderlyingAsset['sol:gomsft'], [
+    ...SOL_TOKEN_FEATURES,
+    CoinFeature.STABLECOIN,
+    CoinFeature.TOKENIZED_EQUITY,
+    CoinFeature.BITGO_TOKENIZED_EQUITY,
+  ]),
+  ofcsolToken('7b1df915-0c88-4309-b644-c57555d0d0d9', 'ofcsol:gonvda', 'NVIDIA', 9, UnderlyingAsset['sol:gonvda'], [
+    ...SOL_TOKEN_FEATURES,
+    CoinFeature.STABLECOIN,
+    CoinFeature.TOKENIZED_EQUITY,
+    CoinFeature.BITGO_TOKENIZED_EQUITY,
+  ]),
+  ofcsolToken('08a32cc3-6396-4eec-9523-d232d1e885db', 'ofcsol:gotsla', 'Tesla', 9, UnderlyingAsset['sol:gotsla'], [
+    ...SOL_TOKEN_FEATURES,
+    CoinFeature.STABLECOIN,
+    CoinFeature.TOKENIZED_EQUITY,
+    CoinFeature.BITGO_TOKENIZED_EQUITY,
+  ]),
   ofcsolToken(
     'e343b3c2-dcbb-4a9f-a60e-3dd79825c5fb',
     'ofcsol:rksol',
@@ -2113,7 +2097,7 @@ export const ofcCoins = [
   tofcsolToken(
     '3441411c-d379-4f61-9630-1e8de117717a',
     'ofctsol:stggospcx',
-    'Test SPCX goStock',
+    'Test SpaceX',
     9,
     UnderlyingAsset['tsol:stggospcx'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
@@ -2121,7 +2105,7 @@ export const ofcCoins = [
   tofcsolToken(
     '84f901ed-5654-47a7-9d08-7ff7c27a8c16',
     'ofctsol:gospcx',
-    'Test SPCX goStock',
+    'Test SpaceX',
     9,
     UnderlyingAsset['tsol:gospcx'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
@@ -2137,7 +2121,7 @@ export const ofcCoins = [
   tofcsolToken(
     'a42e9d17-540e-4a0d-9dd1-ce9d997517bb',
     'ofctsol:goamzn',
-    'Test AMZN goStock',
+    'Test Amazon',
     9,
     UnderlyingAsset['tsol:goamzn'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
@@ -2145,7 +2129,7 @@ export const ofcCoins = [
   tofcsolToken(
     'effad595-0090-4a84-9544-4bff06bc092d',
     'ofctsol:stggoamzn',
-    'Test AMZN goStock',
+    'Test Amazon',
     9,
     UnderlyingAsset['tsol:stggoamzn'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
@@ -2153,7 +2137,7 @@ export const ofcCoins = [
   tofcsolToken(
     'b2099aec-7f32-4eb9-b186-cdf9bf975b94',
     'ofctsol:gobtgo',
-    'Test BTGO goStock',
+    'Test BitGo',
     9,
     UnderlyingAsset['tsol:gobtgo'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
@@ -2161,7 +2145,7 @@ export const ofcCoins = [
   tofcsolToken(
     '5203ca5e-bb04-4b4d-83ab-58199eb4d2e6',
     'ofctsol:stggobtgo',
-    'Test BTGO goStock',
+    'Test BitGo',
     9,
     UnderlyingAsset['tsol:stggobtgo'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
@@ -2169,7 +2153,7 @@ export const ofcCoins = [
   tofcsolToken(
     '1d9f63e3-0566-4bb6-9c8d-47c4b2e8407f',
     'ofctsol:gogoogl',
-    'Test GOOGL goStock',
+    'Test Alphabet',
     9,
     UnderlyingAsset['tsol:gogoogl'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
@@ -2177,7 +2161,7 @@ export const ofcCoins = [
   tofcsolToken(
     '1c12f9fe-9335-46b2-be74-4138fbf33dd8',
     'ofctsol:stggogoogl',
-    'Test GOOGL goStock',
+    'Test Alphabet',
     9,
     UnderlyingAsset['tsol:stggogoogl'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
@@ -2185,7 +2169,7 @@ export const ofcCoins = [
   tofcsolToken(
     'af204f6b-0119-4211-832a-8939717e0d73',
     'ofctsol:gometa',
-    'Test META goStock',
+    'Test Meta',
     9,
     UnderlyingAsset['tsol:gometa'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
@@ -2193,7 +2177,7 @@ export const ofcCoins = [
   tofcsolToken(
     '1a3a65bd-636f-45c8-abae-c74c62ad897b',
     'ofctsol:stggometa',
-    'Test META goStock',
+    'Test Meta',
     9,
     UnderlyingAsset['tsol:stggometa'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
@@ -2201,7 +2185,7 @@ export const ofcCoins = [
   tofcsolToken(
     '72ce0fb6-0abf-471b-9486-d204810749b8',
     'ofctsol:gomsft',
-    'Test MSFT goStock',
+    'Test Microsoft',
     9,
     UnderlyingAsset['tsol:gomsft'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
@@ -2209,7 +2193,7 @@ export const ofcCoins = [
   tofcsolToken(
     '113a4d06-c3f7-4682-ac6f-a8d5472c4632',
     'ofctsol:stggomsft',
-    'Test MSFT goStock',
+    'Test Microsoft',
     9,
     UnderlyingAsset['tsol:stggomsft'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
@@ -2217,7 +2201,7 @@ export const ofcCoins = [
   tofcsolToken(
     '36a98152-0068-4cc9-ac99-cc339bd88807',
     'ofctsol:gonvda',
-    'Test NVDA goStock',
+    'Test NVIDIA',
     9,
     UnderlyingAsset['tsol:gonvda'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
@@ -2225,7 +2209,7 @@ export const ofcCoins = [
   tofcsolToken(
     '21201768-d166-4503-96c4-5c3dc2e6d828',
     'ofctsol:stggonvda',
-    'Test NVDA goStock',
+    'Test NVIDIA',
     9,
     UnderlyingAsset['tsol:stggonvda'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
@@ -2233,7 +2217,7 @@ export const ofcCoins = [
   tofcsolToken(
     '164824db-1c7b-4540-873e-7be82de25203',
     'ofctsol:gotsla',
-    'Test TSLA goStock',
+    'Test Tesla',
     9,
     UnderlyingAsset['tsol:gotsla'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
@@ -2241,7 +2225,7 @@ export const ofcCoins = [
   tofcsolToken(
     '3737ab0f-d759-49e9-9dce-2e10372e1c16',
     'ofctsol:stggotsla',
-    'Test TSLA goStock',
+    'Test Tesla',
     9,
     UnderlyingAsset['tsol:stggotsla'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
