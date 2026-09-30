@@ -1,8 +1,9 @@
 import assert from 'assert';
-import { ClarityType, createAddress, cvToString, cvToValue } from '@stacks/transactions';
+import { ClarityType, ContractCallPayload, createAddress, cvToString, cvToValue } from '@stacks/transactions';
 import { coins } from '@bitgo/statics';
 import should from 'should';
 
+import { BaseTransaction } from '@bitgo/sdk-core';
 import { StxLib } from '../../../src';
 import * as testData from '../resources';
 
@@ -257,5 +258,212 @@ describe('Stacks: PoX-5 Builder', function () {
         }),
       /more than 14 merkle siblings/
     );
+  });
+
+  describe('PoX-5 Builder on tstxsignet', function () {
+    // Stacks Foundation staking-testnet: chain ID 1280 (0x00000500) with the 0x80 testnet tx version
+    const signetFactory = new StxLib.TransactionBuilderFactory(coins.get('tstxsignet'));
+    const TSTXSIGNET_TX_PREFIX = '8000000500';
+    const POX5_BOOT_ADDRESS = 'ST000000000000000000002AMW42H';
+
+    function configure(builder: StxLib.Pox5Builder): StxLib.Pox5Builder {
+      builder.fee({ fee: '180' });
+      builder.nonce(0);
+      builder.fromPubKey(testData.TX_SENDER.pub);
+      builder.numberSignatures(1);
+      return builder;
+    }
+
+    function payloadOf(tx: BaseTransaction): StxLib.StacksContractPayload {
+      return tx.toJson().payload as StxLib.StacksContractPayload;
+    }
+
+    function uintArg(cv: { type: number; value?: unknown }, expected: string): void {
+      cv.type.should.equal(ClarityType.UInt);
+      String(cv.value).should.equal(expected);
+    }
+
+    it('builds a stake transaction carrying the tstxsignet chain ID', async () => {
+      const builder = configure(signetFactory.getPox5Builder());
+      builder.stake({
+        signerManager,
+        amountUstx: '100000000',
+        numCycles: 1,
+        startBurnHt: 66849,
+      });
+
+      const tx = await builder.build();
+      tx.toBroadcastFormat().slice(0, 10).should.equal(TSTXSIGNET_TX_PREFIX);
+
+      const payload = payloadOf(tx);
+      payload.contractAddress.should.equal(POX5_BOOT_ADDRESS);
+      payload.contractName.should.equal('pox-5');
+      payload.functionName.should.equal('stake');
+      payload.functionArgs.length.should.equal(5);
+      payload.functionArgs[0].type.should.equal(ClarityType.PrincipalContract);
+      cvToString(payload.functionArgs[0]).should.equal(signerManager);
+      uintArg(payload.functionArgs[1], '100000000');
+
+      uintArg(payload.functionArgs[2], '1');
+
+      uintArg(payload.functionArgs[3], '66849');
+
+      payload.functionArgs[4].type.should.equal(ClarityType.OptionalNone);
+    });
+
+    it('builds a stake-update transaction carrying the tstxsignet chain ID', async () => {
+      const builder = configure(signetFactory.getPox5Builder());
+      builder.stakeUpdate({
+        signerManager,
+        oldSignerManager,
+        cyclesToExtend: 1,
+        amountIncrease: '50000',
+      });
+
+      const tx = await builder.build();
+      tx.toBroadcastFormat().slice(0, 10).should.equal(TSTXSIGNET_TX_PREFIX);
+
+      const payload = payloadOf(tx);
+      payload.functionName.should.equal('stake-update');
+      payload.functionArgs.length.should.equal(5);
+      cvToString(payload.functionArgs[0]).should.equal(signerManager);
+      cvToString(payload.functionArgs[1]).should.equal(oldSignerManager);
+      uintArg(payload.functionArgs[2], '1');
+      uintArg(payload.functionArgs[3], '50000');
+      payload.functionArgs[4].type.should.equal(ClarityType.OptionalNone);
+    });
+
+    it('builds an unstake transaction carrying the tstxsignet chain ID', async () => {
+      const builder = configure(signetFactory.getPox5Builder());
+      builder.unstake(oldSignerManager);
+
+      const tx = await builder.build();
+      tx.toBroadcastFormat().slice(0, 10).should.equal(TSTXSIGNET_TX_PREFIX);
+
+      const payload = payloadOf(tx);
+      payload.functionName.should.equal('unstake');
+      payload.functionArgs.length.should.equal(1);
+      cvToString(payload.functionArgs[0]).should.equal(oldSignerManager);
+    });
+
+    it('builds register-for-bond transactions (L1 lockup and sBTC) carrying the tstxsignet chain ID', async () => {
+      const btcBuilder = configure(signetFactory.getPox5Builder());
+      btcBuilder.registerForBond({
+        bondIndex: 210,
+        signerManager,
+        amountUstx: '1005000',
+        lockup: { kind: 'btc', unlockBytes: '00', outputs: [validLockupOutput()] },
+      });
+      const btcTx = await btcBuilder.build();
+      btcTx.toBroadcastFormat().slice(0, 10).should.equal(TSTXSIGNET_TX_PREFIX);
+
+      const btcPayload = payloadOf(btcTx);
+      btcPayload.functionName.should.equal('register-for-bond');
+      btcPayload.functionArgs[3].type.should.equal(ClarityType.ResponseOk);
+
+      const sbtcBuilder = configure(signetFactory.getPox5Builder());
+      sbtcBuilder.registerForBond({
+        bondIndex: 210,
+        signerManager,
+        amountUstx: '1005000',
+        lockup: { kind: 'sbtc', sbtcSats: 10000 },
+      });
+      const sbtcTx = await sbtcBuilder.build();
+      sbtcTx.toBroadcastFormat().slice(0, 10).should.equal(TSTXSIGNET_TX_PREFIX);
+
+      const sbtcPayload = payloadOf(sbtcTx);
+      sbtcPayload.functionArgs[3].type.should.equal(ClarityType.ResponseErr);
+    });
+
+    it('rebuilds every staking flow byte-identically from raw hex', async () => {
+      const stakeBuilder = configure(signetFactory.getPox5Builder());
+      stakeBuilder.stake({
+        signerManager,
+        amountUstx: '100000000',
+        numCycles: 1,
+        startBurnHt: 66849,
+      });
+      const stakeTx = await stakeBuilder.build();
+
+      const stakeRebuilt = signetFactory.from(stakeTx.toBroadcastFormat());
+      stakeRebuilt.fromPubKey(testData.TX_SENDER.pub);
+      (await stakeRebuilt.build()).toBroadcastFormat().should.equal(stakeTx.toBroadcastFormat());
+
+      const unstakeBuilder = configure(signetFactory.getPox5Builder());
+      unstakeBuilder.unstake(oldSignerManager);
+      const unstakeTx = await unstakeBuilder.build();
+
+      const unstakeRebuilt = signetFactory.from(unstakeTx.toBroadcastFormat());
+      unstakeRebuilt.fromPubKey(testData.TX_SENDER.pub);
+      (await unstakeRebuilt.build()).toBroadcastFormat().should.equal(unstakeTx.toBroadcastFormat());
+
+      const registerBuilder = configure(signetFactory.getPox5Builder());
+      registerBuilder.registerForBond({
+        bondIndex: 210,
+        signerManager,
+        amountUstx: '1005000',
+        lockup: { kind: 'sbtc', sbtcSats: 10000 },
+      });
+      const registerTx = await registerBuilder.build();
+
+      const registerRebuilt = signetFactory.from(registerTx.toBroadcastFormat());
+      registerRebuilt.fromPubKey(testData.TX_SENDER.pub);
+      (await registerRebuilt.build()).toBroadcastFormat().should.equal(registerTx.toBroadcastFormat());
+    });
+
+    it('routes parsed stake transactions to the PoX-5 builder on tstxsignet', async () => {
+      const builder = configure(signetFactory.getPox5Builder());
+      builder.stake({
+        signerManager,
+        amountUstx: '100000000',
+        numCycles: 1,
+        startBurnHt: 66849,
+      });
+      const tx = await builder.build();
+      const payload = (tx as StxLib.Transaction).stxTransaction.payload as unknown as ContractCallPayload;
+
+      builder.should.be.an.instanceOf(StxLib.Pox5Builder);
+      should.equal(StxLib.Pox5Builder.isValidContractCall(coins.get('tstxsignet'), payload), true);
+      should.equal(
+        StxLib.Pox5Builder.isValidContractCall(coins.get('tstxsignet'), {
+          ...payload,
+          contractAddress: createAddress(testData.ACCOUNT_1.address),
+        }),
+        false
+      );
+
+      const routed = signetFactory.from(tx.toBroadcastFormat());
+      routed.should.be.an.instanceOf(StxLib.Pox5Builder);
+    });
+
+    it('exposes fee, nonce and sender on the built stake transaction', async () => {
+      const builder = configure(signetFactory.getPox5Builder());
+      builder.stake({
+        signerManager,
+        amountUstx: '100000000',
+        numCycles: 1,
+        startBurnHt: 66849,
+      });
+
+      const txJson = (await builder.build()).toJson();
+      txJson.fee.should.equal('180');
+      txJson.nonce.should.equal(0);
+      txJson.id.should.match(/^[0-9a-f]{64}$/);
+      txJson.from.should.equal(testData.TX_SENDER.address);
+    });
+
+    it('rejects a signer-manager principal without the address.contract-name shape', () => {
+      const builder = configure(signetFactory.getPox5Builder());
+      assert.throws(
+        () =>
+          builder.stake({
+            signerManager: 'no-dot',
+            amountUstx: '100000000',
+            numCycles: 1,
+            startBurnHt: 66849,
+          }),
+        /address.contract-name format/
+      );
+    });
   });
 });
