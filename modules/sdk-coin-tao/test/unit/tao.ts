@@ -1,13 +1,21 @@
 import should from 'should';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { Tao, Ttao } from '../../src';
+import { Tao, Ttao, utils } from '../../src';
 import * as sinon from 'sinon';
 import * as testData from './fixtures';
 import { txVersion, genesisHash, specVersion, rawTx } from '../resources';
 import { afterEach } from 'mocha';
-import { TxIntentMismatchRecipientError } from '@bitgo/sdk-core';
-
+import {
+  EDDSAMethods,
+  MPCSweepRecoveryOptions,
+  MPCSweepTxs,
+  RecoveryTxRequest,
+  signRecoveryEddsaMPCv2,
+  TxIntentMismatchRecipientError,
+} from '@bitgo/sdk-core';
+import { coins } from '@bitgo/statics';
+import { MPSUtil } from '@bitgo/sdk-lib-mpc';
 describe('Tao:', function () {
   let bitgo: TestBitGoAPI;
   let baseCoin;
@@ -625,6 +633,129 @@ describe('Tao:', function () {
           })
           .should.be.rejectedWith('missing recipients in txParams');
       });
+    });
+  });
+
+  describe('createBroadcastableSweepTransaction (MPCv2):', () => {
+    const sandBox = sinon.createSandbox();
+    let userKeyShare: Buffer;
+    let backupKeyShare: Buffer;
+    let commonKeychain: string;
+    let mpcv2SweepTxRequest: RecoveryTxRequest;
+    let mpcv2SignatureHex: string;
+
+    before(async function () {
+      const [userDkg, backupDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+      commonKeychain = userDkg.getCommonKeychain();
+      userKeyShare = userDkg.getKeyShare();
+      backupKeyShare = backupDkg.getKeyShare();
+
+      const recoveryDestination = '5H56f31hSYGCRV3URjQHv2Cc4ZSkJNHTM8MKGtkkV6hzCqN7';
+      const mpc = await EDDSAMethods.getInitializedMpcInstance();
+      const walletAddress = baseCoin.getAddressFromPublicKey(mpc.deriveUnhardened(commonKeychain, 'm/0').slice(0, 64));
+      const accountInfoCB = sandBox.stub(Tao.prototype, 'getAccountInfo' as keyof Tao);
+      accountInfoCB.withArgs(walletAddress).resolves({ nonce: 0, freeBalance: 100007000000 });
+      const headerInfoCB = sandBox.stub(Tao.prototype, 'getHeaderInfo' as keyof Tao);
+      headerInfoCB.resolves({
+        headerNumber: testData.westendBlock.blockNumber,
+        headerHash: testData.westendBlock.hash,
+      });
+      const getFeeCB = sandBox.stub(Tao.prototype, 'getFee' as keyof Tao);
+      getFeeCB.withArgs(recoveryDestination, walletAddress, 100007000000).resolves(74401);
+      const getMaterialCB = sandBox.stub(Tao.prototype, 'getMaterial' as keyof Tao);
+      getMaterialCB.resolves(utils.getMaterial(coins.get('ttao').network.type));
+
+      // no walletPassphrase -> unsigned sweep path returns MPCSweepTxs
+      const sweep = (await baseCoin.recover({
+        bitgoKey: commonKeychain,
+        recoveryDestination,
+      })) as MPCSweepTxs;
+      sandBox.restore();
+      mpcv2SweepTxRequest = sweep.txRequests[0];
+      const unsignedTx = (
+        mpcv2SweepTxRequest.transactions[0] as unknown as {
+          unsignedTx: { signableHex: string; derivationPath: string };
+        }
+      ).unsignedTx;
+      const signature = await signRecoveryEddsaMPCv2(
+        Buffer.from(unsignedTx.signableHex, 'hex'),
+        unsignedTx.derivationPath,
+        userKeyShare,
+        backupKeyShare,
+        commonKeychain
+      );
+      mpcv2SignatureHex = signature.toString('hex');
+    });
+
+    // createBroadcastableSweepTransaction calls getMaterial() to re-encode the signed
+    // transaction; stub it with the same testnet material the sweep was built with.
+    beforeEach(function () {
+      const getMaterialCB = sandBox.stub(Tao.prototype, 'getMaterial' as keyof Tao);
+      getMaterialCB.resolves(utils.getMaterial(coins.get('ttao').network.type));
+    });
+
+    afterEach(function () {
+      sandBox.restore();
+    });
+
+    function buildParams(ovc: unknown): MPCSweepRecoveryOptions {
+      return {
+        signatureShares: [
+          {
+            txRequest: mpcv2SweepTxRequest,
+            tssVersion: '0.0.1',
+            ovc: [ovc],
+          },
+        ],
+      } as unknown as MPCSweepRecoveryOptions;
+    }
+    it('should take MPCv2 OVC output and generate a signed sweep transaction', async function () {
+      const params = buildParams({ eddsaMpcv2Signature: mpcv2SignatureHex });
+      const recoveryTxn = await baseCoin.createBroadcastableSweepTransaction(params);
+
+      recoveryTxn.transactions[0].serializedTx.should.not.equal(
+        mpcv2SweepTxRequest.transactions[0].unsignedTx.serializedTx
+      );
+      recoveryTxn.transactions[0].serializedTx.should.not.be.empty();
+      (recoveryTxn.transactions[0].scanIndex ?? 0).should.equal(0);
+      (recoveryTxn.lastScanIndex ?? 0).should.equal(0);
+    });
+
+    it('should reject a tampered MPCv2 signature', async function () {
+      const unsignedTx = (
+        mpcv2SweepTxRequest.transactions[0] as unknown as {
+          unsignedTx: { signableHex: string; derivationPath: string };
+        }
+      ).unsignedTx;
+      const tamperedMessage = Buffer.concat([Buffer.from(unsignedTx.signableHex, 'hex'), Buffer.from('00', 'hex')]);
+      const tamperedSignature = await signRecoveryEddsaMPCv2(
+        tamperedMessage,
+        unsignedTx.derivationPath,
+        userKeyShare,
+        backupKeyShare,
+        commonKeychain
+      );
+      await baseCoin
+        .createBroadcastableSweepTransaction(buildParams({ eddsaMpcv2Signature: tamperedSignature.toString('hex') }))
+        .should.be.rejectedWith('Invalid signature');
+    });
+
+    it('should throw when MPCv2 OVC is missing signature(s)', async function () {
+      await baseCoin
+        .createBroadcastableSweepTransaction(buildParams({}))
+        .should.be.rejectedWith('Missing signature(s)');
+    });
+
+    it('should route MPCv1-shaped ovc to the MPCv1 verify branch and reject an invalid signature', async function () {
+      const mpc = await EDDSAMethods.getInitializedMpcInstance();
+      const derivedPubKey = mpc.deriveUnhardened(commonKeychain, 'm/0').slice(0, 64);
+      await baseCoin
+        .createBroadcastableSweepTransaction(
+          buildParams({
+            eddsaSignature: { R: '00'.repeat(32), sigma: '00'.repeat(32), y: derivedPubKey },
+          })
+        )
+        .should.be.rejectedWith('Invalid signature');
     });
   });
 });
