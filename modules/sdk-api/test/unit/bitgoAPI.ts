@@ -1325,7 +1325,44 @@ describe('Constructor', function () {
       // the counter completes exactly instead of overshooting the total
       const last = v2Events[v2Events.length - 1];
       last.completed.should.equal(34);
-      last.total.should.equal(34);
+      last.total!.should.equal(34);
+    });
+
+    it('emits a terminal total for v1-only accounts so the counter can render n of n', async function () {
+      nock(ROOT).get('/api/v2/user/checkBatchingPasswordFlow').query(true).reply(200, { isBatchingFlowEnabled: false });
+      nock(ROOT)
+        .post('/api/v1/user/changepassword', (body: any) => !!body.keychains && !!body.v2_keychains)
+        .reply(200, {});
+
+      v1UpdatePasswordStub.callsFake(async (params: { progressCallback?: (p: unknown) => void }) => {
+        params.progressCallback?.({ status: 'updated', currentKeychainId: 'xpub1' });
+        params.progressCallback?.({ status: 'updated', currentKeychainId: 'xpub2' });
+        return { keychains: { k1: 'v1enc', k2: 'v1enc2' }, version: 25 };
+      });
+      // a v1-only account: the v2 walk finds nothing and emits nothing
+      v2UpdatePasswordStub.callsFake(async () => ({}));
+
+      const events: PasswordRotationProgress[] = [];
+      await bitgo.changePassword({
+        oldPassword: 'oldpw',
+        newPassword: 'newpw',
+        progressCallback: (progress) => events.push(progress),
+      });
+
+      const keychainEvents = events.filter(
+        (e): e is Extract<PasswordRotationProgress, { phase: 'keychains' }> =>
+          e.phase === 'keychains' && e.status === 'updated'
+      );
+      const v1Events = keychainEvents.filter((e) => e.keychainVersion === 'v1');
+      v1Events.should.have.length(2);
+      v1Events.every((e) => e.total === undefined).should.be.true();
+
+      // no v2 event ever arrived, so the terminal keychains/updated event carries the
+      // client-known v1 set size as the denominator: 2 of 2, immediately before finalizing
+      const last = keychainEvents[keychainEvents.length - 1];
+      last.completed.should.equal(2);
+      last.total!.should.equal(2);
+      events[events.length - 2].should.deepEqual({ phase: 'finalizing', status: 'started' });
     });
 
     it('does not let a throwing progressCallback abort the rotation', async function () {
@@ -1406,8 +1443,12 @@ describe('Constructor', function () {
       });
 
       const keychainEvents = events.filter((e) => e.phase === 'keychains' && e.status === 'updated');
-      keychainEvents.should.have.length(1);
+      // one real keychain event plus the terminal denominator event for this v1-only
+      // account — the retried transport must contribute neither a duplicate event
+      // nor a double-count to either
+      keychainEvents.should.have.length(2);
       keychainEvents[0].should.have.properties({ succeeded: 1, skipped: 0, attempted: 1, completed: 1 });
+      keychainEvents[1].should.have.properties({ succeeded: 1, skipped: 0, attempted: 1, completed: 1, total: 1 });
     });
   });
 

@@ -2053,6 +2053,9 @@ export class BitGoAPI implements BitGoBase {
     // backend-served encryptedTotalCount — without this, a mixed account finishes at
     // `completed > total` (2 v1 + 32 v2 keychains read "34 of 32").
     let v1KeychainCount = 0;
+    // A v1-only account emits no v2 event at all, so nothing would ever carry a total;
+    // tracked so the terminal denominator below can fire for those accounts.
+    let v2EventCount = 0;
     emitProgress({ phase: 'keychains', status: 'started', ...counters });
 
     const makeKeychainProgressCallback =
@@ -2060,6 +2063,9 @@ export class BitGoAPI implements BitGoBase {
       (progress: { status: 'updated' | 'skipped'; currentKeychainId?: string; total?: number }) => {
         counters.attempted++;
         counters.completed++;
+        if (keychainVersion === 'v2') {
+          v2EventCount++;
+        }
         if (progress.status === 'updated') {
           counters.succeeded++;
         } else {
@@ -2109,6 +2115,15 @@ export class BitGoAPI implements BitGoBase {
           encryptionSession,
           progressCallback: makeKeychainProgressCallback('v2'),
         });
+
+      // A v1-only account emits no v2 event, so its total would stay undefined for the
+      // whole rotation and the observer could never render "n of n". Emit the client-known
+      // v1 set size as the terminal denominator — guarded on zero v2 events so mixed
+      // accounts keep the single stable total from encryptedTotalCount instead of one
+      // that jumps mid-rotation.
+      if (v2EventCount === 0 && v1KeychainCount > 0) {
+        emitProgress({ phase: 'keychains', status: 'updated', ...counters, total: v1KeychainCount });
+      }
 
       emitProgress({ phase: 'finalizing', status: 'started' });
 
