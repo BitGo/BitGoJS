@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.11.0...@bitgo/sdk-coin-sol@8.12.0) (2026-09-29)
+
+
+### Bug Fixes
+
+* **sdk-coin-sol:** add priority fees to transaction builders ([89884b5](https://github.com/BitGo/BitGoJS/commit/89884b5d928e88588d6b15febaa418c327a2ad37))
+* **sdk-coin-sol:** guard v1 detection against malformed broadcast input ([3c2048d](https://github.com/BitGo/BitGoJS/commit/3c2048d13a8d51cc94585b81e90242466cd68064))
+
+
+### Features
+
+* **sdk-coin-sol:** add v1 message decoder ([2c83e99](https://github.com/BitGo/BitGoJS/commit/2c83e99df72fc5489aa9f2df3602b96668a308f8))
+* **sdk-coin-sol:** add version-aware Solana transaction serializer ([ae3c2cf](https://github.com/BitGo/BitGoJS/commit/ae3c2cffc068e477bf205a347b445144ba3ce2bb))
+* **sdk-coin-sol:** validate v1 transaction signatures on broadcast ([4f21e64](https://github.com/BitGo/BitGoJS/commit/4f21e6459172db6c99a1e394a7d286d236145a44))
+* **sdk-core:** enable SOL TSS message signing via UTF-8 string path ([c62be9a](https://github.com/BitGo/BitGoJS/commit/c62be9ae1aab208b584218de8641c32b758ab608))
+* **sdk-core:** wire disabletoken prebuild intent for Canton ([f9ce83d](https://github.com/BitGo/BitGoJS/commit/f9ce83d817f51a5124662115016bfc035178fe32))
+
+
+
+
+
 # [8.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.10.1...@bitgo/sdk-coin-sol@8.11.0) (2026-09-24)
 
 

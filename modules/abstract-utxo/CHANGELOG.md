@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [13.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@13.1.1...@bitgo/abstract-utxo@13.2.0) (2026-09-29)
+
+
+### Features
+
+* add safe wallet recovery adapter (utxo) ([b710461](https://github.com/BitGo/BitGoJS/commit/b710461c72186ac2387077fb252c13ffaeccbdea))
+* **sdk-coin-btc:** register tbtcstxsignet ([1f2d0b8](https://github.com/BitGo/BitGoJS/commit/1f2d0b809d24c234039d4243a3624446d227f50e))
+
+
+
+
+
 ## [13.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@13.1.0...@bitgo/abstract-utxo@13.1.1) (2026-09-24)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

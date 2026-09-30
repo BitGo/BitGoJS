@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.19.0...@bitgo/sdk-core@38.20.0) (2026-09-29)
+
+
+### Bug Fixes
+
+* **sdk-core:** allow disabletoken in sendTokenEnablement guard ([d341952](https://github.com/BitGo/BitGoJS/commit/d341952776dc881db9e7d68820a8702aef20536a))
+* **sdk-core:** use etherscan v2 for arcusdc mainnet recovery ([f365bae](https://github.com/BitGo/BitGoJS/commit/f365baeab3a83c9913f43cd87bab7dfb9bf89efa))
+
+
+### Features
+
+* add Safe passkey register & remove methods ([2009b6c](https://github.com/BitGo/BitGoJS/commit/2009b6cae973611aa1f3f8a9d4523f716ae2a4ce))
+* add slot-1 safe recovery groundwork ([81fa952](https://github.com/BitGo/BitGoJS/commit/81fa952ebcb6853ab81fce4fc3dc823ac6d7ac04))
+* **sdk-coin-sol:** add Solana v1 CT transaction support ([59eb3fd](https://github.com/BitGo/BitGoJS/commit/59eb3fd138302eb4c11aa9ada8dea932c7477a60))
+* **sdk-core:** add EdDSA MPS safe derivation ([c926fc4](https://github.com/BitGo/BitGoJS/commit/c926fc40a0790c6e2460816e385f3775a9d08ec0))
+* **sdk-core:** add safe passphrase rotation to keychains.updatePassword ([c22a961](https://github.com/BitGo/BitGoJS/commit/c22a961b1f38176cc3a62131efaf12103aad4cde))
+* **sdk-core:** enable SOL TSS message signing via UTF-8 string path ([c62be9a](https://github.com/BitGo/BitGoJS/commit/c62be9ae1aab208b584218de8641c32b758ab608))
+* **sdk-core:** sign WP-created finalizeUnwrap txnRequests ([88b597e](https://github.com/BitGo/BitGoJS/commit/88b597e526ded19b71613588428c6a950b0abe05))
+* **sdk-core:** wire disabletoken prebuild intent for Canton ([f9ce83d](https://github.com/BitGo/BitGoJS/commit/f9ce83d817f51a5124662115016bfc035178fe32))
+* **sdk-core:** wire unwrap sendMany intent ([ba76578](https://github.com/BitGo/BitGoJS/commit/ba76578063eb9e3e7fc31c5c844ee9bdb998a657))
+
+
+
+
+
 # [38.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.18.0...@bitgo/sdk-core@38.19.0) (2026-09-24)
 
 

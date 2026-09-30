@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [53.3.0](https://github.com/BitGo/BitGoJS/compare/bitgo@53.2.0...bitgo@53.3.0) (2026-09-29)
+
+
+### Features
+
+* **sdk-coin-btc:** register tbtcstxsignet ([1f2d0b8](https://github.com/BitGo/BitGoJS/commit/1f2d0b809d24c234039d4243a3624446d227f50e))
+* **sdk-core:** enable SOL TSS message signing via UTF-8 string path ([c62be9a](https://github.com/BitGo/BitGoJS/commit/c62be9ae1aab208b584218de8641c32b758ab608))
+* **sdk-core:** wire disabletoken prebuild intent for Canton ([f9ce83d](https://github.com/BitGo/BitGoJS/commit/f9ce83d817f51a5124662115016bfc035178fe32))
+* **sdk-core:** wire unwrap sendMany intent ([ba76578](https://github.com/BitGo/BitGoJS/commit/ba76578063eb9e3e7fc31c5c844ee9bdb998a657))
+
+
+
+
+
 # [53.2.0](https://github.com/BitGo/BitGoJS/compare/bitgo@53.1.0...bitgo@53.2.0) (2026-09-24)
 
 

@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.18.0...@bitgo/statics@59.19.0) (2026-09-29)
+
+
+### Bug Fixes
+
+* **statics:** append • Robinhood to onboarded HoodETH token names (CECHO-2294) ([5abbc66](https://github.com/BitGo/BitGoJS/commit/5abbc66e766cdec2048ecc0db2f6eff2f188e5ae))
+
+
+### Features
+
+* add new tokens from AMS API ([ed34bcc](https://github.com/BitGo/BitGoJS/commit/ed34bcc8578fda72b2644d1de065e20786b5b812))
+* add new tokens from AMS API ([3e8e8d5](https://github.com/BitGo/BitGoJS/commit/3e8e8d5b35a92a44eb8fcd262a79f2b48c280ead))
+* **sdk-coin-btc:** register tbtcstxsignet ([1f2d0b8](https://github.com/BitGo/BitGoJS/commit/1f2d0b809d24c234039d4243a3624446d227f50e))
+* **statics:** add BASEETH:OUSD, TEMPO:OUSD, and HoodETH:TTEQ tokens ([42e149c](https://github.com/BitGo/BitGoJS/commit/42e149c732e0e83a7fc24490686d05831a41b024))
+
+
+
+
+
 # [59.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.17.1...@bitgo/statics@59.18.0) (2026-09-24)
 
 
