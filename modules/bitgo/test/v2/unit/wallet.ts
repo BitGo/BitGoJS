@@ -4664,9 +4664,37 @@ describe('V2 Wallet:', function () {
       });
 
       describe('SOL message signing (UTF-8 string path)', function () {
-        const solMessageRaw = 'hello from solana';
-        const solMessageEncoded = Buffer.from(solMessageRaw, 'utf8').toString('hex');
         const solSignerAddress = 'J8TEPFqNJjFTp2NGHuWgijyuF45Lrzo2feZ61kS7yY2q';
+        // the message class the signing stack (BGM_SOL_MESSAGE) accepts: well-formed SIWS
+        const solMessageRaw = [
+          'hastra.io wants you to sign in with your Solana account:',
+          solSignerAddress,
+          '',
+          `You are proving you own ${solSignerAddress}.`,
+          '',
+          'URI: https://hastra.io',
+          'Version: 1',
+          'Chain ID: mainnet',
+          'Nonce: 31a6bab5',
+          'Issued At: 2026-09-21T10:00:00Z',
+          'Resources:',
+          '- https://privy.io',
+        ].join('\n');
+        const solMessageEncoded = Buffer.from(solMessageRaw, 'utf8').toString('hex');
+        const siwsBaseLines = [
+          'hastra.io wants you to sign in with your Solana account:',
+          solSignerAddress,
+          '',
+          'Version: 1',
+          'Chain ID: mainnet',
+          'Nonce: 31a6bab5',
+          'Issued At: 2026-09-21T10:00:00Z',
+        ];
+        const buildSiws = (statement?: string): string =>
+          [...siwsBaseLines.slice(0, 3), ...(statement ? [statement, ''] : []), ...siwsBaseLines.slice(3)].join('\n');
+        // adding a statement line to the no-statement template adds its bytes + 2 newlines
+        const siwsOfSize = (byteLength: number): string =>
+          buildSiws('x'.repeat(byteLength - Buffer.byteLength(buildSiws()) - 2));
         const solTxHash = 'rrrsss1b';
         const txRequestForSolMessageSigning: TxRequest = {
           txRequestId: reqId.toString(),
@@ -4822,7 +4850,7 @@ describe('V2 Wallet:', function () {
         it('should reject messageRaw over MAX_SOL_MESSAGE_BYTES and accept exactly MAX_SOL_MESSAGE_BYTES', async function () {
           await tssSolWallet
             .buildSignMessageRequest({
-              message: { ...solMessage, messageRaw: 'a'.repeat(MAX_SOL_MESSAGE_BYTES + 1) },
+              message: { ...solMessage, messageRaw: siwsOfSize(MAX_SOL_MESSAGE_BYTES + 1) },
             })
             .should.be.rejectedWith(/SOL message exceeds maximum size/);
 
@@ -4835,16 +4863,21 @@ describe('V2 Wallet:', function () {
             .reply(200, txRequestForSolMessageSigning);
 
           await tssSolWallet.buildSignMessageRequest({
-            message: { ...solMessage, messageRaw: 'a'.repeat(MAX_SOL_MESSAGE_BYTES) },
+            message: { ...solMessage, messageRaw: siwsOfSize(MAX_SOL_MESSAGE_BYTES) },
           });
           capturedBody.intent.messageRaw.length.should.equal(MAX_SOL_MESSAGE_BYTES);
         });
 
         it('should measure multi-byte messageRaw in UTF-8 bytes, not characters', async function () {
-          const twoByteChars = 'é';
+          const fillBytes = MAX_SOL_MESSAGE_BYTES - Buffer.byteLength(buildSiws()) - 2;
+          const statement =
+            'é'.repeat(Math.floor(fillBytes / 2)) + 'x'.repeat(fillBytes - Math.floor(fillBytes / 2) * 2);
+          const messageAtCap = buildSiws(statement);
+          messageAtCap.length.should.be.below(MAX_SOL_MESSAGE_BYTES);
+
           await tssSolWallet
             .buildSignMessageRequest({
-              message: { ...solMessage, messageRaw: twoByteChars.repeat(MAX_SOL_MESSAGE_BYTES) },
+              message: { ...solMessage, messageRaw: messageAtCap + 'é' },
             })
             .should.be.rejectedWith(/SOL message exceeds maximum size/);
 
@@ -4857,9 +4890,37 @@ describe('V2 Wallet:', function () {
             .reply(200, txRequestForSolMessageSigning);
 
           await tssSolWallet.buildSignMessageRequest({
-            message: { ...solMessage, messageRaw: twoByteChars.repeat(MAX_SOL_MESSAGE_BYTES / 2) },
+            message: { ...solMessage, messageRaw: messageAtCap },
           });
-          capturedBody.intent.messageRaw.length.should.equal(MAX_SOL_MESSAGE_BYTES / 2);
+          Buffer.byteLength(capturedBody.intent.messageRaw).should.equal(MAX_SOL_MESSAGE_BYTES);
+        });
+
+        it('should reject plain text messageRaw (non-SIWS)', async function () {
+          await tssSolWallet
+            .buildSignMessageRequest({
+              message: { ...solMessage, messageRaw: 'hello from solana' },
+            })
+            .should.be.rejectedWith(/message is not a valid SIWS message/);
+        });
+
+        it('should reject JSON messageRaw (non-SIWS)', async function () {
+          await tssSolWallet
+            .buildSignMessageRequest({
+              message: { ...solMessage, messageRaw: '{"action":"login"}' },
+            })
+            .should.be.rejectedWith(/message is not a valid SIWS message/);
+        });
+
+        it('should reject malformed SIWS messageRaw', async function () {
+          const missingNonce = solMessageRaw
+            .split('\n')
+            .filter((line) => !line.startsWith('Nonce:'))
+            .join('\n');
+          await tssSolWallet
+            .buildSignMessageRequest({
+              message: { ...solMessage, messageRaw: missingNonce },
+            })
+            .should.be.rejectedWith(/message is not a valid SIWS message/);
         });
 
         it('should reject non-SIMPLE message standards and missing signerAddress', async function () {

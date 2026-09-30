@@ -59,6 +59,7 @@ import {
   TransactionType,
   VerifyTransactionOptions,
   TssVerifyAddressOptions,
+  validateSiwsMessage,
   verifyEddsaTssWalletAddress,
   deriveMPCWalletAddress,
   DeriveAddressOptions,
@@ -309,6 +310,9 @@ export class Sol extends BaseCoin {
     if (messageBytes > MAX_SOL_MESSAGE_BYTES) {
       throw new Error(`SOL message exceeds maximum size: ${messageBytes} > ${MAX_SOL_MESSAGE_BYTES} bytes`);
     }
+    // The signing stack (BGM_SOL_MESSAGE) signs only well-formed SIWS messages; reject
+    // non-SIWS here so failures surface client-side instead of mid-ceremony.
+    validateSiwsMessage(message.messageRaw);
   }
 
   /** inherited doc */

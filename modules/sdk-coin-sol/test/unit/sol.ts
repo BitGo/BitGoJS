@@ -2094,8 +2094,23 @@ describe('SOL:', function () {
   });
 
   describe('Validate signable message', () => {
+    const siwsAddress = '8knfAmJm9BmaX9mZWjAdHBcYPYp3LmuykRQnGwkWQCyj';
+    const buildSiws = (statement?: string): string =>
+      [
+        'example.com wants you to sign in with your Solana account:',
+        siwsAddress,
+        '',
+        ...(statement ? [statement, ''] : []),
+        'Version: 1',
+        'Chain ID: mainnet',
+        'Nonce: 31a6bab5',
+        'Issued At: 2026-09-21T10:00:00Z',
+      ].join('\n');
+    // adding a statement line to the no-statement template adds its bytes + 2 newlines
+    const siwsOfSize = (byteLength: number): string =>
+      buildSiws('x'.repeat(byteLength - Buffer.byteLength(buildSiws()) - 2));
     const validMessage = {
-      messageRaw: 'hello from solana',
+      messageRaw: buildSiws(),
       messageStandardType: MessageStandardType.SIMPLE,
       signerAddress: keypair.pub,
     };
@@ -2108,7 +2123,7 @@ describe('SOL:', function () {
       (() =>
         basecoin.validateSignableMessage({
           ...validMessage,
-          messageRaw: 'a'.repeat(MAX_SOL_MESSAGE_BYTES),
+          messageRaw: siwsOfSize(MAX_SOL_MESSAGE_BYTES),
         })).should.not.throw();
     });
 
@@ -2122,22 +2137,54 @@ describe('SOL:', function () {
       (() =>
         basecoin.validateSignableMessage({
           ...validMessage,
-          messageRaw: 'a'.repeat(MAX_SOL_MESSAGE_BYTES + 1),
+          messageRaw: siwsOfSize(MAX_SOL_MESSAGE_BYTES + 1),
         })).should.throw(/SOL message exceeds maximum size/);
     });
 
     it('should measure messageRaw in UTF-8 bytes, not characters', function () {
-      const twoByteChars = 'é';
+      const fillBytes = MAX_SOL_MESSAGE_BYTES - Buffer.byteLength(buildSiws()) - 2;
+      const multibyteStatement =
+        'é'.repeat(Math.floor(fillBytes / 2)) + 'x'.repeat(fillBytes - Math.floor(fillBytes / 2) * 2);
+      const messageAtCap = buildSiws(multibyteStatement);
+      messageAtCap.length.should.be.below(MAX_SOL_MESSAGE_BYTES);
       (() =>
         basecoin.validateSignableMessage({
           ...validMessage,
-          messageRaw: twoByteChars.repeat(MAX_SOL_MESSAGE_BYTES),
-        })).should.throw(/SOL message exceeds maximum size/);
-      (() =>
-        basecoin.validateSignableMessage({
-          ...validMessage,
-          messageRaw: twoByteChars.repeat(MAX_SOL_MESSAGE_BYTES / 2),
+          messageRaw: messageAtCap,
         })).should.not.throw();
+      (() =>
+        basecoin.validateSignableMessage({
+          ...validMessage,
+          messageRaw: messageAtCap + 'é',
+        })).should.throw(/SOL message exceeds maximum size/);
+    });
+
+    it('should reject plain text messages (non-SIWS)', function () {
+      (() =>
+        basecoin.validateSignableMessage({
+          ...validMessage,
+          messageRaw: 'hello from solana',
+        })).should.throw(/message is not a valid SIWS message/);
+    });
+
+    it('should reject JSON messages (non-SIWS)', function () {
+      (() =>
+        basecoin.validateSignableMessage({
+          ...validMessage,
+          messageRaw: '{"action":"login"}',
+        })).should.throw(/message is not a valid SIWS message/);
+    });
+
+    it('should reject malformed SIWS messages', function () {
+      const missingNonce = buildSiws()
+        .split('\n')
+        .filter((line) => !line.startsWith('Nonce:'))
+        .join('\n');
+      (() =>
+        basecoin.validateSignableMessage({
+          ...validMessage,
+          messageRaw: missingNonce,
+        })).should.throw(/message is not a valid SIWS message/);
     });
 
     it('should reject non-SIMPLE message standards', function () {
