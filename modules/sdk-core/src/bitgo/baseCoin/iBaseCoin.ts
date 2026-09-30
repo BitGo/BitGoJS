@@ -601,12 +601,21 @@ export type SignedTransaction =
 export interface SignedMessage {
   coin?: string;
   // @deprecated - use `signature` instead
-  txHash: string;
-  signature: string;
+  // Absent when the sign request was parked behind a pending approval (see pendingApprovalId).
+  txHash?: string;
+  signature?: string;
   messageRaw: string;
   messageEncoded?: string;
   messageStandardType?: MessageStandardType;
   txRequestId: string;
+  /**
+   * Present when a policy parked the message-sign transaction request behind a
+   * pending approval that must be approved or rejected before signing can
+   * proceed. When set, no signature was produced: txHash and signature are
+   * absent, and the caller should surface the approval instead of treating
+   * this as a failure. After approval, re-sign via signAndSendMessageTxRequest.
+   */
+  pendingApprovalId?: string;
 }
 
 export interface RecoverWalletTokenOptions {

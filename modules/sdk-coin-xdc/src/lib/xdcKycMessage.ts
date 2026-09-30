@@ -1,3 +1,4 @@
+import assert from 'assert';
 import { IWallet, MessageStandardType } from '@bitgo/sdk-core';
 
 export interface XdcKycMessageParams {
@@ -43,6 +44,16 @@ export async function signXdcKycMessage(
     },
     walletPassphrase,
   });
+
+  // A message-signing policy can park the sign request behind a pending
+  // approval (no signature is produced); the KYC flow requires a signature,
+  // so fail loudly instead of returning an unusable signed-message object.
+  assert(
+    signed.signature,
+    signed.pendingApprovalId
+      ? `Unable to sign XDC KYC message: the sign request is pending approval (${signed.pendingApprovalId})`
+      : 'Unable to sign XDC KYC message: no signature was produced'
+  );
 
   return {
     kycAccount: account,

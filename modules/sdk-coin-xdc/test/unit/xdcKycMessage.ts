@@ -79,4 +79,16 @@ describe('signXdcKycMessage', function () {
       /TSS signing failed/
     );
   });
+
+  it('should reject when the sign request is parked behind a pending approval', async function () {
+    (wallet.signMessage as sinon.SinonStub).resolves({
+      messageRaw: '',
+      pendingApprovalId: 'pa-11112222333344445555666677778888',
+    });
+
+    await assert.rejects(
+      () => signXdcKycMessage(wallet as unknown as IWallet, ACCOUNT, 'passphrase'),
+      /pending approval \(pa-11112222333344445555666677778888\)/
+    );
+  });
 });
