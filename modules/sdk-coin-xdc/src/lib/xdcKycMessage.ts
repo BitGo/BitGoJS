@@ -44,6 +44,16 @@ export async function signXdcKycMessage(
     walletPassphrase,
   });
 
+  // A message-signing policy can park the sign request behind a pending
+  // approval (no signature is produced); the KYC flow requires a signature,
+  // so fail loudly instead of returning an unusable signed-message object.
+  if (signed.state === 'pendingApproval') {
+    throw new Error(
+      `Unable to sign XDC KYC message: the sign request is parked behind pending approval (${signed.pendingApprovalId}). ` +
+        `Approve the pending approval, then retry the sign request.`
+    );
+  }
+
   return {
     kycAccount: account,
     kycMessage,

@@ -36,6 +36,7 @@ describe('signXdcKycMessage', function () {
 
   it('should call wallet.signMessage with correct messageRaw and messageStandardType', async function () {
     (wallet.signMessage as sinon.SinonStub).resolves({
+      state: 'delivered',
       txHash: '',
       signature: SIGNATURE,
       messageRaw: '',
@@ -54,6 +55,7 @@ describe('signXdcKycMessage', function () {
 
   it('should return kycAccount, kycMessage, and kycSignature mapped correctly', async function () {
     (wallet.signMessage as sinon.SinonStub).resolves({
+      state: 'delivered',
       txHash: '',
       signature: SIGNATURE,
       messageRaw: '',
@@ -77,6 +79,19 @@ describe('signXdcKycMessage', function () {
     await assert.rejects(
       () => signXdcKycMessage(wallet as unknown as IWallet, ACCOUNT, 'passphrase'),
       /TSS signing failed/
+    );
+  });
+
+  it('should reject when the sign request is parked behind a pending approval', async function () {
+    (wallet.signMessage as sinon.SinonStub).resolves({
+      state: 'pendingApproval',
+      messageRaw: '',
+      pendingApprovalId: 'pa-11112222333344445555666677778888',
+    });
+
+    await assert.rejects(
+      () => signXdcKycMessage(wallet as unknown as IWallet, ACCOUNT, 'passphrase'),
+      /pending approval \(pa-11112222333344445555666677778888\)/
     );
   });
 });

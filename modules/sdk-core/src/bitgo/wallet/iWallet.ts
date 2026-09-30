@@ -451,6 +451,12 @@ export interface SignAndSendTxRequestOptions {
   isTxRequestFull: boolean;
 }
 
+export interface SignAndSendMessageTxRequestOptions {
+  txRequestId: string;
+  walletPassphrase: string;
+  reqId?: IRequestTracer;
+}
+
 export interface GetUserPrvOptions {
   keychain?: Keychain;
   key?: Keychain;
@@ -1371,6 +1377,7 @@ export interface IWallet {
   signMessage(params: WalletSignMessageOptions): Promise<SignedMessage>;
   buildSignMessageRequest(params: WalletSignMessageOptions): Promise<TxRequest>;
   signTypedData(params: WalletSignTypedDataOptions): Promise<SignedMessage>;
+  signAndSendMessageTxRequest(params: SignAndSendMessageTxRequestOptions): Promise<SignedMessage>;
   fetchCrossChainUTXOs(params: FetchCrossChainUTXOsOptions): Promise<CrossChainUTXO[]>;
   getChallengesForEcdsaSigning(): Promise<WalletEcdsaChallenges>;
   getNftBalances(): Promise<NftBalance[]>;

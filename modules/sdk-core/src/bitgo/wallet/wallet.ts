@@ -125,6 +125,7 @@ import {
   SharedKeyChain,
   ShareWalletOptions,
   SignAndSendTxRequestOptions,
+  SignAndSendMessageTxRequestOptions,
   SimulateWebhookOptions,
   SubmitTransactionOptions,
   SubWalletType,
@@ -5088,6 +5089,103 @@ export class Wallet implements IWallet {
   }
 
   /**
+   * Signs the message of a full (apiVersion === 'full') message-sign
+   * transaction request from a TSS wallet whose user signing material is
+   * held server-side and decryptable via wallet passphrase (hot wallets —
+   * there is no distinct warm wallet type). Meant to be used for a
+   * message-sign request whose signing was parked behind a pending approval
+   * by the message-signing policy and resumed after the approval was
+   * resolved. Message-sign transaction requests are full-only: the lite
+   * (deprecated) request flow never carries messages.
+   *
+   * Cold / external-signer wallets do not use this method: they resume via
+   * wallet.signMessage({ message: { ..., txRequestId }, prv }), which routes
+   * through the same pendingApproval guard and message signing path.
+   *
+   * Unlike signAndSendTxRequest, this signs through the message path
+   * (signTxRequestForMessage with the WP-persisted messageEncoded); the
+   * transaction signer has no transaction to sign on a message-only request.
+   * The method only signs — delivery of the signature to the requestor is
+   * completed server-side once the signature shares are ingested.
+   *
+   * If the request is still parked behind a pending approval (txRequest
+   * state 'pendingApproval'), resolves with the pendingApprovalId instead
+   * of signing (same contract as signMessage/signTypedData).
+   *
+   * @param params
+   *    txRequestId - The ID of the message-sign transaction request.
+   *    walletPassphrase - The passphrase for the wallet.
+   *    reqId - Optional request tracer.
+   * @returns A promise that resolves to a SignedMessage.
+   */
+  public async signAndSendMessageTxRequest(params: SignAndSendMessageTxRequestOptions): Promise<SignedMessage> {
+    if (this._wallet.multisigType !== 'tss') {
+      throw new Error('Message signing only supported for TSS wallets');
+    }
+    const reqId = params.reqId ?? new RequestTracer();
+    this.bitgo.setRequestTracer(reqId);
+
+    const keychains = await this.getKeychainsAndValidatePassphrase({
+      reqId,
+      walletPassphrase: params.walletPassphrase,
+    });
+    const userKeychain = keychains[0];
+    if (!userKeychain || !userKeychain.encryptedPrv) {
+      throw new Error('the user keychain does not have property encryptedPrv');
+    }
+
+    const txRequest = await getTxRequest(this.bitgo, this.id(), params.txRequestId, reqId);
+
+    // The message-signing policy may still park the request behind a pending
+    // approval; resolve with the pendingApprovalId instead of signing.
+    if (this.tssUtils?.isPendingApprovalTxRequestFull(txRequest)) {
+      assert(txRequest.pendingApprovalId, 'Unable to find pendingApprovalId on a pendingApproval-state txRequest');
+      return {
+        state: 'pendingApproval',
+        coin: this.coin(),
+        messageRaw: txRequest.messages?.[0]?.messageRaw ?? '',
+        txRequestId: txRequest.txRequestId,
+        pendingApprovalId: txRequest.pendingApprovalId,
+      };
+    }
+
+    assert(
+      txRequest.messages && txRequest.messages.length > 0,
+      'Unable to find messages in txRequest for message signing'
+    );
+    const message = txRequest.messages[0];
+    const messageEncoded = message.messageEncoded;
+    assert(messageEncoded, 'Unable to find messageEncoded in txRequest message');
+
+    const signedMessageRequest = await this.tssUtils!.signTxRequestForMessage({
+      txRequest,
+      prv: await this.getUserPrv({
+        keychain: userKeychain,
+        walletPassphrase: params.walletPassphrase,
+      }),
+      reqId,
+      messageRaw: message.messageRaw,
+      messageEncoded,
+      bufferToSign: Buffer.from(messageEncoded, 'hex'),
+    });
+    assert(signedMessageRequest.messages, 'Unable to find messages in signedMessageRequest');
+    assert(signedMessageRequest.messages[0].txHash, 'Unable to find txHash in signedMessageRequest.messages');
+    const signedState = signedMessageRequest.state;
+    if (signedState !== 'delivered') {
+      throw new Error(`Unexpected txRequest state after message signing: ${signedState}`);
+    }
+    return {
+      state: signedState,
+      coin: this.coin(),
+      txHash: signedMessageRequest.messages[0].txHash,
+      signature: signedMessageRequest.messages[0].txHash,
+      messageRaw: message.messageRaw,
+      messageEncoded,
+      txRequestId: signedMessageRequest.txRequestId,
+    };
+  }
+
+  /**
    * Ensures signature shares are in a clean state before signing a transaction.
    * Automatically deletes signature shares for Full TxRequests before signing to prevent
    * issues with stale or partial signatures.
@@ -5319,64 +5417,81 @@ export class Wallet implements IWallet {
       throw new Error('prv required to sign message with TSS');
     }
 
-    try {
-      let txRequest;
-      assert(params.message, 'message required for message signing');
-      const messageRaw = params.message.messageRaw;
+    let txRequest;
+    assert(params.message, 'message required for message signing');
+    const messageRaw = params.message.messageRaw;
 
-      if (!params.message.txRequestId) {
-        const intentOption: IntentOptionsForMessage = {
-          custodianMessageId: params.custodianMessageId,
-          reqId: params.reqId,
-          intentType: 'signMessage',
-          isTss: true,
-          messageRaw,
-          messageStandardType: params.message.messageStandardType,
-          signerAddress: params.message.signerAddress,
-          preparedTransaction: params.message.preparedTransaction,
-        };
-        txRequest = await this.tssUtils!.buildSignMessageRequest(intentOption);
-        params.message.txRequestId = txRequest.txRequestId;
-      } else {
-        txRequest = await getTxRequest(this.bitgo, this.id(), params.message.txRequestId, params.reqId);
-      }
-
-      assert(
-        txRequest.messages && txRequest.messages.length > 0,
-        'Unable to find messages in txRequest for message signing'
-      );
-      const messageEncoded = txRequest.messages[0].messageEncoded;
-
-      const signedMessageRequest = await this.tssUtils!.signTxRequestForMessage({
-        txRequest,
-        prv: params.prv,
-        reqId: params.reqId || new RequestTracer(),
+    if (!params.message.txRequestId) {
+      const intentOption: IntentOptionsForMessage = {
+        custodianMessageId: params.custodianMessageId,
+        reqId: params.reqId,
+        intentType: 'signMessage',
+        isTss: true,
         messageRaw,
-        messageEncoded,
-        bufferToSign: Buffer.from(messageEncoded, 'hex'),
-      });
-      assert(signedMessageRequest.messages, 'Unable to find messages in signedMessageRequest');
-      if (this.baseCoin.getFamily() === CoinFamily.ETH) {
-        assert(
-          signedMessageRequest.messages[0].combineSigShare,
-          'Unable to find combineSigShare in signedMessageRequest.messages'
-        );
-      }
-      assert(signedMessageRequest.messages[0].txHash, 'Unable to find txHash in signedMessageRequest.messages');
-      // messageRaw on the signed request is the WP-persisted payload that was validated and
-      // encoded before signing; the caller's echo is unverifiable on the resume path.
-      const signedMessageRaw = signedMessageRequest.messages[0].messageRaw ?? messageRaw;
-      return {
-        coin: this.coin(),
-        txHash: signedMessageRequest.messages[0].txHash,
-        signature: signedMessageRequest.messages[0].txHash,
-        messageRaw: signedMessageRaw,
-        messageEncoded,
-        txRequestId: signedMessageRequest.txRequestId,
+        messageStandardType: params.message.messageStandardType,
+        signerAddress: params.message.signerAddress,
+        preparedTransaction: params.message.preparedTransaction,
       };
-    } catch (e) {
-      throw new Error('failed to sign message ' + e);
+      txRequest = await this.tssUtils!.buildSignMessageRequest(intentOption);
+      params.message.txRequestId = txRequest.txRequestId;
+    } else {
+      txRequest = await getTxRequest(this.bitgo, this.id(), params.message.txRequestId, params.reqId);
     }
+
+    // A message-signing policy can park the request behind a pending approval.
+    // Signing cannot proceed until the approval is resolved; surface the
+    // pendingApprovalId instead of attempting MPC rounds against a parked request
+    // (which would fail at send with a pendingDelivery state error).
+    if (this.tssUtils!.isPendingApprovalTxRequestFull(txRequest)) {
+      assert(txRequest.pendingApprovalId, 'Unable to find pendingApprovalId on a pendingApproval-state txRequest');
+      return {
+        state: 'pendingApproval',
+        coin: this.coin(),
+        messageRaw,
+        txRequestId: txRequest.txRequestId,
+        pendingApprovalId: txRequest.pendingApprovalId,
+      };
+    }
+
+    assert(
+      txRequest.messages && txRequest.messages.length > 0,
+      'Unable to find messages in txRequest for message signing'
+    );
+    const messageEncoded = txRequest.messages[0].messageEncoded;
+
+    const signedMessageRequest = await this.tssUtils!.signTxRequestForMessage({
+      txRequest,
+      prv: params.prv,
+      reqId: params.reqId || new RequestTracer(),
+      messageRaw,
+      messageEncoded,
+      bufferToSign: Buffer.from(messageEncoded, 'hex'),
+    });
+    assert(signedMessageRequest.messages, 'Unable to find messages in signedMessageRequest');
+    if (this.baseCoin.getFamily() === CoinFamily.ETH) {
+      assert(
+        signedMessageRequest.messages[0].combineSigShare,
+        'Unable to find combineSigShare in signedMessageRequest.messages'
+      );
+    }
+    const { txHash } = signedMessageRequest.messages[0];
+    assert(txHash, 'Unable to find txHash in signedMessageRequest.messages');
+    // messageRaw on the signed request is the WP-persisted payload that was validated and
+    // encoded before signing; the caller's echo is unverifiable on the resume path.
+    const signedMessageRaw = signedMessageRequest.messages[0].messageRaw ?? messageRaw;
+    const signedState = signedMessageRequest.state;
+    if (signedState !== 'delivered') {
+      throw new Error(`Unexpected txRequest state after message signing: ${signedState}`);
+    }
+    return {
+      state: signedState,
+      coin: this.coin(),
+      txHash,
+      signature: txHash,
+      messageRaw: signedMessageRaw,
+      messageEncoded,
+      txRequestId: signedMessageRequest.txRequestId,
+    };
   }
 
   /**
@@ -5392,49 +5507,65 @@ export class Wallet implements IWallet {
       throw new Error('prv required to sign typed data with TSS');
     }
 
-    try {
-      let txRequest;
-      assert(params.typedData, 'typedData required for typed data signing');
-      if (!params.typedData.txRequestId) {
-        const intentOptions: IntentOptionsForTypedData = {
-          custodianMessageId: params.custodianMessageId,
-          reqId: params.reqId,
-          intentType: 'signTypedStructuredData',
-          isTss: true,
-          typedDataRaw: params.typedData.typedDataRaw,
-          typedDataEncoded: params.typedData.typedDataEncoded!.toString('hex'),
-        };
-        txRequest = await this.tssUtils!.createTxRequestWithIntentForTypedDataSigning(intentOptions);
-        params.typedData.txRequestId = txRequest.txRequestId;
-      } else {
-        txRequest = await getTxRequest(this.bitgo, this.id(), params.typedData.txRequestId, params.reqId);
-      }
-
-      const signedTypedDataRequest = await this.tssUtils!.signTxRequestForMessage({
-        txRequest,
-        prv: params.prv,
-        reqId: params.reqId || new RequestTracer(),
-        messageRaw: JSON.stringify(params.typedData.typedDataRaw),
-        messageEncoded: params.typedData.typedDataEncoded!.toString('hex'),
-        bufferToSign: params.typedData.typedDataEncoded!,
-      });
-      assert(signedTypedDataRequest.messages, 'Unable to find messages in signedTypedDataRequest');
-      assert(
-        signedTypedDataRequest.messages[0].combineSigShare,
-        'Unable to find combineSigShare in signedTypedDataRequest.messages'
-      );
-      assert(signedTypedDataRequest.messages[0].txHash, 'Unable to find txHash in signedTypedDataRequest.messages');
-      return {
-        coin: this.coin(),
-        txHash: signedTypedDataRequest.messages[0].txHash,
-        signature: signedTypedDataRequest.messages[0].txHash,
-        messageRaw: params.typedData.typedDataRaw,
-        messageEncoded: params.typedData.typedDataEncoded!.toString('hex'),
-        txRequestId: signedTypedDataRequest.txRequestId,
+    let txRequest;
+    assert(params.typedData, 'typedData required for typed data signing');
+    if (!params.typedData.txRequestId) {
+      const intentOptions: IntentOptionsForTypedData = {
+        custodianMessageId: params.custodianMessageId,
+        reqId: params.reqId,
+        intentType: 'signTypedStructuredData',
+        isTss: true,
+        typedDataRaw: params.typedData.typedDataRaw,
+        typedDataEncoded: params.typedData.typedDataEncoded!.toString('hex'),
       };
-    } catch (e) {
-      throw new Error('failed to sign typed data ' + e);
+      txRequest = await this.tssUtils!.createTxRequestWithIntentForTypedDataSigning(intentOptions);
+      params.typedData.txRequestId = txRequest.txRequestId;
+    } else {
+      txRequest = await getTxRequest(this.bitgo, this.id(), params.typedData.txRequestId, params.reqId);
     }
+
+    // A message-signing policy can park the request behind a pending approval.
+    // Signing cannot proceed until the approval is resolved; surface the
+    // pendingApprovalId instead of attempting MPC rounds against a parked request.
+    if (this.tssUtils!.isPendingApprovalTxRequestFull(txRequest)) {
+      assert(txRequest.pendingApprovalId, 'Unable to find pendingApprovalId on a pendingApproval-state txRequest');
+      return {
+        state: 'pendingApproval',
+        coin: this.coin(),
+        messageRaw: params.typedData.typedDataRaw,
+        txRequestId: txRequest.txRequestId,
+        pendingApprovalId: txRequest.pendingApprovalId,
+      };
+    }
+
+    const signedTypedDataRequest = await this.tssUtils!.signTxRequestForMessage({
+      txRequest,
+      prv: params.prv,
+      reqId: params.reqId || new RequestTracer(),
+      messageRaw: JSON.stringify(params.typedData.typedDataRaw),
+      messageEncoded: params.typedData.typedDataEncoded!.toString('hex'),
+      bufferToSign: params.typedData.typedDataEncoded!,
+    });
+    assert(signedTypedDataRequest.messages, 'Unable to find messages in signedTypedDataRequest');
+    assert(
+      signedTypedDataRequest.messages[0].combineSigShare,
+      'Unable to find combineSigShare in signedTypedDataRequest.messages'
+    );
+    const { txHash } = signedTypedDataRequest.messages[0];
+    assert(txHash, 'Unable to find txHash in signedTypedDataRequest.messages');
+    const signedState = signedTypedDataRequest.state;
+    if (signedState !== 'delivered') {
+      throw new Error(`Unexpected txRequest state after typed data signing: ${signedState}`);
+    }
+    return {
+      state: signedState,
+      coin: this.coin(),
+      txHash,
+      signature: txHash,
+      messageRaw: params.typedData.typedDataRaw,
+      messageEncoded: params.typedData.typedDataEncoded!.toString('hex'),
+      txRequestId: signedTypedDataRequest.txRequestId,
+    };
   }
 
   /**
