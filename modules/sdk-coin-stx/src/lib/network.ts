@@ -1,5 +1,5 @@
 import { BaseCoin as CoinConfig, NetworkType, StacksNetwork as StaticsStacksNetwork } from '@bitgo/statics';
-import { StacksMainnet, StacksNetwork, StacksTestnet } from '@stacks/network';
+import { StacksNetwork, STACKS_MAINNET, STACKS_TESTNET } from '@stacks/network';
 
 /**
  * Build the `@stacks/network` object a transaction is serialized against.
@@ -15,14 +15,13 @@ import { StacksMainnet, StacksNetwork, StacksTestnet } from '@stacks/network';
  */
 export function toStacksNetwork(coinConfig: Readonly<CoinConfig>): StacksNetwork {
   const staticsNetwork = coinConfig.network as StaticsStacksNetwork;
-  const network = staticsNetwork.type === NetworkType.MAINNET ? new StacksMainnet() : new StacksTestnet();
+  const network = staticsNetwork.type === NetworkType.MAINNET ? STACKS_MAINNET : STACKS_TESTNET;
 
-  if (staticsNetwork.chainId !== undefined) {
-    network.chainId = staticsNetwork.chainId;
-  }
-  if (staticsNetwork.transactionVersion !== undefined) {
-    network.version = staticsNetwork.transactionVersion;
-  }
-
-  return network;
+  return {
+    ...network,
+    ...(staticsNetwork.chainId !== undefined && { chainId: staticsNetwork.chainId }),
+    ...(staticsNetwork.transactionVersion !== undefined && {
+      transactionVersion: staticsNetwork.transactionVersion,
+    }),
+  };
 }

@@ -1,5 +1,17 @@
 import assert from 'assert';
-import { ClarityType, createAddress, cvToString, cvToValue } from '@stacks/transactions';
+import {
+  AddressHashMode,
+  AddressVersion,
+  ClarityType,
+  createAddress,
+  cvToString,
+  cvToValue,
+  FungibleConditionCode,
+  Pc,
+  PoxConditionCode,
+  PostConditionMode,
+  PostConditionType,
+} from '@stacks/transactions';
 import { coins } from '@bitgo/statics';
 import should from 'should';
 
@@ -257,5 +269,112 @@ describe('Stacks: PoX-5 Builder', function () {
         }),
       /more than 14 merkle siblings/
     );
+  });
+
+  describe('SIP-045 post-conditions', function () {
+    const signetFactory = new StxLib.TransactionBuilderFactory(coins.get('tstxsignet'));
+    const amountUstx = '100000000';
+
+    const senderAddress = StxLib.Utils.getSTXAddressFromPubKeys(
+      [testData.TX_SENDER.pub],
+      AddressVersion.TestnetMultiSig,
+      AddressHashMode.P2PKH,
+      1
+    ).address;
+
+    function stakingPostCondition(tx: StxLib.Transaction) {
+      const values = (tx as StxLib.Transaction).stxTransaction.postConditions.values;
+      values.length.should.equal(1);
+      const postCondition = values[0] as unknown as {
+        conditionType: PostConditionType;
+        principal: { type: number; address?: { type: number } };
+        conditionCode: number;
+        amount?: bigint;
+      };
+      postCondition.conditionType.should.equal(PostConditionType.Staking);
+      return postCondition;
+    }
+
+    it('attaches the 0x03 staking post-condition and the tstxsignet chain ID to a stake', async () => {
+      const builder = configure(signetFactory.getPox5Builder());
+      builder.stake({
+        signerManager,
+        amountUstx,
+        numCycles: 1,
+        startBurnHt: 66849,
+      });
+
+      const tx = await builder.build();
+      // chain ID 1280 (0x00000500) with the 0x80 testnet tx version
+      tx.toBroadcastFormat().slice(0, 10).should.equal('8000000500');
+      (tx as StxLib.Transaction).stxTransaction.postConditionMode.should.equal(PostConditionMode.Deny);
+
+      const postCondition = stakingPostCondition(tx as StxLib.Transaction);
+      postCondition.conditionCode.should.equal(FungibleConditionCode.Equal);
+      postCondition.amount?.should.equal(BigInt(amountUstx));
+      (postCondition.principal as unknown as { address: { hash160: string } }).address.hash160.length.should.equal(40);
+    });
+
+    it('attaches the 0x04 PoX post-condition to an unstake', async () => {
+      const builder = configure(signetFactory.getPox5Builder());
+      builder.unstake(oldSignerManager);
+
+      const tx = await builder.build();
+      const values = (tx as StxLib.Transaction).stxTransaction.postConditions.values;
+      values.length.should.equal(1);
+      (values[0] as unknown as { conditionType: PostConditionType }).conditionType.should.equal(PostConditionType.PoX);
+      (values[0] as unknown as { conditionCode: number }).conditionCode.should.equal(PoxConditionCode.WillPerform);
+    });
+
+    it('derives the full post-update stake for stake-update', async () => {
+      const builder = configure(signetFactory.getPox5Builder());
+      builder.stakeUpdate({
+        signerManager,
+        oldSignerManager,
+        cyclesToExtend: 1,
+        amountIncrease: '50000',
+        postStakeAmount: '150000000',
+      });
+
+      const tx = await builder.build();
+      const postCondition = stakingPostCondition(tx as StxLib.Transaction);
+      postCondition.amount?.should.equal(BigInt('150000000'));
+    });
+
+    it('rejects stake-update without the post-update stake amount', async () => {
+      const builder = configure(signetFactory.getPox5Builder());
+      builder.stakeUpdate({
+        signerManager,
+        oldSignerManager,
+        cyclesToExtend: 1,
+        amountIncrease: '50000',
+      });
+
+      await builder.build().should.be.rejectedWith(/postStakeAmount/);
+    });
+
+    it('prefers explicitly supplied post-conditions over the derivation', async () => {
+      const builder = configure(signetFactory.getPox5Builder());
+      builder.stake({
+        signerManager,
+        amountUstx,
+        numCycles: 1,
+        startBurnHt: 66849,
+      });
+      builder.postConditions([Pc.principal(senderAddress).willNotPerformPox()]);
+
+      const tx = await builder.build();
+      const values = (tx as StxLib.Transaction).stxTransaction.postConditions.values;
+      values.length.should.equal(1);
+      (values[0] as unknown as { conditionType: PostConditionType }).conditionType.should.equal(PostConditionType.PoX);
+    });
+
+    it('adds no SIP-045 post-condition to read-only reward calls', async () => {
+      const builder = configure(signetFactory.getPox5Builder());
+      builder.claimRewards({ bondIndices: [210], rewardCycle: 42 });
+
+      const tx = await builder.build();
+      (tx as StxLib.Transaction).stxTransaction.postConditions.values.length.should.equal(0);
+    });
   });
 });

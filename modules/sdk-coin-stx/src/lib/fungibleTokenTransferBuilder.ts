@@ -5,8 +5,7 @@ import {
   AddressVersion,
   ClarityValue,
   ContractCallPayload,
-  FungibleConditionCode,
-  makeStandardFungiblePostCondition,
+  Pc,
   PostCondition,
   PostConditionMode,
 } from '@stacks/transactions';
@@ -147,19 +146,18 @@ export class FungibleTokenTransferBuilder extends AbstractContractBuilder {
     }
     const amount: BigNum = new BigNum(tokenTransferParams.amount);
     return [
-      makeStandardFungiblePostCondition(
+      Pc.principal(
         getSTXAddressFromPubKeys(
           this._fromPubKeys,
           this._coinConfig.network.type === NetworkType.MAINNET
             ? AddressVersion.MainnetMultiSig
             : AddressVersion.TestnetMultiSig,
-          this._fromPubKeys.length > 1 ? AddressHashMode.SerializeP2SH : AddressHashMode.SerializeP2PKH,
+          this._fromPubKeys.length > 1 ? AddressHashMode.P2SH : AddressHashMode.P2PKH,
           this._numberSignatures
-        ).address,
-        FungibleConditionCode.Equal,
-        amount.toString(),
-        `${this._contractAddress}.${this._contractName}::${this._tokenName}`
-      ),
+        ).address
+      )
+        .willSendEq(amount.toString())
+        .ft(`${this._contractAddress}.${this._contractName}`, this._tokenName),
     ];
   }
 }

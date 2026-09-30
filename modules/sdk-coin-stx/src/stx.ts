@@ -22,19 +22,15 @@ import {
   bufferCVFromString,
   ClarityType,
   ClarityValue,
-  createStacksPrivateKey,
   cvToString,
   cvToValue,
   deserializeTransaction,
   noneCV,
-  privateKeyToString,
-  publicKeyFromBuffer,
-  publicKeyToString,
+  serializePayload,
   someCV,
   standardPrincipalCV,
   uintCV,
 } from '@stacks/transactions';
-import { serializePayload } from '@stacks/transactions/dist/payload';
 import BigNumber from 'bignumber.js';
 
 import { ExplainTransactionOptions, StxSignTransactionOptions, StxTransactionExplanation } from './types';
@@ -345,7 +341,7 @@ export class Stx extends BaseCoin {
           txJson.payload.functionArgs.length === 4 &&
           txJson.payload.functionArgs[3].type === ClarityType.OptionalSome
         ) {
-          memo = Buffer.from(txJson.payload.functionArgs[3].value.buffer).toString();
+          memo = Buffer.from(txJson.payload.functionArgs[3].value.value, 'hex').toString();
           transactionRecipient['memo'] = memo;
         }
       } else {
@@ -653,7 +649,7 @@ export class Stx extends BaseCoin {
     const baseTxn = await txBuilder.build();
     const txBroadcastFormat = baseTxn.toBroadcastFormat();
     const txDeserialized = deserializeTransaction(txBroadcastFormat);
-    const serializedHex = serializePayload(txDeserialized.payload).toString('hex');
+    const serializedHex = serializePayload(txDeserialized.payload);
     const { recoverableAmount, fee } = await this.getRecoverableAmountAndFee(
       serializedHex,
       txBroadcastFormat.length,
@@ -701,7 +697,7 @@ export class Stx extends BaseCoin {
     const baseTxn = await txBuilder.build();
     const txBroadcastFormat = baseTxn.toBroadcastFormat();
     const txDeserialized = deserializeTransaction(txBroadcastFormat);
-    const serializedHex = serializePayload(txDeserialized.payload).toString('hex');
+    const serializedHex = serializePayload(txDeserialized.payload);
     const { recoverableAmount, fee } = await this.getRecoverableAmountAndFee(
       serializedHex,
       txBroadcastFormat.length,
@@ -807,10 +803,7 @@ export class Stx extends BaseCoin {
     if (!balance || isNaN(balance)) {
       throw new Error('could not find any balance to recover for ' + params.rootAddress);
     }
-    const userPub = publicKeyFromBuffer(keys[0].publicKey);
-    const backupPub = publicKeyFromBuffer(keys[1].publicKey);
-    const bitgoPubKey = publicKeyFromBuffer(keys[2].publicKey);
-    const pubs = [publicKeyToString(userPub), publicKeyToString(backupPub), publicKeyToString(bitgoPubKey)];
+    const pubs = [keys[0].publicKey, keys[1].publicKey, keys[2].publicKey].map((k) => Buffer.from(k).toString('hex'));
 
     const destinationAddressDetails = getAddressDetails(params.recoveryDestination);
     const nonce =
@@ -833,9 +826,7 @@ export class Stx extends BaseCoin {
     if (!keys[0].privateKey) {
       throw new Error(`userKey is not a private key`);
     }
-    const userKey = createStacksPrivateKey(keys[0].privateKey);
-    builder.sign({ key: privateKeyToString(userKey) });
-
+    builder.sign({ key: Buffer.from(keys[0].privateKey).toString('hex') });
     const halfSignedTx = await builder.build();
     const txHexHalfSigned = halfSignedTx.toBroadcastFormat();
     const builder2 = this.getTokenOrNativeTransferBuilder(contractAddress, contractName);
@@ -844,8 +835,7 @@ export class Stx extends BaseCoin {
     if (!keys[1].privateKey) {
       throw new Error(`backupKey is not a private key`);
     }
-    const backupKey = createStacksPrivateKey(keys[1].privateKey);
-    builder2.sign({ key: privateKeyToString(backupKey) });
+    builder2.sign({ key: Buffer.from(keys[1].privateKey).toString('hex') });
 
     const fullySignedTx = await builder2.build();
     const fullySignedTxHex = fullySignedTx.toBroadcastFormat();

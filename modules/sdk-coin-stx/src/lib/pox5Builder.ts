@@ -1,10 +1,16 @@
-import { BaseCoin as CoinConfig, StacksNetwork as BitgoStacksNetwork } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, NetworkType, StacksNetwork as BitgoStacksNetwork } from '@bitgo/statics';
 import {
+  AddressHashMode,
+  AddressVersion,
   bufferCV,
   ContractCallPayload,
+  ClarityType,
   ClarityValue,
   listCV,
   noneCV,
+  Pc,
+  PostCondition,
+  PostConditionMode,
   responseErrorCV,
   responseOkCV,
   someCV,
@@ -26,7 +32,8 @@ import {
   FUNCTION_NAME_UNSTAKE,
   FUNCTION_NAME_UPDATE_BOND_REGISTRATION,
 } from './constants';
-import { contractPrincipalCVFromString, standardPrincipalCVFromString } from './utils';
+import { contractPrincipalCVFromString, getSTXAddressFromPubKeys, standardPrincipalCVFromString } from './utils';
+import { Transaction } from './transaction';
 
 type Integer = bigint | number | string;
 type ByteValue = Buffer | Uint8Array | string;
@@ -86,6 +93,12 @@ export interface Pox5StakeUpdateParams {
   oldSignerManager: string;
   cyclesToExtend?: Integer;
   amountIncrease?: Integer;
+  /**
+   * The FULL staked amount after the update, not the increase. SIP-045 evaluates the 0x03
+   * staking post-condition against the post-update stake: declaring only the increase delta
+   * fails the node's post-condition check. Required when `amountIncrease` is non-zero.
+   */
+  postStakeAmount?: Integer;
   signerCalldata?: ByteValue;
 }
 
@@ -173,6 +186,77 @@ export class Pox5Builder extends ContractBuilder {
     );
   }
 
+  /**
+   * The full post-update stake for a `stake-update` call, as passed via
+   * {@link Pox5StakeUpdateParams.postStakeAmount}. Kept aside from the function args
+   * because it is not part of the pox-5 ABI — the on-chain args only carry the increase.
+   */
+  private _stakeUpdatePostAmount?: Integer;
+
+  /** @inheritdoc */
+  protected async buildImplementation(): Promise<Transaction> {
+    if (this._postConditions === undefined) {
+      this._postConditions = this.derivePostConditions();
+      this._postConditionMode = PostConditionMode.Deny;
+    }
+    return await super.buildImplementation();
+  }
+
+  /**
+   * Derive the SIP-045 post-conditions the pox-5 contract call is evaluated against
+   * (SIP-045 §3.4.3). In Deny mode the node rejects `stake`, `register-for-bond` and
+   * `stake-update` without a matching 0x03 staking post-condition, and `unstake`,
+   * `update-bond-registration` and `announce-l1-early-exit` without a 0x04 PoX
+   * post-condition, so the builder attaches one whenever the caller has not supplied
+   * their own via {@link AbstractContractBuilder.postConditions}.
+   *
+   * The derivation works from the stored function args, so it also covers transactions
+   * re-built from a deserialized raw transaction.
+   */
+  private derivePostConditions(): PostCondition[] {
+    const senderAddress = getSTXAddressFromPubKeys(
+      this._fromPubKeys,
+      this._coinConfig.network.type === NetworkType.MAINNET
+        ? AddressVersion.MainnetMultiSig
+        : AddressVersion.TestnetMultiSig,
+      this._fromPubKeys.length > 1 ? AddressHashMode.P2SH : AddressHashMode.P2PKH,
+      this._numberSignatures
+    ).address;
+
+    switch (this._functionName) {
+      case FUNCTION_NAME_STAKE:
+        return [Pc.principal(senderAddress).willSendEq(this.uintArgValue(1)).ustxToLock()];
+      case FUNCTION_NAME_REGISTER_FOR_BOND:
+        return [Pc.principal(senderAddress).willSendEq(this.uintArgValue(2)).ustxToLock()];
+      case FUNCTION_NAME_STAKE_UPDATE:
+        if (this._stakeUpdatePostAmount === undefined) {
+          throw new InvalidParameterValueError(
+            'pox-5 stake-update requires postStakeAmount (the full post-update stake, not the increase) ' +
+              'for its SIP-045 staking post-condition; pass it in the stakeUpdate params or set postConditions() explicitly'
+          );
+        }
+        return [Pc.principal(senderAddress).willSendEq(this._stakeUpdatePostAmount).ustxToLock()];
+      case FUNCTION_NAME_UNSTAKE:
+      case FUNCTION_NAME_UPDATE_BOND_REGISTRATION:
+      case FUNCTION_NAME_ANNOUNCE_L1_EARLY_EXIT:
+        return [Pc.principal(senderAddress).willPerformPox()];
+      default:
+        // read-only reward calls are not evaluated against SIP-045 staking/PoX post-conditions
+        return [];
+    }
+  }
+
+  /**
+   * Read a uint function argument. The SIP-045 staking post-condition amounts mirror
+   * the on-chain amount arguments, so the derivation can read them straight from the ABI args.
+   */
+  private uintArgValue(index: number): Integer {
+    const arg = this._functionArgs[index];
+    if (!arg || arg.type !== ClarityType.UInt) {
+      throw new InvalidParameterValueError(`pox-5 ${this._functionName} expects a uint argument at position ${index}`);
+    }
+    return arg.value;
+  }
   registerForBond(params: Pox5RegisterForBondParams): this {
     this.functionName(FUNCTION_NAME_REGISTER_FOR_BOND);
     this.functionArgs([
@@ -226,6 +310,7 @@ export class Pox5Builder extends ContractBuilder {
       uintCV(params.amountIncrease ?? 0),
       optionalBuffer(params.signerCalldata),
     ]);
+    this._stakeUpdatePostAmount = params.postStakeAmount;
     return this;
   }
 

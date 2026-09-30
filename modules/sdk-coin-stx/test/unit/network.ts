@@ -1,7 +1,7 @@
 import assert from 'assert';
 
 import { BaseCoin as CoinConfig, coins } from '@bitgo/statics';
-import { pubKeyfromPrivKey, publicKeyToString } from '@stacks/transactions';
+import { privateKeyToPublic } from '@stacks/transactions';
 
 import { StxLib } from '../../src';
 
@@ -11,19 +11,19 @@ describe('Stacks network plumbing', function () {
   it('keeps the stock mainnet chain identity for stx', function () {
     const network = toStacksNetwork(coins.get('stx'));
     assert.strictEqual(network.chainId, 1);
-    assert.strictEqual(network.version, 0);
+    assert.strictEqual(network.transactionVersion, 0);
   });
 
   it('keeps the stock testnet chain identity for tstx', function () {
     const network = toStacksNetwork(coins.get('tstx'));
     assert.strictEqual(network.chainId, 2147483648);
-    assert.strictEqual(network.version, 128);
+    assert.strictEqual(network.transactionVersion, 128);
   });
 
   it('applies the tstxsignet chain identity declared in statics', function () {
     const network = toStacksNetwork(coins.get('tstxsignet'));
     assert.strictEqual(network.chainId, 1280);
-    assert.strictEqual(network.version, 0x80);
+    assert.strictEqual(network.transactionVersion, 0x80);
   });
 
   // staking-testnet rejects transactions carrying the public testnet chain ID with
@@ -41,15 +41,13 @@ describe('Stacks network plumbing', function () {
 });
 
 async function buildTransfer(config: Readonly<CoinConfig>): Promise<string> {
-  const publicKey = publicKeyToString(
-    pubKeyfromPrivKey('0f4fad1041051740108cdf523c346199e99d80cc845a4ea8d4d29b1a81fd22fc01')
-  );
+  const publicKey = privateKeyToPublic('0f4fad1041051740108cdf523c346199e99d80cc845a4ea8d4d29b1a81fd22fc01');
   const builder = new TransactionBuilderFactory(config).getTransferBuilder();
   builder.to('STHT87WKW17VGMPFFNB6QD1ABNKGB1600ZE7YVW4');
   builder.amount('1000');
   builder.fee({ fee: '200' });
   builder.nonce(0);
-  builder.fromPubKey([publicKey]);
+  builder.fromPubKey([publicKey as string]);
   const transaction = await builder.build();
   return transaction.toBroadcastFormat();
 }

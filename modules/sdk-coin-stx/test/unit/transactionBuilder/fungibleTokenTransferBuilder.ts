@@ -3,7 +3,7 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 import { coins } from '@bitgo/statics';
 import { bufferCVFromString, noneCV, someCV, standardPrincipalCV, uintCV } from '@stacks/transactions';
 import should from 'should';
-import { StacksMainnet, StacksTestnet } from '@stacks/network';
+import { STACKS_MAINNET, STACKS_TESTNET } from '@stacks/network';
 import { TransactionType } from '@bitgo/sdk-core';
 import assert from 'assert';
 
@@ -47,8 +47,8 @@ describe('Stacks: Fungible Token Transfer Builder', () => {
         const txBuilder: any = factory.getFungibleTokenTransferBuilder();
         const txBuilderProd: any = factoryProd.getFungibleTokenTransferBuilder();
 
-        txBuilder._network.should.deepEqual(new StacksTestnet());
-        txBuilderProd._network.should.deepEqual(new StacksMainnet());
+        txBuilder._network.should.deepEqual(STACKS_TESTNET);
+        txBuilderProd._network.should.deepEqual(STACKS_MAINNET);
       });
     });
 

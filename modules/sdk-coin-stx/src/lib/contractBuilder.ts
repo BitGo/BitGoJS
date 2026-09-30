@@ -92,12 +92,17 @@ export class ContractBuilder extends AbstractContractBuilder {
 
   functionArgs(args: ClarityValueJson[] | ClarityValue[]): this {
     this._functionArgs = args.map((arg) => {
-      if (!ClarityType[arg.type]) {
+      // A ClarityValue's type is one of the ClarityType values and it never carries a `val`
+      // property; a wire-format ClarityValueJson may. `@stacks/transactions` v2 used a numeric
+      // enum (so `ClarityType[arg.type]` was a valid reverse lookup); v7's string enum is not
+      // reverse-mappable, so discriminate on the enum values themselves.
+      const isClarityValue =
+        !('val' in (arg as ClarityValueJson)) && Object.values(ClarityType).includes(arg.type as ClarityType);
+      if (!isClarityValue) {
         return this.parseCv(arg);
-      } else {
-        // got direct clarity value after deserialization in fromImplementation
-        return arg;
       }
+      // got direct clarity value after deserialization in fromImplementation
+      return arg;
     });
     return this;
   }

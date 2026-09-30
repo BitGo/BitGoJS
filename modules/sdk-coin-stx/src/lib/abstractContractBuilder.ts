@@ -17,6 +17,7 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
+import { reviveClarityValue } from './utils';
 import { TransactionBuilder } from './transactionBuilder';
 
 export abstract class AbstractContractBuilder extends TransactionBuilder {
@@ -41,11 +42,22 @@ export abstract class AbstractContractBuilder extends TransactionBuilder {
       this._contractAddress = txData.payload.contractAddress;
       this._contractName = txData.payload.contractName;
       this._functionName = txData.payload.functionName;
-      this._functionArgs = txData.payload.functionArgs;
+      this._functionArgs = txData.payload.functionArgs.map(reviveClarityValue);
       super.initBuilder(tx);
     } else {
       throw new BuildTransactionError('Transaction should be contract call');
     }
+  }
+
+  /**
+   * Set the post-conditions for the contract call.
+   *
+   * PoX-5 builders derive SIP-045 post-conditions from their params; this setter
+   * overrides the derivation when a caller needs full control.
+   */
+  postConditions(postConditions: PostCondition[]): this {
+    this._postConditions = postConditions;
+    return this;
   }
 
   /** @inheritdoc */
@@ -62,9 +74,8 @@ export abstract class AbstractContractBuilder extends TransactionBuilder {
       contractName: this._contractName,
       functionName: this._functionName,
       functionArgs: this._functionArgs,
-      postConditionMode: this._postConditionMode,
+      postConditionMode: this._postConditionMode ?? PostConditionMode.Deny,
       postConditions: this._postConditions,
-      anchorMode: this._anchorMode,
       network: this._network,
       fee: new BigNum(this._fee.fee).toString(),
       nonce: new BigNum(this._nonce).toString(),

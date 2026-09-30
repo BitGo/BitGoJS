@@ -1,19 +1,19 @@
 import {
   addressToString,
-  BufferReader,
   ContractCallPayload,
-  createStacksPrivateKey,
-  createStacksPublicKey,
+  createMessageSignature,
   createTransactionAuthField,
   cvToString,
   cvToValue,
   deserializeTransaction,
+  getFee,
   isSingleSig,
-  MultiSigSpendingCondition,
   PayloadType,
   PubKeyEncoding,
-  StacksMessageType,
-  StacksTransaction,
+  SingleSigSpendingCondition,
+  StacksTransactionWire,
+  StacksWireType,
+  TransactionAuthFieldWire,
   TransactionSigner,
 } from '@stacks/transactions';
 
@@ -37,7 +37,7 @@ import { KeyPair } from './keyPair';
 import { FUNCTION_NAME_TRANSFER } from './constants';
 
 export class Transaction extends BaseTransaction {
-  private _stxTransaction: StacksTransaction;
+  private _stxTransaction: StacksTransactionWire;
   protected _type: TransactionType;
   private _sigHash: string;
 
@@ -60,17 +60,17 @@ export class Transaction extends BaseTransaction {
       if (!keys.prv) {
         throw new SigningError('Missing private key');
       }
-      const privKey = createStacksPrivateKey(keys.prv);
-      signer.signOrigin(privKey);
+      signer.signOrigin(keys.prv);
       this._sigHash = signer.sigHash;
     }
   }
 
   async appendOrigin(pubKeyString: string[] | string): Promise<void> {
     const pubKeyStrings = pubKeyString instanceof Array ? pubKeyString : [pubKeyString];
-    const signer: TransactionSigner = new TransactionSigner(this._stxTransaction);
     pubKeyStrings.forEach((pubKey) => {
-      signer.appendOrigin(createStacksPublicKey(pubKey));
+      // Direct field push: v7's TransactionSigner constructor refuses conditions that
+      // already carry their required signatures, which rebuild-from-raw flows must allow.
+      this._stxTransaction.appendPubkey(pubKey);
     });
   }
 
@@ -81,11 +81,13 @@ export class Transaction extends BaseTransaction {
     const signatures = signature instanceof Array ? signature : [signature];
 
     if (!isMultiSig) {
-      this._stxTransaction = this._stxTransaction.createTxWithSignature(signatures[0].data);
+      (this._stxTransaction.auth.spendingCondition as SingleSigSpendingCondition).signature = createMessageSignature(
+        signatures[0].data
+      );
     } else {
       const authFields = signatures.map((sig) => createTransactionAuthField(PubKeyEncoding.Compressed, sig));
-      (this._stxTransaction.auth.spendingCondition as MultiSigSpendingCondition).fields = (
-        this._stxTransaction.auth.spendingCondition as MultiSigSpendingCondition
+      (this._stxTransaction.auth.spendingCondition as { fields: TransactionAuthFieldWire[] }).fields = (
+        this._stxTransaction.auth.spendingCondition as { fields: TransactionAuthFieldWire[] }
       ).fields.concat(authFields);
     }
     if (signatures.length > 0) {
@@ -100,7 +102,7 @@ export class Transaction extends BaseTransaction {
       } else {
         const signatures: string[] = [];
         this._stxTransaction.auth.spendingCondition.fields.forEach((field) => {
-          if (field.contents.type === StacksMessageType.MessageSignature) {
+          if (field.contents.type === StacksWireType.MessageSignature) {
             signatures.push(field.contents.data);
           }
         });
@@ -117,7 +119,7 @@ export class Transaction extends BaseTransaction {
     }
     const result: TxData = {
       id: this._stxTransaction.txid(),
-      fee: this._stxTransaction.auth.getFee().toString(10),
+      fee: getFee(this._stxTransaction.auth).toString(),
       from: getTxSenderAddress(this._stxTransaction),
       nonce: this.getNonce(),
       payload: this.getPayloadData(),
@@ -133,11 +135,7 @@ export class Transaction extends BaseTransaction {
         // result.payload.memo will be padded with \u0000 up to
         // MEMO_MAX_LENGTH_BYTES as defined in @stacks/transactions
         memo: unpadMemo(payload.memo.content),
-        to: addressToString({
-          type: StacksMessageType.Address,
-          version: payload.recipient.address.version,
-          hash160: payload.recipient.address.hash160.toString(),
-        }),
+        to: payload.recipient.value,
         amount: payload.amount.toString(),
       };
       return txPayload;
@@ -163,21 +161,21 @@ export class Transaction extends BaseTransaction {
    * @returns {number} size in bytes of the serialized transaction
    */
   transactionSize(): number {
-    return this._stxTransaction.serialize().length;
+    return this._stxTransaction.serializeBytes().length;
   }
 
   toBroadcastFormat(): string {
     if (!this._stxTransaction) {
       throw new ParseTransactionError('Empty transaction');
     }
-    return this._stxTransaction.serialize().toString('hex');
+    return this._stxTransaction.serialize();
   }
 
-  get stxTransaction(): StacksTransaction {
+  get stxTransaction(): StacksTransactionWire {
     return this._stxTransaction;
   }
 
-  set stxTransaction(t: StacksTransaction) {
+  set stxTransaction(t: StacksTransactionWire) {
     this._stxTransaction = t;
   }
 
@@ -197,7 +195,7 @@ export class Transaction extends BaseTransaction {
   fromRawTransaction(rawTransaction: string): void {
     const raw = removeHexPrefix(rawTransaction);
     try {
-      this._stxTransaction = deserializeTransaction(BufferReader.fromBuffer(Buffer.from(raw, 'hex')));
+      this._stxTransaction = deserializeTransaction(Buffer.from(raw, 'hex'));
     } catch (e) {
       throw new ParseTransactionError('Error parsing the raw transaction');
     }

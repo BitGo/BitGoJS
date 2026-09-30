@@ -1,6 +1,7 @@
 import { randomBytes } from 'crypto';
 import { bip32, ECPair } from '@bitgo/secp256k1';
-import { getAddressFromPublicKey, TransactionVersion } from '@stacks/transactions';
+import { getAddressFromPublicKey } from '@stacks/transactions';
+import { StacksNetworkName, TransactionVersion } from '@stacks/network';
 import {
   DefaultKeys,
   isPrivateKey,
@@ -123,6 +124,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    * @returns {string} The public address
    */
   getSTXAddress(compressed = false, network: TransactionVersion = TransactionVersion.Mainnet): string {
-    return getAddressFromPublicKey(this.getKeys(compressed).pub, network);
+    const networkName: StacksNetworkName = network === TransactionVersion.Mainnet ? 'mainnet' : 'testnet';
+    return getAddressFromPublicKey(this.getKeys(compressed).pub, networkName);
   }
 }

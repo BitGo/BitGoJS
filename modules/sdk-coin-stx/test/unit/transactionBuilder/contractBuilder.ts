@@ -1,7 +1,7 @@
 import assert from 'assert';
 import should from 'should';
 import BigNum from 'bn.js';
-import { StacksTestnet, StacksMainnet } from '@stacks/network';
+import { STACKS_TESTNET, STACKS_MAINNET } from '@stacks/network';
 import { TransactionType } from '@bitgo/sdk-core';
 import { bufferCV, noneCV, someCV, standardPrincipalCV, tupleCV, uintCV, intCV } from '@stacks/transactions';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
@@ -49,8 +49,8 @@ describe('Stacks: Contract Builder', function () {
         const txBuilder: any = factory.getTransferBuilder();
         const txBuilderProd: any = factoryProd.getTransferBuilder();
 
-        txBuilder._network.should.deepEqual(new StacksTestnet());
-        txBuilderProd._network.should.deepEqual(new StacksMainnet());
+        txBuilder._network.should.deepEqual(STACKS_TESTNET);
+        txBuilderProd._network.should.deepEqual(STACKS_MAINNET);
       });
     });
 

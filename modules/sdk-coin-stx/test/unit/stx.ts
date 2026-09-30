@@ -5,7 +5,7 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 import { Wallet } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { coins } from '@bitgo/statics';
-import { cvToString, pubKeyfromPrivKey, publicKeyToString } from '@stacks/transactions';
+import { cvToString, privateKeyToPublic, UIntCV } from '@stacks/transactions';
 
 import * as testData from '../fixtures';
 import * as resources from './resources';
@@ -193,7 +193,9 @@ describe('STX:', function () {
     explain.contractName.should.equal(testData.txExplainedContract.contractName);
     explain.contractFunction.should.equal(testData.txExplainedContract.functionName);
     explain.contractFunctionArgs[0].type.should.equal(testData.txExplainedContract.functionArgs[0].type);
-    explain.contractFunctionArgs[0].value.toString().should.equal(testData.txExplainedContract.functionArgs[0].value);
+    explain.contractFunctionArgs[0].value
+      .toString()
+      .should.equal((testData.txExplainedContract.functionArgs[0] as UIntCV).value);
   });
 
   it('should explain a fungible token transfer transaction with memo', async function () {
@@ -204,8 +206,8 @@ describe('STX:', function () {
     explain.id.should.equal(testData.fungibleTokenTransferTx.id);
     explain.fee.should.equal(testData.fungibleTokenTransferTx.fee);
     explain.memo.should.equal('1');
-    explain.outputAmount.should.equal(testData.fungibleTokenTransferTx.functionArgs[2].value);
-    explain.outputs[0].amount.should.equal(testData.fungibleTokenTransferTx.functionArgs[2].value);
+    explain.outputAmount.should.equal((testData.fungibleTokenTransferTx.functionArgs[2] as UIntCV).value);
+    explain.outputs[0].amount.should.equal((testData.fungibleTokenTransferTx.functionArgs[2] as UIntCV).value);
     explain.outputs[0].address.should.equal(cvToString(testData.fungibleTokenTransferTx.functionArgs[1]));
     explain.outputs[0].memo.should.equal('1');
     explain.outputs[0].tokenName.should.equal(testData.fungibleTokenTransferTx.tokenName);
@@ -219,8 +221,8 @@ describe('STX:', function () {
     explain.id.should.equal(testData.hexWithoutMemoTransferId);
     explain.fee.should.equal(testData.fungibleTokenTransferTx.fee);
     assert.deepEqual(explain.memo, undefined, 'memo should be undefined');
-    explain.outputAmount.should.equal(testData.fungibleTokenTransferTx.functionArgs[2].value);
-    explain.outputs[0].amount.should.equal(testData.fungibleTokenTransferTx.functionArgs[2].value);
+    explain.outputAmount.should.equal((testData.fungibleTokenTransferTx.functionArgs[2] as UIntCV).value);
+    explain.outputs[0].amount.should.equal((testData.fungibleTokenTransferTx.functionArgs[2] as UIntCV).value);
     explain.outputs[0].address.should.equal(cvToString(testData.fungibleTokenTransferTx.functionArgs[1]));
     assert.deepEqual(explain.outputs[0].memo, undefined, 'memo should be undefined');
     explain.outputs[0].tokenName.should.equal(testData.fungibleTokenTransferTx.tokenName);
@@ -440,7 +442,7 @@ describe('STX:', function () {
       const builder = factory.getSbtcWithdrawBuilder();
       builder.fee({ fee: '1000' });
       builder.nonce(1);
-      const pubKeys = prvKeysString.map((prv) => publicKeyToString(pubKeyfromPrivKey(prv)));
+      const pubKeys = prvKeysString.map((prv) => privateKeyToPublic(prv) as string);
       builder.fromPubKey(pubKeys);
       builder.numberSignatures(2);
       builder.withdraw(withdrawParams);

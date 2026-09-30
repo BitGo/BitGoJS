@@ -1,7 +1,6 @@
 import should from 'should';
-import { StacksTestnet, StacksMainnet } from '@stacks/network';
-import { pubKeyfromPrivKey, publicKeyToString } from '@stacks/transactions';
-import { principalToString } from '@stacks/transactions/dist/clarity/types/principalCV';
+import { STACKS_TESTNET, STACKS_MAINNET } from '@stacks/network';
+import { privateKeyToPublic } from '@stacks/transactions';
 
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
@@ -42,8 +41,8 @@ describe('Stacks: Send Many Builder', function () {
       const txBuilder: any = factory.getSendmanyBuilder();
       const txBuilderProd: any = factoryProd.getSendmanyBuilder();
 
-      txBuilder._network.should.deepEqual(new StacksTestnet());
-      txBuilderProd._network.should.deepEqual(new StacksMainnet());
+      txBuilder._network.should.deepEqual(STACKS_TESTNET);
+      txBuilderProd._network.should.deepEqual(STACKS_MAINNET);
     });
 
     describe('should build ', function () {
@@ -51,8 +50,8 @@ describe('Stacks: Send Many Builder', function () {
         const builder = initTxBuilder();
 
         // corresponding public keys
-        const pubKeys = testData.prvKeysString.map(pubKeyfromPrivKey);
-        const pubKeyStrings = pubKeys.map(publicKeyToString);
+        const pubKeys = testData.prvKeysString.map((prv) => privateKeyToPublic(prv) as string);
+        const pubKeyStrings = pubKeys;
         builder.fromPubKey(pubKeyStrings);
         for (const recipient of testData.sendManyRecipients) {
           builder.send(recipient);
@@ -75,8 +74,10 @@ describe('Stacks: Send Many Builder', function () {
         list.length.should.equal(testData.sendManyRecipients.length);
         for (let i = 0; i < testData.sendManyRecipients.length; i++) {
           list[i].data.should.have.properties(['to', 'ustx', 'memo']);
-          principalToString(list[i].data.to).should.equal(testData.sendManyRecipients[i].address);
-          list[i].data.memo.buffer.toString('ascii').should.equal(testData.sendManyRecipients[i].memo);
+          list[i].data.to.value.should.equal(testData.sendManyRecipients[i].address);
+          Buffer.from(list[i].data.memo.value, 'hex')
+            .toString('ascii')
+            .should.equal(testData.sendManyRecipients[i].memo);
           list[i].data.ustx.value.should.equal(testData.sendManyRecipients[i].amount);
         }
         tx.outputs.length.should.equal(testData.sendManyRecipients.length);

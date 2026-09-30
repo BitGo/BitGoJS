@@ -3,15 +3,14 @@ import BigNum from 'bn.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import {
   AuthType,
-  BufferReader,
   deserializeTransaction,
   emptyMessageSignature,
   isSingleSig,
-  makeSigHashPreSign,
   nextVerification,
-  publicKeyFromSignature,
-  StacksMessageType,
+  publicKeyFromSignatureVrs,
   PubKeyEncoding,
+  sigHashPreSign,
+  StacksWireType,
 } from '@stacks/transactions';
 import { StacksNetwork } from '@stacks/network';
 import {
@@ -44,7 +43,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _signatures: SignatureData[];
   protected _network: StacksNetwork;
   protected _fromPubKeys: string[];
-
+  /**
+   * The multi-sig `signer` hash from a parsed transaction. Signature recovery yields the
+   * signers' compressed pubkeys even when the original wire listed uncompressed ones, so
+   * re-deriving the P2SH address from recovered keys can change the address; rebuilding
+   * must reuse the parsed one to keep `from(raw).build()` byte-identical.
+   */
+  protected _parsedMultisigSigner?: string;
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this._anchorMode = ANCHOR_MODE;
@@ -77,33 +82,34 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       this._numberSignatures = 1;
       if (tx.stxTransaction.auth.spendingCondition.signature.data !== emptyMessageSignature().data) {
         const signature = tx.stxTransaction.auth.spendingCondition.signature;
-        sigHash = makeSigHashPreSign(
+        sigHash = sigHashPreSign(
           sigHash,
           authType,
           new BigNum(this._fee.fee).toString(),
           new BigNum(this._nonce).toString()
         );
         this._signatures.push({ ...signature, index: 0, sigHash });
-        this._fromPubKeys = [publicKeyFromSignature(sigHash, signature)];
+        this._fromPubKeys = [publicKeyFromSignatureVrs(sigHash, signature.data)];
       }
     } else {
       this._numberSignatures = tx.stxTransaction.auth.spendingCondition.signaturesRequired;
+      this._parsedMultisigSigner = tx.stxTransaction.auth.spendingCondition.signer;
       tx.stxTransaction.auth.spendingCondition.fields.forEach((field, index) => {
-        if (field.contents.type === StacksMessageType.MessageSignature) {
+        if (field.contents.type === StacksWireType.MessageSignature) {
           const signature = field.contents;
           const nextVerify = nextVerification(
             sigHash,
             authType,
             new BigNum(this._fee.fee).toString(),
             new BigNum(this._nonce).toString(),
-            PubKeyEncoding.Compressed, // useless param as Compressed is hardcoded in stacks lib
-            signature
+            PubKeyEncoding.Compressed, // v2 hardcoded compressed; keep the same recovery encoding
+            signature.data
           );
           sigHash = nextVerify.nextSigHash;
           this._signatures.push({ ...signature, index, sigHash });
-          this._fromPubKeys.push(nextVerify.pubKey.data.toString('hex'));
+          this._fromPubKeys.push(Buffer.from(nextVerify.pubKey.data).toString('hex'));
         } else {
-          this._fromPubKeys.push(field.contents.data.toString('hex'));
+          this._fromPubKeys.push(Buffer.from(field.contents.data).toString('hex'));
         }
       });
     }
@@ -113,9 +119,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected fromImplementation(rawTransaction: string): Transaction {
     const tx = new Transaction(this._coinConfig);
     this.validateRawTransaction(rawTransaction);
-    const stackstransaction = deserializeTransaction(
-      BufferReader.fromBuffer(Buffer.from(removeHexPrefix(rawTransaction), 'hex'))
-    );
+    const stackstransaction = deserializeTransaction(Buffer.from(removeHexPrefix(rawTransaction), 'hex'));
     tx.stxTransaction = stackstransaction;
     this.initBuilder(tx);
     return this.transaction;
@@ -125,6 +129,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     const isMultiSig: boolean = this._fromPubKeys.length > 1;
+    const condition = this._transaction.stxTransaction.auth.spendingCondition;
+    if (!isSingleSig(condition) && this._parsedMultisigSigner !== undefined) {
+      (condition as unknown as { signer: string }).signer = this._parsedMultisigSigner;
+    }
     this._transaction.stxTransaction.setFee(new BigNum(this._fee.fee).toString());
     this._transaction.stxTransaction.setNonce(new BigNum(this._nonce).toString());
 
@@ -165,9 +173,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     // Signing the transaction is an operation that relies on all the data being set,
     // so we set the source here and leave the actual signing for the build step
     this._multiSignerKeyPairs.push(signer);
-    const publicKey = signer.getKeys(signer.getCompressed()).pub;
-    if (!this._fromPubKeys.includes(publicKey)) {
-      this._fromPubKeys.push(publicKey);
+    // Track the signer under BOTH compressed and uncompressed forms: fromPubKey may have
+    // registered either representation, and a phantom second entry would make the build
+    // loop sign the same origin twice (which v7's signer oversign guard rejects).
+    const compressedPub = signer.getKeys(true).pub;
+    const uncompressedPub = signer.getKeys(false).pub;
+    if (!this._fromPubKeys.includes(compressedPub) && !this._fromPubKeys.includes(uncompressedPub)) {
+      this._fromPubKeys.push(signer.getKeys(signer.getCompressed()).pub);
     }
     return this.transaction;
   }
@@ -273,7 +285,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       throw new InvalidTransactionError('Raw transaction is empty');
     }
     try {
-      deserializeTransaction(BufferReader.fromBuffer(Buffer.from(removeHexPrefix(rawTransaction), 'hex')));
+      deserializeTransaction(Buffer.from(removeHexPrefix(rawTransaction), 'hex'));
     } catch (e) {
       throw new ParseTransactionError('There was an error parsing the raw transaction');
     }

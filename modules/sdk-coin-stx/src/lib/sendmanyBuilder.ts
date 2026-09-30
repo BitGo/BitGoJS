@@ -5,15 +5,15 @@ import {
   addressToString,
   AddressVersion,
   bufferCVFromString,
-  ClarityValue,
-  FungibleConditionCode,
   listCV,
-  makeStandardSTXPostCondition,
+  ClarityValue,
+  Pc,
   PostCondition,
   PostConditionMode,
   standardPrincipalCV,
   tupleCV,
   uintCV,
+  ContractCallPayload,
 } from '@stacks/transactions';
 import { BuildTransactionError } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
@@ -26,7 +26,6 @@ import {
 } from './utils';
 import { SendParams } from './iface';
 import { CONTRACT_NAME_SENDMANY, FUNCTION_NAME_SENDMANY } from './constants';
-import { ContractCallPayload } from '@stacks/transactions/dist/payload';
 import { AbstractContractBuilder } from './abstractContractBuilder';
 
 export class SendmanyBuilder extends AbstractContractBuilder {
@@ -60,21 +59,20 @@ export class SendmanyBuilder extends AbstractContractBuilder {
   private sendParamsToPostcondition(sendParams: SendParams[]): PostCondition[] {
     const sum: BigNum = sendParams.reduce((current, next) => current.add(new BigNum(next.amount)), new BigNum(0));
     return [
-      makeStandardSTXPostCondition(
+      Pc.principal(
         getSTXAddressFromPubKeys(
           this._fromPubKeys,
           this._coinConfig.network.type === NetworkType.MAINNET
             ? AddressVersion.MainnetMultiSig
             : AddressVersion.TestnetMultiSig,
-          this._fromPubKeys.length > 1 ? AddressHashMode.SerializeP2SH : AddressHashMode.SerializeP2PKH,
+          this._fromPubKeys.length > 1 ? AddressHashMode.P2SH : AddressHashMode.P2PKH,
           this._numberSignatures
-        ).address,
-        FungibleConditionCode.Equal,
-        sum.toString()
-      ),
+        ).address
+      )
+        .willSendEq(sum.toString())
+        .ustx(),
     ];
   }
-
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
     this._sendParams = functionArgsToSendParams((tx.stxTransaction.payload as ContractCallPayload).functionArgs);
