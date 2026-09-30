@@ -1,14 +1,18 @@
 import {
   BaseCoin,
   BitGoBase,
+  EDDSAMethods,
   Environments,
+  MPCSweepRecoveryOptions,
+  MPCTx,
+  MPCTxs,
   SignTransactionOptions as BaseSignTransactionOptions,
 } from '@bitgo/sdk-core';
 import { coins, BaseCoin as StaticsBaseCoin, SubstrateSpecNameType } from '@bitgo/statics';
-import { Interface, SubstrateCoin } from '@bitgo/abstract-substrate';
+import { Interface, KeyPair as SubstrateKeyPair, SubstrateCoin } from '@bitgo/abstract-substrate';
 import { TransactionBuilderFactory } from './lib';
 import { ApiPromise, WsProvider } from '@polkadot/api';
-
+import nacl from 'tweetnacl';
 export const DEFAULT_SCAN_FACTOR = 20; // default number of receive addresses to scan for funds
 
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
@@ -100,5 +104,89 @@ export class Tao extends SubstrateCoin {
       txVersion: api.runtimeVersion.transactionVersion.toNumber(),
       metadata: api.runtimeMetadata.toHex(),
     };
+  }
+
+  /** inherited doc */
+  async createBroadcastableSweepTransaction(params: MPCSweepRecoveryOptions): Promise<MPCTxs> {
+    const req = params.signatureShares;
+    const broadcastableTransactions: MPCTx[] = [];
+    let lastScanIndex = 0;
+
+    for (let i = 0; i < req.length; i++) {
+      const MPC = await EDDSAMethods.getInitializedMpcInstance();
+      const transaction = req[i].txRequest.transactions[0].unsignedTx;
+      const ovc = req[i].ovc?.[0];
+      const mpcv2SignatureHex = ovc?.eddsaMpcv2Signature;
+      if (!ovc || (!mpcv2SignatureHex && !ovc.eddsaSignature)) {
+        throw new Error('Missing signature(s)');
+      }
+      if (!transaction.signableHex) {
+        throw new Error('Missing signable hex');
+      }
+      const messageBuffer = Buffer.from(transaction.signableHex!, 'hex');
+      if (
+        !transaction.coinSpecific ||
+        !transaction.coinSpecific?.firstValid ||
+        !transaction.coinSpecific?.maxDuration
+      ) {
+        throw new Error('missing validity window');
+      }
+      const validityWindow = {
+        firstValid: transaction.coinSpecific?.firstValid,
+        maxDuration: transaction.coinSpecific?.maxDuration,
+      };
+      const material = await this.getMaterial();
+      if (!transaction.coinSpecific?.commonKeychain) {
+        throw new Error('Missing common keychain');
+      }
+      const commonKeychain = transaction.coinSpecific!.commonKeychain! as string;
+      if (!transaction.derivationPath) {
+        throw new Error('Missing derivation path');
+      }
+      const derivationPath = transaction.derivationPath as string;
+      const accountId = MPC.deriveUnhardened(commonKeychain, derivationPath).slice(0, 64);
+      const senderAddr = this.getAddressFromPublicKey(accountId);
+      let signatureHex: Buffer;
+      if (mpcv2SignatureHex) {
+        // MPCv2 (OVC 5-pass): raw 64-byte Ed25519 signature. Verify against the
+        // same derived public key the transaction is signed under, then embed as-is.
+        const signature = Buffer.from(mpcv2SignatureHex, 'hex');
+        const isValid = nacl.sign.detached.verify(messageBuffer, signature, Buffer.from(accountId, 'hex'));
+        if (!isValid) {
+          throw new Error('Invalid signature');
+        }
+        signatureHex = signature;
+      } else {
+        const result = MPC.verify(messageBuffer, ovc.eddsaSignature);
+        if (!result) {
+          throw new Error('Invalid signature');
+        }
+        signatureHex = Buffer.concat([
+          Buffer.from(ovc.eddsaSignature.R, 'hex'),
+          Buffer.from(ovc.eddsaSignature.sigma, 'hex'),
+        ]);
+      }
+
+      const txnBuilder = this.getBuilder()
+        .material(material)
+        .from(transaction.serializedTx as string)
+        .sender({ address: senderAddr })
+        .validity(validityWindow);
+
+      const substrateKeyPair = new SubstrateKeyPair({ pub: accountId });
+      txnBuilder.addSignature({ pub: substrateKeyPair.getKeys().pub }, signatureHex);
+      const signedTransaction = await txnBuilder.build();
+      const serializedTx = signedTransaction.toBroadcastFormat();
+
+      broadcastableTransactions.push({
+        serializedTx: serializedTx,
+        scanIndex: transaction.scanIndex,
+      });
+
+      if (i === req.length - 1 && transaction.coinSpecific!.lastScanIndex) {
+        lastScanIndex = transaction.coinSpecific!.lastScanIndex as number;
+      }
+    }
+    return { transactions: broadcastableTransactions, lastScanIndex };
   }
 }

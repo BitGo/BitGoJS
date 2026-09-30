@@ -2,7 +2,7 @@ import _ from 'lodash';
 import BigNumber from 'bignumber.js';
 
 import { BitGoBase, CoinConstructor, NamedCoinConstructor, VerifyTransactionOptions } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, coins, NetworkType, Sip10TokenConfig, tokens } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, coins, Sip10TokenConfig, tokens } from '@bitgo/statics';
 
 import { Stx } from './stx';
 import { TransactionBuilderFactory } from './lib';
@@ -13,7 +13,9 @@ export class Sip10Token extends Stx {
   public readonly tokenConfig: Sip10TokenConfig;
 
   constructor(bitgo: BitGoBase, tokenConfig: Sip10TokenConfig) {
-    const staticsCoin = tokenConfig.network === NetworkType.MAINNET ? coins.get('stx') : coins.get('tstx');
+    // tokenConfig.coin is derived by statics from the token's network, so it stays correct for
+    // deployments beyond the stock mainnet/testnet pair (e.g. tstxsignet, chain ID 1280).
+    const staticsCoin = coins.get(tokenConfig.coin);
     super(bitgo, staticsCoin);
     this.tokenConfig = tokenConfig;
   }
