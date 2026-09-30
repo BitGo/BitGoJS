@@ -9,6 +9,7 @@ import {
   CANTON_ADDRESSES,
   CANTON_BLOCK_HEIGHT,
   CantonAllocationAllocatePrepareResponse,
+  CantonAllocationAllocateV2PreparedResponse,
   CantonExerciseCommandPrepareResponse,
   CoinTransferPreapprovalCancelPrepareResponse,
   CosignDelegationAcceptTemplePrepareResponse,
@@ -161,6 +162,21 @@ describe('Canton Util', function () {
         'ravi-2-step-party-new::122092e7d33ac10c0f3d55976342f37555df05da5b742956d56a62ae2367769079d2'
       );
       assert.equal(parsedData.amount, '50000000000');
+    });
+
+    it('should parse the V2 allocation allocate prepared transaction', () => {
+      const parsedData = utils.parseRawCantonTransactionData(
+        CantonAllocationAllocateV2PreparedResponse.preparedTransaction,
+        TransactionType.AllocationAllocate
+      );
+      should.exist(parsedData);
+      // sender = allocation authorizer (the allocating party); receiver = otherside of its
+      // SenderSide leg (delivery-0); amount = that leg's 2.0000000000 in base units.
+      assert.equal(parsedData.sender, '12206::1220647c88a200186bf33cd76ceec96bd1f6db2b624955a0e802a97cbde399afcd7d');
+      assert.equal(parsedData.receiver, '12204::1220478f91bb23635c4e6bb4d8d21620f59ca2f2de699174358e183bcdb6fa4f6fca');
+      assert.equal(parsedData.amount, '20000000000');
+      // instrumentAdmin = allocation.admin, instrumentId = leg instrumentId → statics token name
+      assert.equal(parsedData.token, 'tcanton:tc1');
     });
   });
 
