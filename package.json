@@ -121,7 +121,8 @@
     "**/avalanche/**/ws": "8.18.3",
     "**/ethers/**/ws": "7.5.10",
     "**/swarm-js/**/ws": "5.2.4",
-    "**/swarm-js/**/tar": "6.2.1",
+    "**/tar": "7.5.22",
+    "**/swarm-js/**/tar": "7.5.22",
     "serialize-javascript": "7.0.5",
     "@grpc/grpc-js": "^1.14.4",
     "bigint-buffer": "npm:@trufflesuite/bigint-buffer@1.1.10",
@@ -279,7 +280,7 @@
     },
     "swarm-js": {
       "ws": "5.2.4",
-      "tar": "6.2.1"
+      "tar": "7.5.22"
     },
     "iota-sdk": {
       "valibot": "1.2.0"
