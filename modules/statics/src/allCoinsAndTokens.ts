@@ -7895,6 +7895,15 @@ export const allCoinsAndTokens = [
     [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   opethErc20(
+    '7ae22984-b3cc-4bdc-978f-68ebbec1dec9',
+    'opeth:usdt0',
+    'USDT0',
+    6,
+    '0x01bff41798a0bcf287b996046ca68b395dbc1071',
+    UnderlyingAsset['opeth:usdt0'],
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.STABLECOIN]
+  ),
+  opethErc20(
     '949c4e1f-83b8-4ca0-a6dc-72817a8a86e7',
     'opeth:op',
     'Optimism',
