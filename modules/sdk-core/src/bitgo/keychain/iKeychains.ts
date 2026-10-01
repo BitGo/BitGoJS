@@ -81,8 +81,8 @@ export interface ChangedKeychains {
 export interface ListKeychainsResult {
   keys: Keychain[];
   nextBatchPrevId?: string;
-  /** Count of this user's keychains with encrypted private key material set (WCN-2084 total-count support). */
-  encryptedTotalCount?: number;
+  /** Total of the listed keychains — the count of the list's own query (WCN-2084 total-count support). */
+  totalCount?: number;
 }
 
 export interface GetKeychainOptions {
@@ -110,10 +110,9 @@ export interface KeychainPasswordUpdateProgress {
   status: KeychainPasswordUpdateStatus;
   currentKeychainId?: string;
   /**
-   * Truthful total of keychains with encrypted user key material (`encryptedTotalCount`
-   * from the backend, WCN-2084). Records without an `encryptedPrv` are outside this
-   * unit and emit no progress event — the denominator must never be undershot or
-   * overshot by `completed`.
+   * Truthful total of the listed keychains (`totalCount` from the backend, WCN-2084).
+   * Every listed record reports an outcome (updated | skipped), so `completed` reaches
+   * this total exactly on any account composition.
    */
   total?: number;
 }

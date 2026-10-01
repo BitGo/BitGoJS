@@ -2050,7 +2050,7 @@ export class BitGoAPI implements BitGoBase {
     const counters = { attempted: 0, completed: 0, succeeded: 0, skipped: 0 };
     // The v1 set has no server-provided count; its size (the /user/encrypted map) is
     // known only once v1 processing returns. Captured so v2 events can add it to the
-    // backend-served encryptedTotalCount — without this, a mixed account finishes at
+    // backend-served totalCount — without this, a mixed account finishes at
     // `completed > total` (2 v1 + 32 v2 keychains read "34 of 32").
     let v1KeychainCount = 0;
     // A v1-only account emits no v2 event at all, so nothing would ever carry a total;
@@ -2077,7 +2077,7 @@ export class BitGoAPI implements BitGoBase {
           ...counters,
           // v1 events stay indeterminate: the v1 set has no server count, and surfacing
           // its client-side size mid-flight would make the denominator jump the moment
-          // v2's encryptedTotalCount arrives. v2 events add the v1 set size so the
+          // v2's totalCount arrives. v2 events add the v1 set size so the
           // counter reaches the denominator exactly on mixed v1/v2 accounts. When the
           // backend supplies no count, the total stays undefined (never fabricated).
           total:
@@ -2119,7 +2119,7 @@ export class BitGoAPI implements BitGoBase {
       // A v1-only account emits no v2 event, so its total would stay undefined for the
       // whole rotation and the observer could never render "n of n". Emit the client-known
       // v1 set size as the terminal denominator — guarded on zero v2 events so mixed
-      // accounts keep the single stable total from encryptedTotalCount instead of one
+      // accounts keep the single stable total from totalCount instead of one
       // that jumps mid-rotation.
       if (v2EventCount === 0 && v1KeychainCount > 0) {
         emitProgress({ phase: 'keychains', status: 'updated', ...counters, total: v1KeychainCount });

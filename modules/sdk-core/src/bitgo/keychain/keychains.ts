@@ -172,16 +172,18 @@ export class Keychains implements IKeychains {
     let keysLeft = true;
     while (keysLeft) {
       const result: ListKeychainsResult = await this.list({ limit: 500, prevId });
-      if (total === undefined && result.encryptedTotalCount !== undefined) {
-        total = result.encryptedTotalCount;
+      if (total === undefined && result.totalCount !== undefined) {
+        total = result.totalCount;
       }
       for (const key of result.keys) {
         const oldEncryptedPrv = key.encryptedPrv;
         if (_.isUndefined(oldEncryptedPrv)) {
-          // Outside the progress unit (WCN-2084 option B): the denominator is
-          // `encryptedTotalCount` — records with no encryptedPrv are not counted
-          // by the backend and must not emit progress, or `completed` would
-          // overshoot `total` on any page containing placeholder records.
+          // Option A counting unit (WCN-2084): every listed record reports an outcome,
+          // so `completed` reaches the server's `totalCount` on any account composition.
+          // A record with no serialized material is reported as skipped rather than
+          // silently dropped — it is counted by the list total, and the walk still
+          // leaves it untouched (no re-encryption, no entry in the changedKeys map).
+          notifyProgress('skipped', observationId(key));
           continue;
         }
         try {

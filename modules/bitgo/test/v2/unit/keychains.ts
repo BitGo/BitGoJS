@@ -606,7 +606,7 @@ describe('V2 Keychains', function () {
         ]);
       });
 
-      it('threads encryptedTotalCount from the first page into total on every emitted event', async function () {
+      it('threads totalCount from the first page into total on every emitted event', async function () {
         const encXprv1 = await bitgo.encrypt({ input: 'xprv1', password: oldPassword });
         const encXprv2 = await bitgo.encrypt({ input: 'xprv2', password: oldPassword });
         nock(bgUrl)
@@ -617,7 +617,7 @@ describe('V2 Keychains', function () {
               { pub: 'xpub1', encryptedPrv: encXprv1 },
               { pub: 'xpub2', encryptedPrv: encXprv2 },
             ],
-            encryptedTotalCount: 2,
+            totalCount: 2,
           });
 
         const events: Array<{ status: string; currentKeychainId?: string; total?: number }> = [];
@@ -633,26 +633,30 @@ describe('V2 Keychains', function () {
         ]);
       });
 
-      it('should not emit progress for a key with no encryptedPrv (outside the encryptedTotalCount unit)', async function () {
+      it('emits skipped for a listed record with no encryptedPrv so completed reaches totalCount (option A)', async function () {
         const encXprv1 = await bitgo.encrypt({ input: 'xprv1', password: oldPassword });
         nock(bgUrl)
           .get('/api/v2/tltc/key')
           .query(true)
           .reply(200, {
             keys: [{ pub: 'xpub1', encryptedPrv: encXprv1 }, { pub: 'xpub2' }],
-            encryptedTotalCount: 1,
+            totalCount: 2,
           });
 
-        const events: Array<{ status: string; currentKeychainId?: string }> = [];
+        const events: Array<{ status: string; currentKeychainId?: string; total?: number }> = [];
         await keychains.updatePassword({
           oldPassword,
           newPassword,
           progressCallback: (progress) => events.push(progress),
         });
 
-        // Only the encrypted record is in the unit; the placeholder record must not
-        // emit, or `completed` would overshoot `encryptedTotalCount` in the UI.
-        events.should.deepEqual([{ status: 'updated', currentKeychainId: 'xpub1', total: 1 }]);
+        // Every listed record reports an outcome (updated | skipped): the placeholder
+        // record is counted by the list total, so it MUST report skipped — a silent
+        // drop would leave `completed` one short of `totalCount` in the UI.
+        events.should.deepEqual([
+          { status: 'updated', currentKeychainId: 'xpub1', total: 2 },
+          { status: 'skipped', currentKeychainId: 'xpub2', total: 2 },
+        ]);
       });
 
       it('should emit skipped for a known decrypt-failure and never mislabel a fatal error as skipped', async function () {
