@@ -24,12 +24,25 @@ function isRecoverablePublishConflict(output: string): boolean {
   );
 }
 
+// The manifest fields this script reads and writes; everything else is
+// preserved verbatim through the read → mutate → write cycle.
+type PackageManifest = {
+  name: string;
+  version: string;
+  private?: boolean;
+  [key: string]: unknown;
+};
+
+function writePackageJson(cwd: string, json: PackageManifest): void {
+  writeFileSync(path.join(cwd, 'package.json'), JSON.stringify(json, null, 2) + '\n');
+}
+
 // retries a stuck package's publish, bumping its version each time to sidestep an already-logged Rekor entry for that exact tarball digest
 async function publishWithRecovery(
   cwd: string,
-  json: any,
+  json: PackageManifest,
   preid: string,
-): Promise<{ stdout: string; exitCode: number }> {
+): Promise<{ stdout: string; stderr: string; exitCode: number }> {
   const maxAttempts = RECOVERY_MODE ? MAX_RECOVERY_ATTEMPTS : 1;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
@@ -51,10 +64,7 @@ async function publishWithRecovery(
       const next = inc(json.version, 'prerelease', undefined, preid);
       assert(typeof next === 'string', `Failed to increment version for ${json.name}`);
       json.version = next;
-      writeFileSync(
-        path.join(cwd, 'package.json'),
-        JSON.stringify(json, null, 2) + '\n',
-      );
+      writePackageJson(cwd, json);
       console.warn(
         `${json.name}: publish conflict, retrying with bumped version ${json.version} (attempt ${attempt + 1}/${maxAttempts})`,
       );
@@ -66,7 +76,7 @@ async function publishWithRecovery(
 
 async function verifyPackage(dir: string, preid = 'beta'): Promise<boolean> {
   const cwd = dir;
-  const json = JSON.parse(
+  const json: PackageManifest = JSON.parse(
     readFileSync(path.join(cwd, 'package.json'), { encoding: 'utf-8' }),
   );
   // bitgo is private but still published via lerna --include-private.
@@ -80,9 +90,35 @@ async function verifyPackage(dir: string, preid = 'beta'): Promise<boolean> {
       console.log(
         `${json.name} missing. Expected ${json.version}, latest is ${distTags[preid]}`,
       );
-      const { stdout, exitCode } = await publishWithRecovery(cwd, json, preid);
-      console.log(stdout);
-      return exitCode === 0;
+      // `npm publish` will not publish a package marked private: it refuses
+      // with EPRIVATE, and inside a workspace it is worse — npm *silently
+      // skips* the workspace with exit code 0 and only a stderr warning, so
+      // the release reports success while bitgo never lands on npm (run
+      // 36817983431: green, bitgo@2198 unpublished). lerna's
+      // --include-private publishes it by dropping the flag first; do the
+      // same here and restore it after publishing.
+      const restorePrivate = json.private === true;
+      if (restorePrivate) {
+        delete json.private;
+        writePackageJson(cwd, json);
+      }
+      try {
+        const { stdout, stderr, exitCode } = await publishWithRecovery(cwd, json, preid);
+        // print stderr too: npm routes warnings there (e.g. "Skipping
+        // workspace"), and it is the only evidence of a silent skip
+        if (stdout) {
+          console.log(stdout);
+        }
+        if (stderr) {
+          console.warn(stderr);
+        }
+        return exitCode === 0;
+      } finally {
+        if (restorePrivate) {
+          json.private = true;
+          writePackageJson(cwd, json);
+        }
+      }
     } else {
       console.log(`${json.name} matches expected version ${json.version}`);
     }
@@ -95,20 +131,19 @@ async function verifyPackage(dir: string, preid = 'beta'): Promise<boolean> {
 
 async function verify(preid?: string) {
   await getLernaModuleLocations();
-  let anyFailed = false;
   for (let i = 0; i < lernaModuleLocations.length; i++) {
     const dir = lernaModuleLocations[i];
     if (!(await verifyPackage(dir, preid))) {
       console.error('Failed to verify outstanding packages.');
+      // fail the run in both modes: a non-recovery failure used to return
+      // early with exit code 0, reporting success (WCI-1650)
+      process.exitCode = 1;
       if (!RECOVERY_MODE) {
         return;
       }
-      // keep bumping/retrying the rest of the packages instead of aborting on the first stuck one
-      anyFailed = true;
+      // recovery mode keeps bumping/retrying the rest of the packages
+      // instead of aborting on the first stuck one
     }
-  }
-  if (anyFailed) {
-    process.exitCode = 1;
   }
 }
 

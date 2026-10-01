@@ -79,7 +79,7 @@ describe('generate-bitgo-shrinkwrap workspace sibling availability', function ()
     assert.deepEqual(sleeps, [30_000, 30_000]);
   });
 
-  it('performs three checks and reports every missing version', async function () {
+  it('reports every missing version when the poll budget is exhausted', async function () {
     const secondSibling: WorkspaceSibling = { name: '@bitgo-beta/account-lib', version: '2.3.4-beta.5' };
     let requests = 0;
     const sleeps: number[] = [];
@@ -87,6 +87,7 @@ describe('generate-bitgo-shrinkwrap workspace sibling availability', function ()
     await assert.rejects(
       () =>
         ensureWorkspaceSiblingVersionsAvailable([sibling, secondSibling], {
+          attempts: 3,
           registryFetcher: async () => {
             requests += 1;
             return response(404, 'Not Found');
@@ -106,6 +107,29 @@ describe('generate-bitgo-shrinkwrap workspace sibling availability', function ()
     assert.equal(requests, 6);
     assert.deepEqual(sleeps, [30_000, 30_000]);
   });
+
+  it('defaults to a 10-attempt poll budget so slow registry propagation does not fail the release', async function () {
+    let requests = 0;
+    const sleeps: number[] = [];
+
+    await assert.rejects(
+      () =>
+        ensureWorkspaceSiblingVersionsAvailable([sibling], {
+          registryFetcher: async () => {
+            requests += 1;
+            return response(404, 'Not Found');
+          },
+          sleep: async (delayMs) => {
+            sleeps.push(delayMs);
+          },
+        }),
+      /still unavailable from npm after 10 checks/
+    );
+    assert.equal(requests, 10);
+    assert.equal(sleeps.length, 9);
+    assert.ok(sleeps.every((delayMs) => delayMs === 30_000));
+  });
+
 
   it('surfaces unexpected registry responses without retrying them', async function () {
     let requests = 0;
