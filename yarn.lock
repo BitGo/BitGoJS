@@ -7932,10 +7932,10 @@ basic-auth@~2.0.1:
   dependencies:
     safe-buffer "5.1.2"
 
-basic-ftp@5.3.1, basic-ftp@^5.0.2:
-  version "5.3.1"
-  resolved "https://registry.npmjs.org/basic-ftp/-/basic-ftp-5.3.1.tgz#3148ee9af43c0522514a4f973fecb1d3cbb6d71e"
-  integrity sha512-bopVNp6ugyA150DDuZfPFdt1KZ5a94ZDiwX4hMgZDzF+GttD80lEy8kj98kbyhLXnPvhtIo93mdnLIjpCAeeOw==
+basic-ftp@6.2.1, basic-ftp@^5.0.2:
+  version "6.2.1"
+  resolved "https://registry.npmjs.org/basic-ftp/-/basic-ftp-6.2.1.tgz#4e48a39c87baee0314e1a0fa9bcca73b1e251e53"
+  integrity sha512-bK67isD+lKq46AU8vNtjvMaT2ZqAOAmNCbxUHlFBRD4k15NWxyEjmaKtZPlgce58So4BNTjITGQOVTjL9y0ECA==
 
 batch@0.6.1:
   version "0.6.1"
