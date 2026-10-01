@@ -1061,6 +1061,133 @@ describe('TSS Utils:', async function () {
 
       verifyStub.calledOnce.should.be.true();
     });
+
+    describe('consolidate intent', function () {
+      // Intent recipient amount is a build-time snapshot that drifts from the swept balance in the tx.
+      const consolidateTxRequest: TxRequest = {
+        ...baseTxRequest,
+        intent: {
+          intentType: 'consolidate',
+          consolidateId: '68a7d5d0c66e74e216b97173bd558c6d',
+          recipients: [
+            {
+              address: { address: 'HMEgbR4S2hLKfst2VZUVpHVUu4FioFPyW5iUuJvZdMvs' },
+              amount: { value: '999985000', symbol: 'tsol' },
+            },
+          ],
+        },
+      };
+
+      it('verifies sweep-to-root instead of snapshot intent recipients', async function () {
+        sandbox
+          .stub(wallet, 'coinSpecific')
+          .returns({ rootAddress: 'HMEgbR4S2hLKfst2VZUVpHVUu4FioFPyW5iUuJvZdMvs', customChangeWalletId: '' });
+        const verifySpy = sandbox.spy(baseCoin, 'verifyTransaction');
+
+        const rShare = validUserSignShare.rShares[3];
+        await nockSendSignatureShare({
+          walletId: wallet.id(),
+          txRequestId: consolidateTxRequest.txRequestId,
+          signatureShare: { from: SignatureShareType.USER, to: SignatureShareType.BITGO, share: rShare.r + rShare.R },
+        });
+        const signatureShare2: SignatureShareRecord = {
+          from: SignatureShareType.BITGO,
+          to: SignatureShareType.USER,
+          share: validBitgoToUserSignShare.rShares[1].r + validBitgoToUserSignShare.rShares[1].R,
+        };
+        await nockGetTxRequest({
+          walletId: wallet.id(),
+          txRequestId: consolidateTxRequest.txRequestId,
+          response: { txRequests: [{ ...consolidateTxRequest, signatureShares: [signatureShare2] }] },
+        });
+        await nockExchangeCommitments({
+          walletId: wallet.id(),
+          txRequestId: consolidateTxRequest.txRequestId,
+          response: {
+            commitmentShare: {
+              from: SignatureShareType.BITGO,
+              to: SignatureShareType.USER,
+              type: CommitmentType.COMMITMENT,
+              share: validBitgoToUserSignShare.rShares[1].commitment,
+            },
+          },
+        });
+
+        await tssUtils.signTxRequest({
+          txRequest: consolidateTxRequest,
+          prv: JSON.stringify(validUserSigningMaterial),
+          reqId,
+        });
+
+        verifySpy.calledOnce.should.be.true();
+        const verifyArgs = verifySpy.firstCall.args[0];
+        should.not.exist(verifyArgs.txParams.recipients);
+        should(verifyArgs.txPrebuild.consolidateId).equal('68a7d5d0c66e74e216b97173bd558c6d');
+        should(verifyArgs.verification).deepEqual({ consolidationToBaseAddress: true });
+      });
+
+      it('rejects a consolidation that does not sweep to the wallet root address', async function () {
+        sandbox
+          .stub(wallet, 'coinSpecific')
+          .returns({ rootAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe', customChangeWalletId: '' });
+
+        await tssUtils
+          .signTxRequest({
+            txRequest: consolidateTxRequest,
+            prv: JSON.stringify(validUserSigningMaterial),
+            reqId,
+          })
+          .should.be.rejectedWith('tx outputs does not match with expected address');
+      });
+
+      describe('token consolidation', function () {
+        // SPL token sweep: the output is the root's associated token account, not the root itself.
+        const tokenConsolidationTxHex =
+          '02b7c2c7829eded4e8f947c90ed3b9afce71f616eb47dfcfbf4b765778149060013acb33b9f67fdd9c2512f48fac4e4c049eab93829b69404f3bd166fe3242c90700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020104096da690bd558fd8634ac14f1645d8095afd0caea5953578c596e3c0dea38305ee7298bfac55101f177735659d42ed6be890ef3a1d204d9e33f32e24c5635327ca66d1fe00826e5a4f759f87b279c1aee19cce5301af4ed66ae17db48b201ed6c2a0e8a28bf565627f1ab8a34b1a95ee1b0a2a39084f1f0e2acb1c394b20185d8e0b22657c8d9c4ce5f6495efb6410c199011530f90e3ab9d8d1e4206f9ae0ffeb0000000000000000000000000000000000000000000000000000000000000000c5f9fb32f49111ab20c33f2598fc836c113e291881ac21ee29169394011244e406a7d517192c568ee08a845f73d29788cf035c3145b21ab344d8062ea940000006ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9de13c74d2b4d948e1608ea6eebdafe75bc2f995aad11b21d1e2c94f2a2d12f6802050303070004040000000804020604010a0ce0076bb20400000006';
+        const tokenConsolidateTxRequest: TxRequest = {
+          ...consolidateTxRequest,
+          unsignedTxs: [
+            {
+              serializedTxHex: tokenConsolidationTxHex,
+              signableHex: tokenConsolidationTxHex.slice(2 + 2 * 128),
+              derivationPath: 'm/0',
+            },
+          ],
+        };
+
+        it('verifies the output is the wallet root token account', async function () {
+          sandbox
+            .stub(wallet, 'coinSpecific')
+            .returns({ rootAddress: 'HBxZShcE86UMmF93KUM8eWJKqeEXi5cqWCLYLMMhqMYm', customChangeWalletId: '' });
+          const verifySpy = sandbox.spy(baseCoin, 'verifyTransaction');
+          // Stop after verification; signing itself is covered above.
+          sandbox.stub(tssUtils, 'pickBitgoPubGpgKeyForSigning').rejects(new Error('verified'));
+
+          await tssUtils
+            .signTxRequest({
+              txRequest: tokenConsolidateTxRequest,
+              prv: JSON.stringify(validUserSigningMaterial),
+              reqId,
+            })
+            .should.be.rejectedWith('verified');
+          (await verifySpy.firstCall.returnValue).should.be.true();
+        });
+
+        it('rejects a token output that is not the wallet root token account', async function () {
+          sandbox
+            .stub(wallet, 'coinSpecific')
+            .returns({ rootAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe', customChangeWalletId: '' });
+
+          await tssUtils
+            .signTxRequest({
+              txRequest: tokenConsolidateTxRequest,
+              prv: JSON.stringify(validUserSigningMaterial),
+              reqId,
+            })
+            .should.be.rejectedWith('tx outputs does not match with expected address');
+        });
+      });
+    });
   });
 
   describe('signEddsaTssUsingExternalSigner resolveEffectiveTxParams guard:', function () {

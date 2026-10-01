@@ -48,7 +48,7 @@ import { envRequiresBitgoPubGpgKeyConfig, getBitgoMpcGpgPubKey, isBitgoMpcPubKey
 import { EnvironmentName } from '../../../environments';
 import { readKey } from 'openpgp';
 import type { EddsaKeyGenCallbacks } from '../../../wallet/iWallets';
-import { resolveEffectiveTxParams } from '../recipientUtils';
+import { resolveTssVerifyTransactionOptions } from '../recipientUtils';
 
 /**
  * Utility functions for TSS work flows.
@@ -889,8 +889,12 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
         : txRequestResolved.unsignedTxs[0];
     assert(unsignedTx.signableHex, 'Missing signableHex in unsignedTx');
     await this.baseCoin.verifyTransaction({
-      txPrebuild: { txHex: unsignedTx.serializedTxHex ?? unsignedTx.signableHex },
-      txParams: resolveEffectiveTxParams(txRequestResolved, txParams, this.baseCoin.getChain()),
+      ...resolveTssVerifyTransactionOptions(
+        txRequestResolved,
+        unsignedTx.serializedTxHex ?? unsignedTx.signableHex,
+        txParams,
+        this.baseCoin.getChain()
+      ),
       wallet: this.wallet,
       walletType: this.wallet.multisigType(),
     });
