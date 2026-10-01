@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@4.1.4...@bitgo/sdk-coin-stx@4.2.0) (2026-10-01)
+
+
+### Features
+
+* **sdk-coin-stx:** register tstxsignet staking-testnet coin ([029b398](https://github.com/BitGo/BitGoJS/commit/029b39834380cc510b7ae16b15011a0a638054bc))
+
+
+
+
+
 ## [4.1.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@4.1.3...@bitgo/sdk-coin-stx@4.1.4) (2026-09-29)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-stx

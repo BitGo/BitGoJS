@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.23.35](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.23.34...@bitgo/sdk-coin-icp@1.23.35) (2026-10-01)
+
+
+### Bug Fixes
+
+* **sdk-coin-icp:** verify memo-tagged ICP recipients (CECHO-2263) ([deee295](https://github.com/BitGo/BitGoJS/commit/deee295ba8faece9fc435564112f0036d8589081))
+
+
+
+
+
 ## [1.23.34](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.23.33...@bitgo/sdk-coin-icp@1.23.34) (2026-09-29)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-icp
