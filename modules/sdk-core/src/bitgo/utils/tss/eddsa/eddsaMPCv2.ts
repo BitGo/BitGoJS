@@ -54,7 +54,7 @@ import {
 import { EncryptionVersion } from '../../../../api';
 import { BitGoBase } from '../../../bitgoBase';
 import { BaseEddsaUtils } from './base';
-import { resolveEffectiveTxParams } from '../recipientUtils';
+import { resolveTssVerifyTransactionOptions } from '../recipientUtils';
 import { EddsaMPCv2KeyGenSendFn, KeyGenSenderForEnterprise } from './eddsaMPCv2KeyGenSender';
 import { EddsaMPCv2RecoveryKeyShares } from './types';
 import { parseMpcV2KeyShareEnvelope } from '../keyShareEnvelope';
@@ -598,8 +598,12 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
       derivationPath = unsignedTx.derivationPath;
       bufferContent = Buffer.from(txOrMessageToSign, 'hex');
       await this.baseCoin.verifyTransaction({
-        txPrebuild: { txHex: unsignedTx.serializedTxHex ?? txOrMessageToSign },
-        txParams: resolveEffectiveTxParams(txRequest, params.txParams, this.baseCoin.getChain()),
+        ...resolveTssVerifyTransactionOptions(
+          txRequest,
+          unsignedTx.serializedTxHex ?? txOrMessageToSign,
+          params.txParams,
+          this.baseCoin.getChain()
+        ),
         wallet: this.wallet,
         walletType: this.wallet.multisigType(),
       });

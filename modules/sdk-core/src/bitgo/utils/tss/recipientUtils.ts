@@ -1,4 +1,5 @@
-import { TransactionParams } from '../../baseCoin';
+import * as t from 'io-ts';
+import { TransactionParams, VerifyTransactionOptions } from '../../baseCoin';
 import { InvalidTransactionError } from '../../errors';
 import { PopulatedIntent, TxRequest } from './baseTypes';
 
@@ -189,4 +190,37 @@ export function resolveEffectiveTxParams(
   }
 
   return effectiveTxParams;
+}
+
+const ConsolidateIntent = t.intersection([
+  t.type({ intentType: t.literal('consolidate') }),
+  t.partial({ consolidateId: t.string }),
+]);
+
+/**
+ * Resolves the verifyTransaction options for signing-time verification of a TSS txRequest.
+ *
+ * Consolidation intent recipients are a server-generated, build-time balance snapshot that drifts
+ * from the swept amount, so they are not backfilled; sweep-to-base-address is verified instead,
+ * mirroring wallet.sendAccountConsolidations.
+ *
+ * @param txRequest - the transaction request containing the persisted intent
+ * @param txHex - the unsigned transaction to verify
+ * @param txParams - the caller-supplied transaction parameters (may be undefined)
+ * @param chainName - the base chain name; pass baseCoin.getChain()
+ */
+export function resolveTssVerifyTransactionOptions(
+  txRequest: TxRequest,
+  txHex: string,
+  txParams: TransactionParams | undefined,
+  chainName: string
+): Pick<VerifyTransactionOptions, 'txPrebuild' | 'txParams' | 'verification'> {
+  if (ConsolidateIntent.is(txRequest.intent)) {
+    return {
+      txPrebuild: { txHex, consolidateId: txRequest.intent.consolidateId },
+      txParams: { ...txParams },
+      verification: { consolidationToBaseAddress: true },
+    };
+  }
+  return { txPrebuild: { txHex }, txParams: resolveEffectiveTxParams(txRequest, txParams, chainName) };
 }
