@@ -551,7 +551,7 @@ export class Ton extends BaseCoin {
         coinSpecific: coinSpecific,
       };
 
-      return transaction;
+      return { txRequests: [{ walletCoin, transactions: [{ unsignedTx: transaction, signatureShares: [] }] }] };
     }
 
     const completedTransaction = await txBuilder.build();
