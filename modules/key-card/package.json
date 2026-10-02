@@ -35,10 +35,8 @@
   "dependencies": {
     "@bitgo/sdk-api": "^3.0.5",
     "@bitgo/sdk-core": "^38.21.0",
+    "@bitgo/sdk-lib-safes": "^1.2.1",
     "@bitgo/statics": "^59.20.0",
-    "fp-ts": "^2.16.2",
-    "io-ts": "npm:@bitgo-forks/io-ts@2.1.4",
-    "io-ts-types": "^0.5.19",
     "jspdf": ">=4.2.0",
     "pdfjs-dist": "^4.0.0",
     "qrcode": "^1.5.1"
