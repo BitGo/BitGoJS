@@ -1,5 +1,9 @@
 import { EncryptionVersion, Keychain, KeychainsTriplet } from '@bitgo/sdk-core';
 import { BaseCoin, KeyCurve } from '@bitgo/statics';
+import type { SafeKeycardRoots, SafeRootKeyType } from '@bitgo/sdk-lib-safes';
+
+// Moved to sdk-lib-safes; re-exported so existing imports from @bitgo/key-card keep working.
+export type { SafeKeycardRoots, SafeRootKeyType };
 
 export interface GenerateQrDataBaseParams {
   activationCode?: string;
@@ -57,26 +61,18 @@ export interface GenerateLightningQrDataParams extends GenerateQrDataCoinParams 
   userAuthKeychain: Keychain;
 }
 
-/**
- * Identifier for one of a safe's four roots (one per signing scheme). Each value is the
- * root's `rootKeyType`, which is also the key used in the keycard's per-box JSON.
- */
-export type SafeRootKeyType = 'secp256k1Multisig' | 'ecdsaMpc' | 'eddsaMpc' | 'ed25519Multisig';
+const slotsInRenderOrder = {
+  secp256k1Multisig: true,
+  ecdsaMpc: true,
+  eddsaMpc: true,
+  ed25519Multisig: true,
+} satisfies Record<SafeRootKeyType, true>;
 
 /**
  * Fixed render/scan order of the four roots on the safe keycard. Kept stable so a
  * generated keycard and a re-scanned one line up slot-for-slot.
  */
-export const SAFE_ROOT_ORDER: SafeRootKeyType[] = ['secp256k1Multisig', 'ecdsaMpc', 'eddsaMpc', 'ed25519Multisig'];
-
-/**
- * The JSON object encoded in a safe keycard box (A/B/C): the four roots keyed by
- * {@link SafeRootKeyType}. Values are per-root ciphertext for A/B (encryptedPrv or
- * reducedEncryptedPrv; safe MPC ciphertext decrypts to a versioned signing+VRF envelope) or
- * public keys for C. The root-key-type keys are self-identifying, so a
- * consumer parses by key rather than by size/offset.
- */
-export type SafeKeycardRoots = Record<SafeRootKeyType, string>;
+export const SAFE_ROOT_ORDER = Object.keys(slotsInRenderOrder) as SafeRootKeyType[];
 
 /** The product a keycard belongs to, used for user-facing wording (e.g. Box D copy). */
 export type KeycardEntity = 'wallet' | 'safe';
