@@ -81,6 +81,8 @@ export interface ChangedKeychains {
 export interface ListKeychainsResult {
   keys: Keychain[];
   nextBatchPrevId?: string;
+  /** Total of the listed keychains — the count of the list's own query (WCN-2084 total-count support). */
+  totalCount?: number;
 }
 
 export interface GetKeychainOptions {
@@ -101,6 +103,21 @@ export interface ListKeychainOptions {
    */
   safeId?: string;
 }
+
+export type KeychainPasswordUpdateStatus = 'updated' | 'skipped';
+
+export interface KeychainPasswordUpdateProgress {
+  status: KeychainPasswordUpdateStatus;
+  currentKeychainId?: string;
+  /**
+   * Truthful total of the listed keychains (`totalCount` from the backend, WCN-2084).
+   * Every listed record reports an outcome (updated | skipped), so `completed` reaches
+   * this total exactly on any account composition.
+   */
+  total?: number;
+}
+
+export type KeychainPasswordUpdateProgressCallback = (progress: KeychainPasswordUpdateProgress) => void;
 
 export interface UpdatePasswordOptions {
   oldPassword: string;
@@ -131,6 +148,8 @@ export interface UpdatePasswordOptions {
    *   per-keychain source versions.
    */
   safeId?: string;
+  /** Optional observer invoked once per nonfatal keychain outcome during password rotation. */
+  progressCallback?: KeychainPasswordUpdateProgressCallback;
 }
 
 export interface UpdateSingleKeychainPasswordOptions {

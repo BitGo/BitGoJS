@@ -188,6 +188,16 @@ Keychains.prototype.updatePassword = function (params, callback) {
     const newKeychains = {};
     // @ts-expect-error - no implicit this
     const self = this;
+    const notifyProgress = (status: 'updated' | 'skipped', currentKeychainId: string) => {
+      if (!_.isFunction(params.progressCallback)) {
+        return;
+      }
+      try {
+        params.progressCallback({ status, currentKeychainId });
+      } catch (e) {
+        // ignore observer exceptions so a throwing callback never affects rotation results
+      }
+    };
     for (const [xpub, oldEncryptedXprv] of Object.entries((encrypted as any).keychains)) {
       try {
         const decryptedPrv = await self.bitgo.decrypt({
@@ -201,9 +211,11 @@ Keychains.prototype.updatePassword = function (params, callback) {
           encryptionVersion,
         });
         newKeychains[xpub] = newEncryptedPrv;
+        notifyProgress('updated', xpub);
       } catch (e) {
         // decrypting the keychain with the old password didn't work so we just keep it the way it is
         newKeychains[xpub] = oldEncryptedXprv as string;
+        notifyProgress('skipped', xpub);
       }
     }
     return { keychains: newKeychains, version: (encrypted as any).version };

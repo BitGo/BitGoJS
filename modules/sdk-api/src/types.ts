@@ -265,6 +265,25 @@ export interface GetEcdhSecretOptions {
   eckey: ECPairInterface;
 }
 
+export type PasswordRotationProgress =
+  | {
+      phase: 'keychains';
+      status: 'started' | 'updated';
+      completed: number;
+      total?: number;
+      attempted: number;
+      succeeded: number;
+      skipped: number;
+      currentKeychainId?: string;
+      keychainVersion?: 'v1' | 'v2';
+    }
+  | {
+      phase: 'finalizing';
+      status: 'started' | 'completed';
+    };
+
+export type PasswordRotationProgressCallback = (progress: PasswordRotationProgress) => void;
+
 export interface ChangePasswordOptions {
   oldPassword: string;
   newPassword: string;
@@ -274,6 +293,8 @@ export interface ChangePasswordOptions {
    * Argon2id upgrade for v1 (SJCL) keychains once the caller is ready.
    */
   encryptionVersion?: EncryptionVersion;
+  /** Optional observer invoked as the password rotation progresses through keychains and finalization. */
+  progressCallback?: PasswordRotationProgressCallback;
 }
 
 /**
