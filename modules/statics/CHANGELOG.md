@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.19.0...@bitgo/statics@59.20.0) (2026-10-01)
+
+
+### Features
+
+* **sdk-coin-stx:** register tstxsignet staking-testnet coin ([029b398](https://github.com/BitGo/BitGoJS/commit/029b39834380cc510b7ae16b15011a0a638054bc))
+* **statics:** onboard client-requested tokens batch (09/22) ([c0dd93d](https://github.com/BitGo/BitGoJS/commit/c0dd93d9dcb05d636c9eacf39d00a54296f52736))
+* **statics:** rename goStocks to company names ([40b57e8](https://github.com/BitGo/BitGoJS/commit/40b57e838ee65c973048df3232aa569d023081c3))
+
+
+
+
+
 # [59.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.18.0...@bitgo/statics@59.19.0) (2026-09-29)
 
 

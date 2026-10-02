@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.20.0...@bitgo/sdk-core@38.21.0) (2026-10-01)
+
+
+### Bug Fixes
+
+* verify EdDSA external-signer transactions before signing ([a402a27](https://github.com/BitGo/BitGoJS/commit/a402a27323a5e5b3a41c34831b8a29fd2776312c))
+* verify EdDSA TSS consolidations as sweep-to-base-address ([e8deb1a](https://github.com/BitGo/BitGoJS/commit/e8deb1abbe336f00ba933ccb5d3673dae6d02eb7))
+* verify EdDSA TSS transactions before signing ([c88d36d](https://github.com/BitGo/BitGoJS/commit/c88d36d2491d42b2b8461ae18373b4da39cc93c7))
+
+
+### Features
+
+* **sdk-coin-stx:** register tstxsignet staking-testnet coin ([029b398](https://github.com/BitGo/BitGoJS/commit/029b39834380cc510b7ae16b15011a0a638054bc))
+* **sdk-core:** validate SOL message signing as SIWS only ([c96ec3f](https://github.com/BitGo/BitGoJS/commit/c96ec3fff9c5d92a6a16f2fc334e15f2c049c579))
+
+
+
+
+
 # [38.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.19.0...@bitgo/sdk-core@38.20.0) (2026-09-29)
 
 

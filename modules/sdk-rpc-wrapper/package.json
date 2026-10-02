@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-rpc-wrapper",
-  "version": "2.5.46",
+  "version": "2.5.47",
   "description": "Bitgo SDK wrapper to handle EVM RPC events",
   "main": "./dist/src/index.js",
   "type": "./dist/src/index.d.ts",
@@ -13,12 +13,12 @@
     "fmt": "prettier --write '{src,test}/**/*.{ts,js,json}'"
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^38.20.0"
+    "@bitgo/sdk-core": "^38.21.0"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^3.0.4",
-    "@bitgo/sdk-coin-eth": "^26.3.11",
-    "@bitgo/sdk-test": "^9.1.81"
+    "@bitgo/sdk-api": "^3.0.5",
+    "@bitgo/sdk-coin-eth": "^26.3.12",
+    "@bitgo/sdk-test": "^9.1.82"
   },
   "author": "Bitgo DEFI Team <defi-team@bitgo.com>",
   "license": "MIT",

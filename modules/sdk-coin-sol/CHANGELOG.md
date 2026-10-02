@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.12.0...@bitgo/sdk-coin-sol@8.13.0) (2026-10-01)
+
+
+### Features
+
+* **sdk-coin-sol:** add v1 confidential transfer build, ops, example ([b502bcb](https://github.com/BitGo/BitGoJS/commit/b502bcba272169fdb6fbfaebb52a131db1e6591f))
+* **sdk-core:** validate SOL message signing as SIWS only ([c96ec3f](https://github.com/BitGo/BitGoJS/commit/c96ec3fff9c5d92a6a16f2fc334e15f2c049c579))
+
+
+
+
+
 # [8.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.11.0...@bitgo/sdk-coin-sol@8.12.0) (2026-09-29)
 
 
