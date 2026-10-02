@@ -11,6 +11,7 @@ export interface FLRPConstructorOptions {
   prefix?: string;
   suffix?: string;
   primaryKeyCurve: KeyCurve;
+  bip44CoinType?: number;
 }
 
 export class FLRPCoin extends BaseCoin {

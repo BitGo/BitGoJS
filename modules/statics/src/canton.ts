@@ -11,6 +11,7 @@ export interface CantonConstructorOptions {
   prefix?: string;
   suffix?: string;
   primaryKeyCurve: KeyCurve;
+  bip44CoinType?: number;
 }
 
 export class Canton extends BaseCoin {

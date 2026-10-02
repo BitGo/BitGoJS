@@ -1,14 +1,17 @@
 import { RootKeyType } from '@bitgo/public-types';
+import { SAFE_ROOT_SLOTS as STATICS_SAFE_ROOT_SLOTS } from '@bitgo/statics';
 import { Environments } from '../../common';
 import { IBaseCoin } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 
 /**
- * Canonical order of the safe root slots. Shared by safe minting (Safes.createSafeKeys) and
- * passkey register/remove (Safe) so both iterate the slots identically.
+ * Canonical order of the safe root slots: the two multisig slots first, then the two MPC slots.
+ * Served from @bitgo/statics (with the per-slot ordinal table, SAFE_ROOT_SLOT_ORDINALS) so WP and
+ * the SDK iterate the slots identically in safe minting (Safes.createSafeKeys) and passkey
+ * register/remove (Safe).
  * @experimental
  */
-export const SAFE_ROOT_SLOTS: RootKeyType[] = ['secp256k1Multisig', 'ed25519Multisig', 'ecdsaMpc', 'eddsaMpc'];
+export const SAFE_ROOT_SLOTS: RootKeyType[] = STATICS_SAFE_ROOT_SLOTS;
 
 /**
  * Representative coin per root slot, by network. Safe roots are curve/scheme-scoped, not
