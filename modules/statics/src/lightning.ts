@@ -12,6 +12,7 @@ interface LightningConstructorOptions {
   prefix?: string;
   suffix?: string;
   primaryKeyCurve: KeyCurve;
+  bip44CoinType?: number;
 }
 
 export class LightningCoin extends BaseCoin {

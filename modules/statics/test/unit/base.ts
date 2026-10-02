@@ -1,4 +1,16 @@
-import { CoinFamily, CoinFeature, Networks, coins } from '../../src';
+import {
+  CoinFamily,
+  CoinFeature,
+  CoinKind,
+  KeyCurve,
+  Networks,
+  AccountCoin,
+  BaseUnit,
+  OfcCoin,
+  coins,
+} from '../../src';
+import { MAX_BIP32_INDEX } from '../../src/constants';
+import { InvalidBip44CoinTypeError } from '../../src/errors';
 
 const should = require('should');
 const { UnderlyingAsset } = require('../../src/base');
@@ -410,5 +422,50 @@ describe('ZAMA staking feature', function () {
         coins.get(name).features.includes(CoinFeature.STAKING).should.be.false();
       }
     );
+  });
+});
+
+describe('bip44CoinType', function () {
+  function accountCoinOptions(bip44CoinType?: number): ConstructorParameters<typeof AccountCoin>[0] {
+    return {
+      id: '00000000-0000-4000-8000-000000000001',
+      fullName: 'Test Coin',
+      name: 'testcoin',
+      network: Networks.main.ethereum,
+      baseUnit: BaseUnit.ETH,
+      features: AccountCoin.DEFAULT_FEATURES,
+      decimalPlaces: 18,
+      isToken: false,
+      asset: UnderlyingAsset.ETH,
+      primaryKeyCurve: KeyCurve.Secp256k1,
+      bip44CoinType,
+    };
+  }
+
+  it('should default to the coin type of its family', function () {
+    new AccountCoin(accountCoinOptions()).bip44CoinType.should.equal(60);
+  });
+
+  it('should carry the coin type on the coin when provided', function () {
+    new AccountCoin(accountCoinOptions(519)).bip44CoinType.should.equal(519);
+  });
+
+  [MAX_BIP32_INDEX + 1, -1, 0.5].forEach((bip44CoinType) => {
+    it(`should reject out-of-range or non-integer coin type ${bip44CoinType}`, function () {
+      should(() => new AccountCoin(accountCoinOptions(bip44CoinType))).throw(InvalidBip44CoinTypeError);
+    });
+  });
+
+  it('should accept boundary coin types 0 and 0x7fffffff', function () {
+    new AccountCoin(accountCoinOptions(0)).bip44CoinType.should.equal(0);
+    new AccountCoin(accountCoinOptions(MAX_BIP32_INDEX)).bip44CoinType.should.equal(MAX_BIP32_INDEX);
+  });
+
+  it('invariant: OFC and fiat coins carry no bip44CoinType', function () {
+    coins.forEach((coin, name) => {
+      should(coin instanceof OfcCoin || coin.kind === CoinKind.FIAT ? coin.bip44CoinType === undefined : true).be.true(
+        `'${name}' must not carry a bip44CoinType`
+      );
+    });
   });
 });

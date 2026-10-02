@@ -11,6 +11,7 @@ export interface AVAXPConstructorOptions {
   prefix?: string;
   suffix?: string;
   primaryKeyCurve: KeyCurve;
+  bip44CoinType?: number;
 }
 
 export class AVAXPCoin extends BaseCoin {

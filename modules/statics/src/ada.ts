@@ -11,6 +11,7 @@ export interface AdaConstructorOptions {
   prefix?: string;
   suffix?: string;
   primaryKeyCurve: KeyCurve;
+  bip44CoinType?: number;
 }
 
 export class Ada extends BaseCoin {

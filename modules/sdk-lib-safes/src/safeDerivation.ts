@@ -12,11 +12,11 @@
 import * as t from 'io-ts';
 import * as nacl from 'tweetnacl';
 import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
+import { MAX_BIP32_INDEX } from '@bitgo/statics';
 import { Ed25519KeyDeriver } from './ed25519KeyDeriver';
 import { decodeWithCodec } from './codecs';
 import { decodeEd25519StrKeySecretSeed, encodeEd25519StrKeyPublicKey } from './ed25519Pub';
 
-const MAX_BIP32_INDEX = 0x7fffffff;
 export const DERIVED_FROM_PARENT_WITH_HARDENED_PATH = /^m\/(\d+)'$/;
 
 export type SafeChildKeyName = 'user' | 'backup' | 'bitgo';

@@ -13,6 +13,7 @@ interface UtxoConstructorOptions {
   suffix?: string;
   primaryKeyCurve: KeyCurve;
   otherSupportedKeyCurves?: KeyCurve[];
+  bip44CoinType?: number;
 }
 
 export class UtxoCoin extends BaseCoin {

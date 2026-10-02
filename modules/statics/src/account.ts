@@ -138,6 +138,7 @@ export interface AccountConstructorOptions {
   prefix?: string;
   suffix?: string;
   primaryKeyCurve: KeyCurve;
+  bip44CoinType?: number;
 }
 
 /**
