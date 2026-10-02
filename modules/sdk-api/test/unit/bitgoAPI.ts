@@ -1318,7 +1318,7 @@ describe('Constructor', function () {
       v1Events.should.have.length(2);
       v1Events.every((e) => e.total === undefined).should.be.true();
 
-      // v2 events carry the combined denominator: 2 (v1 set) + 32 (encryptedTotalCount)
+      // v2 events carry the combined denominator: 2 (v1 set) + 32 (totalCount)
       v2Events.should.have.length(32);
       v2Events.every((e) => e.total === 34).should.be.true();
 
