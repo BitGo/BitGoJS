@@ -292,10 +292,19 @@ export function matchTransactionTypeByInstructionsOrder(
   instructionIndexes: Record<string, number>
 ): boolean {
   const instructionsCopy = [...instructions]; // Make a copy since we may modify the array below
-  // AdvanceNonceAccount is optional and the first instruction added, it does not matter to match the type
-  if (instructionsCopy.length > 0) {
-    if (getInstructionType(instructions[0]) === 'AdvanceNonceAccount') {
+  // AdvanceNonceAccount and compute-budget instructions (SetComputeUnitLimit /
+  // SetPriorityFee) are optional leading instructions that don't affect the
+  // type-defining instruction order, so skip them the same way.
+  while (instructionsCopy.length > 0) {
+    const instructionType = getInstructionType(instructionsCopy[0]);
+    if (
+      instructionType === 'AdvanceNonceAccount' ||
+      instructionType === ValidInstructionTypesEnum.SetComputeUnitLimit ||
+      instructionType === ValidInstructionTypesEnum.SetPriorityFee
+    ) {
       instructionsCopy.shift();
+    } else {
+      break;
     }
   }
 

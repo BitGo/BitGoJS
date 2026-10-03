@@ -7,6 +7,14 @@ export const SEED_LENGTH = 32;
 export const MAX_MEMO_LENGTH = 130;
 export const STAKE_ACCOUNT_RENT_EXEMPT_AMOUNT = 2282880;
 
+/**
+ * Maximum compute units a single transaction can request through the compute
+ * budget program (SetComputeUnitLimit), enforced on-chain by the runtime.
+ * The priority fee is charged on the requested limit rather than the units
+ * actually consumed, so builders must set an intent-sized limit below this cap.
+ */
+export const MAX_COMPUTE_UNIT_LIMIT = 1_400_000;
+
 export const UNAVAILABLE_TEXT = 'UNAVAILABLE';
 
 /**
