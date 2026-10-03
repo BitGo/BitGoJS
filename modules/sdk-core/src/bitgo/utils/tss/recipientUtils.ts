@@ -140,11 +140,19 @@ export function resolveEffectiveTxParams(
     const tokenName =
       intentRecipient.tokenData?.tokenName ||
       (chainName !== undefined && symbol && symbol !== chainName ? symbol : undefined);
+    // Carry token identity when the intent provides it so coin-level verification can
+    // resolve the mint without a statics name lookup:
+    //   - tokenData.tokenContractAddress (EVM-style token intents)
+    //   - recipient-level tokenAddress/tokenProgramId (SOL consolidateToken intents)
+    const tokenAddress = intentRecipient.tokenData?.tokenContractAddress ?? intentRecipient.tokenAddress;
+    const programId = intentRecipient.tokenProgramId;
     return {
       address: intentRecipient.address.address,
       amount: intentRecipient.amount.value,
       data: intentRecipient.data,
       ...(tokenName && { tokenName }),
+      ...(tokenAddress && { tokenAddress }),
+      ...(programId && { programId }),
     };
   });
 
