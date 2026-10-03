@@ -400,21 +400,21 @@ describe('recipientUtils', function () {
         assert.strictEqual(result.recipients?.[0].tokenName, 'tsol:usdc');
       });
 
-      it('does not set tokenName for a chainName that is not in statics and equals symbol', function () {
-        // Dynamic/AMS token wallets are not in the statics registry, so a symbol
-        // equal to chainName cannot be distinguished from a native transfer.
+      it('does not set tokenName for a chainName that is not registered and equals symbol', function () {
+        // A name registered nowhere (statics or the runtime/AMS registry) cannot
+        // be distinguished from a native transfer, so the symbol stays dropped.
         const txRequest = makeTxRequest({
           intent: {
             intentType: 'payment',
             recipients: [
               {
                 address: { address: 'E7Z6pFfUhjx2dFjdB9Ws2KnKepXoq62TeF5uaCVSvqQV' },
-                amount: { value: '1000', symbol: 'sol:some-dynamic-token' },
+                amount: { value: '1000', symbol: 'sol:some-unregistered-token' },
               },
             ],
           } as any,
         });
-        const result = resolveEffectiveTxParams(txRequest, {}, 'sol:some-dynamic-token');
+        const result = resolveEffectiveTxParams(txRequest, {}, 'sol:some-unregistered-token');
         assert.strictEqual(result.recipients?.[0].tokenName, undefined);
       });
 

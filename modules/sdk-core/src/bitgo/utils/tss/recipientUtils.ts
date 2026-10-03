@@ -112,8 +112,10 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
  * For token wallets (e.g. a sol:usdt wallet) baseCoin.getChain() returns the token
  * name itself, so an intent recipient whose amount.symbol equals chainName is
  * still a token transfer and the symbol must be kept as tokenName. Native wallets
- * keep the strict symbol !== chainName behavior. Chain names that are not in
- * statics (e.g. dynamic/AMS tokens) resolve to false.
+ * keep the strict symbol !== chainName behavior. The statics coin map covers both
+ * statically listed tokens and runtime-registered (AMS) tokens —
+ * GlobalCoinFactory.registerToken adds them to the same map — so names never
+ * registered anywhere are the only ones that resolve to false.
  */
 function isTokenChainName(chainName: string): boolean {
   try {
@@ -235,7 +237,8 @@ const ConsolidateIntent = t.intersection([
  * @param txRequest - the transaction request containing the persisted intent
  * @param txHex - the unsigned transaction to verify
  * @param txParams - the caller-supplied transaction parameters (may be undefined)
- * @param chainName - the base chain name; pass baseCoin.getChain()
+ * @param chainName - the wallet's chain name; pass baseCoin.getChain() (the token
+ *   name itself for token wallets)
  */
 export function resolveTssVerifyTransactionOptions(
   txRequest: TxRequest,
