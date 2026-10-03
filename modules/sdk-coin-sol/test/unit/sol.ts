@@ -928,6 +928,143 @@ describe('SOL:', function () {
         .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
     });
 
+    it('should succeed to verify token transaction when recipient tokenName is not chain-prefixed', async function () {
+      // wallet-platform persists tokenData.tokenName without the chain prefix on some
+      // intent types; the statics lookup must retry the chain-prefixed spelling.
+      const txParams = newTxParamsTokenTransfer();
+      const address = 'AF5H6vBkFnJuVqChRPgPQ4JRcQ5Gk25HBFhQQkyojmvg'; // Native SOL address
+      txParams.recipients = [{ address, amount: '1', tokenName: 'usdc' }];
+      const txPrebuild = newTxPrebuildTokenTransfer();
+      const feePayerWalletData = {
+        id: '5b34252f1bf349930e34020a00000000',
+        coin: 'tsol',
+        keys: [
+          '5b3424f91bf349930e34017500000000',
+          '5b3424f91bf349930e34017600000000',
+          '5b3424f91bf349930e34017700000000',
+        ],
+        coinSpecific: {
+          rootAddress: '4DujymUFbQ8GBKtAwAZrQ6QqpvtBEivL48h4ta2oJGd2',
+        },
+        multisigType: 'tss',
+      };
+      const feePayerWallet = new Wallet(bitgo, basecoin, feePayerWalletData);
+      const validTransaction = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        wallet: feePayerWallet,
+      } as unknown as SolVerifyTransactionOptions);
+      validTransaction.should.equal(true);
+    });
+
+    it('should succeed to verify token transaction for a token name outside the statics map when the explained output carries the mint', async function () {
+      // The recipient declares a token by NAME that is not resolvable in the statics
+      // map (e.g. an AMS-registered token) and carries no tokenAddress. The explained
+      // output carries the actual mint as its tokenName (useTokenAddressTokenName
+      // fallback), which is the source of truth for the token being moved: prove the
+      // output is the recipient's associated token account for that mint.
+      const unsupportedMintAddress = resources.stakeAccount.pub;
+      const recipientNativeAddress = resources.authAccount2.pub;
+      const amount = '1000';
+
+      const ataAddress = await getAssociatedTokenAccountAddress(
+        unsupportedMintAddress,
+        recipientNativeAddress,
+        true,
+        TOKEN_PROGRAM_ID.toString()
+      );
+
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.sender(wallet.pub);
+      txBuilder.nonce(blockHash);
+      txBuilder.fee({ amount: 5000 });
+      txBuilder.send({
+        address: ataAddress,
+        amount,
+        tokenName: unsupportedMintAddress,
+        tokenAddress: unsupportedMintAddress,
+        programId: TOKEN_PROGRAM_ID.toString(),
+        decimalPlaces: 6,
+      });
+      const tx = await txBuilder.build();
+
+      const txPrebuild = {
+        txBase64: tx.toBroadcastFormat(),
+        txInfo: { feePayer: wallet.pub, nonce: blockHash },
+        coin: 'tsol',
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: recipientNativeAddress,
+            amount,
+            tokenName: 'tsol:ams-custom', // token NAME, not a mint address; not in the statics map
+          },
+        ],
+      };
+
+      const result = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        wallet: walletObj,
+      } as unknown as SolVerifyTransactionOptions);
+      result.should.equal(true);
+    });
+
+    it('should fail to verify token transaction when the output token account belongs to a different owner', async function () {
+      // The output-mint fallback must still prove ownership: the ATA derived for the
+      // intent recipient has to equal the tx output, so a token account owned by
+      // someone else is rejected.
+      const unsupportedMintAddress = resources.stakeAccount.pub;
+      const recipientNativeAddress = resources.authAccount2.pub;
+      const otherOwnerAddress = wallet.pub;
+      const amount = '1000';
+
+      const otherOwnerAtaAddress = await getAssociatedTokenAccountAddress(
+        unsupportedMintAddress,
+        otherOwnerAddress,
+        true,
+        TOKEN_PROGRAM_ID.toString()
+      );
+
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.sender(wallet.pub);
+      txBuilder.nonce(blockHash);
+      txBuilder.fee({ amount: 5000 });
+      txBuilder.send({
+        address: otherOwnerAtaAddress,
+        amount,
+        tokenName: unsupportedMintAddress,
+        tokenAddress: unsupportedMintAddress,
+        programId: TOKEN_PROGRAM_ID.toString(),
+        decimalPlaces: 6,
+      });
+      const tx = await txBuilder.build();
+
+      const txPrebuild = {
+        txBase64: tx.toBroadcastFormat(),
+        txInfo: { feePayer: wallet.pub, nonce: blockHash },
+        coin: 'tsol',
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: recipientNativeAddress,
+            amount,
+            tokenName: 'tsol:ams-custom',
+          },
+        ],
+      };
+
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+          wallet: walletObj,
+        } as unknown as SolVerifyTransactionOptions)
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
     it('should succeed to verify transactions when recipients has extra data', async function () {
       const txParams = newTxParamsWithExtraData();
       const txPrebuild = newTxPrebuild();

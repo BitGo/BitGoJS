@@ -5,7 +5,7 @@ import {
   resolveTssVerifyTransactionOptions,
 } from '../../../../../src/bitgo/utils/tss/recipientUtils';
 import { InvalidTransactionError } from '../../../../../src/bitgo/errors';
-import { PopulatedIntent, TxRequest } from '../../../../../src/bitgo/utils/tss/baseTypes';
+import { PopulatedIntent, TokenType, TxRequest } from '../../../../../src/bitgo/utils/tss/baseTypes';
 
 function makeTxRequest(overrides: Partial<TxRequest> = {}): TxRequest {
   return {
@@ -111,6 +111,56 @@ describe('recipientUtils', function () {
       assert.strictEqual(result.recipients?.length, 1);
       assert.strictEqual(result.recipients?.[0].address, '0xabc');
       assert.strictEqual(result.recipients?.[0].amount, '500');
+    });
+
+    it('carries recipient-level SPL token identity onto fallback recipients', function () {
+      const txRequest = makeTxRequest({
+        intent: {
+          intentType: 'consolidateToken',
+          recipients: [
+            {
+              address: { address: 'HMEgbR4S2hLKfst2VZUVpHVUu4FioFPyW5iUuJvZdMvs' },
+              amount: { value: '1000', symbol: 'sol:usdt' },
+              tokenAddress: 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB',
+              tokenProgramId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+            },
+          ],
+        } as PopulatedIntent,
+      });
+      const result = resolveEffectiveTxParams(txRequest, undefined, 'sol');
+      assert.deepStrictEqual(result.recipients, [
+        {
+          address: 'HMEgbR4S2hLKfst2VZUVpHVUu4FioFPyW5iUuJvZdMvs',
+          amount: '1000',
+          data: undefined,
+          tokenName: 'sol:usdt',
+          tokenAddress: 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB',
+          programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+        },
+      ]);
+    });
+
+    it('carries tokenData.tokenContractAddress as tokenAddress for EVM-style token intents', function () {
+      const txRequest = makeTxRequest({
+        intent: {
+          intentType: 'payment',
+          recipients: [
+            {
+              address: { address: '0xabc' },
+              amount: { value: '0', symbol: 'eth' },
+              tokenData: {
+                tokenType: TokenType.ERC20,
+                tokenQuantity: '500',
+                tokenName: 'eth:usdt',
+                tokenContractAddress: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+              },
+            },
+          ],
+        } as PopulatedIntent,
+      });
+      const result = resolveEffectiveTxParams(txRequest, undefined, 'eth');
+      assert.strictEqual(result.recipients?.[0].tokenName, 'eth:usdt');
+      assert.strictEqual(result.recipients?.[0].tokenAddress, '0xdAC17F958D2ee523a2206206994597C13D831ec7');
     });
 
     it('resolves txType from intent.intentType when txParams.type is absent', function () {

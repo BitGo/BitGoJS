@@ -660,8 +660,29 @@ export class Sol extends BaseCoin {
             // If getAssociatedTokenAccountAddress throws an error, then we are unable to derive the ATA for that address.
             // Return false and throw an error if that is the case.
             try {
-              const tokenFromMap = getSolTokenFromTokenName(recipientFromUser.tokenName);
-              const mintAddress = tokenFromMap?.tokenAddress ?? recipientFromUser.tokenAddress;
+              // Resolve the mint from the recipient's token name, retrying with the
+              // chain-prefixed spelling ('usdt' -> 'tsol:usdt') when the bare name does
+              // not resolve to a Solana token. wallet-platform persists tokenData.tokenName
+              // without the chain prefix on some intent types.
+              const tokenFromMap =
+                getSolTokenFromTokenName(recipientFromUser.tokenName) ??
+                getSolTokenFromTokenName(`${this.getChain()}:${recipientFromUser.tokenName}`);
+              let mintAddress = tokenFromMap?.tokenAddress ?? recipientFromUser.tokenAddress;
+
+              // A recipient whose tokenName is a genuine token NAME (not a mint address)
+              // whose token is not resolvable here — a token registered outside the
+              // statics map, or a runtime where the statics lookup is unavailable — has
+              // one remaining source of truth for the mint: the explained output itself.
+              // Use it and prove the output is the recipient's associated token account
+              // for that mint. Recipients whose tokenName IS a mint address
+              // (unsupported-token shape) keep requiring an explicit tokenAddress: the
+              // tx side must not vouch for them.
+              if (!mintAddress && !isValidAddress(recipientFromUser.tokenName)) {
+                if (recipientFromTx.tokenName && isValidAddress(recipientFromTx.tokenName)) {
+                  mintAddress = recipientFromTx.tokenName;
+                }
+              }
+
               const programId = tokenFromMap?.programId ?? recipientFromUser.programId;
 
               if (!mintAddress) {
@@ -729,24 +750,45 @@ export class Sol extends BaseCoin {
       throw new Error('Tx memo does not match with expected txParams recipient memo');
     }
     if (txParams.recipients && !isTokenEnablementTx && !isCloseAssociatedTokenAccountTx) {
-      for (const recipients of txParams.recipients) {
-        // totalAmount based on each token
-        const assetName = recipients.tokenName || this.getChain();
-        const amount = totalAmount[assetName] || new BigNumber(0);
-        totalAmount[assetName] = amount.plus(recipients.amount);
-      }
+      // Canonical asset key for a token name: the mint when the token is resolvable in
+      // the statics map (retrying the chain-prefixed spelling for unprefixed names),
+      // otherwise the name/address as given.
+      const assetKeyFor = (tokenName: string | undefined): string => {
+        if (!tokenName) {
+          return this.getChain();
+        }
+        const token =
+          getSolTokenFromTokenName(tokenName) ?? getSolTokenFromTokenName(`${this.getChain()}:${tokenName}`);
+        return token?.tokenAddress ?? tokenName;
+      };
 
-      // total output amount from explainedTx
+      // Total output amount from explainedTx, keyed by canonical asset. Built first so
+      // recipients can adopt the output-side key when their own tokenName is not
+      // resolvable here (the output's token identity is the ground truth for the token
+      // actually moved — mirrors the recipient check above).
       const explainedTxTotal: Record<string, BigNumber> = {};
-
       for (const output of explainedTx.outputs) {
         // Apply s390x endianness fix to output amounts before summing
         const outputAmountStr = getAmountBasedOnEndianness(output.amount);
+        const assetName = assetKeyFor(output.tokenName);
+        explainedTxTotal[assetName] = (explainedTxTotal[assetName] || new BigNumber(0)).plus(outputAmountStr);
+      }
 
-        // total output amount based on each token
-        const assetName = output.tokenName || this.getChain();
-        const amount = explainedTxTotal[assetName] || new BigNumber(0);
-        explainedTxTotal[assetName] = amount.plus(outputAmountStr);
+      for (const [index, recipients] of txParams.recipients.entries()) {
+        // totalAmount based on each token
+        const resolvedToken = recipients.tokenName
+          ? getSolTokenFromTokenName(recipients.tokenName) ??
+            getSolTokenFromTokenName(`${this.getChain()}:${recipients.tokenName}`)
+          : undefined;
+        const outputAssetKey = explainedTx.outputs[index]
+          ? assetKeyFor(explainedTx.outputs[index].tokenName)
+          : undefined;
+        const assetName =
+          resolvedToken?.tokenAddress ??
+          recipients.tokenAddress ??
+          outputAssetKey ??
+          (recipients.tokenName || this.getChain());
+        totalAmount[assetName] = (totalAmount[assetName] || new BigNumber(0)).plus(recipients.amount);
       }
 
       if (!_.isEqual(explainedTxTotal, totalAmount)) {

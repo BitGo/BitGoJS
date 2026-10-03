@@ -431,6 +431,18 @@ export interface IntentRecipient {
   };
   data?: string;
   tokenData?: TokenTransferRecipientParams;
+  /**
+   * On-chain token mint for SOL-family token intents. wallet-platform persists this on
+   * consolidateToken intent recipients (see WP coins/sol/transactions/intent/consolidate.ts
+   * enrichedRecipients); carrying it through lets coin-level verifyTransaction resolve the
+   * mint without relying on a statics name lookup.
+   */
+  tokenAddress?: string;
+  /**
+   * SPL token program for SOL-family token intents (TOKEN_PROGRAM_ID or
+   * TOKEN_2022_PROGRAM_ID). Persisted by wallet-platform alongside tokenAddress.
+   */
+  tokenProgramId?: string;
 }
 interface PopulatedIntentBase {
   intentType: string;
