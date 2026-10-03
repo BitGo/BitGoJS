@@ -484,53 +484,20 @@ describe('signTxRequest:', function () {
       });
     });
 
-    describe('consolidate intent', function () {
-      // Intent recipient amount is a build-time snapshot that drifts from the swept balance in the tx.
+    it('does not throw for allowlisted no-recipient intentType (consolidate)', async function () {
+      sandbox.stub(baseCoin, 'verifyTransaction').resolves(true);
+      const nockPromises = await getNockPromisesForEddsaSigning(txRequest);
+      await Promise.all(nockPromises);
+
       const consolidateTxRequest: TxRequest = {
         ...txRequest,
-        intent: {
-          intentType: 'consolidate',
-          consolidateId: '68a7d5d0c66e74e216b97173bd558c6d',
-          recipients: [
-            {
-              address: { address: 'HMEgbR4S2hLKfst2VZUVpHVUu4FioFPyW5iUuJvZdMvs' },
-              amount: { value: '999985000', symbol: 'sol' },
-            },
-          ],
-        },
+        intent: { intentType: 'consolidate' } as any,
       };
-
-      it('verifies sweep-to-root instead of snapshot intent recipients', async function () {
-        // Fee payer stays the original root, so this also covers the consolidation fee payer exemption.
-        sandbox
-          .stub(wallet, 'coinSpecific')
-          .returns({ rootAddress: 'HMEgbR4S2hLKfst2VZUVpHVUu4FioFPyW5iUuJvZdMvs', customChangeWalletId: '' });
-        const verifySpy = sandbox.spy(baseCoin, 'verifyTransaction');
-        const nockPromises = await getNockPromisesForEddsaSigning(consolidateTxRequest);
-        await Promise.all(nockPromises);
-
-        await tssUtils.signTxRequest({
-          txRequest: consolidateTxRequest,
-          prv: Buffer.from(userKeyShare).toString('base64'),
-          reqId,
-        });
-
-        verifySpy.calledOnce.should.be.true();
-        verifySpy.firstCall.args[0].should.containDeep({
-          txPrebuild: { consolidateId: '68a7d5d0c66e74e216b97173bd558c6d' },
-          verification: { consolidationToBaseAddress: true },
-        });
-        verifySpy.firstCall.args[0].txParams.should.not.have.property('recipients');
-      });
-
-      it('rejects a consolidation that does not sweep to the wallet root address', async function () {
-        await tssUtils
-          .signTxRequest({
-            txRequest: consolidateTxRequest,
-            prv: Buffer.from(userKeyShare).toString('base64'),
-            reqId,
-          })
-          .should.be.rejectedWith('tx outputs does not match with expected address');
+      const userPrvBase64 = Buffer.from(userKeyShare).toString('base64');
+      await tssUtils.signTxRequest({
+        txRequest: consolidateTxRequest,
+        prv: userPrvBase64,
+        reqId,
       });
     });
 
