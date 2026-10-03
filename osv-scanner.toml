@@ -82,3 +82,15 @@ reason = "extract-zip arbitrary file write via symlink at final path component (
 id = "GHSA-w4pp-8pjf-rmxw"
 reason = "pacote DoS via addGitSha on malicious spec.rawSpec (CVE-2026-9496); transitive via lerna (pinned pacote@21.0.1), @npmcli/arborist, and yeoman-generator (dev-time only); fix only in pacote 21.5.1+/22.0.0 which lerna does not yet support; all specs processed come from our own package.json/yarn.lock, never untrusted input"
 
+[[IgnoredVulns]]
+id = "GHSA-vfj7-8cjw-p6xm"
+reason = "braces stack-overflow DoS (CVE-2026-93687) via deeply nested brace patterns in the recursive AST walker; no upstream fix available (last_affected: 3.0.3, latest release); transitive via chokidar, karma, and lint-staged/micromatch — dev-time tooling only; all brace patterns we feed in are code-controlled globs (watcher roots, lint globs, test patterns), never user-supplied. Re-evaluate on 2026-12-03: drop this exclusion if braces ships a patched release"
+
+[[IgnoredVulns]]
+id = "GHSA-ch52-4w7c-c8xp"
+reason = "http-cache-semantics shared-cache response confusion (CVE-2026-93748) exposing other users' Set-Cookie entries via max-stale on security-zeroed cache entries; no upstream fix available (last_affected: 4.2.0, latest release); transitive via lerna/pacote/@npmcli/arborist/node-gyp/sigstore (dev-time registry + release signing) and via @bitgo/sdk-coin-apt > @aptos-labs/ts-sdk > @aptos-labs/aptos-client > got > cacheable-request (runtime). The CVE requires operating as a shared/proxy HTTP cache serving multiple users; all our usages are single-process client caches (npm registry fetches, in-process got client) — the shared-cache attack vector does not apply. Re-evaluate on 2026-12-03: drop this exclusion if http-cache-semantics ships a patched release"
+
+[[IgnoredVulns]]
+id = "GHSA-86w9-cpqp-85rv"
+reason = "node-forge RSA PKCS#1 v1.5 signature-verification bypass (CVE-2026-85393) via garbage bytes in the DigestAlgorithm sequence; incomplete fix for CVE-2026-33894; no upstream fix available (last_affected: 1.4.0, latest release); transitive via @bitgo/web-demo > @cypress/webpack-dev-server > webpack-dev-server > selfsigned (dev-time only — used to generate self-signed TLS certs for the Cypress dev server). node-forge is never used in our production signature-verification paths (crypto flows go through @noble/*, secp256k1, @stablelib, elliptic). Re-evaluate on 2026-12-03: drop this exclusion if node-forge ships a patched release"
+
