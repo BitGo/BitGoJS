@@ -37,7 +37,8 @@ import {
   isV2Envelope,
 } from '../baseTypes';
 import { InvalidTransactionError } from '../../../errors';
-import { CreateEddsaBitGoKeychainParams, CreateEddsaKeychainParams, KeyShare, YShare } from './types';
+import { CreateEddsaBitGoKeychainParams, CreateEddsaKeychainParams, KeyShare, SignShareCodec, YShare } from './types';
+import { decodeWithCodec } from '../../codecs';
 import baseTSSUtils from '../baseTSSUtils';
 import { BaseEddsaUtils } from './base';
 import { KeychainsTriplet } from '../../../baseCoin';
@@ -54,6 +55,11 @@ import type { EddsaKeyGenCallbacks } from '../../../wallet/iWallets';
  */
 
 export class EddsaUtils extends baseTSSUtils<KeyShare> {
+  private static readonly MPCV1_SIGNING_COMMITMENT_STATE = 'MPCV1_SIGNING_COMMITMENT_STATE';
+  private static readonly MPCV1_SIGNING_R_SHARE_STATE = 'MPCV1_SIGNING_R_SHARE_STATE';
+  /** User signing nonce (R) -> the BitGo R share it was used with */
+  private static readonly usedSigningNonces = new Map<string, string>();
+
   async verifyWalletSignatures(
     userGpgPub: string,
     backupGpgPub: string,
@@ -535,7 +541,6 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
   }> {
     const bitgoIndex = ShareKeyPosition.BITGO;
     const { txRequest, prv } = params;
-    const txRequestResolved: TxRequest = txRequest;
 
     const hdTree = await Ed25519Bip32HdTree.initialize();
     const MPC = await Eddsa.initialize(hdTree);
@@ -545,11 +550,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       throw new Error('Invalid user key - missing backupYShare');
     }
 
-    assert(txRequestResolved.transactions || txRequestResolved.unsignedTxs, 'Unable to find transactions in txRequest');
-    const unsignedTx =
-      txRequestResolved.apiVersion === 'full'
-        ? txRequestResolved.transactions![0].unsignedTx
-        : txRequestResolved.unsignedTxs[0];
+    const unsignedTx = this.getUnsignedTx(txRequest);
 
     const signingKey = MPC.keyDerive(
       userSigningMaterial.uShare,
@@ -572,23 +573,12 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     );
 
     const encryptedSignerShare = this.createUserToBitgoEncryptedSignerShare(userToBitgoEncryptedSignerShare);
-    const stringifiedRShare = JSON.stringify(userSignShare);
-    let encryptedRShare: string;
-    if (params.encryptedPrv && isV2Envelope(params.encryptedPrv)) {
-      const session = await this.bitgo.createEncryptionSession(params.walletPassphrase);
-      try {
-        encryptedRShare = await session.encrypt(stringifiedRShare);
-      } finally {
-        session.destroy();
-      }
-    } else {
-      encryptedRShare = await this.bitgo.encrypt({
-        input: stringifiedRShare,
-        password: params.walletPassphrase,
-        encryptionVersion: 1,
-      });
-    }
-    const encryptedUserToBitgoRShare = this.createUserToBitgoEncryptedRShare(encryptedRShare);
+    const encryptedUserToBitgoRShare = await this.encryptSignShare(
+      userSignShare,
+      params.walletPassphrase,
+      `${EddsaUtils.MPCV1_SIGNING_COMMITMENT_STATE}:${this.getSigningAdata(txRequest)}`,
+      params.encryptedPrv !== undefined && isV2Envelope(params.encryptedPrv)
+    );
 
     return { userToBitgoCommitment, encryptedSignerShare, encryptedUserToBitgoRShare };
   }
@@ -597,30 +587,40 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     txRequest: TxRequest;
     walletPassphrase: string;
     encryptedUserToBitgoRShare: EncryptedSignerShareRecord;
-  }): Promise<{ rShare: SignShare }> {
-    const { walletPassphrase, encryptedUserToBitgoRShare } = params;
+    bitgoToUserCommitment: CommitmentShareRecord;
+  }): Promise<{ rShare: SignShare; encryptedUserToBitgoRShare: EncryptedSignerShareRecord }> {
+    const { txRequest, walletPassphrase, encryptedUserToBitgoRShare, bitgoToUserCommitment } = params;
+    assert(bitgoToUserCommitment?.share, 'Missing BitGo to user commitment');
+    const rShare = await this.decryptSignShare(
+      encryptedUserToBitgoRShare,
+      walletPassphrase,
+      this.getSigningAdata(txRequest),
+      EddsaUtils.MPCV1_SIGNING_COMMITMENT_STATE
+    );
 
-    const decryptedRShare = await this.bitgo.decrypt({
-      input: encryptedUserToBitgoRShare.share,
-      password: walletPassphrase,
-    });
-    const rShare = JSON.parse(decryptedRShare);
-    assert(rShare.xShare, 'Unable to find xShare in decryptedRShare');
-    assert(rShare.rShares, 'Unable to find rShares in decryptedRShare');
+    // Commit-before-reveal: the G share may only be produced against the BitGo commitment presented before our R share is revealed
+    const encryptedRShareWithBitgoCommitment = await this.encryptSignShare(
+      rShare,
+      walletPassphrase,
+      `${EddsaUtils.MPCV1_SIGNING_R_SHARE_STATE}:${this.getSigningAdata(txRequest, bitgoToUserCommitment)}`,
+      isV2Envelope(encryptedUserToBitgoRShare.share)
+    );
 
-    return { rShare };
+    return { rShare, encryptedUserToBitgoRShare: encryptedRShareWithBitgoCommitment };
   }
 
   async createGShareFromTxRequest(params: {
     txRequest: string | TxRequest;
     prv: string;
+    walletPassphrase: string;
     bitgoToUserRShare: SignatureShareRecord;
-    userToBitgoRShare: SignShare;
+    encryptedUserToBitgoRShare: EncryptedSignerShareRecord;
     bitgoToUserCommitment: CommitmentShareRecord;
   }): Promise<GShare> {
     let txRequestResolved: TxRequest;
 
-    const { txRequest, prv, bitgoToUserCommitment, bitgoToUserRShare, userToBitgoRShare } = params;
+    const { txRequest, prv, walletPassphrase, bitgoToUserCommitment, bitgoToUserRShare, encryptedUserToBitgoRShare } =
+      params;
 
     if (typeof txRequest === 'string') {
       txRequestResolved = await getTxRequest(this.bitgo, this.wallet.id(), txRequest);
@@ -633,13 +633,15 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       throw new Error('Invalid user key - missing backupYShare');
     }
 
-    assert(txRequestResolved.transactions || txRequestResolved.unsignedTxs, 'Unable to find transactions in txRequest');
-    const unsignedTx =
-      txRequestResolved.apiVersion === 'full'
-        ? txRequestResolved.transactions![0].unsignedTx
-        : txRequestResolved.unsignedTxs[0];
+    const userToBitgoRShare = await this.decryptSignShare(
+      encryptedUserToBitgoRShare,
+      walletPassphrase,
+      this.getSigningAdata(txRequestResolved, bitgoToUserCommitment),
+      EddsaUtils.MPCV1_SIGNING_R_SHARE_STATE
+    );
+    EddsaUtils.consumeSigningNonce(userToBitgoRShare.xShare.R, bitgoToUserRShare.share);
 
-    const signablePayload = Buffer.from(unsignedTx.signableHex, 'hex');
+    const signablePayload = Buffer.from(this.getUnsignedTx(txRequestResolved).signableHex, 'hex');
 
     const userToBitGoGShare = await createUserToBitGoGShare(
       userToBitgoRShare,
@@ -650,6 +652,68 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       bitgoToUserCommitment
     );
     return userToBitGoGShare;
+  }
+
+  private getUnsignedTx(txRequest: TxRequest): UnsignedTransactionTss {
+    assert(txRequest.transactions || txRequest.unsignedTxs, 'Unable to find transactions in txRequest');
+    return txRequest.apiVersion === 'full' ? txRequest.transactions![0].unsignedTx : txRequest.unsignedTxs[0];
+  }
+
+  /**
+   * Binds persisted signing state to the wallet, txRequest, derivation path, signable payload and, once known, the
+   * BitGo commitment. JSON-encoded so server-supplied fields cannot be shifted across separators.
+   */
+  private getSigningAdata(txRequest: TxRequest, bitgoToUserCommitment?: CommitmentShareRecord): string {
+    const { derivationPath, signableHex } = this.getUnsignedTx(txRequest);
+    const fields = [txRequest.walletId, txRequest.txRequestId, derivationPath, signableHex];
+    return JSON.stringify(bitgoToUserCommitment ? [...fields, bitgoToUserCommitment.share] : fields);
+  }
+
+  private async encryptSignShare(
+    signShare: SignShare,
+    walletPassphrase: string,
+    adata: string,
+    useV2: boolean
+  ): Promise<EncryptedSignerShareRecord> {
+    const input = JSON.stringify(signShare);
+    let encryptedRShare: string;
+    if (useV2) {
+      const session = await this.bitgo.createEncryptionSession(walletPassphrase);
+      try {
+        encryptedRShare = await session.encrypt(input, adata);
+      } finally {
+        session.destroy();
+      }
+    } else {
+      encryptedRShare = await this.bitgo.encrypt({ input, password: walletPassphrase, adata, encryptionVersion: 1 });
+    }
+    return this.createUserToBitgoEncryptedRShare(encryptedRShare);
+  }
+
+  private async decryptSignShare(
+    encryptedSignShare: EncryptedSignerShareRecord,
+    walletPassphrase: string,
+    adata: string,
+    roundDomainSeparator: string
+  ): Promise<SignShare> {
+    this.validateAdata(adata, encryptedSignShare.share, roundDomainSeparator);
+    const decryptedSignShare = await this.bitgo.decrypt({
+      input: encryptedSignShare.share,
+      password: walletPassphrase,
+    });
+    return decodeWithCodec(SignShareCodec, JSON.parse(decryptedSignShare), 'Invalid decrypted SignShare');
+  }
+
+  /**
+   * Enforces that a user signing nonce is only ever used against a single BitGo R share. Signing twice under the
+   * same nonce with different challenges leaks the user's signing share. Identical retries are allowed.
+   */
+  private static consumeSigningNonce(userNonce: string, bitgoToUserRShare: string): void {
+    const usedWith = EddsaUtils.usedSigningNonces.get(userNonce);
+    if (usedWith !== undefined && usedWith !== bitgoToUserRShare) {
+      throw new Error('User signing nonce has already been used');
+    }
+    EddsaUtils.usedSigningNonces.set(userNonce, bitgoToUserRShare);
   }
 
   async signEddsaTssUsingExternalSigner(
@@ -685,10 +749,12 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       reqId
     );
 
-    const { rShare } = await externalSignerRShareGenerator({
-      txRequest: txRequestResolved,
-      encryptedUserToBitgoRShare,
-    });
+    const { rShare, encryptedUserToBitgoRShare: encryptedRShareWithBitgoCommitment } =
+      await externalSignerRShareGenerator({
+        txRequest: txRequestResolved,
+        encryptedUserToBitgoRShare,
+        bitgoToUserCommitment,
+      });
 
     await offerUserToBitgoRShare(
       this.bitgo,
@@ -703,7 +769,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     const gSignShareTransactionParams = {
       txRequest: txRequestResolved,
       bitgoToUserRShare: bitgoToUserRShare,
-      userToBitgoRShare: rShare,
+      encryptedUserToBitgoRShare: encryptedRShareWithBitgoCommitment,
       bitgoToUserCommitment,
     };
     const gShare = await externalSignerGShareGenerator(gSignShareTransactionParams);

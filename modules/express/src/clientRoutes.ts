@@ -1957,7 +1957,9 @@ export function createCustomCommitmentGenerator(
 }
 
 export function createCustomRShareGenerator(externalSignerUrl: string, coin: string): CustomRShareGeneratingFunction {
-  return async function (params): Promise<{ rShare: SignShare }> {
+  return async function (
+    params
+  ): Promise<{ rShare: SignShare; encryptedUserToBitgoRShare: EncryptedSignerShareRecord }> {
     const { body: rShare } = await retryPromise(
       () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/R`).type('json').send(params),
       (err, tryCount) => {
