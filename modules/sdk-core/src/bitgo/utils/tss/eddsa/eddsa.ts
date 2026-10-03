@@ -39,6 +39,7 @@ import {
 import { InvalidTransactionError } from '../../../errors';
 import { CreateEddsaBitGoKeychainParams, CreateEddsaKeychainParams, KeyShare, YShare } from './types';
 import baseTSSUtils from '../baseTSSUtils';
+import { eddsaUserSigningMaterialMatchesCommonKeychain } from '../keyVerification';
 import { BaseEddsaUtils } from './base';
 import { KeychainsTriplet } from '../../../baseCoin';
 import { exchangeEddsaCommitments } from '../../../tss/common';
@@ -860,6 +861,14 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
    */
   async signTxRequestForMessage(params: TSSParamsForMessageWithPrv): Promise<TxRequest> {
     return this.signRequestBase(params, RequestType.message);
+  }
+
+  supportsVerifyKey(): boolean {
+    return true;
+  }
+
+  async verifyKey(params: { prv: string; commonKeychain: string }): Promise<boolean> {
+    return eddsaUserSigningMaterialMatchesCommonKeychain(params);
   }
 
   /**

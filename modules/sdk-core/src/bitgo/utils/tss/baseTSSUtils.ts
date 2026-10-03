@@ -3,6 +3,7 @@ import * as openpgp from 'openpgp';
 import { Key, readKey, SerializedKeyPair } from 'openpgp';
 import { IBaseCoin, KeychainsTriplet } from '../../baseCoin';
 import { BitGoBase } from '../../bitgoBase';
+import { MethodNotImplementedError } from '../../errors';
 import { Keychain, KeyIndices, WebauthnKeyEncryptionInfo } from '../../keychain';
 import { getTxRequest } from '../../tss';
 import { IWallet } from '../../wallet';
@@ -255,6 +256,18 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
 
   signTxRequestForMessage(params: TSSParamsForMessage): Promise<TxRequest> {
     throw new Error('Method not implemented.');
+  }
+
+  supportsVerifyKey(): boolean {
+    return false;
+  }
+
+  async verifyKey(params: { prv: string; commonKeychain: string }): Promise<boolean> {
+    // unsupported wallet types are rejected by the `supportsVerifyKey()` gate in Wallet.verifyKey,
+    // which surfaces the user-facing message; reaching this stub means a direct caller invoked
+    // verifyKey on an algorithm that does not implement it.
+    // async so the rejection, rather than a sync throw, reaches callers of a Promise-typed method.
+    throw new MethodNotImplementedError();
   }
 
   /**
