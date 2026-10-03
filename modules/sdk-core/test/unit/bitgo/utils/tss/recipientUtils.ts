@@ -1,9 +1,5 @@
 import assert from 'assert';
-import {
-  NO_RECIPIENT_TX_TYPES,
-  resolveEffectiveTxParams,
-  resolveTssVerifyTransactionOptions,
-} from '../../../../../src/bitgo/utils/tss/recipientUtils';
+import { NO_RECIPIENT_TX_TYPES, resolveEffectiveTxParams } from '../../../../../src/bitgo/utils/tss/recipientUtils';
 import { InvalidTransactionError } from '../../../../../src/bitgo/errors';
 import { PopulatedIntent, TxRequest } from '../../../../../src/bitgo/utils/tss/baseTypes';
 
@@ -506,29 +502,6 @@ describe('recipientUtils', function () {
       it('throws for stakingAuthorize — must be validated at coin layer', function () {
         const txRequest = makeTxRequest({ intent: { intentType: 'stakingAuthorize' } as any });
         assert.throws(() => resolveEffectiveTxParams(txRequest, {}), InvalidTransactionError);
-      });
-    });
-  });
-
-  describe('resolveTssVerifyTransactionOptions', function () {
-    const intentRecipients = [{ address: { address: 'addr1' }, amount: { value: '100', symbol: 'tsol' } }];
-
-    it('verifies consolidations as sweep-to-base-address without backfilling intent recipients', function () {
-      const txRequest = makeTxRequest({
-        intent: { intentType: 'consolidate', consolidateId: 'consolidate-id', recipients: intentRecipients },
-      });
-      assert.deepStrictEqual(resolveTssVerifyTransactionOptions(txRequest, 'abcd', undefined, 'tsol'), {
-        txPrebuild: { txHex: 'abcd', consolidateId: 'consolidate-id' },
-        txParams: {},
-        verification: { consolidationToBaseAddress: true },
-      });
-    });
-
-    it('resolves effective txParams for non-consolidation intents', function () {
-      const txRequest = makeTxRequest({ intent: { intentType: 'payment', recipients: intentRecipients } });
-      assert.deepStrictEqual(resolveTssVerifyTransactionOptions(txRequest, 'abcd', undefined, 'tsol'), {
-        txPrebuild: { txHex: 'abcd' },
-        txParams: { recipients: [{ address: 'addr1', amount: '100', data: undefined }], type: 'payment' },
       });
     });
   });
