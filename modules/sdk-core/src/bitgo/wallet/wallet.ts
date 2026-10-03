@@ -2410,7 +2410,7 @@ export class Wallet implements IWallet {
         assert(unsignedTx.signableHex, 'Missing signableHex in unsignedTx');
         await this.baseCoin.verifyTransaction({
           txPrebuild: { txHex: unsignedTx.serializedTxHex ?? unsignedTx.signableHex },
-          txParams: resolveEffectiveTxParams(txRequest, params.verifyTxParams.txParams, this.baseCoin.getChain()),
+          txParams: resolveEffectiveTxParams(txRequest, params.verifyTxParams.txParams),
           wallet: this,
           verification: params.verifyTxParams.verification,
           reqId: params.reqId,

@@ -329,7 +329,7 @@ describe('recipientUtils', function () {
     });
 
     describe('tokenName preservation regression tests', function () {
-      it('preserves tokenName from amount.symbol when it differs from chainName', function () {
+      it('preserves tokenName from amount.symbol when it is a token', function () {
         const txRequest = makeTxRequest({
           intent: {
             intentType: 'payment',
@@ -341,12 +341,12 @@ describe('recipientUtils', function () {
             ],
           } as any,
         });
-        const result = resolveEffectiveTxParams(txRequest, {}, 'tsol');
+        const result = resolveEffectiveTxParams(txRequest, {});
         assert.strictEqual(result.recipients?.length, 1);
         assert.strictEqual(result.recipients?.[0].tokenName, 'tsol:usdc');
       });
 
-      it('does NOT set tokenName when symbol equals chainName (native SOL transfer)', function () {
+      it('does NOT set tokenName for a native symbol (native SOL transfer)', function () {
         const txRequest = makeTxRequest({
           intent: {
             intentType: 'payment',
@@ -358,7 +358,7 @@ describe('recipientUtils', function () {
             ],
           } as any,
         });
-        const result = resolveEffectiveTxParams(txRequest, {}, 'tsol');
+        const result = resolveEffectiveTxParams(txRequest, {});
         assert.strictEqual(result.recipients?.[0].tokenName, undefined);
       });
 
@@ -375,7 +375,7 @@ describe('recipientUtils', function () {
             ],
           } as any,
         });
-        const result = resolveEffectiveTxParams(txRequest, {}, 'tsol');
+        const result = resolveEffectiveTxParams(txRequest, {});
         assert.strictEqual(result.recipients?.[0].tokenName, 'canonical-token-name');
       });
 
@@ -392,7 +392,7 @@ describe('recipientUtils', function () {
             ],
           } as any,
         });
-        const result = resolveEffectiveTxParams(txRequest, {}, 'sol');
+        const result = resolveEffectiveTxParams(txRequest, {});
         assert.strictEqual(result.recipients?.[0].tokenName, 'sol:usdc');
       });
 
@@ -409,11 +409,11 @@ describe('recipientUtils', function () {
             ],
           } as any,
         });
-        const result = resolveEffectiveTxParams(txRequest, {}, 'tsol');
+        const result = resolveEffectiveTxParams(txRequest, {});
         assert.strictEqual(result.recipients?.[0].tokenName, 'tsol:usdc');
       });
 
-      it('does NOT set tokenName when chainName is absent (legacy ECDSA callers, no tokenData)', function () {
+      it('does NOT set tokenName for a native symbol without tokenData (ECDSA)', function () {
         const txRequest = makeTxRequest({
           intent: {
             intentType: 'payment',
@@ -425,7 +425,7 @@ describe('recipientUtils', function () {
         assert.strictEqual(result.recipients?.[0].address, '0xabc');
       });
 
-      it('preserves tokenData.tokenName when chainName is absent (legacy ECDSA with tokenData)', function () {
+      it('preserves tokenData.tokenName (ECDSA with tokenData)', function () {
         const txRequest = makeTxRequest({
           intent: {
             intentType: 'transferToken',
@@ -458,7 +458,7 @@ describe('recipientUtils', function () {
             ],
           } as any,
         });
-        const result = resolveEffectiveTxParams(txRequest, {}, 'tsol');
+        const result = resolveEffectiveTxParams(txRequest, {});
         assert.strictEqual(result.recipients?.length, 2);
         result.recipients!.forEach((r) => assert.strictEqual(r.tokenName, 'tsol:usdc'));
         assert.strictEqual(result.recipients![0].amount, '2000000');
@@ -481,7 +481,7 @@ describe('recipientUtils', function () {
             ],
           } as any,
         });
-        const result = resolveEffectiveTxParams(txRequest, {}, 'tsol');
+        const result = resolveEffectiveTxParams(txRequest, {});
         assert.strictEqual(result.recipients![0].tokenName, undefined);
         assert.strictEqual(result.recipients![1].tokenName, 'tsol:usdc');
       });
@@ -517,7 +517,7 @@ describe('recipientUtils', function () {
       const txRequest = makeTxRequest({
         intent: { intentType: 'consolidate', consolidateId: 'consolidate-id', recipients: intentRecipients },
       });
-      assert.deepStrictEqual(resolveTssVerifyTransactionOptions(txRequest, 'abcd', undefined, 'tsol'), {
+      assert.deepStrictEqual(resolveTssVerifyTransactionOptions(txRequest, 'abcd', undefined), {
         txPrebuild: { txHex: 'abcd', consolidateId: 'consolidate-id' },
         txParams: {},
         verification: { consolidationToBaseAddress: true },
@@ -526,10 +526,40 @@ describe('recipientUtils', function () {
 
     it('resolves effective txParams for non-consolidation intents', function () {
       const txRequest = makeTxRequest({ intent: { intentType: 'payment', recipients: intentRecipients } });
-      assert.deepStrictEqual(resolveTssVerifyTransactionOptions(txRequest, 'abcd', undefined, 'tsol'), {
+      assert.deepStrictEqual(resolveTssVerifyTransactionOptions(txRequest, 'abcd', undefined), {
         txPrebuild: { txHex: 'abcd' },
         txParams: { recipients: [{ address: 'addr1', amount: '100', data: undefined }], type: 'payment' },
       });
+    });
+  });
+
+  describe('token detection from the intent symbol', function () {
+    function intentWithSymbols(...symbols: string[]): TxRequest {
+      return makeTxRequest({
+        intent: {
+          intentType: 'payment',
+          recipients: symbols.map((symbol) => ({
+            address: { address: '54CAre4wvLrQFBERN1zg1sJfVoeaSGGiUjRkrvbowctp' },
+            amount: { value: '1000000', symbol },
+          })),
+        } as any,
+      });
+    }
+
+    it('sets tokenName for a token symbol', function () {
+      const result = resolveEffectiveTxParams(intentWithSymbols('tsol:usdcv2'), undefined);
+      assert.strictEqual(result.recipients?.[0].tokenName, 'tsol:usdcv2');
+    });
+
+    it('does not set tokenName for a native symbol', function () {
+      const result = resolveEffectiveTxParams(intentWithSymbols('tsol', 'tdot'), undefined);
+      assert.strictEqual(result.recipients?.[0].tokenName, undefined);
+      assert.strictEqual(result.recipients?.[1].tokenName, undefined);
+    });
+
+    it('does not set tokenName for symbols missing from statics', function () {
+      const result = resolveEffectiveTxParams(intentWithSymbols('tsol:not-in-statics'), undefined);
+      assert.strictEqual(result.recipients?.[0].tokenName, undefined);
     });
   });
 });

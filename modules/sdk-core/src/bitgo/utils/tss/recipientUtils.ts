@@ -1,4 +1,7 @@
 import * as t from 'io-ts';
+
+import { coins } from '@bitgo/statics';
+
 import { TransactionParams, VerifyTransactionOptions } from '../../baseCoin';
 import { InvalidTransactionError } from '../../errors';
 import { PopulatedIntent, TxRequest } from './baseTypes';
@@ -113,7 +116,7 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
  * mapped to ITransactionRecipient shape when txParams.recipients is absent.
  *
  * tokenName is derived from tokenData.tokenName when present, otherwise from
- * amount.symbol when chainName is provided and symbol differs from it.
+ * amount.symbol when statics marks the symbol as a token.
  *
  * Staking intents (BSC delegate/undelegate, CELO stake/unstake, etc.) are
  * identified generically by the presence of `stakingRequestId` on the intent —
@@ -125,21 +128,18 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
  *
  * @param txRequest - the transaction request containing the persisted intent
  * @param txParams - the caller-supplied transaction parameters (may be undefined)
- * @param chainName - the base chain name (e.g. 'sol', 'tsol') used to exclude
- *   native-coin transfers from tokenName; pass baseCoin.getChain()
  */
 export function resolveEffectiveTxParams(
   txRequest: TxRequest,
-  txParams: TransactionParams | undefined,
-  chainName?: string
+  txParams: TransactionParams | undefined
 ): TransactionParams {
   const intentRecipients = (txRequest.intent as PopulatedIntent)?.recipients?.map((intentRecipient) => {
-    // Prefer tokenData.tokenName; fall back to amount.symbol when chainName is
-    // provided and differs from it. When absent, skip the symbol fallback.
+    // Prefer tokenData.tokenName; fall back to amount.symbol when statics marks it as a token.
+    // Decided from the symbol alone, so it does not depend on which coin the wallet was loaded through.
     const { symbol } = intentRecipient.amount;
     const tokenName =
       intentRecipient.tokenData?.tokenName ||
-      (chainName !== undefined && symbol && symbol !== chainName ? symbol : undefined);
+      (symbol && coins.has(symbol) && coins.get(symbol).isToken ? symbol : undefined);
     return {
       address: intentRecipient.address.address,
       amount: intentRecipient.amount.value,
@@ -207,13 +207,11 @@ const ConsolidateIntent = t.intersection([
  * @param txRequest - the transaction request containing the persisted intent
  * @param txHex - the unsigned transaction to verify
  * @param txParams - the caller-supplied transaction parameters (may be undefined)
- * @param chainName - the base chain name; pass baseCoin.getChain()
  */
 export function resolveTssVerifyTransactionOptions(
   txRequest: TxRequest,
   txHex: string,
-  txParams: TransactionParams | undefined,
-  chainName: string
+  txParams: TransactionParams | undefined
 ): Pick<VerifyTransactionOptions, 'txPrebuild' | 'txParams' | 'verification'> {
   if (ConsolidateIntent.is(txRequest.intent)) {
     return {
@@ -222,5 +220,5 @@ export function resolveTssVerifyTransactionOptions(
       verification: { consolidationToBaseAddress: true },
     };
   }
-  return { txPrebuild: { txHex }, txParams: resolveEffectiveTxParams(txRequest, txParams, chainName) };
+  return { txPrebuild: { txHex }, txParams: resolveEffectiveTxParams(txRequest, txParams) };
 }

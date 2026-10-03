@@ -892,8 +892,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       ...resolveTssVerifyTransactionOptions(
         txRequestResolved,
         unsignedTx.serializedTxHex ?? unsignedTx.signableHex,
-        txParams,
-        this.baseCoin.getChain()
+        txParams
       ),
       wallet: this.wallet,
       walletType: this.wallet.multisigType(),
