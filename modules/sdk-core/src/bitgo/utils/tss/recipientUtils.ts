@@ -1,4 +1,5 @@
 import * as t from 'io-ts';
+import { CoinNotDefinedError, coins } from '@bitgo/statics';
 import { TransactionParams, VerifyTransactionOptions } from '../../baseCoin';
 import { InvalidTransactionError } from '../../errors';
 import { PopulatedIntent, TxRequest } from './baseTypes';
@@ -106,6 +107,28 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
 ]);
 
 /**
+ * Whether chainName identifies a token coin rather than a native chain.
+ *
+ * For token wallets (e.g. a sol:usdt wallet) baseCoin.getChain() returns the token
+ * name itself, so an intent recipient whose amount.symbol equals chainName is
+ * still a token transfer and the symbol must be kept as tokenName. Native wallets
+ * keep the strict symbol !== chainName behavior. The statics coin map covers both
+ * statically listed tokens and runtime-registered (AMS) tokens —
+ * GlobalCoinFactory.registerToken adds them to the same map — so names never
+ * registered anywhere are the only ones that resolve to false.
+ */
+function isTokenChainName(chainName: string): boolean {
+  try {
+    return coins.get(chainName).isToken;
+  } catch (e) {
+    if (e instanceof CoinNotDefinedError) {
+      return false;
+    }
+    throw e;
+  }
+}
+
+/**
  * Resolves the effective txParams for TSS signing recipient verification.
  *
  * For smart contract interactions, recipients live in txRequest.intent.recipients
@@ -113,7 +136,9 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
  * mapped to ITransactionRecipient shape when txParams.recipients is absent.
  *
  * tokenName is derived from tokenData.tokenName when present, otherwise from
- * amount.symbol when chainName is provided and symbol differs from it.
+ * amount.symbol when chainName is provided and the symbol is not the wallet's
+ * native asset: for native wallets that means symbol !== chainName, while for
+ * token wallets chainName is the token itself so the symbol is always kept.
  *
  * Staking intents (BSC delegate/undelegate, CELO stake/unstake, etc.) are
  * identified generically by the presence of `stakingRequestId` on the intent —
@@ -125,21 +150,26 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
  *
  * @param txRequest - the transaction request containing the persisted intent
  * @param txParams - the caller-supplied transaction parameters (may be undefined)
- * @param chainName - the base chain name (e.g. 'sol', 'tsol') used to exclude
- *   native-coin transfers from tokenName; pass baseCoin.getChain()
+ * @param chainName - the wallet's chain name (baseCoin.getChain()); for token
+ *   wallets this is the token name itself (e.g. 'sol:usdt')
  */
 export function resolveEffectiveTxParams(
   txRequest: TxRequest,
   txParams: TransactionParams | undefined,
   chainName?: string
 ): TransactionParams {
+  // Resolved once per call: a token wallet's chainName (e.g. 'sol:usdt') is itself
+  // a token, so recipient symbols equal to chainName still identify token transfers.
+  const chainNameIsToken = chainName !== undefined && isTokenChainName(chainName);
+
   const intentRecipients = (txRequest.intent as PopulatedIntent)?.recipients?.map((intentRecipient) => {
     // Prefer tokenData.tokenName; fall back to amount.symbol when chainName is
-    // provided and differs from it. When absent, skip the symbol fallback.
+    // provided and the symbol is not the wallet's native asset. When absent,
+    // skip the symbol fallback.
     const { symbol } = intentRecipient.amount;
     const tokenName =
       intentRecipient.tokenData?.tokenName ||
-      (chainName !== undefined && symbol && symbol !== chainName ? symbol : undefined);
+      (chainName !== undefined && symbol && (symbol !== chainName || chainNameIsToken) ? symbol : undefined);
     return {
       address: intentRecipient.address.address,
       amount: intentRecipient.amount.value,
@@ -207,7 +237,8 @@ const ConsolidateIntent = t.intersection([
  * @param txRequest - the transaction request containing the persisted intent
  * @param txHex - the unsigned transaction to verify
  * @param txParams - the caller-supplied transaction parameters (may be undefined)
- * @param chainName - the base chain name; pass baseCoin.getChain()
+ * @param chainName - the wallet's chain name; pass baseCoin.getChain() (the token
+ *   name itself for token wallets)
  */
 export function resolveTssVerifyTransactionOptions(
   txRequest: TxRequest,

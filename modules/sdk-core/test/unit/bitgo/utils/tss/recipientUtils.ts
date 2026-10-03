@@ -362,6 +362,62 @@ describe('recipientUtils', function () {
         assert.strictEqual(result.recipients?.[0].tokenName, undefined);
       });
 
+      it('keeps tokenName when symbol equals chainName for a token wallet (WCI-1723)', function () {
+        // A sol:usdt token wallet: populateIntent stores amount.symbol = 'sol:usdt'
+        // because sendMany on a token wallet does not include tokenName, and the
+        // EdDSA signers pass baseCoin.getChain() = 'sol:usdt' as chainName.
+        // The symbol is the token name and must be kept so verifyTransaction can
+        // derive the recipient's associated token account.
+        const txRequest = makeTxRequest({
+          intent: {
+            intentType: 'payment',
+            recipients: [
+              {
+                address: { address: 'E7Z6pFfUhjx2dFjdB9Ws2KnKepXoq62TeF5uaCVSvqQV' },
+                amount: { value: '40000000000', symbol: 'sol:usdt' },
+              },
+            ],
+          } as any,
+        });
+        const result = resolveEffectiveTxParams(txRequest, {}, 'sol:usdt');
+        assert.strictEqual(result.recipients?.length, 1);
+        assert.strictEqual(result.recipients?.[0].tokenName, 'sol:usdt');
+      });
+
+      it('keeps tokenName when symbol equals chainName for a testnet token wallet (WCI-1723)', function () {
+        const txRequest = makeTxRequest({
+          intent: {
+            intentType: 'payment',
+            recipients: [
+              {
+                address: { address: 'E7Z6pFfUhjx2dFjdB9Ws2KnKepXoq62TeF5uaCVSvqQV' },
+                amount: { value: '1000000', symbol: 'tsol:usdc' },
+              },
+            ],
+          } as any,
+        });
+        const result = resolveEffectiveTxParams(txRequest, {}, 'tsol:usdc');
+        assert.strictEqual(result.recipients?.[0].tokenName, 'tsol:usdc');
+      });
+
+      it('does not set tokenName for a chainName that is not registered and equals symbol', function () {
+        // A name registered nowhere (statics or the runtime/AMS registry) cannot
+        // be distinguished from a native transfer, so the symbol stays dropped.
+        const txRequest = makeTxRequest({
+          intent: {
+            intentType: 'payment',
+            recipients: [
+              {
+                address: { address: 'E7Z6pFfUhjx2dFjdB9Ws2KnKepXoq62TeF5uaCVSvqQV' },
+                amount: { value: '1000', symbol: 'sol:some-unregistered-token' },
+              },
+            ],
+          } as any,
+        });
+        const result = resolveEffectiveTxParams(txRequest, {}, 'sol:some-unregistered-token');
+        assert.strictEqual(result.recipients?.[0].tokenName, undefined);
+      });
+
       it('prefers tokenData.tokenName over amount.symbol (uses distinct values to verify)', function () {
         const txRequest = makeTxRequest({
           intent: {
