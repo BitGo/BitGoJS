@@ -601,8 +601,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
         ...resolveTssVerifyTransactionOptions(
           txRequest,
           unsignedTx.serializedTxHex ?? txOrMessageToSign,
-          params.txParams,
-          this.baseCoin.getChain()
+          params.txParams
         ),
         wallet: this.wallet,
         walletType: this.wallet.multisigType(),
