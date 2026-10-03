@@ -25,6 +25,7 @@ import {
   MPCSweepTxs,
   MPCTx,
   MPCTxs,
+  resolveTssVerifyTransactionOptions,
   signRecoveryEddsaMPCv2,
   PrebuildAndSignTransactionOptions,
   TransactionPrebuild,
@@ -1048,6 +1049,85 @@ describe('SOL:', function () {
         wallet: walletObj,
       } as any);
       validTransaction.should.equal(true);
+    });
+  });
+
+  describe('TSS signing-time verification of token wallet withdrawals (WCI-1723)', () => {
+    // Signing path for token wallets: eddsaMPCv2.signTxRequest resolves recipients
+    // from the persisted intent and passes baseCoin.getChain() as chainName — for a
+    // token wallet that chain name is the token itself (e.g. 'sol:usdt'). populateIntent
+    // stores amount.symbol = 'sol:usdt' because sendMany on a token wallet does not
+    // include tokenName, so the symbol must be preserved as tokenName for
+    // verifyTransaction to derive the recipient's associated token account.
+    let bitgoMainnet: TestBitGoAPI;
+    let solMainnet: Sol;
+
+    const recipient = 'E7Z6pFfUhjx2dFjdB9Ws2KnKepXoq62TeF5uaCVSvqQV';
+    const walletRoot = '4DujymUFbQ8GBKtAwAZrQ6QqpvtBEivL48h4ta2oJGd2';
+    const usdtAmount = '40000000000';
+
+    const buildUsdtTokenTransferTx = async (): Promise<string> => {
+      const txBuilder = getBuilderFactory('sol').getTokenTransferBuilder();
+      txBuilder.nonce(blockHash);
+      txBuilder.sender(walletRoot);
+      txBuilder.send({ address: recipient, amount: usdtAmount, tokenName: 'sol:usdt' });
+      const tx = await txBuilder.build();
+      return tx.toBroadcastFormat();
+    };
+
+    const tokenWalletTxRequest = (recipientAddress: string): TxRequest =>
+      ({
+        txRequestId: 'wci1723-txreq',
+        walletId: 'wci1723-wallet',
+        intent: {
+          intentType: 'payment',
+          recipients: [{ address: { address: recipientAddress }, amount: { value: usdtAmount, symbol: 'sol:usdt' } }],
+        },
+      } as unknown as TxRequest);
+
+    const tokenWallet = () =>
+      new Wallet(bitgoMainnet, solMainnet, {
+        id: 'wci1723-wallet',
+        coin: 'sol:usdt',
+        coinSpecific: { rootAddress: walletRoot },
+        multisigType: 'tss',
+      });
+
+    before(function () {
+      bitgoMainnet = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
+      bitgoMainnet.safeRegister('sol', Sol.createInstance);
+      bitgoMainnet.initializeTestVars();
+      solMainnet = bitgoMainnet.coin('sol') as Sol;
+    });
+
+    it('verifies a sol:usdt withdrawal signed from a token wallet intent', async function () {
+      const txHex = await buildUsdtTokenTransferTx();
+      const options = resolveTssVerifyTransactionOptions(tokenWalletTxRequest(recipient), txHex, undefined, 'sol:usdt');
+      should.exist(options.txParams?.recipients?.[0].tokenName);
+      options.txParams?.recipients?.[0].tokenName?.should.equal('sol:usdt');
+      const validTransaction = await solMainnet.verifyTransaction({
+        ...options,
+        wallet: tokenWallet(),
+        walletType: 'tss',
+      } as any);
+      validTransaction.should.equal(true);
+    });
+
+    it('still rejects a sol:usdt withdrawal with a tampered intent recipient', async function () {
+      const txHex = await buildUsdtTokenTransferTx();
+      const options = resolveTssVerifyTransactionOptions(
+        tokenWalletTxRequest('8KfDrb6cd4AM7TywFbgRtfr5ZB2auV6TfLF9hqE7BbFA'),
+        txHex,
+        undefined,
+        'sol:usdt'
+      );
+      await solMainnet
+        .verifyTransaction({
+          ...options,
+          wallet: tokenWallet(),
+          walletType: 'tss',
+        } as any)
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
     });
   });
 
