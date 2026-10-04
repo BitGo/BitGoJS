@@ -4,6 +4,7 @@ import {
   ADA_TOKEN_FEATURES,
   APT_FEATURES,
   BSC_TOKEN_FEATURES,
+  CANTON_TOKEN_FEATURES,
   EVM_FEATURES,
   POLYGON_TOKEN_FEATURES,
   POLYX_TOKEN_FEATURES,
@@ -52,6 +53,7 @@ export const networkFeatureMapForTokens: Partial<Record<CoinFamily, CoinFeature[
   bera: [...AccountCoin.DEFAULT_FEATURES, CoinFeature.EIP1559],
   bsc: BSC_TOKEN_FEATURES,
   celo: AccountCoin.DEFAULT_FEATURES,
+  canton: CANTON_TOKEN_FEATURES,
   eth: AccountCoin.DEFAULT_FEATURES,
   eos: AccountCoin.DEFAULT_FEATURES,
   gasevm: [
