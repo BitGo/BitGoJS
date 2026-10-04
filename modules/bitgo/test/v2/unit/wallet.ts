@@ -5208,6 +5208,218 @@ describe('V2 Wallet:', function () {
       });
     });
 
+    describe('Message Signing with pending approval (policy flow)', function () {
+      const messageRaw = 'hello world';
+      const messageEncoded = Buffer.from(`\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`).toString(
+        'hex'
+      );
+      const txHash = '0xrrrsss1b';
+      const pendingApprovalId = 'pa-11112222333344445555666677778888';
+
+      const signedMessagesFixture: NonNullable<TxRequest['messages']> = [
+        {
+          state: 'signed',
+          messageRaw,
+          derivationPath: 'm/0',
+          signatureShares: [{ from: SignatureShareType.USER, to: SignatureShareType.USER, share: '' }],
+          combineSigShare: '0:rrr:sss:3',
+          txHash,
+          messageEncoded,
+        },
+      ];
+
+      const parkedTxRequest: TxRequest = {
+        txRequestId: 'parked-tx-request-id',
+        transactions: [],
+        intent: { intentType: 'signTypedStructuredData' },
+        date: new Date().toISOString(),
+        latest: true,
+        state: 'pendingApproval',
+        apiVersion: 'full',
+        pendingApprovalId,
+        userId: 'userId',
+        walletType: 'hot',
+        policiesChecked: true,
+        version: 1,
+        walletId: 'walletId',
+        unsignedTxs: [],
+        unsignedMessages: [],
+        messages: [
+          {
+            state: 'pendingSignature',
+            messageRaw,
+            derivationPath: 'm/0',
+            signatureShares: [],
+            messageEncoded,
+          },
+        ],
+      };
+
+      const signableTxRequest: TxRequest = {
+        ...parkedTxRequest,
+        state: 'pendingDelivery',
+      };
+
+      const signedTxRequest: TxRequest = {
+        ...parkedTxRequest,
+        state: 'delivered',
+        messages: signedMessagesFixture,
+      };
+
+      const typedDataFixture: TypedData = {
+        typedDataRaw: JSON.stringify({
+          domain: {
+            name: 'bitgo',
+            version: '1',
+            chainId: 1,
+            verifyingContract: '0x0000000000000000000000000000000000000000',
+          },
+          primaryType: 'Message',
+          types: {
+            EIP712Domain: [
+              { name: 'name', type: 'string' },
+              { name: 'version', type: 'string' },
+              { name: 'chainId', type: 'uint256' },
+              { name: 'verifyingContract', type: 'address' },
+            ],
+            Message: [{ name: 'data', type: 'string' }],
+          },
+          message: { data: 'bitgo says hello!' },
+        }),
+        version: SignTypedDataVersion.V3,
+      };
+
+      let signTxRequestForMessageStub: sinon.SinonStub;
+
+      beforeEach(function () {
+        signTxRequestForMessageStub = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'signTxRequestForMessage');
+        signTxRequestForMessageStub.resolves(signedTxRequest);
+        sandbox.stub(Keychains.prototype, 'getKeysForSigning').resolves([
+          {
+            commonKeychain: 'test',
+            id: '',
+            pub: '',
+            type: 'tss',
+            encryptedPrv:
+              '{"iv":"15FsbDVI1zG9OggD8YX+Hg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"hHbNH3Sz/aU=","ct":"WoNVKz7afiRxXI2w/YkzMdMyoQg/B15u1Q8aQgi96jJZ9wk6TIaSEc6bXFH3AHzD9MdJCWJQUpRhoQc/rgytcn69scPTjKeeyVMElGCxZdFVS/psQcNE+lue3//2Zlxj+6t1NkvYO+8yAezSMRBK5OdftXEjNQI="}',
+          },
+        ]);
+      });
+
+      afterEach(function () {
+        sandbox.restore();
+        nock.cleanAll();
+      });
+
+      it('should return pendingApprovalId without signing when a fresh signMessage request is parked', async function () {
+        nock(bgUrl).post(`/api/v2/wallet/${tssEthWallet.id()}/msgrequests`).reply(200, parkedTxRequest);
+
+        const result = await tssEthWallet.signMessage({
+          message: { messageRaw, messageStandardType: MessageStandardType.EIP191 },
+          prv: 'secretKey',
+        });
+
+        result.pendingApprovalId?.should.equal(pendingApprovalId);
+        result.txRequestId.should.equal(parkedTxRequest.txRequestId);
+        should.not.exist(result.txHash);
+        should.not.exist(result.signature);
+        sinon.assert.notCalled(signTxRequestForMessageStub);
+      });
+
+      it('should return pendingApprovalId without signing when resuming a parked signMessage request', async function () {
+        nock(bgUrl)
+          .get(`/api/v2/wallet/${tssEthWallet.id()}/txrequests?txRequestIds=${parkedTxRequest.txRequestId}&latest=true`)
+          .reply(200, { txRequests: [parkedTxRequest] });
+
+        const result = await tssEthWallet.signMessage({
+          message: {
+            messageRaw,
+            txRequestId: parkedTxRequest.txRequestId,
+            messageStandardType: MessageStandardType.EIP191,
+          },
+          prv: 'secretKey',
+        });
+
+        result.pendingApprovalId?.should.equal(pendingApprovalId);
+        should.not.exist(result.txHash);
+        sinon.assert.notCalled(signTxRequestForMessageStub);
+      });
+
+      it('should return pendingApprovalId without signing when a fresh signTypedData request is parked', async function () {
+        nock(bgUrl).post(`/api/v2/wallet/${tssEthWallet.id()}/txrequests`).reply(200, parkedTxRequest);
+
+        const result = await tssEthWallet.signTypedData({
+          typedData: typedDataFixture,
+          prv: 'secretKey',
+        });
+
+        result.pendingApprovalId?.should.equal(pendingApprovalId);
+        should.not.exist(result.txHash);
+        sinon.assert.notCalled(signTxRequestForMessageStub);
+      });
+
+      it('should return pendingApprovalId without signing when resuming a parked signTypedData request', async function () {
+        nock(bgUrl)
+          .get(`/api/v2/wallet/${tssEthWallet.id()}/txrequests?txRequestIds=${parkedTxRequest.txRequestId}&latest=true`)
+          .reply(200, { txRequests: [parkedTxRequest] });
+
+        const result = await tssEthWallet.signTypedData({
+          typedData: { ...typedDataFixture, txRequestId: parkedTxRequest.txRequestId },
+          prv: 'secretKey',
+        });
+
+        result.pendingApprovalId?.should.equal(pendingApprovalId);
+        should.not.exist(result.txHash);
+        sinon.assert.notCalled(signTxRequestForMessageStub);
+      });
+
+      it('should sign a pendingDelivery message request via signAndSendMessageTxRequest', async function () {
+        nock(bgUrl)
+          .get(
+            `/api/v2/wallet/${tssEthWallet.id()}/txrequests?txRequestIds=${signableTxRequest.txRequestId}&latest=true`
+          )
+          .reply(200, { txRequests: [signableTxRequest] });
+
+        const result = await tssEthWallet.signAndSendMessageTxRequest({
+          txRequestId: signableTxRequest.txRequestId,
+          walletPassphrase: TestBitGo.V2.TEST_ETH_WALLET_PASSPHRASE as string,
+        });
+
+        result.txHash?.should.equal(txHash);
+        result.signature?.should.equal(txHash);
+        result.txRequestId.should.equal(signableTxRequest.txRequestId);
+        result.messageRaw.should.equal(messageRaw);
+        should.not.exist(result.pendingApprovalId);
+        sinon.assert.calledOnce(signTxRequestForMessageStub);
+      });
+
+      it('should return pendingApprovalId without signing when signAndSendMessageTxRequest hits a still-parked request', async function () {
+        nock(bgUrl)
+          .get(`/api/v2/wallet/${tssEthWallet.id()}/txrequests?txRequestIds=${parkedTxRequest.txRequestId}&latest=true`)
+          .reply(200, { txRequests: [parkedTxRequest] });
+
+        const result = await tssEthWallet.signAndSendMessageTxRequest({
+          txRequestId: parkedTxRequest.txRequestId,
+          walletPassphrase: TestBitGo.V2.TEST_ETH_WALLET_PASSPHRASE as string,
+        });
+
+        result.pendingApprovalId?.should.equal(pendingApprovalId);
+        should.not.exist(result.txHash);
+        sinon.assert.notCalled(signTxRequestForMessageStub);
+      });
+
+      it('should reject signAndSendMessageTxRequest for non-TSS wallets', async function () {
+        const nonTssWallet = new Wallet(bitgo, bitgo.coin('teth'), { ...ethWalletData, multisigType: 'onchain' });
+
+        await nonTssWallet
+          .signAndSendMessageTxRequest({
+            txRequestId: parkedTxRequest.txRequestId,
+            walletPassphrase: 'passphrase',
+          })
+          .should.be.rejectedWith('Message signing only supported for TSS wallets');
+      });
+    });
+
     describe('Send Many', function () {
       const sendManyInput = {
         type: 'transfer',

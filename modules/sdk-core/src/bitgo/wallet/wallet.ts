@@ -123,6 +123,7 @@ import {
   SharedKeyChain,
   ShareWalletOptions,
   SignAndSendTxRequestOptions,
+  SignAndSendMessageTxRequestOptions,
   SimulateWebhookOptions,
   SubmitTransactionOptions,
   SubWalletType,
@@ -5060,6 +5061,85 @@ export class Wallet implements IWallet {
   }
 
   /**
+   * Signs (and, for full requests, delivers) the message of a message-sign
+   * transaction request from a TSS (hot) wallet. Meant to be used for a message-sign
+   * request whose signing was parked behind a pending approval by the message-signing
+   * policy and resumed after the approval was resolved.
+   *
+   * Unlike signAndSendTxRequest, this signs through the message path
+   * (signTxRequestForMessage with the WP-persisted messageEncoded); the transaction
+   * signer has no transaction to sign on a message-only request.
+   *
+   * If the request is still parked behind a pending approval, resolves with the
+   * pendingApprovalId instead of signing (same contract as signMessage/signTypedData).
+   *
+   * @param params
+   *    txRequestId - The ID of the message-sign transaction request.
+   *    walletPassphrase - The passphrase for the wallet.
+   *    reqId - Optional request tracer.
+   * @returns A promise that resolves to a SignedMessage.
+   */
+  public async signAndSendMessageTxRequest(params: SignAndSendMessageTxRequestOptions): Promise<SignedMessage> {
+    if (this._wallet.multisigType !== 'tss') {
+      throw new Error('Message signing only supported for TSS wallets');
+    }
+    const reqId = params.reqId ?? new RequestTracer();
+    this.bitgo.setRequestTracer(reqId);
+
+    const keychains = await this.getKeychainsAndValidatePassphrase({
+      reqId,
+      walletPassphrase: params.walletPassphrase,
+    });
+    const userKeychain = keychains[0];
+    if (!userKeychain || !userKeychain.encryptedPrv) {
+      throw new Error('the user keychain does not have property encryptedPrv');
+    }
+
+    const txRequest = await getTxRequest(this.bitgo, this.id(), params.txRequestId, reqId);
+
+    // The message-signing policy may still park the request behind a pending
+    // approval; resolve with the pendingApprovalId instead of signing.
+    if (this.tssUtils?.isPendingApprovalTxRequestFull(txRequest)) {
+      return {
+        coin: this.coin(),
+        messageRaw: txRequest.messages?.[0]?.messageRaw ?? '',
+        txRequestId: txRequest.txRequestId,
+        pendingApprovalId: txRequest.pendingApprovalId,
+      };
+    }
+
+    assert(
+      txRequest.messages && txRequest.messages.length > 0,
+      'Unable to find messages in txRequest for message signing'
+    );
+    const message = txRequest.messages[0];
+    const messageEncoded = message.messageEncoded;
+    assert(messageEncoded, 'Unable to find messageEncoded in txRequest message');
+
+    const signedMessageRequest = await this.tssUtils!.signTxRequestForMessage({
+      txRequest,
+      prv: await this.getUserPrv({
+        keychain: userKeychain,
+        walletPassphrase: params.walletPassphrase,
+      }),
+      reqId,
+      messageRaw: message.messageRaw,
+      messageEncoded,
+      bufferToSign: Buffer.from(messageEncoded, 'hex'),
+    });
+    assert(signedMessageRequest.messages, 'Unable to find messages in signedMessageRequest');
+    assert(signedMessageRequest.messages[0].txHash, 'Unable to find txHash in signedMessageRequest.messages');
+    return {
+      coin: this.coin(),
+      txHash: signedMessageRequest.messages[0].txHash,
+      signature: signedMessageRequest.messages[0].txHash,
+      messageRaw: message.messageRaw,
+      messageEncoded,
+      txRequestId: signedMessageRequest.txRequestId,
+    };
+  }
+
+  /**
    * Ensures signature shares are in a clean state before signing a transaction.
    * Automatically deletes signature shares for Full TxRequests before signing to prevent
    * issues with stale or partial signatures.
@@ -5313,6 +5393,19 @@ export class Wallet implements IWallet {
         txRequest = await getTxRequest(this.bitgo, this.id(), params.message.txRequestId, params.reqId);
       }
 
+      // A message-signing policy can park the request behind a pending approval.
+      // Signing cannot proceed until the approval is resolved; surface the
+      // pendingApprovalId instead of attempting MPC rounds against a parked request
+      // (which would fail at send with a pendingDelivery state error).
+      if (this.tssUtils!.isPendingApprovalTxRequestFull(txRequest)) {
+        return {
+          coin: this.coin(),
+          messageRaw,
+          txRequestId: txRequest.txRequestId,
+          pendingApprovalId: txRequest.pendingApprovalId,
+        };
+      }
+
       assert(
         txRequest.messages && txRequest.messages.length > 0,
         'Unable to find messages in txRequest for message signing'
@@ -5347,7 +5440,10 @@ export class Wallet implements IWallet {
         txRequestId: signedMessageRequest.txRequestId,
       };
     } catch (e) {
-      throw new Error('failed to sign message ' + e);
+      // Rethrow the original error so callers can classify it (e.g. the 409
+      // TxRequestPendingApprovalError from wallet-platform) instead of losing
+      // the error type inside a generic message.
+      throw e;
     }
   }
 
@@ -5382,6 +5478,18 @@ export class Wallet implements IWallet {
         txRequest = await getTxRequest(this.bitgo, this.id(), params.typedData.txRequestId, params.reqId);
       }
 
+      // A message-signing policy can park the request behind a pending approval.
+      // Signing cannot proceed until the approval is resolved; surface the
+      // pendingApprovalId instead of attempting MPC rounds against a parked request.
+      if (this.tssUtils!.isPendingApprovalTxRequestFull(txRequest)) {
+        return {
+          coin: this.coin(),
+          messageRaw: params.typedData.typedDataRaw,
+          txRequestId: txRequest.txRequestId,
+          pendingApprovalId: txRequest.pendingApprovalId,
+        };
+      }
+
       const signedTypedDataRequest = await this.tssUtils!.signTxRequestForMessage({
         txRequest,
         prv: params.prv,
@@ -5405,7 +5513,10 @@ export class Wallet implements IWallet {
         txRequestId: signedTypedDataRequest.txRequestId,
       };
     } catch (e) {
-      throw new Error('failed to sign typed data ' + e);
+      // Rethrow the original error so callers can classify it (e.g. the 409
+      // TxRequestPendingApprovalError from wallet-platform) instead of losing
+      // the error type inside a generic message.
+      throw e;
     }
   }
 
