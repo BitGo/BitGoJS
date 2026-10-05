@@ -19,6 +19,7 @@ import {
   TxOutPoint,
   UtxoTransaction,
   verifySignature,
+  ZcashTransaction,
 } from '../../src/bitgo';
 import { isScriptType2Of3, ScriptType2Of3 } from '../../src/bitgo/outputScripts';
 
@@ -302,7 +303,9 @@ describe(`regtest fixtures`, function () {
     it('tests default version', function () {
       // FIXME(BTC-1633): fix generating fixtures for version 455 NU6
       if (networks.zcashTest === network) {
-        assert.strictEqual(getDefaultTransactionVersion(network), 456);
+        // Testnet activated NU7 at block 4465026 (https://zips.z.cash/zip-0259); version 4
+        // transactions are invalid once NU7 activates, so the default is now version 5.
+        assert.strictEqual(getDefaultTransactionVersion(network), ZcashTransaction.VERSION5_BRANCH_NU7);
       } else {
         assert.strictEqual(allVersions.filter((v) => v === getDefaultTransactionVersion(network)).length, 1);
       }
