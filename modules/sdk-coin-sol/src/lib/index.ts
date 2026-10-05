@@ -37,3 +37,4 @@ export {
   resolveTransferHookAccounts,
 } from './token2022Resolve';
 export { rawToUiAmountString, uiAmountToRaw } from './scaledUiAmount';
+export * from './serialization';
