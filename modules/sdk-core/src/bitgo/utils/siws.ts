@@ -72,8 +72,11 @@ function isSiwsDatetime(value: string): boolean {
 }
 
 /**
- * Validates a SIWS message. Throws when the message is not strict UTF-8-representable
- * or not a well-formed SIWS message; returns silently otherwise.
+ * Validates a SIWS message per the Sign In With Solana ABNF grammar: the domain-bound
+ * sign-in template where the statement and every advanced field is optional (any
+ * subset, in canonical order, with strict value checks). Throws when the message is
+ * not strict UTF-8-representable or not a well-formed SIWS message; returns silently
+ * otherwise.
  */
 export function validateSiwsMessage(message: string): void {
   const invalid = () => {
@@ -83,16 +86,12 @@ export function validateSiwsMessage(message: string): void {
     throw new Error('message is not valid UTF-8');
   }
   const lines = message.replace(/\n+$/, '').split('\n');
-  if (lines.length < 3 || !lines[0].endsWith(SIWS_SUFFIX) || lines[0].length === SIWS_SUFFIX.length) {
+  if (lines.length < 2 || !lines[0].endsWith(SIWS_SUFFIX) || lines[0].length === SIWS_SUFFIX.length) {
     invalid();
   }
-  if (!isSiwsBase58Address(lines[1]) || lines[2] !== '') {
+  if (!isSiwsBase58Address(lines[1]) || (lines.length >= 3 && lines[2] !== '')) {
     invalid();
   }
-  let hasVersion = false;
-  let hasChainId = false;
-  let hasNonce = false;
-  let hasIssuedAt = false;
   let hasField = false;
   let inFields = false;
   let inResources = false;
@@ -139,28 +138,22 @@ export function validateSiwsMessage(message: string): void {
         if (value !== '1') {
           invalid();
         }
-        hasVersion = true;
         break;
       case SIWS_FIELD_CHAIN_ID:
         if (!SIWS_CHAIN_IDS.includes(value)) {
           invalid();
         }
-        hasChainId = true;
         break;
       case SIWS_FIELD_NONCE:
         if (!isSiwsAlnum(value)) {
           invalid();
         }
-        hasNonce = true;
         break;
       case SIWS_FIELD_ISSUED_AT:
       case SIWS_FIELD_EXPIRATION_TIME:
       case SIWS_FIELD_NOT_BEFORE:
         if (!isSiwsDatetime(value)) {
           invalid();
-        }
-        if (field === SIWS_FIELD_ISSUED_AT) {
-          hasIssuedAt = true;
         }
         break;
       case SIWS_FIELD_URI:
@@ -176,8 +169,5 @@ export function validateSiwsMessage(message: string): void {
         inResources = true;
         break;
     }
-  }
-  if (!hasVersion || !hasChainId || !hasNonce || !hasIssuedAt) {
-    invalid();
   }
 }

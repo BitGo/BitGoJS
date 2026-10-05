@@ -3,6 +3,7 @@ import { validateSiwsMessage } from '../../../../src';
 
 describe('SIWS message validation', () => {
   const SIWS_ADDRESS = '8knfAmJm9BmaX9mZWjAdHBcYPYp3LmuykRQnGwkWQCyj';
+  const siwsHeader = (domain: string): string => `${domain} wants you to sign in with your Solana account:`;
 
   const buildSiws = (overrides: Record<string, unknown> = {}): string => {
     const domain = (overrides.domain as string) ?? 'hastra.io';
@@ -95,6 +96,41 @@ describe('SIWS message validation', () => {
           })
         )).should.not.throw();
     });
+
+    it('accepts the minimal template (header and address only)', () => {
+      (() => validateSiwsMessage([siwsHeader('example.com'), SIWS_ADDRESS].join('\n'))).should.not.throw();
+      (() => validateSiwsMessage([siwsHeader('example.com'), SIWS_ADDRESS].join('\n') + '\n')).should.not.throw();
+    });
+
+    it('accepts a statement with no fields', () => {
+      (() =>
+        validateSiwsMessage(
+          [siwsHeader('example.com'), SIWS_ADDRESS, '', 'I am the wallet owner.'].join('\n')
+        )).should.not.throw();
+    });
+
+    it('accepts a statement with a lone Nonce field (partner shape)', () => {
+      (() =>
+        validateSiwsMessage(
+          [
+            siwsHeader('app.decibel.trade'),
+            SIWS_ADDRESS,
+            '',
+            'Please confirm you explicitly initiated this request from app.decibel.trade.',
+            '',
+            'Nonce: 0x50ead22afd6ffd976',
+          ].join('\n')
+        )).should.not.throw();
+    });
+
+    it('accepts any subset of advanced fields in canonical order', () => {
+      (() => validateSiwsMessage(buildSiws({ omit: ['Version:'] }))).should.not.throw();
+      (() => validateSiwsMessage(buildSiws({ omit: ['Chain ID:'] }))).should.not.throw();
+      (() => validateSiwsMessage(buildSiws({ omit: ['Nonce:'] }))).should.not.throw();
+      (() => validateSiwsMessage(buildSiws({ omit: ['Issued At:'] }))).should.not.throw();
+      (() =>
+        validateSiwsMessage(buildSiws({ omit: ['URI:', 'Version:', 'Chain ID:', 'Issued At:'] }))).should.not.throw();
+    });
   });
 
   describe('rejections', () => {
@@ -118,13 +154,6 @@ describe('SIWS message validation', () => {
           SIWS_ADDRESS +
           '\n\nVersion: 1\nChain ID: mainnet\nNonce: 31a6bab5\nIssued At: 2026-09-21T10:00:00Z'
       );
-    });
-
-    it('rejects a missing Version, Chain ID, Nonce or Issued At', () => {
-      rejects(buildSiws({ omit: ['Version:'] }));
-      rejects(buildSiws({ omit: ['Chain ID:'] }));
-      rejects(buildSiws({ omit: ['Nonce:'] }));
-      rejects(buildSiws({ omit: ['Issued At:'] }));
     });
 
     it('rejects invalid field values', () => {
@@ -153,6 +182,46 @@ describe('SIWS message validation', () => {
 
     it('rejects a stray line after the fields section', () => {
       rejects(buildSiws({ extraLines: ['stray line'] }));
+    });
+
+    it('rejects an unknown field label after the fields section starts', () => {
+      rejects(buildSiws({ extraLines: ['Unknown Field: value'] }));
+      rejects(buildSiws({ extraLines: ['Version2: 1'] }));
+      rejects(
+        [
+          'hastra.io wants you to sign in with your Solana account:',
+          SIWS_ADDRESS,
+          '',
+          'Version: 1',
+          'Unknown: x',
+          'Chain ID: mainnet',
+        ].join('\n')
+      );
+    });
+
+    it('rejects an unknown field label after the blank line that opens the fields section', () => {
+      rejects(
+        [
+          'hastra.io wants you to sign in with your Solana account:',
+          SIWS_ADDRESS,
+          '',
+          'I am the wallet owner.',
+          '',
+          'Unknown: x',
+        ].join('\n')
+      );
+    });
+
+    it('rejects a field label that appears twice', () => {
+      rejects(
+        [
+          'hastra.io wants you to sign in with your Solana account:',
+          SIWS_ADDRESS,
+          '',
+          'Nonce: 31a6bab5',
+          'Nonce: 31a6bab5',
+        ].join('\n')
+      );
     });
 
     it('rejects an invalid address line', () => {
