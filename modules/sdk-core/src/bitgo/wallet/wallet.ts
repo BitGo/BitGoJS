@@ -4490,6 +4490,7 @@ export class Wallet implements IWallet {
             unspents: params.unspents,
             senderAddress: params.senderAddress,
             isTestTransaction: params.isTestTransaction,
+            isWalletConnectTx: params.isWalletConnectTx as boolean | undefined,
           },
           apiVersion,
           params.preview
