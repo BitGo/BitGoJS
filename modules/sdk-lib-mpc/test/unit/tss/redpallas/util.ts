@@ -2,6 +2,7 @@
 // without a separate, drifting copy.
 export {
   generateRedPallasDKGKeyShares,
+  executeRerand,
   executeTillRound,
   verifyRedPallasSignature,
 } from '../../../../src/tss/redpallas-mps/util';

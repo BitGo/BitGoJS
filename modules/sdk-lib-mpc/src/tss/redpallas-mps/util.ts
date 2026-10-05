@@ -3,7 +3,8 @@ import assert from 'assert';
 import { x25519 } from '@noble/curves/ed25519';
 import { RedPallasDKG } from './dkg';
 import { RedPallasDSG } from './dsg';
-import { DeserializedMessages, RedPallasSignatureResult } from './types';
+import { RedPallasRerand } from './rerand';
+import { DeserializedMessages, RedPallasRerandResult, RedPallasSignatureResult } from './types';
 
 function generateX25519Keypair(seed?: Buffer): { privKey: Buffer; pubKey: Buffer } {
   const privKey = seed ? seed.subarray(0, 32) : crypto.randomBytes(32);
@@ -70,13 +71,46 @@ export async function generateRedPallasDKGKeyShares(
 }
 
 /**
+ * Runs a full 2-party rerand session in-process: the key re-randomization that must
+ * precede every RedPallas DSG (same 2 parties that will then sign). See `RedPallasRerand`
+ * for the protocol. Asserts that both parties agree on the rerandomized public key `pk`
+ * and the tweak scalar `alpha`.
+ */
+export async function executeRerand(
+  party1: RedPallasRerand,
+  party2: RedPallasRerand,
+  keyShare1: Buffer,
+  keyShare2: Buffer
+): Promise<[RedPallasRerandResult, RedPallasRerandResult]> {
+  await party1.initRerand(keyShare1, party2.getPartyIdx());
+  await party2.initRerand(keyShare2, party1.getPartyIdx());
+  const party1Round0Message = party1.getFirstMessage();
+  const party2Round0Message = party2.getFirstMessage();
+
+  const [party1Round1Message] = party1.handleIncomingMessages([party1Round0Message, party2Round0Message]);
+  const [party2Round1Message] = party2.handleIncomingMessages([party1Round0Message, party2Round0Message]);
+  party1.handleIncomingMessages([party1Round1Message, party2Round1Message]);
+  party2.handleIncomingMessages([party1Round1Message, party2Round1Message]);
+
+  const result1 = party1.getRerandomizedKeyShare();
+  const result2 = party2.getRerandomizedKeyShare();
+  assert(result1.pk.toString('hex') === result2.pk.toString('hex'));
+  assert(result1.alpha.toString('hex') === result2.alpha.toString('hex'));
+  return [result1, result2];
+}
+
+/**
  * Initializes two RedPallas DSG parties and drives them through the protocol until the
  * specified round. Mirrors `executeTillRound` in `../eddsa-mps/util.ts`, minus the
  * derivation path (RedPallas DSG operates on an already-(root-or-derived) keyshare; there
  * is no per-signing-session derivation path).
  *
+ * The keyshares are used as given: for the supported flow they are rerand outputs from
+ * `executeRerand`, in which case both parties' signature `rk` equals the rerand `pk`
+ * and the signature verifies under it.
+ *
  * @param round - Round to execute until (1–3). Returns intermediate message arrays for 1–2,
- *   or the final `RedPallasSignatureResult` (signature/rk/alpha) for 3.
+ *   or the final `RedPallasSignatureResult` (signature/rk) for 3.
  * @param party1Dsg - First DSG party (`new RedPallasDSG(partyIdx)`), not yet initialized.
  * @param party2Dsg - Second DSG party (`new RedPallasDSG(partyIdx)`), not yet initialized.
  * @param keyShare1 - Key share for the first party.
@@ -114,7 +148,6 @@ export async function executeTillRound(
   const sig2 = party2Dsg.getSignature();
   assert(sig1.signature.toString('hex') === sig2.signature.toString('hex'));
   assert(sig1.rk.toString('hex') === sig2.rk.toString('hex'));
-  assert(sig1.alpha.toString('hex') === sig2.alpha.toString('hex'));
   return sig1;
 }
 
@@ -122,11 +155,12 @@ export async function executeTillRound(
  * Verifies a `RedPallasSignatureResult` against the raw message.
  *
  * IMPORTANT: unlike EdDSA, RedPallas signatures must be verified against `rk` — the
- * randomized verification key produced alongside the signature by DSG round3 — and NOT
- * against the DKG (or derived) public key directly. `rk = pk + [alpha]G`; `alpha` is
- * included in `RedPallasSignatureResult` for callers that need to independently confirm
- * the relationship between `rk` and a known `pk`, but is not required to verify the
- * signature itself.
+ * rerandomized verification key produced by the rerand session that preceded DSG — and
+ * NOT against the DKG (or derived) public key directly. `rk` equals the rerand result's
+ * `pk` (`pk = pk_dkg + [alpha]G`); the `alpha` randomizer is available from
+ * `RedPallasRerand.getRerandomizedKeyShare()` for callers that need to independently
+ * confirm the relationship between `rk` and a known `pk`, but is not required to verify
+ * the signature itself.
  */
 export async function verifyRedPallasSignature(
   signatureResult: RedPallasSignatureResult,

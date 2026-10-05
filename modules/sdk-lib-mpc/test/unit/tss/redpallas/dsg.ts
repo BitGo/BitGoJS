@@ -1,11 +1,13 @@
 import assert from 'assert';
+import { redpallas_verify } from '@bitgo/wasm-mps';
 import {
   RedPallasMPSDkg,
   RedPallasMPSDsg,
+  RedPallasMPSRerand,
   RedPallasMPSTypes,
   RedPallasMPSUtil,
 } from '../../../../src/tss/redpallas-mps';
-import { generateRedPallasDKGKeyShares, executeTillRound, verifyRedPallasSignature } from './util';
+import { generateRedPallasDKGKeyShares, executeRerand, executeTillRound, verifyRedPallasSignature } from './util';
 
 const MESSAGE = Buffer.from('The Times 03/Jan/2009 Chancellor on brink of second bailout for banks');
 const DERIVATION_SEED = Buffer.from('c526955e37be0a0c8b77a831eb615948772b38df9f04d8c5a2e0e1f1d0c9b8a7', 'hex');
@@ -19,12 +21,18 @@ describe('RedPallas MPS DSG', function () {
   let userKeyShare: Buffer;
   let backupKeyShare: Buffer;
   let bitgoKeyShare: Buffer;
+  /** DKG (root) public key; DSG signatures must NOT verify under it */
+  let dkgPublicKey: Buffer;
 
   before(async function () {
-    [userDkg, backupDkg, bitgoDkg] = await generateRedPallasDKGKeyShares(DERIVATION_SEED);
+    [userDkg, backupDkg, bitgoDkg] = await generateRedPallasDKGKeyShares({
+      encKey: DERIVATION_SEED,
+      dkgSeed: DERIVATION_SEED,
+    });
     userKeyShare = userDkg.getKeyShare();
     backupKeyShare = backupDkg.getKeyShare();
     bitgoKeyShare = bitgoDkg.getKeyShare();
+    dkgPublicKey = userDkg.getSharePublicKey();
   });
 
   describe('DSG Initialization', function () {
@@ -86,10 +94,16 @@ describe('RedPallas MPS DSG', function () {
   });
 
   describe('DSG Protocol Execution (2-of-3)', function () {
-    it('should complete full DSG between user (0) and bitgo (2) and produce identical signatures', async function () {
+    it('should complete full rerand + DSG between user (0) and bitgo (2) and produce identical signatures', async function () {
+      const [rerandA, rerandB] = await executeRerand(
+        new RedPallasMPSRerand.RedPallasRerand(0),
+        new RedPallasMPSRerand.RedPallasRerand(2),
+        userKeyShare,
+        bitgoKeyShare
+      );
       const dsgA = new RedPallasMPSDsg.RedPallasDSG(0);
       const dsgB = new RedPallasMPSDsg.RedPallasDSG(2);
-      await executeTillRound(3, dsgA, dsgB, userKeyShare, bitgoKeyShare, MESSAGE);
+      await executeTillRound(3, dsgA, dsgB, rerandA.keyShare, rerandB.keyShare, MESSAGE);
 
       assert.strictEqual(dsgA.getState(), 'Complete');
       assert.strictEqual(dsgB.getState(), 'Complete');
@@ -99,82 +113,137 @@ describe('RedPallas MPS DSG', function () {
 
       assert.strictEqual(sigA.signature.length, 64, 'Signature must be 64 bytes');
       assert.strictEqual(sigA.rk.length, 32, 'rk must be 32 bytes');
-      assert.strictEqual(sigA.alpha.length, 32, 'alpha must be 32 bytes');
       assert.strictEqual(
         sigA.signature.toString('hex'),
         sigB.signature.toString('hex'),
         'Both parties must produce identical signatures'
       );
       assert.strictEqual(sigA.rk.toString('hex'), sigB.rk.toString('hex'), 'Both parties must agree on rk');
-      assert.strictEqual(sigA.alpha.toString('hex'), sigB.alpha.toString('hex'), 'Both parties must agree on alpha');
+      assert.strictEqual(
+        sigA.rk.toString('hex'),
+        rerandA.pk.toString('hex'),
+        'rk must equal the rerand pk of the rerandomized keyshare'
+      );
     });
 
     it('should produce a signature that verifies under rk (not the DKG public key directly)', async function () {
+      const [rerandA, rerandB] = await executeRerand(
+        new RedPallasMPSRerand.RedPallasRerand(0),
+        new RedPallasMPSRerand.RedPallasRerand(2),
+        userKeyShare,
+        bitgoKeyShare
+      );
       const sig = (await executeTillRound(
         3,
         new RedPallasMPSDsg.RedPallasDSG(0),
         new RedPallasMPSDsg.RedPallasDSG(2),
-        userKeyShare,
-        bitgoKeyShare,
+        rerandA.keyShare,
+        rerandB.keyShare,
         MESSAGE
       )) as RedPallasMPSTypes.RedPallasSignatureResult;
 
+      assert.strictEqual(
+        sig.rk.toString('hex'),
+        rerandA.pk.toString('hex'),
+        'rk must equal the rerand pk of the rerandomized keyshare'
+      );
       const isValid = await verifyRedPallasSignature(sig, MESSAGE);
       assert(isValid, 'Signature should verify under rk');
+      assert(
+        !redpallas_verify(dkgPublicKey, sig.signature, MESSAGE),
+        'Signature must NOT verify under the original DKG public key'
+      );
     });
 
     it('should sign the same message identically across all 2-of-3 party combinations', async function () {
+      const [userRerand, backupRerand] = await executeRerand(
+        new RedPallasMPSRerand.RedPallasRerand(0),
+        new RedPallasMPSRerand.RedPallasRerand(1),
+        userKeyShare,
+        backupKeyShare
+      );
+      const [backupRerand2, bitgoRerand] = await executeRerand(
+        new RedPallasMPSRerand.RedPallasRerand(1),
+        new RedPallasMPSRerand.RedPallasRerand(2),
+        backupKeyShare,
+        bitgoKeyShare
+      );
+      const [userRerand2, bitgoRerand2] = await executeRerand(
+        new RedPallasMPSRerand.RedPallasRerand(0),
+        new RedPallasMPSRerand.RedPallasRerand(2),
+        userKeyShare,
+        bitgoKeyShare
+      );
       const userBackupSig = (await executeTillRound(
         3,
         new RedPallasMPSDsg.RedPallasDSG(0),
         new RedPallasMPSDsg.RedPallasDSG(1),
-        userKeyShare,
-        backupKeyShare,
+        userRerand.keyShare,
+        backupRerand.keyShare,
         MESSAGE
       )) as RedPallasMPSTypes.RedPallasSignatureResult;
       const backupBitgoSig = (await executeTillRound(
         3,
         new RedPallasMPSDsg.RedPallasDSG(1),
         new RedPallasMPSDsg.RedPallasDSG(2),
-        backupKeyShare,
-        bitgoKeyShare,
+        backupRerand2.keyShare,
+        bitgoRerand.keyShare,
         MESSAGE
       )) as RedPallasMPSTypes.RedPallasSignatureResult;
       const userBitgoSig = (await executeTillRound(
         3,
         new RedPallasMPSDsg.RedPallasDSG(0),
         new RedPallasMPSDsg.RedPallasDSG(2),
-        userKeyShare,
-        bitgoKeyShare,
+        userRerand2.keyShare,
+        bitgoRerand2.keyShare,
         MESSAGE
       )) as RedPallasMPSTypes.RedPallasSignatureResult;
 
-      // Per-session nonce (and rerandomizer alpha) randomisation means signatures across
-      // DIFFERENT signing sessions WILL differ. The invariant we test is that every 2-of-3
-      // subset produces a signature that verifies under its own (session-specific) rk.
+      // Per-session nonce (and per-rerand-session alpha) randomisation means signatures
+      // across DIFFERENT signing sessions WILL differ. The invariant we test is that every
+      // 2-of-3 subset produces a signature that verifies under its own (session-specific)
+      // rk — the pk of its own rerand session — and under nothing else.
       assert(await verifyRedPallasSignature(userBackupSig, MESSAGE), 'user+backup signature should verify');
       assert(await verifyRedPallasSignature(backupBitgoSig, MESSAGE), 'backup+bitgo signature should verify');
       assert(await verifyRedPallasSignature(userBitgoSig, MESSAGE), 'user+bitgo signature should verify');
+      assert(
+        !redpallas_verify(dkgPublicKey, userBackupSig.signature, MESSAGE),
+        'user+backup signature must NOT verify under the DKG public key'
+      );
+      assert(
+        !redpallas_verify(dkgPublicKey, backupBitgoSig.signature, MESSAGE),
+        'backup+bitgo signature must NOT verify under the DKG public key'
+      );
+      assert(
+        !redpallas_verify(dkgPublicKey, userBitgoSig.signature, MESSAGE),
+        'user+bitgo signature must NOT verify under the DKG public key'
+      );
     });
 
     it('should sign arbitrary message lengths', async function () {
       const shortMsg = Buffer.from([0x01]);
       const longMsg = Buffer.alloc(4096, 0xab);
 
+      const [rerandA, rerandB] = await executeRerand(
+        new RedPallasMPSRerand.RedPallasRerand(0),
+        new RedPallasMPSRerand.RedPallasRerand(2),
+        userKeyShare,
+        bitgoKeyShare
+      );
       const shortSig = (await executeTillRound(
         3,
         new RedPallasMPSDsg.RedPallasDSG(0),
         new RedPallasMPSDsg.RedPallasDSG(2),
-        userKeyShare,
-        bitgoKeyShare,
+        rerandA.keyShare,
+        rerandB.keyShare,
         shortMsg
       )) as RedPallasMPSTypes.RedPallasSignatureResult;
       const longSig = (await executeTillRound(
         3,
         new RedPallasMPSDsg.RedPallasDSG(0),
         new RedPallasMPSDsg.RedPallasDSG(2),
-        userKeyShare,
-        bitgoKeyShare,
+        rerandA.keyShare,
+        rerandB.keyShare,
         longMsg
       )) as RedPallasMPSTypes.RedPallasSignatureResult;
 
@@ -183,16 +252,28 @@ describe('RedPallas MPS DSG', function () {
     });
 
     it('should throw when handleIncomingMessages is called after completion', async function () {
+      const [rerandA, rerandB] = await executeRerand(
+        new RedPallasMPSRerand.RedPallasRerand(0),
+        new RedPallasMPSRerand.RedPallasRerand(2),
+        userKeyShare,
+        bitgoKeyShare
+      );
       const dsgA = new RedPallasMPSDsg.RedPallasDSG(0);
-      await executeTillRound(3, dsgA, new RedPallasMPSDsg.RedPallasDSG(2), userKeyShare, bitgoKeyShare, MESSAGE);
+      await executeTillRound(3, dsgA, new RedPallasMPSDsg.RedPallasDSG(2), rerandA.keyShare, rerandB.keyShare, MESSAGE);
       assert.throws(() => dsgA.handleIncomingMessages([]), /already completed/);
     });
 
     it('should fail when parties sign different messages', async function () {
+      const [rerand1, rerand2] = await executeRerand(
+        new RedPallasMPSRerand.RedPallasRerand(0),
+        new RedPallasMPSRerand.RedPallasRerand(2),
+        userKeyShare,
+        bitgoKeyShare
+      );
       const dsg1 = new RedPallasMPSDsg.RedPallasDSG(0);
       const dsg2 = new RedPallasMPSDsg.RedPallasDSG(2);
-      await dsg1.initDsg(userKeyShare, Buffer.from('MESSAGE'), 2);
-      await dsg2.initDsg(bitgoKeyShare, Buffer.from('DIFFERENT_MESSAGE'), 0);
+      await dsg1.initDsg(rerand1.keyShare, Buffer.from('MESSAGE'), 2);
+      await dsg2.initDsg(rerand2.keyShare, Buffer.from('DIFFERENT_MESSAGE'), 0);
 
       const r0_1 = dsg1.getFirstMessage();
       const r0_2 = dsg2.getFirstMessage();
@@ -262,10 +343,16 @@ describe('RedPallas MPS DSG', function () {
 
   describe('Session Management', function () {
     it('should export and restore DSG session and continue protocol to a valid signature', async function () {
+      const [rerandA, rerandB] = await executeRerand(
+        new RedPallasMPSRerand.RedPallasRerand(0),
+        new RedPallasMPSRerand.RedPallasRerand(2),
+        userKeyShare,
+        bitgoKeyShare
+      );
       const dsgA = new RedPallasMPSDsg.RedPallasDSG(0);
       const dsgB = new RedPallasMPSDsg.RedPallasDSG(2);
-      await dsgA.initDsg(userKeyShare, MESSAGE, 2);
-      await dsgB.initDsg(bitgoKeyShare, MESSAGE, 0);
+      await dsgA.initDsg(rerandA.keyShare, MESSAGE, 2);
+      await dsgB.initDsg(rerandB.keyShare, MESSAGE, 0);
 
       const a0 = dsgA.getFirstMessage();
       const b0 = dsgB.getFirstMessage();
@@ -295,13 +382,28 @@ describe('RedPallas MPS DSG', function () {
         sigB.signature.toString('hex'),
         'Restored signer must agree with counterpart'
       );
+      assert.strictEqual(
+        sigA.rk.toString('hex'),
+        rerandA.pk.toString('hex'),
+        'Restored signer rk must equal the rerand pk'
+      );
       assert(await verifyRedPallasSignature(sigA, MESSAGE), 'Restored-session signature should verify under rk');
+      assert(
+        !redpallas_verify(dkgPublicKey, sigA.signature, MESSAGE),
+        'Restored-session signature must NOT verify under the DKG public key'
+      );
     });
 
     it('should throw when exporting session after completion', async function () {
+      const [rerandA, rerandB] = await executeRerand(
+        new RedPallasMPSRerand.RedPallasRerand(0),
+        new RedPallasMPSRerand.RedPallasRerand(2),
+        userKeyShare,
+        bitgoKeyShare
+      );
       const dsgA = new RedPallasMPSDsg.RedPallasDSG(0);
       const dsgB = new RedPallasMPSDsg.RedPallasDSG(2);
-      await executeTillRound(3, dsgA, dsgB, userKeyShare, bitgoKeyShare, MESSAGE);
+      await executeTillRound(3, dsgA, dsgB, rerandA.keyShare, rerandB.keyShare, MESSAGE);
       assert.throws(() => dsgA.getSession(), /DSG session is complete\. Exporting the session is not allowed\./);
       assert.throws(() => dsgB.getSession(), /DSG session is complete\. Exporting the session is not allowed\./);
     });
@@ -356,7 +458,8 @@ describe('RedPallas MPS DSG', function () {
   });
 
   describe('RedPallasMPSUtil re-exports', function () {
-    it('should expose executeTillRound and verifyRedPallasSignature from the production util module', function () {
+    it('should expose executeRerand, executeTillRound and verifyRedPallasSignature from the production util module', function () {
+      assert.strictEqual(RedPallasMPSUtil.executeRerand, executeRerand);
       assert.strictEqual(RedPallasMPSUtil.executeTillRound, executeTillRound);
       assert.strictEqual(RedPallasMPSUtil.verifyRedPallasSignature, verifyRedPallasSignature);
     });
