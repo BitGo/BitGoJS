@@ -17,10 +17,18 @@ type WasmMps = NodeWasmer | WebWasmer;
  *   (ask/nk/rivk/ivks) happens upstream, as part of DKG (`redpallas_dkg_round2_process` +
  *   the platform-side-only `redpallas_derivation_process`); DSG only ever operates on an
  *   already-derived (or root) opaque `Keyshare`.
+ * - DSG does not randomize the key it signs with: since `@bitgo/wasm-mps` 1.17.0, key
+ *   re-randomization is a separate `rerand` protocol (see `./rerand.ts`, `RedPallasRerand`)
+ *   that must run before every DSG, between the same 2 parties. The keyshare passed to
+ *   `initDsg` must be the `keyShare` from that rerand result.
  * - Round3 does not return a raw signature; it returns a `RedPallasSignature` bundle of
- *   `signature` (64 raw bytes), `rk` (the randomized verification key the signature
- *   verifies against — NOT the DKG public key) and `alpha` (the 32-byte randomizer scalar
- *   used to re-randomize the DKG public key into `rk`). See `RedPallasSignatureResult`.
+ *   `signature` (64 raw bytes) and `rk` (the rerandomized verification key the signature
+ *   verifies against — NOT the DKG public key). `rk` equals the `pk` of the rerand result
+ *   the DSG session was initialized with. See `RedPallasSignatureResult`.
+ *
+ * Signing a stored DKG keyshare directly (without rerand) still produces a valid
+ * signature — under the bare DKG public key, with the same `rk` every spend — but the
+ * supported, tested path is rerand → DSG.
  *
  * State is explicit: each WASM round function returns `{ msg, state }` bytes; the state
  * bytes are stored between rounds and passed to the next round function (this is what a
@@ -32,13 +40,21 @@ type WasmMps = NodeWasmer | WebWasmer;
  *
  * @example
  * ```typescript
+ * // Rerand first — same 2 parties that will sign (see RedPallasRerand).
+ * const rerand = new RedPallasRerand(0);
+ * await rerand.initRerand(dkgKeyShare, 2);
+ * const rerandMsg1 = rerand.getFirstMessage();
+ * const rerandMsg2 = rerand.handleIncomingMessages([rerandMsg1, peerRerandMsg1]);
+ * rerand.handleIncomingMessages([rerandMsg2[0], peerRerandMsg2]);
+ * const { keyShare, pk, alpha } = rerand.getRerandomizedKeyShare();
+ *
  * const dsg = new RedPallasDSG(0);  // partyIdx 0
  * await dsg.initDsg(keyShare, message, 2);  // counterpart is party 2
  * const msg1 = dsg.getFirstMessage();
  * const msg2 = dsg.handleIncomingMessages([msg1, peerMsg1]);  // emits SignMsg2
  * const msg3 = dsg.handleIncomingMessages([msg2[0], peerMsg2]);  // emits SignMsg3
  * dsg.handleIncomingMessages([msg3[0], peerMsg3]);  // completes DSG
- * const { signature, rk, alpha } = dsg.getSignature();  // 64-byte RedPallas signature + rk/alpha
+ * const { signature, rk } = dsg.getSignature();  // verifies under rk == pk
  * ```
  */
 export class RedPallasDSG {
@@ -103,14 +119,19 @@ export class RedPallasDSG {
   }
 
   /**
-   * Initialises the DSG session. The keyshare must come from a prior DKG run (and, if a
-   * derived key is being used, from the subsequent platform-side derivation process), and
-   * `otherPartyIdx` must be the single counterpart who will co-sign with this party.
+   * Initialises the DSG session. The keyshare must be the rerandomized `keyShare` from
+   * a prior `RedPallasRerand` run with the same counterpart (which itself takes the
+   * opaque Keyshare from DKG — already derived, if applicable). Signing a bare DKG
+   * keyshare produces a valid but non-rerandomized signature under the DKG public key;
+   * use rerand → DSG instead. `otherPartyIdx` must be the single counterpart who ran
+   * that rerand session and will co-sign with this party.
    *
-   * @param keyShare - Opaque bincode-serialised Keyshare bytes from `RedPallasDKG.getKeyShare()`.
+   * @param keyShare - Opaque bincode-serialised rerandomized Keyshare bytes from
+   *   `RedPallasRerand.getRerandomizedKeyShare().keyShare`.
    * @param message - Raw message bytes to sign.
    * @param otherPartyIdx - Party index of the single counterpart in this signing session.
-   *   Must differ from this party's own `partyIdx` and be in `[0, 2]`.
+   *   Must differ from this party's own `partyIdx` and be in `[0, 2]`, and match the
+   *   counterpart of the preceding rerand session.
    */
   async initDsg(keyShare: Buffer, message: Buffer, otherPartyIdx: number): Promise<void> {
     await this.loadWasmMps();
@@ -236,7 +257,6 @@ export class RedPallasDSG {
       this.signatureResult = {
         signature: Buffer.from(result.signature),
         rk: Buffer.from(result.rk),
-        alpha: Buffer.from(result.alpha),
       };
       this.dsgStateBytes = null;
       this.dsgState = RedPallasDsgState.Complete;
@@ -248,9 +268,10 @@ export class RedPallasDSG {
 
   /**
    * Returns the final signature bundle produced by round 3: the 64-byte raw RedPallas
-   * signature, the randomized verification key `rk` it must be verified against (via
-   * `redpallas_verify(rk, signature, message)` — NOT the DKG public key), and the
-   * `alpha` randomizer scalar used to derive `rk` from the DKG public key.
+   * signature and the rerandomized verification key `rk` it must be verified against
+   * (via `redpallas_verify(rk, signature, message)` — NOT the DKG public key). `rk`
+   * equals the `pk` of the rerand result this session was initialized with; the
+   * corresponding `alpha` is available from `RedPallasRerand.getRerandomizedKeyShare()`.
    */
   getSignature(): RedPallasSignatureResult {
     if (!this.signatureResult) {
