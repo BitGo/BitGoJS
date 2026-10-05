@@ -27,6 +27,8 @@ const NU6_BRANCH_ID = 0xc8e71055;
 const NU6_1_BRANCH_ID = 0x4dec4df0; // https://zips.z.cash/zip-0255
 // NU6.2 emergency hard fork re-enabling Orchard with a corrected circuit (mainnet block 3364600).
 const NU6_2_BRANCH_ID = 0x5437f330;
+// NU7 — https://zips.z.cash/zip-0259 (testnet activation block 4465026; mainnet height TBD)
+const NU7_BRANCH_ID = 0x77190ad9;
 
 export class UnsupportedTransactionError extends Error {
   constructor(message: string) {
@@ -46,16 +48,24 @@ export function getDefaultVersionGroupIdForVersion(version: number): number {
     case 550:
     case 551:
     case 552:
+    case 553:
       return ZIP225_VERSION_GROUP_ID;
   }
   throw new Error(`no value for version ${version}`);
 }
 
 export function getDefaultConsensusBranchIdForVersion(network: ZcashNetwork, version: number): number {
-  // Testnet has not yet activated NU6.2 (testnet activation block 4052000), so keep
-  // defaulting to NU6.1 there. Mainnet activated NU6.2 at block 3364600.
+  // Testnet activated NU7 at block 4465026. Per ZIP-259, version 4 transactions become
+  // invalid once NU7 activates (only version 5/6 remain valid), so only bare version 5
+  // resolves to NU7 on testnet; version 4 keeps resolving to the last valid-for-v4 upgrade
+  // (NU6.1) since a caller explicitly building a bare v4 tx cannot target NU7 anyway.
+  // Mainnet's NU7 activation height is not yet set, so mainnet stays on NU6.2 (block 3364600)
+  // until that height is known.
   if (network === networks.zcashTest) {
-    if (version === 4 || version === 5) {
+    if (version === 5) {
+      return NU7_BRANCH_ID;
+    }
+    if (version === 4) {
       return NU6_1_BRANCH_ID;
     }
   }
@@ -88,6 +98,10 @@ export function getDefaultConsensusBranchIdForVersion(network: ZcashNetwork, ver
     case ZcashTransaction.VERSION5_BRANCH_NU6_2:
       // NU6.2 — emergency hard fork re-enabling Orchard, mainnet block 3364600
       return NU6_2_BRANCH_ID;
+    case ZcashTransaction.VERSION5_BRANCH_NU7:
+      // https://zips.z.cash/zip-0259 — version 4 is invalid once NU7 activates, so there is
+      // no VERSION4_BRANCH_NU7 marker; only the version-5 (ZIP-225) format is valid under NU7.
+      return NU7_BRANCH_ID;
   }
   throw new Error(`no value for version ${version}`);
 }
@@ -106,6 +120,8 @@ export class ZcashTransaction<TNumber extends number | bigint = number> extends 
   static VERSION5_BRANCH_NU6 = 550;
   static VERSION5_BRANCH_NU6_1 = 551;
   static VERSION5_BRANCH_NU6_2 = 552;
+  // No VERSION4_BRANCH_NU7: per ZIP-259, version 4 transactions are invalid once NU7 activates.
+  static VERSION5_BRANCH_NU7 = 553;
 
   // 1 if the transaction is post overwinter upgrade, 0 otherwise
   overwintered = 0;

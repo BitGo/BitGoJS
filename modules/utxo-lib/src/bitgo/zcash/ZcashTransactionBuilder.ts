@@ -82,6 +82,7 @@ export class ZcashTransactionBuilder<TNumber extends number | bigint = number> e
       case ZcashTransaction.VERSION5_BRANCH_NU6:
       case ZcashTransaction.VERSION5_BRANCH_NU6_1:
       case ZcashTransaction.VERSION5_BRANCH_NU6_2:
+      case ZcashTransaction.VERSION5_BRANCH_NU7:
         this.setVersion(5);
         break;
       default:

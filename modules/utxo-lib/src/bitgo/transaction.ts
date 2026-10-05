@@ -154,10 +154,11 @@ export function createPsbtFromTransaction(tx: UtxoTransaction<bigint>, prevOuts:
 }
 
 export function getDefaultTransactionVersion(network: Network): number {
-  // Mainnet activated NU6.2 at block 3364600; testnet has not (activation 4052000),
-  // so testnet still builds NU6.1 transactions.
+  // Testnet activated NU7 at block 4465026. Per ZIP-259, version 4 transactions are invalid
+  // once NU7 activates, so testnet must now build version 5 (ZIP-225) transactions.
+  // Mainnet's NU7 activation height is not yet set, so mainnet stays on NU6.2 (block 3364600).
   if (network === networks.zcashTest) {
-    return ZcashTransaction.VERSION4_BRANCH_NU6_1;
+    return ZcashTransaction.VERSION5_BRANCH_NU7;
   }
 
   switch (getMainnet(network)) {
@@ -224,6 +225,7 @@ export function setPsbtDefaults(
           ZcashTransaction.VERSION5_BRANCH_NU6,
           ZcashTransaction.VERSION5_BRANCH_NU6_1,
           ZcashTransaction.VERSION5_BRANCH_NU6_2,
+          ZcashTransaction.VERSION5_BRANCH_NU7,
         ].includes(version)
       ) {
         throw new Error(`invalid version`);
