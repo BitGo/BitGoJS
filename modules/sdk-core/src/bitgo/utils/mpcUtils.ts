@@ -289,6 +289,7 @@ export abstract class MpcUtils {
             nonce: params.nonce,
             custodianTransactionId: params.custodianTransactionId,
             receiveAddress: params.receiveAddress,
+            isWalletConnectTx: params.isWalletConnectTx,
           };
         case 'acceleration':
           return {
