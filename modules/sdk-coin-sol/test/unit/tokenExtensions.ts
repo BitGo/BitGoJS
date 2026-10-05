@@ -1,6 +1,6 @@
 import 'should';
 import { SolTokenExtensionType } from '@bitgo/statics';
-import { ExtensionType, type Mint } from '@solana/spl-token';
+import { ExtensionType, ScaledUiAmountConfigLayout, type Mint } from '@solana/spl-token';
 import { PublicKey } from '@solana/web3.js';
 import { mapModeledExtensions, parseMintExtensions } from '../../src/lib/tokenExtensions';
 
@@ -56,6 +56,25 @@ describe('Sol Token-2022 mint extension parsing', function () {
       result.detectedTypeNames.should.eql(['ConfidentialTransferMint', 'TransferHook']);
       result.extensions.detected.should.eql([SolTokenExtensionType.TransferHook]);
       result.extensions.transferHookProgramId?.should.equal('11111111111111111111111111111111');
+    });
+
+    it('parses a scaled-UI mint: detected name, modeled type, and initial multiplier', function () {
+      // Encoded with spl-token's own ScaledUiAmountConfigLayout so the fixture tracks the
+      // on-chain wire format (authority COption + f64 multiplier + u64 timestamp + f64 newMultiplier).
+      const value = Buffer.alloc(ScaledUiAmountConfigLayout.span);
+      ScaledUiAmountConfigLayout.encode(
+        {
+          authority: new PublicKey('4SgEJtPSjLTD7porvAZYVJX9t4o4nG66b3rMxVpvoiXs'),
+          multiplier: 1.5,
+          newMultiplierEffectiveTimestamp: BigInt(0),
+          newMultiplier: 1.5,
+        },
+        value
+      );
+      const result = parseMintExtensions(fakeMint(tlvEntry(ExtensionType.ScaledUiAmountConfig, value)));
+      result.detectedTypeNames.should.eql(['ScaledUiAmountConfig']);
+      result.extensions.detected.should.eql([SolTokenExtensionType.ScaledUiAmount]);
+      result.extensions.scaledUiAmount?.should.eql({ initialMultiplier: '1.5' });
     });
   });
 });

@@ -7,6 +7,7 @@ import {
   getInterestBearingMintConfigState,
   getMint,
   getPermanentDelegate,
+  getScaledUiAmountConfig,
   getTransferFeeConfig,
   getTransferHook,
   type Mint,
@@ -118,10 +119,14 @@ export function parseMintExtensions(mintInfo: Mint): MintExtensionReadResult {
     };
   }
 
-  // NOTE: ScaledUiAmount config parsing (initialMultiplier) is intentionally deferred — the typed
-  // getter is not available in @solana/spl-token@0.4.9. The extension is still *detected* above
-  // (so the safety gate sees it); populating scaledUiAmount.initialMultiplier is a follow-up that
-  // bumps @solana/spl-token to a version exposing getScaledUiAmountConfig. See PR for 3.4.
+  // ScaledUiAmountConfig: capture the multiplier effective at onboarding. `multiplier` is the
+  // live value; a scheduled change (newMultiplier + newMultiplierEffectiveTimestamp) is tracked
+  // by the indexer's mint-config-changes feed, not by this frozen snapshot (CSHLD-1688).
+  // multiplier is an f64 — stringify for the exact-decimal contract the consumers use.
+  const scaledUi = getScaledUiAmountConfig(mintInfo);
+  if (scaledUi) {
+    extensions.scaledUiAmount = { initialMultiplier: scaledUi.multiplier.toString() };
+  }
 
   if (Object.values(authorities).some((v) => v !== undefined)) {
     extensions.authorities = authorities;
