@@ -139,7 +139,7 @@ describe('TSS EdDSA key verification', function () {
 
     it('accepts a Y share without the optional v field', function () {
       // v is optional on the YShare type, so parsing must allow it; verification separately
-      // requires it as proof of possession (see the VSS commitment case below)
+      // rejects material without it with a distinct unable-to-verify error (see below)
       const { uShare, bitgoYShare, backupYShare } = parseEddsaUserSigningMaterial(matchingPrv);
       const withoutV = { ...bitgoYShare };
       delete withoutV.v;
@@ -192,9 +192,10 @@ describe('TSS EdDSA key verification', function () {
       match.should.equal(false);
     });
 
-    it('returns false when a Y share omits its VSS commitment', async function () {
-      // keyCombine only verifies a Y share's secret u when v is present, so material that drops v
-      // would otherwise pass with an arbitrary u
+    it('rejects material that omits a VSS commitment instead of judging it a non-match', async function () {
+      // keyCombine only verifies a Y share's secret u when v is present, so material that drops
+      // v would otherwise pass combine with an arbitrary u; it cannot be verified at all and
+      // must not be reported as a clean non-match
       const { uShare, bitgoYShare, backupYShare } = parseEddsaUserSigningMaterial(matchingPrv);
       const bitgoWithoutV = { ...bitgoYShare, u: 'cd'.repeat(32) };
       delete bitgoWithoutV.v;
@@ -203,8 +204,21 @@ describe('TSS EdDSA key verification', function () {
         bitgoYShare: bitgoWithoutV,
         backupYShare,
       });
-      const match = await eddsaUserSigningMaterialMatchesCommonKeychain({ prv: forged, commonKeychain });
-      match.should.equal(false);
+      await assert.rejects(eddsaUserSigningMaterialMatchesCommonKeychain({ prv: forged, commonKeychain }), {
+        message: 'Unable to verify key - signing material has no VSS commitment',
+      });
+    });
+
+    it('rejects otherwise-genuine material without a VSS commitment as unverifiable', async function () {
+      // shares without v may be genuine (the server did not always return vssProof), so the
+      // answer must be "cannot verify", never "not this wallet's key"
+      const { uShare, bitgoYShare, backupYShare } = parseEddsaUserSigningMaterial(matchingPrv);
+      const bitgoWithoutV = { ...bitgoYShare };
+      delete bitgoWithoutV.v;
+      const vless = JSON.stringify({ uShare, bitgoYShare: bitgoWithoutV, backupYShare });
+      await assert.rejects(eddsaUserSigningMaterialMatchesCommonKeychain({ prv: vless, commonKeychain }), {
+        message: 'Unable to verify key - signing material has no VSS commitment',
+      });
     });
 
     it('returns false when a Y share carries a mismatched secret with its commitment present', async function () {

@@ -469,7 +469,10 @@ export interface VerifyKeyOptions {
 }
 
 export interface VerifyKeyResult {
-  /** Whether the signing material recombines to the wallet's commonKeychain */
+  /**
+   * Whether the signing material recombines to the wallet's commonKeychain. A consistency
+   * check, not proof of possession — never use it as an authorization signal.
+   */
   match: boolean;
 }
 

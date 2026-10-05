@@ -128,9 +128,15 @@ function uShareSeedMatchesY(MPC: Eddsa, uShare: UserSigningMaterial['uShare']): 
  *
  * Recombination alone is not proof of possession, so two further checks run first. The seed is
  * bound to `uShare.y`, and the Y shares must carry their VSS commitment `v` — `keyCombine`
- * verifies a Y share's secret `u` only when `v` is present, so omitting it skips the check that
- * the share is consistent with the public `y` it claims. Genuine shares produced by `keyShare`
- * always carry `v`.
+ * verifies a Y share's secret `u` only when `v` is present, so material without `v` cannot be
+ * verified at all and throws a distinct error rather than being judged a non-match. Genuine
+ * shares produced by `keyShare` always carry `v`.
+ *
+ * A true result is a consistency check for a caller inspecting its own material, not proof of
+ * possession, and must never be used as an authorization signal: a caller who knows only the
+ * wallet's public commonKeychain can construct material that passes — an `uShare` whose seed
+ * matches its `y`, plus Y shares with a chosen secret `u` and the `v` solved from it, whose
+ * `y` values sum to the common key.
  *
  * @param params.prv - stringified user signing material, as passed as `prv` when signing
  * @param params.commonKeychain - the wallet's user keychain commonKeychain
@@ -145,9 +151,10 @@ export async function eddsaUserSigningMaterialMatchesCommonKeychain(params: {
     return false;
   }
   // keyCombine verifies a Y share's secret `u` against its commitment only when `v` is present,
-  // so material without it would skip that check entirely
+  // so material without `v` cannot be verified at all; reject it distinctly instead of judging
+  // it a non-match, which would misreport genuine material that lacks the commitment
   if (signingMaterial.bitgoYShare.v === undefined || signingMaterial.backupYShare.v === undefined) {
-    return false;
+    throw new Error('Unable to verify key - signing material has no VSS commitment');
   }
   let combinedKey: KeyCombine;
   try {

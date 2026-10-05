@@ -30,7 +30,7 @@ export const VerifyKeyBody = {
 export const VerifyKeyResponse = {
   /** Whether the signing material recombines to the wallet's commonKeychain */
   200: t.type({ match: t.boolean }),
-  /** Invalid request parameters, unsupported wallet type, or malformed signing material */
+  /** Invalid request parameters, unsupported wallet type, or signing material that is malformed, inconsistent, or cannot be verified */
   400: BitgoExpressError,
 } as const;
 
@@ -40,6 +40,16 @@ export const VerifyKeyResponse = {
  * Recombines the shares locally and compares the result against the wallet's commonKeychain,
  * answering up front whether the material can sign for this wallet. Supported for TSS EdDSA
  * (MPCv1) wallets; other wallet types return a 400.
+ *
+ * Outcomes: `match: false` means the material is well-formed and self-consistent but
+ * recombines to a different key. A 400 means the material is malformed, cryptographically
+ * inconsistent, or lacks the VSS commitments needed to verify it at all. Callers treating
+ * "this key does not work for this wallet" as one condition must handle both the 200 `false`
+ * and the 400.
+ *
+ * `match: true` is a consistency check for a caller inspecting its own key file, not proof of
+ * possession: anyone who knows the wallet's public commonKeychain can construct shares that
+ * pass. Never use the result as an authorization signal.
  *
  * @operationId express.v2.wallet.verifyKey
  * @tag Express

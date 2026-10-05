@@ -2731,6 +2731,9 @@ export class Wallet implements IWallet {
    * instead of discovering a mismatch only when a signature fails. Supported for TSS EdDSA
    * (MPCv1) wallets; other wallet types are rejected.
    *
+   * The result is a consistency check for a caller inspecting its own material, not proof of
+   * possession, and must never be used as an authorization signal.
+   *
    * `walletPassphrase` is deliberately not accepted: decrypting the BitGo-held `encryptedPrv`
    * and comparing it against the BitGo-held keychain is circular, and callers that hold their
    * own key material do not need it.
