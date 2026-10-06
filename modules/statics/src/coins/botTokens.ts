@@ -225,6 +225,38 @@ export const botTokens = [
     Networks.test.sol
   ),
   AccountCtors.terc20(
+    '0e5cb41c-7ec4-4b30-90e7-33d23547ad67',
+    'hteth:tgku',
+    'Hoodi Gokubu',
+    18,
+    '0xa3e27ba64c528b2440266e6ded824becb6dcfae8',
+    'hteth:tgku' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  AccountCtors.terc20(
+    '723429e7-6e11-4b0c-8785-95ae0d8c89c1',
+    'hteth:stzamakms',
+    'Mock Zama Staked ZAMA',
+    20,
+    '0xbfb717a712ac94204ae9e7049332641f3332c82f',
+    'hteth:stzamakms' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  AccountCtors.terc20(
     '62c5d357-b508-4748-9a07-878d3414b472',
     'hteth:stzamadfns',
     'Mock Dfns Staked ZAMA',
