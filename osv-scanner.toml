@@ -57,12 +57,10 @@ id = "GHSA-2w8x-224x-785m"
 reason = "sjcl.ecc invalid-curve attack (ECDH); transitive via @bitgo/abstract-lightning > macaroon > sjcl; macaroon uses only HMAC/hash — no ECC; @bitgo/sjcl fork excludes sjcl.ecc entirely; resolved via root resolutions sjcl->@bitgo/sjcl@1.0.1; no upstream fix (first_patched_version: null)"
 
 [[IgnoredVulns]]
-id = "GHSA-96hv-2xvq-fx4p"
-reason = "ws server-side memory exhaustion DoS; transitive via @cosmjs/socket, @ethersproject/providers, @polkadot/rpc-provider, jayson, rpc-websockets, avalanche — all requiring ws <8.21.0; we use ws exclusively as a WebSocket CLIENT for blockchain RPC, never as a server"
-
-[[IgnoredVulns]]
 id = "GHSA-hmw2-7cc7-3qxx"
 reason = "form-data CRLF injection via unescaped multipart field names; transitive via superagent and @aptos-labs/ts-sdk; all form-data field names and filenames in our code are code-controlled constants, not derived from user input"
+
+
 
 [[IgnoredVulns]]
 id = "GHSA-7c78-jf6q-g5cm"
