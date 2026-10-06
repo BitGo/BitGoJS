@@ -2159,6 +2159,19 @@ describe('SOL:', function () {
         })).should.throw(/SOL message exceeds maximum size/);
     });
 
+    it('should accept a SIWS message with a lone Nonce field (advanced fields optional)', function () {
+      (() =>
+        basecoin.validateSignableMessage({
+          ...validMessage,
+          messageRaw: [
+            'example.com wants you to sign in with your Solana account:',
+            siwsAddress,
+            '',
+            'Nonce: 31a6bab5',
+          ].join('\n'),
+        })).should.not.throw();
+    });
+
     it('should reject plain text messages (non-SIWS)', function () {
       (() =>
         basecoin.validateSignableMessage({
@@ -2176,14 +2189,19 @@ describe('SOL:', function () {
     });
 
     it('should reject malformed SIWS messages', function () {
-      const missingNonce = buildSiws()
-        .split('\n')
-        .filter((line) => !line.startsWith('Nonce:'))
-        .join('\n');
+      const outOfOrder = [
+        'example.com wants you to sign in with your Solana account:',
+        siwsAddress,
+        '',
+        'Nonce: 31a6bab5',
+        'Version: 1',
+        'Chain ID: mainnet',
+        'Issued At: 2026-09-21T10:00:00Z',
+      ].join('\n');
       (() =>
         basecoin.validateSignableMessage({
           ...validMessage,
-          messageRaw: missingNonce,
+          messageRaw: outOfOrder,
         })).should.throw(/message is not a valid SIWS message/);
     });
 
