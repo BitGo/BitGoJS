@@ -27,6 +27,7 @@ export class KaspaCoin extends BaseCoin {
     prefix?: string;
     suffix?: string;
     primaryKeyCurve: KeyCurve;
+    bip44CoinType?: number;
   }) {
     super({
       ...options,

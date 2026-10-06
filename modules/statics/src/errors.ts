@@ -82,6 +82,13 @@ export class InvalidDomainError extends BitGoStaticsError {
   }
 }
 
+export class InvalidBip44CoinTypeError extends BitGoStaticsError {
+  public constructor(coinName: string, coinType: number) {
+    super(`invalid bip44CoinType '${coinType}' for coin '${coinName}' — must be an integer between 0 and 0x7fffffff`);
+    Object.setPrototypeOf(this, InvalidBip44CoinTypeError.prototype);
+  }
+}
+
 export class ConflictingCoinFeaturesError extends BitGoStaticsError {
   public constructor(coinName: string, conflictingFeatures: CoinFeature[]) {
     super(

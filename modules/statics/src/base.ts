@@ -1,9 +1,12 @@
 import {
   ConflictingCoinFeaturesError,
   DisallowedCoinFeatureError,
+  InvalidBip44CoinTypeError,
   InvalidIdError,
   MissingRequiredCoinFeatureError,
 } from './errors';
+import { getBip44CoinType } from './bip44CoinTypes';
+import { MAX_BIP32_INDEX } from './constants';
 import { BaseNetwork } from './networks';
 
 export enum CoinKind {
@@ -4941,6 +4944,17 @@ export interface BaseCoinConstructorOptions {
   network: BaseNetwork;
   primaryKeyCurve: KeyCurve;
   otherSupportedKeyCurves?: KeyCurve[];
+  /**
+   * BIP44 coin type used by the safe child derivation scheme
+   * `m/44'/<bip44CoinType>'/<slot>'/<account>'` (`<slot>` comes from SAFE_ROOT_SLOT_ORDINALS in safe.ts).
+   *
+   * BitGo's own value for the coin family (some values match SLIP-44 by choice).
+   * Tokens inherit their parent chain's value; testnets mirror their mainnet counterpart's.
+   * When omitted it is resolved from the coin family (see bip44CoinTypes.ts), which is how
+   * tokens and testnets are filled.
+   * OFC and fiat coins carry no value — they are not BIP44-derivable.
+   */
+  bip44CoinType?: number;
 }
 
 export abstract class BaseCoin {
@@ -4992,6 +5006,12 @@ export abstract class BaseCoin {
    * e.g. for shielded pools requiring a different curve than the coin's base transactions.
    */
   public readonly otherSupportedKeyCurves?: KeyCurve[];
+
+  /**
+   * The BIP44 coin type of this coin, as used by the safe child derivation scheme.
+   * See {@link BaseCoinConstructorOptions.bip44CoinType}.
+   */
+  public readonly bip44CoinType?: number;
 
   /**
    * Set of features which are required by a coin subclass
@@ -5055,6 +5075,14 @@ export abstract class BaseCoin {
     if (!BaseCoin.isValidUuidV4(options.id)) {
       throw new InvalidIdError(options.name, options.id);
     }
+
+    // the bip44 coin type is the <coinType>' segment of safe child derivation paths
+    if (options.bip44CoinType !== undefined) {
+      const { bip44CoinType } = options;
+      if (!Number.isInteger(bip44CoinType) || bip44CoinType < 0 || bip44CoinType > MAX_BIP32_INDEX) {
+        throw new InvalidBip44CoinTypeError(options.name, bip44CoinType);
+      }
+    }
   }
 
   protected constructor(options: BaseCoinConstructorOptions) {
@@ -5077,6 +5105,7 @@ export abstract class BaseCoin {
     this.network = options.network;
     this.primaryKeyCurve = options.primaryKeyCurve;
     this.otherSupportedKeyCurves = options.otherSupportedKeyCurves;
+    this.bip44CoinType = options.bip44CoinType ?? getBip44CoinType(options.network.family);
   }
 
   /**
@@ -5112,6 +5141,7 @@ export interface DynamicCoinConstructorOptions {
   asset: string;
   network: BaseNetwork;
   primaryKeyCurve: string;
+  bip44CoinType?: number;
 }
 
 /**
