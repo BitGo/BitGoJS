@@ -4,6 +4,7 @@ import { PostV2Encrypt } from './v2/encrypt';
 import { PostGenerateWallet } from './v2/generateWallet';
 import { GetV2PingExpress } from './v2/pingExpress';
 import { PostWalletSweep } from './v2/walletSweep';
+import { PostVerifyKey } from './v2/verifyKey';
 
 /**
  * Cumulative OpenAPI batch entrypoint.
@@ -26,5 +27,8 @@ export const ExpressOpenApiSpec = apiSpec({
   },
   'express.pingexpress': {
     get: GetV2PingExpress,
+  },
+  'express.v2.wallet.verifyKey': {
+    post: PostVerifyKey,
   },
 });

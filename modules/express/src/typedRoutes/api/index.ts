@@ -31,6 +31,7 @@ import { PostCreateLocalKeyChain } from './v1/createLocalKeyChain';
 import { PutConstructPendingApprovalTx } from './v1/constructPendingApprovalTx';
 import { PutConsolidateUnspents } from './v1/consolidateUnspents';
 import { PostCreateAddress } from './v2/createAddress';
+import { PostVerifyKey } from './v2/verifyKey';
 import { PutFanoutUnspents } from './v1/fanoutUnspents';
 import { PostOfcSignPayload } from './v2/ofcSignPayload';
 import { PostWalletRecoverToken } from './v2/walletRecoverToken';
@@ -234,6 +235,12 @@ export const ExpressV2WalletCreateAddressApiSpec = apiSpec({
   },
 });
 
+export const ExpressV2WalletVerifyKeyApiSpec = apiSpec({
+  'express.v2.wallet.verifyKey': {
+    post: PostVerifyKey,
+  },
+});
+
 export const ExpressV2WalletIsWalletAddressApiSpec = apiSpec({
   'express.v2.wallet.isWalletAddress': {
     post: PostIsWalletAddress,
@@ -427,6 +434,7 @@ export type ExpressApi = typeof ExpressPingApiSpec &
   typeof ExpressV2WalletConsolidateAccountApiSpec &
   typeof ExpressWalletFanoutUnspentsApiSpec &
   typeof ExpressV2WalletCreateAddressApiSpec &
+  typeof ExpressV2WalletVerifyKeyApiSpec &
   typeof ExpressV2WalletIsWalletAddressApiSpec &
   typeof ExpressV2AddressDeriveApiSpec &
   typeof ExpressKeychainLocalApiSpec &
@@ -474,6 +482,7 @@ export const ExpressApi: ExpressApi = {
   ...ExpressWalletConsolidateUnspentsApiSpec,
   ...ExpressWalletFanoutUnspentsApiSpec,
   ...ExpressV2WalletCreateAddressApiSpec,
+  ...ExpressV2WalletVerifyKeyApiSpec,
   ...ExpressV2WalletConsolidateAccountApiSpec,
   ...ExpressV2WalletIsWalletAddressApiSpec,
   ...ExpressV2AddressDeriveApiSpec,

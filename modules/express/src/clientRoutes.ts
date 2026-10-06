@@ -56,6 +56,7 @@ import { Config } from './config';
 import { ApiResponseError, BitGoExpressError } from './errors';
 import { promises as fs } from 'fs';
 import { retryPromise } from './retryPromise';
+import { SENSITIVE_REQUEST_KEYS } from './sensitiveRequestKeys';
 import {
   handleCreateSignerMacaroon,
   handleGetLightningWalletState,
@@ -843,6 +844,30 @@ export async function handleV2CreateAddress(req: ExpressApiRouteRequest<'express
     await verifyCreatedAddressesWithTrustedKeys(coin, wallet, result, trustedKeychains);
   }
   return result;
+}
+
+/**
+ * handle v2 verifyKey - verify that user-held TSS key material belongs to a wallet
+ * @param req
+ */
+export async function handleV2VerifyKey(req: ExpressApiRouteRequest<'express.v2.wallet.verifyKey', 'post'>) {
+  const coin = req.bitgo.coin(req.decoded.coin);
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
+  try {
+    return await wallet.verifyKey({ prv: req.decoded.prv });
+  } catch (e) {
+    // errors with a meaningful HTTP status (e.g. the keychain fetch inside wallet.verifyKey)
+    // surface it instead of being masked as a 400
+    if (e instanceof Error && typeof (e as ApiResponseError).status === 'number') {
+      throw e;
+    }
+    // transport-level failures (DNS, connection refused, TLS) carry a system `code` instead;
+    // they are infrastructure errors, not malformed input
+    if (e instanceof Error && typeof (e as NodeJS.ErrnoException).code === 'string') {
+      throw e;
+    }
+    throw new ApiResponseError(e instanceof Error ? e.message : String(e), 400);
+  }
 }
 
 /**
@@ -1821,16 +1846,6 @@ interface RequestHandler extends express.RequestHandler<ParamsDictionary, any, R
     | Promise<RequestHandlerResponse>;
 }
 
-const SENSITIVE_REQUEST_KEYS = new Set([
-  'password',
-  'passphrase',
-  'walletpassphrase',
-  'prv',
-  'privatekey',
-  'encryptedprv',
-  'secret',
-]);
-
 function collectSensitiveRequestValues(value: unknown, values = new Set<string>()): Set<string> {
   if (Array.isArray(value)) {
     value.forEach((item) => collectSensitiveRequestValues(item, values));
@@ -2244,6 +2259,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   ]);
 
   router.post('express.v2.wallet.createAddress', [prepareBitGo(config), typedPromiseWrapper(handleV2CreateAddress)]);
+  router.post('express.v2.wallet.verifyKey', [prepareBitGo(config), typedPromiseWrapper(handleV2VerifyKey)]);
   router.post('express.v2.wallet.isWalletAddress', [
     prepareBitGo(config),
     typedPromiseWrapper(handleV2IsWalletAddress),
