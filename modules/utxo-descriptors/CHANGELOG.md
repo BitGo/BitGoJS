@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-descriptors@2.0.0...@bitgo/utxo-descriptors@2.1.0) (2026-09-29)
+
+
+### Features
+
+* **utxo-descriptors:** expose concrete PoX-5 unlock bytes ([9d3f324](https://github.com/BitGo/BitGoJS/commit/9d3f324908246744005eba0399f87d21b89b6f25))
+
+
+
+
+
 # [2.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-descriptors@1.5.3...@bitgo/utxo-descriptors@2.0.0) (2026-09-09)
 
 

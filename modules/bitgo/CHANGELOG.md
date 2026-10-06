@@ -3,6 +3,40 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [53.4.0](https://github.com/BitGo/BitGoJS/compare/bitgo@53.3.0...bitgo@53.4.0) (2026-10-01)
+
+
+### Bug Fixes
+
+* **sdk-coin-stx:** register tstxsignet in remaining coin/token factory switches ([d3b64b6](https://github.com/BitGo/BitGoJS/commit/d3b64b61d2d73a07780377a12c3348a4a553aabf))
+* verify EdDSA external-signer transactions before signing ([a402a27](https://github.com/BitGo/BitGoJS/commit/a402a27323a5e5b3a41c34831b8a29fd2776312c))
+* verify EdDSA TSS consolidations as sweep-to-base-address ([e8deb1a](https://github.com/BitGo/BitGoJS/commit/e8deb1abbe336f00ba933ccb5d3673dae6d02eb7))
+* verify EdDSA TSS transactions before signing ([c88d36d](https://github.com/BitGo/BitGoJS/commit/c88d36d2491d42b2b8461ae18373b4da39cc93c7))
+
+
+### Features
+
+* **sdk-coin-stx:** register tstxsignet staking-testnet coin ([029b398](https://github.com/BitGo/BitGoJS/commit/029b39834380cc510b7ae16b15011a0a638054bc))
+* **sdk-core:** validate SOL message signing as SIWS only ([c96ec3f](https://github.com/BitGo/BitGoJS/commit/c96ec3fff9c5d92a6a16f2fc334e15f2c049c579))
+
+
+
+
+
+# [53.3.0](https://github.com/BitGo/BitGoJS/compare/bitgo@53.2.0...bitgo@53.3.0) (2026-09-29)
+
+
+### Features
+
+* **sdk-coin-btc:** register tbtcstxsignet ([1f2d0b8](https://github.com/BitGo/BitGoJS/commit/1f2d0b809d24c234039d4243a3624446d227f50e))
+* **sdk-core:** enable SOL TSS message signing via UTF-8 string path ([c62be9a](https://github.com/BitGo/BitGoJS/commit/c62be9ae1aab208b584218de8641c32b758ab608))
+* **sdk-core:** wire disabletoken prebuild intent for Canton ([f9ce83d](https://github.com/BitGo/BitGoJS/commit/f9ce83d817f51a5124662115016bfc035178fe32))
+* **sdk-core:** wire unwrap sendMany intent ([ba76578](https://github.com/BitGo/BitGoJS/commit/ba76578063eb9e3e7fc31c5c844ee9bdb998a657))
+
+
+
+
+
 # [53.2.0](https://github.com/BitGo/BitGoJS/compare/bitgo@53.1.0...bitgo@53.2.0) (2026-09-24)
 
 

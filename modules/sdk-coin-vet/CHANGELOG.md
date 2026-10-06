@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.16.35](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.16.34...@bitgo/sdk-coin-vet@2.16.35) (2026-10-01)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-vet
+
+
+
+
+
+## [2.16.34](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.16.33...@bitgo/sdk-coin-vet@2.16.34) (2026-09-29)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-vet
+
+
+
+
+
 ## [2.16.33](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.16.32...@bitgo/sdk-coin-vet@2.16.33) (2026-09-24)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-vet

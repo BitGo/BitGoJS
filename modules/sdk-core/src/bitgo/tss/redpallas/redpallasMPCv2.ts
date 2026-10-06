@@ -1,6 +1,10 @@
 import * as openpgp from 'openpgp';
 import { RedPallasMPSComms, RedPallasMPSTypes } from '@bitgo/sdk-lib-mpc';
 import {
+  RedpallasMPCv2RerandShareRound1Input,
+  RedpallasMPCv2RerandShareRound1Output,
+  RedpallasMPCv2RerandShareRound2Input,
+  RedpallasMPCv2RerandShareRound2Output,
   RedpallasMPCv2SignatureShareRound1Input,
   RedpallasMPCv2SignatureShareRound1Output,
   RedpallasMPCv2SignatureShareRound2Input,
@@ -25,12 +29,18 @@ function partyIdToSignatureShareType(partyId: MPCv2PartiesEnum): SignatureShareT
 }
 
 /**
- * RedPallas MPS DSG signature-share helpers.
+ * RedPallas MPS DSG and rerand signature-share helpers.
  *
- * Groundwork for a future custodial/cold (SMC/OVC) DSG signing flow - not yet wired up to any
- * caller in this SDK. Mirrors `../eddsa/eddsaMPCv2.ts` (same 3-round shape, same PGP-signed-
+ * Groundwork for a future custodial/cold (SMC/OVC) signing flow - not yet wired up to any
+ * caller in this SDK. Mirrors `../eddsa/eddsaMPCv2.ts` (same round shape, same PGP-signed-
  * message envelope), but kept as an independent copy - built on `RedPallasMPSComms` - so
  * RedPallas MPS never depends on the EdDSA MPS module, and vice versa.
+ *
+ * Since `@bitgo/wasm-mps` 1.17.0, key re-randomization is a separate 2-round rerand
+ * protocol that must run before every RedPallas DSG, between the same 2 parties that
+ * will then sign: `getRerandShareRoundOne/Two` build those share records and
+ * `verifyPeerRerandMessageRoundOne/Two` unwrap the peer's rerand messages (see
+ * `RedPallasRerand` in `@bitgo/sdk-lib-mpc`).
  */
 
 /**
@@ -145,5 +155,84 @@ export async function getSignatureShareRoundThree(
     from: partyIdToSignatureShareType(partyId),
     to: partyIdToSignatureShareType(otherSignerPartyId),
     share: JSON.stringify(share),
+  };
+}
+
+/**
+ * Builds the rerand round-1 signature share record.
+ *
+ * Rerand must run before every RedPallas DSG, with the same counterpart. Round 1
+ * carries the PGP-signed WASM commitment broadcast (`RedPallasRerand.getFirstMessage()`).
+ */
+export async function getRerandShareRoundOne(
+  userMsg1: RedPallasMPSTypes.DeserializedMessage,
+  userGpgPrivKey: openpgp.PrivateKey,
+  partyId: SignerPartyId = MPCv2PartiesEnum.USER,
+  otherSignerPartyId: MPCv2PartiesEnum = MPCv2PartiesEnum.BITGO
+): Promise<SignatureShareRecord> {
+  const signedMsg1 = await RedPallasMPSComms.detachSignMpsMessage(Buffer.from(userMsg1.payload), userGpgPrivKey);
+  const share: RedpallasMPCv2RerandShareRound1Input = {
+    type: 'round1Input',
+    data: { msg1: signedMsg1 },
+  };
+  return {
+    from: partyIdToSignatureShareType(partyId),
+    to: partyIdToSignatureShareType(otherSignerPartyId),
+    share: JSON.stringify(share),
+  };
+}
+
+/**
+ * Verifies the peer's rerand round-1 PGP signature and returns the raw deserialized
+ * message ready for `RedPallasRerand.handleIncomingMessages`.
+ */
+export async function verifyPeerRerandMessageRoundOne(
+  parsedRound1Output: RedpallasMPCv2RerandShareRound1Output,
+  peerGpgKey: openpgp.Key,
+  peerPartyId: MPCv2PartiesEnum = MPCv2PartiesEnum.BITGO
+): Promise<RedPallasMPSTypes.DeserializedMessage> {
+  const rawBytes = await RedPallasMPSComms.verifyMpsMessage(parsedRound1Output.data.msg1, peerGpgKey);
+  return {
+    from: peerPartyId,
+    payload: new Uint8Array(rawBytes),
+  };
+}
+
+/**
+ * Builds the rerand round-2 signature share record (opening message).
+ */
+export async function getRerandShareRoundTwo(
+  userMsg2: RedPallasMPSTypes.DeserializedMessage,
+  userGpgPrivKey: openpgp.PrivateKey,
+  partyId: SignerPartyId = MPCv2PartiesEnum.USER,
+  otherSignerPartyId: MPCv2PartiesEnum = MPCv2PartiesEnum.BITGO
+): Promise<SignatureShareRecord> {
+  const signedMsg2 = await RedPallasMPSComms.detachSignMpsMessage(Buffer.from(userMsg2.payload), userGpgPrivKey);
+  const share: RedpallasMPCv2RerandShareRound2Input = {
+    type: 'round2Input',
+    data: { msg2: signedMsg2 },
+  };
+  return {
+    from: partyIdToSignatureShareType(partyId),
+    to: partyIdToSignatureShareType(otherSignerPartyId),
+    share: JSON.stringify(share),
+  };
+}
+
+/**
+ * Verifies the peer's rerand round-2 PGP signature and returns the raw deserialized
+ * message ready for `RedPallasRerand.handleIncomingMessages`. After this exchange
+ * both parties read the rerandomized keyshare via `getRerandomizedKeyShare()` and
+ * feed it into `RedPallasDSG.initDsg`.
+ */
+export async function verifyPeerRerandMessageRoundTwo(
+  parsedRound2Output: RedpallasMPCv2RerandShareRound2Output,
+  peerGpgKey: openpgp.Key,
+  peerPartyId: MPCv2PartiesEnum = MPCv2PartiesEnum.BITGO
+): Promise<RedPallasMPSTypes.DeserializedMessage> {
+  const rawBytes = await RedPallasMPSComms.verifyMpsMessage(parsedRound2Output.data.msg2, peerGpgKey);
+  return {
+    from: peerPartyId,
+    payload: new Uint8Array(rawBytes),
   };
 }

@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@5.2.0...@bitgo/sdk-coin-ada@5.2.1) (2026-10-01)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-ada
+
+
+
+
+
+# [5.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@5.1.10...@bitgo/sdk-coin-ada@5.2.0) (2026-09-29)
+
+
+### Bug Fixes
+
+* **sdk-coin-ada:** pass through native-script txs such as RealFi claim ([fe13176](https://github.com/BitGo/BitGoJS/commit/fe13176924cfb659744276485ea8cf6ad298569c))
+
+
+### Features
+
+* **sdk-coin-ada:** support MPCv2 OVC output in broadcastable sweep ([8bfe550](https://github.com/BitGo/BitGoJS/commit/8bfe55077d68baf39600f01c5817aeedaf5c778f))
+
+
+
+
+
 ## [5.1.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@5.1.9...@bitgo/sdk-coin-ada@5.1.10) (2026-09-24)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada

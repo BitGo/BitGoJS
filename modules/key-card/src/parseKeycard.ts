@@ -1,8 +1,4 @@
-import * as t from 'io-ts';
-import { isLeft } from 'fp-ts/Either';
-import { PathReporter } from 'io-ts/lib/PathReporter';
-import { JsonFromString } from 'io-ts-types';
-import { SafeKeycardRoots } from './types';
+export { parseSafeKeycardBox } from '@bitgo/sdk-lib-safes';
 
 export type PDFTextNode = {
   text: string;
@@ -16,34 +12,6 @@ export type KeycardEntry = {
   label: string;
   value: string;
 };
-
-// A safe keycard box is a JSON object mapping each rootKeyType to a string (per-root
-// ciphertext for A/B, public key for C).
-const SafeKeycardRootsCodec: t.Type<SafeKeycardRoots> = t.type({
-  secp256k1Multisig: t.string,
-  ecdsaMpc: t.string,
-  eddsaMpc: t.string,
-  ed25519Multisig: t.string,
-});
-
-// Decodes a box's JSON string straight into the validated roots record.
-const SafeKeycardBoxFromString = JsonFromString.pipe(SafeKeycardRootsCodec);
-
-/**
- * Parses a safe keycard box value — the JSON packed by `generateSafeQrData`, e.g.
- * `{"secp256k1Multisig":"…","ecdsaMpc":"…",…}` — into its four roots. Throws if the value is
- * not valid JSON or any root is missing/non-string. Recovery tooling calls this on the A/B/C
- * box value returned by {@link parseKeycardFromLines}, then decrypts each root value with the
- * safe password. An MPC root value is an opaque versioned envelope; recovery must unwrap its
- * `prvKeyShare` and `vrf` fields instead of treating the decrypted bytes as a bare share.
- */
-export function parseSafeKeycardBox(data: string): SafeKeycardRoots {
-  const decoded = SafeKeycardBoxFromString.decode(data);
-  if (isLeft(decoded)) {
-    throw new Error(`parseSafeKeycardBox: ${PathReporter.report(decoded).join('; ')}`);
-  }
-  return decoded.right;
-}
 
 const sectionHeaderRegex = /^([A-D])\s*[:.)-]\s*(.+?)\s*$/i;
 const dataLineRegex = /^data\s*:\s*(.*)$/i;

@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [17.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@17.2.0...@bitgo/express@17.2.1) (2026-10-01)
+
+**Note:** Version bump only for package @bitgo/express
+
+
+
+
+
+# [17.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@17.1.0...@bitgo/express@17.2.0) (2026-09-29)
+
+
+### Features
+
+* **express:** add opt-in strict Base58 flag for TRX verifyaddress ([2025258](https://github.com/BitGo/BitGoJS/commit/2025258d5159789279f7ae3c5d13652aad6e669d))
+* **express:** add private Express endpoints for client-side Safe generation ([94a2b96](https://github.com/BitGo/BitGoJS/commit/94a2b96d5de1f448c4aa0a77ece94854d316a3ed))
+* **sdk-coin-sol:** add Solana v1 CT transaction support ([59eb3fd](https://github.com/BitGo/BitGoJS/commit/59eb3fd138302eb4c11aa9ada8dea932c7477a60))
+* **sdk-core:** wire disabletoken prebuild intent for Canton ([f9ce83d](https://github.com/BitGo/BitGoJS/commit/f9ce83d817f51a5124662115016bfc035178fe32))
+
+
+
+
+
 # [17.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@17.0.2...@bitgo/express@17.1.0) (2026-09-24)
 
 

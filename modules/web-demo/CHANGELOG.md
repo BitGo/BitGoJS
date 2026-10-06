@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.6.33](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@3.6.32...@bitgo/web-demo@3.6.33) (2026-10-01)
+
+
+### Bug Fixes
+
+* **sdk-coin-stx:** register tstxsignet in remaining coin/token factory switches ([d3b64b6](https://github.com/BitGo/BitGoJS/commit/d3b64b61d2d73a07780377a12c3348a4a553aabf))
+
+
+
+
+
+## [3.6.32](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@3.6.31...@bitgo/web-demo@3.6.32) (2026-09-29)
+
+**Note:** Version bump only for package @bitgo/web-demo
+
+
+
+
+
 ## [3.6.31](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@3.6.30...@bitgo/web-demo@3.6.31) (2026-09-24)
 
 **Note:** Version bump only for package @bitgo/web-demo

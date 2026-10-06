@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@2.2.0...@bitgo/sdk-coin-polyx@2.2.1) (2026-10-01)
+
+
+### Bug Fixes
+
+* **sdk-coin-polyx:** use getFinalizedHead for mortality checkpoint ([774868d](https://github.com/BitGo/BitGoJS/commit/774868d9987ab719a22b34570933571eeb16c48f))
+
+
+
+
+
+# [2.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@2.1.11...@bitgo/sdk-coin-polyx@2.2.0) (2026-09-29)
+
+
+### Features
+
+* **sdk-coin-polyx:** support MPCv2 OVC output in broadcastable sweep ([1e681c4](https://github.com/BitGo/BitGoJS/commit/1e681c4d792c180af5e4623b7e3eab3e49038ece))
+
+
+
+
+
 ## [2.1.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@2.1.10...@bitgo/sdk-coin-polyx@2.1.11) (2026-09-24)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-polyx

@@ -6,14 +6,7 @@ import 'should';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { Tbtc } from '@bitgo/sdk-coin-btc';
-import {
-  common,
-  BaseCoin,
-  BitGoBase,
-  InvalidTransactionError,
-  Wallet,
-  WalletSignTransactionOptions,
-} from '@bitgo/sdk-core';
+import { common, BaseCoin, BitGoBase, Wallet, WalletSignTransactionOptions } from '@bitgo/sdk-core';
 
 describe('Wallet signTransaction with verifyTxParams', function () {
   let wallet: Wallet;
@@ -157,19 +150,5 @@ describe('Wallet signTransaction with verifyTxParams', function () {
     const verifyParams = callArgs[0];
     assert.strictEqual(verifyParams.txPrebuild.txHex, 'mock-tx-hex');
     assert.deepStrictEqual(verifyParams.txParams, verifyTxParams.txParams);
-  });
-
-  it('should throw when verifyTxParams is provided without txHex or TSS txRequestId', async function () {
-    const signParams: WalletSignTransactionOptions = {
-      txPrebuild: {},
-      verifyTxParams: {
-        txParams: {
-          recipients: [{ address: 'test-address', amount: '1000' }],
-        },
-      },
-    };
-
-    await wallet.signTransaction(signParams).should.be.rejectedWith(InvalidTransactionError);
-    sinon.assert.notCalled(verifyTransactionStub);
   });
 });

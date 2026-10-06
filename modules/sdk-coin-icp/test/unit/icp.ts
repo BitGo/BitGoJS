@@ -228,6 +228,37 @@ describe('Internet computer', function () {
         })
         .should.rejectedWith('generated signableHex is not equal to params.signableHex');
     });
+
+    it('should successfully verify a transaction with a memo-tagged recipient address', async () => {
+      const memoTaggedTxBuilder = factory.getTransferBuilder();
+      memoTaggedTxBuilder.sender(testData.Accounts.account1.address, testData.Accounts.account1.publicKey);
+      memoTaggedTxBuilder.receiverId(testData.Accounts.account6.address);
+      memoTaggedTxBuilder.amount('10');
+      memoTaggedTxBuilder.memo(Number(testData.MetaDataWithMemo.memo));
+      await memoTaggedTxBuilder.build();
+
+      const payloadsData = memoTaggedTxBuilder.transaction.payloadsData;
+      const serializedTxFormat = {
+        serializedTxHex: payloadsData,
+        publicKey: testData.Accounts.account1.publicKey,
+      };
+      const serializedTxHex = Buffer.from(JSON.stringify(serializedTxFormat), 'utf-8').toString('hex');
+      const txParams = {
+        recipients: [
+          {
+            address: testData.Accounts.account6.address,
+            amount: '10',
+          },
+        ],
+      };
+      const response = await basecoin.verifyTransaction({
+        txPrebuild: {
+          txHex: serializedTxHex,
+        },
+        txParams: txParams,
+      });
+      assert(response);
+    });
   });
 
   describe('Address Verification', () => {

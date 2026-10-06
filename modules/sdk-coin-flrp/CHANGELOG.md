@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.19.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.19.0...@bitgo/sdk-coin-flrp@1.19.1) (2026-10-01)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-flrp
+
+
+
+
+
+# [1.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.18.9...@bitgo/sdk-coin-flrp@1.19.0) (2026-09-29)
+
+
+### Features
+
+* **sdk-core:** wire disabletoken prebuild intent for Canton ([f9ce83d](https://github.com/BitGo/BitGoJS/commit/f9ce83d817f51a5124662115016bfc035178fe32))
+
+
+
+
+
 ## [1.18.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.18.8...@bitgo/sdk-coin-flrp@1.18.9) (2026-09-24)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-flrp

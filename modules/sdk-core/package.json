@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-core",
-  "version": "38.19.0",
+  "version": "38.21.0",
   "description": "core library functions for BitGoJS",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,12 +40,12 @@
     ]
   },
   "dependencies": {
-    "@bitgo/public-types": "6.79.0",
-    "@bitgo/sdk-lib-mpc": "^11.0.0",
-    "@bitgo/sdk-lib-safes": "^1.1.1",
+    "@bitgo/public-types": "6.80.0",
+    "@bitgo/sdk-lib-mpc": "^11.1.0",
+    "@bitgo/sdk-lib-safes": "^1.2.1",
     "@bitgo/secp256k1": "^1.11.1",
     "@bitgo/sjcl": "^1.1.0",
-    "@bitgo/statics": "^59.18.0",
+    "@bitgo/statics": "^59.20.0",
     "@bitgo/utxo-lib": "^11.24.4",
     "@noble/curves": "1.8.1",
     "@stablelib/hex": "^1.0.0",

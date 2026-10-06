@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.25.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.24.2...@bitgo/account-lib@27.25.0) (2026-10-01)
+
+
+### Features
+
+* **sdk-coin-stx:** register tstxsignet staking-testnet coin ([029b398](https://github.com/BitGo/BitGoJS/commit/029b39834380cc510b7ae16b15011a0a638054bc))
+
+
+
+
+
+## [27.24.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.24.1...@bitgo/account-lib@27.24.2) (2026-09-29)
+
+**Note:** Version bump only for package @bitgo/account-lib
+
+
+
+
+
 ## [27.24.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.24.0...@bitgo/account-lib@27.24.1) (2026-09-24)
 
 **Note:** Version bump only for package @bitgo/account-lib

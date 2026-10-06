@@ -1,7 +1,7 @@
 import { EncryptionVersion, IRequestTracer } from '../../../api';
 import * as openpgp from 'openpgp';
 import { Key, readKey, SerializedKeyPair } from 'openpgp';
-import { IBaseCoin, KeychainsTriplet, TransactionParams } from '../../baseCoin';
+import { IBaseCoin, KeychainsTriplet } from '../../baseCoin';
 import { BitGoBase } from '../../bitgoBase';
 import { Keychain, KeyIndices, WebauthnKeyEncryptionInfo } from '../../keychain';
 import { getTxRequest } from '../../tss';
@@ -269,9 +269,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     txRequest: string | TxRequest,
     externalSignerCommitmentGenerator: CustomCommitmentGeneratingFunction,
     externalSignerRShareGenerator: CustomRShareGeneratingFunction,
-    externalSignerGShareGenerator: CustomGShareGeneratingFunction,
-    _reqId?: IRequestTracer,
-    _txParams?: TransactionParams
+    externalSignerGShareGenerator: CustomGShareGeneratingFunction
   ): Promise<TxRequest> {
     throw new Error('Method not implemented.');
   }

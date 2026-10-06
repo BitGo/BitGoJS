@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@3.0.4...@bitgo/sdk-api@3.0.5) (2026-10-01)
+
+**Note:** Version bump only for package @bitgo/sdk-api
+
+
+
+
+
+## [3.0.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@3.0.3...@bitgo/sdk-api@3.0.4) (2026-09-29)
+
+
+### Bug Fixes
+
+* **sdk-api:** sign HMAC over the real multipart body for .attach() requests ([d53e38c](https://github.com/BitGo/BitGoJS/commit/d53e38cc4cc376373b2dcb0f31e69ba9fde37ef4))
+
+
+
+
+
 ## [3.0.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@3.0.2...@bitgo/sdk-api@3.0.3) (2026-09-24)
 
 

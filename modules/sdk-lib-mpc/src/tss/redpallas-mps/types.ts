@@ -36,7 +36,8 @@ export enum RedPallasDkgState {
  * Mirrors the EdDSA MPS `DsgState`, except `redpallas_dsg_round0_process` does not take a
  * derivation path: RedPallas key derivation (ask/nk/rivk/ivks) happens separately, upstream,
  * as part of DKG (see `RedPallasDkgState`); the DSG round functions only ever operate on an
- * already-derived (or root) `Keyshare`.
+ * already-derived (or root) `Keyshare`. The keyshare passed to DSG must come from a prior
+ * `RedPallasRerand` session (see `RedPallasRerandState`).
  */
 export enum RedPallasDsgState {
   /** DSG session has not been initialized */
@@ -49,24 +50,60 @@ export enum RedPallasDsgState {
   WaitMsg2 = 'WaitMsg2',
   /** R2 broadcast emitted; waiting for counterpart's R2 broadcast (SignMsg3, the partial sig) */
   WaitMsg3 = 'WaitMsg3',
-  /** Final RedPallas signature (signature/rk/alpha) is available via getSignature() */
+  /** Final RedPallas signature (signature/rk) is available via getSignature() */
   Complete = 'Complete',
+}
+
+/**
+ * Represents the state of a RedPallas rerand (key re-randomization) session.
+ *
+ * A rerand session must run before every RedPallas DSG, between the same 2 parties
+ * that will then sign. Since `@bitgo/wasm-mps` 1.17.0, DSG no longer randomizes the
+ * key it signs with; the randomizer (`alpha`) is produced here instead.
+ */
+export enum RedPallasRerandState {
+  /** Rerand session has not been initialized */
+  Uninitialized = 'Uninitialized',
+  /** initRerand() has been called; ready for getFirstMessage() */
+  Init = 'Init',
+  /** R0 (local commitment) emitted; waiting for counterpart's R0 broadcast (commitment) */
+  WaitMsg1 = 'WaitMsg1',
+  /** R1 broadcast emitted; waiting for counterpart's R1 broadcast (randomizer + blind opening) */
+  WaitMsg2 = 'WaitMsg2',
+  /** Rerandomized key share (keyShare/pk/alpha) is available via getRerandomizedKeyShare() */
+  Complete = 'Complete',
+}
+
+/**
+ * The final output of a RedPallas rerand session.
+ *
+ * - `keyShare` is the rerandomized keyshare to be passed to `RedPallasDSG.initDsg`.
+ * - `pk` is the rerandomized public key; the DSG result's `rk` equals it, and the DSG
+ *   signature verifies under it.
+ * - `alpha` is the 32-byte tweak scalar applied to both the DKG keyshares and the DKG
+ *   public key (`pk = pk_dkg + [alpha]G`). It is fresh per rerand session and identical
+ *   on both parties. Since the rerand protocol moved out of DSG (wasm-mps 1.17.0), this
+ *   is the only place `alpha` is exposed.
+ */
+export interface RedPallasRerandResult {
+  keyShare: Buffer;
+  pk: Buffer;
+  alpha: Buffer;
 }
 
 /**
  * The final output of a RedPallas DSG session.
  *
  * - `signature` is the 64-byte raw Schnorr (RedPallas) signature.
- * - `rk` is the randomized verification key that the signature must be verified against
- *   (i.e. `redpallas_verify(rk, signature, message)`), not the original DKG public key.
- * - `alpha` is the 32-byte randomizer scalar used to re-randomize the DKG public key into
- *   `rk` (`rk = pk + [alpha]G`). Callers that need to independently re-derive/verify `rk`
- *   from the DKG public key can use `alpha` to do so.
+ * - `rk` is the rerandomized verification key that the signature must be verified against
+ *   (i.e. `redpallas_verify(rk, signature, message)`), not the DKG public key. DSG does
+ *   not randomize the key it signs with: `rk` equals the `pk` of the rerandomized
+ *   keyshare the DSG session was initialized with (see `RedPallasRerandResult`), and
+ *   the corresponding `alpha` is available from that rerand result.
  */
 export interface RedPallasSignatureResult {
   signature: Buffer;
   rk: Buffer;
-  alpha: Buffer;
 }
 
 /** A PGP detached-signed message by a party.
