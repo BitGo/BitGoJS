@@ -633,7 +633,7 @@ describe('V2 Keychains', function () {
         ]);
       });
 
-      it('emits skipped for a listed record with no encryptedPrv so completed reaches totalCount (option A)', async function () {
+      it('emits skipped for a listed record with no encryptedPrv so completed reaches totalCount', async function () {
         const encXprv1 = await bitgo.encrypt({ input: 'xprv1', password: oldPassword });
         nock(bgUrl)
           .get('/api/v2/tltc/key')

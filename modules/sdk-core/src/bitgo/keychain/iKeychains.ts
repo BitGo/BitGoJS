@@ -148,7 +148,11 @@ export interface UpdatePasswordOptions {
    *   per-keychain source versions.
    */
   safeId?: string;
-  /** Optional observer invoked once per nonfatal keychain outcome during password rotation. */
+  /**
+   * Optional observer invoked once per listed keychain record (`updated` or `skipped`) during password
+   * rotation. Legacy mode (no `safeId`) only: safe mode persists through the bulk key endpoint and never
+   * invokes it.
+   */
   progressCallback?: KeychainPasswordUpdateProgressCallback;
 }
 

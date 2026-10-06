@@ -178,8 +178,8 @@ export class Keychains implements IKeychains {
       for (const key of result.keys) {
         const oldEncryptedPrv = key.encryptedPrv;
         if (_.isUndefined(oldEncryptedPrv)) {
-          // Option A counting unit (WCN-2084): every listed record reports an outcome,
-          // so `completed` reaches the server's `totalCount` on any account composition.
+          // Every listed record reports an outcome, so `completed` reaches the server's
+          // `totalCount` on any account composition.
           // A record with no serialized material is reported as skipped rather than
           // silently dropped — it is counted by the list total, and the walk still
           // leaves it untouched (no re-encryption, no entry in the changedKeys map).

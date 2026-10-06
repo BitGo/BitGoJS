@@ -2010,6 +2010,17 @@ export class BitGoAPI implements BitGoBase {
    * given oldPassword. Returns nothing on success.
    * @param oldPassword {String} - the current password
    * @param newPassword {String} - the new password
+   * @param encryptionVersion {EncryptionVersion} - optional envelope version for the re-encrypted keychains;
+   *   defaults to preserving each keychain's existing envelope version
+   * @param progressCallback {PasswordRotationProgressCallback} - optional observer for rotation progress.
+   *   Invoked synchronously and never awaited; an exception thrown by the callback is swallowed, so it can
+   *   never change the outcome of the rotation. Events, in order: `keychains/started`, one `keychains/updated`
+   *   per listed keychain record (`updated` or `skipped`), then `finalizing/started` and `finalizing/completed`
+   *   (only after the final request succeeds). `total` is the backend's first-page `totalCount` plus the size of
+   *   the v1 keychain set; it stays `undefined` while the backend supplies no count, except that an account with
+   *   only v1 keychains receives one terminal `keychains/updated` event carrying the v1 set size. Consumers should
+   *   render indeterminate progress while `total` is `undefined`. `completed` reaches `total` unless keychains are
+   *   added or removed during the rotation, because `total` is latched from the first v2 page.
    */
   async changePassword({
     oldPassword,
