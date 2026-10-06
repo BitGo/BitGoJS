@@ -2,6 +2,10 @@ import * as assert from 'assert';
 import * as pgp from 'openpgp';
 import { RedPallasMPSComms, RedPallasMPSTypes } from '@bitgo/sdk-lib-mpc';
 import {
+  RedpallasMPCv2RerandShareRound1Input,
+  RedpallasMPCv2RerandShareRound1Output,
+  RedpallasMPCv2RerandShareRound2Input,
+  RedpallasMPCv2RerandShareRound2Output,
   RedpallasMPCv2SignatureShareRound1Input,
   RedpallasMPCv2SignatureShareRound1Output,
   RedpallasMPCv2SignatureShareRound2Input,
@@ -11,9 +15,13 @@ import {
 } from '@bitgo/public-types';
 import { SignatureShareRecord, SignatureShareType } from '../../../../../src';
 import {
+  getRerandShareRoundOne,
+  getRerandShareRoundTwo,
   getSignatureShareRoundOne,
   getSignatureShareRoundTwo,
   getSignatureShareRoundThree,
+  verifyPeerRerandMessageRoundOne,
+  verifyPeerRerandMessageRoundTwo,
   verifyPeerMessageRoundOne,
   verifyPeerMessageRoundTwo,
   verifyPeerMessageRoundThree,
@@ -209,6 +217,111 @@ describe('RedPallas MPS DSG helper functions', function () {
     };
 
     await assert.rejects(verifyPeerMessageRoundThree(round3Output, bitgoGpgPubKey));
+  });
+
+  // ── Rerand (must run before every DSG, same 2 parties) ──────────────────────
+
+  it('getRerandShareRoundOne should build a valid rerand round-1 share for the user', async function () {
+    const share: SignatureShareRecord = await getRerandShareRoundOne(userPayload(1), userGpgPrivKey);
+
+    assert.strictEqual(share.from, SignatureShareType.USER);
+    assert.strictEqual(share.to, SignatureShareType.BITGO);
+
+    const parsed = decodeWithCodec(
+      RedpallasMPCv2RerandShareRound1Input,
+      JSON.parse(share.share),
+      'RedpallasMPCv2RerandShareRound1Input'
+    );
+    assert.strictEqual(parsed.type, 'round1Input');
+    assert.ok(parsed.data.msg1.message, 'msg1.message should be set');
+    assert.ok(parsed.data.msg1.signature, 'msg1.signature should be set');
+  });
+
+  it('getRerandShareRoundOne should build a valid rerand round-1 share for the backup', async function () {
+    const share: SignatureShareRecord = await getRerandShareRoundOne(
+      backupPayload(1),
+      backupGpgPrivKey,
+      MPCv2PartiesEnum.BACKUP
+    );
+
+    assert.strictEqual(share.from, SignatureShareType.BACKUP);
+    assert.strictEqual(share.to, SignatureShareType.BITGO);
+  });
+
+  it('verifyPeerRerandMessageRoundOne should verify a valid BitGo rerand round-1 message', async function () {
+    const bitgoSignedMsg1 = await RedPallasMPSComms.detachSignMpsMessage(
+      Buffer.from(bitgoPayload(1).payload),
+      bitgoGpgPrivKey
+    );
+    const round1Output: RedpallasMPCv2RerandShareRound1Output = {
+      type: 'round1Output',
+      data: { msg1: bitgoSignedMsg1 },
+    };
+
+    const result = await verifyPeerRerandMessageRoundOne(round1Output, bitgoGpgPubKey);
+
+    assert.strictEqual(result.from, MPCv2PartiesEnum.BITGO);
+    assert.deepStrictEqual(Buffer.from(result.payload), Buffer.from(bitgoPayload(1).payload));
+  });
+
+  it('verifyPeerRerandMessageRoundOne should throw on a tampered rerand round-1 message', async function () {
+    const round1Output: RedpallasMPCv2RerandShareRound1Output = {
+      type: 'round1Output',
+      data: {
+        msg1: {
+          message: Buffer.from('tampered').toString('base64'),
+          signature: '-----BEGIN PGP SIGNATURE-----\n\nINVALID\n-----END PGP SIGNATURE-----\n',
+        },
+      },
+    };
+
+    await assert.rejects(verifyPeerRerandMessageRoundOne(round1Output, bitgoGpgPubKey));
+  });
+
+  it('getRerandShareRoundTwo should build a valid rerand round-2 share for the user', async function () {
+    const share: SignatureShareRecord = await getRerandShareRoundTwo(userPayload(2), userGpgPrivKey);
+
+    assert.strictEqual(share.from, SignatureShareType.USER);
+    assert.strictEqual(share.to, SignatureShareType.BITGO);
+
+    const parsed = decodeWithCodec(
+      RedpallasMPCv2RerandShareRound2Input,
+      JSON.parse(share.share),
+      'RedpallasMPCv2RerandShareRound2Input'
+    );
+    assert.strictEqual(parsed.type, 'round2Input');
+    assert.ok(parsed.data.msg2.message, 'msg2.message should be set');
+    assert.ok(parsed.data.msg2.signature, 'msg2.signature should be set');
+  });
+
+  it('verifyPeerRerandMessageRoundTwo should verify a valid BitGo rerand round-2 message', async function () {
+    const bitgoSignedMsg2 = await RedPallasMPSComms.detachSignMpsMessage(
+      Buffer.from(bitgoPayload(2).payload),
+      bitgoGpgPrivKey
+    );
+    const round2Output: RedpallasMPCv2RerandShareRound2Output = {
+      type: 'round2Output',
+      data: { msg2: bitgoSignedMsg2 },
+    };
+
+    const result = await verifyPeerRerandMessageRoundTwo(round2Output, bitgoGpgPubKey);
+
+    assert.strictEqual(result.from, MPCv2PartiesEnum.BITGO);
+    assert.deepStrictEqual(Buffer.from(result.payload), Buffer.from(bitgoPayload(2).payload));
+  });
+
+  it('verifyPeerRerandMessageRoundTwo should throw on a tampered rerand round-2 message', async function () {
+    const round2Output: RedpallasMPCv2RerandShareRound2Output = {
+      type: 'round2Output',
+      data: {
+        msg2: {
+          message: Buffer.from('tampered').toString('base64'),
+          signature: '-----BEGIN PGP SIGNATURE-----\n\nINVALID\n-----END PGP SIGNATURE-----\n',
+        },
+      },
+    };
+
+    await assert.rejects(verifyPeerRerandMessageRoundTwo(round2Output, bitgoGpgPubKey));
   });
 
   // ── Envelope round-trip via the independent RedPallas MPS comms layer ───────
