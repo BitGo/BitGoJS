@@ -255,6 +255,13 @@ export class EthLikeToken extends AbstractEthLikeNewCoins {
       backupKeyAddress = keyPair.getAddress();
     }
 
+    await this.assertRecoveryKeysAreWalletSigners(
+      userKey,
+      backupKeyAddress,
+      params.walletContractAddress,
+      params.apiKey
+    );
+
     // Get nonce for backup key (should be 0)
     let backupKeyNonce = 0;
 

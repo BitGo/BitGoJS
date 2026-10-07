@@ -9,7 +9,7 @@ import assert from 'assert';
 import { Algo } from '../../src/algo';
 import BigNumber from 'bignumber.js';
 import { TransactionBuilderFactory } from '../../src/lib';
-import { common, KeyPair, Wallet } from '@bitgo/sdk-core';
+import { common, KeyPair, RecoveryKeyMismatchError, Wallet } from '@bitgo/sdk-core';
 import { algoBackupKey } from './fixtures/algoBackupKey';
 import nock from 'nock';
 
@@ -939,8 +939,27 @@ describe('ALGO:', function () {
             });
           },
           {
-            message: 'bitgo public key from the keyCard is required for non-bitgo recovery',
+            message: 'bitgo public key from the keyCard is required for recovery',
           }
+        );
+      });
+
+      it('should throw RecoveryKeyMismatchError when the keys do not derive the rootAddress', async function () {
+        await assert.rejects(
+          async () => {
+            await basecoin.recover({
+              userKey,
+              backupKey,
+              rootAddress: bitgoPub,
+              walletPassphrase,
+              fee,
+              bitgoKey: bitgoPub,
+              recoveryDestination,
+              firstRound: 5003596,
+              nodeParams,
+            });
+          },
+          (err) => err instanceof RecoveryKeyMismatchError && err.code === 'recovery_key_mismatch'
         );
       });
 
@@ -1015,6 +1034,25 @@ describe('ALGO:', function () {
         txJson.to.should.equal(recoveryDestination);
         txJson.from.should.equal(rootAddress);
         txJson.fee.should.equal(fee);
+      });
+
+      it('should throw RecoveryKeyMismatchError when the keys do not derive the rootAddress', async function () {
+        await assert.rejects(
+          async () => {
+            await basecoin.recover({
+              userKey: userPub,
+              backupKey: backupPub,
+              bitgoKey: bitgoPub,
+              rootAddress: bitgoPub,
+              walletPassphrase,
+              fee,
+              recoveryDestination,
+              firstRound: 5003596,
+              nodeParams,
+            });
+          },
+          (err) => err instanceof RecoveryKeyMismatchError && err.code === 'recovery_key_mismatch'
+        );
       });
     });
 

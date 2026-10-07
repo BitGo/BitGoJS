@@ -24,6 +24,8 @@ import {
   MultisigType,
   multisigTypes,
   AuditDecryptedKeyParams,
+  Environments,
+  RecoveryKeyMismatchError,
 } from '@bitgo/sdk-core';
 import { BigNumber } from 'bignumber.js';
 import * as stellar from 'stellar-sdk';
@@ -31,13 +33,16 @@ import { SeedValidator } from './seedValidator';
 import { KeyPair as HbarKeyPair, TransactionBuilderFactory, Transaction, Recipient as HederaRecipient } from './lib';
 import * as Utils from './lib/utils';
 import * as _ from 'lodash';
+import * as request from 'superagent';
 import {
   Client,
   Transaction as HbarTransaction,
   AccountBalanceQuery,
   AccountBalanceJson,
   Hbar as HbarUnit,
+  PublicKey,
 } from '@hashgraph/sdk';
+import { proto } from '@hashgraph/proto';
 import { PUBLIC_KEY_PREFIX } from './lib/keyPair';
 
 // Hedera-specific transaction data interface for raw transaction validation
@@ -595,6 +600,8 @@ export class Hbar extends BaseCoin {
 
     let userPrv: string | undefined;
     let backUp: string | undefined;
+    let userPub: string | undefined;
+    let backupPub: string | undefined;
     if (!isUnsignedSweep) {
       try {
         userPrv = await this.bitgo.decrypt({ input: params.userKey, password: params.walletPassphrase });
@@ -604,6 +611,8 @@ export class Hbar extends BaseCoin {
           'unable to decrypt userKey or backupKey with the walletPassphrase provided, got error: ' + e.message
         );
       }
+      userPub = new HbarKeyPair({ prv: userPrv }).getKeys().pub;
+      backupPub = new HbarKeyPair({ prv: backUp }).getKeys().pub;
     }
 
     // validate userKey for unsigned sweep
@@ -619,6 +628,20 @@ export class Hbar extends BaseCoin {
     const { address: destinationAddress, memoId } = Utils.getAddressDetails(params.recoveryDestination);
     const nodeId = params.nodeId ? params.nodeId : '0.0.3';
     const client = this.getHbarClient();
+    const onChainSigners = new Set(await this.getAccountKeys(params.rootAddress));
+    const userRaw = PublicKey.fromString(userPub ?? params.userKey)
+      .toStringRaw()
+      .toLowerCase();
+    const backupRaw = PublicKey.fromString(backupPub ?? params.backupKey)
+      .toStringRaw()
+      .toLowerCase();
+    if (!onChainSigners.has(userRaw) || !onChainSigners.has(backupRaw)) {
+      throw new RecoveryKeyMismatchError(
+        `user key ${userPub ?? params.userKey} or backup key ${
+          backupPub ?? params.backupKey
+        } is not in the key list of account ${params.rootAddress}`
+      );
+    }
     const balance = await this.getAccountBalance(params.rootAddress, client);
     const fee = params.maxFee ? params.maxFee : '10000000'; // default fee to 1 hbar
     const nativeBalance = HbarUnit.fromString(balance.hbars).toTinybars().toString();
@@ -837,6 +860,53 @@ export class Hbar extends BaseCoin {
   private getHbarClient(): Client {
     const client = this.bitgo.getEnv() === 'prod' ? Client.forMainnet() : Client.forTestnet();
     return client;
+  }
+
+  /**
+   * Fetches the flattened set of ed25519 public keys controlling an account, via the Hedera mirror node.
+   * Returns raw (non-DER) lowercase hex keys for ed25519 keys (single key, key list or threshold key).
+   * Account keys of other types (e.g. ECDSA_secp256k1) are rejected, so recovery of such accounts
+   * fails closed with an explicit error rather than a misleading key mismatch.
+   * Uses the free mirror-node REST API because the SDK's AccountInfoQuery is a paid query,
+   * and recovery runs with an operator-less client that cannot pay.
+   */
+  async getAccountKeys(accountId: string): Promise<string[]> {
+    // note: hbar reuses the hbarevm EVM explorer config; its baseUrl is the Hedera mirror-node REST API
+    const baseUrl = Environments[this.bitgo.getEnv()].evm?.hbarevm?.baseUrl;
+    if (!baseUrl) {
+      throw new Error(`mirror node base URL not configured for environment ${this.bitgo.getEnv()}`);
+    }
+    try {
+      const response = await request
+        .get(`${baseUrl}/accounts/${accountId}`)
+        .set('Accept', 'application/json')
+        .timeout({ response: 10000 });
+      const accountKey = response.body?.key;
+      if (!accountKey?.key) {
+        throw new Error(`no key returned for account ${accountId}`);
+      }
+      if (accountKey._type === 'ProtobufEncoded') {
+        return Hbar.collectEd25519Keys(proto.Key.decode(Buffer.from(accountKey.key, 'hex')));
+      }
+      if (accountKey._type !== 'ED25519') {
+        throw new Error(`unsupported account key type ${accountKey._type} for account ${accountId}`);
+      }
+      return [accountKey.key.toLowerCase()];
+    } catch (e) {
+      throw new Error('Failed to get account keys, error: ' + e.message);
+    }
+  }
+
+  /**
+   * Flattens a protobuf Key (single ed25519 / keyList / thresholdKey) into raw ed25519 hex keys
+   */
+  private static collectEd25519Keys(key: proto.IKey, out: string[] = []): string[] {
+    if (key.ed25519?.length) {
+      out.push(Buffer.from(key.ed25519).toString('hex').toLowerCase());
+    }
+    key.keyList?.keys?.forEach((child) => Hbar.collectEd25519Keys(child, out));
+    key.thresholdKey?.keys?.keys?.forEach((child) => Hbar.collectEd25519Keys(child, out));
+    return out;
   }
 
   async getAccountBalance(accountId: string, client: Client): Promise<AccountBalanceJson> {

@@ -157,6 +157,14 @@ export class ErrorNoInputToRecover extends BitGoJsError {
   }
 }
 
+export class RecoveryKeyMismatchError extends BitGoJsError {
+  public code = 'recovery_key_mismatch';
+
+  public constructor(message?: string) {
+    super(message || 'recovery keys do not match the wallet on-chain signer set');
+  }
+}
+
 export class InvalidKeyPathError extends BitGoJsError {
   public constructor(keyPath: string) {
     super(`invalid keypath: ${keyPath}`);

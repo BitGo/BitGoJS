@@ -7,7 +7,9 @@ import { randomBytes } from 'crypto';
 import { BigNumber } from 'bignumber.js';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
-import { common, Wallet } from '@bitgo/sdk-core';
+import { common, RecoveryKeyMismatchError, Wallet } from '@bitgo/sdk-core';
+import { PublicKey } from '@hashgraph/sdk';
+import { proto } from '@hashgraph/proto';
 import { TxData, Transfer } from '../../src/lib/iface';
 
 import * as TestData from '../fixtures/hbar';
@@ -982,9 +984,23 @@ describe('Hedera Hashgraph:', function () {
 
     describe('Non-BitGo', async function () {
       const sandBox = Sinon.createSandbox();
+      let getAccountKeysStub: SinonStub;
+      // DER pubs of the encrypted userKey/backupKey fixtures decrypted with walletPassphrase
+      const signedUserPub = '302a300506032b65700321002394bfbbb5367aaaa6868131c417f2f2776306752e2880215a538bc65e052331';
+      const signedBackupPub =
+        '302a300506032b65700321002176d5aed22681307f3a73fec88e6f0937cddca019b5b1f50a7d816a49524d64';
 
       afterEach(function () {
         sandBox.verifyAndRestore();
+      });
+
+      beforeEach(function () {
+        getAccountKeysStub = sandBox
+          .stub(Hbar.prototype, 'getAccountKeys')
+          .resolves([
+            PublicKey.fromString(signedUserPub).toStringRaw().toLowerCase(),
+            PublicKey.fromString(signedBackupPub).toStringRaw().toLowerCase(),
+          ]);
       });
 
       it('should build and sign the recovery tx', async function () {
@@ -1264,14 +1280,41 @@ describe('Hedera Hashgraph:', function () {
           { message: 'Insufficient native balance to recover tokens, got native balance: 1000000 fee: ' + defaultFee }
         );
       });
+
+      it('should throw RecoveryKeyMismatchError when the user key is not in the account key list', async function () {
+        getAccountKeysStub.resolves([PublicKey.fromString(signedBackupPub).toStringRaw().toLowerCase()]);
+
+        await assert.rejects(
+          async () => {
+            await basecoin.recover({
+              userKey,
+              backupKey,
+              rootAddress,
+              walletPassphrase,
+              recoveryDestination: recoveryDestination + '?memoId=' + memo,
+            });
+          },
+          (err) => err instanceof RecoveryKeyMismatchError && err.code === 'recovery_key_mismatch'
+        );
+      });
     });
 
     describe('Unsigned Sweep', function () {
       const sandBox = Sinon.createSandbox();
       let getBalanceStub: SinonStub;
+      let getAccountKeysStub: SinonStub;
 
       afterEach(function () {
         sandBox.verifyAndRestore();
+      });
+
+      beforeEach(function () {
+        getAccountKeysStub = sandBox
+          .stub(Hbar.prototype, 'getAccountKeys')
+          .resolves([
+            PublicKey.fromString(userPub).toStringRaw().toLowerCase(),
+            PublicKey.fromString(backupPub).toStringRaw().toLowerCase(),
+          ]);
       });
 
       it('should build unsigned sweep tx', async function () {
@@ -1463,6 +1506,25 @@ describe('Hedera Hashgraph:', function () {
           { message: 'startTime must be a future timestamp, got: ' + startTime }
         );
       });
+
+      it('should throw RecoveryKeyMismatchError when the user key is not in the account key list', async function () {
+        getAccountKeysStub.resolves([PublicKey.fromString(backupPub).toStringRaw().toLowerCase()]);
+        const startTime = (Date.now() / 1000 + 10).toFixed();
+
+        await assert.rejects(
+          async () => {
+            await basecoin.recover({
+              userKey: userPub,
+              backupKey: backupPub,
+              rootAddress,
+              bitgoKey,
+              recoveryDestination: recoveryDestination + '?memoId=' + memo,
+              startTime,
+            });
+          },
+          (err) => err instanceof RecoveryKeyMismatchError && err.code === 'recovery_key_mismatch'
+        );
+      });
     });
 
     describe('Recovery with root keys', function () {
@@ -1482,6 +1544,7 @@ describe('Hedera Hashgraph:', function () {
         getBalanceStub = sandBox
           .stub(Hbar.prototype, 'getAccountBalance')
           .resolves({ hbars: formatBalanceResponse(balance), tokens: [] });
+        sandBox.stub(Hbar.prototype, 'getAccountKeys').resolves([userEddsaRootPub, backupEddsaRootPub]);
       });
 
       afterEach(function () {
@@ -1566,6 +1629,40 @@ describe('Hedera Hashgraph:', function () {
         txJson.validDuration.should.equal(defaultValidDuration);
         txJson.startTime.should.equal(startTime + '.0');
         txJson.validDuration.should.equal(defaultValidDuration);
+      });
+    });
+
+    describe('Account key lookup', function () {
+      it('should flatten a ProtobufEncoded threshold key into raw member keys', async function () {
+        const rawUserPub = PublicKey.fromString(userPub).toStringRaw().toLowerCase();
+        const rawBackupPub = PublicKey.fromString(backupPub).toStringRaw().toLowerCase();
+        const thresholdKey = {
+          threshold: 2,
+          keys: {
+            keys: [
+              { ed25519: Buffer.from(rawUserPub, 'hex') },
+              { ed25519: Buffer.from(rawBackupPub, 'hex') },
+              { ed25519: Buffer.from(bitgoKey, 'hex') },
+            ],
+          },
+        };
+        const encodedKey = Buffer.from(proto.Key.encode({ thresholdKey }).finish()).toString('hex');
+
+        nock('https://testnet.mirrornode.hedera.com/api/v1')
+          .get('/accounts/' + rootAddress)
+          .reply(200, { key: { _type: 'ProtobufEncoded', key: encodedKey } });
+
+        const accountKeys = await basecoin.getAccountKeys(rootAddress);
+        accountKeys.should.deepEqual([rawUserPub, rawBackupPub, bitgoKey]);
+      });
+
+      it('should return the raw key for a simple ED25519 account', async function () {
+        const rawUserPub = PublicKey.fromString(userPub).toStringRaw().toLowerCase();
+        nock('https://testnet.mirrornode.hedera.com/api/v1')
+          .get('/accounts/' + rootAddress)
+          .reply(200, { key: { _type: 'ED25519', key: rawUserPub } });
+        const accountKeys = await basecoin.getAccountKeys(rootAddress);
+        accountKeys.should.deepEqual([rawUserPub]);
       });
     });
   });

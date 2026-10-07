@@ -20,7 +20,7 @@ type FullNodeResponseBody = {
   id: string;
   result?: string;
   error?: {
-    code: string;
+    code: number | string;
     message: string;
   };
 };
@@ -56,9 +56,34 @@ export class Ethw extends Eth {
     const result = await this.recoveryFullNodeRPCQuery('eth_getBalance', [address, 'latest']);
     // throw if the result does not exist or the result is not a valid number
     if (!result || !result.result) {
-      throw new Error(`Could not obtain address balance for ${address} from full node, got: ${result.result}`);
+      throw new Error(`Could not obtain address balance for ${address} from full node, got: ${result?.result}`);
     }
     return new optionalDeps.ethUtil.BN(result.result.slice(2), 16);
+  }
+
+  /**
+   * Queries the wallet contract (via RPC) whether an address is a signer on it.
+   * Every recovery read for this coin goes through the full node, so the signer
+   * probe shares that path instead of the explorer API.
+   * @param {string} walletContractAddress address of the wallet contract
+   * @param {string} signerAddress address to test for membership
+   * @returns {Promise<boolean>} true if the address is a signer on the wallet contract
+   */
+  async queryIsWalletSigner(walletContractAddress: string, signerAddress: string): Promise<boolean> {
+    const signerMethodSignature = optionalDeps.ethAbi.methodID('isSigner', ['address']);
+    const signerMethodArgs = optionalDeps.ethAbi.rawEncode(['address'], [signerAddress]);
+    const signerMethodData = Buffer.concat([signerMethodSignature, signerMethodArgs]).toString('hex');
+    const signerMethodDataHex = optionalDeps.ethUtil.addHexPrefix(signerMethodData);
+    const result = await this.recoveryFullNodeRPCQuery('eth_call', [
+      { to: walletContractAddress, data: signerMethodDataHex },
+      'latest',
+    ]);
+    if (!result || !result.result || optionalDeps.ethUtil.stripHexPrefix(result.result).length === 0) {
+      throw new Error(
+        `Could not read the signer set of wallet contract ${walletContractAddress} from the full node, got: ${result?.result}`
+      );
+    }
+    return optionalDeps.ethAbi.rawDecode(['bool'], optionalDeps.ethUtil.toBuffer(result.result))[0] === true;
   }
 
   /**
@@ -77,7 +102,7 @@ export class Ethw extends Eth {
       'latest',
     ]);
     if (!result || !result.result) {
-      throw new Error('Could not obtain sequence ID from full node, got: ' + result.result);
+      throw new Error('Could not obtain sequence ID from full node, got: ' + result?.result);
     }
     const sequenceIdHex = result.result;
     return new optionalDeps.ethUtil.BN(sequenceIdHex.slice(2), 16).toNumber();

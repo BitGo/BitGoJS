@@ -20,6 +20,7 @@ import {
   ParsedTransaction,
   ParseTransactionOptions,
   promiseProps,
+  RecoveryKeyMismatchError,
   TokenEnablementConfig,
   TransactionParams,
   UnexpectedAddressError,
@@ -752,10 +753,12 @@ export class Xrp extends BaseCoin {
     }
 
     if (foundAddresses[userAddress] !== 1) {
-      throw new Error('unexpected incidence frequency of user signer address');
+      throw new RecoveryKeyMismatchError(`user signer address ${userAddress} is missing from the wallet signer list`);
     }
     if (foundAddresses[backupAddress] !== 1) {
-      throw new Error('unexpected incidence frequency of user signer address');
+      throw new RecoveryKeyMismatchError(
+        `backup signer address ${backupAddress} is missing from the wallet signer list`
+      );
     }
 
     // make sure the flags disable the master key and enforce destination tags

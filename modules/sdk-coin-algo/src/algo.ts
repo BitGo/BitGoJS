@@ -17,6 +17,7 @@ import {
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
+  RecoveryKeyMismatchError,
   SignedTransaction,
   SignTransactionOptions as BaseSignTransactionOptions,
   TokenManagementType,
@@ -878,21 +879,40 @@ export class Algo extends BaseCoin {
 
     let userPrv: string | undefined;
     let backupPrv: string | undefined;
+    let userKeyAddress: string;
+    let backupKeyAddress: string;
+    if (!params.bitgoKey) {
+      throw new Error('bitgo public key from the keyCard is required for recovery');
+    }
     if (!isUnsignedSweep) {
-      if (!params.bitgoKey) {
-        throw new Error('bitgo public key from the keyCard is required for non-bitgo recovery');
-      }
       try {
         userPrv = await this.bitgo.decrypt({ input: params.userKey, password: params.walletPassphrase });
         backupPrv = await this.bitgo.decrypt({ input: params.backupKey, password: params.walletPassphrase });
-        const userKeyAddress = Utils.privateKeyToAlgoAddress(userPrv);
-        const backupKeyAddress = Utils.privateKeyToAlgoAddress(backupPrv);
-        txBuilder.numberOfRequiredSigners(2).setSigners([userKeyAddress, backupKeyAddress, params.bitgoKey]);
       } catch (e) {
         throw new Error(
           'unable to decrypt userKey or backupKey with the walletPassphrase provided, got error: ' + e.message
         );
       }
+      userKeyAddress = Utils.privateKeyToAlgoAddress(userPrv);
+      backupKeyAddress = Utils.privateKeyToAlgoAddress(backupPrv);
+      txBuilder.numberOfRequiredSigners(2).setSigners([userKeyAddress, backupKeyAddress, params.bitgoKey]);
+    } else {
+      userKeyAddress = this.stellarAddressToAlgoAddress(params.userKey);
+      backupKeyAddress = this.stellarAddressToAlgoAddress(params.backupKey);
+    }
+
+    // Make sure the recovery keys are the on-chain signers of the wallet, before any node call.
+    // The msig preimage is order-sensitive, so the keys must be passed in wallet-creation order;
+    // a swapped userKey/backupKey pair derives a different address and fails closed here.
+    const expectedRootAddress = AlgoLib.algoUtils.multisigAddress(SUPPORTED_ADDRESS_VERSION, MSIG_THRESHOLD, [
+      userKeyAddress,
+      backupKeyAddress,
+      this.stellarAddressToAlgoAddress(params.bitgoKey),
+    ]);
+    if (expectedRootAddress !== params.rootAddress) {
+      throw new RecoveryKeyMismatchError(
+        `recovery keys derive multisig address ${expectedRootAddress}, which does not match the given rootAddress ${params.rootAddress}`
+      );
     }
 
     const client = this.getClient(params.nodeParams.token, params.nodeParams.baseServer, params.nodeParams.port);

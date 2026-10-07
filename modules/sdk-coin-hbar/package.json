@@ -51,6 +51,7 @@
     "long": "^5.2.3",
     "protobufjs": "^7.5.8",
     "stellar-sdk": "^10.0.1",
+    "superagent": "^9.0.1",
     "tweetnacl": "^1.0.3"
   },
   "devDependencies": {

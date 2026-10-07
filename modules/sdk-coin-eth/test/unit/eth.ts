@@ -11,6 +11,7 @@ import {
   InvalidAddressError,
   InvalidAddressVerificationObjectPropertyError,
   MPCSweepTxs,
+  RecoveryKeyMismatchError,
   TransactionType,
   TxIntentMismatchRecipientError,
   UnexpectedAddressError,
@@ -2855,6 +2856,38 @@ describe('ETH:', function () {
           'Error: invalid address'
         );
       });
+    });
+  });
+
+  describe('Recover signer checks', function () {
+    const baseUrl = common.Environments.test.etherscanBaseUrl as string;
+    it('should throw RecoveryKeyMismatchError when the user recovery key is not a wallet signer', async function () {
+      const userXpub =
+        'xpub661MyMwAqRbcEeTc8789MK5PUGEYiPG4F4V17n2Rd2LoTATA1XoCnJT5FAYAShQxSxtFjpo5NHmcWwTp2LiWGBMwpUcAA3HywhxivgYfq7q';
+      const backupXpub =
+        'xpub661MyMwAqRbcFZX15xpZf4ERCGHiVSJm8r5C4yh1yXV2GrdZCUPYo4WQr6tN9oUywKXsgSHo7Risf9r22GH5joVD2hEEEhqnSCvK8qy11wW';
+      const backupKeyAddress = '0x4f2c4830cc37f2785c646f89ded8a919219fa0e9';
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getIsSignerCallRequest('0x916da87c3ae51f0fa23a2bab8732d23c21d30f5e'))
+        .reply(200, mockData.getIsSignerFalseResponse);
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getIsSignerCallRequest(backupKeyAddress))
+        .reply(200, mockData.getIsSignerTrueResponse);
+      const basecoin = bitgo.coin('hteth') as Hteth;
+      await assert.rejects(
+        async () =>
+          await basecoin.recover({
+            userKey: userXpub,
+            backupKey: backupXpub,
+            walletContractAddress: TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS as string,
+            recoveryDestination: '0xd5ADdE17feD8baed3F32b84AF05B8F2816f7b560',
+            eip1559: { maxFeePerGas: 20000000000, maxPriorityFeePerGas: 10000000000 },
+            gasLimit: 500000,
+          }),
+        (err) => err instanceof RecoveryKeyMismatchError && err.code === 'recovery_key_mismatch'
+      );
     });
   });
 
