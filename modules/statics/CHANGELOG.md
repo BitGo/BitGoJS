@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.20.0...@bitgo/statics@59.21.0) (2026-10-07)
+
+
+### Bug Fixes
+
+* **statics:** remove dup canton entry ([ab08ecb](https://github.com/BitGo/BitGoJS/commit/ab08ecb69e8b1086f3a1899823fb6acb689d9d5e))
+
+
+### Features
+
+* add new tokens from AMS API ([53b563c](https://github.com/BitGo/BitGoJS/commit/53b563ced12248e3537e010d473d4fe1f635f781))
+* add new tokens from AMS API ([40743d4](https://github.com/BitGo/BitGoJS/commit/40743d4a411822f732f164fa3a865eddf72a6724))
+* add new tokens from AMS API ([2764b83](https://github.com/BitGo/BitGoJS/commit/2764b83dc06204db57ab5de019ceeff1f46460f4))
+* add new tokens from AMS API ([b1e1ed3](https://github.com/BitGo/BitGoJS/commit/b1e1ed3ed7a11f68748152be0c8ad5db4833f554))
+* add new tokens from AMS API ([23c66bd](https://github.com/BitGo/BitGoJS/commit/23c66bddaffc73d1f89f803e05eb544af44bed1d))
+* add new tokens from AMS API ([cc9233d](https://github.com/BitGo/BitGoJS/commit/cc9233d75a7adc66b272de44e431f3c69c29f4f3))
+* add new tokens from AMS API ([58da464](https://github.com/BitGo/BitGoJS/commit/58da4645057150868a5f446e8e60b9179529c301))
+* add new tokens from AMS API ([63d43cf](https://github.com/BitGo/BitGoJS/commit/63d43cfd8b4dfb3d715ef7df8c6d24ec2be7c55c))
+* **statics:** add bip44CoinType per coin family ([7751d10](https://github.com/BitGo/BitGoJS/commit/7751d108470af4de1243f430fe85dbe09bd2aac8))
+
+
+
+
+
 # [59.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.19.0...@bitgo/statics@59.20.0) (2026-10-01)
 
 

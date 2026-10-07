@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@11.1.0...@bitgo/sdk-lib-mpc@11.2.0) (2026-10-07)
+
+
+### Features
+
+* **sdk-lib-mpc:** bump wasm-mps 1.17.0, add RedPallas rerand ([12e67fd](https://github.com/BitGo/BitGoJS/commit/12e67fd94e33352bd76615e8553563dd85edd959))
+
+
+
+
+
 # [11.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@11.0.0...@bitgo/sdk-lib-mpc@11.1.0) (2026-09-29)
 
 

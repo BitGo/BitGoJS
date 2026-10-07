@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [17.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@17.2.1...@bitgo/express@17.3.0) (2026-10-07)
+
+
+### Bug Fixes
+
+* **sdk-core:** report TSS signing material without VSS commitments as unverifiable ([616898c](https://github.com/BitGo/BitGoJS/commit/616898c74a798d975f67e699f6b7fe10c041b1a1))
+
+
+### Features
+
+* add express API for MPCv1 to MPCv2 wallet key retrofit ([798d26c](https://github.com/BitGo/BitGoJS/commit/798d26cb5741330a930d417b3d7f3f2f55da20ae))
+* **root:** add TSS EdDSA key verification to SDK and Express ([081c90d](https://github.com/BitGo/BitGoJS/commit/081c90da48177d79b46ff0ba9a65a3c6d1b2f9a7))
+
+
+
+
+
 ## [17.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@17.2.0...@bitgo/express@17.2.1) (2026-10-01)
 
 **Note:** Version bump only for package @bitgo/express

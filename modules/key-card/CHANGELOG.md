@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.35.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.34.22...@bitgo/key-card@0.35.0) (2026-10-07)
+
+
+### Features
+
+* move safe keycard box codec from key-card ([32e7234](https://github.com/BitGo/BitGoJS/commit/32e7234f02175117c63f5eec9d70c62f7669fbf0))
+
+
+
+
+
 ## [0.34.22](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.34.21...@bitgo/key-card@0.34.22) (2026-10-01)
 
 **Note:** Version bump only for package @bitgo/key-card

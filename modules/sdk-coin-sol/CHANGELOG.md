@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.13.0...@bitgo/sdk-coin-sol@8.14.0) (2026-10-07)
+
+
+### Bug Fixes
+
+* **sdk-core:** make SIWS advanced fields optional ([b856958](https://github.com/BitGo/BitGoJS/commit/b8569583ff7cea9c865b5ca826db5cfc5e5825b8)), closes [#2370](https://github.com/BitGo/BitGoJS/issues/2370)
+
+
+### Features
+
+* **sdk-coin-sol:** detect ScaledUiAmountConfig and capture initial multiplier ([408ed9f](https://github.com/BitGo/BitGoJS/commit/408ed9fb57723adaf78f70ab99e430d340000627))
+* **sdk-coin-sol:** export v1 serializer primitives (Refs: CHALO-1603) ([6549815](https://github.com/BitGo/BitGoJS/commit/65498155b8ec61f32ce5f6dcb8fb9d6483b1523c))
+
+
+
+
+
 # [8.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.12.0...@bitgo/sdk-coin-sol@8.13.0) (2026-10-01)
 
 

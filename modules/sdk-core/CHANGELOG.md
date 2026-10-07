@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.21.0...@bitgo/sdk-core@38.22.0) (2026-10-07)
+
+
+### Bug Fixes
+
+* **sdk-core:** make SIWS advanced fields optional ([b856958](https://github.com/BitGo/BitGoJS/commit/b8569583ff7cea9c865b5ca826db5cfc5e5825b8)), closes [#2370](https://github.com/BitGo/BitGoJS/issues/2370)
+* **sdk-core:** report TSS signing material without VSS commitments as unverifiable ([616898c](https://github.com/BitGo/BitGoJS/commit/616898c74a798d975f67e699f6b7fe10c041b1a1))
+
+
+### Features
+
+* **root:** add TSS EdDSA key verification to SDK and Express ([081c90d](https://github.com/BitGo/BitGoJS/commit/081c90da48177d79b46ff0ba9a65a3c6d1b2f9a7))
+* **sdk-core:** add RedPallas rerand share helpers, public-types 6.80.0 ([7364575](https://github.com/BitGo/BitGoJS/commit/736457516842e0b8c231e4138889ceac2706e763))
+* **sdk-core:** forward isWalletConnectTx through TSS prebuild path ([e41e728](https://github.com/BitGo/BitGoJS/commit/e41e7281b7f8b54175655c4a318941d9f477e94a))
+* **statics:** add bip44CoinType per coin family ([7751d10](https://github.com/BitGo/BitGoJS/commit/7751d108470af4de1243f430fe85dbe09bd2aac8))
+
+
+
+
+
 # [38.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.20.0...@bitgo/sdk-core@38.21.0) (2026-10-01)
 
 
