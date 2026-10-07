@@ -63,7 +63,6 @@
     "@bitgo/blockapis": "^1.13.11",
     "@bitgo/sdk-api": "^3.0.6",
     "@bitgo/sdk-core": "^38.22.0",
-    "@bitgo/sdk-lib-safes": "^1.3.0",
     "@bitgo/utxo-core": "^1.41.5",
     "@bitgo/utxo-descriptors": "^2.1.0",
     "@bitgo/utxo-ord": "^1.34.5",
