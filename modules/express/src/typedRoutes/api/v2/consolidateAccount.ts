@@ -22,6 +22,9 @@ export const ConsolidateAccountRequestBody = {
   /** Optional: restrict the consolidation to the specified receive addresses. If not provided, will consolidate the funds from all receive addresses up to 500 addresses */
   consolidateAddresses: optional(t.array(t.string)),
 
+  /** Opt-in consolidation mode (CHALO-1755). `single-asset` consolidates only the URL coin's asset (native SOL, or the selected SPL token) and is gated by a wallet-platform Flipt rollout flag; omitting it (or sending `legacy-multi-asset`) keeps legacy multi-asset behavior */
+  consolidationMode: optional(t.union([t.literal('single-asset'), t.literal('legacy-multi-asset')])),
+
   /** Passphrase to decrypt the user key on the wallet. Required if External Signer is not used to sign the transactions */
   walletPassphrase: optional(t.string),
   /** Extended private key (alternative to walletPassphrase) */

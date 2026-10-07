@@ -70,6 +70,14 @@ export interface Memo {
 
 export interface BuildConsolidationTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {
   consolidateAddresses?: string[];
+  /**
+   * Opt-in consolidation mode (CHALO-1755). `single-asset` consolidates only the URL coin's
+   * asset (native SOL, or the selected SPL token) and is gated by the wallet-platform
+   * `wallet-platform_sol-consolidation_single-asset-enable` Flipt rollout flag; omitting the
+   * field (or passing `legacy-multi-asset`) keeps legacy multi-asset behavior, so existing
+   * callers are unaffected by the rollout.
+   */
+  consolidationMode?: 'single-asset' | 'legacy-multi-asset';
 }
 
 export interface ResourceDelegationEntry {
