@@ -23,11 +23,13 @@ export class AllocationRequestBuilder extends TransactionBuilder {
   private _receiverPartyId: string;
   private _amount: CantonAmount;
   private _token: string;
-  private _receiveToken: string;
-  private _receiveAmount: CantonAmount;
+  private _receiveToken?: string;
+  private _receiveAmount?: CantonAmount;
   private _allocateBefore: string;
   private _settleBefore: string;
   private _comment?: string;
+  private _legType?: 'trade' | 'fee';
+  private _parentTradeId?: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -184,6 +186,31 @@ export class AllocationRequestBuilder extends TransactionBuilder {
   }
 
   /**
+   * Sets the leg category: "trade" for a DvP delivery leg, "fee" for a
+   * payment-only operator-fee leg.
+   * @param type - leg type
+   */
+  legType(type: 'trade' | 'fee'): this {
+    if (type !== 'trade' && type !== 'fee') {
+      throw new Error('legType must be either "trade" or "fee"');
+    }
+    this._legType = type;
+    return this;
+  }
+
+  /**
+   * Sets the trade identifier of the parent trade this fee leg belongs to.
+   * @param id - parent trade id
+   */
+  parentTradeId(id: string): this {
+    if (!id || !id.trim()) {
+      throw new Error('parentTradeId must be a non-empty string');
+    }
+    this._parentTradeId = id.trim();
+    return this;
+  }
+
+  /**
    * Sets the ISO 8601 deadline by which allocation must be submitted.
    * @param deadline - allocate-before timestamp
    */
@@ -233,13 +260,23 @@ export class AllocationRequestBuilder extends TransactionBuilder {
       receiverPartyId: this._receiverPartyId,
       amount: this._amount,
       token: this._token,
-      receiveToken: this._receiveToken,
-      receiveAmount: this._receiveAmount,
       allocateBefore: this._allocateBefore,
       settleBefore: this._settleBefore,
     };
     if (this._contractId !== null && this._contractId !== undefined) {
       result.contractId = this._contractId;
+    }
+    if (this._receiveToken !== undefined) {
+      result.receiveToken = this._receiveToken;
+    }
+    if (this._receiveAmount !== undefined) {
+      result.receiveAmount = this._receiveAmount;
+    }
+    if (this._legType !== undefined) {
+      result.legType = this._legType;
+    }
+    if (this._parentTradeId !== undefined) {
+      result.parentTradeId = this._parentTradeId;
     }
     if (this._comment !== undefined) {
       result.comment = this._comment;
@@ -257,8 +294,13 @@ export class AllocationRequestBuilder extends TransactionBuilder {
     if (!this._receiverPartyId) throw new Error('receiverPartyId is missing');
     if (this._amount === undefined || this._amount === null) throw new Error('amount is missing');
     if (!this._token) throw new Error('token is missing');
-    if (!this._receiveToken) throw new Error('receiveToken is missing');
-    if (this._receiveAmount === undefined || this._receiveAmount === null) throw new Error('receiveAmount is missing');
+    if (this._legType !== 'fee') {
+      // Trade legs (explicit or legacy) always carry the receive side of the settlement;
+      // fee legs are payment-only — the fee payer receives nothing — so the receive fields are omitted.
+      if (!this._receiveToken) throw new Error('receiveToken is missing');
+      if (this._receiveAmount === undefined || this._receiveAmount === null)
+        throw new Error('receiveAmount is missing');
+    }
     if (!this._allocateBefore) throw new Error('allocateBefore is missing');
     if (!this._settleBefore) throw new Error('settleBefore is missing');
   }
