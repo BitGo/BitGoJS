@@ -63,6 +63,20 @@ describe('Account Consolidations:', function () {
 
           scope.isDone().should.be.True();
         });
+        it('should forward an explicit consolidation mode', async function () {
+          const scope = nock(bgUrl)
+            .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateAccount/build`, {
+              consolidationMode: 'single-asset',
+            })
+            .reply(200, fixtures.buildAccountConsolidation);
+
+          const accountConsolidationBuild = await wallet.buildAccountConsolidations({
+            consolidationMode: 'single-asset',
+          });
+
+          accountConsolidationBuild.length.should.equal(2);
+          scope.isDone().should.be.True();
+        });
 
         it('should throw if the result is an empty array', async function () {
           const scope = nock(bgUrl)

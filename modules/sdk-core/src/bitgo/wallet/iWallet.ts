@@ -69,6 +69,7 @@ export interface Memo {
 
 export interface BuildConsolidationTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {
   consolidateAddresses?: string[];
+  consolidationMode?: 'single-asset' | 'legacy-multi-asset';
 }
 
 export interface ResourceDelegationEntry {

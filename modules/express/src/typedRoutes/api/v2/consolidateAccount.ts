@@ -21,7 +21,11 @@ export const ConsolidateAccountParams = {
 export const ConsolidateAccountRequestBody = {
   /** Optional: restrict the consolidation to the specified receive addresses. If not provided, will consolidate the funds from all receive addresses up to 500 addresses */
   consolidateAddresses: optional(t.array(t.string)),
-
+  /** Optional SOL mode. Omit to preserve legacy multi-asset behavior. */
+  consolidationMode: optional(t.keyof({
+    'single-asset': null,
+    'legacy-multi-asset': null,
+  })),
   /** Passphrase to decrypt the user key on the wallet. Required if External Signer is not used to sign the transactions */
   walletPassphrase: optional(t.string),
   /** Extended private key (alternative to walletPassphrase) */
