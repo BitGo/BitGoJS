@@ -9,7 +9,14 @@ import assert from 'assert';
 import { Algo } from '../../src/algo';
 import BigNumber from 'bignumber.js';
 import { TransactionBuilderFactory } from '../../src/lib';
-import { common, ErrorNoInputToRecover, KeyPair, RecoveryProviderError, Wallet } from '@bitgo/sdk-core';
+import {
+  common,
+  ErrorNoInputToRecover,
+  KeyPair,
+  RecoveryKeyMismatchError,
+  RecoveryProviderError,
+  Wallet,
+} from '@bitgo/sdk-core';
 import { algoBackupKey } from './fixtures/algoBackupKey';
 import nock from 'nock';
 
@@ -840,7 +847,7 @@ describe('ALGO:', function () {
           firstRound: 5002596,
           nodeParams,
           externalBackupSignature: {
-            publicKey: '11'.repeat(32),
+            publicKey: 'f16a6cd32e3e6579cc315db23b9b12b56b86b799249046648c40522a04e2e8bf',
             signature: 'ab'.repeat(64),
           },
         });
@@ -986,8 +993,27 @@ describe('ALGO:', function () {
             });
           },
           {
-            message: 'bitgo public key from the keyCard is required for non-bitgo recovery',
+            message: 'bitgo public key from the keyCard is required for recovery',
           }
+        );
+      });
+
+      it('should throw RecoveryKeyMismatchError when the keys do not derive the rootAddress', async function () {
+        await assert.rejects(
+          async () => {
+            await basecoin.recover({
+              userKey,
+              backupKey,
+              rootAddress: bitgoPub,
+              walletPassphrase,
+              fee,
+              bitgoKey: bitgoPub,
+              recoveryDestination,
+              firstRound: 5003596,
+              nodeParams,
+            });
+          },
+          (err) => err instanceof RecoveryKeyMismatchError && err.code === 'recovery_key_mismatch'
         );
       });
 
@@ -1062,6 +1088,25 @@ describe('ALGO:', function () {
         txJson.to.should.equal(recoveryDestination);
         txJson.from.should.equal(rootAddress);
         txJson.fee.should.equal(fee);
+      });
+
+      it('should throw RecoveryKeyMismatchError when the keys do not derive the rootAddress', async function () {
+        await assert.rejects(
+          async () => {
+            await basecoin.recover({
+              userKey: userPub,
+              backupKey: backupPub,
+              bitgoKey: bitgoPub,
+              rootAddress: bitgoPub,
+              walletPassphrase,
+              fee,
+              recoveryDestination,
+              firstRound: 5003596,
+              nodeParams,
+            });
+          },
+          (err) => err instanceof RecoveryKeyMismatchError && err.code === 'recovery_key_mismatch'
+        );
       });
     });
 

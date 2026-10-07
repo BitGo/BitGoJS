@@ -3,9 +3,10 @@ import * as should from 'should';
 
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
+import { RecoveryKeyMismatchError } from '@bitgo/sdk-core';
 
 import { Ethw } from '../../src/index';
-import { nockEthwRecovery } from '../lib/recovery-nocks';
+import { NockDataEntry, isSignerProbe, nockEthwRecovery } from '../lib/recovery-nocks';
 
 nock.disableNetConnect();
 
@@ -67,7 +68,9 @@ describe('Ethereum pow', function () {
     });
 
     it('should throw if etherscan errs', async function () {
-      const nockUnsuccessfulEtherscanData: any[] = [
+      const nockUnsuccessfulEtherscanData: NockDataEntry[] = [
+        isSignerProbe('0x5df5a96b478bb1808140d87072143e60262e8670', '0xd74753831f445cab405a315691baf3a18387eb3d'),
+        isSignerProbe('0x5df5a96b478bb1808140d87072143e60262e8670', '0x74c2137d54b0fc9f907e13f14e0dd18485fee924'),
         {
           params: {
             method: 'eth_getTransactionCount',
@@ -104,7 +107,9 @@ describe('Ethereum pow', function () {
     });
 
     it('should throw if backup key address has insufficient balance', async function () {
-      const insufficientFeeData: any[] = [
+      const insufficientFeeData: NockDataEntry[] = [
+        isSignerProbe('0x5df5a96b478bb1808140d87072143e60262e8670', '0xd74753831f445cab405a315691baf3a18387eb3d'),
+        isSignerProbe('0x5df5a96b478bb1808140d87072143e60262e8670', '0x74c2137d54b0fc9f907e13f14e0dd18485fee924'),
         {
           params: {
             method: 'eth_getTransactionCount',
@@ -190,6 +195,21 @@ describe('Ethereum pow', function () {
       recovery.should.have.property('id');
       recovery.should.have.property('tx');
       await checkRecoveryTxExplanation(recovery.tx, 2200000000000000000, recoveryParams.recoveryDestination);
+    });
+
+    it('should throw RecoveryKeyMismatchError when the user key is not a wallet signer', async function () {
+      const userNotSignerData: NockDataEntry[] = [
+        isSignerProbe(
+          '0x5df5a96b478bb1808140d87072143e60262e8670',
+          '0xd74753831f445cab405a315691baf3a18387eb3d',
+          false
+        ),
+        isSignerProbe('0x5df5a96b478bb1808140d87072143e60262e8670', '0x74c2137d54b0fc9f907e13f14e0dd18485fee924'),
+      ];
+      nockEthwRecovery(bitgo, userNotSignerData);
+      await basecoin
+        .recover(recoveryParams)
+        .should.be.rejectedWith(RecoveryKeyMismatchError, { code: 'recovery_key_mismatch' });
     });
 
     it('should error when the backup key is unfunded (cannot pay gas)', async function () {

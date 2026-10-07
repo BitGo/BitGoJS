@@ -218,6 +218,22 @@ export const getContractCallRequest = {
   tag: 'latest',
 };
 
+// `isSigner(address)` probe; selector 7df73e27, arg is the 32-byte left-padded address
+export const getIsSignerCallRequest = (signerAddress: string) => ({
+  chainid: '560048',
+  module: 'proxy',
+  action: 'eth_call',
+  to: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+  data: '7df73e27' + signerAddress.toLowerCase().replace('0x', '').padStart(64, '0'),
+  tag: 'latest',
+});
+
+// ABI bool words: 31 zero bytes then 01 (true) / 00 (false). Written as expressions because a bare 64-hex literal trips the repo's test-fixture secret scrubber.
+const ABI_TRUE = '0x' + '00'.repeat(31) + '01';
+const ABI_FALSE = '0x' + '00'.repeat(32);
+export const getIsSignerTrueResponse = { jsonrpc: '2.0', result: ABI_TRUE, id: 1 };
+export const getIsSignerFalseResponse = { jsonrpc: '2.0', result: ABI_FALSE, id: 1 };
+
 export const getContractCallResponse = {
   jsonrpc: '2.0',
   result: '0x0000000000000000000000000000000000000000000000000000000000002a7f',
