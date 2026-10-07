@@ -315,6 +315,32 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   protected getAdditionalSignatures(): Signature[] {
     return this._signatures;
+   * Add a signature produced by the fee payer of the transaction being built.
+   *
+   * The fee payer is account 0 of the transaction message, so its signature belongs in slot 0.
+   * Use this for signatures produced by the enterprise fee address key (HSM single-sig) of a
+   * sponsored transaction; the key must match account 0.
+   *
+   * @param {BasePublicKey} publicKey The public key of the fee payer; must be account 0 of the message
+   * @param {Buffer} signature The signature of the transaction payload
+   */
+  addFeePayerSignature(publicKey: BasePublicKey, signature: Buffer): void {
+    if (publicKey.pub !== this.getFeePayerAccountKey()) {
+      throw new SigningError(`Fee payer signature must come from account 0 of the message, got: ${publicKey.pub}`);
+    }
+    this.addSignature(publicKey, signature);
+  }
+
+  /**
+   * The account 0 key of the message being built, i.e. the fee payer: the first static account
+   * key of a versioned transaction, or the fee payer of a legacy transaction.
+   */
+  private getFeePayerAccountKey(): string | undefined {
+    const versionedData = this._transaction.getVersionedTransactionData();
+    if (versionedData) {
+      return versionedData.staticAccountKeys[0];
+    }
+    return this._feePayer ?? this._sender;
   }
 
   /**

@@ -1,4 +1,5 @@
 import {
+  PublicKey as BasePublicKey,
   BaseTransaction,
   Entry,
   InvalidTransactionError,
@@ -263,6 +264,39 @@ export class Transaction extends BaseTransaction {
    */
   setVersionedTransactionData(data: VersionedTransactionData | undefined): void {
     this._versionedTransactionData = data;
+  }
+
+  /**
+   * Add a signature produced by the fee payer of this transaction.
+   *
+   * The fee payer is account 0 of the transaction message, so its signature belongs in slot 0.
+   * Use this for signatures produced by the enterprise fee address key (HSM single-sig) of a
+   * sponsored transaction.
+   *
+   * @param {BasePublicKey} publicKey The public key of the fee payer; must be account 0 of the message
+   * @param {Buffer} signature The signature of the transaction payload
+   */
+  addFeePayerSignature(publicKey: BasePublicKey, signature: Buffer): void {
+    if (this._versionedTransaction) {
+      const account0 = this._versionedTransaction.message.staticAccountKeys[0]?.toBase58();
+      if (publicKey.pub !== account0) {
+        throw new SigningError(`Fee payer signature must come from account 0 of the message, got: ${publicKey.pub}`);
+      }
+      this._versionedTransaction.addSignature(new PublicKey(publicKey.pub), signature);
+      return;
+    }
+
+    if (this._solTransaction) {
+      // For legacy transactions @solana/web3.js places the fee payer first in the message
+      const feePayer = this._solTransaction.feePayer?.toBase58();
+      if (publicKey.pub !== feePayer) {
+        throw new SigningError(`Fee payer signature must come from account 0 of the message, got: ${publicKey.pub}`);
+      }
+      this._solTransaction.addSignature(new PublicKey(publicKey.pub), signature);
+      return;
+    }
+
+    throw new SigningError('Fee payer signature requires a built transaction');
   }
 
   /** @inheritdoc */
