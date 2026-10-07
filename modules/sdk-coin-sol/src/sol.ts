@@ -754,13 +754,24 @@ export class Sol extends BaseCoin {
       }
     }
 
-    // For non-consolidate transactions, feePayer must be the wallet's root address
-    if (
-      consolidateId === undefined &&
-      transactionJson.feePayer !== walletRootAddress &&
-      !isCloseAssociatedTokenAccountTx
-    ) {
-      throw new Error('Tx fee payer is not the wallet root address');
+    // For non-consolidate transactions, feePayer must be the wallet's root address,
+    // or — when wallet-platform declares a sponsored fee payer — exactly that address.
+    // The closed match only accepts the specific fee payer declared for this
+    // transaction; every other non-root fee payer still throws. (CHALO-1749)
+    if (consolidateId === undefined && !isCloseAssociatedTokenAccountTx) {
+      if (params.feePayer) {
+        // Sponsored: WP declared the fee payer for this transaction — strict match.
+        // A mismatch means the transaction's fee payer was tampered with or the
+        // wrong prebuild was returned.
+        if (transactionJson.feePayer !== params.feePayer) {
+          throw new Error(
+            `Tx fee payer ${transactionJson.feePayer} does not match the declared sponsored fee payer ${params.feePayer}`
+          );
+        }
+      } else if (transactionJson.feePayer !== walletRootAddress) {
+        // Today's behavior: fee payer must be the wallet root
+        throw new Error('Tx fee payer is not the wallet root address');
+      }
     }
 
     if (durableNonce && !_.isEqual(explainedTx.durableNonce, durableNonce)) {
