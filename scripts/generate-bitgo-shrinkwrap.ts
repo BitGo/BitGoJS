@@ -18,7 +18,12 @@ const rootDir = path.resolve(__dirname, '..');
 const bitgoDir = path.join(rootDir, 'modules/bitgo');
 const modulesDir = path.join(rootDir, 'modules');
 const npmRegistryUrl = 'https://registry.npmjs.org';
-const siblingAvailabilityAttempts = 3;
+// npm acknowledges a publish immediately, but the packument can lag several
+// minutes behind it (run 36854235065: the last sibling finalized ~5 min
+// after lerna reported success, 3s after a 3x30s poll had already given up).
+// Poll for up to ~5 minutes so a normal release absorbs registry
+// propagation delay instead of failing on it.
+const siblingAvailabilityAttempts = 10;
 const siblingAvailabilityDelayMs = 30_000;
 
 type PackageJson = {
