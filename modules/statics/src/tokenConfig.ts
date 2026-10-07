@@ -306,6 +306,7 @@ export interface AmsTokenConfig {
   assetName?: string;
   policyId?: string;
   baseUrl?: string;
+  detected_extension_type_names?: string[];
 }
 
 export interface AmsNetworkConfig extends DynamicNetworkOptions {
