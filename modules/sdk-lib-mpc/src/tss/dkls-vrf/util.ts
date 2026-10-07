@@ -1,5 +1,7 @@
 import { Buffer } from 'buffer';
+import { encode } from 'cbor-x';
 import { Derive } from '../ecdsa-dkls/derive';
+import { ReducedKeyShare, buildDklsKeyShare, getCommonKeychain, getDecodedReducedKeyShare } from '../ecdsa-dkls/types';
 import { VrfDkg } from './dkg';
 
 /**
@@ -127,4 +129,110 @@ export async function generateHardDerivedKeyShares(
   // #endregion
 
   return [user, backup, bitgoUserPair, bitgoBackupPair];
+}
+
+/**
+ * Builds the multi-level hardened derivation path for a Safe MPC child wallet:
+ * `m/44'/<coinType>'/<safeSlotOrdinal>'/<accountIndex>'`, encoded as the byte
+ * sequence the DKLS VRF hard-derive wasm expects — four 4-byte big-endian u32s,
+ * each with the hardened bit (0x80000000) set, concatenated in order.
+ *
+ */
+export function buildSafeMpcDerivePath(params: {
+  coinType: number;
+  safeSlotOrdinal: number;
+  accountIndex: number;
+}): Uint8Array {
+  const { coinType, safeSlotOrdinal, accountIndex } = params;
+  const segments = [44, coinType, safeSlotOrdinal, accountIndex];
+  const path = new Uint8Array(segments.length * 4);
+  segments.forEach((segment, i) => {
+    if (!Number.isInteger(segment) || segment < 0 || segment > 0x7fffffff) {
+      throw new Error(`Invalid BIP44 path segment at index ${i}: ${segment}`);
+    }
+    path.set([0x80 | (segment >>> 24), (segment >>> 16) & 0xff, (segment >>> 8) & 0xff, segment & 0xff], i * 4);
+  });
+  return path;
+}
+
+export type MpcRootShare = { signing: Buffer; vrf: Buffer };
+
+/**
+ * Derives the Safe ecdsaMpc child wallet key for a given account, fully offline, from the
+ * user and backup reduced roots on the keycard: rebuild both as 3-party keyshares, run the
+ * user↔backup hard-derive ceremony at `m/44'/<coinType>'/3'/<account>'`, then return the child
+ * common keychain and both reduced child shares.
+ */
+export async function deriveSafeEcdsaMpcChild(params: {
+  userRoot: MpcRootShare;
+  backupRoot: MpcRootShare;
+  account: number;
+  coinType: number;
+}): Promise<{ commonKeychain: string; userChild: string; backupChild: string }> {
+  const reduceRootToDklsKeyShare = (reducedRoot: ReducedKeyShare, partyIdx: number): Buffer => {
+    const xShare = {
+      x: Buffer.from(reducedRoot.prv).toString('hex'),
+      y: Buffer.from(reducedRoot.pub).toString('hex'),
+      chaincode: Buffer.from(reducedRoot.rootChainCode).toString('hex'),
+    };
+    return Buffer.from(encode(buildDklsKeyShare({ xShare, n: 3, t: 2, partyIdx, xiList: reducedRoot.xList })));
+  };
+
+  const { userRoot, backupRoot, account, coinType } = params;
+
+  const userReduced = getDecodedReducedKeyShare(userRoot.signing);
+  const backupReduced = getDecodedReducedKeyShare(backupRoot.signing);
+
+  const userKeyShare = reduceRootToDklsKeyShare(userReduced, 0);
+  const backupKeyShare = reduceRootToDklsKeyShare(backupReduced, 1);
+
+  const path = buildSafeMpcDerivePath({ coinType, safeSlotOrdinal: 3, accountIndex: account });
+
+  /**
+   * Derive User and Backup keys - 2 Rounds
+   */
+  const user = new Derive(3, 2, 0, userKeyShare, userRoot.vrf, path);
+  const backup = new Derive(3, 2, 1, backupKeyShare, backupRoot.vrf, path);
+
+  // #region round 1
+  const userMsg1 = await user.initDerive();
+  const backupMsg1 = await backup.initDerive();
+
+  const userMsg2 = user.handleIncomingMessages({
+    p2pMessages: [],
+    broadcastMessages: [{ payload: backupMsg1.payload, from: backupMsg1.from }],
+  });
+  const backupMsg2 = backup.handleIncomingMessages({
+    p2pMessages: [],
+    broadcastMessages: [{ payload: userMsg1.payload, from: userMsg1.from }],
+  });
+  // #endregion
+
+  // #region round 2
+  user.handleIncomingMessages({
+    p2pMessages: [],
+    broadcastMessages: [
+      { payload: backupMsg2.broadcastMessages[0].payload, from: backupMsg2.broadcastMessages[0].from },
+    ],
+  });
+  backup.handleIncomingMessages({
+    p2pMessages: [],
+    broadcastMessages: [{ payload: userMsg2.broadcastMessages[0].payload, from: userMsg2.broadcastMessages[0].from }],
+  });
+  // #endregion
+
+  const commonKeychain = getCommonKeychain(user.getKeyShare());
+
+  // Guard: the derived child must never equal the root
+  const rootCommonKeychain =
+    Buffer.from(userReduced.pub).toString('hex') + Buffer.from(userReduced.rootChainCode).toString('hex');
+  if (commonKeychain === rootCommonKeychain) {
+    throw new Error('deriveSafeEcdsaMpcChild: derived child keychain equals the root keychain');
+  }
+
+  return {
+    commonKeychain,
+    userChild: user.getReducedKeyShare().toString('base64'),
+    backupChild: backup.getReducedKeyShare().toString('base64'),
+  };
 }

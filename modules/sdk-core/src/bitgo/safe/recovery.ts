@@ -9,6 +9,7 @@ import { bip32 } from '@bitgo/utxo-lib';
 import { coins, MAX_BIP32_INDEX, SAFE_ROOT_SLOT_ORDINALS } from '@bitgo/statics';
 import type { RootKeyType } from '@bitgo/public-types';
 import { parseSafeKeycardBox } from '@bitgo/sdk-lib-safes';
+import { DklsVrfUtils } from '@bitgo/sdk-lib-mpc';
 import { BitGoBase } from '../bitgoBase';
 import { IncorrectPasswordError } from '../errors';
 import { parseSafeMpcKeyEnvelopes } from '../utils/tss/keyShareEnvelope';
@@ -24,10 +25,15 @@ export type Secp256k1MultisigChildKeys = {
   bitgo: { pub: string };
 };
 
-export type DerivedSafeWalletKeys = {
-  path: string;
-  keys: Secp256k1MultisigChildKeys;
+export type EcdsaMpcChildKeys = {
+  commonKeychain: string;
+  user: string;
+  backup: string;
 };
+
+export type DerivedSafeWalletKeys =
+  | { slot: 'secp256k1Multisig'; path: string; keys: Secp256k1MultisigChildKeys }
+  | { slot: 'ecdsaMpc'; path: string; keys: EcdsaMpcChildKeys };
 
 export type SafeRecoverKeyParams = {
   userKey: string;
@@ -115,9 +121,6 @@ export async function deriveSafeWalletKeys(params: {
   account: number;
   roots: DecryptedSafeRoots;
 }): Promise<DerivedSafeWalletKeys> {
-  if (params.slot !== 'secp256k1Multisig') {
-    throw new Error(`deriveSafeWalletKeys: slot '${params.slot}' is not supported yet`);
-  }
   if (!Number.isInteger(params.account) || params.account < 0 || params.account > MAX_BIP32_INDEX) {
     throw new Error(`deriveSafeWalletKeys: invalid account '${params.account}'`);
   }
@@ -128,27 +131,46 @@ export async function deriveSafeWalletKeys(params: {
   }
   const slotOrdinal = SAFE_ROOT_SLOT_ORDINALS[params.slot];
   const { account, roots } = params;
-  const root = roots.secp256k1Multisig;
 
-  const user = bip32.fromBase58(root.user).derivePath(buildSafeUserPath(coinType, slotOrdinal, account));
-  const backup = bip32.fromBase58(root.backup).derivePath(buildSafeCosignerPath(coinType, slotOrdinal, account));
-  const bitgo = bip32.fromBase58(root.bitgo).derivePath(buildSafeCosignerPath(coinType, slotOrdinal, account));
+  if (params.slot === 'secp256k1Multisig') {
+    const root = roots.secp256k1Multisig;
+    const user = bip32.fromBase58(root.user).derivePath(buildSafeUserPath(coinType, slotOrdinal, account));
+    const backup = bip32.fromBase58(root.backup).derivePath(buildSafeCosignerPath(coinType, slotOrdinal, account));
+    const bitgo = bip32.fromBase58(root.bitgo).derivePath(buildSafeCosignerPath(coinType, slotOrdinal, account));
 
-  if (!user.privateKey || !backup.privateKey) {
-    throw new Error('deriveSafeWalletKeys: user and backup roots must be private (xprv)');
+    if (!user.privateKey || !backup.privateKey) {
+      throw new Error('deriveSafeWalletKeys: user and backup roots must be private (xprv)');
+    }
+    if (bitgo.privateKey) {
+      throw new Error('deriveSafeWalletKeys: bitgo root must be public (xpub)');
+    }
+
+    return {
+      slot: 'secp256k1Multisig',
+      path: buildSafeUserPath(coinType, slotOrdinal, account),
+      keys: {
+        user: { prv: user.toBase58(), pub: user.neutered().toBase58() },
+        backup: { prv: backup.toBase58(), pub: backup.neutered().toBase58() },
+        bitgo: { pub: bitgo.neutered().toBase58() },
+      },
+    };
   }
-  if (bitgo.privateKey) {
-    throw new Error('deriveSafeWalletKeys: bitgo root must be public (xpub)');
+
+  if (params.slot === 'ecdsaMpc') {
+    const { commonKeychain, userChild, backupChild } = await DklsVrfUtils.deriveSafeEcdsaMpcChild({
+      userRoot: roots.ecdsaMpc.user,
+      backupRoot: roots.ecdsaMpc.backup,
+      account,
+      coinType,
+    });
+    return {
+      slot: 'ecdsaMpc',
+      path: buildSafeUserPath(coinType, slotOrdinal, account),
+      keys: { commonKeychain, user: userChild, backup: backupChild },
+    };
   }
 
-  return {
-    path: buildSafeUserPath(coinType, slotOrdinal, account),
-    keys: {
-      user: { prv: user.toBase58(), pub: user.neutered().toBase58() },
-      backup: { prv: backup.toBase58(), pub: backup.neutered().toBase58() },
-      bitgo: { pub: bitgo.neutered().toBase58() },
-    },
-  };
+  throw new Error(`deriveSafeWalletKeys: slot '${params.slot}' is not supported yet`);
 }
 
 /**
