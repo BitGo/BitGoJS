@@ -204,6 +204,12 @@ function compileInstructions(
  *
  * @param args - version, instructions, fee payer, recent blockhash, and config
  * @returns the serialized message bytes (v1 starts with the 0x81 version prefix)
+ *
+ * @note `recentBlockhash` accepts either a recent block hash or a durable nonce
+ *   hash (both are opaque 32-byte base58 values in the v1 blockhash field). When
+ *   a nonce hash is supplied, the caller MUST also include the
+ *   `AdvanceNonceAccount` instruction (see `buildAdvanceNonceAccountInstruction`)
+ *   in `instructions` - a bare nonce hash without the instruction is invalid.
  */
 export function compileTransactionMessage(args: {
   version: TransactionVersion;

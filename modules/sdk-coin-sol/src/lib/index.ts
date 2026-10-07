@@ -15,6 +15,7 @@ export { StakingWithdrawBuilder } from './stakingWithdrawBuilder';
 export { TokenTransferBuilder } from './tokenTransferBuilder';
 export { Transaction } from './transaction';
 export { TransactionBuilder } from './transactionBuilder';
+export { V1TransactionBuilder, buildAdvanceNonceAccountInstruction } from './v1TransactionBuilder';
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
 export { TransferBuilder } from './transferBuilder';
 export { TransferBuilderV2 } from './transferBuilderV2';
