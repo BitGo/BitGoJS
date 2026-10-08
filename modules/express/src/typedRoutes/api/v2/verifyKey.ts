@@ -53,6 +53,7 @@ export const VerifyKeyResponse = {
  *
  * @operationId express.v2.wallet.verifyKey
  * @tag Express
+ * @private
  */
 export const PostVerifyKey = httpRoute({
   path: '/api/v2/{coin}/wallet/{id}/verifyKey',
