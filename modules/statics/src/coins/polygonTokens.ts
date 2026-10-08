@@ -1159,6 +1159,15 @@ export const polygonTokens = [
     POLYGON_TOKEN_FEATURES
   ),
   polygonErc20(
+    'aadb5fb3-d347-4a88-b0e9-78c81ec30de3',
+    'polygon:usdau',
+    'AllUnity USD',
+    6,
+    '0xc6df1b92a6ae61a27059c41e541a91ce8dcb1605',
+    UnderlyingAsset['polygon:usdau'],
+    [...POLYGON_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  polygonErc20(
     '93611666-ac86-4859-805d-2604aea6a748',
     'polygon:mmt54',
     'METWAVE MINE',
