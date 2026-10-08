@@ -47,6 +47,13 @@ export class DuplicateNftCollectionIdDefinitionError extends BitGoStaticsError {
   }
 }
 
+export class CoinReplacementNotAllowedError extends BitGoStaticsError {
+  public constructor(coinName: string, reason: string) {
+    super(`coin '${coinName}' cannot be replaced: ${reason}`);
+    Object.setPrototypeOf(this, CoinReplacementNotAllowedError.prototype);
+  }
+}
+
 export class DisallowedCoinFeatureError extends BitGoStaticsError {
   public constructor(coinName: string, feature: CoinFeature) {
     super(`coin feature '${feature}' is disallowed for coin ${coinName}.`);

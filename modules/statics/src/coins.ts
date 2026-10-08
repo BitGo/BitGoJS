@@ -84,15 +84,34 @@ allCoinsAndTokens.forEach((coin) => {
 // onboarding doesn't require hand-maintaining that map for every new EVM family.
 registerErc20Families(erc20FamilySupportsEip1559);
 
+function findExistingCoin({ name, id, alias }: AmsTokenConfig): Readonly<BaseCoin> | undefined {
+  return coins.getOrUndefined(name) ?? coins.getOrUndefined(id) ?? (alias ? coins.getOrUndefined(alias) : undefined);
+}
+
 export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefined {
-  if (!token.isToken) {
-    try {
-      return buildDynamicCoin(token);
-    } catch (error) {
-      console.warn(`Failed to build dynamic coin for ${token.name} (${token.id}):`, error);
-      return undefined;
+  const existingCoin = findExistingCoin(token);
+  if (!existingCoin) {
+    if (!token.isToken) {
+      try {
+        return buildDynamicCoin(token);
+      } catch {
+        return undefined;
+      }
     }
+    return constructToken(token);
   }
+  try {
+    const refreshedCoin = token.isToken ? constructToken(token) : buildDynamicCoin(token);
+    if (refreshedCoin) {
+      coins.replace(refreshedCoin);
+    }
+  } catch {
+    // an AMS config that fails validation must not break a coin we already know
+  }
+  return findExistingCoin(token);
+}
+
+function constructToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefined {
   const initializerMap: Record<string, unknown> = {
     algo: algoToken,
     apt: aptToken,
@@ -150,18 +169,6 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     initializerMap[key] = erc721Token;
   });
 
-  //return the BaseCoin from default coin map if present
-  if (isCoinPresentInCoinMap({ ...token })) {
-    if (coins.has(token.name)) {
-      return coins.get(token.name);
-    }
-    if (coins.has(token.id)) {
-      return coins.get(token.id);
-    }
-    if (token.alias && coins.has(token.alias)) {
-      return coins.get(token.alias);
-    }
-  }
   const family = token.family;
   const initializer = initializerMap[family] as (...args: unknown[]) => Readonly<BaseCoin>;
   if (!initializer) {
@@ -497,27 +504,27 @@ export function createTokenMapUsingConfigDetails(tokenConfigMap: Record<string, 
     if (!tokenConfigs.length) continue;
     const tokenConfig = tokenConfigs[0];
 
-    if (!isCoinPresentInCoinMap({ ...tokenConfig }) && !nftAndOtherTokens.has(tokenConfig.name)) {
-      try {
-        const token = createToken(tokenConfig);
-        // A token whose name is absent from the accumulated map can still reuse a contract address
-        // (or NFT collection id) already claimed by a static or previously-accepted AMS token.
-        // Adding it would make the final CoinMap.fromCoins throw, so skip it instead.
-        if (token && !accumulatedMap.hasTokenAddressConflict(token)) {
+    if (nftAndOtherTokens.has(tokenConfig.name)) continue;
+    const isKnownCoin = isCoinPresentInCoinMap({ ...tokenConfig });
+    try {
+      const token = createToken(tokenConfig);
+      if (isKnownCoin) {
+        // createToken refreshed the global map and returned the record it now holds; mirror it here
+        if (token) {
           BaseCoins.set(token.name, token);
-          accumulatedMap.addCoin(token);
-        } else if (token) {
-          console.warn(
-            `Skipping token with conflicting contract address or NFT collection id: name="${tokenConfig.name}" id="${tokenConfig.id}"`
-          );
+          accumulatedMap.replace(token);
         }
-      } catch (e) {
-        console.warn(
-          `Skipping malformed token: name="${tokenConfig.name}" id="${tokenConfig.id}" family="${
-            tokenConfig.family
-          }" error=${(e as Error).message}`
-        );
+        continue;
       }
+      // A token whose name is absent from the accumulated map can still reuse a contract address
+      // (or NFT collection id) already claimed by a static or previously-accepted AMS token.
+      // Adding it would make the final CoinMap.fromCoins throw, so skip it instead.
+      if (token && !accumulatedMap.hasTokenAddressConflict(token)) {
+        BaseCoins.set(token.name, token);
+        accumulatedMap.addCoin(token);
+      }
+    } catch {
+      // a malformed or conflicting token config must not break the rest of the map build
     }
   }
 
@@ -563,8 +570,6 @@ export function createTokenMapUsingTrimmedConfigDetails(
     for (const tokenConfig of tokenConfigs) {
       const network = networkNameMap.get(tokenConfig.network.name);
 
-      if (isCoinPresentInCoinMap({ ...tokenConfig })) continue;
-
       if (!tokenConfig.isToken) {
         // Dynamic base chain — network must be pre-registered in networkByName map before calling this function.
         if (network) {
@@ -592,8 +597,6 @@ export function createTokenUsingTrimmedConfigDetails(
   let fullTokenConfig: AmsTokenConfig | undefined;
   const networkNameMap = getNetworksMap();
   const network = networkNameMap.get(tokenConfig.network.name);
-
-  if (isCoinPresentInCoinMap({ ...tokenConfig })) return undefined;
 
   if (!tokenConfig.isToken) {
     // Dynamic base chain — network must be pre-registered in networkByName map before calling this function.

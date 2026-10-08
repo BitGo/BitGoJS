@@ -5,6 +5,7 @@ import {
   DuplicateCoinIdDefinitionError,
   DuplicateContractAddressDefinitionError,
   DuplicateNftCollectionIdDefinitionError,
+  CoinReplacementNotAllowedError,
 } from './errors';
 import { ContractAddressDefinedToken, NFTCollectionIdDefinedToken } from './account';
 import { EthereumNetwork } from './networks';
@@ -106,27 +107,46 @@ export class CoinMap {
   }
 
   /**
-   * Replace a Base coin object completely from the CoinMap using its ID.
-   * @param {string} key key to search the old coin object
+   * Replace a coin (token or base coin) in the CoinMap with a new object carrying refreshed modifiable
+   * fields. The existing record is looked up by id, and the swap only happens when its immutable fields
+   * (id, name, contract address and alias) are unchanged. Anything else throws before the map
+   * is touched. Coins that are not in the map yet are added.
    * @param {Readonly<BaseCoin>} coin new coin object
+   * @throws {CoinReplacementNotAllowedError} when an immutable field differs from the existing record
    */
   public replace(coin: Readonly<BaseCoin>): void {
     if (this.has(coin.id)) {
       const oldCoin = this.get(coin.id);
+      CoinMap.assertImmutableFieldsUnchanged(oldCoin, coin);
       this._map.delete(oldCoin.name);
       this._coinByIds.delete(oldCoin.id);
       if (oldCoin.alias) {
         this._coinByAliases.delete(oldCoin.alias);
       }
-      if (oldCoin.isToken) {
-        if (oldCoin instanceof ContractAddressDefinedToken) {
-          this._coinByContractAddress.delete(CoinMap.contractAddressKey(oldCoin));
-        } else if (oldCoin instanceof NFTCollectionIdDefinedToken) {
-          this._coinByNftCollectionID.delete(CoinMap.nftCollectionIdKey(oldCoin));
-        }
+      if (oldCoin instanceof ContractAddressDefinedToken) {
+        this._coinByContractAddress.delete(CoinMap.contractAddressKey(oldCoin));
+      } else if (oldCoin instanceof NFTCollectionIdDefinedToken) {
+        this._coinByNftCollectionID.delete(CoinMap.nftCollectionIdKey(oldCoin));
       }
     }
     this.addCoin(coin);
+  }
+
+  private static assertImmutableFieldsUnchanged(oldCoin: Readonly<BaseCoin>, newCoin: Readonly<BaseCoin>): void {
+    const oldContractAddress = oldCoin instanceof ContractAddressDefinedToken ? oldCoin.contractAddress : undefined;
+    const newContractAddress = newCoin instanceof ContractAddressDefinedToken ? newCoin.contractAddress : undefined;
+    if (oldCoin.id !== newCoin.id) {
+      throw new CoinReplacementNotAllowedError(oldCoin.name, 'immutable field id changed');
+    }
+    if (oldCoin.name !== newCoin.name) {
+      throw new CoinReplacementNotAllowedError(oldCoin.name, 'immutable field name changed');
+    }
+    if (oldContractAddress !== newContractAddress) {
+      throw new CoinReplacementNotAllowedError(oldCoin.name, 'immutable field contractAddress changed');
+    }
+    if (oldCoin.alias !== newCoin.alias) {
+      throw new CoinReplacementNotAllowedError(oldCoin.name, 'immutable field alias changed');
+    }
   }
 
   /**
