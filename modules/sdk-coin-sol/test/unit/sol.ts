@@ -630,6 +630,250 @@ describe('SOL:', function () {
         .should.be.rejectedWith('Tx fee payer is not the wallet root address');
     });
 
+    // CHALO-1749: sponsored fee-payer bypass — when wallet-platform declares a
+    // fee payer, the transaction's fee payer must match it exactly; when it doesn't,
+    // today's wallet-root check applies. All tests below use the same fixture
+    // (txPrebuild feePayer = '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe') and
+    // behavioral assertions against the parsed transaction — no mocks.
+
+    it('should pass verifyTransaction when the declared feePayer matches the transaction feePayer', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      const walletData = {
+        id: '5b34252f1bf349930e34020a00000000',
+        coin: 'tsol',
+        keys: [
+          '5b3424f91bf349930e34017500000000',
+          '5b3424f91bf349930e34017600000000',
+          '5b3424f91bf349930e34017700000000',
+        ],
+        coinSpecific: {
+          rootAddress: stakeAccount.pub, // different from the tx's feePayer
+        },
+        multisigType: 'tss',
+      };
+      const walletWithDifferentRoot = new Wallet(bitgo, basecoin, walletData);
+
+      // The transaction's feePayer ('5hr5fis...') is NOT the wallet root (stakeAccount.pub),
+      // but WP declared it as the sponsored fee payer → passes
+      const result = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        memo,
+        wallet: walletWithDifferentRoot,
+        feePayer: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe', // = the tx's actual feePayer
+      } as any);
+      result.should.equal(true);
+    });
+
+    it('should fail verifyTransaction when the declared feePayer does not match the transaction feePayer', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+
+      // The tx's feePayer is '5hr5fis...' but WP declared a different address → strict mismatch
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+          memo,
+          wallet: walletObj,
+          feePayer: '4DujymUFbQ8GBKtAwAZrQ6QqpvtBEivL48h4ta2oJGd2', // ≠ the tx's feePayer
+        } as any)
+        .should.be.rejectedWith(
+          /Tx fee payer 5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe does not match the declared sponsored fee payer 4DujymUFbQ8GBKtAwAZrQ6QqpvtBEivL48h4ta2oJGd2/
+        );
+    });
+
+    it('should fall back to the wallet-root check when feePayer is an empty string', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      const walletData = {
+        id: '5b34252f1bf349930e34020a00000000',
+        coin: 'tsol',
+        keys: [
+          '5b3424f91bf349930e34017500000000',
+          '5b3424f91bf349930e34017600000000',
+          '5b3424f91bf349930e34017700000000',
+        ],
+        coinSpecific: {
+          rootAddress: stakeAccount.pub,
+        },
+        multisigType: 'tss',
+      };
+      const walletWithDifferentRoot = new Wallet(bitgo, basecoin, walletData);
+
+      // Empty feePayer → today's wallet-root check applies → tx feePayer ≠ root → throws
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+          memo,
+          wallet: walletWithDifferentRoot,
+          feePayer: '', // empty = not sponsored
+        } as any)
+        .should.be.rejectedWith('Tx fee payer is not the wallet root address');
+    });
+
+    it('should fall back to the wallet-root check when feePayer is undefined', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      const walletData = {
+        id: '5b34252f1bf349930e34020a00000000',
+        coin: 'tsol',
+        keys: [
+          '5b3424f91bf349930e34017500000000',
+          '5b3424f91bf349930e34017600000000',
+          '5b3424f91bf349930e34017700000000',
+        ],
+        coinSpecific: {
+          rootAddress: stakeAccount.pub,
+        },
+        multisigType: 'tss',
+      };
+      const walletWithDifferentRoot = new Wallet(bitgo, basecoin, walletData);
+
+      // No feePayer at all → today's wallet-root check → throws
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+          memo,
+          wallet: walletWithDifferentRoot,
+        } as any)
+        .should.be.rejectedWith('Tx fee payer is not the wallet root address');
+    });
+
+    it('should pass verifyTransaction when the declared feePayer equals the wallet root (non-sponsored equivalent)', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+
+      // Declared feePayer = the wallet root = the tx's feePayer → passes via either check
+      const result = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        memo,
+        wallet: walletObj, // root = wallet.pub = '5hr5fis...' = tx feePayer
+        feePayer: wallet.pub, // declared = root
+      } as any);
+      result.should.equal(true);
+    });
+
+    it('should skip the feePayer check for consolidation transactions even with a declared feePayer mismatch', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      txPrebuild.consolidateId = 'abc123'; // marks it as a consolidation → fee-payer check skipped
+
+      // Even with a mismatched declared feePayer, consolidation bypasses the check
+      const result = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        memo,
+        wallet: walletObj,
+        feePayer: 'someRandomAddress', // would fail if the check ran
+      } as any);
+      result.should.equal(true);
+    });
+
+    it('should reject a declared feePayer that is a syntactically valid but different address (closed match, not an open bypass)', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+
+      // Declared feePayer is a valid base58 address but doesn't match the tx → throws
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+          memo,
+          wallet: walletObj,
+          feePayer: goodAddresses[0], // a valid but different address
+        } as any)
+        .should.be.rejectedWith(/does not match the declared sponsored fee payer/);
+    });
+
+    it('should verify a builder-produced transaction end-to-end with a sponsored fee payer', async function () {
+      // Build a real transaction with the fee payer set to a different address,
+      // serialize it, and verify it passes through verifyTransaction with the
+      // declared fee payer — the full CHALO-1749 sponsored flow.
+      const enterpriseFeeAddress = stakeAccount.pub; // a different key from the wallet root
+      const senderAddress = wallet.pub;
+      const recipientAddress = 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S';
+      const transferAmount = '300000';
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.sender(senderAddress);
+      txBuilder.feePayer(enterpriseFeeAddress);
+      txBuilder.nonce(blockHash);
+      txBuilder.send({
+        address: recipientAddress,
+        amount: transferAmount,
+      });
+      const tx = await txBuilder.build();
+      const txBase64 = tx.toBroadcastFormat();
+
+      // The built transaction's feePayer must be the enterprise address, not the wallet root
+      const explained = tx.explainTransaction();
+      should.equal(explained.feePayer, enterpriseFeeAddress);
+
+      // A wallet whose root is the sender, not the fee payer
+      const senderWalletData = {
+        id: '5b34252f1bf349930e34020a00000000',
+        coin: 'tsol',
+        keys: [
+          '5b3424f91bf349930e34017500000000',
+          '5b3424f91bf349930e34017600000000',
+          '5b3424f91bf349930e34017700000000',
+        ],
+        coinSpecific: {
+          rootAddress: senderAddress,
+        },
+        multisigType: 'tss',
+      };
+      const senderWallet = new Wallet(bitgo, basecoin, senderWalletData);
+
+      const txParams = {
+        recipients: [
+          {
+            address: recipientAddress,
+            amount: transferAmount,
+          },
+        ],
+      };
+      const prebuild = {
+        recipients: [
+          {
+            address: recipientAddress,
+            amount: transferAmount,
+          },
+        ],
+        txBase64,
+        txInfo: {
+          feePayer: enterpriseFeeAddress,
+          nonce: blockHash,
+        },
+        txid: tx.id,
+        isVotingTransaction: false,
+        coin: 'tsol',
+      };
+
+      // Without the declared feePayer: the tx feePayer (enterprise) ≠ wallet root (sender) → throws
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild: prebuild,
+          wallet: senderWallet,
+        } as unknown as SolVerifyTransactionOptions)
+        .should.be.rejectedWith('Tx fee payer is not the wallet root address');
+
+      // With the declared feePayer matching the tx's actual fee payer → passes
+      const result = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild: prebuild,
+        wallet: senderWallet,
+        feePayer: enterpriseFeeAddress,
+      } as unknown as SolVerifyTransactionOptions);
+      result.should.equal(true);
+    });
+
     it('should fail verify transactions when have different recipients', async function () {
       const txParams = newTxParamsWithError();
       const txPrebuild = newTxPrebuild();
