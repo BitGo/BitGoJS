@@ -226,6 +226,7 @@ export abstract class V1TransactionBuilder extends BaseTransactionBuilder {
     // Populate a metadata-only SolTransaction from the decoded message so
     // toJson / loadInputsAndOutputs work.
     const decoded = decodeV1Message(messageBytes);
+    tx.setTransactionType(this.transactionType);
     const metaTx = new SolTransaction();
     metaTx.feePayer = new PublicKey(decoded.staticAccounts[0]);
     metaTx.recentBlockhash = decoded.blockhash;
