@@ -148,6 +148,20 @@ export class Transaction extends BaseTransaction {
   get signature(): string[] {
     const signatures: string[] = [];
 
+    if (this._v1TransactionBytes) {
+      // v1 wire format: messageBytes followed by 64-byte signatures; filter out
+      // zero-filled placeholder slots (unsigned signers)
+      const numRequired = this._v1TransactionBytes[1];
+      const sigStart = this._v1TransactionBytes.length - numRequired * 64;
+      for (let i = 0; i < numRequired; i++) {
+        const sig = this._v1TransactionBytes.slice(sigStart + i * 64, sigStart + (i + 1) * 64);
+        if (sig.some((b) => b !== 0)) {
+          signatures.push(base58.encode(sig));
+        }
+      }
+      return signatures;
+    }
+
     if (this._versionedTransaction) {
       // Handle VersionedTransaction signatures
       for (const sig of this._versionedTransaction.signatures) {
