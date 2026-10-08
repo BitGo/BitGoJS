@@ -4606,6 +4606,20 @@ export const ofcErc20Coins = [
     true,
     'arcusdc'
   ),
+  ofcerc20(
+    'c1a3b230-f6cd-4b97-ad18-59f612d9cd82',
+    'ofcarcusdc:usdau',
+    'AllUnity USD',
+    6,
+    UnderlyingAsset['arcusdc:usdau'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'arcusdc'
+  ),
 
   // Scroll mainnet OFC tokens
   ofcerc20(
@@ -7024,6 +7038,20 @@ export const tOfcErc20Coins = [
     true,
     'megaeth'
   ),
+  ofcerc20(
+    '1401ada2-ea79-4a72-8523-48ed4ea12635',
+    'ofcmegaeth:usdm',
+    'MegaUSD',
+    18,
+    underlyingAssetForSymbol('megaeth:usdm'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'megaeth'
+  ),
 
   // MegaEth testnet tokens
   tofcerc20(
@@ -7667,6 +7695,20 @@ export const tOfcErc20Coins = [
     'OpenUSD',
     6,
     UnderlyingAsset['baseeth:ousd'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
+  ofcerc20(
+    'be795d20-d0fc-43ba-9f87-3e4f2cd7f85f',
+    'ofcbaseeth:usdau',
+    'AllUnity USD',
+    6,
+    UnderlyingAsset['baseeth:usdau'],
     undefined,
     undefined,
     '',

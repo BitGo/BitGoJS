@@ -3842,6 +3842,20 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
+  tip20Token(
+    '79a37554-9dde-4a9a-a8cb-5d68039f1a18',
+    'tempo:usdau',
+    'AllUnity USD',
+    6,
+    '0x20c000000000000000000000c6ac18274a980b26',
+    UnderlyingAsset['tempo:usdau'],
+    [
+      ...TEMPO_FEATURES,
+      CoinFeature.STABLECOIN,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
+  ),
   // Tempo TIP20 testnet tokens
   ttip20Token(
     'e1872fd8-14ee-4dc9-bc5e-fd52552d9c60',
@@ -5321,6 +5335,16 @@ export const allCoinsAndTokens = [
     Networks.main.basechain,
     [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
+  erc20Token(
+    '3fb1f556-7fa0-4fe7-90ba-c0a8d0459af0',
+    'baseeth:usdau',
+    'AllUnity USD',
+    6,
+    '0xc6df1b92a6ae61a27059c41e541a91ce8dcb1605',
+    UnderlyingAsset['baseeth:usdau'],
+    Networks.main.basechain,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
 
   // ARC mainnet tokens
   erc20Token(
@@ -5339,6 +5363,15 @@ export const allCoinsAndTokens = [
     6,
     '0xe9185f0c5f296ed1797aae4238d26ccabeadb86c',
     UnderlyingAsset['arcusdc:usyc'],
+    Networks.main.arcusdc
+  ),
+  erc20Token(
+    '52e129e4-edef-4d21-a3b6-abecc0edf205',
+    'arcusdc:usdau',
+    'AllUnity USD',
+    6,
+    '0x0957a5b68b614f22b2dd8bd9d6879858beaaa6a0',
+    UnderlyingAsset['arcusdc:usdau'],
     Networks.main.arcusdc
   ),
 
@@ -5622,6 +5655,15 @@ export const allCoinsAndTokens = [
     18,
     '0x28b7e77f82b25b95953825f1e3ea0e36c1c29861',
     UnderlyingAsset['megaeth:mega'],
+    Networks.main.megaeth
+  ),
+  erc20Token(
+    '46ca89ef-2efe-430c-9eea-b1761cff28d4',
+    'megaeth:usdm',
+    'MegaUSD',
+    18,
+    '0xfafddbb3fc7688494971a79cc65dca3ef82079e7',
+    UnderlyingAsset['megaeth:usdm'],
     Networks.main.megaeth
   ),
   erc20Token(

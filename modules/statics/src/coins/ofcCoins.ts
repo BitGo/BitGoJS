@@ -4401,6 +4401,15 @@ export const ofcCoins = [
     UnderlyingAsset['polygon:brl1']
   ),
   ofcPolygonErc20(
+    'bc339fee-6128-48b4-8d4a-e6701ad62555',
+    'ofcpolygon:usdau',
+    'AllUnity USD',
+    6,
+    UnderlyingAsset['polygon:usdau'],
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
+  ofcPolygonErc20(
     'bb845778-42b3-4277-a291-a0d703e5961e',
     'ofcpolygon:mmt54',
     'METWAVE MINE',
@@ -6718,6 +6727,13 @@ export const ofcCoins = [
     UnderlyingAsset['tempo:stcusd']
   ),
   ofcTempoToken('003c69c6-5a4a-4768-bea1-cb57718ea719', 'ofctempo:sofid', 'SoFiUSD', 6, UnderlyingAsset['tempo:sofid']),
+  ofcTempoToken(
+    '767e5bc3-2281-45e9-9eb0-38d2517c0e75',
+    'ofctempo:usdau',
+    'AllUnity USD',
+    6,
+    UnderlyingAsset['tempo:usdau']
+  ),
   ofcTempoToken('d2741b2a-375b-4dae-98d4-0a5d5586ddb4', 'ofctempo:ousd', 'OpenUSD', 6, UnderlyingAsset['tempo:ousd']),
   // Tempo testnet OFC tokens
   tofcTempoToken(

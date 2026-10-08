@@ -4302,4 +4302,18 @@ export const ofcHoodethTokens = [
     true,
     'hoodeth'
   ),
+  ofcerc20(
+    '116654ba-3cf0-46be-b9d6-57a342ff7636',
+    'ofchoodeth:orbio',
+    'Orbio',
+    18,
+    UnderlyingAsset['hoodeth:orbio'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'hoodeth'
+  ),
 ];

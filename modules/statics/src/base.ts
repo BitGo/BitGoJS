@@ -2322,6 +2322,7 @@ export enum UnderlyingAsset {
   'hoodeth:ai' = 'hoodeth:ai',
   'hoodeth:pipedog' = 'hoodeth:pipedog',
   'hoodeth:tteq' = 'hoodeth:tteq',
+  'hoodeth:orbio' = 'hoodeth:orbio', // CECHO-2426
   'hemieth:hemi' = 'hemieth:hemi',
   'hemieth:hemibtc' = 'hemieth:hemibtc',
   'usdt0:stable' = 'usdt0:stable',
@@ -3367,6 +3368,7 @@ export enum UnderlyingAsset {
   'polygon:infra' = 'polygon:infra',
   'polygon:sofid' = 'polygon:sofid',
   'polygon:tel' = 'polygon:tel',
+  'polygon:usdau' = 'polygon:usdau', // CECHO-2426
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',
@@ -4093,6 +4095,9 @@ export enum UnderlyingAsset {
   'tflr:wflr' = 'tflr:wflr',
   'tflr:twc2flr' = 'tflr:twc2flr',
 
+  //MegaETH tokens
+  'megaeth:usdm' = 'megaeth:usdm', // CECHO-2426
+
   ERC721 = 'erc721',
   ERC1155 = 'erc1155',
   NONSTANDARD = 'nonstandard',
@@ -4740,6 +4745,7 @@ export enum UnderlyingAsset {
   'tempo:stcusd' = 'tempo:stcusd',
   'tempo:sofid' = 'tempo:sofid',
   'tempo:ousd' = 'tempo:ousd',
+  'tempo:usdau' = 'tempo:usdau', // CECHO-2426
 
   // Tempo testnet tokens
   'ttempo:pathusd' = 'ttempo:pathusd',
@@ -4762,6 +4768,7 @@ export enum UnderlyingAsset {
   // ARC mainnet tokens
   'arcusdc:eurc' = 'arcusdc:eurc',
   'arcusdc:usyc' = 'arcusdc:usyc',
+  'arcusdc:usdau' = 'arcusdc:usdau', // CECHO-2426
 
   // Scroll mainnet tokens
   'scrolleth:scr' = 'scrolleth:scr',
@@ -4828,6 +4835,7 @@ export enum UnderlyingAsset {
   'baseeth:tel' = 'baseeth:tel',
   'baseeth:svvv' = 'baseeth:svvv',
   'baseeth:ousd' = 'baseeth:ousd',
+  'baseeth:usdau' = 'baseeth:usdau', // CECHO-2426
   'arbeth:rain' = 'arbeth:rain',
   'arbeth:mlk' = 'arbeth:mlk',
   'polygon:apepe' = 'polygon:apepe',

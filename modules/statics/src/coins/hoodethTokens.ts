@@ -3055,6 +3055,16 @@ export const hoodethTokens = [
     EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20Token(
+    '9539c0ae-733f-45eb-8428-0a9b6c365409',
+    'hoodeth:orbio',
+    'Orbio',
+    18,
+    '0xaa07a0e9209e16ac99708c3ec70159c6ef3128a3',
+    UnderlyingAsset['hoodeth:orbio'],
+    Networks.main.hoodeth,
+    EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
     '3493d608-fd3e-45dc-926d-783d54a8fe4d',
     'thoodeth:amzn',
     'Amazon',
