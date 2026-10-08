@@ -1,6 +1,7 @@
 import 'should';
 import * as sinon from 'sinon';
 import { bip32 } from '@bitgo/utxo-lib';
+import { DklsDsg, DklsTypes, DklsUtils, DklsVrfUtils } from '@bitgo/sdk-lib-mpc';
 import { buildSafeMpcKeyEnvelopes } from '../../../../src/bitgo/utils/tss/keyShareEnvelope';
 import { IncorrectPasswordError } from '../../../../src/bitgo/errors';
 import {
@@ -165,6 +166,9 @@ describe('deriveSafeWalletKeys', () => {
 
   it('derives the BIP44 child triplet for slot 1', async () => {
     const result = await deriveSafeWalletKeys({ coin: 'btc', slot: 'secp256k1Multisig', account: 0, roots });
+    if (result.slot !== 'secp256k1Multisig') {
+      throw new Error('expected secp256k1Multisig slot');
+    }
 
     result.path.should.equal("m/44'/0'/1'/0'");
     result.keys.user.prv.should.equal(userRoot.derivePath("m/44'/0'/1'/0'").toBase58());
@@ -176,6 +180,30 @@ describe('deriveSafeWalletKeys', () => {
   it('varies the path with the account', async () => {
     const result = await deriveSafeWalletKeys({ coin: 'btc', slot: 'secp256k1Multisig', account: 2, roots });
     result.path.should.equal("m/44'/0'/1'/2'");
+  });
+
+  it('derives the ecdsaMpc child via the DKLs ceremony', async () => {
+    const [userDkg, backupDkg] = await DklsUtils.generateDKGKeyShares();
+    const [vrfUser, vrfBackup] = await DklsVrfUtils.generateVrfDKGKeyShares();
+
+    const mpcRoots: DecryptedSafeRoots = {
+      ...roots,
+      ecdsaMpc: {
+        user: { signing: userDkg.getReducedKeyShare(), vrf: vrfUser.getKeyShare() },
+        backup: { signing: backupDkg.getReducedKeyShare(), vrf: vrfBackup.getKeyShare() },
+        bitgo: 'g',
+      },
+    };
+
+    const result = await deriveSafeWalletKeys({ coin: 'eth', slot: 'ecdsaMpc', account: 0, roots: mpcRoots });
+    if (result.slot !== 'ecdsaMpc') {
+      throw new Error('expected ecdsaMpc slot');
+    }
+
+    result.path.should.equal("m/44'/60'/3'/0'");
+    result.keys.commonKeychain.should.be.a.String();
+    result.keys.user.should.be.a.String();
+    result.keys.backup.should.be.a.String();
   });
 
   it('rejects unsupported slots', async () => {
@@ -278,5 +306,58 @@ describe('buildSafeRecoverKeyParams', () => {
       keys,
       mode: 'signed',
     }).should.be.rejectedWith(/not supported yet/);
+  });
+});
+
+describe('Safe ecdsaMpc derive → sign (gate)', function () {
+  it('derives a child, rebuilds 2-of-2 shares, and signs a message verified at m/0', async function () {
+    const [userDkg, backupDkg] = await DklsUtils.generateDKGKeyShares();
+    const [vrfUser, vrfBackup] = await DklsVrfUtils.generateVrfDKGKeyShares();
+
+    const rootCommonKeychain = DklsTypes.getCommonKeychain(userDkg.getKeyShare());
+
+    const { commonKeychain, userChild, backupChild } = await DklsVrfUtils.deriveSafeEcdsaMpcChild({
+      userRoot: { signing: userDkg.getReducedKeyShare(), vrf: vrfUser.getKeyShare() },
+      backupRoot: { signing: backupDkg.getReducedKeyShare(), vrf: vrfBackup.getKeyShare() },
+      account: 0,
+      coinType: 60,
+    });
+
+    // The derived child must never be the root (the "root envelope in the child position" footgun).
+    commonKeychain.should.not.equal(rootCommonKeychain);
+
+    // Rebuild 2-of-2 keyshares from the derived reduced CBOR, exactly as the signer's retrofit does.
+    const toRetrofit = (b64: string): DklsTypes.RetrofitData => {
+      const reduced = DklsTypes.getDecodedReducedKeyShare(Buffer.from(b64, 'base64'));
+      return {
+        xShare: {
+          x: Buffer.from(reduced.prv).toString('hex'),
+          y: Buffer.from(reduced.pub).toString('hex'),
+          chaincode: Buffer.from(reduced.rootChainCode).toString('hex'),
+        },
+        xiList: reduced.xList.slice(0, 2),
+      };
+    };
+    const [user2of2, backup2of2] = await DklsUtils.generate2of2KeyShares(
+      toRetrofit(userChild),
+      toRetrofit(backupChild)
+    );
+
+    const messageHash = Buffer.from('0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef', 'hex');
+    const userDsg = new DklsDsg.Dsg(user2of2.getKeyShare(), 0, 'm/0', messageHash);
+    const backupDsg = new DklsDsg.Dsg(backup2of2.getKeyShare(), 1, 'm/0', messageHash);
+    const signatureString = DklsUtils.verifyAndConvertDklsSignature(
+      messageHash,
+      (await DklsUtils.executeTillRound(5, userDsg, backupDsg)) as DklsTypes.DeserializedDklsSignature,
+      commonKeychain,
+      'm/0',
+      undefined,
+      false
+    );
+
+    // verifyAndConvertDklsSignature recovers the pubkey from the signature and checks it against
+    // deriveUnhardened(childCK, 'm/0'); it throws on mismatch, so a returned string is proof.
+    signatureString.should.be.a.String();
+    signatureString.should.match(/^\d+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+$/);
   });
 });

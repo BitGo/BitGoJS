@@ -1,7 +1,10 @@
 import assert from 'assert';
+import { createHash } from 'crypto';
 import { decode } from 'cbor-x';
 import * as t from 'io-ts';
 import { XShare } from '../ecdsa/types';
+import { Secp256k1Curve } from '../../curves';
+import { bigIntToBufferBE } from '../../util';
 import { isLeft } from 'fp-ts/Either';
 
 // Broadcast message meant to be sent to multiple parties
@@ -193,4 +196,71 @@ export function getDecodedReducedKeyShare(reducedKeyShare: Buffer | Uint8Array):
     throw new Error(`Unable to parse reducedKeyShare: ${decoded.left}`);
   }
   return decoded.right;
+}
+
+/**
+ * Plain-object form of a DKLS keyshare, matching what the wasm `Keyshare` serializes to
+ * (snake_case fields). `buildDklsKeyShare` produces this; it is `encode`d to CBOR and then
+ * parsed by `Keyshare.fromBytes`.
+ */
+export type DklsKeyShare = {
+  total_parties: number;
+  threshold: number;
+  rank_list: number[];
+  party_id: number;
+  public_key: number[];
+  root_chain_code: number[];
+  final_session_id: number[];
+  seed_ot_receivers: number[][];
+  seed_ot_senders: number[][];
+  sent_seed_list: number[][];
+  rec_seed_list: number[][];
+  s_i: number[];
+  big_s_list: number[][];
+  x_i_list: number[][];
+};
+
+/**
+ * Builds a plain (CBOR-encodable) DKLS key share object from a retrofit x-share,
+ * without running a DKG ceremony. This is the pure core of `Dkg._createDKLsRetrofitKeyShare`:
+ * the party's secret scalar and public key are copied verbatim, the OT seeds are zeroed
+ * (a retrofit/derived share cannot sign directly), and the session id is `sha256(pub || chaincode)`
+ * so every party of the same key rebuilds the same id.
+ */
+export function buildDklsKeyShare(params: {
+  xShare: Partial<XShare>;
+  n: number;
+  t: number;
+  partyIdx: number;
+  xiList?: number[][];
+}): DklsKeyShare {
+  const { xShare, n, t, partyIdx, xiList } = params;
+  if (!xShare.y || !xShare.chaincode || !xShare.x) {
+    throw Error('xShare must have a public key, private share value, and a chaincode.');
+  }
+  const defaultXiList: Array<Array<number>> = [];
+  for (let i = 0; i < n; i++) {
+    defaultXiList.push(Array.from(bigIntToBufferBE(BigInt(i + 1), 32)));
+  }
+  const secp256k1 = new Secp256k1Curve();
+  return {
+    total_parties: n,
+    threshold: t,
+    rank_list: new Array(n).fill(0),
+    party_id: partyIdx,
+    public_key: Array.from(Buffer.from(xShare.y, 'hex')),
+    root_chain_code: Array.from(Buffer.from(xShare.chaincode, 'hex')),
+    final_session_id: Array.from(
+      createHash('sha256').update(Buffer.from(xShare.y, 'hex')).update(Buffer.from(xShare.chaincode, 'hex')).digest()
+    ),
+    seed_ot_receivers: new Array(n - 1).fill(Array(32832).fill(0)),
+    seed_ot_senders: new Array(n - 1).fill(Array(32768).fill(0)),
+    sent_seed_list: [Array(32).fill(0)],
+    rec_seed_list: [Array(32).fill(0)],
+    s_i: Array.from(Buffer.from(xShare.x, 'hex')),
+    // big_s_list is now created internally during the protocol so isn't needed here, however a valid KeyShare object needs to have it.
+    // a dummy public key is used to fill big_s_list.
+    big_s_list: new Array(n).fill(Array.from(bigIntToBufferBE(secp256k1.basePointMult(BigInt('0x' + xShare.x))))),
+    x_i_list: xiList ? xiList : defaultXiList,
+  };
 }

@@ -2,10 +2,14 @@ import type { KeygenSession, Keyshare, Message } from '@silencelaboratories/dkls
 import type { VrfKeygenSession as DklsVrfKeygenSession } from '@silencelaboratories/dkls-wasm-ll-vrf-node';
 import type { VrfKeygenSession as DklsVrfWebKeygenSession } from '@silencelaboratories/dkls-wasm-ll-vrf-web';
 import { decode, encode } from 'cbor-x';
-import { createHash } from 'crypto';
-import { Secp256k1Curve } from '../../curves';
-import { bigIntToBufferBE } from '../../util';
-import { DeserializedBroadcastMessage, DeserializedMessages, DkgState, ReducedKeyShare, RetrofitData } from './types';
+import {
+  buildDklsKeyShare,
+  DeserializedBroadcastMessage,
+  DeserializedMessages,
+  DkgState,
+  ReducedKeyShare,
+  RetrofitData,
+} from './types';
 
 type NodeWasmer = typeof import('@silencelaboratories/dkls-wasm-ll-node');
 type WebWasmer = typeof import('@silencelaboratories/dkls-wasm-ll-web');
@@ -75,39 +79,13 @@ export class Dkg {
 
   private _createDKLsRetrofitKeyShare() {
     if (this.retrofitData) {
-      if (!this.retrofitData.xShare.y || !this.retrofitData.xShare.chaincode || !this.retrofitData.xShare.x) {
-        throw Error('xShare must have a public key, private share value, and a chaincode.');
-      }
-      const xiList: Array<Array<number>> = [];
-      for (let i = 0; i < this.n; i++) {
-        xiList.push(Array.from(bigIntToBufferBE(BigInt(i + 1), 32)));
-      }
-      const secp256k1 = new Secp256k1Curve();
-      const dklsKeyShare = {
-        total_parties: this.n,
-        threshold: this.t,
-        rank_list: new Array(this.n).fill(0),
-        party_id: this.partyIdx,
-        public_key: Array.from(Buffer.from(this.retrofitData.xShare.y, 'hex')),
-        root_chain_code: Array.from(Buffer.from(this.retrofitData.xShare.chaincode, 'hex')),
-        final_session_id: Array.from(
-          createHash('sha256')
-            .update(Buffer.from(this.retrofitData.xShare.y, 'hex'))
-            .update(Buffer.from(this.retrofitData.xShare.chaincode, 'hex'))
-            .digest()
-        ),
-        seed_ot_receivers: new Array(this.n - 1).fill(Array(32832).fill(0)),
-        seed_ot_senders: new Array(this.n - 1).fill(Array(32768).fill(0)),
-        sent_seed_list: [Array(32).fill(0)],
-        rec_seed_list: [Array(32).fill(0)],
-        s_i: Array.from(Buffer.from(this.retrofitData.xShare.x, 'hex')),
-        // big_s_list is now created internally during the protocol so isn't needed here, however a valid KeyShare object needs to have it.
-        // a dummy public key is used to fill big_s_list.
-        big_s_list: new Array(this.n).fill(
-          Array.from(bigIntToBufferBE(secp256k1.basePointMult(BigInt('0x' + this.retrofitData.xShare.x))))
-        ),
-        x_i_list: this.retrofitData.xiList ? this.retrofitData.xiList : xiList,
-      };
+      const dklsKeyShare = buildDklsKeyShare({
+        xShare: this.retrofitData.xShare,
+        n: this.n,
+        t: this.t,
+        partyIdx: this.partyIdx,
+        xiList: this.retrofitData.xiList,
+      });
       this.dklsKeyShareRetrofitObject = this.getDklsWasm().Keyshare.fromBytes(encode(dklsKeyShare));
     }
   }
