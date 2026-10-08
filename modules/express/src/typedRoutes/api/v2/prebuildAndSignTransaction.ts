@@ -124,6 +124,8 @@ export const SolAddressLookupTable = t.partial({
   writableIndexes: t.array(t.number),
   /** Readonly indexes */
   readonlyIndexes: t.array(t.number),
+  /** Resolved table addresses, indexed by the compiled lookup indexes */
+  addresses: t.array(t.string),
 });
 
 /**

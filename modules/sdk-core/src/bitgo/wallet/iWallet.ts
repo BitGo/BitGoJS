@@ -262,6 +262,8 @@ export interface PrebuildTransactionOptions {
       accountKey: string;
       writableIndexes: number[];
       readonlyIndexes: number[];
+      /** Resolved table addresses, indexed by the compiled lookup indexes. */
+      addresses?: string[];
     }[];
     staticAccountKeys: string[];
     messageHeader: {

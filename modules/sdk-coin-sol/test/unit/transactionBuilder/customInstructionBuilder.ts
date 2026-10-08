@@ -950,6 +950,12 @@ describe('Sol Custom Instruction Builder', () => {
           accountKey: lookup.accountKey.toBase58(),
           writableIndexes: lookup.writableIndexes,
           readonlyIndexes: lookup.readonlyIndexes,
+          addresses: Array.from(
+            {
+              length: Math.max(...lookup.writableIndexes, ...lookup.readonlyIndexes) + 1,
+            },
+            () => Keypair.generate().publicKey.toBase58()
+          ),
         })),
         staticAccountKeys: originalDeserialized.message.staticAccountKeys.map((key) => key.toBase58()),
         messageHeader: originalDeserialized.message.header,
@@ -1176,15 +1182,40 @@ describe('Sol Custom Instruction Builder', () => {
       sameFeePayerTx.toBroadcastFormat().should.equal(expected);
     });
 
-    it('rejects a fee payer that is an address lookup table account', () => {
+    it('rejects a fee payer that is loaded through an address lookup table', () => {
       const data = memoTxData([authAccount.pub, MEMO_PROGRAM], {
         numRequiredSignatures: 1,
         numReadonlySignedAccounts: 0,
         numReadonlyUnsignedAccounts: 0,
       });
-      data.addressLookupTables = [{ accountKey: feePayerAccount.pub, writableIndexes: [0], readonlyIndexes: [1] }];
+      data.addressLookupTables = [
+        {
+          accountKey: Keypair.generate().publicKey.toBase58(),
+          writableIndexes: [0],
+          readonlyIndexes: [],
+          addresses: [feePayerAccount.pub],
+        },
+      ];
       should(() => feePayerBuilder(data, feePayerAccount.pub)).throwError(
-        'Fee payer cannot be an address lookup table account: ' + feePayerAccount.pub
+        'Fee payer cannot be loaded through an address lookup table: ' + feePayerAccount.pub
+      );
+    });
+
+    it('rejects fee-payer rewriting when lookup-table addresses are unresolved', () => {
+      const data = memoTxData([authAccount.pub, MEMO_PROGRAM], {
+        numRequiredSignatures: 1,
+        numReadonlySignedAccounts: 0,
+        numReadonlyUnsignedAccounts: 0,
+      });
+      data.addressLookupTables = [
+        {
+          accountKey: Keypair.generate().publicKey.toBase58(),
+          writableIndexes: [0],
+          readonlyIndexes: [],
+        },
+      ];
+      should(() => feePayerBuilder(data, feePayerAccount.pub)).throwError(
+        /address lookup table addresses are unresolved/
       );
     });
 

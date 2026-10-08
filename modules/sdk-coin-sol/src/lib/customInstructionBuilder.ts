@@ -195,8 +195,22 @@ export class CustomInstructionBuilder extends TransactionBuilder {
     assert(feePayer, 'fee payer must be set before rewriting');
     validateAddress(feePayer, 'fee payer');
 
-    if (data.addressLookupTables.some((alt) => alt.accountKey === feePayer)) {
-      throw new BuildTransactionError('Fee payer cannot be an address lookup table account: ' + feePayer);
+    const loadedAddresses = data.addressLookupTables.flatMap((alt) => {
+      const addresses = alt.addresses;
+      if (!addresses) {
+        throw new BuildTransactionError(
+          'Cannot rewrite fee payer while address lookup table addresses are unresolved: ' + alt.accountKey
+        );
+      }
+      for (const index of [...alt.writableIndexes, ...alt.readonlyIndexes]) {
+        if (!Number.isInteger(index) || index < 0 || index >= addresses.length) {
+          throw new BuildTransactionError(`Invalid address lookup table index ${index} for ${alt.accountKey}`);
+        }
+      }
+      return [...alt.writableIndexes, ...alt.readonlyIndexes].map((index) => addresses[index]);
+    });
+    if (loadedAddresses.includes(feePayer)) {
+      throw new BuildTransactionError('Fee payer cannot be loaded through an address lookup table: ' + feePayer);
     }
 
     const { staticAccountKeys, messageHeader } = data;

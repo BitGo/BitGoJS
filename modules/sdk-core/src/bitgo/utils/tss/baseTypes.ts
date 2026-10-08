@@ -59,6 +59,8 @@ export interface SolAddressLookupTable {
   accountKey: string;
   writableIndexes: number[];
   readonlyIndexes: number[];
+  /** Resolved table addresses, indexed by the compiled lookup indexes. */
+  addresses?: string[];
 }
 
 export type SolTransactionVersion = 0 | 1;

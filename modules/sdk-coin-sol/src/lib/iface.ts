@@ -388,6 +388,8 @@ export interface AddressLookupTable {
   accountKey: string;
   writableIndexes: number[];
   readonlyIndexes: number[];
+  /** Resolved table addresses, indexed by the compiled lookup indexes. */
+  addresses?: string[];
 }
 
 export interface TransactionExplanation extends BaseTransactionExplanation {
