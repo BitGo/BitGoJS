@@ -2,7 +2,7 @@ import should from 'should';
 import nacl from 'tweetnacl';
 import { coins } from '@bitgo/statics';
 import { TransactionType } from '@bitgo/sdk-core';
-import { SystemProgram } from '@solana/web3.js';
+import { PublicKey, SystemProgram } from '@solana/web3.js';
 import {
   buildAdvanceNonceAccountInstruction,
   decodeV1Message,
@@ -13,6 +13,7 @@ import {
 } from '../../../src';
 import { verifyV1Signatures } from '../../../src/lib/serialization/parseWireTransaction';
 import { InstructionBuilderTypes } from '../../../src/lib/constants';
+import { V1CustomInstructionBuilder } from '../../../src/lib/v1CustomInstructionBuilder';
 import { SolanaKeys, Transfer } from '../../../src/lib/iface';
 import * as testData from '../../resources/sol';
 
@@ -220,5 +221,53 @@ describe('Solana V1 Transaction Builder (SIMD-0296/0385)', () => {
       json.nonce.should.equal(recentBlockHash);
       json.numSignatures.should.equal(1);
     });
+  });
+});
+
+describe('V1CustomInstructionBuilder', function () {
+  const coinConfig = coins.get('tsol');
+  const user = new KeyPair(testData.authAccount).getKeys();
+  const gasTank = new KeyPair({ prv: testData.prvKeys.prvKey1.base58 }).getKeys();
+  const nonceAccount = new KeyPair(testData.nonceAccount).getKeys();
+  const recentBlockHash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
+  const v1Config = {
+    computeUnitLimit: 200_000,
+    heapSize: 32_768,
+    loadedAccountsDataSizeLimit: 65_536,
+    priorityFee: 5_000,
+  };
+
+  const signWith = (keyPair: SolanaKeys, messageBytes: Uint8Array): Uint8Array => {
+    const prv = keyPair.prv;
+    if (typeof prv !== 'string') {
+      throw new Error('Missing private key for test signer');
+    }
+    const kp = new KeyPair({ prv });
+    return nacl.sign.detached(messageBytes, kp.getKeys(true).prv as Uint8Array);
+  };
+
+  it('builds a v1 transaction from a custom instruction + 2 signatures in signer order', async function () {
+    const recipient = 'C3sGf4xZb7kP1mQr8tYw9uVx2nD5hJ6aLcE4oRqS7iB';
+    const builder = new V1CustomInstructionBuilder(coinConfig);
+    builder.sender(user.pub);
+    builder.nonce(recentBlockHash, { walletNonceAddress: nonceAccount.pub, authWalletAddress: gasTank.pub });
+    builder.transactionConfig(v1Config);
+    builder.addInstruction(
+      SystemProgram.transfer({
+        fromPubkey: new PublicKey(user.pub),
+        toPubkey: new PublicKey(recipient),
+        lamports: 1_000_000,
+      })
+    );
+    builder.sign({ key: user.prv });
+
+    const unsigned = (await builder.build()) as Transaction;
+    const gasTankSig = signWith(gasTank, unsigned.v1MessageBytes!);
+    builder.addSignature({ pub: gasTank.pub }, Buffer.from(gasTankSig));
+    const signed = (await builder.build()) as Transaction;
+
+    const parsed = parseWireTransaction(signed.v1TransactionBytes!);
+    parsed.signerPublicKeys.should.deepEqual([user.pub, gasTank.pub]);
+    verifyV1Signatures(parsed.messageBytes, parsed.signatures, parsed.signerPublicKeys);
   });
 });
