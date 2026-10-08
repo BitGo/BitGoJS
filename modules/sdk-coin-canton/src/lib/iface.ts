@@ -223,6 +223,13 @@ export interface CantonAllocationAllocateRequest {
  * Internal (non-signable) data for an AllocationRequest txRequest.
  * Surfaces the full DvP trade leg to the allocating party so they can
  * review and then submit an AllocationAllocate.
+ *
+ * For a trade leg (`legType` "trade", or absent for legacy requests),
+ * `receiveToken`/`receiveAmount` show what the allocating party will receive
+ * upon successful settlement. A fee leg (`legType` "fee") is payment-only —
+ * the fee payer sends the operator fee and receives nothing — so the receive
+ * fields are absent and `parentTradeId` carries the trade identifier of the
+ * parent trade the fee belongs to.
  */
 export interface AllocationRequest {
   updateId: string;
@@ -234,8 +241,10 @@ export interface AllocationRequest {
   receiverPartyId: string;
   amount: CantonAmount;
   token: string;
-  receiveToken: string;
-  receiveAmount: CantonAmount;
+  receiveToken?: string;
+  receiveAmount?: CantonAmount;
+  legType?: 'trade' | 'fee';
+  parentTradeId?: string;
   allocateBefore: string;
   settleBefore: string;
   comment?: string;

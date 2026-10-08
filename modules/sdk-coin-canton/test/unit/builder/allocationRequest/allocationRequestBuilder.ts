@@ -21,6 +21,7 @@ const receiveAmount = 80;
 const allocateBefore = '2026-05-06T16:46:17.184609Z';
 const settleBefore = '2026-05-07T16:46:17.184609Z';
 const comment = 'security leg allocation';
+const parentTradeId = 'TRADE-9F2C01';
 
 // Helper to set all required fields on a builder
 function buildWithAllRequired(txBuilder: AllocationRequestBuilder): AllocationRequestBuilder {
@@ -268,7 +269,7 @@ describe('AllocationRequest Builder', () => {
     assert.throws(() => txBuilder.toRequestObject(), /token is missing/);
   });
 
-  it('should throw if receiveToken is missing', function () {
+  it('should throw if receiveToken is missing for a non-fee request', function () {
     const txBuilder = new AllocationRequestBuilder(coins.get('tcanton'));
     txBuilder.initBuilder(new Transaction(coins.get('tcanton')));
     txBuilder
@@ -306,7 +307,7 @@ describe('AllocationRequest Builder', () => {
     assert.throws(() => txBuilder.toRequestObject(), /amount is missing/);
   });
 
-  it('should throw if receiveAmount was never set', function () {
+  it('should throw if receiveAmount was never set for a non-fee request', function () {
     const txBuilder = new AllocationRequestBuilder(coins.get('tcanton'));
     txBuilder.initBuilder(new Transaction(coins.get('tcanton')));
     txBuilder
@@ -361,6 +362,101 @@ describe('AllocationRequest Builder', () => {
       .receiveAmount(receiveAmount)
       .allocateBefore(allocateBefore);
     assert.throws(() => txBuilder.toRequestObject(), /settleBefore is missing/);
+  });
+
+  // --- fee-shaped requests ---
+
+  it('should build a fee-shaped allocation request without receive fields', function () {
+    const txBuilder = new AllocationRequestBuilder(coins.get('tcanton'));
+    const tx = new Transaction(coins.get('tcanton'));
+    txBuilder.initBuilder(tx);
+    txBuilder
+      .updateId(updateId)
+      .operatorId(operatorId)
+      .contractId(contractId)
+      .tradeId(tradeId)
+      .transferLegId(transferLegId)
+      .senderPartyId(senderPartyId)
+      .receiverPartyId(receiverPartyId)
+      .amount(amount)
+      .token(token)
+      .legType('fee')
+      .parentTradeId(parentTradeId)
+      .allocateBefore(allocateBefore)
+      .settleBefore(settleBefore);
+    const requestObj: AllocationRequest = txBuilder.toRequestObject();
+    should.exist(requestObj);
+    assert.equal(requestObj.legType, 'fee');
+    assert.equal(requestObj.parentTradeId, parentTradeId);
+    assert.equal(requestObj.receiveToken, undefined);
+    assert.equal(requestObj.receiveAmount, undefined);
+    assert.ok(!('receiveToken' in requestObj), 'receiveToken should be absent for fee legs');
+    assert.ok(!('receiveAmount' in requestObj), 'receiveAmount should be absent for fee legs');
+  });
+
+  it('should round-trip a fee-shaped allocation request through toBroadcastFormat and fromRawTransaction', function () {
+    const txBuilder = new AllocationRequestBuilder(coins.get('tcanton'));
+    const tx = new Transaction(coins.get('tcanton'));
+    txBuilder.initBuilder(tx);
+    txBuilder
+      .updateId(updateId)
+      .operatorId(operatorId)
+      .contractId(contractId)
+      .tradeId(tradeId)
+      .transferLegId(transferLegId)
+      .senderPartyId(senderPartyId)
+      .receiverPartyId(receiverPartyId)
+      .amount(amount)
+      .token(token)
+      .legType('fee')
+      .parentTradeId(parentTradeId)
+      .allocateBefore(allocateBefore)
+      .settleBefore(settleBefore);
+
+    const requestObj = txBuilder.toRequestObject();
+    tx.allocationRequestData = requestObj;
+
+    const parsedTx = new Transaction(coins.get('tcanton'));
+    parsedTx.fromRawTransaction(tx.toBroadcastFormat());
+    const parsedData = parsedTx.toJson().allocationRequestData;
+    assert.equal(parsedData?.legType, 'fee');
+    assert.equal(parsedData?.parentTradeId, parentTradeId);
+    assert.equal(parsedData?.receiveToken, undefined);
+    assert.equal(parsedData?.receiveAmount, undefined);
+  });
+
+  it('should still require receive fields when an explicit trade leg is set', function () {
+    const txBuilder = new AllocationRequestBuilder(coins.get('tcanton'));
+    txBuilder.initBuilder(new Transaction(coins.get('tcanton')));
+    txBuilder
+      .updateId(updateId)
+      .operatorId(operatorId)
+      .contractId(contractId)
+      .tradeId(tradeId)
+      .transferLegId(transferLegId)
+      .senderPartyId(senderPartyId)
+      .receiverPartyId(receiverPartyId)
+      .amount(amount)
+      .token(token)
+      .legType('trade')
+      .receiveToken(receiveToken)
+      .receiveAmount(receiveAmount)
+      .allocateBefore(allocateBefore)
+      .settleBefore(settleBefore);
+    const requestObj: AllocationRequest = txBuilder.toRequestObject();
+    assert.equal(requestObj.legType, 'trade');
+  });
+
+  it('should throw if legType is not trade or fee', function () {
+    const txBuilder = new AllocationRequestBuilder(coins.get('tcanton'));
+    // out-of-union value is unreachable through types; cast exists only to exercise the runtime guard
+    const invalidLegType = 'bogus' as unknown as 'trade' | 'fee';
+    assert.throws(() => txBuilder.legType(invalidLegType), /legType must be either "trade" or "fee"/);
+  });
+
+  it('should throw if parentTradeId is an empty string', function () {
+    const txBuilder = new AllocationRequestBuilder(coins.get('tcanton'));
+    assert.throws(() => txBuilder.parentTradeId(''), /parentTradeId must be a non-empty string/);
   });
 
   // --- invalid setter argument tests ---
