@@ -666,6 +666,36 @@ describe('SOL:', function () {
       result.should.equal(true);
     });
 
+    it('accepts a fee payer declared inside txParams by the wallet verification path', async function () {
+      const txPrebuild = newTxPrebuild();
+      const walletData = {
+        id: '5b34252f1bf349930e34020a00000000',
+        coin: 'tsol',
+        keys: [
+          '5b3424f91bf349930e34017500000000',
+          '5b3424f91bf349930e34017600000000',
+          '5b3424f91bf349930e34017700000000',
+        ],
+        coinSpecific: {
+          rootAddress: stakeAccount.pub,
+        },
+        multisigType: 'tss',
+      };
+      const walletWithDifferentRoot = new Wallet(bitgo, basecoin, walletData);
+
+      const verifyParams = {
+        txParams: {
+          ...newTxParams(),
+          feePayer: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+        },
+        txPrebuild,
+        memo,
+        wallet: walletWithDifferentRoot,
+      } as unknown as Parameters<typeof basecoin.verifyTransaction>[0];
+      const result = await basecoin.verifyTransaction(verifyParams);
+      result.should.equal(true);
+    });
+
     it('should fail verifyTransaction when the declared feePayer does not match the transaction feePayer', async function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
