@@ -5,6 +5,7 @@ import { CloseAtaBuilder } from './closeAtaBuilder';
 import { ConfidentialTransferBuilder } from './confidentialTransferBuilder';
 import { RecoverNestedAtaBuilder } from './recoverNestedAtaBuilder';
 import { CustomInstructionBuilder } from './customInstructionBuilder';
+import { V1CustomInstructionBuilder } from './v1CustomInstructionBuilder';
 import { StakingActivateBuilder } from './stakingActivateBuilder';
 import { StakingAuthorizeBuilder } from './stakingAuthorizeBuilder';
 import { StakingDeactivateBuilder } from './stakingDeactivateBuilder';
@@ -194,6 +195,21 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    */
   getCustomInstructionBuilder(tx?: Transaction): CustomInstructionBuilder {
     return this.initializeBuilder(tx, new CustomInstructionBuilder(this._coinConfig));
+  }
+
+  /**
+   * Returns the v1 (SIMD-0296/0385) builder to create custom-instruction transactions.
+   *
+   * Assembles v1 transactions from a client-supplied envelope: feed each envelope
+   * instruction as a web3.js TransactionInstruction via addInstruction, set the fee
+   * payer via sender, optional durable nonce via nonce, and the v1 config via
+   * transactionConfig. The builder owns the AdvanceNonceAccount injection, the message
+   * compile, and the message-signer-order signature assembly. Built fresh each call —
+   * v1 transactions are always assembled from an envelope, never re-initialized from a
+   * parsed transaction.
+   */
+  getV1CustomInstructionBuilder(): V1CustomInstructionBuilder {
+    return new V1CustomInstructionBuilder(this._coinConfig);
   }
 
   /**
