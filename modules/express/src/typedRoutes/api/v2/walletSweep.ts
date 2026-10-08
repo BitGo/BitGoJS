@@ -50,10 +50,17 @@ export const WalletSweepBody = {
 } as const;
 
 /**
- * The sweep call spends the full balance of the wallet to the provided address. On UTXO coins, the sweep call will fail if the wallet has any unconfirmed funds, or if there are more unspents than can be sent with a single transaction.
+ * Sweep the full balance of a wallet to a provided address
+ *
+ * The sweep call spends the full balance of the wallet to the provided address.
+ * On UTXO coins, the sweep call will fail if the wallet has any unconfirmed
+ * funds, or if there are more unspents than can be sent with a single
+ * transaction. Pass `allowPartialSweep` to sweep part of a wallet when there
+ * are too many unspents to empty it in a single transaction.
  *
  * @operationId express.wallet.sweep
  * @tag Express
+ * @public
  */
 export const PostWalletSweep: HttpRoute<'post'> = httpRoute({
   path: '/api/v2/{coin}/wallet/{id}/sweep',
