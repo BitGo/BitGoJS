@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.21.0...@bitgo/statics@59.22.0) (2026-10-09)
+
+
+### Features
+
+* onboaring tokens for CECHO-2426-1005 batch ([6a7f49b](https://github.com/BitGo/BitGoJS/commit/6a7f49b97809d217dfb5463d21a746be9ec3e170))
+* **statics:** add detected_extension_type_names to AmsTokenConfig ([50b5920](https://github.com/BitGo/BitGoJS/commit/50b592021bae6560f605cee370bb0de8f90f3e13))
+
+
+
+
+
 # [59.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.20.0...@bitgo/statics@59.21.0) (2026-10-07)
 
 

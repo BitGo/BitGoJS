@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.34.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.33.3...@bitgo/sdk-coin-canton@1.34.0) (2026-10-09)
+
+
+### Features
+
+* **sdk-coin-canton:** accept fee-shaped allocation requests ([3e25de0](https://github.com/BitGo/BitGoJS/commit/3e25de0aa5a874773ad32b8f11b1f00c675ef286))
+
+
+
+
+
 ## [1.33.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.33.2...@bitgo/sdk-coin-canton@1.33.3) (2026-10-07)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-canton

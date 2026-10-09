@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [38.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.22.0...@bitgo/sdk-core@38.23.0) (2026-10-09)
+
+
+### Features
+
+* derive ecdsaMpc child keys for Safe recovery ([f09bd34](https://github.com/BitGo/BitGoJS/commit/f09bd349b86fca42481d3914e01566984aafc23a))
+* recovery SDK surface for slot 1 ([46db72a](https://github.com/BitGo/BitGoJS/commit/46db72a7c75c224969b321debc68d027fd06df45))
+
+
+
+
+
 # [38.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.21.0...@bitgo/sdk-core@38.22.0) (2026-10-07)
 
 
