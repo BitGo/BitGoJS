@@ -1,5 +1,6 @@
 import 'should';
 import {
+  BaseCoin,
   BaseNetwork,
   BaseUnit,
   CoinFamily,
@@ -980,13 +981,125 @@ describe('CoinMap', function () {
     coinMap.has(token.name).should.be.true();
   });
 
-  it('should replace a coin', () => {
-    const coinMap = CoinMap.fromCoins([]);
-    const coin = coins.get('btc');
-    const newCoin = { ...coin, name: 'btc2' };
-    coinMap.replace(newCoin);
-    coinMap.has(coin.name).should.be.false();
-    coinMap.has(newCoin.name).should.be.true();
+  describe('replace', () => {
+    // Replacement is only allowed for tokens whose immutable fields (id, name, contract address, alias)
+    // are unchanged; a mismatch must throw and leave the map untouched so a refreshed AMS record
+    // can never silently redefine a different asset.
+    const template = coins.get('tusdc') as Erc20Coin;
+    const buildToken = (overrides: {
+      id?: string;
+      name?: string;
+      fullName?: string;
+      contractAddress?: string;
+      suffix?: string;
+    }) =>
+      terc20(
+        overrides.id ?? template.id,
+        overrides.name ?? template.name,
+        overrides.fullName ?? template.fullName,
+        template.decimalPlaces,
+        overrides.contractAddress ?? template.contractAddress.toString(),
+        template.asset,
+        template.features,
+        template.prefix,
+        overrides.suffix ?? template.suffix,
+        template.network as EthereumNetwork
+      );
+
+    it('should add a coin that is not in the map', () => {
+      const coinMap = CoinMap.fromCoins([]);
+      coinMap.replace(template);
+      coinMap.get(template.name).should.equal(template);
+    });
+
+    it('should replace a token when immutable fields match', () => {
+      const coinMap = CoinMap.fromCoins([template]);
+      const refreshed = buildToken({ fullName: 'refreshed name' });
+      coinMap.replace(refreshed);
+      coinMap.get(template.name).should.equal(refreshed);
+      coinMap.get(template.id).should.equal(refreshed);
+      coinMap.get(`${template.family}:${template.contractAddress}`).should.equal(refreshed);
+    });
+
+    it('should replace a token when only the prefix and suffix change', () => {
+      const coinMap = CoinMap.fromCoins([template]);
+      const refreshed = buildToken({ suffix: 'OTHER' });
+      coinMap.replace(refreshed);
+      coinMap.get(template.name).should.equal(refreshed);
+    });
+
+    it('should throw and keep the existing token when the name differs', () => {
+      const coinMap = CoinMap.fromCoins([template]);
+      (() => coinMap.replace(buildToken({ name: 'tusdc2' }))).should.throw(
+        `coin '${template.name}' cannot be replaced: immutable field name changed`
+      );
+      coinMap.get(template.name).should.equal(template);
+      coinMap.has('tusdc2').should.be.false();
+    });
+
+    it('should throw and keep the existing token when the contract address differs', () => {
+      const coinMap = CoinMap.fromCoins([template]);
+      (() =>
+        coinMap.replace(buildToken({ contractAddress: '0x0000000000000000000000000000000000000001' }))).should.throw(
+        `coin '${template.name}' cannot be replaced: immutable field contractAddress changed`
+      );
+      coinMap.get(template.name).should.equal(template);
+    });
+
+    it('should throw and keep the existing token when the alias differs', () => {
+      const coinMap = CoinMap.fromCoins([template]);
+      // keep the prototype so the candidate is still a contract-address token and only the alias differs
+      const candidate = Object.assign(Object.create(Object.getPrototypeOf(template)), template, {
+        alias: 'legacyusdc',
+      });
+      (() => coinMap.replace(candidate)).should.throw(
+        `coin '${template.name}' cannot be replaced: immutable field alias changed`
+      );
+      coinMap.get(template.name).should.equal(template);
+      coinMap.has('legacyusdc').should.be.false();
+    });
+
+    it('should treat a token with a different id as a new coin and reject the duplicate name', () => {
+      const coinMap = CoinMap.fromCoins([template]);
+      (() => coinMap.replace(buildToken({ id: '11111111-1111-4111-8111-111111111111' }))).should.throw(
+        `coin '${template.name}' is already defined`
+      );
+      coinMap.get(template.name).should.equal(template);
+    });
+
+    it('should replace a base coin when immutable fields match', () => {
+      const btc = coins.get('btc');
+      const coinMap = CoinMap.fromCoins([btc]);
+      const refreshed = { ...btc, fullName: 'Bitcoin renamed' };
+      coinMap.replace(refreshed);
+      coinMap.get('btc').should.equal(refreshed);
+      coinMap.get(btc.id).should.equal(refreshed);
+    });
+
+    it('should throw and keep the existing base coin when the name differs', () => {
+      const btc = coins.get('btc');
+      const coinMap = CoinMap.fromCoins([btc]);
+      (() => coinMap.replace({ ...btc, name: 'btc2' })).should.throw(
+        `coin 'btc' cannot be replaced: immutable field name changed`
+      );
+      coinMap.get('btc').should.equal(btc);
+      coinMap.has('btc2').should.be.false();
+    });
+
+    it('should throw and keep the existing coin when a contract-address token tries to replace a base coin', () => {
+      // isToken itself isn't checked directly; a token replacing a base coin is still rejected here
+      // because the base coin has no contract address while the token does.
+      const btc = coins.get('btc');
+      const coinMap = CoinMap.fromCoins([btc]);
+      (() =>
+        coinMap.replace(
+          buildToken({
+            id: btc.id,
+            name: btc.name,
+          })
+        )).should.throw(`coin '${btc.name}' cannot be replaced: immutable field contractAddress changed`);
+      coinMap.get('btc').should.equal(btc);
+    });
   });
 
   describe('coinNameFromChainId', function () {
@@ -1565,6 +1678,20 @@ describe('ADA RealFi USDr staking', () => {
 });
 
 describe('create token map using config details', () => {
+  // Known tokens are refreshed in the global coin map, and these tests feed deliberately wrong configs
+  // for real tokens, so put the originals back for the suites that read the global map.
+  const staticCoinsBeforeAmsTests = new Map<string, Readonly<BaseCoin>>();
+  before(() => {
+    coins.forEach((coin, name) => staticCoinsBeforeAmsTests.set(name, coin));
+  });
+  after(() => {
+    staticCoinsBeforeAmsTests.forEach((coin, name) => {
+      if (coins.get(name) !== coin) {
+        coins.replace(coin);
+      }
+    });
+  });
+
   it('should create a valid token map from AmsTokenConfig', () => {
     const tokenMap = createTokenMapUsingConfigDetails(amsTokenConfig);
     Object.keys(amsTokenConfig).forEach((tokenName) => {
@@ -1577,14 +1704,19 @@ describe('create token map using config details', () => {
     });
   });
 
-  it('should give precedence to static coin map over ams coin map', () => {
-    const tokenMap = createTokenMapUsingConfigDetails(incorrectAmsTokenConfig);
+  it('should refresh modifiable fields of a known token from the ams config', () => {
     const tokenName = 'thbar:usdc';
+    const tokenMap = createTokenMapUsingConfigDetails(incorrectAmsTokenConfig);
     const token = tokenMap.get(tokenName);
+    token.decimalPlaces.should.eql(incorrectAmsTokenConfig[tokenName][0].decimalPlaces);
+  });
+
+  it('should keep the static token when the ams config diverges on an identity field', () => {
+    const tokenName = 'thbar:usdc';
+    const divergentConfig = { [tokenName]: [{ ...incorrectAmsTokenConfig[tokenName][0], contractAddress: '0.0.1' }] };
+    const token = createTokenMapUsingConfigDetails(divergentConfig).get(tokenName);
     token.decimalPlaces.should.eql(coins.get(tokenName).decimalPlaces);
     token.baseUnit.should.eql(coins.get(tokenName).baseUnit);
-    token.decimalPlaces.should.not.eql(incorrectAmsTokenConfig[tokenName][0].decimalPlaces);
-    token.baseUnit.should.not.eql(incorrectAmsTokenConfig[tokenName][0].baseUnit);
   });
 
   it('should create a coin map and get formatted tokens from it', () => {
@@ -1644,14 +1776,12 @@ describe('create token map using config details', () => {
     });
   });
 
-  it('should return the base coin present in default coin map', () => {
+  it('should refresh a known token through createToken and return the record held by the coin map', () => {
     const tokenName = 'thbar:usdc';
     const token = createToken(incorrectAmsTokenConfig[tokenName][0]);
     token?.should.not.be.undefined();
-    token?.decimalPlaces.should.eql(coins.get(tokenName).decimalPlaces);
-    token?.baseUnit.should.eql(coins.get(tokenName).baseUnit);
-    token?.decimalPlaces.should.not.eql(incorrectAmsTokenConfig[tokenName][0].decimalPlaces);
-    token?.baseUnit.should.not.eql(incorrectAmsTokenConfig[tokenName][0].baseUnit);
+    token?.decimalPlaces.should.eql(incorrectAmsTokenConfig[tokenName][0].decimalPlaces);
+    coins.get(tokenName).should.equal(token);
   });
 
   it('should be able to create base coin from trimmed token config', () => {
@@ -2067,7 +2197,9 @@ describe('DynamicCoin and dynamic base chain support', function () {
       coinMap.has('mydynchain2').should.be.false();
     });
 
-    it('should return undefined when the coin already exists in the static coin map', function () {
+    it('should keep the existing coin when a refresh attempt for a known base chain fails validation', function () {
+      // id 'btc' is not a valid UUID, so the refreshed DynamicCoin fails validation and the
+      // pre-existing static btc coin is kept and returned instead of the (invalid) refreshed one.
       const config = {
         ...trimmedDynamicBaseChainConfig['mydynchain'][0],
         name: 'btc',
@@ -2075,7 +2207,7 @@ describe('DynamicCoin and dynamic base chain support', function () {
         isToken: false,
       };
       const coin = createTokenUsingTrimmedConfigDetails(config);
-      should(coin).be.undefined();
+      coin.should.equal(coins.get('btc'));
     });
   });
 });
