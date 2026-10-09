@@ -7,6 +7,8 @@ import {
   MismatchedRecipient,
   ContractDataPayload,
   TokenApproval,
+  RecoveryKeyMismatchError,
+  BitGoJsError,
 } from '../../../src/bitgo/errors';
 import { TransactionParams } from '../../../src/bitgo/baseCoin';
 
@@ -379,5 +381,21 @@ describe('Transaction Intent Mismatch Errors', () => {
         should.equal(parsed.id, '0x123');
       });
     });
+  });
+});
+
+describe('RecoveryKeyMismatchError', () => {
+  it('should set name, code, and default message', () => {
+    const error = new RecoveryKeyMismatchError();
+    error.name.should.equal('RecoveryKeyMismatchError');
+    error.code.should.equal('recovery_key_mismatch');
+    error.message.should.equal('recovery keys do not match the wallet on-chain signer set');
+    should(error).be.an.instanceof(BitGoJsError);
+  });
+
+  it('should respect a custom message', () => {
+    const error = new RecoveryKeyMismatchError('custom mismatch message');
+    error.message.should.equal('custom mismatch message');
+    error.code.should.equal('recovery_key_mismatch');
   });
 });

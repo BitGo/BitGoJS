@@ -5,7 +5,7 @@ import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import ripple from '../../src/ripple';
 import { Txrp } from '../../src/txrp';
 
-import { Wallet } from '@bitgo/sdk-core';
+import { RecoveryKeyMismatchError, Wallet } from '@bitgo/sdk-core';
 import assert from 'assert';
 import * as _ from 'lodash';
 import * as nock from 'nock';
@@ -570,6 +570,112 @@ describe('XRP:', function () {
       res.txHex.should.equal(
         '120000228000000024000C50B82E00003039201B002B750061D48E35FA931A0000524C555344000000000000000000000000000000FCF4DD8C64636BC503F4A58DC6C684D2C7C3C24F68400000000000001E730081149389EC07DF6E6567D658BACC54606EBB33DC13E6831438D1B9A61C0FFA1A82FCF8A40AF709A9C8CF1890F3E0107321035F72A84A6BCD8ED2D26EAD2C5F864C55C26364EAF20257EFF7241F0F8D987BDA74473045022100A954411577684F5844C79F7B49FBE2D71E6E8AEC6A6BF4C04C3E3A208F5DA3F702206C114D4E2B7EA16CAF1DFAE2CE9D5C878818F879B8C921E5CF389F5AB87FE59381146BBA54CE60D9F3C926711A2C60D1CC712F21993CE1E01073210261E923400BDF6024D1D05574A7303C3D6878C7678F31254BD769DD4037495D9974473045022100F0FCF1044224A1DCB6ACE8AB057FD2344B39ED5C09B436A2B94EB1EF1A7ED99802206EFB9321E6344C94591B9D1F921045DDBAE3EC78808CB30D6C9CA18F02A11E7B8114EE3FBE636ADCBDD05B53493501DA6FBBC9287562E1F1'
       );
+    });
+
+    it('should throw RecoveryKeyMismatchError when the user signer is not in the wallet signer list', async function () {
+      xrplStub = sandBox.stub(basecoin.bitgo, 'post');
+      const accountInfoParams = {
+        method: 'account_info',
+        params: [
+          {
+            account: testData.keys.rootAddress,
+            strict: true,
+            ledger_index: 'current',
+            queue: true,
+            signer_lists: true,
+          },
+        ],
+      };
+
+      const accountLinesParams = {
+        method: 'account_lines',
+        params: [
+          {
+            account: testData.keys.rootAddress,
+            ledger_index: 'validated',
+          },
+        ],
+      };
+
+      // clone the happy-path account info but replace the user signer entry
+      const mismatchedAccountInfoResponse = _.cloneDeep(testData.accountInfoResponse);
+      mismatchedAccountInfoResponse.body.result.account_data.signer_lists[0].SignerEntries[0].SignerEntry.Account =
+        'rQNZGRLwTAF4WAxZvc1UbueEs4rQb7KQmN';
+
+      const sendStub = sinon.stub();
+      sendStub.withArgs(accountInfoParams).resolves(mismatchedAccountInfoResponse);
+      sendStub.withArgs({ method: 'fee' }).resolves(testData.feeResponse);
+      sendStub.withArgs({ method: 'server_info' }).resolves(testData.serverInfoResponse);
+      sendStub.withArgs(accountLinesParams).resolves(testData.accountlinesResponse);
+
+      xrplStub.withArgs(basecoin.getRippledUrl()).returns({
+        send: sendStub,
+      });
+
+      await basecoin
+        .recover({
+          userKey: testData.keys.userKey,
+          backupKey: testData.keys.backupKey,
+          rootAddress: testData.keys.rootAddress,
+          recoveryDestination: destination,
+          walletPassphrase: passPhrase,
+          issuerAddress: 'rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV',
+          currencyCode: '524C555344000000000000000000000000000000',
+        })
+        .should.be.rejectedWith(RecoveryKeyMismatchError, { code: 'recovery_key_mismatch' });
+    });
+
+    it('should throw RecoveryKeyMismatchError when the backup signer is not in the wallet signer list', async function () {
+      xrplStub = sandBox.stub(basecoin.bitgo, 'post');
+      const accountInfoParams = {
+        method: 'account_info',
+        params: [
+          {
+            account: testData.keys.rootAddress,
+            strict: true,
+            ledger_index: 'current',
+            queue: true,
+            signer_lists: true,
+          },
+        ],
+      };
+
+      const accountLinesParams = {
+        method: 'account_lines',
+        params: [
+          {
+            account: testData.keys.rootAddress,
+            ledger_index: 'validated',
+          },
+        ],
+      };
+
+      // clone the happy-path account info but replace the backup signer entry
+      const mismatchedAccountInfoResponse = _.cloneDeep(testData.accountInfoResponse);
+      mismatchedAccountInfoResponse.body.result.account_data.signer_lists[0].SignerEntries[1].SignerEntry.Account =
+        'rQNZGRLwTAF4WAxZvc1UbueEs4rQb7KQmN';
+
+      const sendStub = sinon.stub();
+      sendStub.withArgs(accountInfoParams).resolves(mismatchedAccountInfoResponse);
+      sendStub.withArgs({ method: 'fee' }).resolves(testData.feeResponse);
+      sendStub.withArgs({ method: 'server_info' }).resolves(testData.serverInfoResponse);
+      sendStub.withArgs(accountLinesParams).resolves(testData.accountlinesResponse);
+
+      xrplStub.withArgs(basecoin.getRippledUrl()).returns({
+        send: sendStub,
+      });
+
+      await basecoin
+        .recover({
+          userKey: testData.keys.userKey,
+          backupKey: testData.keys.backupKey,
+          rootAddress: testData.keys.rootAddress,
+          recoveryDestination: destination,
+          walletPassphrase: passPhrase,
+          issuerAddress: 'rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV',
+          currencyCode: '524C555344000000000000000000000000000000',
+        })
+        .should.be.rejectedWith(RecoveryKeyMismatchError, { code: 'recovery_key_mismatch' });
     });
 
     it('should generate an unsigned sweep for token', async function () {

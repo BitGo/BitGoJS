@@ -215,7 +215,9 @@ export class Eth extends AbstractEthLikeNewCoins {
     const gasPrice = params.eip1559
       ? new optionalDeps.ethUtil.BN(params.eip1559.maxFeePerGas)
       : new optionalDeps.ethUtil.BN(this.setGasPrice(params.gasPrice));
-    if (!isUnsignedSweep) {
+    // decrypt the user key unless it is already an extended key, so that both sweep and
+    // signed branches reach the signer check with a base58 key (same gate as recoverEthLike)
+    if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
       try {
         userKey = await this.bitgo.decrypt({
           input: userKey,
@@ -253,6 +255,13 @@ export class Eth extends AbstractEthLikeNewCoins {
       }
       backupKeyAddress = `0x${optionalDeps.ethUtil.privateToAddress(backupSigningKey).toString('hex')}`;
     }
+
+    await this.assertRecoveryKeysAreWalletSigners(
+      userKey,
+      backupKeyAddress,
+      params.walletContractAddress,
+      params.apiKey
+    );
 
     const backupKeyNonce = await this.getAddressNonce(backupKeyAddress, params.apiKey);
 

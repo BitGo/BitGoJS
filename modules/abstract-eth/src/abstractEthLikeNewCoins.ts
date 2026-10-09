@@ -29,6 +29,7 @@ import {
   PrebuildTransactionResult,
   PresignTransactionOptions as BasePresignTransactionOptions,
   Recipient,
+  RecoveryKeyMismatchError,
   SignTransactionOptions as BaseSignTransactionOptions,
   TxIntentMismatchError,
   TxIntentMismatchRecipientError,
@@ -774,6 +775,70 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     }
     const sequenceIdHex = result.result;
     return new optionalDeps.ethUtil.BN(sequenceIdHex.slice(2), 16).toNumber();
+  }
+
+  /**
+   * Queries the wallet contract (via explorer API) whether an address is a signer on it.
+   * Probes the explicit `isSigner(address)` function because it exists on every deployed
+   * WalletSimple generation: the newer generation declares it beside its
+   * `mapping(address => bool) public signers`, while eth-multisig-v2 (ETH wallets) only
+   * has `address[] public signers` whose getter takes an index. The contracts'
+   * non-reverting fallback would return empty data for a missing selector, so probing a
+   * generation-specific getter must never happen.
+   * @param walletContractAddress - address of the wallet contract
+   * @param signerAddress - address to test for membership
+   * @param apiKey - optional API key to use instead of the one from the environment
+   * @returns true if the address is a signer on the wallet contract
+   */
+  async queryIsWalletSigner(walletContractAddress: string, signerAddress: string, apiKey?: string): Promise<boolean> {
+    const signerData = this.getMethodCallData('isSigner', ['address'], [signerAddress]).toString('hex');
+    const result = await this.recoveryBlockchainExplorerQuery(
+      {
+        chainid: this.getChainId().toString(),
+        module: 'proxy',
+        action: 'eth_call',
+        to: walletContractAddress,
+        data: signerData,
+        tag: 'latest',
+      },
+      apiKey
+    );
+    if (!result || !result.result || optionalDeps.ethUtil.stripHexPrefix(result.result).length === 0) {
+      throw new Error(
+        `Could not read the signer set of wallet contract ${walletContractAddress} from the explorer, got: ${result?.result}`
+      );
+    }
+    return optionalDeps.ethAbi.rawDecode(['bool'], optionalDeps.ethUtil.toBuffer(result.result))[0] === true;
+  }
+
+  /**
+   * Asserts the user and backup recovery keys are signers on the wallet contract.
+   * Runs before any balance/fee check so wrong pairings fail closed with RecoveryKeyMismatchError.
+   */
+  protected async assertRecoveryKeysAreWalletSigners(
+    userKey: string,
+    backupKeyAddress: string,
+    walletContractAddress: string,
+    apiKey?: string
+  ): Promise<void> {
+    const userKeyAddress = `0x${optionalDeps.ethUtil
+      .publicToAddress(bip32.fromBase58(userKey).publicKey, true)
+      .toString('hex')}`;
+    const isUserSigner = await this.queryIsWalletSigner(walletContractAddress, userKeyAddress, apiKey);
+    // we need to wait between making two explorer api calls to avoid getting banned
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const isBackupSigner = await this.queryIsWalletSigner(walletContractAddress, backupKeyAddress, apiKey);
+    const missingSigners = [
+      ...(isUserSigner ? [] : [`user key ${userKeyAddress}`]),
+      ...(isBackupSigner ? [] : [`backup key ${backupKeyAddress}`]),
+    ];
+    if (missingSigners.length > 0) {
+      throw new RecoveryKeyMismatchError(
+        `${missingSigners.join(' and ')} ${
+          missingSigners.length === 1 ? 'is not a signer' : 'are not signers'
+        } of wallet contract ${walletContractAddress}`
+      );
+    }
   }
 
   /**
@@ -1535,6 +1600,13 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       backupKeyAddress = keyPair.getAddress();
     }
 
+    await this.assertRecoveryKeysAreWalletSigners(
+      userKey,
+      backupKeyAddress,
+      params.walletContractAddress,
+      params.apiKey
+    );
+
     const backupKeyNonce = await this.getAddressNonce(backupKeyAddress, params.apiKey);
     // get balance of backupKey to ensure funds are available to pay fees
     const backupKeyBalance = await this.queryAddressBalance(backupKeyAddress, params.apiKey);
@@ -2282,6 +2354,11 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       const derivedCommonKeyChain = MPC.deriveUnhardened(commonKeyChain, 'm/0');
       const backupKeyPair = new KeyPairLib({ pub: derivedCommonKeyChain.slice(0, 66) });
       const baseAddress = backupKeyPair.getAddress();
+      if (baseAddress.toLowerCase() !== params.walletContractAddress.toLowerCase()) {
+        throw new RecoveryKeyMismatchError(
+          `derived wallet base address ${baseAddress} does not match the given wallet contract address ${params.walletContractAddress}`
+        );
+      }
       const unsignedTx = (await this.buildTssRecoveryTxn(baseAddress, gasPrice, gasLimit, params)).tx;
       const messageHash = unsignedTx.getMessageToSign(true);
       const signature = await ECDSAUtils.signRecoveryMpcV2(messageHash, userKeyShare, backupKeyShare, commonKeyChain);

@@ -1,6 +1,7 @@
+import assert from 'assert';
 import * as should from 'should';
 import { bip32 } from '@bitgo/secp256k1';
-import { common, FullySignedTransaction, TransactionType, Wallet } from '@bitgo/sdk-core';
+import { common, FullySignedTransaction, RecoveryKeyMismatchError, TransactionType, Wallet } from '@bitgo/sdk-core';
 import * as secp256k1 from 'secp256k1';
 import nock from 'nock';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
@@ -562,6 +563,14 @@ describe('Arbitrum', function () {
         .query(mockData.getBalanceRequest(backupKeyAddress))
         .reply(200, mockData.getBalanceResponse);
       nock(baseUrl).get('/api').query(mockData.getContractCallRequest).reply(200, mockData.getContractCallResponse);
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getIsSignerCallRequest('0x916da87c3ae51f0fa23a2bab8732d23c21d30f5e'))
+        .reply(200, mockData.getIsSignerTrueResponse);
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getIsSignerCallRequest(backupKeyAddress))
+        .reply(200, mockData.getIsSignerTrueResponse);
       const basecoin = bitgo.coin('tarbeth') as Arbeth;
       const transaction = (await basecoin.recover({
         userKey: userXpub,
@@ -604,6 +613,14 @@ describe('Arbitrum', function () {
         .query(mockData.getBalanceRequest(backupKeyAddress))
         .reply(200, mockData.getBalanceResponse);
       nock(baseUrl).get('/api').query(mockData.getContractCallRequest).reply(200, mockData.getContractCallResponse);
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getIsSignerCallRequest('0x916da87c3ae51f0fa23a2bab8732d23c21d30f5e'))
+        .reply(200, mockData.getIsSignerTrueResponse);
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getIsSignerCallRequest(backupKeyAddress))
+        .reply(200, mockData.getIsSignerTrueResponse);
       const basecoin = bitgo.coin('tarbeth') as Arbeth;
       try {
         (await basecoin.recover({
@@ -636,6 +653,14 @@ describe('Arbitrum', function () {
         .query(mockData.getBalanceRequest(backupKeyAddress))
         .reply(200, mockData.getFeeAddressLowBalanceResponse);
       nock(baseUrl).get('/api').query(mockData.getContractCallRequest).reply(200, mockData.getContractCallResponse);
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getIsSignerCallRequest('0x916da87c3ae51f0fa23a2bab8732d23c21d30f5e'))
+        .reply(200, mockData.getIsSignerTrueResponse);
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getIsSignerCallRequest(backupKeyAddress))
+        .reply(200, mockData.getIsSignerTrueResponse);
       const basecoin = bitgo.coin('tarbeth') as Arbeth;
       try {
         (await basecoin.recover({
@@ -669,6 +694,14 @@ describe('Arbitrum', function () {
         .query(mockData.getBalanceRequest(backupKeyAddress))
         .reply(200, mockData.getBalanceResponse);
       nock(baseUrl).get('/api').query(mockData.getContractCallRequest).reply(200, mockData.getContractCallResponse);
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getIsSignerCallRequest('0x552319b648972679986b5719c24c876aeaf4ef59'))
+        .reply(200, mockData.getIsSignerTrueResponse);
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getIsSignerCallRequest(backupKeyAddress))
+        .reply(200, mockData.getIsSignerTrueResponse);
       const basecoin = bitgo.coin('tarbeth') as Arbeth;
       const transaction = (await basecoin.recover({
         userKey:
@@ -713,6 +746,14 @@ describe('Arbitrum', function () {
         .query(mockData.getBalanceRequest(backupKeyAddress))
         .reply(200, mockData.getBalanceResponse);
       nock(baseUrl).get('/api').query(mockData.getContractCallRequest).reply(200, mockData.getContractCallResponse);
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getIsSignerCallRequest('0x916da87c3ae51f0fa23a2bab8732d23c21d30f5e'))
+        .reply(200, mockData.getIsSignerTrueResponse);
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getIsSignerCallRequest(backupKeyAddress))
+        .reply(200, mockData.getIsSignerTrueResponse);
       const basecoin = bitgo.coin('tarbeth') as Arbeth;
       const transaction = (await basecoin.recover({
         userKey: userXpub,
@@ -750,6 +791,77 @@ describe('Arbitrum', function () {
       const rebuiltTx = await txBuilder.build();
       rebuiltTx.signature.length.should.equal(2);
       rebuiltTx.outputs.length.should.equal(1);
+    });
+
+    it('should throw RecoveryKeyMismatchError when user recovery key is not a wallet signer', async function () {
+      const walletContractAddress = TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS as string;
+      const backupKeyAddress = '0x4f2c4830cc37f2785c646f89ded8a919219fa0e9';
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getIsSignerCallRequest('0x916da87c3ae51f0fa23a2bab8732d23c21d30f5e'))
+        .reply(200, mockData.getIsSignerFalseResponse);
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getIsSignerCallRequest(backupKeyAddress))
+        .reply(200, mockData.getIsSignerTrueResponse);
+      const basecoin = bitgo.coin('tarbeth') as Arbeth;
+      await assert.rejects(
+        async () =>
+          await basecoin.recover({
+            userKey: userXpub,
+            backupKey: backupXpub,
+            walletContractAddress: walletContractAddress,
+            recoveryDestination: TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT as string,
+            eip1559: { maxFeePerGas: 20000000000, maxPriorityFeePerGas: 10000000000 },
+            gasLimit: 500000,
+          }),
+        (err) => err instanceof RecoveryKeyMismatchError && err.code === 'recovery_key_mismatch'
+      );
+    });
+
+    it('should throw RecoveryKeyMismatchError when backup recovery key is not a wallet signer', async function () {
+      const walletContractAddress = TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS as string;
+      const backupKeyAddress = '0x4f2c4830cc37f2785c646f89ded8a919219fa0e9';
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getIsSignerCallRequest('0x916da87c3ae51f0fa23a2bab8732d23c21d30f5e'))
+        .reply(200, mockData.getIsSignerTrueResponse);
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getIsSignerCallRequest(backupKeyAddress))
+        .reply(200, mockData.getIsSignerFalseResponse);
+      const basecoin = bitgo.coin('tarbeth') as Arbeth;
+      await assert.rejects(
+        async () =>
+          await basecoin.recover({
+            userKey: userXpub,
+            backupKey: backupXpub,
+            walletContractAddress: walletContractAddress,
+            recoveryDestination: TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT as string,
+            eip1559: { maxFeePerGas: 20000000000, maxPriorityFeePerGas: 10000000000 },
+            gasLimit: 500000,
+          }),
+        (err) => err instanceof RecoveryKeyMismatchError && err.code === 'recovery_key_mismatch'
+      );
+    });
+
+    it('should throw an error when the signer set cannot be read from the wallet contract', async function () {
+      const walletContractAddress = TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS as string;
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getIsSignerCallRequest('0x916da87c3ae51f0fa23a2bab8732d23c21d30f5e'))
+        .reply(200, { jsonrpc: '2.0', result: '0x', id: 1 });
+      const basecoin = bitgo.coin('tarbeth') as Arbeth;
+      await basecoin
+        .recover({
+          userKey: userXpub,
+          backupKey: backupXpub,
+          walletContractAddress: walletContractAddress,
+          recoveryDestination: TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT as string,
+          eip1559: { maxFeePerGas: 20000000000, maxPriorityFeePerGas: 10000000000 },
+          gasLimit: 500000,
+        })
+        .should.be.rejectedWith(/Could not read the signer set/);
     });
   });
 });

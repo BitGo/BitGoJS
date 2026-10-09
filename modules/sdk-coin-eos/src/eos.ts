@@ -31,6 +31,7 @@ import {
   multisigTypes,
   ParsedTransaction,
   ParseTransactionOptions,
+  RecoveryKeyMismatchError,
   RequestTracer,
   SignTransactionOptions as BaseSignTransactionOptions,
   TransactionExplanation,
@@ -910,10 +911,6 @@ export class Eos extends BaseCoin {
     const rootAddressDetails = this.getAddressDetails(params.rootAddress);
     const account = await this.getAccountFromNode({ address: rootAddressDetails.address });
 
-    if (!account.core_liquid_balance) {
-      throw new Error('Could not find any balance to recovery for ' + params.rootAddress);
-    }
-
     if (!account.permissions) {
       throw new Error('Could not find permissions for ' + params.rootAddress);
     }
@@ -942,7 +939,13 @@ export class Eos extends BaseCoin {
       foundPubs[signer.key] = (foundPubs[signer.key] || 0) + 1;
     }
     if (foundPubs[userPub] !== 1 || foundPubs[backupPub] !== 1) {
-      throw new Error('unexpected incidence frequency of user signer key');
+      throw new RecoveryKeyMismatchError(
+        `user signer key ${userPub} or backup signer key ${backupPub} is missing from the account active permissions`
+      );
+    }
+
+    if (!account.core_liquid_balance) {
+      throw new Error('Could not find any balance to recovery for ' + params.rootAddress);
     }
 
     const accountBalance = account.core_liquid_balance.split(' ')[0];

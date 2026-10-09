@@ -64,6 +64,14 @@ describe('Arbeth Token:', function () {
       .query(mockData.getBalanceRequest(backupKeyAddress))
       .reply(200, mockData.getBalanceResponse);
     nock(baseUrl).get('/api').query(mockData.getContractCallRequest).reply(200, mockData.getContractCallResponse);
+    nock(baseUrl)
+      .get('/api')
+      .query(mockData.getIsSignerCallRequest('0x916da87c3ae51f0fa23a2bab8732d23c21d30f5e'))
+      .reply(200, mockData.getIsSignerTrueResponse);
+    nock(baseUrl)
+      .get('/api')
+      .query(mockData.getIsSignerCallRequest(backupKeyAddress))
+      .reply(200, mockData.getIsSignerTrueResponse);
     const transaction = (await arbethTokenCoin.recover({
       userKey: userXpub,
       backupKey: backupXpub,
@@ -106,6 +114,14 @@ describe('Arbeth Token:', function () {
       .query(mockData.getBalanceRequest(backupKeyAddress))
       .reply(200, mockData.getBalanceResponse);
     nock(baseUrl).get('/api').query(mockData.getContractCallRequest).reply(200, mockData.getContractCallResponse);
+    nock(baseUrl)
+      .get('/api')
+      .query(mockData.getIsSignerCallRequest('0x552319b648972679986b5719c24c876aeaf4ef59'))
+      .reply(200, mockData.getIsSignerTrueResponse);
+    nock(baseUrl)
+      .get('/api')
+      .query(mockData.getIsSignerCallRequest(backupKeyAddress))
+      .reply(200, mockData.getIsSignerTrueResponse);
 
     const transaction = (await arbethTokenCoin.recover({
       userKey:

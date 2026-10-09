@@ -34,6 +34,7 @@ import {
   ParsedTransaction,
   ParseTransactionOptions,
   promiseProps,
+  RecoveryKeyMismatchError,
   StellarFederationUserNotFoundError,
   TokenEnablementConfig,
   UnexpectedAddressError,
@@ -769,6 +770,15 @@ export class Xlm extends BaseCoin {
         // If the destination account does not yet exist, horizon responds with 404
         unfundedDestination = true;
       }
+    }
+
+    const onChainSigners = new Set((accountData.signers ?? []).map((signer) => signer.key));
+    const userAddress = userKey.publicKey();
+    const backupAddress = backupKey.publicKey();
+    if (!onChainSigners.has(userAddress) || !onChainSigners.has(backupAddress)) {
+      throw new RecoveryKeyMismatchError(
+        `user signer ${userAddress} or backup signer ${backupAddress} is missing from the account signers of ${params.rootAddress}`
+      );
     }
 
     if (!accountData.sequence || !accountData.balances) {
