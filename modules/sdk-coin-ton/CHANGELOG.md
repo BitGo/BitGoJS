@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.3.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@4.3.2...@bitgo/sdk-coin-ton@4.3.3) (2026-10-09)
+
+
+### Bug Fixes
+
+* **sdk-coin-ton:** return MPCSweepTxs from recover() for unsigned sweeps ([6ae3e01](https://github.com/BitGo/BitGoJS/commit/6ae3e01ed42716ff9f5d042c978562cb420cee58))
+
+
+
+
+
 ## [4.3.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@4.3.1...@bitgo/sdk-coin-ton@4.3.2) (2026-10-07)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ton

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@11.2.0...@bitgo/sdk-lib-mpc@11.3.0) (2026-10-09)
+
+
+### Features
+
+* derive ecdsaMpc child keys for Safe recovery ([f09bd34](https://github.com/BitGo/BitGoJS/commit/f09bd349b86fca42481d3914e01566984aafc23a))
+
+
+
+
+
 # [11.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@11.1.0...@bitgo/sdk-lib-mpc@11.2.0) (2026-10-07)
 
 

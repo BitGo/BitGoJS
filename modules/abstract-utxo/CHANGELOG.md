@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [13.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@13.2.2...@bitgo/abstract-utxo@13.3.0) (2026-10-09)
+
+
+### Features
+
+* recovery SDK surface for slot 1 ([46db72a](https://github.com/BitGo/BitGoJS/commit/46db72a7c75c224969b321debc68d027fd06df45))
+
+
+
+
+
 ## [13.2.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@13.2.1...@bitgo/abstract-utxo@13.2.2) (2026-10-07)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

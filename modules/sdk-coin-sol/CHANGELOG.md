@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.14.0...@bitgo/sdk-coin-sol@8.15.0) (2026-10-09)
+
+
+### Bug Fixes
+
+* **sdk-coin-sol:** fix three bugs in injectNonceAdvanceInstruction ([9225ace](https://github.com/BitGo/BitGoJS/commit/9225acea9a16ad06f27d433c7d91f1b3fbf2c39c))
+* **sdk-coin-sol:** read sponsored fee payer from tx params ([ce5756c](https://github.com/BitGo/BitGoJS/commit/ce5756c188a835d52f71ee3f856c9792aee9bfb0))
+* **sdk-coin-sol:** set tx type on v1 parse ([072643b](https://github.com/BitGo/BitGoJS/commit/072643ba950719a175b96a4cc2917e9c3948e963))
+
+
+### Features
+
+* **sdk-coin-sol:** add addFeePayerSignature() ([4425b80](https://github.com/BitGo/BitGoJS/commit/4425b80d8a4f482762e2515ab8f97bf7fc446cd9))
+* **sdk-coin-sol:** add explicit compute-unit-limit setter ([ff5a721](https://github.com/BitGo/BitGoJS/commit/ff5a72174c7134dcecaaa2e76977971891cf484e))
+* **sdk-coin-sol:** add V1CustomInstructionBuilder for WP v1 ([b0631cc](https://github.com/BitGo/BitGoJS/commit/b0631ccc9ae13162a0ff2b98f609cc9a69fd6ffc))
+* **sdk-coin-sol:** add V1TransactionBuilder with durable nonce ([330d24d](https://github.com/BitGo/BitGoJS/commit/330d24defffd4c34b954cc1b6b853807515b8a93))
+* **sdk-coin-sol:** verifyTransaction accepts a wallet-platform-declared sponsored fee payer ([b4b0e18](https://github.com/BitGo/BitGoJS/commit/b4b0e185f2a70b214a83b8a61ccf42f56a10b68e))
+
+
+
+
+
 # [8.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.13.0...@bitgo/sdk-coin-sol@8.14.0) (2026-10-07)
 
 
