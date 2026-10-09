@@ -1,15 +1,18 @@
 import should from 'should';
 import nacl from 'tweetnacl';
 import { coins } from '@bitgo/statics';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType, type SolVersionedTransactionData } from '@bitgo/sdk-core';
 import { PublicKey, SystemProgram } from '@solana/web3.js';
+import base58 from 'bs58';
 import {
   buildAdvanceNonceAccountInstruction,
   decodeV1Message,
+  injectV1NonceAdvanceInstruction,
   KeyPair,
   parseWireTransaction,
   Transaction,
   V1TransactionBuilder,
+  toV1TransactionInstruction,
 } from '../../../src';
 import { verifyV1Signatures } from '../../../src/lib/serialization/parseWireTransaction';
 import { InstructionBuilderTypes } from '../../../src/lib/constants';
@@ -269,5 +272,81 @@ describe('V1CustomInstructionBuilder', function () {
     const parsed = parseWireTransaction(signed.v1TransactionBytes!);
     parsed.signerPublicKeys.should.deepEqual([user.pub, gasTank.pub]);
     verifyV1Signatures(parsed.messageBytes, parsed.signatures, parsed.signerPublicKeys);
+  });
+});
+
+describe('V1TransactionBuilder envelope surface (fromVersionedData + SDK injector)', function () {
+  const coinConfig = coins.get('tsol');
+  const user = new KeyPair(testData.authAccount).getKeys();
+  const gasTank = new KeyPair({ prv: testData.prvKeys.prvKey1.base58 }).getKeys();
+  const nonceAccount = new KeyPair(testData.nonceAccount).getKeys();
+  const recentBlockHash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
+
+  const envelope: SolVersionedTransactionData = {
+    version: 1,
+    versionedInstructions: [
+      { programIdIndex: 1, accountKeyIndexes: [0, 1], data: '2UzHM' }, // base58 of 0x01000000
+    ],
+    addressLookupTables: [],
+    staticAccountKeys: [user.pub, 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'],
+    messageHeader: { numRequiredSignatures: 1, numReadonlySignedAccounts: 0, numReadonlyUnsignedAccounts: 1 },
+    transactionConfig: {
+      computeUnitLimit: 200_000,
+      heapSize: 32_768,
+      loadedAccountsDataSizeLimit: null,
+      priorityFee: null,
+    },
+  };
+
+  it('fromVersionedData builds the same v1 message as manual addInstruction', async function () {
+    const fromData = new V1CustomInstructionBuilder(coinConfig);
+    fromData.fromVersionedData(envelope);
+    fromData.nonce(recentBlockHash);
+    fromData.sign({ key: user.prv });
+    const a = (await fromData.build()) as Transaction;
+
+    const manual = new V1CustomInstructionBuilder(coinConfig);
+    manual.sender(user.pub);
+    manual.nonce(recentBlockHash);
+    manual.transactionConfig({ computeUnitLimit: 200_000, heapSize: 32_768 });
+    for (const ix of envelope.versionedInstructions) {
+      manual.addInstruction(toV1TransactionInstruction(ix, envelope));
+    }
+    manual.sign({ key: user.prv });
+    const b = (await manual.build()) as Transaction;
+
+    a.v1MessageBytes!.should.deepEqual(b.v1MessageBytes!);
+  });
+
+  it('SDK injectV1NonceAdvanceInstruction grows the header and promotes the authority', function () {
+    const injected = injectV1NonceAdvanceInstruction(envelope, {
+      walletNonceAddress: nonceAccount.pub,
+      authWalletAddress: gasTank.pub,
+    });
+    injected.messageHeader.numRequiredSignatures.should.equal(2);
+    injected.messageHeader.numReadonlySignedAccounts.should.equal(1);
+    injected.messageHeader.numReadonlyUnsignedAccounts.should.equal(3);
+    const nonceIx = injected.versionedInstructions[0];
+    injected.staticAccountKeys[nonceIx.programIdIndex].should.equal(SystemProgram.programId.toBase58());
+    Buffer.from(base58.decode(nonceIx.data))
+      .equals(Buffer.from([4, 0, 0, 0]))
+      .should.be.true();
+
+    // idempotent on a second pass
+    const twice = injectV1NonceAdvanceInstruction(injected, {
+      walletNonceAddress: nonceAccount.pub,
+      authWalletAddress: gasTank.pub,
+    });
+    twice.versionedInstructions.length.should.equal(injected.versionedInstructions.length);
+  });
+
+  it('transactionConfig coerces unset fields to null (SDK serializer contract)', async function () {
+    const builder = new V1CustomInstructionBuilder(coinConfig);
+    builder.fromVersionedData(envelope);
+    builder.nonce(recentBlockHash);
+    builder.transactionConfig({ computeUnitLimit: 200_000 });
+    const tx = (await builder.build()) as Transaction;
+    const decoded = decodeV1Message(tx.v1MessageBytes!);
+    decoded.configValues.some((v) => v.kind === 'u32' && v.value === 200_000).should.be.true();
   });
 });
