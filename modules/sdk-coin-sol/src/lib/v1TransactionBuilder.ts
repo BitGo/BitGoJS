@@ -9,9 +9,17 @@ import {
   PublicKey as BasePublicKey,
   SigningError,
   SolV1TransactionConfig,
+  SolVersionedTransactionData,
   TransactionType,
 } from '@bitgo/sdk-core';
-import { PublicKey, SystemProgram, Transaction as SolTransaction, TransactionInstruction } from '@solana/web3.js';
+import {
+  PublicKey,
+  SystemProgram,
+  SYSVAR_RECENT_BLOCKHASHES_PUBKEY,
+  Transaction as SolTransaction,
+  TransactionInstruction,
+} from '@solana/web3.js';
+import base58 from 'bs58';
 import nacl from 'tweetnacl';
 import assert from 'assert';
 import { Transaction } from './transaction';
@@ -52,6 +60,183 @@ export function buildAdvanceNonceAccountInstruction(
 }
 
 /**
+ * Map a v1 envelope instruction (index-based) into a web3.js TransactionInstruction
+ * (address-based), deriving each referenced account's signer/writable role from the
+ * message header (Solana role conventions: the last `numReadonlySignedAccounts`
+ * signers and last `numReadonlyUnsignedAccounts` non-signers are readonly).
+ *
+ * @param instruction - the envelope instruction (programIdIndex/accountKeyIndexes/data)
+ * @param data - the v1 envelope
+ * @returns the address-based instruction, ready for V1TransactionBuilder.addInstruction
+ */
+export function toV1TransactionInstruction(
+  instruction: { programIdIndex: number; accountKeyIndexes: number[]; data: string },
+  data: SolVersionedTransactionData
+): TransactionInstruction {
+  const { staticAccountKeys, messageHeader } = data;
+  const numRequiredSignatures = messageHeader.numRequiredSignatures;
+  const numAccounts = staticAccountKeys.length;
+
+  const isSigner = (index: number): boolean => index < numRequiredSignatures;
+  const isWritable = (index: number): boolean =>
+    isSigner(index)
+      ? index < numRequiredSignatures - messageHeader.numReadonlySignedAccounts
+      : index < numAccounts - messageHeader.numReadonlyUnsignedAccounts;
+
+  return new TransactionInstruction({
+    programId: new PublicKey(staticAccountKeys[instruction.programIdIndex]),
+    keys: instruction.accountKeyIndexes.map((accountIndex) => ({
+      pubkey: new PublicKey(staticAccountKeys[accountIndex]),
+      isSigner: isSigner(accountIndex),
+      isWritable: isWritable(accountIndex),
+    })),
+    data: Buffer.from(base58.decode(instruction.data)),
+  });
+}
+
+/**
+ * Inject an AdvanceNonceAccount instruction into a v1 envelope for durable nonce.
+ *
+ * v1 (SIMD-0296/0385) has no address lookup tables, so every account is a static
+ * key. The nonce authority MUST sign the AdvanceNonceAccount instruction (hard
+ * runtime requirement) and the nonce account MUST be writable; the system program
+ * and recent-blockhashes sysvar are readonly non-signers. The instruction is
+ * prepended and every instruction's account indexes are remapped to the rebuilt
+ * static key list; messageHeader grows accordingly so the wire-size estimate and
+ * account caps are correct.
+ *
+ * @param data - the v1 envelope (client-supplied, no nonce instruction)
+ * @param durableNonceParams - walletNonceAddress + authWalletAddress (gas-tank root)
+ * @returns a copy of the envelope with the nonce instruction injected
+ * @edge if the envelope already contains an AdvanceNonceAccount instruction, returns
+ *   the envelope unchanged (idempotent - a durable-aware client may supply it)
+ */
+export function injectV1NonceAdvanceInstruction(
+  data: SolVersionedTransactionData,
+  durableNonceParams: { walletNonceAddress: string; authWalletAddress: string }
+): SolVersionedTransactionData {
+  const { walletNonceAddress, authWalletAddress } = durableNonceParams;
+  const SYSTEM_PROGRAM = SystemProgram.programId.toBase58();
+  const SYSVAR_RECENT_BLOCKHASHES = SYSVAR_RECENT_BLOCKHASHES_PUBKEY.toBase58();
+
+  // Idempotence: a durable-aware client may already include the nonce instruction.
+  const hasNonceAdvance = data.versionedInstructions.some((instruction) => {
+    const program = data.staticAccountKeys[instruction.programIdIndex];
+    return program === SYSTEM_PROGRAM && Buffer.from(base58.decode(instruction.data))[0] === 4;
+  });
+  if (hasNonceAdvance) {
+    return data;
+  }
+
+  const { numRequiredSignatures, numReadonlySignedAccounts, numReadonlyUnsignedAccounts } = data.messageHeader;
+  const oldStaticLen = data.staticAccountKeys.length;
+  if (
+    numReadonlySignedAccounts > numRequiredSignatures ||
+    numRequiredSignatures + numReadonlyUnsignedAccounts > oldStaticLen
+  ) {
+    throw new BuildTransactionError(
+      `Invalid message header: readonly counts (${numReadonlySignedAccounts}, ${numReadonlyUnsignedAccounts}) ` +
+        `are inconsistent with ${numRequiredSignatures} required signatures and ${oldStaticLen} static account keys`
+    );
+  }
+
+  // Split the static keys into the four v1 header sections.
+  const writableSigners = data.staticAccountKeys.slice(0, numRequiredSignatures - numReadonlySignedAccounts);
+  const readonlySigners = data.staticAccountKeys.slice(
+    numRequiredSignatures - numReadonlySignedAccounts,
+    numRequiredSignatures
+  );
+  const writableNonSigners = data.staticAccountKeys.slice(
+    numRequiredSignatures,
+    oldStaticLen - numReadonlyUnsignedAccounts
+  );
+  const readonlyNonSigners = data.staticAccountKeys.slice(oldStaticLen - numReadonlyUnsignedAccounts);
+
+  // The nonce authority must be a signer for AdvanceNonceAccount.
+  const authorityIsSigner = writableSigners.includes(authWalletAddress) || readonlySigners.includes(authWalletAddress);
+  if (!authorityIsSigner) {
+    const asReadonlyNonSigner = readonlyNonSigners.indexOf(authWalletAddress);
+    const asWritableNonSigner = writableNonSigners.indexOf(authWalletAddress);
+    if (asReadonlyNonSigner >= 0) {
+      readonlyNonSigners.splice(asReadonlyNonSigner, 1);
+      readonlySigners.push(authWalletAddress);
+    } else if (asWritableNonSigner >= 0) {
+      writableNonSigners.splice(asWritableNonSigner, 1);
+      writableSigners.push(authWalletAddress);
+    } else {
+      readonlySigners.push(authWalletAddress);
+    }
+  }
+
+  // The nonce account must be writable for AdvanceNonceAccount.
+  const nonceAsReadonlyNonSigner = readonlyNonSigners.indexOf(walletNonceAddress);
+  const nonceAsReadonlySigner = readonlySigners.indexOf(walletNonceAddress);
+  if (nonceAsReadonlyNonSigner >= 0) {
+    readonlyNonSigners.splice(nonceAsReadonlyNonSigner, 1);
+    writableNonSigners.push(walletNonceAddress);
+  } else if (nonceAsReadonlySigner >= 0) {
+    readonlySigners.splice(nonceAsReadonlySigner, 1);
+    writableSigners.push(walletNonceAddress);
+  } else if (!writableSigners.includes(walletNonceAddress) && !writableNonSigners.includes(walletNonceAddress)) {
+    writableNonSigners.push(walletNonceAddress);
+  }
+
+  // The system program and recent-blockhashes sysvar are readonly non-signers.
+  const isPresent = (key: string) =>
+    writableSigners.includes(key) ||
+    readonlySigners.includes(key) ||
+    writableNonSigners.includes(key) ||
+    readonlyNonSigners.includes(key);
+  if (!isPresent(SYSTEM_PROGRAM)) {
+    readonlyNonSigners.push(SYSTEM_PROGRAM);
+  }
+  if (!isPresent(SYSVAR_RECENT_BLOCKHASHES)) {
+    readonlyNonSigners.push(SYSVAR_RECENT_BLOCKHASHES);
+  }
+
+  const newStaticAccountKeys = [...writableSigners, ...readonlySigners, ...writableNonSigners, ...readonlyNonSigners];
+
+  // Remap every instruction index to the new key order (v1 has no lookup tables).
+  const indexMap = new Map<number, number>();
+  data.staticAccountKeys.forEach((key, oldIdx) => indexMap.set(oldIdx, newStaticAccountKeys.indexOf(key)));
+  const remapIndex = (index: number): number => {
+    const mapped = indexMap.get(index);
+    if (mapped === undefined) {
+      throw new BuildTransactionError(`Invalid account key index ${index} in versioned instruction`);
+    }
+    return mapped;
+  };
+
+  const nonceAdvanceInstruction = {
+    programIdIndex: newStaticAccountKeys.indexOf(SYSTEM_PROGRAM),
+    accountKeyIndexes: [
+      newStaticAccountKeys.indexOf(walletNonceAddress),
+      newStaticAccountKeys.indexOf(SYSVAR_RECENT_BLOCKHASHES),
+      newStaticAccountKeys.indexOf(authWalletAddress),
+    ],
+    data: '6vx8P', // base58 of SystemProgram AdvanceNonceAccount (0x04000000)
+  };
+
+  return {
+    ...data,
+    versionedInstructions: [
+      nonceAdvanceInstruction,
+      ...data.versionedInstructions.map((instruction) => ({
+        programIdIndex: remapIndex(instruction.programIdIndex),
+        accountKeyIndexes: instruction.accountKeyIndexes.map(remapIndex),
+        data: instruction.data,
+      })),
+    ],
+    staticAccountKeys: newStaticAccountKeys,
+    messageHeader: {
+      numRequiredSignatures: writableSigners.length + readonlySigners.length,
+      numReadonlySignedAccounts: readonlySigners.length,
+      numReadonlyUnsignedAccounts: readonlyNonSigners.length,
+    },
+  };
+}
+
+/**
  * Base builder for Solana v1 (SIMD-0296/0385) transactions.
  *
  * Parallel to the v0 {@link TransactionBuilder}, which is bound to a
@@ -77,6 +262,17 @@ export function buildAdvanceNonceAccountInstruction(
  * broadcastable wire is only produced once every required signer has a
  * signature.
  */
+/**
+ * Input shape for {@link V1TransactionBuilder.transactionConfig}: all fields optional;
+ * unset values are coerced to null (the SDK v1 serializer contract).
+ */
+export type V1TransactionConfigInput = {
+  computeUnitLimit?: number;
+  heapSize?: number;
+  loadedAccountsDataSizeLimit?: number;
+  priorityFee?: number;
+};
+
 export abstract class V1TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
   private _instructionsData: InstructionParams[] = [];
@@ -351,8 +547,48 @@ export abstract class V1TransactionBuilder extends BaseTransactionBuilder {
    * @param {SolV1TransactionConfig} config the v1 transaction config
    * @returns {V1TransactionBuilder} This transaction builder
    */
-  transactionConfig(config: SolV1TransactionConfig): this {
-    this._transactionConfig = config;
+  transactionConfig(config: V1TransactionConfigInput): this {
+    this._transactionConfig = {
+      computeUnitLimit: config.computeUnitLimit ?? null,
+      heapSize: config.heapSize ?? null,
+      loadedAccountsDataSizeLimit: config.loadedAccountsDataSizeLimit ?? null,
+      priorityFee: config.priorityFee ?? null,
+    };
+    return this;
+  }
+
+  /**
+   * Initialize the builder from a client-supplied v1 envelope
+   * (SolVersionedTransactionData). Sets the fee payer from staticAccountKeys[0],
+   * coerces the transaction config, and converts each envelope instruction to an
+   * address-based TransactionInstruction via {@link toV1TransactionInstruction}.
+   *
+   * @param data - the v1 envelope
+   * @returns {V1TransactionBuilder} This transaction builder
+   */
+  fromVersionedData(data: SolVersionedTransactionData): this {
+    if (!data || typeof data !== 'object') {
+      throw new BuildTransactionError('VersionedTransactionData must be a valid object');
+    }
+    if (!Array.isArray(data.staticAccountKeys) || data.staticAccountKeys.length === 0) {
+      throw new BuildTransactionError('staticAccountKeys must be a non-empty array');
+    }
+    if (!Array.isArray(data.versionedInstructions)) {
+      throw new BuildTransactionError('versionedInstructions must be an array');
+    }
+    if (!data.messageHeader || typeof data.messageHeader !== 'object') {
+      throw new BuildTransactionError('messageHeader must be a valid object');
+    }
+    this._sender = data.staticAccountKeys[0];
+    this._transactionConfig = {
+      computeUnitLimit: data.transactionConfig?.computeUnitLimit ?? null,
+      heapSize: data.transactionConfig?.heapSize ?? null,
+      loadedAccountsDataSizeLimit: data.transactionConfig?.loadedAccountsDataSizeLimit ?? null,
+      priorityFee: data.transactionConfig?.priorityFee ?? null,
+    };
+    for (const instruction of data.versionedInstructions) {
+      this.addInstruction(toV1TransactionInstruction(instruction, data));
+    }
     return this;
   }
 
