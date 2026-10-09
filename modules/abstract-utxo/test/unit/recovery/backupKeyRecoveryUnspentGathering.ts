@@ -3,13 +3,15 @@ import assert from 'assert';
 import * as sinon from 'sinon';
 import nock = require('nock');
 import { BIP32 } from '@bitgo/wasm-utxo';
-import { Triple } from '@bitgo/sdk-core';
+import { RecoveryProviderError, Triple } from '@bitgo/sdk-core';
+import { ApiRequestError, BlockchairApi } from '@bitgo/blockapis';
 
 import {
   backupKeyRecovery,
   BackupKeyRecoveryTransansaction,
   CoingeckoApi,
   FormattedOfflineVaultTxInfo,
+  forCoin,
 } from '../../../src';
 import type { Unspent } from '../../../src/unspent';
 import {
@@ -155,6 +157,55 @@ describe('Backup Key Recovery - Unspent Gathering', function () {
           });
         }, /No input to recover/);
       });
+    });
+  });
+
+  describe('RecoveryProvider', function () {
+    afterEach(function () {
+      nock.cleanAll();
+    });
+
+    it('maps a blockchair indexer failure to RecoveryProviderError', async function () {
+      const failingProvider = {
+        getAddressInfo: () => Promise.reject(new ApiRequestError('https://api.blockchair.com', 'status code 503')),
+        getUnspentsForAddresses: () => Promise.reject(new Error('unused')),
+        getTransactionHex: () => Promise.reject(new Error('unused')),
+        getTransactionIO: () => Promise.reject(new Error('unused')),
+      };
+      const stub = sinon.stub(BlockchairApi, 'forCoin').returns(failingProvider as any);
+      try {
+        const provider = forCoin('btc');
+        await assert.rejects(() => provider.getAddressInfo('addr'), RecoveryProviderError);
+      } finally {
+        stub.restore();
+      }
+    });
+
+    it('maps a real blockchair 503 to RecoveryProviderError', async function () {
+      const address = '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa';
+      nock('https://api.blockchair.com')
+        .get('/bitcoin/dashboards/address/' + address)
+        .reply(503);
+
+      const provider = forCoin('btc');
+      await assert.rejects(() => provider.getAddressInfo(address), RecoveryProviderError);
+    });
+
+    it('maps a blockchair rate-limit body (data:null) to RecoveryProviderError', async function () {
+      const address = '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa';
+      nock('https://api.blockchair.com')
+        .get('/bitcoin/dashboards/address/' + address)
+        .reply(200, {
+          data: null,
+          context: {
+            code: 430,
+            error: 'Your IP address is temporary blacklisted due to exceeding usage of API resources.',
+          },
+          api: {},
+        });
+
+      const provider = forCoin('btc');
+      await assert.rejects(() => provider.getAddressInfo(address), RecoveryProviderError);
     });
   });
 });

@@ -1,4 +1,12 @@
-import { BaseCoin, BitGoBase, common, MPCAlgorithm, MultisigType, multisigTypes } from '@bitgo/sdk-core';
+import {
+  BaseCoin,
+  BitGoBase,
+  common,
+  MPCAlgorithm,
+  MultisigType,
+  multisigTypes,
+  RecoveryProviderError,
+} from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import {
   AbstractEthLikeNewCoins,
@@ -67,7 +75,9 @@ export class Coredao extends AbstractEthLikeNewCoins {
     });
     // throw if the result does not exist or the result is not a valid number
     if (!result || !result.result || isNaN(Number(result.result))) {
-      throw new Error(`Could not obtain address balance for ${address} from the explorer, got: ${result.result}`);
+      throw new RecoveryProviderError(
+        `Could not obtain address balance for ${address} from the explorer, got: ${result.result}`
+      );
     }
     result.result = result.result.toString();
 
@@ -86,7 +96,7 @@ export class Coredao extends AbstractEthLikeNewCoins {
       address: address,
     });
     if (!result || !Array.isArray(result.result)) {
-      throw new Error('Unable to find next nonce from the explorer, got: ' + JSON.stringify(result));
+      throw new RecoveryProviderError('Unable to find next nonce from the explorer, got: ' + JSON.stringify(result));
     }
     const backupKeyTxList = result.result.filter((tx) => tx.from === address);
     if (backupKeyTxList.length > 0) {

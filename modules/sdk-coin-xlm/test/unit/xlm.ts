@@ -3,7 +3,13 @@ import * as should from 'should';
 import * as stellar from 'stellar-sdk';
 
 import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
-import { Environments, PrebuildAndSignTransactionOptions, Wallet } from '@bitgo/sdk-core';
+import {
+  Environments,
+  ErrorNoInputToRecover,
+  PrebuildAndSignTransactionOptions,
+  RecoveryProviderError,
+  Wallet,
+} from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { Txlm } from '../../src';
 import { KeyPair } from '../../src/lib/keyPair';
@@ -503,6 +509,40 @@ describe('XLM:', function () {
       recovery.txBase64.should.be.a.String();
       recovery.recoveryAmount.should.be.a.Number();
       recovery.feeInfo.fee.should.equal(100);
+    });
+
+    it('should throw ErrorNoInputToRecover when the account does not exist', async function () {
+      nock('https://horizon-testnet.stellar.org/accounts')
+        .get('/' + wallet.receiveAddress())
+        .reply(404, {
+          status: 404,
+          title: 'Resource Missing',
+          detail: 'The resource at the url requested was not found.',
+        });
+
+      await basecoin
+        .recover({
+          userKey: 'GA34NPQ4M54HHZBKSDZ5B3J3BZHTXKCZD4UFO2OYZERPOASK4DAATSIB',
+          backupKey: 'GC3D3ZNNK7GHLMSWJA54DQO6QJUJJF7K6J5JGCEW45ZT6QMKZ6PMUHUM',
+          recoveryDestination: 'GDDHCKMYYYCVXOSAVMSEIYGYNX74LIAV3ACXYQ6WPMDUF7W3KZNWTHTH',
+          rootAddress: wallet.receiveAddress(),
+        })
+        .should.be.rejectedWith(ErrorNoInputToRecover);
+    });
+
+    it('should throw RecoveryProviderError when Horizon is unreachable', async function () {
+      nock('https://horizon-testnet.stellar.org/accounts')
+        .get('/' + wallet.receiveAddress())
+        .replyWithError('network error');
+
+      await basecoin
+        .recover({
+          userKey: 'GA34NPQ4M54HHZBKSDZ5B3J3BZHTXKCZD4UFO2OYZERPOASK4DAATSIB',
+          backupKey: 'GC3D3ZNNK7GHLMSWJA54DQO6QJUJJF7K6J5JGCEW45ZT6QMKZ6PMUHUM',
+          recoveryDestination: 'GDDHCKMYYYCVXOSAVMSEIYGYNX74LIAV3ACXYQ6WPMDUF7W3KZNWTHTH',
+          rootAddress: wallet.receiveAddress(),
+        })
+        .should.be.rejectedWith(RecoveryProviderError);
     });
 
     it('should fail to verify a transaction signed with the wrong key', async function () {

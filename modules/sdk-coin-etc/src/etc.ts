@@ -14,10 +14,12 @@ import {
 import {
   BaseCoin,
   BitGoBase,
+  ErrorNoInputToRecover,
   common,
   getIsUnsignedSweep,
   Util,
   Recipient,
+  RecoveryProviderError,
   MultisigType,
   multisigTypes,
 } from '@bitgo/sdk-core';
@@ -143,7 +145,7 @@ export class Etc extends AbstractEthLikeCoin {
     // get balance of wallet
     const txAmount = await this.queryAddressBalance(params.walletContractAddress);
     if (txAmount.lt(new BN(0))) {
-      throw new Error('Wallet does not have enough funds to recover');
+      throw new ErrorNoInputToRecover('Wallet does not have enough funds to recover');
     }
 
     // build recipients object
@@ -243,16 +245,19 @@ export class Etc extends AbstractEthLikeCoin {
    * @returns {Promise<Object>} response from etc.network
    */
   async recoveryBlockchainExplorerQuery(query: Record<string, any>): Promise<any> {
-    const response = await request
-      .post(common.Environments[this.bitgo.getEnv()].etcNodeUrl + '/api/eth-rpc')
-      .send(query);
+    let response;
+    try {
+      response = await request.post(common.Environments[this.bitgo.getEnv()].etcNodeUrl + '/api/eth-rpc').send(query);
+    } catch (e) {
+      throw new RecoveryProviderError('could not reach etc.network', e);
+    }
 
     if (!response.ok) {
-      throw new Error('could not reach etc.network');
+      throw new RecoveryProviderError('could not reach etc.network');
     }
 
     if (response.body.status === '0' && response.body.message === 'NOTOK') {
-      throw new Error('etc.network rate limit reached');
+      throw new RecoveryProviderError('etc.network rate limit reached');
     }
     return response.body;
   }
@@ -297,7 +302,7 @@ export class Etc extends AbstractEthLikeCoin {
       id: 1,
     });
     if (!result || isNaN(result.result)) {
-      throw new Error('Unable to find next nonce from etc.network, got: ' + JSON.stringify(result));
+      throw new RecoveryProviderError('Unable to find next nonce from etc.network, got: ' + JSON.stringify(result));
     }
     const nonceHex = result.result;
     return new optionalDeps.ethUtil.BN(nonceHex.slice(2), 16).toNumber();
@@ -318,13 +323,19 @@ export class Etc extends AbstractEthLikeCoin {
 
     // throw if the result object does not exist
     if (!result) {
-      throw new Error(`Could not obtain address balance for ${address} from etc.network, got: Empty object response`);
+      throw new RecoveryProviderError(
+        `Could not obtain address balance for ${address} from etc.network, got: Empty object response`
+      );
     } else if (result.error) {
       // throw if result.error exists
-      throw new Error(`Could not obtain address balance for ${address} from etc.network, got: ${result.error}`);
+      throw new RecoveryProviderError(
+        `Could not obtain address balance for ${address} from etc.network, got: ${result.error}`
+      );
     } else if (!result.result || isNaN(result.result)) {
       // throw if the result.result is not a number
-      throw new Error(`Could not obtain address balance for ${address} from etc.network, got: Incorrect Balance Hex`);
+      throw new RecoveryProviderError(
+        `Could not obtain address balance for ${address} from etc.network, got: Incorrect Balance Hex`
+      );
     }
 
     const nativeBalanceHex = result.result;
@@ -348,7 +359,7 @@ export class Etc extends AbstractEthLikeCoin {
       id: 1,
     });
     if (!result || !result.result) {
-      throw new Error('Could not obtain sequence ID from etc.network, got: ' + result.result);
+      throw new RecoveryProviderError('Could not obtain sequence ID from etc.network, got: ' + result.result);
     }
     const sequenceIdHex = result.result;
     return new optionalDeps.ethUtil.BN(sequenceIdHex.slice(2), 16).toNumber();

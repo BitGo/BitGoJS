@@ -17,6 +17,7 @@ import {
   common,
   EDDSAMethods,
   Environments,
+  ErrorNoInputToRecover,
   generateRandomPassword,
   IWallet,
   MAX_SOL_MESSAGE_BYTES,
@@ -25,6 +26,7 @@ import {
   MPCSweepTxs,
   MPCTx,
   MPCTxs,
+  RecoveryProviderError,
   signRecoveryEddsaMPCv2,
   PrebuildAndSignTransactionOptions,
   TransactionPrebuild,
@@ -3126,6 +3128,32 @@ describe('SOL:', function () {
           walletPassphrase: testData.keys.walletPassword,
         })
         .should.rejectedWith('Did not find address with funds to recover');
+    });
+
+    it('should throw ErrorNoInputToRecover when no address has sufficient funds', async function () {
+      await basecoin
+        .recover({
+          userKey: testData.keys.userKey,
+          backupKey: testData.keys.backupKey,
+          bitgoKey: testData.keys.bitgoKeyNoFunds,
+          recoveryDestination: testData.keys.destinationPubKey,
+          walletPassphrase: testData.keys.walletPassword,
+        })
+        .should.be.rejectedWith(ErrorNoInputToRecover);
+    });
+
+    it('should throw RecoveryProviderError when the node returns a non-200 response', async function () {
+      callBack.resetBehavior();
+      callBack.resolves({ status: 500, body: {} });
+      await basecoin
+        .recover({
+          userKey: testData.keys.userKey,
+          backupKey: testData.keys.backupKey,
+          bitgoKey: testData.keys.bitgoKey,
+          recoveryDestination: testData.keys.destinationPubKey,
+          walletPassphrase: testData.keys.walletPassword,
+        })
+        .should.be.rejectedWith(RecoveryProviderError);
     });
 
     it('should recover sol tokens to recovery destination with no existing token accounts', async function () {

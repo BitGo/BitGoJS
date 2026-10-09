@@ -5,10 +5,11 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 
 import { Coredao, Tcoredao } from '../../src';
 import nock from 'nock';
+import request from 'superagent';
 
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx';
 import { stripHexPrefix } from '@ethereumjs/util';
-import { common } from '@bitgo/sdk-core';
+import { common, RecoveryProviderError } from '@bitgo/sdk-core';
 import { mockDataNonBitGoRecovery } from '../resources';
 
 const bitgo: TestBitGoAPI = TestBitGo.decorate(BitGoAPI, { env: 'test' });
@@ -85,5 +86,20 @@ describe('Coredao', function () {
       jsonTx.chainId?.should.equal('0x45a');
       jsonTx.to?.should.equal(mockDataNonBitGoRecovery.recoveryDestination);
     });
+  });
+});
+
+describe('coredao recoveryBlockchainExplorerQuery', function () {
+  it('should throw RecoveryProviderError when the explorer is unreachable', async function () {
+    const coredaoCoin = bitgo.coin('tcoredao') as Tcoredao;
+    const originalGet = request.get;
+    request.get = (() => ({ query: () => Promise.reject(new Error('connection refused')) })) as any;
+    try {
+      await coredaoCoin
+        .recoveryBlockchainExplorerQuery({ module: 'account', action: 'balance', address: '0x' + '0'.repeat(40) })
+        .should.be.rejectedWith(RecoveryProviderError);
+    } finally {
+      request.get = originalGet;
+    }
   });
 });

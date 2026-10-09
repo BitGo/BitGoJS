@@ -6,8 +6,9 @@ import { OfflineVaultTxInfo, SignTransactionOptions } from '@bitgo/abstract-eth'
 
 import { BN } from 'ethereumjs-util';
 import { getBuilder } from './getBuilder';
-import { FullySignedTransaction } from '@bitgo/sdk-core';
+import { FullySignedTransaction, RecoveryProviderError } from '@bitgo/sdk-core';
 import * as should from 'should';
+import request from 'superagent';
 
 describe('Ethereum Classic', function () {
   let bitgo: TestBitGoAPI;
@@ -189,5 +190,28 @@ describe('Wallet Recovery Wizard', function () {
       rebuiltTx.signature.length.should.equal(2);
       rebuiltTx.outputs.length.should.equal(1);
     });
+  });
+});
+
+describe('etc recoveryBlockchainExplorerQuery', function () {
+  let tetcCoin: Tetc;
+
+  before(function () {
+    const bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
+    bitgo.initializeTestVars();
+    bitgo.safeRegister('tetc', Tetc.createInstance);
+    tetcCoin = bitgo.coin('tetc') as Tetc;
+  });
+
+  it('should throw RecoveryProviderError when the node is unreachable', async function () {
+    const originalPost = request.post;
+    request.post = (() => ({ send: () => Promise.reject(new Error('connection refused')) })) as any;
+    try {
+      await tetcCoin
+        .recoveryBlockchainExplorerQuery({ jsonrpc: '2.0', method: 'eth_getBalance', params: [] })
+        .should.be.rejectedWith(RecoveryProviderError);
+    } finally {
+      request.post = originalPost;
+    }
   });
 });

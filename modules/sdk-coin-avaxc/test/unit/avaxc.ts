@@ -5,7 +5,7 @@ import { getBuilder } from './getBuilder';
 import * as secp256k1 from 'secp256k1';
 import { bip32 } from '@bitgo/secp256k1';
 import * as nock from 'nock';
-import { common, TransactionType, Wallet } from '@bitgo/sdk-core';
+import { common, RecoveryProviderError, TransactionType, Wallet } from '@bitgo/sdk-core';
 import { Eth, optionalDeps } from '@bitgo/sdk-coin-eth';
 import { AvaxSignTransactionOptions } from '../../src/iface';
 import * as should from 'should';
@@ -13,6 +13,7 @@ import { EXPORT_C, IMPORT_C, endpointResponses, recoveryUsers } from '../resourc
 import { TavaxP } from '@bitgo/sdk-coin-avaxp';
 import { decodeTransaction, parseTransaction, walletSimpleABI } from './helpers';
 import * as sinon from 'sinon';
+import request from 'superagent';
 import { BN } from 'ethereumjs-util';
 import { EthereumNetwork } from '@bitgo/statics';
 
@@ -1472,5 +1473,28 @@ describe('Avalanche C-Chain', function () {
         recoveryTxn.should.have.property('nextContractSequenceId');
       });
     });
+  });
+});
+
+describe('avaxc recoveryBlockchainExplorerQuery', function () {
+  let tavaxCoin: TavaxC;
+
+  before(function () {
+    const bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
+    bitgo.initializeTestVars();
+    bitgo.safeRegister('tavaxc', TavaxC.createInstance);
+    tavaxCoin = bitgo.coin('tavaxc') as TavaxC;
+  });
+
+  it('should throw RecoveryProviderError when the node is unreachable', async function () {
+    const originalPost = request.post;
+    request.post = (() => ({ send: () => Promise.reject(new Error('connection refused')) })) as any;
+    try {
+      await tavaxCoin
+        .recoveryBlockchainExplorerQuery({ jsonrpc: '2.0', method: 'eth_getBalance', params: [] })
+        .should.be.rejectedWith(RecoveryProviderError);
+    } finally {
+      request.post = originalPost;
+    }
   });
 });

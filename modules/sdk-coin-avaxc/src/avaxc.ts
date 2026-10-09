@@ -30,6 +30,7 @@ import {
   ParsedTransaction,
   ParseTransactionOptions,
   Recipient,
+  RecoveryProviderError,
   TransactionExplanation,
   Util,
   VerifyAddressOptions,
@@ -328,16 +329,21 @@ export class AvaxC extends AbstractEthLikeNewCoins {
    * @returns {Promise<Object>} response from avax.network
    */
   async recoveryBlockchainExplorerQuery(query: Record<string, any>, apiKey?: string): Promise<any> {
-    const response = await request
-      .post(common.Environments[this.bitgo.getEnv()].avaxcNetworkBaseUrl + '/ext/bc/C/rpc')
-      .send(query);
+    let response;
+    try {
+      response = await request
+        .post(common.Environments[this.bitgo.getEnv()].avaxcNetworkBaseUrl + '/ext/bc/C/rpc')
+        .send(query);
+    } catch (e) {
+      throw new RecoveryProviderError('could not reach avax.network', e);
+    }
 
     if (!response.ok) {
-      throw new Error('could not reach avax.network');
+      throw new RecoveryProviderError('could not reach avax.network');
     }
 
     if (response.body.status === '0' && response.body.message === 'NOTOK') {
-      throw new Error('avax.network rate limit reached');
+      throw new RecoveryProviderError('avax.network rate limit reached');
     }
     return response.body;
   }
@@ -357,7 +363,7 @@ export class AvaxC extends AbstractEthLikeNewCoins {
       id: 1,
     });
     if (!result || isNaN(result.result)) {
-      throw new Error('Unable to find next nonce from avax.network, got: ' + JSON.stringify(result));
+      throw new RecoveryProviderError('Unable to find next nonce from avax.network, got: ' + JSON.stringify(result));
     }
     const nonceHex = result.result;
     return new optionalDeps.ethUtil.BN(nonceHex.slice(2), 16).toNumber();
@@ -377,7 +383,9 @@ export class AvaxC extends AbstractEthLikeNewCoins {
     });
     // throw if the result does not exist or the result is not a valid number
     if (!result || !result.result || isNaN(result.result)) {
-      throw new Error(`Could not obtain address balance for ${address} from avax.network, got: ${result.result}`);
+      throw new RecoveryProviderError(
+        `Could not obtain address balance for ${address} from avax.network, got: ${result.result}`
+      );
     }
     const nativeBalanceHex = result.result;
     return new optionalDeps.ethUtil.BN(nativeBalanceHex.slice(2), 16);
@@ -435,7 +443,7 @@ export class AvaxC extends AbstractEthLikeNewCoins {
       id: 1,
     });
     if (!result || !result.result) {
-      throw new Error('Could not obtain sequence ID from avax.network, got: ' + result.result);
+      throw new RecoveryProviderError('Could not obtain sequence ID from avax.network, got: ' + result.result);
     }
     const sequenceIdHex = result.result;
     return new optionalDeps.ethUtil.BN(sequenceIdHex.slice(2), 16).toNumber();
