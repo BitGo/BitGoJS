@@ -2,7 +2,7 @@
  * @prettier
  */
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { Wallet } from '@bitgo/sdk-core';
+import { ErrorNoInputToRecover, RecoveryProviderError, Wallet } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { bip32 } from '@bitgo/secp256k1';
 import * as ecc from 'eosjs-ecc';
@@ -186,6 +186,70 @@ describe('EOS:', function () {
     );
 
     sandBox.restore();
+  });
+
+  it('should throw ErrorNoInputToRecover when the account has no liquid balance', async function () {
+    const userKey =
+      'xpub661MyMwAqRbcH1oUADxatLuKkVjaDB2zTNJoZQsGVQEvoogpbXJw24QMokNwFKj9Qhci6KWaCcQKrzpL4LCQXXX3YpTQxgD9KLBjhDrUWo4';
+    const backupKey =
+      'xpub661MyMwAqRbcH1n6sgY29G7dAxL7twS8rt1jyuuQb1kfnA7s3FJPGoVqb9JenXkeJmC4jZ8iVscn3AH6MkYAVc61FTYCHpxv5cxWar5Jw3C';
+    const rootAddress = 'i1skda3kso43';
+    const destinationAddress = 'ks13kdh245ls';
+
+    const sandBox = sinon.createSandbox();
+    const callBack = sandBox.stub(Eos.prototype, 'getDataFromNode' as any);
+    callBack
+      .withArgs({
+        endpoint: '/v1/chain/get_account',
+        payload: { account_name: rootAddress },
+      })
+      .resolves({ status: 200, body: { account_name: rootAddress } });
+
+    try {
+      await basecoin
+        .recover({
+          userKey,
+          backupKey,
+          bitgoKey: 'key',
+          recoveryDestination: destinationAddress,
+          rootAddress,
+        })
+        .should.be.rejectedWith(ErrorNoInputToRecover);
+    } finally {
+      sandBox.restore();
+    }
+  });
+
+  it('should throw RecoveryProviderError when the node returns a non-200 response', async function () {
+    const userKey =
+      'xpub661MyMwAqRbcH1oUADxatLuKkVjaDB2zTNJoZQsGVQEvoogpbXJw24QMokNwFKj9Qhci6KWaCcQKrzpL4LCQXXX3YpTQxgD9KLBjhDrUWo4';
+    const backupKey =
+      'xpub661MyMwAqRbcH1n6sgY29G7dAxL7twS8rt1jyuuQb1kfnA7s3FJPGoVqb9JenXkeJmC4jZ8iVscn3AH6MkYAVc61FTYCHpxv5cxWar5Jw3C';
+    const rootAddress = 'i1skda3kso43';
+    const destinationAddress = 'ks13kdh245ls';
+
+    const sandBox = sinon.createSandbox();
+    const callBack = sandBox.stub(Eos.prototype, 'getDataFromNode' as any);
+    callBack
+      .withArgs({
+        endpoint: '/v1/chain/get_account',
+        payload: { account_name: rootAddress },
+      })
+      .resolves({ status: 500, body: {} });
+
+    try {
+      await basecoin
+        .recover({
+          userKey,
+          backupKey,
+          bitgoKey: 'key',
+          recoveryDestination: destinationAddress,
+          rootAddress,
+        })
+        .should.be.rejectedWith(RecoveryProviderError);
+    } finally {
+      sandBox.restore();
+    }
   });
 
   describe('Transactions:', function () {

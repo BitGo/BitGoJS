@@ -24,6 +24,7 @@ import {
   EDDSAMethods,
   EDDSAMethodTypes,
   Environments,
+  ErrorNoInputToRecover,
   ITokenEnablement,
   KeyPair,
   MAX_SOL_MESSAGE_BYTES,
@@ -47,6 +48,7 @@ import {
   PrebuildTransactionWithIntentOptions,
   PresignTransactionOptions,
   PublicKey,
+  RecoveryProviderError,
   RecoveryTxRequest,
   SignedTransaction,
   SignTransactionOptions,
@@ -1060,12 +1062,19 @@ export class Sol extends BaseCoin {
     apiKey?: string
   ): Promise<request.Response> {
     const nodeUrl = this.getPublicNodeUrl(apiKey);
+    let response: request.Response;
     try {
-      return await request.post(nodeUrl).send(params.payload);
+      response = await request.post(nodeUrl).send(params.payload);
     } catch (e) {
       console.debug(e);
+      throw new RecoveryProviderError(`Unable to call endpoint: '/' from node: ${nodeUrl}`);
     }
-    throw new Error(`Unable to call endpoint: '/' from node: ${nodeUrl}`);
+    // Solana returns HTTP 200 with a JSON-RPC `error` field (no `result`) for RPC-level
+    // failures such as rate limiting, invalid params, or transient node errors.
+    if (response.body && response.body.error) {
+      throw new RecoveryProviderError(`RPC error: ${JSON.stringify(response.body.error)}`);
+    }
+    return response;
   }
 
   protected async getBlockhash(apiKey?: string): Promise<string> {
@@ -1085,7 +1094,7 @@ export class Sol extends BaseCoin {
       apiKey
     );
     if (response.status !== 200) {
-      throw new Error('Account not found');
+      throw new RecoveryProviderError('Account not found');
     }
 
     return response.body.result.value.blockhash;
@@ -1109,7 +1118,7 @@ export class Sol extends BaseCoin {
       apiKey
     );
     if (response.status !== 200) {
-      throw new Error('Account not found');
+      throw new RecoveryProviderError('Account not found');
     }
 
     return response.body.result.value;
@@ -1128,7 +1137,7 @@ export class Sol extends BaseCoin {
       apiKey
     );
     if (response.status !== 200 || response.error) {
-      throw new Error(JSON.stringify(response.error));
+      throw new RecoveryProviderError(JSON.stringify(response.error));
     }
 
     return response.body.result;
@@ -1147,7 +1156,7 @@ export class Sol extends BaseCoin {
       apiKey
     );
     if (response.status !== 200) {
-      throw new Error('Account not found');
+      throw new RecoveryProviderError('Account not found');
     }
     return response.body.result.value;
   }
@@ -1170,7 +1179,7 @@ export class Sol extends BaseCoin {
       apiKey
     );
     if (response.status !== 200) {
-      throw new Error('Account not found');
+      throw new RecoveryProviderError('Account not found');
     }
     return {
       authority: response.body.result.value.data.parsed.info.authority,
@@ -1202,7 +1211,7 @@ export class Sol extends BaseCoin {
       apiKey
     );
     if (response.status !== 200) {
-      throw new Error('Account not found');
+      throw new RecoveryProviderError('Account not found');
     }
 
     if (response.body.result.value.length !== 0) {
@@ -1234,7 +1243,7 @@ export class Sol extends BaseCoin {
       apiKey
     );
     if (response.status !== 200) {
-      throw new Error('Account not found');
+      throw new RecoveryProviderError('Account not found');
     }
     return {
       pubKey: pubKey,
@@ -1268,7 +1277,7 @@ export class Sol extends BaseCoin {
         apiKey
       );
       if (response.status !== 200) {
-        throw new Error('Account not found');
+        throw new RecoveryProviderError('Account not found');
       }
       const value = response.body?.result?.value;
       if (!value) {
@@ -1560,11 +1569,11 @@ export class Sol extends BaseCoin {
             }
           }
         } else {
-          throw Error('Not enough token funds to recover');
+          throw new ErrorNoInputToRecover('Not enough token funds to recover');
         }
       } else {
         // there are no recoverable token accounts , need to check if there are tokens to recover
-        throw Error('Did not find token account to recover tokens, please check token account');
+        throw new ErrorNoInputToRecover('Did not find token account to recover tokens, please check token account');
       }
     } else {
       txBuilder = factory
@@ -1595,13 +1604,13 @@ export class Sol extends BaseCoin {
     totalFee = totalFee.plus(new BigNumber(baseFee));
     totalFeeForTokenRecovery = totalFeeForTokenRecovery.plus(new BigNumber(baseFee));
     if (totalFee.gt(balance)) {
-      throw Error('Did not find address with funds to recover');
+      throw new ErrorNoInputToRecover('Did not find address with funds to recover');
     }
 
     if (params.tokenContractAddress) {
       // Check if there is sufficient native solana to recover tokens
       if (new BigNumber(balance).lt(totalFeeForTokenRecovery)) {
-        throw Error(
+        throw new ErrorNoInputToRecover(
           'Not enough funds to pay for recover tokens fees, have: ' +
             balance +
             ' need: ' +
@@ -1750,7 +1759,7 @@ export class Sol extends BaseCoin {
 
     balance = await this.getAccountBalance(params.closeAtaAddress);
     if (balance <= 0) {
-      throw Error('Did not find closeAtaAddress with sol funds to recover');
+      throw new ErrorNoInputToRecover('Did not find closeAtaAddress with sol funds to recover');
     }
 
     const factory = this.getBuilder();
@@ -1790,7 +1799,7 @@ export class Sol extends BaseCoin {
       const baseFee = params.durableNonce ? feePerSignature * 2 : feePerSignature;
       const totalFee = new BigNumber(baseFee);
       if (totalFee.gt(accountBalance)) {
-        throw Error('Did not find address with funds to recover');
+        throw new ErrorNoInputToRecover('Did not find address with funds to recover');
       }
       txBuilder.fee({ amount: feePerSignature });
 
@@ -2051,11 +2060,7 @@ export class Sol extends BaseCoin {
       try {
         recoveryTransaction = await this.recover(recoverParams);
       } catch (e) {
-        if (
-          e.message === 'Did not find address with funds to recover' ||
-          e.message === 'Did not find token account to recover tokens, please check token account' ||
-          e.message === 'Not enough token funds to recover'
-        ) {
+        if (e instanceof ErrorNoInputToRecover) {
           lastScanIndex = i;
           continue;
         }
@@ -2077,7 +2082,7 @@ export class Sol extends BaseCoin {
     }
 
     if (consolidationTransactions.length === 0) {
-      throw new Error('Did not find an address with funds to recover');
+      throw new ErrorNoInputToRecover('Did not find an address with funds to recover');
     }
 
     if (isUnsignedSweep) {

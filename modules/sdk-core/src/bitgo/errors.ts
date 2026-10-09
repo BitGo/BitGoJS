@@ -152,8 +152,20 @@ export class StellarFederationUserNotFoundError extends BitGoJsError {
 }
 
 export class ErrorNoInputToRecover extends BitGoJsError {
+  public code = 'no_input_to_recover';
+
   public constructor(message?: string) {
     super(message || 'No input to recover - aborting!');
+  }
+}
+
+export class RecoveryProviderError extends BitGoJsError {
+  public code = 'recovery_provider_failed';
+  public cause?: unknown;
+
+  public constructor(message?: string, cause?: unknown) {
+    super(message || 'Unable to reach the chain provider while attempting recovery.');
+    this.cause = cause;
   }
 }
 

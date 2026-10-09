@@ -9,6 +9,7 @@ import {
   getIsUnsignedSweep,
   MPCAlgorithm,
   NamedCoinConstructor,
+  RecoveryProviderError,
   Util,
 } from '@bitgo/sdk-core';
 import { coins, Erc7984TokenConfig, EthereumNetwork, tokens } from '@bitgo/statics';
@@ -900,14 +901,14 @@ export class Erc7984Token extends Eth {
     );
 
     if (!result || !result.result) {
-      throw new Error(
+      throw new RecoveryProviderError(
         `Could not obtain confidential balance for ${walletAddress} from token ${this.tokenContractAddress}`
       );
     }
 
     const handle = result.result as string;
     if (!handle.startsWith('0x') || handle.length !== 66) {
-      throw new Error(`Unexpected confidentialBalanceOf response format: ${handle}`);
+      throw new RecoveryProviderError(`Unexpected confidentialBalanceOf response format: ${handle}`);
     }
 
     return handle;

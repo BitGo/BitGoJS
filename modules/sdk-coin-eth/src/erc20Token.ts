@@ -4,6 +4,8 @@
 import {
   BitGoBase,
   CoinConstructor,
+  ErrorNoInputToRecover,
+  RecoveryProviderError,
   Util,
   checkKrsProvider,
   getIsKrsRecovery,
@@ -216,6 +218,9 @@ export class Erc20Token extends Eth {
       },
       params.apiKey
     );
+    if (!Array.isArray(result.result)) {
+      throw new RecoveryProviderError('Could not obtain nonce from explorer, got: ' + JSON.stringify(result.result));
+    }
     const backupKeyTxList = result.result;
     if (backupKeyTxList.length > 0) {
       // Calculate last nonce used
@@ -241,7 +246,7 @@ export class Erc20Token extends Eth {
       params.apiKey
     );
     if (new BigNumber(txAmount).isLessThanOrEqualTo(0)) {
-      throw new Error('Wallet does not have enough funds to recover');
+      throw new ErrorNoInputToRecover('Wallet does not have enough funds to recover');
     }
 
     // build recipients object

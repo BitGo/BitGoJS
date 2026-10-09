@@ -22,6 +22,7 @@ import {
   ActivateMethodId,
   BuildTransactionError,
   LockMethodId,
+  RecoveryProviderError,
   SigningError,
   TransactionType,
   UnlockMethodId,
@@ -1298,14 +1299,20 @@ export async function recoveryBlockchainExplorerQuery(
   if (token) {
     query.apikey = token;
   }
-  const response = await request.get(`${explorerUrl}/api`).query(query);
+
+  let response;
+  try {
+    response = await request.get(`${explorerUrl}/api`).query(query);
+  } catch (e) {
+    throw new RecoveryProviderError(`could not reach explorer at ${explorerUrl}`, e);
+  }
 
   if (!response.ok) {
-    throw new Error('could not reach explorer');
+    throw new RecoveryProviderError(`could not reach explorer at ${explorerUrl}`);
   }
 
   if (response.body.status === '0' && response.body.message === 'NOTOK') {
-    throw new Error('Explorer rate limit reached');
+    throw new RecoveryProviderError('Explorer rate limit reached');
   }
   return response.body;
 }

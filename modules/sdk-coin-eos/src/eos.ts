@@ -20,6 +20,7 @@ import {
   BitGoBase,
   checkKrsProvider,
   Environments,
+  ErrorNoInputToRecover,
   getBip32Keys,
   getIsKrsRecovery,
   getIsUnsignedSweep,
@@ -31,6 +32,7 @@ import {
   multisigTypes,
   ParsedTransaction,
   ParseTransactionOptions,
+  RecoveryProviderError,
   RequestTracer,
   SignTransactionOptions as BaseSignTransactionOptions,
   TransactionExplanation,
@@ -793,7 +795,9 @@ export class Eos extends BaseCoin {
         // let's hope another call succeeds
       }
     }
-    throw new Error(`Unable to call endpoint: ${params.endpoint} from nodes: ${_.join(nodeUrls, ', ')}`);
+    throw new RecoveryProviderError(
+      `Unable to call endpoint: ${params.endpoint} from nodes: ${_.join(nodeUrls, ', ')}`
+    );
   }
 
   /**
@@ -802,7 +806,7 @@ export class Eos extends BaseCoin {
   protected async getChainInfoFromNode(): Promise<any> {
     const response = await this.getDataFromNode({ endpoint: '/v1/chain/get_info' });
     if (response.status !== 200) {
-      throw new Error('Unable to fetch chain info');
+      throw new RecoveryProviderError('Unable to fetch chain info');
     }
     return response.body;
   }
@@ -817,7 +821,7 @@ export class Eos extends BaseCoin {
       payload: { account_name: address },
     });
     if (response.status !== 200) {
-      throw new Error('Account not found');
+      throw new RecoveryProviderError(`Account lookup failed with status ${response.status}`);
     }
     return response.body;
   }
@@ -832,7 +836,7 @@ export class Eos extends BaseCoin {
       payload: { block_num_or_id: blockNumOrId },
     });
     if (response.status !== 200) {
-      throw new Error('Block not found');
+      throw new RecoveryProviderError('Block not found');
     }
     return response.body;
   }
@@ -911,7 +915,7 @@ export class Eos extends BaseCoin {
     const account = await this.getAccountFromNode({ address: rootAddressDetails.address });
 
     if (!account.core_liquid_balance) {
-      throw new Error('Could not find any balance to recovery for ' + params.rootAddress);
+      throw new ErrorNoInputToRecover('Could not find any balance to recovery for ' + params.rootAddress);
     }
 
     if (!account.permissions) {

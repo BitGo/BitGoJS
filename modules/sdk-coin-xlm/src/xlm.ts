@@ -22,6 +22,7 @@ import {
   BitGoBase,
   checkKrsProvider,
   common,
+  ErrorNoInputToRecover,
   ExtraPrebuildParamsOptions,
   InvalidAddressError,
   InvalidMemoIdError,
@@ -34,6 +35,7 @@ import {
   ParsedTransaction,
   ParseTransactionOptions,
   promiseProps,
+  RecoveryProviderError,
   StellarFederationUserNotFoundError,
   TokenEnablementConfig,
   UnexpectedAddressError,
@@ -757,7 +759,10 @@ export class Xlm extends BaseCoin {
     try {
       accountData = await toBitgoRequest(request.get(accountDataUrl)).result();
     } catch (e) {
-      throw new Error('Unable to reach the Stellar network via Horizon.');
+      if (e.status === 404) {
+        throw new ErrorNoInputToRecover('Account does not exist on the Stellar network.');
+      }
+      throw new RecoveryProviderError('Unable to reach the Stellar network via Horizon.', e);
     }
 
     // Now check if the destination account is empty or not
@@ -768,11 +773,13 @@ export class Xlm extends BaseCoin {
       if (e.status === 404) {
         // If the destination account does not yet exist, horizon responds with 404
         unfundedDestination = true;
+      } else {
+        throw new RecoveryProviderError('Unable to reach the Stellar network via Horizon.', e);
       }
     }
 
     if (!accountData.sequence || !accountData.balances) {
-      throw new Error('Horizon server error - unable to retrieve sequence ID or account balance');
+      throw new RecoveryProviderError('Horizon server error - unable to retrieve sequence ID or account balance');
     }
 
     const account = new stellar.Account(params.rootAddress, accountData.sequence);
@@ -781,7 +788,7 @@ export class Xlm extends BaseCoin {
     const nativeBalanceInfo = accountData.balances.find((assetBalance) => assetBalance['asset_type'] === 'native');
 
     if (!nativeBalanceInfo) {
-      throw new Error('Provided wallet has a balance of 0 XLM, recovery aborted');
+      throw new ErrorNoInputToRecover('Provided wallet has a balance of 0 XLM, recovery aborted');
     }
 
     const walletBalance = Number(this.bigUnitsToBaseUnits(nativeBalanceInfo.balance));

@@ -6,7 +6,15 @@ import _ from 'lodash';
 import { bip32 } from '@bitgo/secp256k1';
 import { BigNumber } from 'bignumber.js';
 
-import { BitGoBase, CoinConstructor, NamedCoinConstructor, getIsUnsignedSweep, Util } from '@bitgo/sdk-core';
+import {
+  BitGoBase,
+  CoinConstructor,
+  NamedCoinConstructor,
+  ErrorNoInputToRecover,
+  RecoveryProviderError,
+  getIsUnsignedSweep,
+  Util,
+} from '@bitgo/sdk-core';
 import {
   coinFamiliesWithL1Fees,
   TransactionBuilder as EthLikeTransactionBuilder,
@@ -265,6 +273,9 @@ export class EthLikeToken extends AbstractEthLikeNewCoins {
       address: backupKeyAddress,
     });
 
+    if (!Array.isArray(result.result)) {
+      throw new RecoveryProviderError('Could not obtain nonce from explorer, got: ' + JSON.stringify(result.result));
+    }
     const backupKeyTxList = result.result;
     if (backupKeyTxList.length > 0) {
       // Calculate last nonce used
@@ -297,7 +308,7 @@ export class EthLikeToken extends AbstractEthLikeNewCoins {
       params.walletContractAddress
     );
     if (new BigNumber(txAmount).isLessThanOrEqualTo(0)) {
-      throw new Error('Wallet does not have enough funds to recover');
+      throw new ErrorNoInputToRecover('Wallet does not have enough funds to recover');
     }
 
     // build recipients object

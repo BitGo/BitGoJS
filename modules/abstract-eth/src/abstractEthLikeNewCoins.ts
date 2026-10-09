@@ -10,6 +10,7 @@ import {
   Ecdsa,
   ECDSAMethodTypes,
   ECDSAUtils,
+  ErrorNoInputToRecover,
   EthereumLibraryUnavailableError,
   FeeEstimateOptions,
   FullySignedTransaction,
@@ -29,6 +30,7 @@ import {
   PrebuildTransactionResult,
   PresignTransactionOptions as BasePresignTransactionOptions,
   Recipient,
+  RecoveryProviderError,
   SignTransactionOptions as BaseSignTransactionOptions,
   TxIntentMismatchError,
   TxIntentMismatchRecipientError,
@@ -663,7 +665,9 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     );
     // throw if the result does not exist or the result is not a valid number
     if (!result || !result.result || isNaN(result.result)) {
-      throw new Error(`Could not obtain address balance for ${address} from the explorer, got: ${result.result}`);
+      throw new RecoveryProviderError(
+        `Could not obtain address balance for ${address} from the explorer, got: ${result.result}`
+      );
     }
     return new optionalDeps.ethUtil.BN(result.result, 10);
   }
@@ -770,7 +774,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       apiKey
     );
     if (!result || !result.result) {
-      throw new Error('Could not obtain sequence ID from explorer, got: ' + result.result);
+      throw new RecoveryProviderError('Could not obtain sequence ID from explorer, got: ' + result.result);
     }
     const sequenceIdHex = result.result;
     return new optionalDeps.ethUtil.BN(sequenceIdHex.slice(2), 16).toNumber();
@@ -986,7 +990,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     }
 
     if (!result || !Array.isArray(result.result)) {
-      throw new Error('Unable to find next nonce from Etherscan, got: ' + JSON.stringify(result));
+      throw new RecoveryProviderError('Unable to find next nonce from Etherscan, got: ' + JSON.stringify(result));
     }
     const backupKeyTxList = result.result;
     if (backupKeyTxList.length > 0) {
@@ -1436,11 +1440,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
         try {
           recoveryTransaction = await this.recover(recoverParams);
         } catch (e) {
-          if (
-            e.message === 'Did not find address with funds to recover' ||
-            e.message === 'Did not find token account to recover tokens, please check token account' ||
-            e.message === 'Not enough token funds to recover'
-          ) {
+          if (e instanceof ErrorNoInputToRecover) {
             lastScanIndex = i;
             continue;
           }
@@ -1557,7 +1557,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     // get balance of wallet
     const txAmount = await this.queryAddressBalance(params.walletContractAddress, params.apiKey);
     if (new BigNumber(txAmount).isLessThanOrEqualTo(0)) {
-      throw new Error('Wallet does not have enough funds to recover');
+      throw new ErrorNoInputToRecover('Wallet does not have enough funds to recover');
     }
 
     // build recipients object
@@ -1998,7 +1998,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     );
     // throw if the result does not exist or the result is not a valid number
     if (!result || !result.result || isNaN(result.result)) {
-      throw new Error(
+      throw new RecoveryProviderError(
         `Could not obtain token address balance for ${tokenContractAddress} from Etherscan, got: ${result.result}`
       );
     }
@@ -3764,6 +3764,9 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       console.log(` Got gas price: ${gasPrice}`);
       return gasPrice;
     } catch (e) {
+      if (e instanceof RecoveryProviderError) {
+        throw e;
+      }
       throw new Error(`Failed to get gas price. Please make sure to use the api key of ${wrongChainCoin}`);
     }
   }
@@ -3799,6 +3802,9 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       console.log(`Got gas limit: ${gasLimit}`);
       return gasLimit;
     } catch (e) {
+      if (e instanceof RecoveryProviderError) {
+        throw e;
+      }
       throw new Error(
         `Failed to get gas limit. Please make sure to use the privateKey aka userKey of ${intendedChain} wallet ${to}`
       );

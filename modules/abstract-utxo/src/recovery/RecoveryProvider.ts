@@ -1,4 +1,5 @@
-import { BlockchairApi, AddressInfo, TransactionIO } from '@bitgo/blockapis';
+import { ApiRequestError, BlockchairApi, AddressInfo, TransactionIO } from '@bitgo/blockapis';
+import { RecoveryProviderError } from '@bitgo/sdk-core';
 
 import type { Unspent } from '../unspent';
 
@@ -22,6 +23,30 @@ export interface RecoveryProvider<TNumber extends number | bigint = number> {
   getTransactionIO(txid: string): Promise<TransactionIO>;
 }
 
+/**
+ * Re-map `@bitgo/blockapis` provider failures (`ApiRequestError`) to the shared
+ * `RecoveryProviderError` so a recovery scanner can distinguish "indexer failed"
+ * from "wallet is empty". `ApiRequestError` is the single error type the blockchair
+ * http client surfaces for network failures, non-2xx responses, and malformed bodies.
+ */
+function wrapProviderErrors<T extends RecoveryProvider>(provider: T): T {
+  return new Proxy(provider, {
+    get(target, prop, receiver) {
+      const value = Reflect.get(target, prop, receiver);
+      if (typeof value === 'function') {
+        return (...args: unknown[]) =>
+          Promise.resolve(value.apply(target, args)).catch((e: unknown) => {
+            if (e instanceof ApiRequestError) {
+              throw new RecoveryProviderError(e.message, e);
+            }
+            throw e;
+          });
+      }
+      return value;
+    },
+  }) as T;
+}
+
 export function forCoin(coinName: string, apiToken?: string): RecoveryProvider<number> {
   switch (coinName) {
     case 'btc':
@@ -34,7 +59,7 @@ export function forCoin(coinName: string, apiToken?: string): RecoveryProvider<n
     case 'doge':
     case 'ltc':
     case 'zec':
-      return BlockchairApi.forCoin(coinName, { apiToken });
+      return wrapProviderErrors(BlockchairApi.forCoin(coinName, { apiToken }));
   }
 
   throw new ApiNotImplementedError(coinName);

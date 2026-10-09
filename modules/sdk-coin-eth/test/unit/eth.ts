@@ -7,15 +7,18 @@ import * as secp256k1 from 'secp256k1';
 import request from 'superagent';
 import {
   common,
+  ErrorNoInputToRecover,
   generateRandomPassword,
   InvalidAddressError,
   InvalidAddressVerificationObjectPropertyError,
   MPCSweepTxs,
+  RecoveryProviderError,
   TransactionType,
   TxIntentMismatchRecipientError,
   UnexpectedAddressError,
   Wallet,
 } from '@bitgo/sdk-core';
+import BN from 'bn.js';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import {
   AbstractEthLikeNewCoins,
@@ -2516,6 +2519,34 @@ describe('ETH:', function () {
       assert(spy.returned(true));
     });
 
+    it('should throw ErrorNoInputToRecover when the multisig wallet has no funds', async function () {
+      const params = mockData.getNonBitGoRecoveryForHotWalletsMPCv2();
+      const basecoin = bitgo.coin('hteth') as Hteth;
+
+      const nonceStub = sinon.stub(basecoin, 'getAddressNonce').resolves(0);
+      const balanceStub = sinon.stub(basecoin, 'queryAddressBalance');
+      balanceStub.onFirstCall().resolves(new BN('99999999999999999999'));
+      balanceStub.onSecondCall().resolves(new BN('0'));
+
+      try {
+        await basecoin
+          .recover({
+            userKey: params.userKey,
+            backupKey: params.backupKey,
+            walletPassphrase: params.walletPassphrase,
+            walletContractAddress: params.walletContractAddress,
+            recoveryDestination: params.recoveryDestination,
+            eip1559: { maxFeePerGas: 20000000000, maxPriorityFeePerGas: 10000000000 },
+            gasLimit: 500000,
+            intendedChain: params.intendedChain,
+          })
+          .should.be.rejectedWith(ErrorNoInputToRecover);
+      } finally {
+        nonceStub.restore();
+        balanceStub.restore();
+      }
+    });
+
     describe('Non-BitGo Recovery for Hot Wallets (MPCv2)', function () {
       const baseUrl = common.Environments.test.etherscanBaseUrl as string;
       let bitgo: TestBitGoAPI;
@@ -2900,6 +2931,50 @@ describe('ETH:', function () {
         // Restore original function and API token
         request.get = originalGet;
         common.Environments.test.etherscanApiToken = originalApiToken;
+      }
+    });
+
+    it('should throw RecoveryProviderError when the explorer request fails', async function () {
+      const coin = bitgo.coin('teth') as Teth;
+      const query = {
+        module: 'account',
+        action: 'balance',
+        address: '0x1234567890123456789012345678901234567890',
+      };
+      const originalGet = request.get;
+      request.get = function () {
+        return {
+          query: function () {
+            throw new Error('connection refused');
+          },
+        } as any;
+      };
+      try {
+        await coin.recoveryBlockchainExplorerQuery(query).should.be.rejectedWith(RecoveryProviderError);
+      } finally {
+        request.get = originalGet;
+      }
+    });
+
+    it('should throw RecoveryProviderError when the explorer rate-limits the request', async function () {
+      const coin = bitgo.coin('teth') as Teth;
+      const query = {
+        module: 'account',
+        action: 'balance',
+        address: '0x1234567890123456789012345678901234567890',
+      };
+      const originalGet = request.get;
+      request.get = function () {
+        return {
+          query: function () {
+            return { ok: true, body: { status: '0', message: 'NOTOK' } };
+          },
+        } as any;
+      };
+      try {
+        await coin.recoveryBlockchainExplorerQuery(query).should.be.rejectedWith(RecoveryProviderError);
+      } finally {
+        request.get = originalGet;
       }
     });
   });

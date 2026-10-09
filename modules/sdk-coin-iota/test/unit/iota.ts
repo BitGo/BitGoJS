@@ -7,8 +7,10 @@ import { coins, GasTankAccountCoin } from '@bitgo/statics';
 import * as testData from '../resources/iota';
 import {
   EDDSAMethods,
+  ErrorNoInputToRecover,
   MPCSweepRecoveryOptions,
   MPCSweepTxs,
+  RecoveryProviderError,
   RecoveryTxRequest,
   signRecoveryEddsaMPCv2,
   TransactionType,
@@ -1632,6 +1634,54 @@ describe('IOTA:', function () {
         );
 
       sandBox.assert.callCount(basecoin.fetchOwnedObjects, 10);
+    });
+
+    it('should throw ErrorNoInputToRecover when no address has funds', async function () {
+      sandBox.stub(Iota.prototype, 'fetchOwnedObjects' as keyof Iota).resolves([]);
+
+      await basecoin
+        .recover({
+          userKey: keys.userKey,
+          backupKey: keys.backupKey,
+          bitgoKey: keys.bitgoKey,
+          recoveryDestination,
+          walletPassphrase,
+          scan: 1,
+        })
+        .should.be.rejectedWith(ErrorNoInputToRecover);
+    });
+
+    it('should throw RecoveryProviderError when the fullnode RPC fails', async function () {
+      sandBox
+        .stub(Iota.prototype, 'fetchOwnedObjects' as keyof Iota)
+        .rejects(new Error('RPC call failed with status 503'));
+
+      await basecoin
+        .recover({
+          userKey: keys.userKey,
+          backupKey: keys.backupKey,
+          bitgoKey: keys.bitgoKey,
+          recoveryDestination,
+          walletPassphrase,
+          scan: 1,
+        })
+        .should.be.rejectedWith(RecoveryProviderError);
+    });
+
+    it('should throw RecoveryProviderError when the token balance query fails', async function () {
+      sandBox.stub(Iota.prototype, 'getBalance' as keyof Iota).rejects(new Error('RPC error: connection refused'));
+
+      await basecoin
+        .recover({
+          userKey: keys.userKey,
+          backupKey: keys.backupKey,
+          bitgoKey: keys.bitgoKey,
+          recoveryDestination,
+          walletPassphrase,
+          tokenContractAddress: '0x2::usdc::USDC',
+          scan: 1,
+        })
+        .should.be.rejectedWith(RecoveryProviderError);
     });
   });
 

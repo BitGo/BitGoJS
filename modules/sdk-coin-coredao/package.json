@@ -49,7 +49,8 @@
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^3.0.7",
-    "@bitgo/sdk-test": "^9.1.84"
+    "@bitgo/sdk-test": "^9.1.84",
+    "superagent": "^9.0.1"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
   "files": [

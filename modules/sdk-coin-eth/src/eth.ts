@@ -9,6 +9,7 @@ import {
   BitGoBase,
   checkKrsProvider,
   common,
+  ErrorNoInputToRecover,
   FullySignedTransaction,
   getIsKrsRecovery,
   getIsUnsignedSweep,
@@ -17,6 +18,7 @@ import {
   MultisigType,
   multisigTypes,
   Recipient,
+  RecoveryProviderError,
   Util,
   TokenEnablementConfig,
 } from '@bitgo/sdk-core';
@@ -174,14 +176,19 @@ export class Eth extends AbstractEthLikeNewCoins {
     if (token) {
       query.apikey = token;
     }
-    const response = await request.get(common.Environments[this.bitgo.getEnv()].etherscanBaseUrl + '/api').query(query);
+    let response;
+    try {
+      response = await request.get(common.Environments[this.bitgo.getEnv()].etherscanBaseUrl + '/api').query(query);
+    } catch (e) {
+      throw new RecoveryProviderError('could not reach Etherscan', e);
+    }
 
     if (!response.ok) {
-      throw new Error('could not reach Etherscan');
+      throw new RecoveryProviderError('could not reach Etherscan');
     }
 
     if (response.body.status === '0' && response.body.message === 'NOTOK') {
-      throw new Error('Etherscan rate limit reached');
+      throw new RecoveryProviderError('Etherscan rate limit reached');
     }
     return response.body;
   }
@@ -272,7 +279,7 @@ export class Eth extends AbstractEthLikeNewCoins {
     // get balance of wallet and deduct fees to get transaction amount
     const txAmount = await this.queryAddressBalance(params.walletContractAddress, params.apiKey);
     if (new BigNumber(txAmount).isLessThanOrEqualTo(0)) {
-      throw new Error('Wallet does not have enough funds to recover');
+      throw new ErrorNoInputToRecover('Wallet does not have enough funds to recover');
     }
 
     // build recipients object

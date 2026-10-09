@@ -6,6 +6,7 @@ import {
   EDDSAMethodTypes,
   EddsaSigningMaterial,
   Environments,
+  ErrorNoInputToRecover,
   getEddsaSigningMaterial as sharedGetEddsaSigningMaterial,
   isEddsaSigningMaterial,
   KeyPair,
@@ -23,6 +24,7 @@ import {
   ParsedTransaction,
   PopulatedIntent,
   PrebuildTransactionWithIntentOptions,
+  RecoveryProviderError,
   RecoveryTxRequest,
   signEddsaMpcV2RecoveryTx,
   SignedTransaction,
@@ -333,7 +335,10 @@ export class Iota extends BaseCoin {
             params.tokenContractAddress
           );
         } catch (e) {
-          continue;
+          if (e instanceof RecoveryProviderError) {
+            throw e;
+          }
+          throw new RecoveryProviderError(`Failed to fetch token objects for ${senderAddress}`, e);
         }
 
         if (tokenObjects.length === 0) {
@@ -352,6 +357,9 @@ export class Iota extends BaseCoin {
             precomputedMaterial
           );
         } catch (e) {
+          if (e instanceof RecoveryProviderError) {
+            throw e;
+          }
           continue;
         }
       }
@@ -360,7 +368,10 @@ export class Iota extends BaseCoin {
       try {
         ownedObjects = await this.fetchOwnedObjects(senderAddress, params.fullnodeRpcUrl);
       } catch (e) {
-        continue;
+        if (e instanceof RecoveryProviderError) {
+          throw e;
+        }
+        throw new RecoveryProviderError(`Failed to fetch owned objects for ${senderAddress}`, e);
       }
 
       if (ownedObjects.length === 0) {
@@ -432,7 +443,7 @@ export class Iota extends BaseCoin {
       };
     }
 
-    throw new Error(
+    throw new ErrorNoInputToRecover(
       `Did not find an address with sufficient funds to recover. ` +
         `Scanned addresses from index ${startIdx} to ${endIdx - 1}. ` +
         `Please start the next scan at address index ${endIdx}.`
@@ -447,7 +458,10 @@ export class Iota extends BaseCoin {
       const balance = await this.getBalance(senderAddress, params.fullnodeRpcUrl, params.tokenContractAddress);
       return balance > 0n;
     } catch (e) {
-      return false;
+      if (e instanceof RecoveryProviderError) {
+        throw e;
+      }
+      throw new RecoveryProviderError(`Failed to query token balance for ${senderAddress}`, e);
     }
   }
 
@@ -514,7 +528,7 @@ export class Iota extends BaseCoin {
       try {
         recoveryTransaction = await this.recover(recoverParams, signingMaterial);
       } catch (e) {
-        if ((e as Error).message.startsWith('Did not find an address with sufficient funds to recover.')) {
+        if (e instanceof ErrorNoInputToRecover) {
           lastScanIndex = idx;
           continue;
         }
@@ -530,7 +544,7 @@ export class Iota extends BaseCoin {
     }
 
     if (consolidationTransactions.length === 0) {
-      throw new Error(
+      throw new ErrorNoInputToRecover(
         `Did not find an address with sufficient funds to recover. Please start the next scan at address index ${
           lastScanIndex + 1
         }.`
@@ -625,25 +639,30 @@ export class Iota extends BaseCoin {
    * @throws Error if RPC call fails
    */
   private async makeRpcCall(url: string, method: string, params: any[]): Promise<any> {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        jsonrpc: '2.0',
-        id: 1,
-        method,
-        params,
-      }),
-    });
+    let response;
+    try {
+      response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 1,
+          method,
+          params,
+        }),
+      });
+    } catch (e) {
+      throw new RecoveryProviderError(`RPC call failed for ${method}: ${(e as Error).message}`, e);
+    }
 
     if (!response.ok) {
-      throw new Error(`RPC call failed with status ${response.status}`);
+      throw new RecoveryProviderError(`RPC call failed with status ${response.status}`);
     }
 
     const json = await response.json();
 
     if (json.error) {
-      throw new Error(`RPC error: ${json.error.message || JSON.stringify(json.error)}`);
+      throw new RecoveryProviderError(`RPC error: ${json.error.message || JSON.stringify(json.error)}`);
     }
 
     return json.result;
@@ -741,17 +760,20 @@ export class Iota extends BaseCoin {
     }));
     const tokenBalance = tokenObjectsWithBalance.reduce((sum, obj) => sum + BigInt(obj.balance), 0n);
     if (tokenBalance <= 0n) {
-      throw new Error('Token balance is zero');
+      throw new ErrorNoInputToRecover('Token balance is zero');
     }
 
     let gasObjectsWithBalance: IotaObjectWithBalance[];
     try {
       gasObjectsWithBalance = await this.fetchOwnedObjects(senderAddress, params.fullnodeRpcUrl);
     } catch (e) {
-      throw new Error('Failed to fetch gas objects for token recovery');
+      if (e instanceof RecoveryProviderError) {
+        throw e;
+      }
+      throw new RecoveryProviderError('Failed to fetch gas objects for token recovery', e);
     }
     if (gasObjectsWithBalance.length === 0) {
-      throw new Error('No gas objects found for token recovery');
+      throw new ErrorNoInputToRecover('No gas objects found for token recovery');
     }
 
     gasObjectsWithBalance = gasObjectsWithBalance.sort((a, b) => (BigInt(b.balance) > BigInt(a.balance) ? 1 : -1));
@@ -767,7 +789,7 @@ export class Iota extends BaseCoin {
     );
     const netGasBalance = totalBalance - BigInt(gasBudget);
     if (netGasBalance <= 0n) {
-      throw new Error('Insufficient gas balance for token recovery');
+      throw new ErrorNoInputToRecover('Insufficient gas balance for token recovery');
     }
 
     const recoveryAmount = tokenBalance.toString();
