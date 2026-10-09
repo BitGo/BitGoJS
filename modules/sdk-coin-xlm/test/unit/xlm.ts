@@ -1368,6 +1368,28 @@ describe('XLM:', function () {
         isValid.should.equal(true);
       });
 
+      it('should throw when the setOptions op carries a field outside flags/lowThreshold', async () => {
+        // A rebuilt tx could inject signer:{attacker,weight:3} while keeping every verified field
+        // identical; the wallet co-signers would satisfy highThreshold for the injected change and
+        // grant the attacker full control under an unchanged approval. Reject on sight — the
+        // platform build layer never produces these fields on an accountConfig op.
+        for (const injectedField of [
+          { signer: { ed25519PublicKey: trustorAddress, weight: 3 } },
+          { masterWeight: 1 },
+          { medThreshold: 3 },
+          { highThreshold: 1 },
+          { homeDomain: 'evil.example.com' },
+        ]) {
+          const txPrebuild = {
+            txBase64: buildTxBase64([stellar.Operation.setOptions({ lowThreshold: 2, ...injectedField })]),
+          };
+          const txParams = { type: 'accountConfig', lowThreshold: 2 };
+          await basecoin
+            .verifyTransaction({ txParams, txPrebuild, wallet: {}, verification: {} })
+            .should.be.rejectedWith(/unsupported field/);
+        }
+      });
+
       it('should throw setFlags mismatch when tx flags differ from requested flags', async () => {
         // tx sets authRequired|authRevocable (3) but params only expect authRequired (1) => mismatch.
         const txPrebuild = {

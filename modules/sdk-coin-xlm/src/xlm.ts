@@ -1195,6 +1195,24 @@ export class Xlm extends BaseCoin {
       }
     }
 
+    // The platform build layer only ever produces setOptions ops carrying setFlags, clearFlags,
+    // or lowThreshold. Reject any other SetOptions field on sight: a rebuilt tx could otherwise
+    // carry e.g. signer:{attacker,weight:3} or a weakened med/high threshold while keeping every
+    // verified field identical, and the wallet co-signers would satisfy highThreshold for the
+    // injected change.
+    for (const unsupportedField of [
+      'inflationDest',
+      'masterWeight',
+      'medThreshold',
+      'highThreshold',
+      'homeDomain',
+      'signer',
+    ] as const) {
+      if (!_.isNil(setOptionsOp[unsupportedField])) {
+        throw new Error(`accountConfig setOptions op carries unsupported field ${unsupportedField}`);
+      }
+    }
+
     if (txParams.flags) {
       const expectedSetFlag = ((txParams.flags.authRequired ? stellar.AuthRequiredFlag : 0) |
         (txParams.flags.authRevocable ? stellar.AuthRevocableFlag : 0) |
