@@ -6,6 +6,7 @@ import * as sinon from 'sinon';
 import nock from 'nock';
 import type { IHmacAuthStrategy } from '@bitgo/sdk-hmac';
 import type { IEncryptionSession } from '@bitgo/sdk-core';
+import type { PasswordRotationProgress } from '../../src/types';
 
 describe('Constructor', function () {
   describe('cookiesPropagationEnabled argument', function () {
@@ -1196,6 +1197,266 @@ describe('Constructor', function () {
         encryptionSession: session,
       });
       sinon.assert.calledOnce(destroy);
+    });
+
+    it('emits keychains/started, monotonic keychains/updated events, then finalizing/started and finalizing/completed', async function () {
+      nock(ROOT).get('/api/v2/user/checkBatchingPasswordFlow').query(true).reply(200, { isBatchingFlowEnabled: false });
+      nock(ROOT)
+        .post('/api/v1/user/changepassword', (body: any) => !!body.keychains && !!body.v2_keychains)
+        .reply(200, {});
+
+      v1UpdatePasswordStub.callsFake(async (params: { progressCallback?: (p: unknown) => void }) => {
+        params.progressCallback?.({ status: 'updated', currentKeychainId: 'xpub1' });
+        params.progressCallback?.({ status: 'skipped', currentKeychainId: 'xpub2' });
+        // one map entry per emitted event, since the map's size now feeds the v2 total
+        return { keychains: { k1: 'v1enc', k2: 'v1enc2' }, version: 25 };
+      });
+      v2UpdatePasswordStub.callsFake(async (params: { progressCallback?: (p: unknown) => void }) => {
+        params.progressCallback?.({ status: 'updated', currentKeychainId: 'xpub3' });
+        return { v2k1: 'v2enc' };
+      });
+
+      const events: PasswordRotationProgress[] = [];
+      await bitgo.changePassword({
+        oldPassword: 'oldpw',
+        newPassword: 'newpw',
+        progressCallback: (progress) => events.push(progress),
+      });
+
+      events.should.deepEqual([
+        { phase: 'keychains', status: 'started', completed: 0, attempted: 0, succeeded: 0, skipped: 0 },
+        {
+          phase: 'keychains',
+          status: 'updated',
+          completed: 1,
+          attempted: 1,
+          succeeded: 1,
+          skipped: 0,
+          total: undefined,
+          currentKeychainId: 'xpub1',
+          keychainVersion: 'v1',
+        },
+        {
+          phase: 'keychains',
+          status: 'updated',
+          completed: 2,
+          attempted: 2,
+          succeeded: 1,
+          skipped: 1,
+          total: undefined,
+          currentKeychainId: 'xpub2',
+          keychainVersion: 'v1',
+        },
+        {
+          phase: 'keychains',
+          status: 'updated',
+          completed: 3,
+          attempted: 3,
+          succeeded: 2,
+          skipped: 1,
+          total: undefined,
+          currentKeychainId: 'xpub3',
+          keychainVersion: 'v2',
+        },
+        { phase: 'finalizing', status: 'started' },
+        { phase: 'finalizing', status: 'completed' },
+      ]);
+    });
+
+    it('forwards a truthful total from the v2 lower-level callback into every keychains/updated event', async function () {
+      nock(ROOT).get('/api/v2/user/checkBatchingPasswordFlow').query(true).reply(200, { isBatchingFlowEnabled: false });
+      nock(ROOT)
+        .post('/api/v1/user/changepassword', (body: any) => !!body.keychains && !!body.v2_keychains)
+        .reply(200, {});
+
+      v2UpdatePasswordStub.callsFake(async (params: { progressCallback?: (p: unknown) => void }) => {
+        params.progressCallback?.({ status: 'updated', currentKeychainId: 'xpub1', total: 2 });
+        params.progressCallback?.({ status: 'updated', currentKeychainId: 'xpub2', total: 2 });
+        return { v2k1: 'v2enc', v2k2: 'v2enc2' };
+      });
+
+      const events: PasswordRotationProgress[] = [];
+      await bitgo.changePassword({
+        oldPassword: 'oldpw',
+        newPassword: 'newpw',
+        progressCallback: (progress) => events.push(progress),
+      });
+
+      const v2Events = events.filter(
+        (e): e is Extract<PasswordRotationProgress, { phase: 'keychains' }> =>
+          e.phase === 'keychains' && e.status === 'updated' && e.keychainVersion === 'v2'
+      );
+      // the v1 stub keeps its default 1-entry map, so v2 events forward 1 (v1) + 2 (v2) = 3
+      v2Events.every((e) => e.total === 3).should.be.true();
+    });
+
+    it('covers both keychain sets in the total so mixed v1/v2 accounts complete exactly (2 v1 + 32 v2 = 34 of 34)', async function () {
+      nock(ROOT).get('/api/v2/user/checkBatchingPasswordFlow').query(true).reply(200, { isBatchingFlowEnabled: false });
+      nock(ROOT)
+        .post('/api/v1/user/changepassword', (body: any) => !!body.keychains && !!body.v2_keychains)
+        .reply(200, {});
+
+      v1UpdatePasswordStub.callsFake(async (params: { progressCallback?: (p: unknown) => void }) => {
+        params.progressCallback?.({ status: 'updated', currentKeychainId: 'xpub1' });
+        params.progressCallback?.({ status: 'updated', currentKeychainId: 'xpub2' });
+        return { keychains: { k1: 'v1enc', k2: 'v1enc2' }, version: 25 };
+      });
+      v2UpdatePasswordStub.callsFake(async (params: { progressCallback?: (p: unknown) => void }) => {
+        for (let i = 1; i <= 32; i++) {
+          params.progressCallback?.({ status: 'updated', currentKeychainId: `v2key-${i}`, total: 32 });
+        }
+        return { v2k1: 'v2enc' };
+      });
+
+      const events: PasswordRotationProgress[] = [];
+      await bitgo.changePassword({
+        oldPassword: 'oldpw',
+        newPassword: 'newpw',
+        progressCallback: (progress) => events.push(progress),
+      });
+
+      const keychainEvents = events.filter(
+        (e): e is Extract<PasswordRotationProgress, { phase: 'keychains' }> =>
+          e.phase === 'keychains' && e.status === 'updated'
+      );
+      const v1Events = keychainEvents.filter((e) => e.keychainVersion === 'v1');
+      const v2Events = keychainEvents.filter((e) => e.keychainVersion === 'v2');
+
+      // v1 events stay indeterminate: the v1 set has no server-provided count
+      v1Events.should.have.length(2);
+      v1Events.every((e) => e.total === undefined).should.be.true();
+
+      // v2 events carry the combined denominator: 2 (v1 set) + 32 (totalCount)
+      v2Events.should.have.length(32);
+      v2Events.every((e) => e.total === 34).should.be.true();
+
+      // the counter completes exactly instead of overshooting the total
+      const last = v2Events[v2Events.length - 1];
+      last.completed.should.equal(34);
+      last.total!.should.equal(34);
+    });
+
+    it('emits a terminal total for v1-only accounts so the counter can render n of n', async function () {
+      nock(ROOT).get('/api/v2/user/checkBatchingPasswordFlow').query(true).reply(200, { isBatchingFlowEnabled: false });
+      nock(ROOT)
+        .post('/api/v1/user/changepassword', (body: any) => !!body.keychains && !!body.v2_keychains)
+        .reply(200, {});
+
+      v1UpdatePasswordStub.callsFake(async (params: { progressCallback?: (p: unknown) => void }) => {
+        params.progressCallback?.({ status: 'updated', currentKeychainId: 'xpub1' });
+        params.progressCallback?.({ status: 'updated', currentKeychainId: 'xpub2' });
+        return { keychains: { k1: 'v1enc', k2: 'v1enc2' }, version: 25 };
+      });
+      // a v1-only account: the v2 walk finds nothing and emits nothing
+      v2UpdatePasswordStub.callsFake(async () => ({}));
+
+      const events: PasswordRotationProgress[] = [];
+      await bitgo.changePassword({
+        oldPassword: 'oldpw',
+        newPassword: 'newpw',
+        progressCallback: (progress) => events.push(progress),
+      });
+
+      const keychainEvents = events.filter(
+        (e): e is Extract<PasswordRotationProgress, { phase: 'keychains' }> =>
+          e.phase === 'keychains' && e.status === 'updated'
+      );
+      const v1Events = keychainEvents.filter((e) => e.keychainVersion === 'v1');
+      v1Events.should.have.length(2);
+      v1Events.every((e) => e.total === undefined).should.be.true();
+
+      // no v2 event ever arrived, so the terminal keychains/updated event carries the
+      // client-known v1 set size as the denominator: 2 of 2, immediately before finalizing
+      const last = keychainEvents[keychainEvents.length - 1];
+      last.completed.should.equal(2);
+      last.total!.should.equal(2);
+      events[events.length - 2].should.deepEqual({ phase: 'finalizing', status: 'started' });
+    });
+
+    it('does not let a throwing progressCallback abort the rotation', async function () {
+      nock(ROOT).get('/api/v2/user/checkBatchingPasswordFlow').query(true).reply(200, { isBatchingFlowEnabled: false });
+      const changePassScope = nock(ROOT)
+        .post('/api/v1/user/changepassword', (body: any) => !!body.keychains && !!body.v2_keychains)
+        .reply(200, {});
+
+      await bitgo.changePassword({
+        oldPassword: 'oldpw',
+        newPassword: 'newpw',
+        progressCallback: () => {
+          throw new Error('observer boom');
+        },
+      });
+
+      changePassScope.isDone().should.be.true();
+    });
+
+    it('emits no finalizing/completed and no legacy fallback when the batching-path final POST fails', async function () {
+      nock(ROOT)
+        .get('/api/v2/user/checkBatchingPasswordFlow')
+        .query(true)
+        .reply(200, { isBatchingFlowEnabled: true, maxBatchSizeKB: 900 });
+      nock(ROOT).put('/api/v2/user/keychains').reply(200, {});
+      const changePassScope = nock(ROOT).post('/api/v1/user/changepassword').reply(500, { error: 'boom' });
+
+      const events: PasswordRotationProgress[] = [];
+      await bitgo
+        .changePassword({
+          oldPassword: 'oldpw',
+          newPassword: 'newpw',
+          progressCallback: (progress) => events.push(progress),
+        })
+        .should.be.rejected();
+
+      changePassScope.isDone().should.be.true();
+      events.some((e) => e.phase === 'finalizing' && e.status === 'completed').should.be.false();
+    });
+
+    it('completes exactly once via legacy fallback when the batching check fails', async function () {
+      nock(ROOT).get('/api/v2/user/checkBatchingPasswordFlow').query(true).reply(503, { error: 'service unavailable' });
+      nock(ROOT)
+        .post('/api/v1/user/changepassword', (body: any) => !!body.keychains && !!body.v2_keychains)
+        .reply(200, {});
+
+      const events: PasswordRotationProgress[] = [];
+      await bitgo.changePassword({
+        oldPassword: 'oldpw',
+        newPassword: 'newpw',
+        progressCallback: (progress) => events.push(progress),
+      });
+
+      events.filter((e) => e.phase === 'finalizing' && e.status === 'completed').should.have.length(1);
+    });
+
+    it('does not add keychain events or double-count when a transport batch is retried', async function () {
+      nock(ROOT)
+        .get('/api/v2/user/checkBatchingPasswordFlow')
+        .query(true)
+        .reply(200, { isBatchingFlowEnabled: true, maxBatchSizeKB: 900 });
+      nock(ROOT).put('/api/v2/user/keychains').reply(500, { error: 'transient' });
+      nock(ROOT).put('/api/v2/user/keychains').reply(200, {});
+      nock(ROOT)
+        .post('/api/v1/user/changepassword', (body: any) => !body.keychains && !body.v2_keychains)
+        .reply(200, {});
+
+      v1UpdatePasswordStub.callsFake(async (params: { progressCallback?: (p: unknown) => void }) => {
+        params.progressCallback?.({ status: 'updated', currentKeychainId: 'xpub1' });
+        return { keychains: { k1: 'v1enc' }, version: 25 };
+      });
+
+      const events: PasswordRotationProgress[] = [];
+      await bitgo.changePassword({
+        oldPassword: 'oldpw',
+        newPassword: 'newpw',
+        progressCallback: (progress) => events.push(progress),
+      });
+
+      const keychainEvents = events.filter((e) => e.phase === 'keychains' && e.status === 'updated');
+      // one real keychain event plus the terminal denominator event for this v1-only
+      // account — the retried transport must contribute neither a duplicate event
+      // nor a double-count to either
+      keychainEvents.should.have.length(2);
+      keychainEvents[0].should.have.properties({ succeeded: 1, skipped: 0, attempted: 1, completed: 1 });
+      keychainEvents[1].should.have.properties({ succeeded: 1, skipped: 0, attempted: 1, completed: 1, total: 1 });
     });
   });
 

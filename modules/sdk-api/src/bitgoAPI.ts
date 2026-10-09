@@ -68,6 +68,7 @@ import {
   GetUserOptions,
   ListWebhookNotificationsOptions,
   LoginResponse,
+  PasswordRotationProgress,
   PingOptions,
   ProcessedAuthenticationOptions,
   ReconstitutedSecret,
@@ -2009,8 +2010,24 @@ export class BitGoAPI implements BitGoBase {
    * given oldPassword. Returns nothing on success.
    * @param oldPassword {String} - the current password
    * @param newPassword {String} - the new password
+   * @param encryptionVersion {EncryptionVersion} - optional envelope version for the re-encrypted keychains;
+   *   defaults to preserving each keychain's existing envelope version
+   * @param progressCallback {PasswordRotationProgressCallback} - optional observer for rotation progress.
+   *   Invoked synchronously and never awaited; an exception thrown by the callback is swallowed, so it can
+   *   never change the outcome of the rotation. Events, in order: `keychains/started`, one `keychains/updated`
+   *   per listed keychain record (`updated` or `skipped`), then `finalizing/started` and `finalizing/completed`
+   *   (only after the final request succeeds). `total` is the backend's first-page `totalCount` plus the size of
+   *   the v1 keychain set; it stays `undefined` while the backend supplies no count, except that an account with
+   *   only v1 keychains receives one terminal `keychains/updated` event carrying the v1 set size. Consumers should
+   *   render indeterminate progress while `total` is `undefined`. `completed` reaches `total` unless keychains are
+   *   added or removed during the rotation, because `total` is latched from the first v2 page.
    */
-  async changePassword({ oldPassword, newPassword, encryptionVersion }: ChangePasswordOptions): Promise<any> {
+  async changePassword({
+    oldPassword,
+    newPassword,
+    encryptionVersion,
+    progressCallback,
+  }: ChangePasswordOptions): Promise<any> {
     if (!_.isString(oldPassword)) {
       throw new Error('expected string oldPassword');
     }
@@ -2029,6 +2046,58 @@ export class BitGoAPI implements BitGoBase {
       throw new Error('the provided oldPassword is incorrect');
     }
 
+    const emitProgress = (progress: PasswordRotationProgress) => {
+      if (!_.isFunction(progressCallback)) {
+        return;
+      }
+      try {
+        progressCallback(progress);
+      } catch (e) {
+        // ignore observer exceptions so a throwing callback never affects rotation results
+      }
+    };
+
+    // Single counter set shared by both the v1 and v2 lower-level keychain callbacks below.
+    const counters = { attempted: 0, completed: 0, succeeded: 0, skipped: 0 };
+    // The v1 set has no server-provided count; its size (the /user/encrypted map) is
+    // known only once v1 processing returns. Captured so v2 events can add it to the
+    // backend-served totalCount — without this, a mixed account finishes at
+    // `completed > total` (2 v1 + 32 v2 keychains read "34 of 32").
+    let v1KeychainCount = 0;
+    // A v1-only account emits no v2 event at all, so nothing would ever carry a total;
+    // tracked so the terminal denominator below can fire for those accounts.
+    let v2EventCount = 0;
+    emitProgress({ phase: 'keychains', status: 'started', ...counters });
+
+    const makeKeychainProgressCallback =
+      (keychainVersion: 'v1' | 'v2') =>
+      (progress: { status: 'updated' | 'skipped'; currentKeychainId?: string; total?: number }) => {
+        counters.attempted++;
+        counters.completed++;
+        if (keychainVersion === 'v2') {
+          v2EventCount++;
+        }
+        if (progress.status === 'updated') {
+          counters.succeeded++;
+        } else {
+          counters.skipped++;
+        }
+        emitProgress({
+          phase: 'keychains',
+          status: 'updated',
+          ...counters,
+          // v1 events stay indeterminate: the v1 set has no server count, and surfacing
+          // its client-side size mid-flight would make the denominator jump the moment
+          // v2's totalCount arrives. v2 events add the v1 set size so the
+          // counter reaches the denominator exactly on mixed v1/v2 accounts. When the
+          // backend supplies no count, the total stays undefined (never fabricated).
+          total:
+            keychainVersion === 'v2' && progress.total !== undefined ? v1KeychainCount + progress.total : undefined,
+          currentKeychainId: progress.currentKeychainId,
+          keychainVersion,
+        });
+      };
+
     // it doesn't matter which coin we choose because the v2 updatePassword functions updates all v2 keychains
     // we just need to choose a coin that exists in the current environment
     const coin = common.Environments[this.getEnv()].network === 'bitcoin' ? 'btc' : 'tbtc';
@@ -2038,14 +2107,36 @@ export class BitGoAPI implements BitGoBase {
     const encryptionSession =
       encryptionVersion === 2 ? await this.createEncryptionSession(newPassword, encryptionVersion) : undefined;
     try {
-      const updateKeychainPasswordParams = {
+      const v1KeychainUpdatePWResult = await this.keychains().updatePassword({
         oldPassword,
         newPassword,
         encryptionVersion,
         encryptionSession,
-      };
-      const v1KeychainUpdatePWResult = await this.keychains().updatePassword(updateKeychainPasswordParams);
-      const v2Keychains = await this.coin(coin).keychains().updatePassword(updateKeychainPasswordParams);
+        progressCallback: makeKeychainProgressCallback('v1'),
+      });
+      // Every v1 entry emits exactly one progress event, so the returned map's size is
+      // the v1 contribution to the denominator; v2 events below add it to their total.
+      v1KeychainCount = Object.keys(v1KeychainUpdatePWResult.keychains).length;
+      const v2Keychains = await this.coin(coin)
+        .keychains()
+        .updatePassword({
+          oldPassword,
+          newPassword,
+          encryptionVersion,
+          encryptionSession,
+          progressCallback: makeKeychainProgressCallback('v2'),
+        });
+
+      // A v1-only account emits no v2 event, so its total would stay undefined for the
+      // whole rotation and the observer could never render "n of n". Emit the client-known
+      // v1 set size as the terminal denominator — guarded on zero v2 events so mixed
+      // accounts keep the single stable total from totalCount instead of one
+      // that jumps mid-rotation.
+      if (v2EventCount === 0 && v1KeychainCount > 0) {
+        emitProgress({ phase: 'keychains', status: 'updated', ...counters, total: v1KeychainCount });
+      }
+
+      emitProgress({ phase: 'finalizing', status: 'started' });
 
       const [hmacOldPassword, hmacNewPassword] = await Promise.all([
         this._hmacAuthStrategy.calculateHMAC(user.username, oldPassword),
@@ -2065,6 +2156,7 @@ export class BitGoAPI implements BitGoBase {
       const payloadSizeKB = Math.ceil(payloadSizeBytes / 1024);
 
       // Check if batching flow is enabled
+      let useBatchingFlow = false;
       try {
         const batchingFlowCheck = await this.get(this.url('/user/checkBatchingPasswordFlow', 2))
           .query({ payloadSize: payloadSizeKB.toString() })
@@ -2077,20 +2169,30 @@ export class BitGoAPI implements BitGoBase {
             batchingFlowCheck.maxBatchSizeKB,
             3
           );
-          // Call changepassword API without keychains for batching flow
-          return this.post(this.url('/user/changepassword'))
-            .send({
-              version: updatePasswordParams.version,
-              oldPassword: updatePasswordParams.oldPassword,
-              password: updatePasswordParams.password,
-            })
-            .result();
+          useBatchingFlow = true;
         }
       } catch (error) {
         // batching flow check failed
       }
 
-      return this.post(this.url('/user/changepassword')).send(updatePasswordParams).result();
+      if (useBatchingFlow) {
+        // Call changepassword API without keychains for batching flow. Awaited outside the
+        // check/upload try-catch above, so a rejection here still propagates to the caller
+        // with no legacy-POST fallback, exactly as before.
+        const result = await this.post(this.url('/user/changepassword'))
+          .send({
+            version: updatePasswordParams.version,
+            oldPassword: updatePasswordParams.oldPassword,
+            password: updatePasswordParams.password,
+          })
+          .result();
+        emitProgress({ phase: 'finalizing', status: 'completed' });
+        return result;
+      }
+
+      const result = await this.post(this.url('/user/changepassword')).send(updatePasswordParams).result();
+      emitProgress({ phase: 'finalizing', status: 'completed' });
+      return result;
     } finally {
       encryptionSession?.destroy();
     }
