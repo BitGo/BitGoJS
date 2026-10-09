@@ -1,4 +1,4 @@
-import { DklsTypes, MPSComms, MpsDerive, MpsVrf, type MPSTypes } from '@bitgo/sdk-lib-mpc';
+import { MPSComms, MpsDerive, MpsVrf, type MPSTypes } from '@bitgo/sdk-lib-mpc';
 import {
   EddsaMPCv2DeriveRound1Request,
   EddsaMPCv2DeriveRound1Response,
@@ -7,10 +7,10 @@ import {
   MPCv2KeyGenStateEnum,
   type EddsaMPCv2KeyGenRound1Response,
   type EddsaMPCv2KeyGenRound2Response,
+  type EddsaMPCv2SignedMessage,
 } from '@bitgo/public-types';
 import { DerivedFromParentWithHardenedPath } from '@bitgo/sdk-lib-safes';
 import assert from 'assert';
-import * as t from 'io-ts';
 import * as pgp from 'openpgp';
 import { NonEmptyString } from 'io-ts-types';
 
@@ -20,69 +20,39 @@ import type { EncryptionVersion } from '../../../../api';
 import { generateGPGKeyPair } from '../../opengpgUtils';
 import type { WebauthnKeyEncryptionInfo } from '../../../keychain';
 import { envRequiresBitgoPubGpgKeyConfig, isBitgoEddsaMpcv2PubKey } from '../../../tss/bitgoPubKeys';
-import { base64String, boundedInt, decodeWithCodec } from '../../codecs';
+import { decodeWithCodec } from '../../codecs';
 import { EddsaMPCv2Utils } from './eddsaMPCv2';
 import {
   EddsaMPCv2DeriveKeySendFn,
   KeyGenSenderForEnterprise,
   KeyGenSenderForSafeChild,
 } from './eddsaMPCv2KeyGenSender';
-import type { EddsaMPCv2VrfKeyGenResponseFields } from './typesEddsaMPCv2';
 import { MPCv2PartiesEnum } from '../ecdsa/typesMPCv2';
 import { buildSafeMpcKeyEnvelopes } from '../keyShareEnvelope';
 
-const VrfPartyId = boundedInt(0, 2, 'VrfPartyId');
-const VrfMessageTransferCodec = t.intersection([
-  t.type({
-    from: VrfPartyId,
-    payload: base64String,
-  }),
-  t.partial({ to: VrfPartyId }),
-]);
-const VrfMessageTransfersCodec = t.array(VrfMessageTransferCodec);
-
-type VrfMessageTransfer = t.TypeOf<typeof VrfMessageTransferCodec>;
-
-export function serializeVrfMessages(messages: DklsTypes.DeserializedMessages): string {
-  const transfers: VrfMessageTransfer[] = [
-    ...messages.broadcastMessages.map((message) => ({
-      from: message.from,
-      payload: Buffer.from(message.payload).toString('base64'),
-    })),
-    ...messages.p2pMessages.map((message) => ({
-      from: message.from,
-      to: message.to,
-      payload: Buffer.from(message.payload).toString('base64'),
-    })),
-  ];
-  return Buffer.from(JSON.stringify(transfers)).toString('base64');
+/** Returns the single payload a VRF round produced, which is what the party signs for BitGo. */
+function getSingleVrfPayload(messages: { payload: Uint8Array }[], description: string): Uint8Array {
+  assert.equal(messages.length, 1, `${description} must produce exactly one message`);
+  return messages[0].payload;
 }
 
-export function deserializeVrfMessages(blob: string, forParty: number): DklsTypes.DeserializedMessages {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(Buffer.from(blob, 'base64').toString());
-  } catch (error) {
-    const reason = error instanceof Error ? error.message : 'malformed JSON';
-    throw new Error(`Invalid VRF DKG message blob: ${reason}`);
-  }
-
-  const transfers = decodeWithCodec(VrfMessageTransfersCodec, parsed, 'VRF DKG message blob');
-  return {
-    broadcastMessages: transfers
-      .filter((message) => message.to === undefined)
-      .map((message) => ({
-        from: message.from,
-        payload: new Uint8Array(Buffer.from(message.payload, 'base64')),
-      })),
-    p2pMessages: transfers
-      .filter((message): message is VrfMessageTransfer & { to: number } => message.to === forParty)
-      .map((message) => ({
-        from: message.from,
-        to: message.to,
-        payload: new Uint8Array(Buffer.from(message.payload, 'base64')),
-      })),
-  };
+/**
+ * Decrypts a BitGo VRF opening encrypted to a client party's GPG key and verifies BitGo's
+ * detached signature over the plaintext.
+ */
+async function decryptBitgoVrfOpening(
+  message: EddsaMPCv2SignedMessage,
+  partyKey: pgp.PrivateKey,
+  bitgoKey: pgp.Key
+): Promise<Uint8Array> {
+  const { data } = await pgp.decrypt({
+    message: await pgp.readMessage({ armoredMessage: message.message }),
+    decryptionKeys: partyKey,
+    format: 'binary',
+  });
+  const plaintext = Buffer.from(data);
+  await MPSComms.verifyMpsMessage({ message: plaintext.toString('base64'), signature: message.signature }, bitgoKey);
+  return new Uint8Array(plaintext);
 }
 
 /**
@@ -137,11 +107,19 @@ export class EddsaVrfMPCv2Utils extends EddsaMPCv2Utils {
 
     const userSignedMsg1 = await MPSComms.detachSignMpsMessage(Buffer.from(userMsg1.payload), userGpgKey);
     const backupSignedMsg1 = await MPSComms.detachSignMpsMessage(Buffer.from(backupMsg1.payload), backupGpgKey);
+    const userSignedVrfMsg1 = await MPSComms.detachSignMpsMessage(
+      getSingleVrfPayload(userVrfMsg1.broadcastMessages, 'User VRF round 0'),
+      userGpgKey
+    );
+    const backupSignedVrfMsg1 = await MPSComms.detachSignMpsMessage(
+      getSingleVrfPayload(backupVrfMsg1.broadcastMessages, 'Backup VRF round 0'),
+      backupGpgKey
+    );
 
     assert(NonEmptyString.is(userGpgPublicKey), 'User GPG public key is required');
     assert(NonEmptyString.is(backupGpgPublicKey), 'Backup GPG public key is required');
 
-    const round1Sender = KeyGenSenderForEnterprise<EddsaMPCv2KeyGenRound1Response & EddsaMPCv2VrfKeyGenResponseFields>(
+    const round1Sender = KeyGenSenderForEnterprise<EddsaMPCv2KeyGenRound1Response>(
       this.bitgo,
       params.enterprise,
       params.safeId
@@ -151,8 +129,8 @@ export class EddsaVrfMPCv2Utils extends EddsaMPCv2Utils {
       backupGpgPublicKey,
       userMsg1: userSignedMsg1,
       backupMsg1: backupSignedMsg1,
-      userVrfMsg1: serializeVrfMessages(userVrfMsg1),
-      backupVrfMsg1: serializeVrfMessages(backupVrfMsg1),
+      userVrfMsg1: userSignedVrfMsg1,
+      backupVrfMsg1: backupSignedVrfMsg1,
       ...(params.retrofit?.walletId ? { walletId: params.retrofit.walletId } : {}),
     });
     assert(bitgoVrfMsg1, 'BitGo VRF message 1 not found in round 1 response');
@@ -176,55 +154,68 @@ export class EddsaVrfMPCv2Utils extends EddsaMPCv2Utils {
     const userSignedMsg2 = await MPSComms.detachSignMpsMessage(Buffer.from(userMsg2.payload), userGpgKey);
     const backupSignedMsg2 = await MPSComms.detachSignMpsMessage(Buffer.from(backupMsg2.payload), backupGpgKey);
 
+    const bitgoVrfRawMsg1Bytes = await MPSComms.verifyMpsMessage(bitgoVrfMsg1, bitgoKeyObj);
+    const bitgoVrfDeserializedMsg1: MPSTypes.DeserializedMessage = {
+      from: MPCv2PartiesEnum.BITGO,
+      payload: new Uint8Array(bitgoVrfRawMsg1Bytes),
+    };
     const userVrfMsg2 = await userVrfSession.handleIncomingMessages({
-      broadcastMessages: [
-        ...backupVrfMsg1.broadcastMessages,
-        ...deserializeVrfMessages(bitgoVrfMsg1, MPCv2PartiesEnum.USER).broadcastMessages,
-      ],
+      broadcastMessages: [...backupVrfMsg1.broadcastMessages, bitgoVrfDeserializedMsg1],
       p2pMessages: [],
     });
     const backupVrfMsg2 = await backupVrfSession.handleIncomingMessages({
-      broadcastMessages: [
-        ...userVrfMsg1.broadcastMessages,
-        ...deserializeVrfMessages(bitgoVrfMsg1, MPCv2PartiesEnum.BACKUP).broadcastMessages,
-      ],
+      broadcastMessages: [...userVrfMsg1.broadcastMessages, bitgoVrfDeserializedMsg1],
       p2pMessages: [],
     });
-
-    const round2Sender = KeyGenSenderForEnterprise<EddsaMPCv2KeyGenRound2Response & EddsaMPCv2VrfKeyGenResponseFields>(
-      this.bitgo,
-      params.enterprise
+    const userSignedVrfMsg2 = await MPSComms.detachSignMpsMessage(
+      getSingleVrfPayload(
+        userVrfMsg2.p2pMessages.filter((message) => message.to === MPCv2PartiesEnum.BITGO),
+        'User VRF round 1 opening for BitGo'
+      ),
+      userGpgKey
     );
+    const backupSignedVrfMsg2 = await MPSComms.detachSignMpsMessage(
+      getSingleVrfPayload(
+        backupVrfMsg2.p2pMessages.filter((message) => message.to === MPCv2PartiesEnum.BITGO),
+        'Backup VRF round 1 opening for BitGo'
+      ),
+      backupGpgKey
+    );
+
+    const round2Sender = KeyGenSenderForEnterprise<EddsaMPCv2KeyGenRound2Response>(this.bitgo, params.enterprise);
     const {
       sessionId: sessionIdRound2,
       commonPublicKeychain,
       bitgoMsg2,
-      bitgoVrfMsg2,
+      bitgoVrfMsgToUser,
+      bitgoVrfMsgToBackup,
     } = await round2Sender(MPCv2KeyGenStateEnum['MPCv2-R2'], {
       sessionId,
       userMsg2: userSignedMsg2,
       backupMsg2: backupSignedMsg2,
-      userVrfMsg2: serializeVrfMessages(userVrfMsg2),
-      backupVrfMsg2: serializeVrfMessages(backupVrfMsg2),
+      userVrfMsg2: userSignedVrfMsg2,
+      backupVrfMsg2: backupSignedVrfMsg2,
     });
     assert.equal(sessionId, sessionIdRound2, 'Round 1 and round 2 session IDs do not match');
-    assert(bitgoVrfMsg2, 'BitGo VRF message 2 not found in round 2 response');
+    assert(bitgoVrfMsgToUser, 'BitGo VRF message to user not found in round 2 response');
+    assert(bitgoVrfMsgToBackup, 'BitGo VRF message to backup not found in round 2 response');
 
-    // VRF finalizes locally after the second existing MPCv2 round.
+    // VRF finalizes locally after the second existing MPCv2 round. BitGo's openings are encrypted
+    // to the recipient party's GPG key and signed by BitGo's key.
+    const bitgoVrfOpeningToUser = await decryptBitgoVrfOpening(bitgoVrfMsgToUser, userGpgKey, bitgoKeyObj);
+    const bitgoVrfOpeningToBackup = await decryptBitgoVrfOpening(bitgoVrfMsgToBackup, backupGpgKey, bitgoKeyObj);
     await userVrfSession.handleIncomingMessages({
       broadcastMessages: [],
       p2pMessages: [
-        ...userVrfMsg2.p2pMessages.filter((message) => message.to === MPCv2PartiesEnum.USER),
         ...backupVrfMsg2.p2pMessages.filter((message) => message.to === MPCv2PartiesEnum.USER),
-        ...deserializeVrfMessages(bitgoVrfMsg2, MPCv2PartiesEnum.USER).p2pMessages,
+        { from: MPCv2PartiesEnum.BITGO, to: MPCv2PartiesEnum.USER, payload: bitgoVrfOpeningToUser },
       ],
     });
     await backupVrfSession.handleIncomingMessages({
       broadcastMessages: [],
       p2pMessages: [
         ...userVrfMsg2.p2pMessages.filter((message) => message.to === MPCv2PartiesEnum.BACKUP),
-        ...backupVrfMsg2.p2pMessages.filter((message) => message.to === MPCv2PartiesEnum.BACKUP),
-        ...deserializeVrfMessages(bitgoVrfMsg2, MPCv2PartiesEnum.BACKUP).p2pMessages,
+        { from: MPCv2PartiesEnum.BITGO, to: MPCv2PartiesEnum.BACKUP, payload: bitgoVrfOpeningToBackup },
       ],
     });
     // #endregion
