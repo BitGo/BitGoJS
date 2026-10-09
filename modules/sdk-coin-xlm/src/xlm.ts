@@ -127,6 +127,7 @@ interface TransactionOperation {
   // accountConfig (setOptions) operation fields
   setFlags?: number;
   clearFlags?: number;
+  lowThreshold?: number;
   // authorizeTrustline (setTrustLineFlags) operation fields
   trustor?: string;
   authorized?: boolean;
@@ -183,6 +184,10 @@ export interface AccountConfigVerifyParams extends BuildOptions {
   type: 'accountConfig';
   flags?: AccountFlags;
   clearFlags?: AccountFlags;
+  // Only lowThreshold is whitelisted, and only with the value 2 — tightening the low threshold
+  // to 2 signatures (up from the initialized value of 1). med/high/master govern payment
+  // authorization and signer changes themselves and must not be weakened through this path.
+  lowThreshold?: number;
 }
 
 export interface AuthorizeTrustlineVerifyParams extends BuildOptions {
@@ -198,11 +203,13 @@ export interface ClawbackVerifyParams extends BuildOptions {
 function isAccountConfigVerifyParams(params: unknown): params is AccountConfigVerifyParams {
   if (typeof params !== 'object' || params === null) return false;
   const p = params as Record<string, unknown>;
-  // flags and clearFlags are optional, but must be plain objects when present
+  // flags and clearFlags are optional, but must be plain objects when present;
+  // lowThreshold is optional but must be a number when present
   return (
     p.type === 'accountConfig' &&
     (p.flags === undefined || (typeof p.flags === 'object' && p.flags !== null)) &&
-    (p.clearFlags === undefined || (typeof p.clearFlags === 'object' && p.clearFlags !== null))
+    (p.clearFlags === undefined || (typeof p.clearFlags === 'object' && p.clearFlags !== null)) &&
+    (p.lowThreshold === undefined || typeof p.lowThreshold === 'number')
   );
 }
 
@@ -1038,6 +1045,7 @@ export class Xlm extends BaseCoin {
           coin: this.getChain(),
           setFlags: setOptionsOp.setFlags,
           clearFlags: setOptionsOp.clearFlags,
+          lowThreshold: setOptionsOp.lowThreshold,
         });
       } else if (op.type === 'setTrustLineFlags') {
         const setTrustLineFlagsOp = op as stellar.Operation.SetTrustLineFlags;
@@ -1167,12 +1175,25 @@ export class Xlm extends BaseCoin {
     if (setOptionsOps.length === 0) {
       throw new Error('accountConfig transaction must contain at least one setOptions operation');
     }
-    // Reject multiple setOptions ops: txParams only carries one flags/clearFlags set, so any
-    // additional ops would be silently unverified — a verification gap.
+    // Reject multiple setOptions ops: txParams only carries one flags/clearFlags/lowThreshold
+    // set, so any additional ops would be silently unverified — a verification gap.
     if (setOptionsOps.length > 1) {
       throw new Error('accountConfig transaction must contain exactly one setOptions operation');
     }
     const setOptionsOp = setOptionsOps[0];
+
+    // Mirrors the platform build restriction: only tightening the low threshold to exactly
+    // 2 signatures is accepted; any other value is rejected before the mismatch check.
+    if (txParams.lowThreshold !== undefined) {
+      if (txParams.lowThreshold !== 2) {
+        throw new Error(`accountConfig lowThreshold must be 2, got ${txParams.lowThreshold}`);
+      }
+      if (setOptionsOp.lowThreshold !== txParams.lowThreshold) {
+        throw new Error(
+          `accountConfig lowThreshold mismatch: expected ${txParams.lowThreshold}, got ${setOptionsOp.lowThreshold}`
+        );
+      }
+    }
 
     if (txParams.flags) {
       const expectedSetFlag = ((txParams.flags.authRequired ? stellar.AuthRequiredFlag : 0) |
