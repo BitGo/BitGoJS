@@ -31,7 +31,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@bitgo/public-types": "6.79.0",
+    "@bitgo/public-types": "6.83.0",
     "@bitgo/statics": "^59.22.0",
     "@bitgo/utxo-lib": "^11.24.4",
     "create-hmac": "^1.1.7",

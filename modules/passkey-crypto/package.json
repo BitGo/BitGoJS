@@ -35,7 +35,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@bitgo/public-types": "6.79.0",
+    "@bitgo/public-types": "6.83.0",
     "@bitgo/sdk-core": "^38.23.0"
   },
   "devDependencies": {

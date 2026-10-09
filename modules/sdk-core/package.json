@@ -40,7 +40,7 @@
     ]
   },
   "dependencies": {
-    "@bitgo/public-types": "6.80.0",
+    "@bitgo/public-types": "6.83.0",
     "@bitgo/sdk-lib-mpc": "^11.3.0",
     "@bitgo/sdk-lib-safes": "^1.4.0",
     "@bitgo/secp256k1": "^1.11.1",
