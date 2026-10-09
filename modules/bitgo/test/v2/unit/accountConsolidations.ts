@@ -63,6 +63,20 @@ describe('Account Consolidations:', function () {
 
           scope.isDone().should.be.True();
         });
+        it('should forward an explicit consolidation mode', async function () {
+          const scope = nock(bgUrl)
+            .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateAccount/build`, {
+              consolidationMode: 'single-asset',
+            })
+            .reply(200, fixtures.buildAccountConsolidation);
+
+          const accountConsolidationBuild = await wallet.buildAccountConsolidations({
+            consolidationMode: 'single-asset',
+          });
+
+          accountConsolidationBuild.length.should.equal(2);
+          scope.isDone().should.be.True();
+        });
 
         it('should throw if the result is an empty array', async function () {
           const scope = nock(bgUrl)
@@ -120,6 +134,26 @@ describe('Account Consolidations:', function () {
           await wallet.sendAccountConsolidations(params);
           sinon.assert.calledWith(sendAccountConsolidationStub, sinon.match({ apiVersion: 'full' }));
 
+          scope.isDone().should.be.True();
+        });
+        it('should forward consolidationMode when sending consolidations', async function () {
+          const scope = nock(bgUrl)
+            .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateAccount/build`, {
+              apiVersion: 'full',
+              consolidationMode: 'single-asset',
+            })
+            .reply(200, fixtures.buildAccountConsolidation);
+          const sendAccountConsolidationStub = sinon
+            .stub(wallet, 'sendAccountConsolidation')
+            .resolves(fixtures.signedAccountConsolidationBuilds);
+          sinon.stub(wallet, 'getKeychainsAndValidatePassphrase').resolves([]);
+
+          wallet.tssUtils = {
+            supportedTxRequestVersions: () => ['lite', 'full'],
+          };
+
+          await wallet.sendAccountConsolidations({ consolidationMode: 'single-asset' });
+          sinon.assert.called(sendAccountConsolidationStub);
           scope.isDone().should.be.True();
         });
 

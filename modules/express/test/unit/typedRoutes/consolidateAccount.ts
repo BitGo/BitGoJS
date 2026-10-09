@@ -68,6 +68,12 @@ describe('Consolidate Account API Tests', function () {
         assert.strictEqual(decoded.consolidateAddresses?.length, 2);
         assert.strictEqual(decoded.walletPassphrase, validBody.walletPassphrase);
       });
+      it('should validate both consolidation modes', function () {
+        for (const consolidationMode of ['single-asset', 'legacy-multi-asset']) {
+          const decoded = assertDecode(t.type(ConsolidateAccountRequestBody), { consolidationMode });
+          assert.strictEqual(decoded.consolidationMode, consolidationMode);
+        }
+      });
 
       it('should validate body with all common fields', function () {
         const validBody = {
@@ -92,6 +98,9 @@ describe('Consolidate Account API Tests', function () {
         assert.throws(() => assertDecode(t.type(ConsolidateAccountRequestBody), { consolidateAddresses: 'string' }));
         assert.throws(() => assertDecode(t.type(ConsolidateAccountRequestBody), { minConfirms: '2' }));
         assert.throws(() => assertDecode(t.type(ConsolidateAccountRequestBody), { preview: 'true' }));
+      });
+      it('should reject an invalid consolidation mode', function () {
+        assert.throws(() => assertDecode(t.type(ConsolidateAccountRequestBody), { consolidationMode: 'single' }));
       });
     });
 

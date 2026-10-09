@@ -126,6 +126,21 @@ describe('Consolidate account', () => {
     );
     consolidationStub.should.be.calledOnceWith(body);
   });
+  it('should forward consolidationMode to bitgo api consolidate/build', async () => {
+    const result = { success: [], failure: [] };
+    const body = { consolidationMode: 'single-asset' };
+    const { bitgoStub, consolidationStub } = createConsolidateMocks(result, true, 'tss');
+    const mockRequest = {
+      bitgo: bitgoStub,
+      decoded: { coin: 'tsol', id: '23423423423423' },
+      body,
+    };
+
+    await handleV2ConsolidateAccount(mockRequest as express.Request & typeof mockRequest).should.be.resolvedWith(
+      result
+    );
+    consolidationStub.should.be.calledOnceWith(body);
+  });
 
   it('should use on-chain signing params for a TRX on-chain wallet even though TRX supportsTss', async () => {
     const result = { failure: [] };
