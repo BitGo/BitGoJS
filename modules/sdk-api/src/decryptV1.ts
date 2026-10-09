@@ -4,18 +4,6 @@ import * as t from 'io-ts';
 import { promisify } from 'util';
 
 /**
- * Minimal shape the decrypt path needs from a crypto module. Both `node:crypto`
- * and `crypto-browserify` satisfy this. Passing this in from tests lets the
- * browser-shim test suite exercise the real decrypt code instead of a copy.
- */
-export interface CryptoModule {
-  pbkdf2: typeof pbkdf2;
-  createDecipheriv: typeof createDecipheriv;
-}
-
-const defaultCrypto: CryptoModule = { pbkdf2, createDecipheriv };
-
-/**
  * Upper bound on PBKDF2 iterations accepted from a v1 envelope. BitGo-produced
  * v1 envelopes use 10,000; this cap is 10x that. Envelope validation enforces
  * it up front before any KDF work runs.
@@ -70,16 +58,15 @@ function ccmNonceLength(plaintextLen: number): number {
 }
 
 /**
- * Decrypt a parsed v1 envelope given a crypto module.
+ * Decrypt a v1 (SJCL PBKDF2-SHA256 + AES-CCM) envelope with Node's native
+ * `node:crypto`.
  *
- * v1 = PBKDF2-SHA256(password, salt, iter, keyLen) then AES-CCM(key, nonce, ct||tag).
- * Byte-for-byte compatible with `sjcl.decrypt` output for the same envelope.
- *
- * Exported so tests can inject `crypto-browserify` and exercise the exact
- * runtime path the webpack browser bundle produces, without duplicating the
- * decrypt logic.
+ * Node runtimes only: the `crypto` webpack substitutes in browser bundles
+ * (`crypto-browserify`) has no working AES-CCM, so `decryptV1WithFallback`
+ * routes browser runtimes straight to the frozen SJCL decoder instead of
+ * ever calling this.
  */
-export async function decryptV1WithCrypto(password: string, ciphertext: string, crypto: CryptoModule): Promise<string> {
+export async function decryptV1(password: string, ciphertext: string): Promise<string> {
   const env = parseV1Envelope(ciphertext);
   const salt = Buffer.from(env.salt, 'base64');
   const ivFull = Buffer.from(env.iv, 'base64');
@@ -94,26 +81,13 @@ export async function decryptV1WithCrypto(password: string, ciphertext: string, 
   const iv = ivFull.subarray(0, nonceLen);
 
   const keyBytes = env.ks / 8;
-  const key: Buffer = await promisify(crypto.pbkdf2)(password, salt, env.iter, keyBytes, 'sha256');
+  const key: Buffer = await promisify(pbkdf2)(password, salt, env.iter, keyBytes, 'sha256');
 
-  const decipher = crypto.createDecipheriv(`aes-${env.ks}-ccm`, key, iv, { authTagLength: tagBytes });
+  const decipher = createDecipheriv(`aes-${env.ks}-ccm`, key, iv, { authTagLength: tagBytes });
   decipher.setAuthTag(authTag);
   const aad = env.adata ? Buffer.from(env.adata, 'utf8') : Buffer.alloc(0);
   decipher.setAAD(aad, { plaintextLength: cipher.length });
 
   const pt = Buffer.concat([decipher.update(cipher), decipher.final()]);
   return pt.toString('utf8');
-}
-
-/**
- * Decrypt a v1 (SJCL PBKDF2-SHA256 + AES-CCM) envelope.
- *
- * Runs the same `node:crypto` code on server and browser. The BitGoJS webpack
- * config already maps `crypto` -> `crypto-browserify`, whose `aes-256-ccm` and
- * `pbkdf2` implementations are byte-compatible with Node's native ones and
- * with SJCL's envelope format. Parity is guarded by tests in
- * `test/unit/decryptV1.browser.ts`.
- */
-export async function decryptV1(password: string, ciphertext: string): Promise<string> {
-  return decryptV1WithCrypto(password, ciphertext, defaultCrypto);
 }
