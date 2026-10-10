@@ -1,9 +1,10 @@
 import should from 'should';
 
-import { common, TransactionType } from '@bitgo/sdk-core';
+import { common, ErrorNoInputToRecover, RecoveryProviderError, TransactionType } from '@bitgo/sdk-core';
 import { coins } from '@bitgo/statics';
 import { Txtz, Xtz, XtzLib } from '../../src';
 import nock from 'nock';
+import request from 'superagent';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import {
@@ -354,6 +355,50 @@ describe('Offline Tezos Transaction builder', function () {
       consolidationResult.txInfo.branch.should.equal('BMWuVUCyg5gruMRzhsQMPkF47WEG8Z2BgSxfBnoLBvzvq977XPi');
       consolidationResult.sourceCounter.should.equal('54996303');
       consolidationResult.transferCounters[0].should.equal('54996303');
+    });
+
+    it('should throw ErrorNoInputToRecover when there are no funds to recover', async function () {
+      const basecoin = bitgo.coin('txtz') as Xtz;
+      const params = paramsDetailsForRecovery;
+
+      nock(baseUrl)
+        .get(`/v1/accounts/${params.walletContractAddress}`)
+        .times(1)
+        .reply(200, { ...contractAddressDetails, balance: 0 });
+      nock(baseUrl).get(`/v1/accounts/${params.feeAddress}`).times(1).reply(200, feeAddressDetails);
+
+      await basecoin
+        .recover({
+          userKey: params.userKey,
+          backupKey: params.backupKey,
+          recoveryDestination: params.recoveryDestination,
+          walletContractAddress: params.walletContractAddress,
+          walletPassphrase: params.walletPassphrase,
+        })
+        .should.be.rejectedWith(ErrorNoInputToRecover);
+    });
+
+    it('should throw RecoveryProviderError when the explorer is unreachable', async function () {
+      const basecoin = bitgo.coin('txtz') as Xtz;
+      const params = paramsDetailsForRecovery;
+
+      const originalGet = request.get;
+      request.get = function () {
+        return Promise.reject(new Error('connection refused')) as any;
+      };
+      try {
+        await basecoin
+          .recover({
+            userKey: params.userKey,
+            backupKey: params.backupKey,
+            recoveryDestination: params.recoveryDestination,
+            walletContractAddress: params.walletContractAddress,
+            walletPassphrase: params.walletPassphrase,
+          })
+          .should.be.rejectedWith(RecoveryProviderError);
+      } finally {
+        request.get = originalGet;
+      }
     });
   });
 });

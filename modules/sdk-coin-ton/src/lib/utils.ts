@@ -1,6 +1,6 @@
 import TonWeb from 'tonweb';
 import { BN } from 'bn.js';
-import { BaseUtils, isValidEd25519PublicKey } from '@bitgo/sdk-core';
+import { BaseUtils, isValidEd25519PublicKey, RecoveryProviderError } from '@bitgo/sdk-core';
 import { VESTING_CONTRACT_CODE_B64 } from './constants';
 import { VestingContractParams } from './iface';
 export class Utils implements BaseUtils {
@@ -153,7 +153,7 @@ export async function getFeeEstimate(wallet: any, toAddress: string, amount: str
       .estimateFee();
     return feeEstimate;
   } catch (error) {
-    throw new Error(`Failed to estimate fee: ${error.message}`);
+    throw new RecoveryProviderError(`Failed to estimate fee: ${error.message}`, error);
   }
 }
 

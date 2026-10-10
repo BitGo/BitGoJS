@@ -7,7 +7,7 @@ import { randomBytes } from 'crypto';
 import { BigNumber } from 'bignumber.js';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
-import { common, Wallet } from '@bitgo/sdk-core';
+import { common, ErrorNoInputToRecover, RecoveryProviderError, Wallet } from '@bitgo/sdk-core';
 import { TxData, Transfer } from '../../src/lib/iface';
 
 import * as TestData from '../fixtures/hbar';
@@ -1093,18 +1093,15 @@ describe('Hedera Hashgraph:', function () {
         const getBalanceStub = sandBox
           .stub(Hbar.prototype, 'getAccountBalance')
           .resolves({ hbars: formatBalanceResponse('100'), tokens: [] });
-        await assert.rejects(
-          async () => {
-            await basecoin.recover({
-              userKey,
-              backupKey,
-              rootAddress,
-              walletPassphrase,
-              recoveryDestination: recoveryDestination + '?memoId=' + memo,
-            });
-          },
-          { message: 'Insufficient balance to recover, got balance: 100 fee: 10000000' }
-        );
+        await assert.rejects(async () => {
+          await basecoin.recover({
+            userKey,
+            backupKey,
+            rootAddress,
+            walletPassphrase,
+            recoveryDestination: recoveryDestination + '?memoId=' + memo,
+          });
+        }, ErrorNoInputToRecover);
 
         getBalanceStub.callCount.should.equal(1);
       });
@@ -1208,19 +1205,16 @@ describe('Hedera Hashgraph:', function () {
           tokens: [{ tokenId: 'randomString', balance: '100', decimals: 6 }],
         };
         sandBox.stub(Hbar.prototype, 'getAccountBalance').resolves(data);
-        await assert.rejects(
-          async () => {
-            await basecoin.recover({
-              userKey,
-              backupKey,
-              rootAddress: rootAddress,
-              walletPassphrase,
-              recoveryDestination: recoveryDestination + '?memoId=' + memo,
-              tokenId: tokenId,
-            });
-          },
-          { message: 'Insufficient balance to recover token: ' + tokenId + ' for account: ' + rootAddress }
-        );
+        await assert.rejects(async () => {
+          await basecoin.recover({
+            userKey,
+            backupKey,
+            rootAddress: rootAddress,
+            walletPassphrase,
+            recoveryDestination: recoveryDestination + '?memoId=' + memo,
+            tokenId: tokenId,
+          });
+        }, ErrorNoInputToRecover);
       });
 
       it('should throw error for insufficient balance for tokenId if token balance exist with 0 amount', async function () {
@@ -1229,19 +1223,16 @@ describe('Hedera Hashgraph:', function () {
           tokens: [{ tokenId: 'randomString', balance: '0', decimals: 6 }],
         };
         sandBox.stub(Hbar.prototype, 'getAccountBalance').resolves(data);
-        await assert.rejects(
-          async () => {
-            await basecoin.recover({
-              userKey,
-              backupKey,
-              rootAddress: rootAddress,
-              walletPassphrase,
-              recoveryDestination: recoveryDestination + '?memoId=' + memo,
-              tokenId: tokenId,
-            });
-          },
-          { message: 'Insufficient balance to recover token: ' + tokenId + ' for account: ' + rootAddress }
-        );
+        await assert.rejects(async () => {
+          await basecoin.recover({
+            userKey,
+            backupKey,
+            rootAddress: rootAddress,
+            walletPassphrase,
+            recoveryDestination: recoveryDestination + '?memoId=' + memo,
+            tokenId: tokenId,
+          });
+        }, ErrorNoInputToRecover);
       });
 
       it('should throw error for insufficient native balance for token transfer', async function () {
@@ -1263,6 +1254,21 @@ describe('Hedera Hashgraph:', function () {
           },
           { message: 'Insufficient native balance to recover tokens, got native balance: 1000000 fee: ' + defaultFee }
         );
+      });
+
+      it('should throw RecoveryProviderError when the account balance query fails', async function () {
+        sandBox
+          .stub(Hbar.prototype, 'getAccountBalance')
+          .rejects(new RecoveryProviderError('Failed to get account balance'));
+        await assert.rejects(async () => {
+          await basecoin.recover({
+            userKey,
+            backupKey,
+            rootAddress,
+            walletPassphrase,
+            recoveryDestination: recoveryDestination + '?memoId=' + memo,
+          });
+        }, RecoveryProviderError);
       });
     });
 

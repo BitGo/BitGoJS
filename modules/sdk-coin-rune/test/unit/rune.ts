@@ -1,6 +1,7 @@
 import { CosmosTransaction, SendMessage } from '@bitgo/abstract-cosmos';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { ErrorNoInputToRecover, RecoveryProviderError } from '@bitgo/sdk-core';
 import { coins, NetworkType } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import { beforeEach } from 'mocha';
@@ -398,7 +399,29 @@ describe('Rune', function () {
           walletPassphrase: wrwUser.walletPassphrase,
           recoveryDestination: wrwUser.destinationAddress,
         })
-        .should.rejectedWith('Did not have enough funds to recover');
+        .should.rejectedWith(ErrorNoInputToRecover);
+    });
+  });
+
+  describe('Recover transaction: provider failure', () => {
+    const sandBox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandBox.restore();
+      sinon.restore();
+    });
+
+    it('should throw RecoveryProviderError when the node returns a non-200 response', async function () {
+      sandBox.stub(Trune.prototype, 'getChainIdFromNode' as keyof Trune).resolves({ status: 500, body: {} });
+      await trune
+        .recover({
+          userKey: wrwUser.userPrivateKey,
+          backupKey: wrwUser.backupPrivateKey,
+          bitgoKey: wrwUser.bitgoPublicKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          recoveryDestination: wrwUser.destinationAddress,
+        })
+        .should.rejectedWith(RecoveryProviderError);
     });
   });
 });

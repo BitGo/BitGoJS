@@ -21,6 +21,7 @@ import {
   EDDSAMethodTypes,
   EddsaSigningMaterial,
   Environments,
+  ErrorNoInputToRecover,
   getEddsaSigningMaterial as sharedGetEddsaSigningMaterial,
   KeyPair,
   MPCAlgorithm,
@@ -35,6 +36,7 @@ import {
   ParsedTransaction,
   ParseTransactionOptions as BaseParseTransactionOptions,
   PublicKey,
+  RecoveryProviderError,
   RecoveryTxRequest,
   signEddsaMpcV2RecoveryTx,
   SignedTransaction,
@@ -396,7 +398,7 @@ export class Near extends BaseCoin {
       } catch (e) {
         // UNKNOWN_ACCOUNT error indicates that the address has not partake in any transaction so far, so we will
         // treat it as a zero balance address
-        if (e.message !== 'UNKNOWN_ACCOUNT') {
+        if (!(e instanceof ErrorNoInputToRecover)) {
           throw e;
         }
       }
@@ -499,7 +501,7 @@ export class Near extends BaseCoin {
       }
       return { serializedTx: serializedTx, scanIndex: i };
     }
-    throw new Error('Did not find an address with funds to recover');
+    throw new ErrorNoInputToRecover('Did not find an address with funds to recover');
   }
 
   /**
@@ -798,14 +800,15 @@ export class Near extends BaseCoin {
    */
   protected async getDataFromNode(params: { payload?: Record<string, unknown> }): Promise<request.Response> {
     const nodeUrls = this.getPublicNodeUrls();
+    let lastError;
     for (const nodeUrl of nodeUrls) {
       try {
         return await request.post(nodeUrl).send(params.payload);
       } catch (e) {
-        console.debug(e);
+        lastError = e;
       }
     }
-    throw new Error(`Unable to call endpoint: '/' from nodes: ${_.join(nodeUrls, ', ')}`);
+    throw new RecoveryProviderError(`Unable to call endpoint: '/' from nodes: ${_.join(nodeUrls, ', ')}`, lastError);
   }
 
   protected async getAccessKey({
@@ -829,7 +832,7 @@ export class Near extends BaseCoin {
       },
     });
     if (response.status !== 200) {
-      throw new Error('Account not found');
+      throw new RecoveryProviderError('Account not found');
     }
     const accessKey = response.body.result;
     return { nonce: accessKey.nonce + 1, blockHash: accessKey.block_hash };
@@ -849,11 +852,14 @@ export class Near extends BaseCoin {
       },
     });
     if (response.status !== 200) {
-      throw new Error('Failed to query account information');
+      throw new RecoveryProviderError('Failed to query account information');
     }
-    const errorCause = response.body.error?.cause.name;
+    const errorCause = response.body.error?.cause?.name;
+    if (errorCause === 'UNKNOWN_ACCOUNT') {
+      throw new ErrorNoInputToRecover(errorCause);
+    }
     if (errorCause !== undefined) {
-      throw new Error(errorCause);
+      throw new RecoveryProviderError(errorCause);
     }
 
     const account = response.body.result;
@@ -888,11 +894,11 @@ export class Near extends BaseCoin {
       },
     });
     if (response.status !== 200) {
-      throw new Error('Failed to fetch ft balance of the account');
+      throw new RecoveryProviderError('Failed to fetch ft balance of the account');
     }
     const errorCause = response.body.error?.cause?.name;
     if (errorCause !== undefined) {
-      throw new Error(errorCause);
+      throw new RecoveryProviderError(errorCause);
     }
     const resultUint8Array: Uint8Array = new Uint8Array(response.body.result.result);
     const raw = new TextDecoder().decode(resultUint8Array);
@@ -922,11 +928,11 @@ export class Near extends BaseCoin {
       },
     });
     if (response.status !== 200) {
-      throw new Error('Failed to fetch storage deposit of the account');
+      throw new RecoveryProviderError('Failed to fetch storage deposit of the account');
     }
     const errorCause = response.body.error?.cause?.name;
     if (errorCause !== undefined) {
-      throw new Error(errorCause);
+      throw new RecoveryProviderError(errorCause);
     }
     const resultUint8Array: Uint8Array = new Uint8Array(response.body.result.result);
     const raw = new TextDecoder().decode(resultUint8Array);
@@ -946,7 +952,7 @@ export class Near extends BaseCoin {
       },
     });
     if (response.status !== 200) {
-      throw new Error('Account not found');
+      throw new RecoveryProviderError('Account not found');
     }
 
     const config = response.body.result;
@@ -977,7 +983,7 @@ export class Near extends BaseCoin {
       },
     });
     if (response.status !== 200) {
-      throw new Error('Account not found');
+      throw new RecoveryProviderError('Account not found');
     }
     return response.body.result.gas_price;
   }

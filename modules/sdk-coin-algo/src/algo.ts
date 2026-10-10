@@ -11,12 +11,14 @@ import {
   BaseBroadcastTransactionResult,
   BaseCoin,
   BitGoBase,
+  ErrorNoInputToRecover,
   InvalidAddressError,
   InvalidKey,
   KeyIndices,
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
+  RecoveryProviderError,
   SignedTransaction,
   SignTransactionOptions as BaseSignTransactionOptions,
   TokenManagementType,
@@ -830,9 +832,13 @@ export class Algo extends BaseCoin {
    * @param client
    */
   async getAccountBalance(rootAddress: string, client: algosdk.Algodv2): Promise<number> {
-    const accountInformation = await client.accountInformation(rootAddress).do();
-    // Extract the balance from the account information
-    return accountInformation.amount;
+    try {
+      const accountInformation = await client.accountInformation(rootAddress).do();
+      // Extract the balance from the account information
+      return accountInformation.amount;
+    } catch (e) {
+      throw new RecoveryProviderError(`Failed to get account balance for ${rootAddress}`, e);
+    }
   }
 
   /**
@@ -903,7 +909,7 @@ export class Algo extends BaseCoin {
     const spendableAmount = new BigNumber(nativeBalance).minus(params.fee).minus(MIN_MICROALGOS_BALANCE).toNumber();
 
     if (new BigNumber(spendableAmount).isZero() || new BigNumber(spendableAmount).isLessThanOrEqualTo(params.fee)) {
-      throw new Error(
+      throw new ErrorNoInputToRecover(
         'Insufficient balance to recover, got balance: ' +
           nativeBalance +
           ' fee: ' +
@@ -915,15 +921,21 @@ export class Algo extends BaseCoin {
 
     let latestRound: number | undefined;
     if (!params.firstRound) {
-      latestRound = await client
-        .status()
-        .do()
-        .then((status) => status['last-round']);
+      try {
+        latestRound = await client
+          .status()
+          .do()
+          .then((status) => status['last-round']);
+      } catch (e) {
+        throw new RecoveryProviderError('Failed to fetch the latest round from the node', e);
+      }
     }
 
     const firstRound = !params.firstRound ? latestRound : params.firstRound;
     if (!firstRound) {
-      throw new Error('Unable to fetch the latest round from the node. Please provide the firstRound or try again.');
+      throw new RecoveryProviderError(
+        'Unable to fetch the latest round from the node. Please provide the firstRound or try again.'
+      );
     }
     const LAST_ROUND_BUFFER = 1000;
     const lastRound = firstRound + LAST_ROUND_BUFFER;

@@ -3,6 +3,7 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import { TestBitGo, TestBitGoAPI, mockSerializedChallengeWithProofs } from '@bitgo/sdk-test';
 import { coins } from '@bitgo/statics';
+import { ErrorNoInputToRecover } from '@bitgo/sdk-core';
 import BigNumber from 'bignumber.js';
 import sinon from 'sinon';
 import { Atom, Tatom } from '../../src';
@@ -603,7 +604,7 @@ describe('ATOM', function () {
           walletPassphrase: wrwUser.walletPassphrase,
           recoveryDestination: destinationAddress,
         })
-        .should.rejectedWith('Did not have enough funds to recover');
+        .should.rejectedWith(ErrorNoInputToRecover);
     });
   });
 });

@@ -2,9 +2,11 @@ import {
   BaseCoin,
   BaseTransactionBuilder,
   BitGoBase,
+  ErrorNoInputToRecover,
   MethodNotImplementedError,
   ParsedTransaction,
   ParseTransactionOptions,
+  RecoveryProviderError,
   KeyPair as SdkCoreKeyPair,
   SignedTransaction,
   TransactionExplanation,
@@ -283,18 +285,23 @@ export class Xtz extends BaseCoin {
     },
     apiKey?: string
   ): Promise<unknown> {
-    const response = await request.get(
-      `${common.Environments[this.bitgo.getEnv()].xtzExplorerBaseUrl}/v1/${params.actionPath}${
-        params.address ? '/' + params.address : ''
-      }${params.action ? '/' + params.action : ''}${apiKey ? `?apikey=${apiKey}` : ''}`
-    );
+    let response;
+    try {
+      response = await request.get(
+        `${common.Environments[this.bitgo.getEnv()].xtzExplorerBaseUrl}/v1/${params.actionPath}${
+          params.address ? '/' + params.address : ''
+        }${params.action ? '/' + params.action : ''}${apiKey ? `?apikey=${apiKey}` : ''}`
+      );
+    } catch (e) {
+      throw new RecoveryProviderError('could not reach TZKT', e);
+    }
 
     if (!response.ok) {
-      throw new Error('could not reach TZKT');
+      throw new RecoveryProviderError('could not reach TZKT');
     }
 
     if (response.status === 429) {
-      throw new Error('TZKT rate limit reached');
+      throw new RecoveryProviderError('TZKT rate limit reached');
     }
     return response.body;
   }
@@ -315,7 +322,7 @@ export class Xtz extends BaseCoin {
     );
 
     if (!result) {
-      throw new Error(`Unable to find details for ${address}`);
+      throw new ErrorNoInputToRecover(`Unable to find details for ${address}`);
     }
     return result;
   }
@@ -336,7 +343,7 @@ export class Xtz extends BaseCoin {
     );
     // throw if the result does not exist or the result is not a valid number
     if (!result || !result.balance) {
-      throw new Error(`Could not obtain address balance for ${address} from the explorer`);
+      throw new ErrorNoInputToRecover(`Could not obtain address balance for ${address} from the explorer`);
     }
     return new BigNumber(result.balance, 10);
   }
@@ -358,14 +365,21 @@ export class Xtz extends BaseCoin {
     }/chains/main/blocks/head/helpers/scripts/pack_data`;
 
     if (!xtzRpcUrl) {
-      throw new Error('XTZ RPC url not found');
+      throw new RecoveryProviderError('XTZ RPC url not found');
     }
 
-    const response = await request.post(xtzRpcUrl).send(dataToSign);
+    let response;
+    try {
+      response = await request.post(xtzRpcUrl).send(dataToSign);
+    } catch (e) {
+      throw new RecoveryProviderError(`unable to pack data to sign: ${(e as Error).message}`, e);
+    }
     if (response.status === 404) {
-      throw new Error(`unable to pack data to sign ${response.status}: ${response.body.error.message}`);
+      throw new RecoveryProviderError(`unable to pack data to sign ${response.status}: ${response.body.error.message}`);
     } else if (response.status !== 200) {
-      throw new Error(`unexpected IMS response status ${response.status}: ${response.body.error.message}`);
+      throw new RecoveryProviderError(
+        `unexpected IMS response status ${response.status}: ${response.body.error.message}`
+      );
     }
     return response.body.packed;
   }
@@ -444,11 +458,11 @@ export class Xtz extends BaseCoin {
 
     // get balance of sender address
     if (!userAddressDetails.balance || userAddressDetails.balance === 0) {
-      throw new Error('No funds to recover from source address');
+      throw new ErrorNoInputToRecover('No funds to recover from source address');
     }
     const txAmount = userAddressDetails.balance;
     if (new BigNumber(txAmount).isLessThanOrEqualTo(0)) {
-      throw new Error('Wallet does not have enough funds to recover');
+      throw new ErrorNoInputToRecover('Wallet does not have enough funds to recover');
     }
 
     const feeInfo = {
@@ -468,7 +482,7 @@ export class Xtz extends BaseCoin {
     });
 
     if (!chainHead || !chainHead.hash) {
-      throw new Error('Unable to fetch chain head');
+      throw new RecoveryProviderError('Unable to fetch chain head');
     }
     txBuilder.branch(chainHead.hash);
 

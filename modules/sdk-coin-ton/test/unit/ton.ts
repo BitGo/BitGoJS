@@ -6,10 +6,12 @@ import assert from 'assert';
 import * as testData from '../resources/ton';
 import {
   EDDSAMethods,
+  ErrorNoInputToRecover,
   MPCRecoveryOptions,
   MPCSweepRecoveryOptions,
   MPCSweepTxs,
   MPCTx,
+  RecoveryProviderError,
   signRecoveryEddsaMPCv2,
   TransactionExplanation,
 } from '@bitgo/sdk-core';
@@ -858,6 +860,46 @@ describe('TON:', function () {
       (unsigned as any).txRequests[0].transactions[0].unsignedTx.signableHex.should.not.be.undefined();
       (unsigned as any).txRequests[0].transactions[0].unsignedTx.derivationPath.should.equal('m/0');
       (unsigned as any).txRequests[0].transactions[0].unsignedTx.coinSpecific.commonKeychain.should.equal(bitgoKey);
+    });
+
+    it('should throw ErrorNoInputToRecover when there is no TON balance to recover', async function () {
+      const mockProvider = {
+        getBalance: sandbox.stub().resolves('0'),
+        getEstimateFee: sandbox.stub().resolves({
+          source_fees: { in_fwd_fee: 1000, storage_fee: 1000, gas_fee: 1000, fwd_fee: 1000 },
+        }),
+        call: sandbox.stub(),
+        send: sandbox.stub(),
+      };
+      sandbox.stub(Tonweb, 'HttpProvider').returns(mockProvider as any);
+
+      const bitgoKey =
+        '1baafa0d62174bf0c78f3256318613ffc44b6dd54ab1a63c2185232f92ede9dae1b2818dbeb52a8215fd56f5a5f2a9f94c079ce89e4dc3b1ce6ed6e84ce71857';
+      const recoveryDestination = 'UQBL2idCXR4ATdQtaNa4VpofcpSxuxIgHH7_slOZfdOXSadJ';
+
+      await basecoin
+        .recover({ bitgoKey, recoveryDestination, apiKey: 'dummy' })
+        .should.be.rejectedWith(ErrorNoInputToRecover);
+    });
+
+    it('should throw RecoveryProviderError when the provider fails to fetch the balance', async function () {
+      const mockProvider = {
+        getBalance: sandbox.stub().rejects(new Error('provider down')),
+        getEstimateFee: sandbox.stub().resolves({
+          source_fees: { in_fwd_fee: 1000, storage_fee: 1000, gas_fee: 1000, fwd_fee: 1000 },
+        }),
+        call: sandbox.stub(),
+        send: sandbox.stub(),
+      };
+      sandbox.stub(Tonweb, 'HttpProvider').returns(mockProvider as any);
+
+      const bitgoKey =
+        '1baafa0d62174bf0c78f3256318613ffc44b6dd54ab1a63c2185232f92ede9dae1b2818dbeb52a8215fd56f5a5f2a9f94c079ce89e4dc3b1ce6ed6e84ce71857';
+      const recoveryDestination = 'UQBL2idCXR4ATdQtaNa4VpofcpSxuxIgHH7_slOZfdOXSadJ';
+
+      await basecoin
+        .recover({ bitgoKey, recoveryDestination, apiKey: 'dummy' })
+        .should.be.rejectedWith(RecoveryProviderError);
     });
 
     it('should take OVC output and generate a signed sweep transaction', async function () {
