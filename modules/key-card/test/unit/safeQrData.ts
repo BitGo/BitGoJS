@@ -13,7 +13,7 @@ import { generateSafeQrData } from '../../src/generateQrData';
 import { splitKeys } from '../../src/utils';
 import { QRBinaryMaxLength } from '../../src/drawKeycard';
 import { parseKeycardFromLines, parseSafeKeycardBox } from '../../src/parseKeycard';
-import { SafeRootKeyType, SAFE_ROOT_ORDER } from '../../src/types';
+import { SafeRootKeyType, SAFE_ROOT_ORDER, SafeKeycardRoots } from '../../src/types';
 
 const passphrase = 'safe-keycard-round-trip';
 
@@ -240,9 +240,21 @@ describe('generateSafeQrData', function () {
   it('parseSafeKeycardBox rejects malformed / incomplete box data', function () {
     assert.throws(() => parseSafeKeycardBox('not json'), /parseSafeKeycardBox/); // invalid JSON
     assert.throws(() => parseSafeKeycardBox('"a string"'), /parseSafeKeycardBox/); // not an object
-    assert.throws(() => parseSafeKeycardBox('{"secp256k1Multisig":"x"}'), /parseSafeKeycardBox/); // missing roots
+    assert.throws(() => parseSafeKeycardBox('{}'), /empty slot set/); // declares no roots
+    assert.throws(() => parseSafeKeycardBox('{"secp256k1Multisig":"a","unknownRoot":"b"}'), /unknownRoot/);
+    parseSafeKeycardBox('{"secp256k1Multisig":"x"}').should.deepEqual({ secp256k1Multisig: 'x' }); // a subset now parses
     // A well-formed box with all four roots decodes successfully.
     const ok = parseSafeKeycardBox('{"secp256k1Multisig":"a","ecdsaMpc":"b","eddsaMpc":"c","ed25519Multisig":"d"}');
-    ok.ecdsaMpc.should.equal('b');
+    ok.ecdsaMpc!.should.equal('b');
+  });
+
+  it('round-trips a partial (2-slot) safe box through parse, byte-for-byte', function () {
+    const partial: SafeKeycardRoots = {
+      secp256k1Multisig: 'x',
+      ed25519Multisig: 'y',
+    };
+    const box = JSON.stringify(partial);
+    parseSafeKeycardBox(box).should.deepEqual(partial);
+    JSON.stringify(parseSafeKeycardBox(box)).should.equal(box);
   });
 });
