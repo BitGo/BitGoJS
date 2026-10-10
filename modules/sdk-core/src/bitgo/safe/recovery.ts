@@ -9,7 +9,7 @@ import { bip32 } from '@bitgo/utxo-lib';
 import { coins, MAX_BIP32_INDEX, SAFE_ROOT_SLOT_ORDINALS } from '@bitgo/statics';
 import type { RootKeyType } from '@bitgo/public-types';
 import { parseSafeKeycardBox } from '@bitgo/sdk-lib-safes';
-import { DklsVrfUtils } from '@bitgo/sdk-lib-mpc';
+import { DklsVrfUtils, MpsVrfUtils } from '@bitgo/sdk-lib-mpc';
 import { BitGoBase } from '../bitgoBase';
 import { IncorrectPasswordError } from '../errors';
 import { parseSafeMpcKeyEnvelopes } from '../utils/tss/keyShareEnvelope';
@@ -31,9 +31,16 @@ export type EcdsaMpcChildKeys = {
   backup: string;
 };
 
+export type EddsaMpcChildKeys = {
+  commonKeychain: string;
+  user: string;
+  backup: string;
+};
+
 export type DerivedSafeWalletKeys =
   | { slot: 'secp256k1Multisig'; path: string; keys: Secp256k1MultisigChildKeys }
-  | { slot: 'ecdsaMpc'; path: string; keys: EcdsaMpcChildKeys };
+  | { slot: 'ecdsaMpc'; path: string; keys: EcdsaMpcChildKeys }
+  | { slot: 'eddsaMpc'; path: string; keys: EddsaMpcChildKeys };
 
 export type SafeRecoverKeyParams = {
   userKey: string;
@@ -112,8 +119,8 @@ function buildSafeCosignerPath(coinType: number, slotOrdinal: number, account: n
 
 /**
  * Derives a Safe wallet's child keys at the BIP44 path for a given slot and account.
- * Only `secp256k1Multisig` (slot 1) is supported for now; the remaining slots throw
- * until their derivation arms land (WCN-2736/WCN-2737/WCN-2894).
+ * Supports `secp256k1Multisig`, `ecdsaMpc`, and `eddsaMpc`; `ed25519Multisig` remains
+ * unsupported until its derivation arm lands (WCN-2894).
  */
 export async function deriveSafeWalletKeys(params: {
   coin: string;
@@ -165,6 +172,21 @@ export async function deriveSafeWalletKeys(params: {
     });
     return {
       slot: 'ecdsaMpc',
+      path: buildSafeUserPath(coinType, slotOrdinal, account),
+      keys: { commonKeychain, user: userChild, backup: backupChild },
+    };
+  }
+
+  if (params.slot === 'eddsaMpc') {
+    const { commonKeychain, userChild, backupChild } = await MpsVrfUtils.deriveSafeEddsaMpcChild({
+      userRoot: roots.eddsaMpc.user,
+      backupRoot: roots.eddsaMpc.backup,
+      account,
+      coinType,
+      safeSlotOrdinal: slotOrdinal,
+    });
+    return {
+      slot: 'eddsaMpc',
       path: buildSafeUserPath(coinType, slotOrdinal, account),
       keys: { commonKeychain, user: userChild, backup: backupChild },
     };

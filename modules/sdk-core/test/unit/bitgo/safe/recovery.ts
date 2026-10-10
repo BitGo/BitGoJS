@@ -1,7 +1,10 @@
+import assert from 'assert';
 import 'should';
 import * as sinon from 'sinon';
 import { bip32 } from '@bitgo/utxo-lib';
-import { DklsDsg, DklsTypes, DklsUtils, DklsVrfUtils } from '@bitgo/sdk-lib-mpc';
+import { ed25519 } from '@noble/curves/ed25519';
+import * as sjcl from '@bitgo/sjcl';
+import { DklsDsg, DklsTypes, DklsUtils, DklsVrfUtils, MPSUtil, MpsDerive, MpsVrfUtils } from '@bitgo/sdk-lib-mpc';
 import { buildSafeMpcKeyEnvelopes } from '../../../../src/bitgo/utils/tss/keyShareEnvelope';
 import { IncorrectPasswordError } from '../../../../src/bitgo/errors';
 import {
@@ -11,6 +14,8 @@ import {
   deriveSafeWalletKeys,
 } from '../../../../src/bitgo/safe/recovery';
 import { BitGoBase } from '../../../../src/bitgo/bitgoBase';
+import { getInitializedMpcInstance } from '../../../../src/bitgo/tss/eddsa/eddsa';
+import { signEddsaMpcV2RecoveryTx } from '../../../../src/bitgo/utils/tss/eddsa/eddsaMPCv2';
 
 const PASSWORD = 'safe-password';
 
@@ -206,8 +211,77 @@ describe('deriveSafeWalletKeys', () => {
     result.keys.backup.should.be.a.String();
   });
 
-  it('rejects unsupported slots', async () => {
-    await deriveSafeWalletKeys({ coin: 'btc', slot: 'eddsaMpc', account: 0, roots }).should.be.rejectedWith(
+  it('derives and signs the eddsaMpc slot-4 BIP44 child', async function () {
+    const [userDkg, backupDkg, bitgoDkg] = await MPSUtil.generateEdDsaDKGKeyShares();
+    const [vrfUser, vrfBackup, vrfBitgo] = await MpsVrfUtils.generateVrfDKGKeyShares();
+    const mpcRoots: DecryptedSafeRoots = {
+      ...roots,
+      eddsaMpc: {
+        user: { signing: userDkg.getReducedKeyShare(), vrf: vrfUser.getKeyShare() },
+        backup: { signing: backupDkg.getReducedKeyShare(), vrf: vrfBackup.getKeyShare() },
+        bitgo: bitgoDkg.getCommonKeychain(),
+      },
+    };
+
+    const result = await deriveSafeWalletKeys({ coin: 'sol', slot: 'eddsaMpc', account: 0, roots: mpcRoots });
+    if (result.slot !== 'eddsaMpc') {
+      throw new Error('expected eddsaMpc slot');
+    }
+    result.path.should.equal("m/44'/501'/4'/0'");
+
+    // Play mint's user↔BitGo role locally at the same BIP44 path; no dev-minted wallet is needed.
+    const userMint = new MpsDerive.Derive(3, 2, 0, userDkg.getKeyShare(), vrfUser.getKeyShare(), result.path);
+    const bitgoMint = new MpsDerive.Derive(3, 2, 2, bitgoDkg.getKeyShare(), vrfBitgo.getKeyShare(), result.path);
+    const [userRound0, bitgoRound0] = await Promise.all([userMint.initDerive(), bitgoMint.initDerive()]);
+    const [userRound1] = userMint.handleIncomingMessages([bitgoRound0]);
+    const [bitgoRound1] = bitgoMint.handleIncomingMessages([userRound0]);
+    if (!userRound1 || !bitgoRound1) {
+      throw new Error('expected user and BitGo derive round-1 messages');
+    }
+    assert.deepStrictEqual(userMint.handleIncomingMessages([bitgoRound1]), []);
+    assert.deepStrictEqual(bitgoMint.handleIncomingMessages([userRound1]), []);
+    const mintedChildCommonKeychain = userMint.getCommonKeychain();
+    assert.strictEqual(bitgoMint.getCommonKeychain(), mintedChildCommonKeychain);
+    assert.strictEqual(result.keys.commonKeychain, mintedChildCommonKeychain);
+
+    const walletPassphrase = 'safe-recovery-passphrase';
+    const userKey = sjcl.encrypt(walletPassphrase, result.keys.user);
+    const backupKey = sjcl.encrypt(walletPassphrase, result.keys.backup);
+    const rootCommonKeychain = userDkg.getCommonKeychain();
+    await assert.rejects(
+      signEddsaMpcV2RecoveryTx({
+        message: Buffer.from('wrong keychain must fail'),
+        userKey,
+        backupKey,
+        walletPassphrase,
+        bitgoKey: rootCommonKeychain,
+        derivationPath: 'm/0',
+      }),
+      /commonKeyChain from keycard does not match bitgoKey/
+    );
+
+    const mpc = await getInitializedMpcInstance();
+    for (const derivationPath of ['m/0', 'm/3']) {
+      const message = Buffer.from(`Safe EdDSA recovery ${derivationPath}`);
+      const signature = await signEddsaMpcV2RecoveryTx({
+        message,
+        userKey,
+        backupKey,
+        walletPassphrase,
+        bitgoKey: result.keys.commonKeychain,
+        derivationPath,
+      });
+      const derivedKeychain = mpc.deriveUnhardened(result.keys.commonKeychain, derivationPath);
+      const publicKeyBytes = Buffer.from(derivedKeychain.slice(0, 64), 'hex');
+      assert.strictEqual(
+        ed25519.verify(new Uint8Array(signature), new Uint8Array(message), new Uint8Array(publicKeyBytes)),
+        true
+      );
+    }
+  });
+
+  it('rejects the unsupported ed25519Multisig slot', async () => {
+    await deriveSafeWalletKeys({ coin: 'btc', slot: 'ed25519Multisig', account: 0, roots }).should.be.rejectedWith(
       /not supported yet/
     );
   });
