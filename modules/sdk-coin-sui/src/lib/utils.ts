@@ -5,6 +5,7 @@ import {
   isValidEd25519PublicKey,
   ParseTransactionError,
   Recipient,
+  RecoveryProviderError,
   TransactionType,
 } from '@bitgo/sdk-core';
 import BigNumber from 'bignumber.js';
@@ -603,7 +604,7 @@ export class Utils implements BaseUtils {
         cursor = result.nextCursor;
       } catch (e) {
         console.error(`Failed to get input coins from the node ${e}`);
-        throw new Error(`Failed to get input coins from the node.`);
+        throw new RecoveryProviderError(`Failed to get input coins from the node.`, e);
       }
     }
     return data

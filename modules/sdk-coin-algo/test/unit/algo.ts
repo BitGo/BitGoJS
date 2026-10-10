@@ -9,7 +9,7 @@ import assert from 'assert';
 import { Algo } from '../../src/algo';
 import BigNumber from 'bignumber.js';
 import { TransactionBuilderFactory } from '../../src/lib';
-import { common, KeyPair, Wallet } from '@bitgo/sdk-core';
+import { common, ErrorNoInputToRecover, KeyPair, RecoveryProviderError, Wallet } from '@bitgo/sdk-core';
 import { algoBackupKey } from './fixtures/algoBackupKey';
 import nock from 'nock';
 
@@ -865,24 +865,46 @@ describe('ALGO:', function () {
 
       it('should throw if there is no enough balance to recover', async function () {
         const getBalanceStub = sandBox.stub(Algo.prototype, 'getAccountBalance').resolves(100500);
-        await assert.rejects(
-          async () => {
-            await basecoin.recover({
-              userKey,
-              backupKey,
-              rootAddress,
-              fee,
-              walletPassphrase,
-              bitgoKey: bitgoPub,
-              recoveryDestination,
-              firstRound: 5003596,
-              nodeParams,
-            });
-          },
-          { message: 'Insufficient balance to recover, got balance: 100500 fee: 1000 min account balance: 100000' }
-        );
+        await assert.rejects(async () => {
+          await basecoin.recover({
+            userKey,
+            backupKey,
+            rootAddress,
+            fee,
+            walletPassphrase,
+            bitgoKey: bitgoPub,
+            recoveryDestination,
+            firstRound: 5003596,
+            nodeParams,
+          });
+        }, ErrorNoInputToRecover);
 
         getBalanceStub.callCount.should.equal(1);
+      });
+
+      it('should throw RecoveryProviderError when the node fails to return the account balance', async function () {
+        sandBox.stub(Algo.prototype, 'getClient').returns({
+          accountInformation: () => ({
+            do: () => Promise.reject(new Error('node unreachable')),
+          }),
+          status: () => ({
+            do: () => Promise.resolve({ 'last-round': 5002596 }),
+          }),
+        } as any);
+
+        await assert.rejects(async () => {
+          await basecoin.recover({
+            userKey,
+            backupKey,
+            rootAddress,
+            walletPassphrase,
+            fee,
+            bitgoKey: bitgoPub,
+            recoveryDestination: recoveryDestination,
+            firstRound: 5002596,
+            nodeParams,
+          });
+        }, RecoveryProviderError);
       });
 
       it('should throw if the walletPassphrase is undefined', async function () {

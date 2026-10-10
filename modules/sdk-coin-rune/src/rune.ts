@@ -14,6 +14,7 @@ import {
   Ecdsa,
   ECDSAUtils,
   Environments,
+  ErrorNoInputToRecover,
   TransactionType,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
@@ -179,11 +180,17 @@ export class Rune extends CosmosCoin {
     // Step 4: Fetch account details such as accountNo, balance and check for sufficient funds once gasAmount has been deducted
     const [accountNumber, sequenceNo] = await this.getAccountDetails(senderAddress);
     const balances = await this.getAccountBalance(senderAddress);
+    if (!balances?.length) {
+      throw new ErrorNoInputToRecover('No balance found on account');
+    }
     const balance = new BigNumber(balances[0].amount);
     const gasBudget: FeeData = {
       amount: [{ denom: this.getDenomination(), amount: this.getGasAmountDetails().gasAmount }],
       gasLimit: this.getGasAmountDetails().gasLimit,
     };
+    if (balance.isLessThanOrEqualTo(0)) {
+      throw new ErrorNoInputToRecover('Did not have enough funds to recover');
+    }
     const actualBalance = balance.minus(this.getNativeRuneTxnFees());
 
     if (actualBalance.isLessThanOrEqualTo(0)) {

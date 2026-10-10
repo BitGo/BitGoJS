@@ -4,6 +4,7 @@ import {
   BaseTransaction,
   BitGoBase,
   Environments,
+  ErrorNoInputToRecover,
   getBip32Keys,
   getIsUnsignedSweep,
   KeyPair,
@@ -11,6 +12,7 @@ import {
   MultisigType,
   multisigTypes,
   SignedTransaction,
+  RecoveryProviderError,
   TransactionParams,
   TransactionRecipient,
   TransactionType,
@@ -423,7 +425,7 @@ export class Stx extends BaseCoin {
       const body: NativeStxBalance = response.body;
       return body;
     } catch (e) {
-      throw new Error(`unable to get native stx balance from node: ${e.message}`);
+      throw new RecoveryProviderError(`unable to get native stx balance from node: ${e.message}`, e);
     }
   }
 
@@ -449,7 +451,7 @@ export class Stx extends BaseCoin {
       const body: SingleFungibleTokenBalance = response.body;
       return body;
     } catch (e) {
-      throw new Error(`unable to get native stx balance from node: ${e.message}`);
+      throw new RecoveryProviderError(`unable to get native stx balance from node: ${e.message}`, e);
     }
   }
 
@@ -468,7 +470,7 @@ export class Stx extends BaseCoin {
       const body: StxNonceResponse = response.body;
       return body;
     } catch (e) {
-      throw new Error(`unable to get account nonce from node: ${e.message}`);
+      throw new RecoveryProviderError(`unable to get account nonce from node: ${e.message}`, e);
     }
   }
 
@@ -501,7 +503,7 @@ export class Stx extends BaseCoin {
       }
       return body.estimations[0].fee;
     } catch (e) {
-      throw new Error(`unable to get transaction fee estimation: ${e.message}`);
+      throw new RecoveryProviderError(`unable to get transaction fee estimation: ${e.message}`, e);
     }
   }
 
@@ -625,7 +627,7 @@ export class Stx extends BaseCoin {
     });
     const tokenBalance = tokenBalanceData?.balance;
     if (!Number(tokenBalance) || isNaN(Number(tokenBalance))) {
-      throw new Error(
+      throw new ErrorNoInputToRecover(
         `no token balance found to recover for address: ${rootAddressDetails.address}, token: ${assetId}`
       );
     }
@@ -805,7 +807,7 @@ export class Stx extends BaseCoin {
     ]);
     const balance = Number(accountBalanceData.balance);
     if (!balance || isNaN(balance)) {
-      throw new Error('could not find any balance to recover for ' + params.rootAddress);
+      throw new ErrorNoInputToRecover('could not find any balance to recover for ' + params.rootAddress);
     }
     const userPub = publicKeyFromBuffer(keys[0].publicKey);
     const backupPub = publicKeyFromBuffer(keys[1].publicKey);

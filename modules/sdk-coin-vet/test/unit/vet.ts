@@ -4,6 +4,8 @@ import _ from 'lodash';
 import should from 'should';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { ErrorNoInputToRecover, RecoveryProviderError } from '@bitgo/sdk-core';
+import BigNumber from 'bignumber.js';
 import { coins, GasTankAccountCoin } from '@bitgo/statics';
 import { Vet, Tvet, Transaction } from '../../src';
 import * as testData from '../resources/vet';
@@ -331,6 +333,48 @@ describe('Vechain', function () {
       };
 
       await basecoin.isWalletAddress(params).should.be.rejected();
+    });
+  });
+
+  describe('Recovery', () => {
+    const sandbox = sinon.createSandbox();
+    const bitgoKey =
+      '0310768736a005ea5364e1b5b5288cf553224dd28b2df8ced63b72a8020478967f05ec5bce1f26cd7eb009a4bea445bb55c2f54a30f2706c1a3747e8df2d288829';
+    const recoveryDestination = testData.addresses.validAddresses[1];
+
+    afterEach(function () {
+      sandbox.restore();
+    });
+
+    it('should throw ErrorNoInputToRecover when there is no VET balance to recover', async function () {
+      sandbox.stub(Vet.prototype, 'getBalance').resolves(new BigNumber(0));
+      await basecoin
+        .recover({
+          bitgoKey,
+          recoveryDestination,
+        })
+        .should.be.rejectedWith(ErrorNoInputToRecover);
+    });
+
+    it('should throw ErrorNoInputToRecover when there is no token balance to recover', async function () {
+      sandbox.stub(Vet.prototype, 'getBalance').resolves(new BigNumber(0));
+      await basecoin
+        .recover({
+          bitgoKey,
+          recoveryDestination,
+          tokenContractAddress: testData.NFT_CONTRACT_ADDRESS,
+        })
+        .should.be.rejectedWith(ErrorNoInputToRecover);
+    });
+
+    it('should throw RecoveryProviderError when the balance query fails', async function () {
+      sandbox.stub(Vet.prototype, 'getBalance').rejects(new RecoveryProviderError('Failed to get native balance.'));
+      await basecoin
+        .recover({
+          bitgoKey,
+          recoveryDestination,
+        })
+        .should.be.rejectedWith(RecoveryProviderError);
     });
   });
 });

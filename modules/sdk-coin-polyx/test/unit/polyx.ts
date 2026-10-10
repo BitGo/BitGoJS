@@ -11,10 +11,12 @@ import { afterEach } from 'mocha';
 import { genesisHash, specVersion, txVersion, rawTx, accounts, mockTssSignature } from '../resources';
 import {
   EDDSAMethods,
+  ErrorNoInputToRecover,
   MPCSweepRecoveryOptions,
   MPCSweepTxs,
   MPCRecoveryOptions,
   MPCTx,
+  RecoveryProviderError,
   signRecoveryEddsaMPCv2,
   TxIntentMismatchRecipientError,
 } from '@bitgo/sdk-core';
@@ -359,6 +361,47 @@ describe('Polyx:', function () {
         sig.length.should.equal(64);
         sig.should.deepEqual(rawSig);
       });
+    });
+  });
+
+  describe('Recover Transaction Failures:', function () {
+    const sandBox = sinon.createSandbox();
+    const recoveryDestination = '5H56f31hSYGCRV3URjQHv2Cc4ZSkJNHTM8MKGtkkV6hzCqN7';
+
+    beforeEach(function () {
+      sandBox.stub(Polyx.prototype, 'getAccountInfo' as keyof Polyx).resolves({ nonce: 0, freeBalance: 0 });
+      sandBox.stub(Polyx.prototype, 'getFee' as keyof Polyx).resolves(74401);
+    });
+
+    afterEach(function () {
+      sandBox.restore();
+    });
+
+    it('should fail to recover due to not finding an address with funds', async function () {
+      await baseCoin
+        .recover({
+          userKey: testData.wrwUser.userKey,
+          backupKey: testData.wrwUser.backupKey,
+          bitgoKey: testData.wrwUser.bitgoKey,
+          walletPassphrase: testData.wrwUser.walletPassphrase,
+          recoveryDestination,
+        })
+        .should.rejectedWith(ErrorNoInputToRecover);
+    });
+
+    it('should throw RecoveryProviderError when account info query fails', async function () {
+      (Polyx.prototype as unknown as { getAccountInfo: sinon.SinonStub }).getAccountInfo.rejects(
+        new Error('network failure')
+      );
+      await baseCoin
+        .recover({
+          userKey: testData.wrwUser.userKey,
+          backupKey: testData.wrwUser.backupKey,
+          bitgoKey: testData.wrwUser.bitgoKey,
+          walletPassphrase: testData.wrwUser.walletPassphrase,
+          recoveryDestination,
+        })
+        .should.be.rejectedWith(RecoveryProviderError);
     });
   });
 

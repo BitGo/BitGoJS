@@ -8,6 +8,7 @@ import {
   Ecdsa,
   ECDSAUtils,
   Environments,
+  ErrorNoInputToRecover,
   InvalidAddressError,
   KeyPair,
   MPCAlgorithm,
@@ -15,6 +16,7 @@ import {
   multisigTypes,
   ParsedTransaction,
   ParseTransactionOptions,
+  RecoveryProviderError,
   SignedTransaction,
   SigningError,
   SignTransactionOptions,
@@ -446,6 +448,9 @@ export class Icp extends BaseCoin {
       const senderAddress = this.getAddressFromPublicKey(publicKey);
       const balance = await this.getAccountBalance(publicKey);
       const feeData = await this.getFeeData();
+      if (balance.isLessThanOrEqualTo(0)) {
+        throw new ErrorNoInputToRecover('Did not have enough funds to recover');
+      }
       const actualBalance = balance.minus(feeData);
       if (actualBalance.isLessThanOrEqualTo(0)) {
         throw new Error('Did not have enough funds to recover');
@@ -492,6 +497,9 @@ export class Icp extends BaseCoin {
       };
       return recoveredTransaction;
     } catch (error) {
+      if (error instanceof RecoveryProviderError || error instanceof ErrorNoInputToRecover) {
+        throw error;
+      }
       throw new Error(`Error during ICP recovery: ${error.message || error}`);
     }
   }

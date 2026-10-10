@@ -28,8 +28,10 @@ import {
   OvcInput,
   OvcOutput,
   Environments,
+  ErrorNoInputToRecover,
   MPCSweepTxs,
   PublicKey,
+  RecoveryProviderError,
   MPCTxs,
   MPCSweepRecoveryOptions,
   AuditDecryptedKeyParams,
@@ -394,7 +396,12 @@ export class Ton extends BaseCoin {
     const currPath = params.seed ? getDerivationPath(params.seed) + `/${index}` : `m/${index}`;
     const accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
     const senderAddr = await Utils.default.getAddressFromPublicKey(accountId);
-    const balance = await tonweb.getBalance(senderAddr);
+    let balance;
+    try {
+      balance = await tonweb.getBalance(senderAddr);
+    } catch (e) {
+      throw new RecoveryProviderError(`Failed to get TON balance for address ${senderAddr}`, e);
+    }
 
     const jettonBalances: { minterAddress?: string; walletAddress: string; balance: string }[] = [];
     if (params.senderJettonAddress) {
@@ -408,7 +415,10 @@ export class Ton extends BaseCoin {
           });
         }
       } catch (e) {
-        throw new Error(`Failed to query jetton balance for address ${params.senderJettonAddress}: ${e.message}`);
+        throw new RecoveryProviderError(
+          `Failed to query jetton balance for address ${params.senderJettonAddress}: ${e.message}`,
+          e
+        );
       }
     }
 
@@ -417,7 +427,12 @@ export class Ton extends BaseCoin {
       publicKey: tonweb.utils.hexToBytes(accountId),
       wc: 0,
     });
-    const seqnoResult = await wallet.methods.seqno().call();
+    let seqnoResult;
+    try {
+      seqnoResult = await wallet.methods.seqno().call();
+    } catch (e) {
+      throw new RecoveryProviderError(`Failed to query seqno for address ${senderAddr}`, e);
+    }
     const seqno: number = seqnoResult !== null && seqnoResult !== undefined ? seqnoResult : 0;
 
     const factory = this.getBuilder();
@@ -460,7 +475,7 @@ export class Ton extends BaseCoin {
       transactionType = 'jetton';
     } else {
       if (new BigNumber(balance).isEqualTo(0)) {
-        throw Error('Did not find address with TON balance to recover');
+        throw new ErrorNoInputToRecover('Did not find address with TON balance to recover');
       }
 
       const tonFeeEstimate = await getFeeEstimate(wallet, params.recoveryDestination, balance, seqno as number);

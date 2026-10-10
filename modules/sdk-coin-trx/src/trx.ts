@@ -9,6 +9,7 @@ import * as request from 'superagent';
 import {
   BaseCoin,
   BitGoBase,
+  ErrorNoInputToRecover,
   common,
   getBip32Keys,
   getIsKrsRecovery,
@@ -19,6 +20,7 @@ import {
   MPCAlgorithm,
   ParsedTransaction,
   ParseTransactionOptions,
+  RecoveryProviderError,
   SignedTransaction,
   SignTransactionOptions,
   TransactionExplanation,
@@ -747,17 +749,26 @@ export class Trx extends BaseCoin {
   private async recoveryPost(query: { path: string; jsonObj: any; node: NodeTypes }): Promise<any> {
     const nodeUri = this.getNodeUrl(query.node);
 
-    const response = await request
-      .post(nodeUri + query.path)
-      .type('json')
-      .send(query.jsonObj);
+    let response;
+    try {
+      response = await request
+        .post(nodeUri + query.path)
+        .type('json')
+        .send(query.jsonObj);
+    } catch (e) {
+      throw new RecoveryProviderError('could not reach Tron node', e);
+    }
 
     if (!response.ok) {
-      throw new Error('could not reach Tron node');
+      throw new RecoveryProviderError('could not reach Tron node');
     }
 
     // unfortunately, it doesn't look like most TRON nodes return valid json as body
-    return JSON.parse(response.text);
+    try {
+      return JSON.parse(response.text);
+    } catch (e) {
+      throw new RecoveryProviderError('malformed response from Tron node', e);
+    }
   }
 
   /**
@@ -768,17 +779,26 @@ export class Trx extends BaseCoin {
   private async recoveryGet(query: { path: string; jsonObj: any; node: NodeTypes }): Promise<any> {
     const nodeUri = this.getNodeUrl(query.node);
 
-    const response = await request
-      .get(nodeUri + query.path)
-      .type('json')
-      .send(query.jsonObj);
+    let response;
+    try {
+      response = await request
+        .get(nodeUri + query.path)
+        .type('json')
+        .send(query.jsonObj);
+    } catch (e) {
+      throw new RecoveryProviderError('could not reach Tron node', e);
+    }
 
     if (!response.ok) {
-      throw new Error('could not reach Tron node');
+      throw new RecoveryProviderError('could not reach Tron node');
     }
 
     // unfortunately, it doesn't look like most TRON nodes return valid json as body
-    return JSON.parse(response.text);
+    try {
+      return JSON.parse(response.text);
+    } catch (e) {
+      throw new RecoveryProviderError('malformed response from Tron node', e);
+    }
   }
 
   /**
@@ -1006,7 +1026,7 @@ export class Trx extends BaseCoin {
         }
         return this.formatForOfflineVault(await txBuilder.build(), SAFE_TRON_TOKEN_TRANSACTION_FEE, recoveryAmount);
       } else {
-        throw Error('Not found token to recover, please check token balance');
+        throw new ErrorNoInputToRecover('Not found token to recover, please check token balance');
       }
     }
     // let us recover the native Tron
@@ -1130,7 +1150,7 @@ export class Trx extends BaseCoin {
     const account = await this.getAccountBalancesFromNode(walletAddress);
 
     if (!account.data[0]) {
-      throw new Error(`Account ${walletAddress} not found or has no data`);
+      throw new ErrorNoInputToRecover(`Account ${walletAddress} not found or has no data`);
     }
 
     const tokenContractAddr = params.tokenContractAddress;
@@ -1157,7 +1177,7 @@ export class Trx extends BaseCoin {
       }
 
       if (!rawTokenTxn) {
-        throw new Error('Not found token to recover, please check token balance');
+        throw new ErrorNoInputToRecover('Not found token to recover, please check token balance');
       }
 
       const trxBalance = account.data[0].balance;
