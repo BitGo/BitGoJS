@@ -13,6 +13,7 @@ describe('deriveSafeEcdsaMpcChild', function () {
       backupRoot: { signing: backupDkg.getReducedKeyShare(), vrf: vrfBackup.getKeyShare() },
       account: 0,
       coinType: 1,
+      safeSlotOrdinal: 3,
     });
 
     assert.notStrictEqual(commonKeychain, rootCommonKeychain, 'child keychain must differ from the root');
@@ -68,6 +69,7 @@ describe('deriveSafeEcdsaMpcChild', function () {
       backupRoot: { signing: backupDkg.getReducedKeyShare(), vrf: vrfBackup.getKeyShare() },
       account: 0,
       coinType: 1,
+      safeSlotOrdinal: 3,
     });
     assert.notStrictEqual(
       commonKeychain,
@@ -76,26 +78,35 @@ describe('deriveSafeEcdsaMpcChild', function () {
     );
   });
 
-  it('uses the full path: different accounts derive different children (not truncated)', async function () {
+  it('uses account and slot ordinal in the full path', async function () {
     const [userDkg, backupDkg] = await DklsUtils.generateDKGKeyShares();
     const [vrfUser, vrfBackup] = await DklsVrfUtils.generateVrfDKGKeyShares();
-
     const userRoot = { signing: userDkg.getReducedKeyShare(), vrf: vrfUser.getKeyShare() };
     const backupRoot = { signing: backupDkg.getReducedKeyShare(), vrf: vrfBackup.getKeyShare() };
 
-    const { commonKeychain: ck0 } = await DklsVrfUtils.deriveSafeEcdsaMpcChild({
+    const { commonKeychain: account0 } = await DklsVrfUtils.deriveSafeEcdsaMpcChild({
       userRoot,
       backupRoot,
       account: 0,
       coinType: 1,
+      safeSlotOrdinal: 3,
     });
-    const { commonKeychain: ck1 } = await DklsVrfUtils.deriveSafeEcdsaMpcChild({
+    const { commonKeychain: account1 } = await DklsVrfUtils.deriveSafeEcdsaMpcChild({
       userRoot,
       backupRoot,
       account: 1,
       coinType: 1,
+      safeSlotOrdinal: 3,
+    });
+    const { commonKeychain: differentSlot } = await DklsVrfUtils.deriveSafeEcdsaMpcChild({
+      userRoot,
+      backupRoot,
+      account: 0,
+      coinType: 1,
+      safeSlotOrdinal: 4,
     });
 
-    assert.notStrictEqual(ck0, ck1, 'different accounts must derive different children (path must not be truncated)');
+    assert.notStrictEqual(account0, account1, 'different accounts must derive different children');
+    assert.notStrictEqual(account0, differentSlot, 'different slot ordinals must derive different children');
   });
 });

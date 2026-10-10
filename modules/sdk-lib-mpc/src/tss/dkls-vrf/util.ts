@@ -160,14 +160,16 @@ export type MpcRootShare = { signing: Buffer; vrf: Buffer };
 /**
  * Derives the Safe ecdsaMpc child wallet key for a given account, fully offline, from the
  * user and backup reduced roots on the keycard: rebuild both as 3-party keyshares, run the
- * user↔backup hard-derive ceremony at `m/44'/<coinType>'/3'/<account>'`, then return the child
- * common keychain and both reduced child shares.
+ * user↔backup hard-derive ceremony at
+ * `m/44'/<coinType>'/<safeSlotOrdinal>'/<account>'`, then return the child common keychain
+ * and both reduced child shares.
  */
 export async function deriveSafeEcdsaMpcChild(params: {
   userRoot: MpcRootShare;
   backupRoot: MpcRootShare;
   account: number;
   coinType: number;
+  safeSlotOrdinal: number;
 }): Promise<{ commonKeychain: string; userChild: string; backupChild: string }> {
   const reduceRootToDklsKeyShare = (reducedRoot: ReducedKeyShare, partyIdx: number): Buffer => {
     const xShare = {
@@ -178,7 +180,7 @@ export async function deriveSafeEcdsaMpcChild(params: {
     return Buffer.from(encode(buildDklsKeyShare({ xShare, n: 3, t: 2, partyIdx, xiList: reducedRoot.xList })));
   };
 
-  const { userRoot, backupRoot, account, coinType } = params;
+  const { userRoot, backupRoot, account, coinType, safeSlotOrdinal } = params;
 
   const userReduced = getDecodedReducedKeyShare(userRoot.signing);
   const backupReduced = getDecodedReducedKeyShare(backupRoot.signing);
@@ -186,7 +188,7 @@ export async function deriveSafeEcdsaMpcChild(params: {
   const userKeyShare = reduceRootToDklsKeyShare(userReduced, 0);
   const backupKeyShare = reduceRootToDklsKeyShare(backupReduced, 1);
 
-  const path = buildSafeMpcDerivePath({ coinType, safeSlotOrdinal: 3, accountIndex: account });
+  const path = buildSafeMpcDerivePath({ coinType, safeSlotOrdinal, accountIndex: account });
 
   /**
    * Derive User and Backup keys - 2 Rounds
