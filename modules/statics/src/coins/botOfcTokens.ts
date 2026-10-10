@@ -16,6 +16,20 @@ export const botOfcTokens = [
     'hteth'
   ),
   AccountCtors.tofcerc20(
+    'f07d1564-45c5-4b3b-9cdd-5133a7f49b57',
+    'ofceth:at',
+    'APT',
+    18,
+    'eth:at' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.tofcerc20(
     'd7c2c0ee-3af7-411d-88a7-9a5e8170f250',
     'ofchteth:WBTC',
     'Wrapped BTC',
@@ -208,34 +222,6 @@ export const botOfcTokens = [
     undefined
   ),
   AccountCtors.tofcerc20(
-    '0cb1f209-9a1e-4db6-bac1-1297c11deca5',
-    'ofchteth:tgku',
-    'Hoodi Gokubu',
-    18,
-    'hteth:tgku' as unknown as UnderlyingAsset,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    'hteth'
-  ),
-  AccountCtors.tofcerc20(
-    '2b1e7e23-4cd8-46af-86ba-02f90cbe91ee',
-    'ofchteth:stzamakms',
-    'Mock Zama Staked ZAMA',
-    20,
-    'hteth:stzamakms' as unknown as UnderlyingAsset,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    'hteth'
-  ),
-  AccountCtors.tofcerc20(
     '93cdb013-f0e3-4b2a-be37-b41bc0b0d9e0',
     'ofchteth:stzamadfns',
     'Mock Dfns Staked ZAMA',
@@ -424,6 +410,20 @@ export const botOfcTokens = [
     undefined,
     undefined,
     'hteth'
+  ),
+  AccountCtors.tofcerc20(
+    '6031027d-729b-48f1-a687-cf5b8e7640cb',
+    'ofctbaseeth:haven',
+    'Haven',
+    18,
+    'tbaseeth:haven' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'tbaseeth'
   ),
   AccountCtors.ofcerc20(
     '26f46d44-700d-4e32-8845-fb181e6d8027',
@@ -4154,5 +4154,55 @@ export const botOfcTokens = [
     undefined,
     undefined,
     'eth'
+  ),
+  AccountCtors.ofcsolToken(
+    '52b7dbca-ec91-416c-b6a9-8df56c5a64e4',
+    'ofcsol:zaruv2',
+    'ofcZAR Universal v2',
+    6,
+    'sol:zaruv2' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.ofcerc20(
+    '18a320a9-edf0-4ca0-af83-595fa5f77e8d',
+    'ofceth:usdau',
+    'AllUnity USD',
+    6,
+    'eth:usdau' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcsolToken(
+    '7ab6c364-1ddf-4ddd-8663-4ca8ff3bc5ed',
+    'ofcsol:usdau',
+    'ofcAllUnity USDAU',
+    6,
+    'sol:usdau' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.ofcsolToken(
+    '0114f1ea-3839-45c7-b0f7-30cc01f6e0fb',
+    'ofcsol:stampz',
+    'ofcStampede',
+    6,
+    'sol:stampz' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
   ),
 ];

@@ -89,6 +89,7 @@ export const networkFeatureMapForTokens: Partial<Record<CoinFamily, CoinFeature[
   canton: CANTON_TOKEN_FEATURES,
   celo: AccountCoin.DEFAULT_FEATURES,
   eth: AccountCoin.DEFAULT_FEATURES,
+  baseeth: EVM_TOKEN_FEATURES,
   eos: AccountCoin.DEFAULT_FEATURES,
   gasevm: EVM_TOKEN_FEATURES,
   hbar: AccountCoin.DEFAULT_FEATURES,

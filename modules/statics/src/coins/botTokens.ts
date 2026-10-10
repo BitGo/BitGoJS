@@ -29,6 +29,18 @@ export const botTokens = [
     Networks.test.hoodi
   ),
   AccountCtors.terc20(
+    '3b0d47ca-d5a9-49d6-a063-8946b88fb843',
+    'eth:at',
+    'APT',
+    18,
+    '0x0581ccdf2d9bca21baeff8b32b2551fd49cf70aa',
+    'eth:at' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth'),
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  AccountCtors.terc20(
     '1f8f6be2-e97e-4f41-836d-c4420b8cc77b',
     'hteth:WBTC',
     'Wrapped BTC',
@@ -225,38 +237,6 @@ export const botTokens = [
     Networks.test.sol
   ),
   AccountCtors.terc20(
-    '0e5cb41c-7ec4-4b30-90e7-33d23547ad67',
-    'hteth:tgku',
-    'Hoodi Gokubu',
-    18,
-    '0xa3e27ba64c528b2440266e6ded824becb6dcfae8',
-    'hteth:tgku' as unknown as UnderlyingAsset,
-    getTokenFeatures('eth', [
-      'custody-bitgo-new-york' as CoinFeature,
-      'custody-bitgo-germany' as CoinFeature,
-      'custody-bitgo-korea' as CoinFeature,
-    ]),
-    undefined,
-    undefined,
-    Networks.test.hoodi
-  ),
-  AccountCtors.terc20(
-    '723429e7-6e11-4b0c-8785-95ae0d8c89c1',
-    'hteth:stzamakms',
-    'Mock Zama Staked ZAMA',
-    20,
-    '0xbfb717a712ac94204ae9e7049332641f3332c82f',
-    'hteth:stzamakms' as unknown as UnderlyingAsset,
-    getTokenFeatures('eth', [
-      'custody-bitgo-new-york' as CoinFeature,
-      'custody-bitgo-germany' as CoinFeature,
-      'custody-bitgo-korea' as CoinFeature,
-    ]),
-    undefined,
-    undefined,
-    Networks.test.hoodi
-  ),
-  AccountCtors.terc20(
     '62c5d357-b508-4748-9a07-878d3414b472',
     'hteth:stzamadfns',
     'Mock Dfns Staked ZAMA',
@@ -448,7 +428,6 @@ export const botTokens = [
       'custody-bitgo-switzerland' as CoinFeature,
       'custody-bitgo-sister-trust-one' as CoinFeature,
       'custody-bitgo-korea' as CoinFeature,
-      CoinFeature.STAKING,
     ]),
     undefined,
     undefined,
@@ -4219,6 +4198,18 @@ export const botTokens = [
     undefined,
     undefined,
     Networks.test.canton
+  ),
+  AccountCtors.terc20(
+    '8802850b-0570-462b-adb9-2382726e0ced',
+    'tbaseeth:haven',
+    'Haven',
+    18,
+    '0x25c849385b8ec4b980713eda45c65da93f04e629',
+    'tbaseeth:haven' as unknown as UnderlyingAsset,
+    getTokenFeatures('baseeth'),
+    undefined,
+    undefined,
+    Networks.test.basechain
   ),
   AccountCtors.erc20(
     '4161ed06-c331-4e21-8791-eaca5151e869',
@@ -9636,6 +9627,84 @@ export const botTokens = [
       'custody-bitgo-sister-trust-one' as CoinFeature,
       'custody-bitgo-korea' as CoinFeature,
     ]),
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.solToken(
+    '299a3c22-4221-4df8-9adc-5e42a8bdb7ac',
+    'sol:zaruv2',
+    'ZAR Universal v2',
+    6,
+    '2WvREMqcoxtGuKTyyuzVMH7xDkeH8mY6phduvUofPRXN',
+    '2WvREMqcoxtGuKTyyuzVMH7xDkeH8mY6phduvUofPRXN',
+    'sol:zaruv2' as unknown as UnderlyingAsset,
+    getTokenFeatures('sol', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-switzerland' as CoinFeature,
+      'custody-bitgo-sister-trust-one' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    AccountCtors.ProgramID.Token2022ProgramId,
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.erc20(
+    'e3b772c9-dbae-4ce4-b36e-60583503527d',
+    'eth:usdau',
+    'AllUnity USD',
+    6,
+    '0xc6df1b92a6ae61a27059c41e541a91ce8dcb1605',
+    'eth:usdau' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-switzerland' as CoinFeature,
+      'custody-bitgo-sister-trust-one' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.solToken(
+    '27d7eae0-dda5-4292-8b7e-137b2f024c8a',
+    'sol:usdau',
+    'AllUnity USDAU',
+    6,
+    '34yktgNRkQ2tQT66PkUqwZaeTFzcjbXmvVFhNG9h2bJn',
+    '34yktgNRkQ2tQT66PkUqwZaeTFzcjbXmvVFhNG9h2bJn',
+    'sol:usdau' as unknown as UnderlyingAsset,
+    getTokenFeatures('sol', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-switzerland' as CoinFeature,
+      'custody-bitgo-sister-trust-one' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    AccountCtors.ProgramID.Token2022ProgramId,
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.solToken(
+    '81df9915-58b3-48a9-806a-f500e0d1b191',
+    'sol:stampz',
+    'Stampede',
+    6,
+    'GqivH1VnEGdbuGMPz6B4qZ4GeRyyX6JZciUW6CUnRM3C',
+    'GqivH1VnEGdbuGMPz6B4qZ4GeRyyX6JZciUW6CUnRM3C',
+    'sol:stampz' as unknown as UnderlyingAsset,
+    getTokenFeatures('sol', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-switzerland' as CoinFeature,
+      'custody-bitgo-sister-trust-one' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    AccountCtors.ProgramID.Token2022ProgramId,
     undefined,
     undefined,
     undefined
