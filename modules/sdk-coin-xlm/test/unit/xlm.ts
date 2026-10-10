@@ -1361,6 +1361,75 @@ describe('XLM:', function () {
         isValid.should.equal(true);
       });
 
+      it('should verify a setOptions tx whose lowThreshold matches the requested lowThreshold', async () => {
+        // Wallets initialize with lowThreshold 1; raising it to 2 makes low-security ops require
+        // 2 signatures — the primary use case for this param.
+        const txPrebuild = {
+          txBase64: buildTxBase64([stellar.Operation.setOptions({ lowThreshold: 2 })]),
+        };
+        const txParams = { type: 'accountConfig', lowThreshold: 2 };
+        const isValid = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet: {}, verification: {} });
+        isValid.should.equal(true);
+      });
+
+      it('should throw lowThreshold mismatch when the tx threshold differs from the requested one', async () => {
+        // tx sets lowThreshold 1 but params expect 2 — a tampered prebuild must not pass.
+        const txPrebuild = {
+          txBase64: buildTxBase64([stellar.Operation.setOptions({ lowThreshold: 1 })]),
+        };
+        const txParams = { type: 'accountConfig', lowThreshold: 2 };
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild, wallet: {}, verification: {} })
+          .should.be.rejectedWith(/accountConfig lowThreshold mismatch/);
+      });
+
+      it('should throw when the requested lowThreshold is not exactly 2', async () => {
+        // The SDK mirrors the platform build restriction: only tightening to 2 is accepted; any
+        // other value — lower, higher, or fractional — is rejected before the mismatch check.
+        for (const invalidLowThreshold of [0, 1, 3, 256, 1.5]) {
+          const txPrebuild = {
+            txBase64: buildTxBase64([stellar.Operation.setOptions({ lowThreshold: 2 })]),
+          };
+          const txParams = { type: 'accountConfig', lowThreshold: invalidLowThreshold };
+          await basecoin
+            .verifyTransaction({ txParams, txPrebuild, wallet: {}, verification: {} })
+            .should.be.rejectedWith(/must be 2/);
+        }
+      });
+
+      it('should not require lowThreshold when params omit it', async () => {
+        // Backwards compatibility: a flags-only accountConfig must still verify even though the
+        // built tx op carries no threshold change.
+        const txPrebuild = {
+          txBase64: buildTxBase64([stellar.Operation.setOptions({ setFlags: stellar.AuthRequiredFlag })]),
+        };
+        const txParams = { type: 'accountConfig', flags: { authRequired: true } };
+        const isValid = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet: {}, verification: {} });
+        isValid.should.equal(true);
+      });
+
+      it('should throw when the setOptions op carries a field outside flags/lowThreshold', async () => {
+        // A rebuilt tx could inject signer:{attacker,weight:3} while keeping every verified field
+        // identical; the wallet co-signers would satisfy highThreshold for the injected change and
+        // grant the attacker full control under an unchanged approval. Reject on sight — the
+        // platform build layer never produces these fields on an accountConfig op.
+        for (const injectedField of [
+          { signer: { ed25519PublicKey: trustorAddress, weight: 3 } },
+          { masterWeight: 1 },
+          { medThreshold: 3 },
+          { highThreshold: 1 },
+          { homeDomain: 'evil.example.com' },
+        ]) {
+          const txPrebuild = {
+            txBase64: buildTxBase64([stellar.Operation.setOptions({ lowThreshold: 2, ...injectedField })]),
+          };
+          const txParams = { type: 'accountConfig', lowThreshold: 2 };
+          await basecoin
+            .verifyTransaction({ txParams, txPrebuild, wallet: {}, verification: {} })
+            .should.be.rejectedWith(/unsupported field/);
+        }
+      });
+
       it('should throw setFlags mismatch when tx flags differ from requested flags', async () => {
         // tx sets authRequired|authRevocable (3) but params only expect authRequired (1) => mismatch.
         const txPrebuild = {
@@ -1619,6 +1688,17 @@ describe('XLM:', function () {
       accountConfigOperation.coin.should.equal('txlm');
       // authRequired (1) | authRevocable (2) => setFlags 3; clearFlags is unset for this op.
       accountConfigOperation.setFlags.should.equal(3);
+      should.not.exist(accountConfigOperation.clearFlags);
+    });
+
+    it('should parse a lowThreshold setOptions op into an accountConfig operation with the threshold', async () => {
+      const txBase64 = buildTxBase64([stellar.Operation.setOptions({ lowThreshold: 2 })]);
+      const explanation = await basecoin.explainTransaction({ txBase64 });
+      explanation.operations.length.should.equal(1);
+      const accountConfigOperation = explanation.operations[0];
+      accountConfigOperation.type.should.equal('accountConfig');
+      accountConfigOperation.lowThreshold.should.equal(2);
+      should.not.exist(accountConfigOperation.setFlags);
       should.not.exist(accountConfigOperation.clearFlags);
     });
 
