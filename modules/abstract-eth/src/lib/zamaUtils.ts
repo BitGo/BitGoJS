@@ -78,34 +78,36 @@ export const finalizeUnwrapMethodId = addHexPrefix(
 // ---------------------------------------------------------------------------
 
 /**
- * Asserts that `amount * rate` fits in uint64 (ERC-7984 confidential mint domain).
+ * Asserts that the confidential amount minted by `wrap(to, amount)` fits in uint64 (`euint64`).
  *
- * @throws {Error} if amount or rate is invalid, or the product exceeds uint64
+ * The wrapper mints `floor(amount / rate())` — `amount` is in underlying-token base units and
+ * `rate()` is `10 ** (underlyingDecimals - 6)` (1 when the underlying has <= 6 decimals) — and
+ * reverts if that quotient does not fit uint64. For a rate > 1 the underlying amount can therefore
+ * be far larger than uint64 (e.g. 1 full 18-decimal token is 1e18 at rate 1e12, minting 1e6).
+ *
+ * @throws {Error} if amount or rate is invalid, or `floor(amount / rate)` exceeds uint64
  */
-export function assertAmountTimesRateFitsUint64(
-  amount: string | number | bigint,
-  rate: string | number | bigint
-): void {
+export function assertWrapAmountFitsUint64(amount: string | number | bigint, rate: string | number | bigint): void {
   let amountBn: bigint;
   let rateBn: bigint;
   try {
     amountBn = typeof amount === 'bigint' ? amount : BigInt(amount);
   } catch {
-    throw new Error(`assertAmountTimesRateFitsUint64: invalid amount '${amount}'`);
+    throw new Error(`assertWrapAmountFitsUint64: invalid amount '${amount}'`);
   }
   try {
     rateBn = typeof rate === 'bigint' ? rate : BigInt(rate);
   } catch {
-    throw new Error(`assertAmountTimesRateFitsUint64: invalid rate '${rate}'`);
+    throw new Error(`assertWrapAmountFitsUint64: invalid rate '${rate}'`);
   }
   if (amountBn <= 0n) {
-    throw new Error('assertAmountTimesRateFitsUint64: amount must be > 0');
+    throw new Error('assertWrapAmountFitsUint64: amount must be > 0');
   }
   if (rateBn <= 0n) {
-    throw new Error('assertAmountTimesRateFitsUint64: rate must be > 0');
+    throw new Error('assertWrapAmountFitsUint64: rate must be > 0');
   }
-  if (amountBn * rateBn > UINT64_MAX) {
-    throw new Error('assertAmountTimesRateFitsUint64: amount × rate exceeds uint64');
+  if (amountBn / rateBn > UINT64_MAX) {
+    throw new Error('assertWrapAmountFitsUint64: amount / rate exceeds uint64');
   }
 }
 
@@ -152,7 +154,7 @@ export function buildApproveCalldata(wrapperAddress: string, amount: string | nu
  *
  * Calldata is sent to the confidential wrapper contract. `to` is the recipient of
  * the minted encrypted balance (self-directed shields use the wallet base address).
- * When `rate` is provided, validates that `amount × rate` fits uint64 (`euint64`).
+ * When `rate` is provided, validates that the minted `floor(amount / rate)` fits uint64 (`euint64`).
  * `rate` is not encoded in calldata (deserialize round-trips omit it).
  *
  * Does not set gasLimit — WP owns gas.
@@ -161,7 +163,7 @@ export function buildApproveCalldata(wrapperAddress: string, amount: string | nu
  * @param amount  Underlying ERC-20 amount to wrap (base units); must be > 0
  * @param rate    Optional on-chain wrapper `rate()` for uint64 validation
  * @returns ABI-encoded calldata hex string (0x-prefixed)
- * @throws {Error} if address/amount/rate is invalid or amount × rate exceeds uint64
+ * @throws {Error} if address/amount/rate is invalid or floor(amount / rate) exceeds uint64
  */
 export function buildWrapCalldata(
   to: string,
@@ -186,7 +188,7 @@ export function buildWrapCalldata(
   }
 
   if (rate !== undefined) {
-    assertAmountTimesRateFitsUint64(amountBn, rate);
+    assertWrapAmountFitsUint64(amountBn, rate);
   }
 
   const method = EthereumAbi.methodID('wrap', [...wrapTypes]);

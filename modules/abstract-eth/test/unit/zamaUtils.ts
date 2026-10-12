@@ -232,16 +232,25 @@ describe('Zama Utils', () => {
         (() => buildWrapCalldata(RECIPIENT, -1, RATE_ONE)).should.throw(/amount must be > 0/);
       });
 
-      it('should reject when amount × rate exceeds uint64', () => {
-        // UINT64_MAX / 1e12 + 1 overflows for ctest1-style rate
-        const tooLarge = (UINT64_MAX / BigInt(RATE_1E12) + 1n).toString();
-        (() => buildWrapCalldata(RECIPIENT, tooLarge, RATE_1E12)).should.throw(/exceeds uint64/);
+      it('should accept 1 full 18-decimal underlying token for rate 1e12 (mints 1e6)', () => {
+        const calldata = buildWrapCalldata(RECIPIENT, '1000000000000000000', RATE_1E12);
+        calldata.slice(0, 10).should.equal(wrapMethodId);
       });
 
-      it('should accept amount × rate that fits uint64 for rate 1e12', () => {
-        const ok = (UINT64_MAX / BigInt(RATE_1E12)).toString();
-        const calldata = buildWrapCalldata(RECIPIENT, ok, RATE_1E12);
+      it('should accept the largest amount whose floor(amount / rate) is UINT64_MAX', () => {
+        const largest = (UINT64_MAX * BigInt(RATE_1E12) + BigInt(RATE_1E12) - 1n).toString();
+        const calldata = buildWrapCalldata(RECIPIENT, largest, RATE_1E12);
         calldata.slice(0, 10).should.equal(wrapMethodId);
+      });
+
+      it('should reject the smallest amount whose floor(amount / rate) exceeds uint64', () => {
+        const tooLarge = ((UINT64_MAX + 1n) * BigInt(RATE_1E12)).toString();
+        (() => buildWrapCalldata(RECIPIENT, tooLarge, RATE_1E12)).should.throw(/amount \/ rate exceeds uint64/);
+      });
+
+      it('should reject amount above uint64 for rate 1', () => {
+        const tooLarge = (UINT64_MAX + 1n).toString();
+        (() => buildWrapCalldata(RECIPIENT, tooLarge, RATE_ONE)).should.throw(/amount \/ rate exceeds uint64/);
       });
 
       it('should encode without rate when rate is omitted (deserialize path)', () => {
