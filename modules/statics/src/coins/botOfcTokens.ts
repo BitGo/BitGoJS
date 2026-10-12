@@ -425,6 +425,20 @@ export const botOfcTokens = [
     undefined,
     'hteth'
   ),
+  AccountCtors.tofcerc20(
+    '6031027d-729b-48f1-a687-cf5b8e7640cb',
+    'ofctbaseeth:haven',
+    'Haven',
+    18,
+    'tbaseeth:haven' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'tbaseeth'
+  ),
   AccountCtors.ofcerc20(
     '26f46d44-700d-4e32-8845-fb181e6d8027',
     'ofceth:gusdcq',
@@ -4154,5 +4168,55 @@ export const botOfcTokens = [
     undefined,
     undefined,
     'eth'
+  ),
+  AccountCtors.ofcsolToken(
+    '52b7dbca-ec91-416c-b6a9-8df56c5a64e4',
+    'ofcsol:zaruv2',
+    'ofcZAR Universal v2',
+    6,
+    'sol:zaruv2' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.ofcerc20(
+    '18a320a9-edf0-4ca0-af83-595fa5f77e8d',
+    'ofceth:usdau',
+    'AllUnity USD',
+    6,
+    'eth:usdau' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcsolToken(
+    '7ab6c364-1ddf-4ddd-8663-4ca8ff3bc5ed',
+    'ofcsol:usdau',
+    'ofcAllUnity USDAU',
+    6,
+    'sol:usdau' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.ofcsolToken(
+    '0114f1ea-3839-45c7-b0f7-30cc01f6e0fb',
+    'ofcsol:stampz',
+    'ofcStampede',
+    6,
+    'sol:stampz' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
   ),
 ];
