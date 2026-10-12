@@ -1186,7 +1186,8 @@ export class Xlm extends BaseCoin {
     // 2 signatures is accepted; any other value is rejected before the mismatch check.
     if (txParams.lowThreshold !== undefined) {
       if (txParams.lowThreshold !== 2) {
-        throw new Error(`accountConfig lowThreshold must be 2, got ${txParams.lowThreshold}`);
+        // JSON.stringify keeps wrong-typed input (e.g. string "2") distinguishable from the valid number.
+        throw new Error(`accountConfig lowThreshold must be 2, got ${JSON.stringify(txParams.lowThreshold)}`);
       }
       if (setOptionsOp.lowThreshold !== txParams.lowThreshold) {
         throw new Error(
@@ -1200,14 +1201,22 @@ export class Xlm extends BaseCoin {
     // carry e.g. signer:{attacker,weight:3} or a weakened med/high threshold while keeping every
     // verified field identical, and the wallet co-signers would satisfy highThreshold for the
     // injected change.
-    for (const unsupportedField of [
+    // The platform build layer only ever produces setOptions ops carrying setFlags, clearFlags,
+    // or lowThreshold. Reject any other SetOptions field on sight — including op-level source
+    // (a rebuilt op redirected to another account would execute under that account's
+    // thresholds) — because a rebuilt tx could otherwise carry e.g. signer:{attacker,weight:3}
+    // or a weakened med/high threshold while keeping every verified field identical, and the
+    // wallet co-signers would satisfy highThreshold for the injected change.
+    const unsupportedSetOptionsFields = [
       'inflationDest',
       'masterWeight',
       'medThreshold',
       'highThreshold',
       'homeDomain',
       'signer',
-    ] as const) {
+      'source',
+    ] as const;
+    for (const unsupportedField of unsupportedSetOptionsFields) {
       if (!_.isNil(setOptionsOp[unsupportedField])) {
         throw new Error(`accountConfig setOptions op carries unsupported field ${unsupportedField}`);
       }

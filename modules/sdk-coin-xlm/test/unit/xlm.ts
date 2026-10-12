@@ -1379,6 +1379,8 @@ describe('XLM:', function () {
           { medThreshold: 3 },
           { highThreshold: 1 },
           { homeDomain: 'evil.example.com' },
+          // Op-level source: a redirected op would execute under a different account's thresholds.
+          { source: trustorAddress },
         ]) {
           const txPrebuild = {
             txBase64: buildTxBase64([stellar.Operation.setOptions({ lowThreshold: 2, ...injectedField })]),
