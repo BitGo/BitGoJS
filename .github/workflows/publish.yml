@@ -126,3 +126,32 @@ jobs:
         env:
           NPM_CONFIG_PROVENANCE: true
           RECOVERY_MODE: ${{ inputs.recovery-mode }}
+          # the fallback publish must ship the same npm-shrinkwrap.json the
+          # lerna path generates; without this, bitgo publishes without one
+          BITGO_GENERATE_SHRINKWRAP: true
+
+      # bitgo's `prepack` generates npm-shrinkwrap.json at pack time (see
+      # scripts/generate-bitgo-shrinkwrap.ts). npm only honors a shipped
+      # shrinkwrap for installers when the registry's version metadata says
+      # _hasShrinkwrap: true — confirm that here so a publish that skipped
+      # shrinkwrap generation (or never landed) fails the release instead of
+      # shipping a package whose shrinkwrap consumers won't get. Mirrors the
+      # prod gate in npmjs-release.yml.
+      - name: Verify bitgo package has shrinkwrap metadata
+        run: |
+          name=$(jq -r '.name' modules/bitgo/package.json)
+          version=$(jq -r '.version' modules/bitgo/package.json)
+          encoded_name=$(printf '%s' "$name" | sed 's|/|%2f|g')
+          # Registry metadata can lag briefly right after publish, so retry
+          # before failing the release on what might just be propagation delay.
+          for attempt in 1 2 3 4 5; do
+            has_shrinkwrap=$(curl -sL "https://registry.npmjs.org/${encoded_name}/${version}" | jq -r '._hasShrinkwrap // false')
+            if [ "$has_shrinkwrap" = 'true' ]; then
+              echo "✅ ${name}@${version} published with _hasShrinkwrap: true."
+              exit 0
+            fi
+            echo "attempt ${attempt}: _hasShrinkwrap=${has_shrinkwrap}; retrying in 5s"
+            [ "$attempt" -lt 5 ] && sleep 5
+          done
+          echo "::error::Published ${name}@${version} is missing _hasShrinkwrap metadata on the npm registry."
+          exit 1
