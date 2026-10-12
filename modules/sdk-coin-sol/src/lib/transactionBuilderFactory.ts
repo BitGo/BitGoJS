@@ -6,6 +6,7 @@ import { ConfidentialTransferBuilder } from './confidentialTransferBuilder';
 import { RecoverNestedAtaBuilder } from './recoverNestedAtaBuilder';
 import { CustomInstructionBuilder } from './customInstructionBuilder';
 import { V1CustomInstructionBuilder } from './v1CustomInstructionBuilder';
+import { V1PaymentBuilder } from './v1PaymentBuilder';
 import { StakingActivateBuilder } from './stakingActivateBuilder';
 import { StakingAuthorizeBuilder } from './stakingAuthorizeBuilder';
 import { StakingDeactivateBuilder } from './stakingDeactivateBuilder';
@@ -210,6 +211,18 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    */
   getV1CustomInstructionBuilder(): V1CustomInstructionBuilder {
     return new V1CustomInstructionBuilder(this._coinConfig);
+  }
+
+  /**
+   * Returns the builder to create Solana v1 (SIMD-0296/0385) native SOL
+   * transfers from structured params (sender + recipients/amounts).
+   *
+   * Server-side construction surface — the caller supplies fields, never
+   * instructions. Set the fee payer via sender, optional durable nonce via
+   * nonce, and the v1 config via transactionConfig.
+   */
+  getV1PaymentBuilder(): V1PaymentBuilder {
+    return new V1PaymentBuilder(this._coinConfig);
   }
 
   /**
