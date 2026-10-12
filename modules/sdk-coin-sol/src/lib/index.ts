@@ -23,6 +23,7 @@ export {
   type V1TransactionConfigInput,
 } from './v1TransactionBuilder';
 export { V1CustomInstructionBuilder } from './v1CustomInstructionBuilder';
+export { V1PaymentBuilder, type SendParams } from './v1PaymentBuilder';
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
 export { TransferBuilder } from './transferBuilder';
 export { TransferBuilderV2 } from './transferBuilderV2';
