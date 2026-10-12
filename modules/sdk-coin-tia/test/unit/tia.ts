@@ -209,6 +209,68 @@ describe('TIA', function () {
         })
         .should.rejectedWith('missing required tx prebuild property txHex');
     });
+
+    it('should succeed to verify transaction with a memo-suffixed recipient address', async function () {
+      // Regression test for COINS-1760: recipients can carry their memo folded into the
+      // address as `address?memoId=X` (the BitGo combined address+memo convention), but
+      // explainTransaction() reports the plain on-chain address plus a separate memo
+      // field. Comparing raw strings made every memo-tagged recipient - like the
+      // `?memoId=0` withdrawal recipient in COINS-1760 - fail verification even though
+      // the transaction was built correctly.
+      const txPrebuild = {
+        txHex: TEST_TX_WITH_MEMO.signedTxBase64,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: `${TEST_TX_WITH_MEMO.to}?memoId=${TEST_TX_WITH_MEMO.memo}`,
+            amount: TEST_TX_WITH_MEMO.sendAmount,
+          },
+        ],
+      };
+      const verification = {};
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should fail to verify transaction when the recipient memoId does not match the tx memo', async function () {
+      const txPrebuild = {
+        txHex: TEST_TX_WITH_MEMO.signedTxBase64,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: `${TEST_TX_WITH_MEMO.to}?memoId=999999`,
+            amount: TEST_TX_WITH_MEMO.sendAmount,
+          },
+        ],
+      };
+      const verification = {};
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, verification })
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should fail to verify transaction when the recipient has no memoId but the tx has one', async function () {
+      const txPrebuild = {
+        txHex: TEST_TX_WITH_MEMO.signedTxBase64,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: TEST_TX_WITH_MEMO.to,
+            amount: TEST_TX_WITH_MEMO.sendAmount,
+          },
+        ],
+      };
+      const verification = {};
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, verification })
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
   });
 
   describe('Explain Transaction: ', () => {

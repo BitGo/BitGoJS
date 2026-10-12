@@ -545,7 +545,18 @@ export class CosmosCoin<CustomMessage = never> extends BaseCoin {
     return { serializedTx: serializedTx };
   }
 
-  /** @inheritDoc **/
+  /**
+   * @inheritDoc
+   *
+   * Recipients can carry their memo folded into the address as `address?memoId=X`
+   * (the BitGo combined address+memo convention - see getAddressDetails), while
+   * explainTransaction() reports the plain on-chain address plus a separate `memo`
+   * field on each output. Comparing the two sides as raw strings made every
+   * memo-tagged recipient fail verification even when the transaction was built
+   * correctly (COINS-1760). Normalize both sides to the same { address, amount,
+   * memo? } shape before comparing, which also checks the recipient memoId
+   * against the transaction memo.
+   */
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     let totalAmount = new BigNumber(0);
     const { txPrebuild, txParams } = params;
@@ -556,8 +567,11 @@ export class CosmosCoin<CustomMessage = never> extends BaseCoin {
     const transaction = await this.getBuilder().from(rawTx).build();
     const explainedTx = transaction.explainTransaction();
     if (txParams.recipients && txParams.recipients.length > 0) {
-      const filteredRecipients = txParams.recipients?.map((recipient) => _.pick(recipient, ['address', 'amount']));
-      const filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount']));
+      const filteredRecipients = txParams.recipients.map((recipient) => {
+        const { address, memoId } = this.getAddressDetails(recipient.address);
+        return { address, amount: recipient.amount, ...(memoId !== undefined ? { memo: memoId } : {}) };
+      });
+      const filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount', 'memo']));
 
       if (!_.isEqual(filteredOutputs, filteredRecipients)) {
         throw new Error('Tx outputs does not match with expected txParams recipients');
