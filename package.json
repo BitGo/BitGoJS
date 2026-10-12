@@ -119,7 +119,6 @@
     "bignumber.js": "9.1.2",
     "form-data": "^4.0.4",
     "ws": "8.22.0",
-    "**/swarm-js/**/tar": "6.2.1",
     "serialize-javascript": "7.0.5",
     "@grpc/grpc-js": "^1.14.4",
     "bigint-buffer": "npm:@trufflesuite/bigint-buffer@1.1.10",
@@ -277,9 +276,6 @@
     },
     "avalanche": {
       "store2": "2.14.4"
-    },
-    "swarm-js": {
-      "tar": "6.2.1"
     },
     "iota-sdk": {
       "valibot": "1.2.0"
