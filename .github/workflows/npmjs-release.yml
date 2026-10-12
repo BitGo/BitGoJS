@@ -301,11 +301,45 @@ jobs:
         run: |
           yarn lerna version --sign-git-tag --sign-git-commit --include-merged-tags --conventional-commits --conventional-graduate --yes
 
+      # WCI-1754: with NPM_CONFIG_PROVENANCE, npm records a Sigstore
+      # transparency-log (Rekor) entry for the provenance attestation before
+      # the registry write. If the registry response is lost and npm retries
+      # the publish, Rekor rejects the identical attestation with HTTP 409
+      # "an equivalent entry already exists" and lerna exits 1 even though
+      # the version already landed on npm (run 37553757724). Lerna still
+      # publishes the remaining packages, so treat that specific 409 as a
+      # no-op and let the follow-up verification step prove every version is
+      # present on the registry before the release continues. Any other
+      # failure fails the release as before.
       - name: Publish siblings (pass 1)
+        id: publish-siblings
         if: inputs.dry-run == false
-        run: yarn lerna publish from-package --yes
         env:
           NPM_CONFIG_PROVENANCE: true
+        run: |
+          set +e
+          yarn lerna publish from-package --yes 2>&1 | tee "$RUNNER_TEMP/publish-siblings-pass1.log"
+          status=${PIPESTATUS[0]}
+          set -e
+          if [ "$status" -eq 0 ]; then
+            exit 0
+          fi
+          if grep -q 'TLOG_CREATE_ENTRY_ERROR' "$RUNNER_TEMP/publish-siblings-pass1.log" \
+            && grep -q 'an equivalent entry already exists' "$RUNNER_TEMP/publish-siblings-pass1.log"; then
+            echo "::warning::Sibling publish hit a Sigstore transparency-log 409 (duplicate provenance attestation) — treating as already published; verifying registry presence next."
+            echo "tlog-409=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          exit "$status"
+
+      - name: Verify siblings published after transparency-log 409
+        if: ${{ inputs.dry-run == false && steps.publish-siblings.outputs.tlog-409 == 'true' }}
+        uses: ./.github/actions/verify-published-versions
+        with:
+          # bitgo is published separately in pass 2, so it is not expected
+          # on the registry yet.
+          include-bitgo: false
+          error-title: "Pass 1 tolerated a transparency-log 409 but these versions are still missing from npm"
 
       # WCN-2091: fail the release BEFORE bitgo publishes if the shrinkwrap it
       # would ship pins any transitive that is incompatible with the Node.js
@@ -347,38 +381,44 @@ jobs:
           fi
           echo "✅ bitgo tarball installs cleanly on $(node --version) with engine-strict."
 
+      # Same transparency-log 409 tolerance as pass 1 (WCI-1754): a 409
+      # means an equivalent provenance attestation was already recorded, so
+      # a prior attempt of this same publish already landed this bitgo
+      # version. Verify registry presence instead of failing the release.
       - name: Publish bitgo (pass 2)
+        id: publish-bitgo
         if: inputs.dry-run == false
-        run: |
-          bitgo_name=$(jq -r '.name' modules/bitgo/package.json)
-          yarn lerna publish from-package --include-private "$bitgo_name" --yes
         env:
           NPM_CONFIG_PROVENANCE: true
           BITGO_GENERATE_SHRINKWRAP: true
+        run: |
+          bitgo_name=$(jq -r '.name' modules/bitgo/package.json)
+          set +e
+          yarn lerna publish from-package --include-private "$bitgo_name" --yes 2>&1 | tee "$RUNNER_TEMP/publish-bitgo-pass2.log"
+          status=${PIPESTATUS[0]}
+          set -e
+          if [ "$status" -eq 0 ]; then
+            exit 0
+          fi
+          if grep -q 'TLOG_CREATE_ENTRY_ERROR' "$RUNNER_TEMP/publish-bitgo-pass2.log" \
+            && grep -q 'an equivalent entry already exists' "$RUNNER_TEMP/publish-bitgo-pass2.log"; then
+            echo "::warning::bitgo publish hit a Sigstore transparency-log 409 (duplicate provenance attestation) — treating as already published; verifying registry presence next."
+            echo "tlog-409=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          exit "$status"
+
+      - name: Verify bitgo published after transparency-log 409
+        if: ${{ inputs.dry-run == false && steps.publish-bitgo.outputs.tlog-409 == 'true' }}
+        uses: ./.github/actions/verify-published-versions
+        with:
+          error-title: "Pass 2 tolerated a transparency-log 409 but these versions are still missing from npm"
 
       - name: Verify recovery published the missing versions
         if: ${{ inputs.dry-run == false && inputs.recovery-mode }}
-        run: |
-          # Walk every non-private package and confirm the version on
-          # rel/latest is now reachable on the npm registry. Catches the
-          # case where lerna reports success but a package didn't land
-          # (e.g., another transient registry error).
-          missing=()
-          for f in modules/*/package.json; do
-            if [ "$(jq -r '.private // false' "$f")" = "true" ] && [ "$f" != "modules/bitgo/package.json" ]; then continue; fi
-            name=$(jq -r '.name' "$f")
-            version=$(jq -r '.version' "$f")
-            code=$(curl -sL -o /dev/null -w "%{http_code}" -- "https://registry.npmjs.org/${name}/${version}")
-            if [ "$code" != "200" ]; then
-              missing+=("${name}@${version} (HTTP ${code})")
-            fi
-          done
-          if [ "${#missing[@]}" -ne 0 ]; then
-            echo "::error::Recovery left versions still missing from npm:"
-            printf '  - %s\n' "${missing[@]}"
-            exit 1
-          fi
-          echo "✅ All public package versions on rel/latest are present on npm."
+        uses: ./.github/actions/verify-published-versions
+        with:
+          error-title: "Recovery left versions still missing from npm"
 
       # bitgo's `prepack` script generates npm-shrinkwrap.json at pack time (see
       # scripts/generate-bitgo-shrinkwrap.ts). npm only honors a shipped shrinkwrap
