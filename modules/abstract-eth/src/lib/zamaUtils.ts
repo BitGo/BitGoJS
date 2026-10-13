@@ -150,6 +150,29 @@ export function buildApproveCalldata(wrapperAddress: string, amount: string | nu
 }
 
 /**
+ * Decodes ERC-20 `approve(spender, amount)` calldata.
+ *
+ * @param data ABI-encoded approve calldata (0x-prefixed)
+ * @returns `{ spender, amount }` with checksummed `spender` and decimal-string `amount`
+ * @throws {Error} if the selector is not `approve` or the arguments cannot be decoded
+ */
+export function decodeApproveCalldata(data: string): { spender: string; amount: string } {
+  if (!data.toLowerCase().startsWith(approveMethodId.toLowerCase())) {
+    throw new Error(`decodeApproveCalldata: expected approve selector ${approveMethodId}, got ${data.slice(0, 10)}`);
+  }
+  // selector (4 bytes) + two 32-byte words; reject trailing bytes so nothing unparsed rides along
+  if (data.length !== 2 + 8 + 2 * 64) {
+    throw new Error(`decodeApproveCalldata: expected 68 bytes of calldata, got ${(data.length - 2) / 2}`);
+  }
+  const abiCoder = new ethers.utils.AbiCoder();
+  const decoded = abiCoder.decode([...approveTypes], '0x' + data.slice(10));
+  return {
+    spender: ethers.utils.getAddress(decoded[0]),
+    amount: decoded[1].toString(),
+  };
+}
+
+/**
  * Encodes ERC-7984 `wrap(to, amount)` calldata for the shield path.
  *
  * Calldata is sent to the confidential wrapper contract. `to` is the recipient of
