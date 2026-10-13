@@ -1,7 +1,9 @@
 import 'should';
 import * as assert from 'assert';
+import { randomBytes } from 'crypto';
 import { decrypt, encrypt } from '@bitgo/sdk-api';
 import { coins } from '@bitgo/statics';
+import { encodeDerivableEd25519Pub, generateEd25519ChainCode } from '@bitgo/sdk-lib-safes';
 import {
   Keychain,
   KeychainsTriplet,
@@ -82,6 +84,10 @@ async function buildRoots(): Promise<{
     };
   }
 
+  // slot ④'s backup pub is a real derivable composite (publicKey32 ‖ chainCode32) so that
+  // selectBackupRootEntry can decode the chain code it stores alongside the seed in box B.
+  roots.ed25519Multisig.backupKeychain.pub = encodeDerivableEd25519Pub(randomBytes(32), generateEd25519ChainCode());
+
   return { roots, plaintexts, bitgoPubs };
 }
 
@@ -119,10 +125,26 @@ describe('generateSafeQrData', function () {
     const bitgoBox = parseSafeKeycardBox(reassemble(qrData.bitgo.data));
 
     for (const slot of SAFE_ROOT_ORDER) {
-      (await decrypt(passphrase, userBox[slot])).should.equal(plaintexts[slot].user);
-      (await decrypt(passphrase, backupBox[slot])).should.equal(plaintexts[slot].backup);
+      (await decrypt(passphrase, userBox[slot] as string)).should.equal(plaintexts[slot].user);
+      const backupEntry = backupBox[slot];
+      const backupPrv = typeof backupEntry === 'string' ? backupEntry : backupEntry.prv;
+      (await decrypt(passphrase, backupPrv)).should.equal(plaintexts[slot].backup);
       bitgoBox[slot].should.equal(bitgoPubs[slot]);
     }
+
+    // Box B's slot-④ entry carries the chain code next to the seed (only slot ④ is an object).
+    const ed25519Backup = backupBox.ed25519Multisig;
+    assert.ok(typeof ed25519Backup === 'object');
+    if (typeof ed25519Backup === 'object') {
+      ed25519Backup.chainCode.should.match(/^[A-Z2-7]{52}$/);
+      // The seed is byte-identical to the un-widened encrypted value (chain code NOT appended).
+      ed25519Backup.prv.should.equal(roots.ed25519Multisig.backupKeychain.encryptedPrv);
+    }
+
+    // The other three box-B slots stay bare strings.
+    backupBox.secp256k1Multisig.should.be.a.String();
+    backupBox.ecdsaMpc.should.be.a.String();
+    backupBox.eddsaMpc.should.be.a.String();
   });
 
   it('preserves the versioned VRF envelope in the MPC root card blob', async function () {
@@ -136,7 +158,7 @@ describe('generateSafeQrData', function () {
 
     const qrData = await generateSafeQrData({ coin: coins.get('btc'), roots });
     const userBox = parseSafeKeycardBox(qrData.user.data);
-    const decoded = parseMpcV2KeyShareEnvelope(await decrypt(passphrase, userBox.ecdsaMpc));
+    const decoded = parseMpcV2KeyShareEnvelope(await decrypt(passphrase, userBox.ecdsaMpc as string));
 
     decoded.signingKeyShare.toString().should.equal('reduced-signing-share');
     assert.ok(decoded.vrfKeyShare);
@@ -160,7 +182,7 @@ describe('generateSafeQrData', function () {
     fragments.every((fragment) => fragment.length <= QRBinaryMaxLength).should.equal(true);
 
     const parsed = parseMpcV2KeyShareEnvelope(
-      await decrypt(passphrase, parseSafeKeycardBox(reassemble(qrData.user.data)).ecdsaMpc)
+      await decrypt(passphrase, parseSafeKeycardBox(reassemble(qrData.user.data)).ecdsaMpc as string)
     );
     parsed.signingKeyShare.length.should.equal(606);
     assert.ok(parsed.vrfKeyShare);
@@ -233,7 +255,7 @@ describe('generateSafeQrData', function () {
     assert.ok(userEntry);
     const userBox = parseSafeKeycardBox(userEntry.value);
     for (const slot of SAFE_ROOT_ORDER) {
-      (await decrypt(passphrase, userBox[slot])).should.equal(plaintexts[slot].user);
+      (await decrypt(passphrase, userBox[slot] as string)).should.equal(plaintexts[slot].user);
     }
   });
 

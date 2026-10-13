@@ -24,16 +24,25 @@ export type SafeRootKeyType = RootKeyType;
  * {@link SafeRootKeyType}. Values are per-root ciphertext for A/B (encryptedPrv or
  * reducedEncryptedPrv; safe MPC ciphertext decrypts to a versioned signing+VRF envelope) or
  * public keys for C. The root-key-type keys are self-identifying, so a
- * consumer parses by key rather than by size/offset.
+ * consumer parses by key rather than by size/offset. Box B's `ed25519Multisig` entry carries a
+ * `{ prv, chainCode }` object (the chain code is independent randomness not recomputable from the
+ * seed); every other entry is a bare string.
  */
-export type SafeKeycardRoots = Record<SafeRootKeyType, string>;
+export const Ed25519ChainCodeEntryCodec = t.type({ prv: t.string, chainCode: t.string });
+export type Ed25519ChainCodeEntry = t.TypeOf<typeof Ed25519ChainCodeEntryCodec>;
+
+export type SafeKeycardRootEntry = string | Ed25519ChainCodeEntry;
+
+export type SafeKeycardRoots = Record<SafeRootKeyType, SafeKeycardRootEntry>;
+
+const SafeKeycardRootEntryCodec: t.Type<SafeKeycardRootEntry> = t.union([t.string, Ed25519ChainCodeEntryCodec]);
 
 // Annotating with SafeKeycardRoots makes the compiler reject a key added to or removed from one side only.
 const SafeKeycardRootsCodec: t.Type<SafeKeycardRoots> = t.type({
-  secp256k1Multisig: t.string,
-  ecdsaMpc: t.string,
-  eddsaMpc: t.string,
-  ed25519Multisig: t.string,
+  secp256k1Multisig: SafeKeycardRootEntryCodec,
+  ecdsaMpc: SafeKeycardRootEntryCodec,
+  eddsaMpc: SafeKeycardRootEntryCodec,
+  ed25519Multisig: SafeKeycardRootEntryCodec,
 });
 
 // Decodes a box's JSON string straight into the validated roots record.
@@ -42,7 +51,7 @@ const SafeKeycardBoxFromString = JsonFromString.pipe(SafeKeycardRootsCodec);
 /**
  * Parses a safe keycard box value — the JSON packed by key-card's `generateSafeQrData`, e.g.
  * `{"secp256k1Multisig":"…","ecdsaMpc":"…",…}` — into its four roots. Throws if the value is
- * not valid JSON or any root is missing/non-string. Recovery tooling calls this on the A/B/C
+ * not valid JSON or any root is not a bare string or a `{ prv, chainCode }` entry. Recovery tooling calls this on the A/B/C
  * box value, then decrypts each root value with the safe password. An MPC root value is an
  * opaque versioned envelope; recovery must unwrap its `prvKeyShare` and `vrf` fields instead
  * of treating the decrypted bytes as a bare share.
