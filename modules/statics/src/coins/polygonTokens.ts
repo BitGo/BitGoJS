@@ -1763,6 +1763,15 @@ export const polygonTokens = [
     UnderlyingAsset['tpolygon:activ'],
     POLYGON_TOKEN_FEATURES
   ),
+  tpolygonErc20(
+    '28a97ebc-56ad-4de5-bb73-3f0e6caff4cb',
+    'tpolygon:jpyc',
+    'JPY Coin',
+    18,
+    '0xe7c3d8c9a439fede00d2600032d5db0be71c3c29',
+    UnderlyingAsset['tpolygon:jpyc'],
+    POLYGON_TOKEN_FEATURES
+  ),
   // CECHO-1941 batch tokens
   polygonErc20(
     'd133a2fc-0e5d-4ab4-b652-ab7692f4a0da',
