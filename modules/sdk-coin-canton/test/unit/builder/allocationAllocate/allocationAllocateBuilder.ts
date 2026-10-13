@@ -398,6 +398,8 @@ describe('AllocationAllocate Builder', () => {
       assert.equal(txData.amount, '5000000000');
       assert.equal(txData.token, undefined);
       // no token, so inputs and outputs are denominated in the base coin
+      // (setTransaction does not populate them; the raw-parse path calls loadInputsAndOutputs)
+      txBuilder.transaction.loadInputsAndOutputs();
       assert.equal(txBuilder.transaction.inputs[0].coin, 'tcanton');
       assert.equal(txBuilder.transaction.outputs[0].coin, 'tcanton');
     });
