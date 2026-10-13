@@ -14,6 +14,7 @@ import {
   DynamicCoin,
   EosCoin,
   Erc20Coin,
+  EthLikeERC721Token,
   EthereumNetwork,
   EVM_TOKEN_FEATURES,
   EVM_TOKEN_FEATURES_NON_EIP1559,
@@ -41,6 +42,7 @@ import {
   amsTokenWithUnsupportedNetwork,
   dynamicBaseChainFullConfig,
   dynamicTestNetwork,
+  hbarevmTokenConfigs,
   incorrectAmsTokenConfig,
   multipleTokensSameFamilyConfig,
   reducedAmsTokenConfig,
@@ -50,6 +52,7 @@ import {
 import { EthLikeErc20Token } from '../../../sdk-coin-evm/src';
 import {
   AccountCoin,
+  EthLikeERC20Token,
   getUnsupportedSolTokenExtensions,
   ProgramID,
   solToken,
@@ -1874,6 +1877,43 @@ describe('create token map using config details', () => {
       }
     }
   });
+
+  it('should create hbarevm ERC721 and ERC20 AMS tokens instead of skipping them as malformed', () => {
+    // Regression for CECHO-2453: the hbarevm family supports both ERC20 and
+    // ERC721, and dispatching on the family alone invoked erc721Token with the
+    // ERC20 argument layout, so its `features` parameter received `token.asset`
+    // and the coin failed the required account-model feature check. Both token
+    // kinds were then skipped with a 'Skipping malformed token' warning.
+    const warnings: string[] = [];
+    const originalWarn = console.warn;
+    console.warn = (...args: unknown[]) => {
+      warnings.push(args.join(' '));
+    };
+    try {
+      const coinMap = createTokenMapUsingTrimmedConfigDetails(hbarevmTokenConfigs);
+
+      const nft = coinMap.get('hbarevm:freshnft');
+      (nft instanceof EthLikeERC721Token).should.be.true();
+      nft.decimalPlaces.should.eql(0);
+      nft.features.should.containEql(CoinFeature.ACCOUNT_MODEL);
+      (nft as unknown as { contractAddress: string }).contractAddress.should.eql(
+        '0x1111111111111111111111111111111111111111'
+      );
+
+      const erc20 = coinMap.get('hbarevm:fresherc20');
+      (erc20 instanceof EthLikeERC20Token).should.be.true();
+      erc20.decimalPlaces.should.eql(6);
+      erc20.features.should.containEql(CoinFeature.ACCOUNT_MODEL);
+      (erc20 as unknown as { contractAddress: string }).contractAddress.should.eql(
+        '0x2222222222222222222222222222222222222222'
+      );
+
+      warnings.filter((message) => message.includes('Skipping malformed token')).should.be.empty();
+    } finally {
+      console.warn = originalWarn;
+    }
+  });
+
   describe('zkSync Era Features', function () {
     it('should have ZKSYNCERA_FEATURES for zksyncera', function () {
       const coin = coins.get('zksyncera');

@@ -31,7 +31,7 @@ import {
   erc721Token,
 } from './account';
 import { ofcToken } from './ofc';
-import { BaseCoin, CoinFeature, DynamicCoin } from './base';
+import { BaseCoin, CoinFeature, DynamicCoin, UnderlyingAsset } from './base';
 import { AmsNetworkConfigMap, AmsTokenConfig, TrimmedAmsTokenConfig } from './tokenConfig';
 import { CoinMap } from './map';
 import { BaseNetwork, getNetwork, getNetworksMap, NetworkType } from './networks';
@@ -160,20 +160,7 @@ function constructToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefined {
     }
   }
 
-  // dynamically add erc20 token initializers for eth like chains to the initializer map
-  Object.keys(erc20ChainToNameMap).forEach((key) => {
-    initializerMap[key] = erc20Token;
-  });
-
-  Object.keys(erc721ChainToNameMap).forEach((key) => {
-    initializerMap[key] = erc721Token;
-  });
-
   const family = token.family;
-  const initializer = initializerMap[family] as (...args: unknown[]) => Readonly<BaseCoin>;
-  if (!initializer) {
-    return undefined;
-  }
 
   const commonArgs = [
     token.id,
@@ -188,28 +175,45 @@ function constructToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefined {
     token.primaryKeyCurve,
   ];
 
+  // A family can support both ERC20 and ERC721 tokens (e.g. hbarevm), so for
+  // families tracked by the ERC20/ERC721 chain maps the token's kind — not the
+  // family — picks the initializer and its argument layout. Dispatching on the
+  // family alone invoked erc721Token with the ERC20 layout for such families,
+  // handing it `token.asset` in place of `features`, which failed the coin's
+  // required account-model feature check and caused the token to be skipped.
+  if (erc20ChainToNameMap[family] || erc721ChainToNameMap[family]) {
+    const isErc721 = token.asset === UnderlyingAsset.ERC721;
+    const evmInitializer = (isErc721 ? erc721Token : erc20Token) as unknown as (
+      ...args: unknown[]
+    ) => Readonly<BaseCoin>;
+    return isErc721
+      ? evmInitializer(
+          ...commonArgs.slice(0, 3), // id, name, fullName
+          token.contractAddress, // contractAddress
+          token.network,
+          token.features,
+          token.prefix,
+          token.suffix,
+          token.primaryKeyCurve
+        )
+      : evmInitializer(
+          ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
+          token.contractAddress || token.tokenAddress, // contractAddress
+          token.asset,
+          token.network,
+          token.features,
+          token.prefix,
+          token.suffix,
+          token.primaryKeyCurve
+        );
+  }
+
+  const initializer = initializerMap[family] as (...args: unknown[]) => Readonly<BaseCoin>;
+  if (!initializer) {
+    return undefined;
+  }
+
   switch (family) {
-    case erc20ChainToNameMap[family]:
-      return initializer(
-        ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
-        token.contractAddress || token.tokenAddress, // contractAddress
-        token.asset,
-        token.network,
-        token.features,
-        token.prefix,
-        token.suffix,
-        token.primaryKeyCurve
-      );
-    case erc721ChainToNameMap[family]:
-      return initializer(
-        ...commonArgs.slice(0, 3), // id, name, fullName
-        token.contractAddress, // contractAddress
-        token.network,
-        token.features,
-        token.prefix,
-        token.suffix,
-        token.primaryKeyCurve
-      );
     case 'arbeth':
     case 'avaxc':
     case 'baseeth':

@@ -1,4 +1,5 @@
 import { DynamicNetwork } from '../../../src/networks';
+import { TrimmedAmsTokenConfig } from '../../../src/tokenConfig';
 
 export const dynamicTestNetwork = new DynamicNetwork({
   name: 'MyDynamicTestnet',
@@ -1318,6 +1319,56 @@ export const reducedTokenConfigForAllChains = {
       contractAddress: '0x1234567890abcdef1234567890abcdef12345678',
       network: {
         name: 'BaseChainTestnet',
+      },
+      additionalFeatures: [],
+      excludedFeatures: [],
+    },
+  ],
+};
+
+// Fresh hbarevm-family tokens (names and UUIDs not present in the static coin
+// map) covering both token kinds on a family whose base coin supports both
+// ERC20 and ERC721.
+export const hbarevmTokenConfigs: Record<string, TrimmedAmsTokenConfig[]> = {
+  'hbarevm:freshnft': [
+    {
+      id: 'b1f0a7e2-6c1d-4f3b-9a2e-0d5c4b3a2c11',
+      fullName: 'Fresh Hedera EVM NFT',
+      name: 'hbarevm:freshnft',
+      prefix: '',
+      suffix: 'HBAREVM:FRESHNFT',
+      baseUnit: 'wei',
+      kind: 'crypto',
+      family: 'hbarevm',
+      isToken: true,
+      decimalPlaces: 0,
+      asset: 'erc721',
+      primaryKeyCurve: 'secp256k1',
+      contractAddress: '0x1111111111111111111111111111111111111111',
+      network: {
+        name: 'Hedera EVM',
+      },
+      additionalFeatures: [],
+      excludedFeatures: [],
+    },
+  ],
+  'hbarevm:fresherc20': [
+    {
+      id: 'b1f0a7e2-6c1d-4f3b-9a2e-0d5c4b3a2c12',
+      fullName: 'Fresh Hedera EVM ERC20',
+      name: 'hbarevm:fresherc20',
+      prefix: '',
+      suffix: 'HBAREVM:FRESHERC20',
+      baseUnit: 'wei',
+      kind: 'crypto',
+      family: 'hbarevm',
+      isToken: true,
+      decimalPlaces: 6,
+      asset: 'hbarevm:fresherc20',
+      primaryKeyCurve: 'secp256k1',
+      contractAddress: '0x2222222222222222222222222222222222222222',
+      network: {
+        name: 'Hedera EVM',
       },
       additionalFeatures: [],
       excludedFeatures: [],
