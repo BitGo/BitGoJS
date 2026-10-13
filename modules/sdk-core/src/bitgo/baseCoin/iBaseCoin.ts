@@ -598,16 +598,48 @@ export type SignedTransaction =
   | SignedTransactionRequest
   | TxRequest;
 
-export interface SignedMessage {
+/**
+ * Base fields shared by every message-sign result.
+ */
+export interface SignedMessageBase {
   coin?: string;
-  // @deprecated - use `signature` instead
-  txHash: string;
-  signature: string;
   messageRaw: string;
   messageEncoded?: string;
   messageStandardType?: MessageStandardType;
   txRequestId: string;
 }
+
+/**
+ * The message-sign request was parked behind a pending approval by the
+ * message-signing policy; no signature was produced. The discriminator is the
+ * server-reported txRequest state ('pendingApproval') — never inferred from
+ * id presence. Surface the approval, then re-sign via
+ * signAndSendMessageTxRequest once it is resolved.
+ */
+export interface SignedMessagePendingApproval extends SignedMessageBase {
+  state: 'pendingApproval';
+  pendingApprovalId: string;
+}
+
+/**
+ * The message is signed and the request is terminal (wallet-platform
+ * transitions a message request pendingDelivery → delivered once all
+ * messages are signed; the txRequest-level 'signed' state is never used for
+ * message requests).
+ */
+export interface SignedMessageDelivered extends SignedMessageBase {
+  state: 'delivered';
+  // @deprecated - use `signature` instead
+  txHash: string;
+  signature: string;
+}
+
+/**
+ * Discriminated on the wallet-platform txRequest state. BREAKING: consumers
+ * that previously read `txHash`/`signature` without narrowing must first
+ * check `state === 'delivered'`.
+ */
+export type SignedMessage = SignedMessagePendingApproval | SignedMessageDelivered;
 
 export interface RecoverWalletTokenOptions {
   tokenContractAddress: string;
