@@ -398,8 +398,10 @@ export class Utils implements BaseUtils {
           }
         }
         // DvpLegAllocation create node → allocation.transferLeg contains the full settlement transfer details:
-        // sender, receiver (the actual settlement counterparty), amount, and instrumentId
-        const dvpFields = findCreateNodeFields('DvpLegAllocation');
+        // sender, receiver (the actual settlement counterparty), amount, and instrumentId.
+        // Native Canton Coin (Amulet) allocations create an AmuletAllocation instead, with the identical
+        // `allocation` record (AmuletAllocation also carries lockedAmulet and expiresAt).
+        const dvpFields = findCreateNodeFields('DvpLegAllocation') ?? findCreateNodeFields('AmuletAllocation');
         if (dvpFields) {
           const allocationField = getField(dvpFields, 'allocation');
           if (allocationField?.oneofKind === 'record') {
@@ -607,7 +609,8 @@ export class Utils implements BaseUtils {
     if (memoId) {
       parsedData.memoId = memoId;
     }
-    if (instrumentId && instrumentAdmin) {
+    // Native Canton Coin carries no token: the transaction falls back to the base coin.
+    if (instrumentId && instrumentAdmin && !this.isNativeInstrument(instrumentAdmin, instrumentId)) {
       parsedData.token = this.findTokenNameByContractAddress(`${instrumentAdmin}:${instrumentId}`);
     }
     return parsedData;
@@ -1055,14 +1058,23 @@ export class Utils implements BaseUtils {
    * @param contractAddress - the contract address of the form, `instrumentAdmin:instrumentId`
    * @returns tokenName if contractAddress matches with any supported canton tokens
    */
-  private findTokenNameByContractAddress(contractAddress: string): string | undefined {
-    if (contractAddress.includes('Amulet')) {
-      return undefined;
-    }
+  private findTokenNameByContractAddress(contractAddress: string): string {
     const cantonToken = coins
       .filter((coin) => coin instanceof CantonToken && coin.contractAddress === contractAddress)
       .map((coin) => coin as CantonToken);
-    return cantonToken ? cantonToken[0].name : undefined;
+    if (cantonToken.length === 0) {
+      throw new Error(`unsupported canton token instrument: ${contractAddress}`);
+    }
+    return cantonToken[0].name;
+  }
+
+  /**
+   * Whether an instrument is native Canton Coin: `Amulet` administered by a DSO party. This is an exact
+   * check on the instrument id and the admin's `DSO::` prefix, never a substring match on the whole
+   * `admin:id` string, so an unrelated token whose name merely contains "Amulet" is not treated as native.
+   */
+  private isNativeInstrument(instrumentAdmin: string, instrumentId: string): boolean {
+    return instrumentId === 'Amulet' && instrumentAdmin.startsWith('DSO::');
   }
 }
 

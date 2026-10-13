@@ -9,6 +9,7 @@ import {
   CANTON_ADDRESSES,
   CANTON_BLOCK_HEIGHT,
   CantonAllocationAllocatePrepareResponse,
+  CantonAllocationAllocateNativePrepareResponse,
   CantonAllocationAllocateV2PreparedResponse,
   CantonExerciseCommandPrepareResponse,
   CoinTransferPreapprovalCancelPrepareResponse,
@@ -177,6 +178,21 @@ describe('Canton Util', function () {
       assert.equal(parsedData.amount, '20000000000');
       // instrumentAdmin = allocation.admin, instrumentId = leg instrumentId → statics token name
       assert.equal(parsedData.token, 'tcanton:tc1');
+    });
+
+    it('should parse the native Canton Coin allocation allocate prepared transaction', () => {
+      const parsedData = utils.parseRawCantonTransactionData(
+        CantonAllocationAllocateNativePrepareResponse.preparedTransaction,
+        TransactionType.AllocationAllocate
+      );
+      should.exist(parsedData);
+      // sender/receiver/amount come from the AmuletAllocation allocation.transferLeg (no DvpLegAllocation)
+      assert.equal(parsedData.sender, '12204::122041049193fc30bb11a5c3d8cc5ce7fd1781e2bb29359ff2d6eae6db4df032157f');
+      assert.equal(parsedData.receiver, '12207::122077264e6222a18a7b9fe94dad9a7ee00d545f5538b94a5344e79f584245cfe113');
+      // 0.5 Amulet in base units; the receiver is the settlement counterparty, not the DSO expectedAdmin
+      assert.equal(parsedData.amount, '5000000000');
+      // native Amulet carries no token: it falls back to the base coin
+      assert.equal(parsedData.token, undefined);
     });
   });
 
