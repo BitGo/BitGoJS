@@ -85,6 +85,7 @@ describe('Token Naming Convention Tests', function () {
       'sepeth:pyusd',
       'sepeth:wtgxx',
       'sepeth:real1',
+      'sepeth:jpyc',
       'fixed',
       'schz',
       'bgerch',

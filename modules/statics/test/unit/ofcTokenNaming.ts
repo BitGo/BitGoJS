@@ -53,6 +53,7 @@ describe('OFC Token Naming Convention Tests', function () {
         'ofctnear:stnear', // "stNEAR"
         'ofctbaseeth', // "Base Sepolia Chain"
         'ofctpolygon:activ', // "Activ"
+        'ofctpolygon:jpyc', // "JPY Coin"
         'ofctxlm:yghs', // "yGHS"
       ];
 

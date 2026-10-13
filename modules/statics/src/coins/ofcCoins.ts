@@ -4838,6 +4838,13 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['tpolygon:activ']
   ),
+  tofcPolygonErc20(
+    '05f41f8e-5d80-41c9-9f41-8eae4cff13e6',
+    'ofctpolygon:jpyc',
+    'JPY Coin',
+    18,
+    UnderlyingAsset['tpolygon:jpyc']
+  ),
 
   ofcAlgoToken(
     'fec37305-8fb8-4c23-b42c-b4696d579eb9',

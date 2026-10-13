@@ -5191,6 +5191,20 @@ export const tOfcErc20Coins = [
     undefined,
     'sepeth'
   ),
+  tofcerc20(
+    '621a2122-c416-468a-938a-ede06b67c3de',
+    'ofcsepeth:jpyc',
+    'JPY Coin',
+    18,
+    UnderlyingAsset['sepeth:jpyc'],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'sepeth'
+  ),
 
   ofcerc20(
     'cc2a92cf-d799-463b-b08c-e9a4d5e87934',

@@ -2012,6 +2012,7 @@ export enum UnderlyingAsset {
   'sepeth:pyusd' = 'sepeth:pyusd',
   'sepeth:wtgxx' = 'sepeth:wtgxx',
   'sepeth:real1' = 'sepeth:real1',
+  'sepeth:jpyc' = 'sepeth:jpyc',
   // Robinhood Chain testnet ERC-20 tokens
   'thoodeth:amzn' = 'thoodeth:amzn',
   'thoodeth:tsla' = 'thoodeth:tsla',
@@ -3680,6 +3681,8 @@ export enum UnderlyingAsset {
   'tpolygon:abld' = 'tpolygon:abld',
   // CSHLD-1278 testnet token
   'tpolygon:activ' = 'tpolygon:activ',
+  // CECHO-2428 testnet token
+  'tpolygon:jpyc' = 'tpolygon:jpyc',
 
   // generic NFTs
   'terc721:polygontoken' = 'terc721:polygontoken',

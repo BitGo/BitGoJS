@@ -15230,6 +15230,18 @@ export const erc20Coins = [
     undefined,
     Networks.test.sepolia
   ),
+  terc20(
+    'c70a0d46-5ebb-42e2-aee0-51c98de0f0c1',
+    'sepeth:jpyc',
+    'JPY Coin',
+    18,
+    '0xe7c3d8c9a439fede00d2600032d5db0be71c3c29',
+    UnderlyingAsset['sepeth:jpyc'],
+    ACCOUNT_COIN_DEFAULT_FEATURES,
+    undefined,
+    undefined,
+    Networks.test.sepolia
+  ),
 
   // ERC-7984 underlying plain ERC-20 tokens (Zama fhEVM - Hoodi)
   terc20(
