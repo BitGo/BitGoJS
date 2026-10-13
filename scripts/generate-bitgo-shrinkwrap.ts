@@ -5,8 +5,11 @@
  *
  * Runs as bitgo's `prepack` script, gated on BITGO_GENERATE_SHRINKWRAP=true.
  * Before npm resolves the isolated package, it verifies that every exact workspace
- * sibling version is visible on the public registry. Missing versions are retried
- * three times to absorb npm propagation delay before the release fails loudly.
+ * sibling version is visible on the public registry. Versions that are not visible yet
+ * are polled until they appear, up to a time budget (default 20 minutes, override with
+ * BITGO_SIBLING_AVAILABILITY_TIMEOUT_MINUTES), because the registry can take minutes to
+ * hours to show a version that lerna already reported as published. If the budget runs
+ * out, the release fails loudly and lists what is still missing.
  */
 
 import fs from 'fs';
@@ -18,8 +21,12 @@ const rootDir = path.resolve(__dirname, '..');
 const bitgoDir = path.join(rootDir, 'modules/bitgo');
 const modulesDir = path.join(rootDir, 'modules');
 const npmRegistryUrl = 'https://registry.npmjs.org';
-const siblingAvailabilityAttempts = 3;
+const siblingAvailabilityTimeoutEnvVar = 'BITGO_SIBLING_AVAILABILITY_TIMEOUT_MINUTES';
+const defaultSiblingAvailabilityTimeoutMs = 20 * 60_000;
 const siblingAvailabilityDelayMs = 30_000;
+// A long wait should survive a registry blip, but not a registry that is really down.
+const maxConsecutiveRegistryCheckErrors = 5;
+const maxMissingSiblingsLogged = 10;
 
 type PackageJson = {
   name?: unknown;
@@ -40,6 +47,17 @@ export type RegistryResponse = {
 
 export type RegistryFetcher = (url: string) => Promise<RegistryResponse>;
 export type Sleep = (delayMs: number) => Promise<void>;
+
+/**
+ * A failed registry lookup. `transient` marks failures worth retrying while waiting
+ * (network errors, HTTP 429 and 5xx); anything else, such as a 401/403, fails at once.
+ */
+export class RegistryCheckError extends Error {
+  constructor(message: string, readonly transient: boolean) {
+    super(message);
+    this.name = 'RegistryCheckError';
+  }
+}
 
 /**
  * Workspace package versions, read from disk rather than a hardcoded `@bitgo/`
@@ -92,7 +110,10 @@ export async function findUnavailableWorkspaceSiblings(
         response = await registryFetcher(url);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        throw new Error(`Failed to check npm availability for ${sibling.name}@${sibling.version}: ${message}`);
+        throw new RegistryCheckError(
+          `Failed to check npm availability for ${sibling.name}@${sibling.version}: ${message}`,
+          true
+        );
       }
 
       if (response.status === 404 || response.status === 410) {
@@ -100,9 +121,10 @@ export async function findUnavailableWorkspaceSiblings(
       }
       if (response.status < 200 || response.status >= 300) {
         const statusText = response.statusText ? ` ${response.statusText}` : '';
-        throw new Error(
+        throw new RegistryCheckError(
           `Failed to check npm availability for ${sibling.name}@${sibling.version}: ` +
-            `HTTP ${response.status}${statusText}`
+            `HTTP ${response.status}${statusText}`,
+          response.status === 429 || response.status >= 500
         );
       }
       return undefined;
@@ -115,12 +137,47 @@ export async function findUnavailableWorkspaceSiblings(
 export interface WorkspaceSiblingAvailabilityOptions {
   registryFetcher?: RegistryFetcher;
   sleep?: Sleep;
-  attempts?: number;
+  /** Wall-clock source in milliseconds. Injectable for tests. */
+  now?: () => number;
+  /**
+   * Total time to keep waiting for missing siblings. Defaults to
+   * BITGO_SIBLING_AVAILABILITY_TIMEOUT_MINUTES, else 20 minutes. Zero checks once and does not wait.
+   */
+  timeoutMs?: number;
   delayMs?: number;
 }
 
 const sleep: Sleep = (delayMs) => setTimeoutPromise(delayMs);
 
+export function getSiblingAvailabilityTimeoutMs(env: NodeJS.ProcessEnv = process.env): number {
+  const raw = env[siblingAvailabilityTimeoutEnvVar];
+  if (raw === undefined || raw.trim() === '') return defaultSiblingAvailabilityTimeoutMs;
+  const minutes = Number(raw);
+  if (!Number.isFinite(minutes) || minutes < 0) {
+    throw new Error(`${siblingAvailabilityTimeoutEnvVar} must be zero or more minutes, got "${raw}".`);
+  }
+  return minutes * 60_000;
+}
+
+function formatDuration(ms: number): string {
+  if (ms < 60_000) return `${Math.round(ms / 1000)}s`;
+  const minutes = ms / 60_000;
+  return `${Number.isInteger(minutes) ? minutes : minutes.toFixed(1)} min`;
+}
+
+function describeSiblings(siblings: readonly WorkspaceSibling[]): string {
+  const names = siblings.map(({ name, version }) => `${name}@${version}`);
+  const shown = names.slice(0, maxMissingSiblingsLogged).join(', ');
+  const hidden = names.length - maxMissingSiblingsLogged;
+  return hidden > 0 ? `${shown} and ${hidden} more` : shown;
+}
+
+/**
+ * Waits until every sibling version is visible on npm, polling every `delayMs` until `timeoutMs`
+ * has been spent. Fails with the full list of still-missing versions when the budget runs out.
+ * Transient registry failures (network errors, 429, 5xx) are retried a few times in a row;
+ * anything else fails immediately.
+ */
 export async function ensureWorkspaceSiblingVersionsAvailable(
   siblings: readonly WorkspaceSibling[],
   options: WorkspaceSiblingAvailabilityOptions = {}
@@ -129,22 +186,71 @@ export async function ensureWorkspaceSiblingVersionsAvailable(
 
   const registryFetcher = options.registryFetcher ?? fetchRegistry;
   const sleepFn = options.sleep ?? sleep;
-  const attempts = options.attempts ?? siblingAvailabilityAttempts;
+  const now = options.now ?? Date.now;
+  const timeoutMs = options.timeoutMs ?? getSiblingAvailabilityTimeoutMs();
   const delayMs = options.delayMs ?? siblingAvailabilityDelayMs;
-  if (attempts < 1) {
-    throw new Error(`Workspace sibling availability checks require at least one attempt, got ${attempts}.`);
+  if (!(timeoutMs >= 0)) {
+    throw new Error(`Workspace sibling availability timeout must be zero or more milliseconds, got ${timeoutMs}.`);
+  }
+  if (!(delayMs > 0)) {
+    throw new Error(`Workspace sibling availability delay must be more than zero milliseconds, got ${delayMs}.`);
   }
 
-  for (let attempt = 1; attempt <= attempts; attempt++) {
-    console.log(`Checking npm availability for workspace siblings (attempt ${attempt}/${attempts}).`);
-    const missing = await findUnavailableWorkspaceSiblings(siblings, registryFetcher);
-    if (missing.length === 0) return;
+  const startedAt = now();
+  let checks = 0;
+  let consecutiveErrors = 0;
+  let lastMissing: WorkspaceSibling[] | undefined;
+  let lastError: Error | undefined;
 
-    const missingPackages = missing.map(({ name, version }) => `${name}@${version}`);
-    console.warn(`Missing workspace sibling versions: ${missingPackages.join(', ')}`);
-    if (attempt === attempts) {
+  for (;;) {
+    checks += 1;
+    console.log(
+      `Checking npm availability for workspace siblings (check ${checks}, ${formatDuration(
+        now() - startedAt
+      )} elapsed).`
+    );
+    try {
+      // After the first pass only re-check what was missing; a published version does not disappear.
+      const missing = await findUnavailableWorkspaceSiblings(lastMissing ?? siblings, registryFetcher);
+      consecutiveErrors = 0;
+      lastMissing = missing;
+      if (missing.length === 0) {
+        if (checks > 1) {
+          console.log(
+            `All ${siblings.length} workspace siblings are visible on npm after ${formatDuration(now() - startedAt)}.`
+          );
+        }
+        return;
+      }
+      console.warn(
+        `Missing workspace sibling versions (${missing.length} of ${siblings.length}): ${describeSiblings(missing)}`
+      );
+    } catch (error) {
+      consecutiveErrors += 1;
+      if (
+        !(error instanceof RegistryCheckError) ||
+        !error.transient ||
+        consecutiveErrors > maxConsecutiveRegistryCheckErrors
+      ) {
+        throw error;
+      }
+      lastError = error;
+      console.warn(
+        `Transient npm registry error (${consecutiveErrors}/${maxConsecutiveRegistryCheckErrors}), will retry: ${error.message}`
+      );
+    }
+
+    const elapsedMs = now() - startedAt;
+    if (elapsedMs + delayMs > timeoutMs) {
+      if (lastMissing === undefined) {
+        // Only reachable when every check so far failed with a transient registry error.
+        throw lastError ?? new Error('Workspace sibling availability could not be determined.');
+      }
+      const missingPackages = lastMissing.map(({ name, version }) => `${name}@${version}`);
       throw new Error(
-        `Workspace sibling versions are still unavailable from npm after ${attempts} checks: ` +
+        `Workspace sibling versions are still unavailable from npm after ${checks} checks over ${formatDuration(
+          elapsedMs
+        )}: ` +
           `${missingPackages.join(', ')}. This is likely npm registry propagation delay; ` +
           'retry the release in recovery mode after these versions become visible.'
       );
