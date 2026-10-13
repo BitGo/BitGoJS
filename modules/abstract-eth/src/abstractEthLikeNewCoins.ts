@@ -83,6 +83,7 @@ import { EthLikeToken } from './ethLikeToken';
 import {
   calculateForwarderV1Address,
   coinFamiliesWithL1Fees,
+  approveMethodId,
   decodeApproveCalldata,
   decodeTransferData,
   ERC1155TransferBuilder,
@@ -476,6 +477,29 @@ export function isVerifyContractBaseAddressOptions(
 }
 
 const debug = debugLib('bitgo:v2:ethlike');
+
+let erc7984WrappersByUnderlying: ReadonlyMap<string, ReadonlySet<string>> | undefined;
+
+/**
+ * Lowercased wrapper (spender) addresses of every registered ERC-7984 shield pair, keyed by the lowercased
+ * address of the pair's underlying ERC-20. Statics is static for the lifetime of the process, so this is
+ * computed once.
+ */
+function getErc7984WrappersByUnderlying(): ReadonlyMap<string, ReadonlySet<string>> {
+  if (!erc7984WrappersByUnderlying) {
+    const byUnderlying = new Map<string, Set<string>>();
+    coins.forEach((coin) => {
+      if (coin instanceof Erc7984Coin && coin.underlyingErc20Address && coin.contractAddress) {
+        const underlying = coin.underlyingErc20Address.toLowerCase();
+        const wrappers = byUnderlying.get(underlying) ?? new Set<string>();
+        wrappers.add(coin.contractAddress.toLowerCase());
+        byUnderlying.set(underlying, wrappers);
+      }
+    });
+    erc7984WrappersByUnderlying = byUnderlying;
+  }
+  return erc7984WrappersByUnderlying;
+}
 
 export const optionalDeps = {
   get ethAbi() {
@@ -3206,6 +3230,12 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
    * WP builds the bytes server-side; re-parse them here so the client signs only
    * `approve(wrapper, amount)` on the pair's underlying ERC-20 with the amount from the intent.
    * Fails closed on any deviation.
+   *
+   * Scope: this runs when the declared type is `wrapApprove`, and {@link assertWrapperApproveIsDeclared} also
+   * forces any approve whose spender is a registered wrapper through it. Deliberately NOT covered: an approve
+   * of a registered underlying to a third-party spender under another declared type (tokenApproval, defiApprove,
+   * customTx) is indistinguishable from a legitimate approval, so a server that relabels the intent of such a
+   * tx still skips this check on signing paths that carry no caller txParams (pendingApproval re-sign).
    */
   private async verifyWrapApproveTransaction(
     params: VerifyEthTransactionOptions,
@@ -3217,7 +3247,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     }
     const wrapParams = txParams.wrapParams;
     if (!wrapParams?.tokenName || !wrapParams.amount) {
-      throw new Error('wrapApprove transaction requires wrapParams with tokenName and amount');
+      return throwRecipientMismatch('wrapApprove transaction requires wrapParams with tokenName and amount', []);
     }
 
     let wrapper: Erc7984Coin;
@@ -3228,7 +3258,10 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       }
       wrapper = staticsCoin;
     } catch {
-      throw new Error(`wrapApprove: '${wrapParams.tokenName}' is not a registered ERC-7984 shield pair`);
+      return throwRecipientMismatch(
+        `wrapApprove: '${wrapParams.tokenName}' is not a registered ERC-7984 shield pair`,
+        []
+      );
     }
 
     const txBuilder = this.getTransactionBuilder();
@@ -3257,6 +3290,73 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     }
     if (decoded.amount !== wrapParams.amount) {
       await mismatch('wrapApprove transaction amount does not match the requested amount', txJson.to, decoded.amount);
+    }
+  }
+
+  /**
+   * Content-based guard for the ERC-7984 shield approve leg, for txs NOT declared `wrapApprove`.
+   *
+   * On signing paths that carry no caller txParams (pendingApproval re-sign) the declared type is the
+   * server-persisted `intent.intentType`, so a compromised or buggy WP could relabel a mutated
+   * `approve(wrapper, amount)` as another type and skip `verifyWrapApproveTransaction`. So an
+   * `approve(address,uint256)` sent to a registered ERC-7984 underlying whose spender is that pair's wrapper
+   * MUST be declared `wrapApprove` (and so pass the spender/amount check).
+   *
+   * A tx is rejected only when ALL of these hold:
+   *   1. the tx targets a registered ERC-7984 underlying (`to` is in `getErc7984WrappersByUnderlying()`);
+   *   2. the calldata is `approve(address,uint256)` (selector match);
+   *   3. the spender (first ABI word) is that underlying's wrapper;
+   *   4. the declared type is not `wrapApprove` (enforced by the caller, which only invokes this method then).
+   *
+   * Scoped to wrapper-directed approvals only: approvals of the same token to any other spender, transfers,
+   * and every other call are untouched. Known exceptions to "only the shield journey approves the wrapper":
+   * a dApp (WalletConnect) approving the wrapper directly would be rejected here, and the unbuilt Phase-2
+   * `approve(0)` allowance-reset leg must be declared `wrapApprove` (or get its own branch).
+   *
+   * Parsing is best-effort: if the tx cannot be parsed by this coin's builder the check is skipped, so it can
+   * never introduce a new failure for a tx that was verifiable before.
+   */
+  private async assertWrapperApproveIsDeclared(
+    params: VerifyEthTransactionOptions,
+    throwRecipientMismatch: (message: string, mismatchedRecipients: Recipient[]) => Promise<never>
+  ): Promise<void> {
+    const { txPrebuild } = params;
+    if (!txPrebuild?.txHex) {
+      return;
+    }
+    const wrappersByUnderlying = getErc7984WrappersByUnderlying();
+    if (wrappersByUnderlying.size === 0) {
+      return;
+    }
+
+    // Cheap prefilter: calldata is serialized as literal bytes, so an approve can only be present if the
+    // 4-byte selector appears in the hex. Nearly every other tx returns here without touching the builder.
+    if (!txPrebuild.txHex.toLowerCase().includes(approveMethodId.slice(2).toLowerCase())) {
+      return;
+    }
+
+    let txJson: { to?: string; data?: string; value?: string };
+    try {
+      const txBuilder = this.getTransactionBuilder();
+      txBuilder.from(txPrebuild.txHex);
+      txJson = (await txBuilder.build()).toJson();
+    } catch {
+      // Not parseable by this builder: leave it to the type-specific checks and the signer.
+      return;
+    }
+
+    const wrappers = txJson.to ? wrappersByUnderlying.get(txJson.to.toLowerCase()) : undefined;
+    const data = (txJson.data || '').toLowerCase();
+    // Read the spender leniently (first ABI word after the selector) rather than via the strict decoder: an
+    // ERC-20 ignores trailing bytes, so approve(wrapper, amount) + junk would otherwise slip past a strict parse.
+    if (!wrappers || !data.startsWith(approveMethodId.toLowerCase()) || data.length < 10 + 64) {
+      return;
+    }
+    const spender = `0x${data.slice(10 + 24, 10 + 64)}`;
+    if (wrappers.has(spender)) {
+      await throwRecipientMismatch('approve() of an ERC-7984 wrapper must be declared as a wrapApprove intent', [
+        { address: spender, amount: txJson.value || '' },
+      ]);
     }
   }
 
@@ -3457,6 +3557,10 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
 
     if (txParams.type === 'wrapApprove') {
       await this.verifyWrapApproveTransaction(params, throwRecipientMismatch);
+    } else {
+      // Declared as anything else: only an approve of a registered wrapper is rejected (see the method doc);
+      // for every other tx this returns without parsing or after one best-effort parse.
+      await this.assertWrapperApproveIsDeclared(params, throwRecipientMismatch);
     }
 
     // Verify consolidation transactions send to base address

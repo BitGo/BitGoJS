@@ -115,6 +115,48 @@ describe('recipientUtils', function () {
       assert.strictEqual(result.type, 'consolidate');
     });
 
+    describe('ERC-7984 shield wrapParams propagation', function () {
+      const tokenName = 'hteth:cusdt';
+      const amount = '1000000';
+
+      it('derives wrapParams from a wrapApprove intent when txParams is undefined (pendingApproval re-sign path)', function () {
+        const txRequest = makeTxRequest({
+          intent: { intentType: 'wrapApprove', tokenName, amount } as PopulatedIntent,
+        });
+        const result = resolveEffectiveTxParams(txRequest, undefined);
+        assert.strictEqual(result.type, 'wrapApprove');
+        assert.deepStrictEqual(result.wrapParams, { tokenName, amount });
+      });
+
+      it('derives wrapParams from a wrap intent', function () {
+        const txRequest = makeTxRequest({ intent: { intentType: 'wrap', tokenName, amount } as PopulatedIntent });
+        assert.deepStrictEqual(resolveEffectiveTxParams(txRequest, undefined).wrapParams, { tokenName, amount });
+      });
+
+      it('does not overwrite wrapParams supplied by the caller', function () {
+        const callerWrapParams = { tokenName: 'hteth:ctest1', amount: '5' };
+        const txRequest = makeTxRequest({
+          intent: { intentType: 'wrapApprove', tokenName, amount } as PopulatedIntent,
+        });
+        const result = resolveEffectiveTxParams(txRequest, { type: 'wrapApprove', wrapParams: callerWrapParams });
+        assert.deepStrictEqual(result.wrapParams, callerWrapParams);
+      });
+
+      it('does not derive wrapParams for other intent types or a non-string amount', function () {
+        const other = makeTxRequest({ intent: { intentType: 'tokenApproval', tokenName, amount } as PopulatedIntent });
+        assert.strictEqual(resolveEffectiveTxParams(other, undefined).wrapParams, undefined);
+
+        const objectAmount = makeTxRequest({
+          intent: {
+            intentType: 'wrapApprove',
+            tokenName,
+            amount: { value: amount, symbol: tokenName },
+          } as PopulatedIntent,
+        });
+        assert.strictEqual(resolveEffectiveTxParams(objectAmount, undefined).wrapParams, undefined);
+      });
+    });
+
     it('does not throw for exempt types', function () {
       for (const txType of [
         'acceleration',

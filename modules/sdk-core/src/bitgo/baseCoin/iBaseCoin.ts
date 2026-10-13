@@ -288,6 +288,8 @@ export interface TransactionParams {
   memo?: Memo;
   enableTokens?: TokenEnablement[];
   stakingRequestId?: string;
+  /** ERC-7984 shield intent (`type: 'wrapApprove' | 'wrap'`): wrapper coin name and exact amount. */
+  wrapParams?: { tokenName: string; amount: string };
 }
 
 export interface AddressVerificationData {
