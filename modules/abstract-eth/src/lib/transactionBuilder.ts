@@ -1255,7 +1255,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /**
-   * Set the wrapper on-chain `rate()` used for amount × rate uint64 validation.
+   * Set the wrapper on-chain `rate()` used for floor(amount / rate) uint64 validation.
    */
   wrapRate(rate: string): void {
     this._wrapRate = rate;

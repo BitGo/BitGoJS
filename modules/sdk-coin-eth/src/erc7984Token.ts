@@ -33,7 +33,7 @@ import {
   callFromParentMethodId,
   decodeWrapCalldata,
   wrapMethodId,
-  assertAmountTimesRateFitsUint64,
+  assertWrapAmountFitsUint64,
   decodeUnwrapCalldata,
   unwrapMethodId,
   decodeFinalizeUnwrapCalldata,
@@ -201,7 +201,7 @@ export class Erc7984Token extends Eth {
    *   tx.data = sendMultiSig(wrapper, 0, wrap(baseAddress, amount), ...)
    *
    * Checks: wrapper address, self-directed `to` == base, amount > 0, amount matches
-   * recipients, and amount × rate fits uint64 when statics rate is present.
+   * recipients, and floor(amount / rate) fits uint64 when statics rate is present.
    */
   private async verifyWrapTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
     const { txParams, txPrebuild, wallet } = params;
@@ -275,7 +275,7 @@ export class Erc7984Token extends Eth {
     const rate = this.tokenConfig.rate;
     if (rate !== undefined) {
       try {
-        assertAmountTimesRateFitsUint64(amount, rate);
+        assertWrapAmountFitsUint64(amount, rate);
       } catch (e) {
         throw new Error(`verifyWrapTransaction: ${(e as Error).message}`);
       }
