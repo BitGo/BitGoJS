@@ -9,6 +9,7 @@ import { IcpAgent } from '../../../src/lib/icpAgent';
 import { RecoveryOptions, LEDGER_CANISTER_ID } from '../../../src/lib/iface';
 import { Principal } from '@dfinity/principal';
 import BigNumber from 'bignumber.js';
+import { ErrorNoInputToRecover, RecoveryProviderError } from '@bitgo/sdk-core';
 import utils from '../../../src/lib/utils';
 
 describe('ICP transaction recovery', async () => {
@@ -148,12 +149,25 @@ describe('ICP transaction recovery', async () => {
       );
   });
 
+  it('should fail to recover txn if balance is zero', async () => {
+    sinon.restore();
+    sinon.stub(IcpAgent.prototype, 'getBalance').resolves(BigNumber(0));
+    sinon.stub(IcpAgent.prototype, 'getFee').resolves(BigNumber(10000));
+    await icp.recover(recoveryParams).should.rejectedWith(ErrorNoInputToRecover);
+  });
+
   it('should fail to recover txn if balance is low', async () => {
     sinon.restore();
     setupLowBalanceStubs();
     await icp
       .recover(recoveryParams)
       .should.rejectedWith('Error during ICP recovery: Did not have enough funds to recover');
+  });
+
+  it('should fail to recover txn if the balance provider fails', async () => {
+    sinon.restore();
+    sinon.stub(IcpAgent.prototype, 'getBalance').rejects(new RecoveryProviderError('Error fetching balance'));
+    await icp.recover(recoveryParams).should.rejectedWith(RecoveryProviderError);
   });
 
   it('should fail to recover txn if userKey is not provided', async () => {

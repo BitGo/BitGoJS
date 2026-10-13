@@ -27,6 +27,8 @@ import {
   Ecdsa,
   ECDSAUtils,
   Environments,
+  ErrorNoInputToRecover,
+  RecoveryProviderError,
   BaseBroadcastTransactionOptions,
   BaseBroadcastTransactionResult,
   verifyMPCWalletAddress,
@@ -464,6 +466,9 @@ export class Vet extends BaseCoin {
         tx: signedTx.toBroadcastFormat(),
       };
     } catch (error) {
+      if (error instanceof RecoveryProviderError || error instanceof ErrorNoInputToRecover) {
+        throw error;
+      }
       throw new Error(`Error during Vechain recovery: ${error.message || error}`);
     }
   }
@@ -512,6 +517,9 @@ export class Vet extends BaseCoin {
         );
       }
     } catch (error) {
+      if (error instanceof RecoveryProviderError) {
+        throw error;
+      }
       throw new Error(`Failed to ensure VTHO balance: ${error.message}`);
     }
   }
@@ -537,7 +545,7 @@ export class Vet extends BaseCoin {
 
         return balance;
       } catch (error) {
-        throw new Error('Failed to get native balance.');
+        throw new RecoveryProviderError('Failed to get native balance.', error);
       }
     }
 
@@ -566,14 +574,17 @@ export class Vet extends BaseCoin {
 
       // Validate response and extract the balance data
       if (!simResponse || !Array.isArray(simResponse) || simResponse.length === 0 || !simResponse[0].data) {
-        throw new Error('Invalid simulation response from VeChain node');
+        throw new RecoveryProviderError('Invalid simulation response from VeChain node');
       }
 
       // The returned data is the hex-encoded balance
       return new BigNumber(simResponse[0].data);
     } catch (error) {
       logger.error('Error fetching token balance:', error);
-      throw new Error(`Failed to get token balance: ${error.message}`);
+      if (error instanceof RecoveryProviderError) {
+        throw error;
+      }
+      throw new RecoveryProviderError(`Failed to get token balance: ${error.message}`, error);
     }
   }
 
@@ -593,14 +604,17 @@ export class Vet extends BaseCoin {
 
       // Validate the response data
       if (!data || !data.id) {
-        throw new Error('Invalid response from the VeChain node');
+        throw new RecoveryProviderError('Invalid response from the VeChain node');
       }
 
       // Return the first 18 characters of the block ID
       return data.id.slice(0, 18);
     } catch (error) {
       // Rethrow or return a sensible default
-      throw new Error('Failed to get block ref: ');
+      if (error instanceof RecoveryProviderError) {
+        throw error;
+      }
+      throw new RecoveryProviderError('Failed to get block ref: ', error);
     }
   }
 
@@ -642,7 +656,7 @@ export class Vet extends BaseCoin {
       const simResponse = response.data;
 
       if (!simResponse || !Array.isArray(simResponse)) {
-        throw new Error('Invalid simulation response from VeChain node');
+        throw new RecoveryProviderError('Invalid simulation response from VeChain node');
       }
 
       const totalSimulatedGas = simResponse.reduce((sum, result) => sum + (result.gasUsed || 0), 0);
@@ -653,7 +667,10 @@ export class Vet extends BaseCoin {
 
       return new BigNumber(totalGas);
     } catch (error) {
-      throw new Error(`Failed to estimate gas: ${error.message}`);
+      if (error instanceof RecoveryProviderError) {
+        throw error;
+      }
+      throw new RecoveryProviderError(`Failed to estimate gas: ${error.message}`, error);
     }
   }
 
@@ -673,7 +690,7 @@ export class Vet extends BaseCoin {
     const balance = await this.getBalance(baseAddress);
 
     if (balance.isLessThanOrEqualTo(0)) {
-      throw new Error(`no VET balance to recover for address ${baseAddress}`);
+      throw new ErrorNoInputToRecover(`no VET balance to recover for address ${baseAddress}`);
     }
 
     const recipients = [
@@ -814,6 +831,9 @@ export class Vet extends BaseCoin {
         tx: signedTx.toBroadcastFormat(),
       };
     } catch (error) {
+      if (error instanceof RecoveryProviderError || error instanceof ErrorNoInputToRecover) {
+        throw error;
+      }
       throw new Error(`Error during Vechain token recovery: ${error.message || error}`);
     }
   }
@@ -830,7 +850,7 @@ export class Vet extends BaseCoin {
     //replace with get balance function
 
     if (balance.isLessThanOrEqualTo(0)) {
-      throw new Error(
+      throw new ErrorNoInputToRecover(
         `no token balance to recover for address ${baseAddress} contract address ${tokenContractAddress}`
       );
     }

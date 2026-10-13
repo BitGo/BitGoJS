@@ -1,5 +1,7 @@
+import 'should';
 import * as sinon from 'sinon';
 import * as sdkCore from '@bitgo/sdk-core';
+import { ErrorNoInputToRecover, RecoveryProviderError } from '@bitgo/sdk-core';
 // Cross-module relative import: tsx resolves TypeScript source directly in the monorepo,
 // avoiding a circular devDependency (sdk-coin-tao depends on abstract-substrate at runtime).
 import { Ttao } from '../../../sdk-coin-tao/src';
@@ -140,6 +142,31 @@ describe('SubstrateCoin MPCv2 recovery helpers:', function () {
       (sdkCore.EDDSAMethods.getTSSSignature as sinon.SinonStub).calledOnce.should.be.true();
       addSignatureStub.calledOnce.should.be.true();
       addSignatureStub.firstCall.args[1].should.equal(mockSig);
+    });
+  });
+
+  describe('recover()', function () {
+    const recoveryDestination = '5FJ18ywfrWuRifNyc8aPwQ5ium19Fefwmx18H4XYkDc36F2A';
+    const bitgoKey = 'aa'.repeat(64);
+
+    beforeEach(function () {
+      sandBox.stub(Ttao.prototype, 'getAccountInfo' as keyof Ttao).resolves({ nonce: 0, freeBalance: 0 });
+      sandBox.stub(Ttao.prototype, 'getFee' as keyof Ttao).resolves(100);
+    });
+
+    afterEach(function () {
+      sandBox.restore();
+    });
+
+    it('should throw ErrorNoInputToRecover for a verifiably empty wallet', async function () {
+      await basecoin.recover({ bitgoKey, recoveryDestination }).should.be.rejectedWith(ErrorNoInputToRecover);
+    });
+
+    it('should throw RecoveryProviderError when the account info query fails', async function () {
+      (Ttao.prototype as unknown as { getAccountInfo: sinon.SinonStub }).getAccountInfo.rejects(
+        new Error('network failure')
+      );
+      await basecoin.recover({ bitgoKey, recoveryDestination }).should.be.rejectedWith(RecoveryProviderError);
     });
   });
 });

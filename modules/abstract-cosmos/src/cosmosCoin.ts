@@ -5,6 +5,7 @@ import {
   BitGoBase,
   Ecdsa,
   ECDSAUtils,
+  ErrorNoInputToRecover,
   ExplanationResult,
   InvalidAddressError,
   InvalidMemoIdError,
@@ -14,6 +15,7 @@ import {
   multisigTypes,
   ParsedTransaction,
   ParseTransactionOptions,
+  RecoveryProviderError,
   SignedTransaction,
   SigningError,
   SignTransactionOptions,
@@ -251,7 +253,7 @@ export class CosmosCoin<CustomMessage = never> extends BaseCoin {
    */
   private processBalances(balances: Coin[]): BalanceResult {
     if (!balances?.length) {
-      throw new Error('No balance found on account');
+      throw new ErrorNoInputToRecover('No balance found on account');
     }
 
     const denomination = this.getDenomination();
@@ -279,6 +281,10 @@ export class CosmosCoin<CustomMessage = never> extends BaseCoin {
         remainingBalances.push(balance);
       }
     });
+
+    if (nativeBalance.isLessThanOrEqualTo(0)) {
+      throw new ErrorNoInputToRecover('Did not have enough funds to recover');
+    }
 
     const actualBalance = nativeBalance.minus(gasAmount);
     if (actualBalance.isLessThanOrEqualTo(0)) {
@@ -667,9 +673,14 @@ export class CosmosCoin<CustomMessage = never> extends BaseCoin {
     try {
       return await request.get(fullEndpoint).send();
     } catch (e) {
-      console.debug(e);
+      if ((e as { status?: number })?.status === 404) {
+        throw new ErrorNoInputToRecover('Account not found');
+      }
+      throw new RecoveryProviderError(
+        `Unable to call endpoint ${getAccountPath + senderAddress} from node: ${nodeUrl}`,
+        e
+      );
     }
-    throw new Error(`Unable to call endpoint ${getAccountPath + senderAddress} from node: ${nodeUrl}`);
   }
 
   /**
@@ -682,9 +693,11 @@ export class CosmosCoin<CustomMessage = never> extends BaseCoin {
     try {
       return await request.get(fullEndpoint).send();
     } catch (e) {
-      console.debug(e);
+      throw new RecoveryProviderError(
+        `Unable to call endpoint ${getBalancePath + senderAddress} from node: ${nodeUrl}`,
+        e
+      );
     }
-    throw new Error(`Unable to call endpoint ${getBalancePath + senderAddress} from node: ${nodeUrl}`);
   }
 
   /**
@@ -697,9 +710,8 @@ export class CosmosCoin<CustomMessage = never> extends BaseCoin {
     try {
       return await request.get(fullEndpoint).send();
     } catch (e) {
-      console.debug(e);
+      throw new RecoveryProviderError(`Unable to call endpoint ${getLatestBlockPath} from node: ${nodeUrl}`, e);
     }
-    throw new Error(`Unable to call endpoint ${getLatestBlockPath} from node: ${nodeUrl}`);
   }
 
   /**
@@ -708,7 +720,10 @@ export class CosmosCoin<CustomMessage = never> extends BaseCoin {
   protected async getAccountBalance(senderAddress: string): Promise<Coin[]> {
     const response = await this.getBalanceFromNode(senderAddress);
     if (response.status !== 200) {
-      throw new Error('Account not found');
+      throw new RecoveryProviderError('Account not found');
+    }
+    if (!response.body?.balances) {
+      throw new RecoveryProviderError(`Malformed balance response for ${senderAddress}`);
     }
     return response.body.balances;
   }
@@ -719,7 +734,7 @@ export class CosmosCoin<CustomMessage = never> extends BaseCoin {
   protected async getChainId(): Promise<string> {
     const response = await this.getChainIdFromNode();
     if (response.status !== 200) {
-      throw new Error('Account not found');
+      throw new RecoveryProviderError('Account not found');
     }
     return response.body.block.header.chain_id;
   }
@@ -729,8 +744,11 @@ export class CosmosCoin<CustomMessage = never> extends BaseCoin {
    */
   protected async getAccountDetails(senderAddress: string): Promise<string[]> {
     const response = await this.getAccountFromNode(senderAddress);
+    if (response.status === 404) {
+      throw new ErrorNoInputToRecover('Account not found');
+    }
     if (response.status !== 200) {
-      throw new Error('Account not found');
+      throw new RecoveryProviderError('Account not found');
     }
     return [response.body.account.account_number, response.body.account.sequence];
   }

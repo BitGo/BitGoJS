@@ -6,6 +6,7 @@ import {
   DotAssetTypes,
   Eddsa,
   Environments,
+  ErrorNoInputToRecover,
   ExplanationResult,
   KeyPair,
   MPCAlgorithm,
@@ -23,6 +24,7 @@ import {
   MPCConsolidationRecoveryOptions,
   MPCSweepTxs,
   RecoveryTxRequest,
+  RecoveryProviderError,
   MPCUnsignedTx,
   MPCSweepRecoveryOptions,
   MPCTxs,
@@ -390,19 +392,31 @@ export class Dot extends BaseCoin {
     const accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
     const senderAddr = this.getAddressFromPublicKey(accountId);
 
-    const { nonce, freeBalance } = await this.getAccountInfo(senderAddr);
-    const destAddr = params.recoveryDestination;
-    const amount = freeBalance;
-    const partialFee = await this.getFee(destAddr, senderAddr, amount);
+    let accountInfo;
+    let partialFee;
+    try {
+      accountInfo = await this.getAccountInfo(senderAddr);
+      partialFee = await this.getFee(params.recoveryDestination, senderAddr, accountInfo.freeBalance);
+    } catch (e) {
+      throw new RecoveryProviderError(`Failed to query account balance or fee for ${senderAddr}`, e);
+    }
+    const { nonce, freeBalance } = accountInfo;
 
     const value = new BigNumber(freeBalance).minus(new BigNumber(partialFee));
     if (value.isLessThanOrEqualTo(0)) {
-      throw new Error('Did not find address with funds to recover');
+      throw new ErrorNoInputToRecover('Did not find address with funds to recover');
     }
 
     // first build the unsigned txn
-    const { headerNumber, headerHash } = await this.getHeaderInfo();
-    const material = await this.getMaterial();
+    let headerInfo;
+    let material;
+    try {
+      headerInfo = await this.getHeaderInfo();
+      material = await this.getMaterial();
+    } catch (e) {
+      throw new RecoveryProviderError('Failed to query chain header or material', e);
+    }
+    const { headerNumber, headerHash } = headerInfo;
     const validityWindow = { firstValid: headerNumber, maxDuration: this.MAX_VALIDITY_DURATION };
 
     const txnBuilder = this.getBuilder().getTransferBuilder().material(material);
@@ -530,7 +544,7 @@ export class Dot extends BaseCoin {
       try {
         recoveryTransaction = await this.recover(recoverParams, signingMaterial);
       } catch (e) {
-        if (e.message === 'Did not find address with funds to recover') {
+        if (e instanceof ErrorNoInputToRecover) {
           lastScanIndex = i;
           continue;
         }
@@ -546,7 +560,7 @@ export class Dot extends BaseCoin {
     }
 
     if (consolidationTransactions.length == 0) {
-      throw new Error('Did not find an address with funds to recover');
+      throw new ErrorNoInputToRecover('Did not find an address with funds to recover');
     }
 
     if (isUnsignedSweep) {

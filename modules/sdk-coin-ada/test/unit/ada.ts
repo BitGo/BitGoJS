@@ -30,8 +30,10 @@ import assert from 'assert';
 import {
   common,
   EDDSAMethods,
+  ErrorNoInputToRecover,
   MPCSweepRecoveryOptions,
   MPCSweepTxs,
+  RecoveryProviderError,
   signRecoveryEddsaMPCv2,
   Wallet,
 } from '@bitgo/sdk-core';
@@ -1159,7 +1161,7 @@ describe('ADA', function () {
           startingScanIndex: 1,
           endingScanIndex: 2,
         })
-        .should.rejectedWith('Did not find an address with funds to recover.');
+        .should.rejectedWith(ErrorNoInputToRecover);
     });
 
     it('should throw if startingScanIndex is not ge to 1', async () => {
@@ -1381,7 +1383,7 @@ describe('ADA', function () {
           startingScanIndex: 1,
           endingScanIndex: 4,
         })
-        .should.be.rejectedWith('Did not find an address with funds to recover.');
+        .should.be.rejectedWith(ErrorNoInputToRecover);
     });
 
     it('should build even if single address has no funds', async function () {
@@ -1568,7 +1570,7 @@ describe('ADA', function () {
           walletPassphrase: wrwUser.walletPassphrase,
           recoveryDestination: destAddr,
         })
-        .should.rejectedWith('Did not find address with funds to recover.');
+        .should.rejectedWith(ErrorNoInputToRecover);
       sandBox.assert.calledOnce(basecoin.getDataFromNode);
     });
 
@@ -1590,6 +1592,20 @@ describe('ADA', function () {
           'Insufficient funds to recover, minimum required is 1 ADA plus fees, got 834455 fees: 165545'
         );
       sandBox.assert.calledTwice(basecoin.getDataFromNode);
+    });
+
+    it('should throw RecoveryProviderError when the node returns a non-2xx status', async function () {
+      const callBack = sandBox.stub(Ada.prototype, 'getDataFromNode' as keyof Ada);
+      callBack.withArgs('address_info', sinon.match.has('_addresses')).resolves({ status: 500 });
+      await basecoin
+        .recover({
+          userKey: wrwUser.userKey,
+          backupKey: wrwUser.backupKey,
+          bitgoKey: wrwUser.bitgoKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          recoveryDestination: destAddr,
+        })
+        .should.be.rejectedWith(RecoveryProviderError);
     });
   });
 

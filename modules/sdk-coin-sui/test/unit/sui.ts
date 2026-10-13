@@ -16,10 +16,12 @@ import { Buffer } from 'buffer';
 import {
   common,
   EDDSAMethods,
+  ErrorNoInputToRecover,
   MPCSweepRecoveryOptions,
   MPCSweepTxs,
   MPCRecoveryOptions,
   MPCTxs,
+  RecoveryProviderError,
   signRecoveryEddsaMPCv2,
   TransactionPrebuild,
   Wallet,
@@ -3002,9 +3004,7 @@ describe('SUI:', function () {
           startingScanIndex: '0',
           scan: 1,
         })
-        .should.rejectedWith(
-          'Did not find an address with sufficient funds to recover. Please start the next scan at address index 1. If it is token transaction, please keep sufficient Sui balance in the address for the transaction fee.'
-        );
+        .should.rejectedWith(ErrorNoInputToRecover);
 
       sandBox.assert.callCount(basecoin.getBalance, 1);
     });
@@ -3022,9 +3022,7 @@ describe('SUI:', function () {
           walletPassphrase,
           scan: '10',
         })
-        .should.rejectedWith(
-          'Did not find an address with sufficient funds to recover. Please start the next scan at address index 10. If it is token transaction, please keep sufficient Sui balance in the address for the transaction fee.'
-        );
+        .should.rejectedWith(ErrorNoInputToRecover);
 
       sandBox.assert.callCount(basecoin.getBalance, 10);
     });
@@ -3043,7 +3041,7 @@ describe('SUI:', function () {
           startingScanIndex: '0',
           scan: 1,
         })
-        .should.be.rejectedWith(/Failed to query Sui balance.*Method not found/);
+        .should.be.rejectedWith(RecoveryProviderError);
 
       sandBox.assert.callCount(basecoin.getBalance, 1);
     });
@@ -3069,9 +3067,7 @@ describe('SUI:', function () {
           startingScanIndex: '1',
           endingScanIndex: '2',
         })
-        .should.rejectedWith(
-          'Did not find an address with sufficient funds to recover. Please start the next scan at address index 2.'
-        );
+        .should.rejectedWith(ErrorNoInputToRecover);
 
       sandBox.assert.callCount(basecoin.getBalance, 1);
     });

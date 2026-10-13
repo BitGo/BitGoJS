@@ -5,9 +5,11 @@ import { CoinFamily, BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import {
   BaseCoin,
   BitGoBase,
+  ErrorNoInputToRecover,
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
+  RecoveryProviderError,
   SignedTransaction,
   SignTransactionOptions,
   VerifyAddressOptions as BaseVerifyAddressOptions,
@@ -627,7 +629,7 @@ export class Hbar extends BaseCoin {
     let txBuilder;
     if (!params.tokenId) {
       if (spendableAmount.isZero() || spendableAmount.isNegative()) {
-        throw new Error(`Insufficient balance to recover, got balance: ${nativeBalance} fee: ${fee}`);
+        throw new ErrorNoInputToRecover(`Insufficient balance to recover, got balance: ${nativeBalance} fee: ${fee}`);
       }
       txBuilder = this.getBuilderFactory().getTransferBuilder();
       txBuilder.send({ address: destinationAddress, amount: spendableAmount.toString() });
@@ -643,7 +645,9 @@ export class Hbar extends BaseCoin {
         throw new Error(`Unsupported token: ${params.tokenId}`);
       }
       if (!tokenBalance || new BigNumber(tokenBalance.balance).isZero()) {
-        throw new Error(`Insufficient balance to recover token: ${params.tokenId} for account: ${params.rootAddress}`);
+        throw new ErrorNoInputToRecover(
+          `Insufficient balance to recover token: ${params.tokenId} for account: ${params.rootAddress}`
+        );
       }
       txBuilder = this.getBuilderFactory().getTokenTransferBuilder();
       txBuilder.send({ address: destinationAddress, amount: tokenBalance.balance, tokenName: token.name });
@@ -845,7 +849,7 @@ export class Hbar extends BaseCoin {
 
       return balance.toJSON();
     } catch (e) {
-      throw new Error('Failed to get account balance, error: ' + e.message);
+      throw new RecoveryProviderError('Failed to get account balance, error: ' + e.message, e);
     }
   }
 

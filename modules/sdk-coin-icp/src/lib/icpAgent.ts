@@ -11,6 +11,7 @@ import {
 } from './iface';
 import BigNumber from 'bignumber.js';
 import { NetworkType, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { RecoveryProviderError } from '@bitgo/sdk-core';
 
 export class IcpAgent {
   private readonly host: string;
@@ -57,10 +58,10 @@ export class IcpAgent {
    * @throws Error if the balance could not be fetched.
    */
   public async getBalance(principalId: string): Promise<BigNumber> {
+    if (!principalId) {
+      throw new Error('Principal ID is required');
+    }
     try {
-      if (!principalId) {
-        throw new Error('Principal ID is required');
-      }
       const ledger = this.getLedger();
       const account = {
         owner: Principal.fromText(principalId),
@@ -71,7 +72,7 @@ export class IcpAgent {
       return BigNumber(balance);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      throw new Error(`Error fetching balance for principal ${principalId}: ${errorMessage}`);
+      throw new RecoveryProviderError(`Error fetching balance for principal ${principalId}: ${errorMessage}`, error);
     }
   }
 
@@ -96,7 +97,7 @@ export class IcpAgent {
       return BigNumber(feeEntry[1].Nat);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      throw new Error(`Error fetching transaction fee: ${errorMessage}`);
+      throw new RecoveryProviderError(`Error fetching transaction fee: ${errorMessage}`, error);
     }
   }
 }

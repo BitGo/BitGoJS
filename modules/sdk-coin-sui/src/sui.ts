@@ -11,6 +11,7 @@ import {
   EDDSAMethodTypes,
   EddsaSigningMaterial,
   Environments,
+  ErrorNoInputToRecover,
   getEddsaSigningMaterial as sharedGetEddsaSigningMaterial,
   isEddsaSigningMaterial,
   KeyPair,
@@ -24,6 +25,7 @@ import {
   MPCUnsignedTx,
   ParsedTransaction,
   ParseTransactionOptions as BaseParseTransactionOptions,
+  RecoveryProviderError,
   RecoveryTxRequest,
   signEddsaMpcV2RecoveryTx,
   SignedTransaction,
@@ -370,10 +372,14 @@ export class Sui extends BaseCoin {
         availableBalance = new BigNumber(balanceInfo.totalBalance);
         fundsInAddressBalance = new BigNumber(balanceInfo.fundsInAddressBalance);
       } catch (e) {
-        throw new Error(
+        if (e instanceof RecoveryProviderError) {
+          throw e;
+        }
+        throw new RecoveryProviderError(
           `Failed to query Sui balance for address ${senderAddress} at index ${idx} via ${this.getPublicNodeUrl()}: ${
             (e as Error).message
-          }`
+          }`,
+          e
         );
       }
       if (availableBalance.minus(MAX_GAS_BUDGET).toNumber() <= 0) {
@@ -394,7 +400,10 @@ export class Sui extends BaseCoin {
             continue;
           }
         } catch (e) {
-          continue;
+          if (e instanceof RecoveryProviderError) {
+            throw e;
+          }
+          throw new RecoveryProviderError(`Failed to query Sui token balance for address ${senderAddress}`, e);
         }
         return this.recoverSuiToken(
           params,
@@ -508,7 +517,7 @@ export class Sui extends BaseCoin {
       };
     }
 
-    throw new Error(
+    throw new ErrorNoInputToRecover(
       `Did not find an address with sufficient funds to recover. Please start the next scan at address index ${endIdx}. If it is token transaction, please keep sufficient Sui balance in the address for the transaction fee.`
     );
   }
@@ -882,7 +891,7 @@ export class Sui extends BaseCoin {
       try {
         recoveryTransaction = await this.recover(recoverParams, signingMaterial);
       } catch (e) {
-        if (e.message.startsWith('Did not find an address with sufficient funds to recover.')) {
+        if (e instanceof ErrorNoInputToRecover) {
           lastScanIndex = idx;
           continue;
         }
@@ -898,7 +907,7 @@ export class Sui extends BaseCoin {
     }
 
     if (consolidationTransactions.length === 0) {
-      throw new Error(
+      throw new ErrorNoInputToRecover(
         `Did not find an address with sufficient funds to recover. Please start the next scan at address index ${
           lastScanIndex + 1
         }.`

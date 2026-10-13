@@ -5,7 +5,7 @@ import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import ripple from '../../src/ripple';
 import { Txrp } from '../../src/txrp';
 
-import { Wallet } from '@bitgo/sdk-core';
+import { ErrorNoInputToRecover, RecoveryProviderError, Wallet } from '@bitgo/sdk-core';
 import assert from 'assert';
 import * as _ from 'lodash';
 import * as nock from 'nock';
@@ -834,6 +834,97 @@ describe('XRP:', function () {
           reserveWithdrawal: true,
         })
         .should.be.rejectedWith(/does not exist on the ledger/);
+    });
+  });
+
+  describe('Recover - empty input and provider failure', () => {
+    const sandBox = sinon.createSandbox();
+    const destination = 'raBSn6ipeWXYe7rNbNafZSx9dV2fU3zRyP?dt=12345';
+    const passPhrase = '#Bondiola1234';
+    let xrplStub;
+
+    afterEach(() => {
+      sandBox.restore();
+    });
+
+    function stubRippled({ accountInfoResponse, accountLinesResponse, fail = false }: any) {
+      xrplStub = sandBox.stub(basecoin.bitgo, 'post');
+      const sendStub = sinon.stub();
+      if (fail) {
+        sendStub.rejects(new Error('rippled node unreachable'));
+      } else {
+        sendStub
+          .withArgs({
+            method: 'account_info',
+            params: [
+              {
+                account: testData.keys.rootAddress,
+                strict: true,
+                ledger_index: 'current',
+                queue: true,
+                signer_lists: true,
+              },
+            ],
+          })
+          .resolves(accountInfoResponse);
+        sendStub.withArgs({ method: 'fee' }).resolves(testData.feeResponse);
+        sendStub.withArgs({ method: 'server_info' }).resolves(testData.serverInfoResponse);
+        sendStub
+          .withArgs({
+            method: 'account_lines',
+            params: [{ account: testData.keys.rootAddress, ledger_index: 'validated' }],
+          })
+          .resolves(accountLinesResponse);
+      }
+      xrplStub.withArgs(basecoin.getRippledUrl()).returns({ send: sendStub });
+    }
+
+    it('should throw ErrorNoInputToRecover when there is no XRP to recover', async function () {
+      const noBalance = JSON.parse(JSON.stringify(testData.accountInfoResponse));
+      noBalance.body.result.account_data.Balance = '0';
+      stubRippled({ accountInfoResponse: noBalance, accountLinesResponse: testData.accountlinesResponseEmpty });
+
+      await basecoin
+        .recover({
+          userKey: testData.keys.userKey,
+          backupKey: testData.keys.backupKey,
+          rootAddress: testData.keys.rootAddress,
+          recoveryDestination: destination,
+          walletPassphrase: passPhrase,
+        })
+        .should.be.rejectedWith(ErrorNoInputToRecover);
+    });
+
+    it('should throw ErrorNoInputToRecover when the token trustline has no funds', async function () {
+      const zeroBalanceLines = JSON.parse(JSON.stringify(testData.accountlinesResponse));
+      zeroBalanceLines.body.result.lines[0].balance = '0';
+      stubRippled({ accountInfoResponse: testData.accountInfoResponse, accountLinesResponse: zeroBalanceLines });
+
+      await basecoin
+        .recover({
+          userKey: testData.keys.userKey,
+          backupKey: testData.keys.backupKey,
+          rootAddress: testData.keys.rootAddress,
+          recoveryDestination: destination,
+          walletPassphrase: passPhrase,
+          issuerAddress: 'rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV',
+          currencyCode: '524C555344000000000000000000000000000000',
+        })
+        .should.be.rejectedWith(ErrorNoInputToRecover);
+    });
+
+    it('should throw RecoveryProviderError when the rippled node query fails', async function () {
+      stubRippled({ fail: true });
+
+      await basecoin
+        .recover({
+          userKey: testData.keys.userKey,
+          backupKey: testData.keys.backupKey,
+          rootAddress: testData.keys.rootAddress,
+          recoveryDestination: destination,
+          walletPassphrase: passPhrase,
+        })
+        .should.be.rejectedWith(RecoveryProviderError);
     });
   });
 

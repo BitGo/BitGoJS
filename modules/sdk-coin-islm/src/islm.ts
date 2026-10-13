@@ -1,5 +1,5 @@
 import { CosmosCoin, CosmosKeyPair, GasAmountDetails } from '@bitgo/abstract-cosmos';
-import { BaseCoin, BitGoBase, Environments } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase, Environments, ErrorNoInputToRecover, RecoveryProviderError } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, BaseUnit, coins } from '@bitgo/statics';
 import { KeyPair, TransactionBuilderFactory } from './lib';
 import { GAS_AMOUNT, GAS_LIMIT } from './lib/constants';
@@ -73,8 +73,11 @@ export class Islm extends CosmosCoin {
   /** @inheritDoc **/
   protected async getAccountDetails(senderAddress: string): Promise<string[]> {
     const response = await this.getAccountFromNode(senderAddress);
+    if (response.status === 404) {
+      throw new ErrorNoInputToRecover('Account not found');
+    }
     if (response.status !== 200) {
-      throw new Error('Account not found');
+      throw new RecoveryProviderError('Account not found');
     }
     return [response.body.account.base_account.account_number, response.body.account.base_account.sequence];
   }

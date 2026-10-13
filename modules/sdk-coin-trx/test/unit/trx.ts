@@ -1,8 +1,10 @@
 import assert from 'node:assert';
 import { afterEach, before, describe, it, mock } from 'node:test';
 import { BitGoAPI } from '@bitgo/sdk-api';
+import { ErrorNoInputToRecover, RecoveryProviderError } from '@bitgo/sdk-core';
 import { TestBitGoAPI, TestBitGo } from '@bitgo/sdk-test';
 import * as _ from 'lodash';
+import nock from 'nock';
 import { Trx, Ttrx, Utils } from '../../src';
 import { signTxOptions, mockTx } from '../fixtures';
 import {
@@ -855,9 +857,30 @@ describe('TRON:', function () {
           recoveryDestination: TssTestRecoverData.recoveryDestination,
           isTss: true,
         }),
-        {
-          message: 'Not found token to recover, please check token balance',
-        }
+        ErrorNoInputToRecover
+      );
+    });
+  });
+
+  describe('Recover Provider Failure', () => {
+    afterEach(() => {
+      mock.reset();
+      nock.cleanAll();
+    });
+
+    it('should throw RecoveryProviderError when the Tron node is unreachable', async () => {
+      nock('https://api.shasta.trongrid.io')
+        .get(/\/v1\/accounts\/.*/)
+        .reply(500, { error: 'node unavailable' });
+
+      await assert.rejects(
+        basecoin.recover({
+          userKey: TestRecoverData.userKey,
+          backupKey: TestRecoverData.backupKey,
+          bitgoKey: TestRecoverData.bitgoKey,
+          recoveryDestination: TestRecoverData.recoveryDestination,
+        }),
+        RecoveryProviderError
       );
     });
   });

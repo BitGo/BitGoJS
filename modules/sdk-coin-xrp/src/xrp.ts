@@ -11,6 +11,7 @@ import {
   BaseCoin,
   BitGoBase,
   checkKrsProvider,
+  ErrorNoInputToRecover,
   getBip32Keys,
   InvalidAddressError,
   KeyPair,
@@ -20,6 +21,7 @@ import {
   ParsedTransaction,
   ParseTransactionOptions,
   promiseProps,
+  RecoveryProviderError,
   TokenEnablementConfig,
   TransactionParams,
   UnexpectedAddressError,
@@ -697,12 +699,20 @@ export class Xrp extends BaseCoin {
 
     const keys = await getBip32Keys(this.bitgo, params, { requireBitGoXpub: false });
 
-    const { addressDetails, feeDetails, serverDetails, accountLines } = await promiseProps({
-      addressDetails: this.bitgo.post(rippledUrl).send(accountInfoParams),
-      feeDetails: this.bitgo.post(rippledUrl).send({ method: 'fee' }),
-      serverDetails: this.bitgo.post(rippledUrl).send({ method: 'server_info' }),
-      accountLines: this.bitgo.post(rippledUrl).send(accountLinesParams),
-    });
+    let addressDetails;
+    let feeDetails;
+    let serverDetails;
+    let accountLines;
+    try {
+      ({ addressDetails, feeDetails, serverDetails, accountLines } = await promiseProps({
+        addressDetails: this.bitgo.post(rippledUrl).send(accountInfoParams),
+        feeDetails: this.bitgo.post(rippledUrl).send({ method: 'fee' }),
+        serverDetails: this.bitgo.post(rippledUrl).send({ method: 'server_info' }),
+        accountLines: this.bitgo.post(rippledUrl).send(accountLinesParams),
+      }));
+    } catch (e) {
+      throw new RecoveryProviderError('Unable to query rippled node for recovery', e);
+    }
 
     const openLedgerFee = new BigNumber(feeDetails.body.result.drops.open_ledger_fee);
     const baseReserve = new BigNumber(serverDetails.body.result.info.validated_ledger.reserve_base_xrp).times(
@@ -791,7 +801,7 @@ export class Xrp extends BaseCoin {
     }
 
     if (recoverableBalance.toNumber() <= 0) {
-      throw new Error(
+      throw new ErrorNoInputToRecover(
         `Quantity of XRP to recover must be greater than 0. Current balance: ${balance.toNumber()}, blockchain reserve: ${reserve.toNumber()}, spendable balance: ${recoverableBalance.toNumber()}`
       );
     }
@@ -987,10 +997,10 @@ export class Xrp extends BaseCoin {
     }
 
     if (amount === undefined) {
-      throw new Error(`Does not have Trustline with ${issuer}`);
+      throw new ErrorNoInputToRecover(`Does not have Trustline with ${issuer}`);
     }
     if (amount === '0') {
-      throw new Error(`Does not have funds to recover`);
+      throw new ErrorNoInputToRecover(`Does not have funds to recover`);
     }
 
     const decimalPlaces = coins.get(tokenName).decimalPlaces;

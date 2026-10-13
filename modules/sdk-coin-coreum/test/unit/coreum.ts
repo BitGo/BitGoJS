@@ -3,6 +3,7 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import { TestBitGo, TestBitGoAPI, mockSerializedChallengeWithProofs } from '@bitgo/sdk-test';
 import { NetworkType, coins } from '@bitgo/statics';
+import { ErrorNoInputToRecover } from '@bitgo/sdk-core';
 import BigNumber from 'bignumber.js';
 import { beforeEach } from 'mocha';
 import sinon from 'sinon';
@@ -515,7 +516,7 @@ describe('Coreum', function () {
           walletPassphrase: wrwUser.walletPassphrase,
           recoveryDestination: destinationAddress,
         })
-        .should.rejectedWith('Did not have enough funds to recover');
+        .should.rejectedWith(ErrorNoInputToRecover);
     });
   });
 });

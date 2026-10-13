@@ -1,4 +1,5 @@
 import { BitGoAPI } from '@bitgo/sdk-api';
+import { ErrorNoInputToRecover, RecoveryProviderError } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import BigNumber from 'bignumber.js';
 import sinon from 'sinon';
@@ -330,6 +331,48 @@ describe('Islm', function () {
         .parseTransaction({ txHex: TEST_SEND_TX.signedTxBase64 })
         .should.be.rejectedWith('Invalid transaction');
       stub.restore();
+    });
+  });
+
+  describe('Recover transaction: negative path', function () {
+    const sandBox = sinon.createSandbox();
+    const recoveryDestination = address.address1;
+    const commonKeyChain =
+      '03924e763697f4388577cf234a57b1675ff5048f3adddec23959d85862f55cc97f6a06c263e' +
+      'a42166875f0f13acb828c724bd9d67d06c440dff6e308326e9833ab';
+
+    beforeEach(function () {
+      sandBox.stub(Islm.prototype, 'getAccountDetails' as keyof Islm).resolves(['0', '0']);
+      sandBox.stub(Islm.prototype, 'getAccountBalance' as keyof Islm).resolves([]);
+    });
+
+    afterEach(function () {
+      sandBox.restore();
+      sinon.restore();
+    });
+
+    it('should throw ErrorNoInputToRecover when there is no balance', async function () {
+      sandBox
+        .stub(Islm.prototype, 'getChainIdFromNode' as keyof Islm)
+        .resolves({ status: 200, body: { block: { header: { chain_id: 'test-chain' } } } });
+      await basecoin
+        .recover({
+          rootAddress: recoveryDestination,
+          bitgoKey: commonKeyChain,
+          recoveryDestination,
+        })
+        .should.rejectedWith(ErrorNoInputToRecover);
+    });
+
+    it('should throw RecoveryProviderError when the node returns a non-200 response', async function () {
+      sandBox.stub(Islm.prototype, 'getChainIdFromNode' as keyof Islm).resolves({ status: 500, body: {} });
+      await basecoin
+        .recover({
+          rootAddress: recoveryDestination,
+          bitgoKey: commonKeyChain,
+          recoveryDestination,
+        })
+        .should.rejectedWith(RecoveryProviderError);
     });
   });
 });

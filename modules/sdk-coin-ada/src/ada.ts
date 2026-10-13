@@ -17,12 +17,14 @@ import {
   EDDSAMethodTypes,
   AddressFormat,
   Environments,
+  ErrorNoInputToRecover,
   ITransactionRecipient,
   MPCTx,
   MPCRecoveryOptions,
   MPCConsolidationRecoveryOptions,
   MPCSweepTxs,
   RecoveryTxRequest,
+  RecoveryProviderError,
   MPCUnsignedTx,
   MPCSweepRecoveryOptions,
   MPCTxs,
@@ -286,9 +288,8 @@ export class Ada extends BaseCoin {
       const res = await request.post(restEndpoint).send(requestBody);
       return res;
     } catch (e) {
-      console.debug(e);
+      throw new RecoveryProviderError(`Unable to call endpoint ${restEndpoint}`, e);
     }
-    throw new Error(`Unable to call endpoint ${restEndpoint}`);
   }
 
   protected async getAddressInfo(
@@ -297,7 +298,7 @@ export class Ada extends BaseCoin {
     const requestBody = { _addresses: [walletAddr] };
     const res = await this.getDataFromNode('address_info', requestBody);
     if (res.status != 200) {
-      throw new Error(`Failed to retrieve address info for address ${walletAddr}`);
+      throw new RecoveryProviderError(`Failed to retrieve address info for address ${walletAddr}`);
     }
     const body = res.body[0];
     if (body === undefined) {
@@ -309,7 +310,7 @@ export class Ada extends BaseCoin {
   protected async getChainTipInfo(): Promise<Record<string, string>> {
     const res = await this.getDataFromNode('tip');
     if (res.status != 200) {
-      throw new Error('Failed to retrieve chain tip info');
+      throw new RecoveryProviderError('Failed to retrieve chain tip info');
     }
     const body = res.body[0];
     return body;
@@ -413,7 +414,7 @@ export class Ada extends BaseCoin {
     const isUnsignedSweep = !params.walletPassphrase;
     const { balance, utxoSet } = await this.getAddressInfo(senderAddr);
     if (balance <= 0) {
-      throw new Error('Did not find address with funds to recover.');
+      throw new ErrorNoInputToRecover('Did not find address with funds to recover.');
     }
 
     // Aggregate token assets from all UTxOs into a fingerprint-keyed map for the builder
@@ -619,10 +620,7 @@ export class Ada extends BaseCoin {
       try {
         recoveryTransaction = await this.recover(recoverParams, signingMaterial);
       } catch (e) {
-        if (
-          e.message === 'Did not find address with funds to recover.' ||
-          e.message.startsWith('Insufficient funds to recover')
-        ) {
+        if (e instanceof ErrorNoInputToRecover || e.message.startsWith('Insufficient funds to recover')) {
           lastScanIndex = i;
           continue;
         }
@@ -638,7 +636,7 @@ export class Ada extends BaseCoin {
     }
 
     if (consolidationTransactions.length == 0) {
-      throw new Error('Did not find an address with funds to recover.');
+      throw new ErrorNoInputToRecover('Did not find an address with funds to recover.');
     }
 
     if (isUnsignedSweep) {

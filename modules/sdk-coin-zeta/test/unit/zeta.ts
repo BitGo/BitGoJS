@@ -1,6 +1,6 @@
 import { CosmosTransaction, RedelegateMessage, SendMessage } from '@bitgo/abstract-cosmos';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { Environments } from '@bitgo/sdk-core';
+import { Environments, ErrorNoInputToRecover, RecoveryProviderError } from '@bitgo/sdk-core';
 import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import { TestBitGo, TestBitGoAPI, mockSerializedChallengeWithProofs } from '@bitgo/sdk-test';
 import { coins } from '@bitgo/statics';
@@ -490,12 +490,7 @@ describe('Zeta', function () {
   describe('Recover transaction: failure path', () => {
     const sandBox = sinon.createSandbox();
     const destinationAddress = wrwUser.destinationAddress;
-    const testZeroBalance = [
-      {
-        denom: 'azeta',
-        amount: '0',
-      },
-    ];
+    const testZeroBalance = [];
     const testChainId = 'test-chain';
 
     beforeEach(() => {
@@ -560,7 +555,45 @@ describe('Zeta', function () {
           walletPassphrase: wrwUser.walletPassphrase,
           recoveryDestination: destinationAddress,
         })
-        .should.rejectedWith('Did not have enough funds to recover');
+        .should.rejectedWith(ErrorNoInputToRecover);
+    });
+  });
+
+  describe('Recover transaction: provider failure', () => {
+    const sandBox = sinon.createSandbox();
+    const destinationAddress = wrwUser.destinationAddress;
+
+    beforeEach(() => {
+      const deserializedEntChallenge = EcdsaTypes.deserializeNtildeWithProofs(mockSerializedChallengeWithProofs);
+      sinon.stub(EcdsaRangeProof, 'generateNtilde').resolves(deserializedEntChallenge);
+
+      sandBox.stub(Zeta.prototype, 'getChainIdFromNode' as keyof Zeta).resolves({ status: 500, body: {} });
+
+      sandBox
+        .stub(Zeta.prototype, 'getAccountFromNode' as keyof Zeta)
+        .resolves({ status: 200, body: mockAccountDetailsResponse });
+
+      sandBox
+        .stub(Zeta.prototype, 'getAccountBalance' as keyof Zeta)
+        .withArgs(wrwUser.senderAddress)
+        .resolves([{ denom: 'azeta', amount: '0' }]);
+    });
+
+    afterEach(() => {
+      sandBox.restore();
+      sinon.restore();
+    });
+
+    it('should throw RecoveryProviderError when the node returns a non-200 response', async function () {
+      await basecoin
+        .recover({
+          userKey: wrwUser.userPrivateKey,
+          backupKey: wrwUser.backupPrivateKey,
+          bitgoKey: wrwUser.bitgoPublicKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          recoveryDestination: destinationAddress,
+        })
+        .should.rejectedWith(RecoveryProviderError);
     });
   });
 });

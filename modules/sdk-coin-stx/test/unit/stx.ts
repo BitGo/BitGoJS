@@ -2,7 +2,7 @@ import assert from 'assert';
 import nock from 'nock';
 
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { Wallet } from '@bitgo/sdk-core';
+import { ErrorNoInputToRecover, RecoveryProviderError, Wallet } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { coins } from '@bitgo/statics';
 import { cvToString, pubKeyfromPrivKey, publicKeyToString } from '@stacks/transactions';
@@ -617,9 +617,7 @@ describe('STX:', function () {
         bitgoKey: testData.HOT_WALLET_KEY_CARD_INFO.BITGO_PUB_KEY,
         walletPassphrase: testData.HOT_WALLET_KEY_CARD_INFO.WALLET_PASSPHRASE,
       };
-      await basecoin
-        .recover(recoveryOptions)
-        .should.rejectedWith(`could not find any balance to recover for ${rootAddress}`);
+      await basecoin.recover(recoveryOptions).should.rejectedWith(ErrorNoInputToRecover);
     });
 
     it('should fail with insufficient balance when stx balance is lower than fee', async function () {
@@ -648,6 +646,25 @@ describe('STX:', function () {
         walletPassphrase: testData.HOT_WALLET_KEY_CARD_INFO.WALLET_PASSPHRASE,
       };
       await basecoin.recover(recoveryOptions).should.rejectedWith('insufficient balance to build the transaction');
+    });
+
+    it('should throw RecoveryProviderError when the node fails to return the stx balance', async function () {
+      const rootAddress = testData.HOT_WALLET_ROOT_ADDRESS;
+      nock(`https://api.testnet.hiro.so`)
+        .get(`/extended/v2/addresses/${rootAddress}/balances/stx`)
+        .reply(500, { error: 'node unavailable' });
+      nock(`https://api.testnet.hiro.so`)
+        .get(`/extended/v1/address/${rootAddress}/nonces`)
+        .reply(200, testData.ACCOUNT_NONCE_RESPONSE);
+      const recoveryOptions: RecoveryOptions = {
+        backupKey: testData.HOT_WALLET_KEY_CARD_INFO.BACKUP_KEY,
+        userKey: testData.HOT_WALLET_KEY_CARD_INFO.USER_KEY,
+        rootAddress: rootAddress,
+        recoveryDestination: testData.DESTINATION_ADDRESS_WRW,
+        bitgoKey: testData.HOT_WALLET_KEY_CARD_INFO.BITGO_PUB_KEY,
+        walletPassphrase: testData.HOT_WALLET_KEY_CARD_INFO.WALLET_PASSPHRASE,
+      };
+      await basecoin.recover(recoveryOptions).should.rejectedWith(RecoveryProviderError);
     });
   });
 });

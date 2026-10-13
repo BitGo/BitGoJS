@@ -13,9 +13,11 @@ import { coins } from '@bitgo/statics';
 import {
   common,
   EDDSAMethods,
+  ErrorNoInputToRecover,
   MPCSweepRecoveryOptions,
   MPCSweepTxs,
   MPCTx,
+  RecoveryProviderError,
   signRecoveryEddsaMPCv2,
   TransactionPrebuild,
   Wallet,
@@ -1331,10 +1333,26 @@ describe('NEAR:', function () {
           recoveryDestination: destAddr,
           scan: numIteration,
         })
-        .should.rejectedWith('Did not find an address with funds to recover');
+        .should.rejectedWith(ErrorNoInputToRecover);
       // getDataFromNode should be called numIteration + 1 times since we initially
       // call getProtocolConfig
       sandBox.assert.callCount(basecoin.getDataFromNode, numIteration + 1);
+    });
+
+    it('should throw RecoveryProviderError when the node returns a non-200 response', async function () {
+      (Near.prototype as any).getDataFromNode
+        .withArgs(sinon.match.hasNested('payload.params.request_type', 'view_account'))
+        .resolves({ status: 500, body: {} });
+      await basecoin
+        .recover({
+          userKey: keys.userKey,
+          backupKey: keys.backupKey,
+          bitgoKey: keys.bitgoKey,
+          walletPassphrase: 'Ghghjkg!455544llll',
+          recoveryDestination: destAddr,
+          scan: numIteration,
+        })
+        .should.rejectedWith(RecoveryProviderError);
     });
   });
 

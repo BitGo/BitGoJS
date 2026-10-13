@@ -9,10 +9,12 @@ import { chainName, txVersion, genesisHash, specVersion } from '../resources';
 import * as sinon from 'sinon';
 import {
   EDDSAMethods,
+  ErrorNoInputToRecover,
   MPCSweepRecoveryOptions,
   MPCSweepTxs,
   MPCTx,
   MPCTxs,
+  RecoveryProviderError,
   signRecoveryEddsaMPCv2,
   TransactionType,
   Wallet,
@@ -873,7 +875,7 @@ describe('DOT:', function () {
           startingScanIndex: 1,
           endingScanIndex: 2,
         })
-        .should.rejectedWith('Did not find an address with funds to recover');
+        .should.rejectedWith(ErrorNoInputToRecover);
     });
 
     it('should throw if startingScanIndex is not ge to 1', async () => {
@@ -1071,7 +1073,22 @@ describe('DOT:', function () {
           walletPassphrase: testData.wrwUser.walletPassphrase,
           recoveryDestination: destAddr,
         })
-        .should.rejectedWith('Did not find address with funds to recover');
+        .should.rejectedWith(ErrorNoInputToRecover);
+    });
+
+    it('should throw RecoveryProviderError when account info query fails', async function () {
+      (Dot.prototype as unknown as { getAccountInfo: sinon.SinonStub }).getAccountInfo.rejects(
+        new Error('network failure')
+      );
+      await basecoin
+        .recover({
+          userKey: testData.wrwUser.userKey,
+          backupKey: testData.wrwUser.backupKey,
+          bitgoKey: testData.wrwUser.bitgoKey,
+          walletPassphrase: testData.wrwUser.walletPassphrase,
+          recoveryDestination: destAddr,
+        })
+        .should.be.rejectedWith(RecoveryProviderError);
     });
   });
 
