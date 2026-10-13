@@ -1,34 +1,18 @@
 import * as sjcl from '@bitgo/sjcl';
 import { randomBytes } from 'crypto';
 
-import { decryptV1, V1_MAX_ITER } from './decryptV1';
+import { decryptV1, parseV1Envelope } from './decryptV1';
 import { decryptV2, encryptV2 } from './encryptV2';
 
 /**
- * True when running in a bundled browser build. `browserify-aes` -- the AES
- * polyfill webpack substitutes for `node:crypto` in browser bundles -- has no
- * AES-CCM mode at all, so native v1 decrypt fails on literally every call
- * there. There's no point paying for the doomed native attempt (a full
- * PBKDF2 run) before falling back; go straight to SJCL.
+ * True in a browser main thread (`window`) or worker (`self`) runtime. The
+ * `crypto` webpack substitutes for `node:crypto` there (`crypto-browserify`,
+ * backed by `browserify-aes`) has no working AES-CCM, so a native v1 attempt
+ * would only pay for a doomed PBKDF2 run before falling back. Browser
+ * runtimes route v1 decrypt straight to SJCL instead.
  */
-const isBrowserRuntime = typeof window !== 'undefined';
-
-/**
- * SJCL has no upper bound on `iter`, so a hostile v1 envelope could burn CPU
- * running an inflated PBKDF2. Native decrypt's codec normally catches this
- * before any KDF work runs; the browser path skips native entirely, so it
- * needs this narrow check to preserve the same DoS protection.
- */
-function assertIterWithinCap(ciphertext: string): void {
-  let iter: unknown;
-  try {
-    iter = JSON.parse(ciphertext)?.iter;
-  } catch {
-    return; // malformed JSON -- let sjcl.decrypt raise its own error
-  }
-  if (typeof iter === 'number' && iter > V1_MAX_ITER) {
-    throw new Error(`v1 decrypt: iter ${iter} exceeds cap of ${V1_MAX_ITER}`);
-  }
+function isBrowserRuntime(): boolean {
+  return typeof window !== 'undefined' || typeof self !== 'undefined';
 }
 
 /**
@@ -106,11 +90,16 @@ function isIterCapViolation(err: unknown): boolean {
 /**
  * v1 decrypt with an SJCL safety net.
  *
- * Design intent during rollout: zero false negatives. Any native failure
- * (envelope shape our stricter codec rejects, framing bug, unsupported
- * algorithm, auth-tag mismatch, etc.) falls through to `sjcl.decrypt` so the
- * caller is never blocked. The only exception is an iter-cap violation,
- * which is rethrown to preserve DoS protection.
+ * Node: native `node:crypto` first, SJCL fallback. Design intent during
+ * rollout: zero false negatives. Any native failure (envelope shape our
+ * stricter codec rejects, framing bug, unsupported algorithm, auth-tag
+ * mismatch, etc.) falls through to `sjcl.decrypt` so the caller is never
+ * blocked. The only exception is an iter-cap violation, which is rethrown
+ * to preserve DoS protection.
+ *
+ * Browser/worker: skip the native attempt entirely (its polyfilled AES-CCM
+ * is broken) and go straight to `sjcl.decrypt`, after running the same
+ * `parseV1Envelope` iter-cap check the native path would run.
  *
  * The console.warn only fires when native fails AND SJCL succeeds -- i.e.
  * when the two engines disagree, which is the only signal worth
@@ -126,10 +115,19 @@ export async function decryptV1WithFallback(
   password: string,
   ciphertext: string,
   native: (pw: string, ct: string) => Promise<string> = decryptV1,
-  isBrowser: boolean = isBrowserRuntime
+  isBrowser: boolean = isBrowserRuntime()
 ): Promise<string> {
   if (isBrowser) {
-    assertIterWithinCap(ciphertext);
+    try {
+      parseV1Envelope(ciphertext);
+    } catch (parseErr) {
+      // Only honor the iter-cap violation: SJCL has no upper bound on `iter`,
+      // so falling through would let a hostile envelope burn CPU running an
+      // inflated PBKDF2. Any other shape rejection (e.g. a legacy envelope
+      // without a `v` field) is a form SJCL still accepts, so let
+      // sjcl.decrypt make the final call.
+      if (isIterCapViolation(parseErr)) throw parseErr;
+    }
     return sjcl.decrypt(password, ciphertext);
   }
   try {
