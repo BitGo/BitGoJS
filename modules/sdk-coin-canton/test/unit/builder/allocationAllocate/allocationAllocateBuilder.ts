@@ -5,7 +5,10 @@ import { coins } from '@bitgo/statics';
 
 import { AllocationAllocateBuilder, Transaction } from '../../../../src';
 import { CantonAllocationAllocateRequest } from '../../../../src/lib/iface';
-import { CantonAllocationAllocatePrepareResponse } from '../../../resources';
+import {
+  CantonAllocationAllocateNativePrepareResponse,
+  CantonAllocationAllocatePrepareResponse,
+} from '../../../resources';
 
 const commandId = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
 const amount = 100;
@@ -380,6 +383,32 @@ describe('AllocationAllocate Builder', () => {
         'ravi-2-step-party-new::122092e7d33ac10c0f3d55976342f37555df05da5b742956d56a62ae2367769079d2'
       );
       assert.equal(txData.amount, '50000000000');
+    });
+
+    it('should parse a native Canton Coin allocation with the base coin identity', function () {
+      const txBuilder = new AllocationAllocateBuilder(coins.get('tcanton'));
+      const tx = new Transaction(coins.get('tcanton'));
+      txBuilder.initBuilder(tx);
+      txBuilder.commandId(commandId);
+      txBuilder.setTransaction(CantonAllocationAllocateNativePrepareResponse);
+      const txData = txBuilder.transaction.toJson();
+      should.exist(txData);
+      assert.equal(txData.sender, '12204::122041049193fc30bb11a5c3d8cc5ce7fd1781e2bb29359ff2d6eae6db4df032157f');
+      assert.equal(txData.receiver, '12207::122077264e6222a18a7b9fe94dad9a7ee00d545f5538b94a5344e79f584245cfe113');
+      assert.equal(txData.amount, '5000000000');
+      assert.equal(txData.token, undefined);
+      // no token, so inputs and outputs are denominated in the base coin
+      assert.equal(txBuilder.transaction.inputs[0].coin, 'tcanton');
+      assert.equal(txBuilder.transaction.outputs[0].coin, 'tcanton');
+    });
+
+    it('should validate the raw native Canton Coin allocation transaction', async function () {
+      const txBuilder = new AllocationAllocateBuilder(coins.get('tcanton'));
+      const tx = new Transaction(coins.get('tcanton'));
+      txBuilder.initBuilder(tx);
+      txBuilder.commandId(commandId);
+      txBuilder.setTransaction(CantonAllocationAllocateNativePrepareResponse);
+      await txBuilder.validateRawTransaction(CantonAllocationAllocateNativePrepareResponse.preparedTransaction);
     });
 
     it('should validate the raw allocation allocate transaction', async function () {
