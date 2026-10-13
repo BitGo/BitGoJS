@@ -133,6 +133,10 @@ export const BuildParams = t.exact(
       trustlines: t.unknown,
       flags: t.unknown,
       clearFlags: t.unknown,
+      // XLM accountConfig (setOptions): the platform's /tx/build validates lowThreshold via the
+      // coin-scoped whitelist, but without this key preBuildTransaction's client-side
+      // _.pick(buildParamKeys) strips it before the request ever leaves the SDK.
+      lowThreshold: t.unknown,
       trustlineAuths: t.unknown,
       clawbacks: t.unknown,
       type: t.unknown,
