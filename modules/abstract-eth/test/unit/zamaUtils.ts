@@ -2,6 +2,7 @@ import should from 'should';
 import EthereumAbi from 'ethereumjs-abi';
 import {
   buildApproveCalldata,
+  decodeApproveCalldata,
   buildWrapCalldata,
   decodeWrapCalldata,
   buildUnwrapCalldata,
@@ -163,6 +164,31 @@ describe('Zama Utils', () => {
       it('should reject a non-numeric amount string', () => {
         (() => buildApproveCalldata(WRAPPER_ADDRESS, 'abc')).should.throw(/invalid amount/);
       });
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  describe('decodeApproveCalldata', () => {
+    it('should round-trip buildApproveCalldata with a checksummed spender', () => {
+      const decoded = decodeApproveCalldata(buildApproveCalldata(WRAPPER_ADDRESS, '1000000'));
+      decoded.spender.should.equal('0x2dEBbe0487Ef921dF4457F9E36eD05Be2df1AC75');
+      decoded.amount.should.equal('1000000');
+    });
+
+    it('should decode amount 0 and the uint256 max', () => {
+      decodeApproveCalldata(buildApproveCalldata(WRAPPER_ADDRESS, 0)).amount.should.equal('0');
+      const max = (2n ** 256n - 1n).toString();
+      decodeApproveCalldata(buildApproveCalldata(WRAPPER_ADDRESS, max)).amount.should.equal(max);
+    });
+
+    it('should reject a non-approve selector', () => {
+      should.throws(() => decodeApproveCalldata(buildWrapCalldata(WRAPPER_ADDRESS, '1')), /expected approve selector/);
+    });
+
+    it('should reject truncated calldata and trailing bytes', () => {
+      const valid = buildApproveCalldata(WRAPPER_ADDRESS, '1');
+      should.throws(() => decodeApproveCalldata(valid.slice(0, -2)), /expected 68 bytes/);
+      should.throws(() => decodeApproveCalldata(valid + '00'), /expected 68 bytes/);
     });
   });
 

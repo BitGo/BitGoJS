@@ -32,7 +32,7 @@ import {
   UnsignedSweepTxMPCv2,
   VerifyEthAddressOptions,
 } from '../../src';
-import { EthereumNetwork } from '@bitgo/statics';
+import { coins, Erc7984Coin, EthereumNetwork } from '@bitgo/statics';
 import assert from 'assert';
 import { getBuilder } from './getBuilder';
 import * as testData from '../resources/eth';
@@ -59,12 +59,12 @@ describe('ETH:', function () {
   const userReqSig =
     '0x404db307f6147f0d8cd338c34c13906ef46a6faa7e0e119d5194ef05aec16e6f3d710f9b7901460f97e924066b62efd74443bd34402c6d40b49c203a559ff2c8';
 
-  const buildDefiTxHex = async (data: string): Promise<string> => {
+  const buildDefiTxHex = async (data: string, to: string = address1): Promise<string> => {
     const txBuilder = getBuilder('hteth') as TransactionBuilder;
     txBuilder.type(TransactionType.ContractCall);
     txBuilder.fee({ fee: '10', gasLimit: '100000' });
     txBuilder.counter(1);
-    txBuilder.contract(address1);
+    txBuilder.contract(to);
     txBuilder.data(data);
     return (await txBuilder.build()).toBroadcastFormat();
   };
@@ -934,36 +934,77 @@ describe('ETH:', function () {
       isTransactionVerified.should.equal(true);
     });
 
-    it('should verify TSS transaction with wrapApprove type and no recipients', async function () {
-      const coin = bitgo.coin('hteth') as Hteth;
-      const wallet = new Wallet(bitgo, coin, {
-        coinSpecific: {
-          baseAddress: '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be',
-        },
+    describe('wrapApprove calldata assertion', function () {
+      const pair = coins.get('hteth:cusdt') as Erc7984Coin;
+      const wrapper = String(pair.contractAddress);
+      const underlying = pair.underlyingErc20Address as string;
+      const amount = '1000000';
+
+      const verifyWrapApprove = async (
+        data: string,
+        opts: { to?: string; wrapParams?: { tokenName: string; amount: string } | null } = {}
+      ) => {
+        const coin = bitgo.coin('hteth') as Hteth;
+        const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: address1 } });
+        // WP derives the underlying token, spender and calldata from wrapParams, so there are no recipients.
+        const wrapParams =
+          opts.wrapParams === null ? undefined : opts.wrapParams ?? { tokenName: 'hteth:cusdt', amount };
+        return coin.verifyTransaction({
+          txParams: { type: 'wrapApprove', wrapParams } as any,
+          txPrebuild: { txHex: await buildDefiTxHex(data, opts.to ?? underlying), coin: 'hteth', walletId: 'w' } as any,
+          wallet,
+          verification: {},
+          walletType: 'tss',
+        });
+      };
+
+      it('should verify approve(wrapper, amount) on the underlying ERC-20', async function () {
+        const result = await verifyWrapApprove(defiCalldata('approve(address,uint256)', [wrapper, amount]));
+        result.should.equal(true);
       });
 
-      // WP derives the underlying token contract, wrapper spender, and approve
-      // calldata from tokenName and amount, so the client intent has no recipients.
-      const txParams = {
-        type: 'wrapApprove',
-        tokenName: 'hteth:cusdt',
-        amount: '1000000',
-      };
-      const txPrebuild = {
-        txHex: '0x',
-        coin: 'hteth',
-        walletId: 'fakeWalletId',
-      };
-
-      const isTransactionVerified = await coin.verifyTransaction({
-        txParams: txParams as any,
-        txPrebuild: txPrebuild as any,
-        wallet,
-        verification: {},
-        walletType: 'tss',
+      it('should reject approve with a spender other than the wrapper', async function () {
+        await expectDefiRejection(
+          verifyWrapApprove(defiCalldata('approve(address,uint256)', [address2, amount])),
+          /spender does not match the wrapper/
+        );
       });
 
-      isTransactionVerified.should.equal(true);
+      it('should reject approve with a mutated amount', async function () {
+        await expectDefiRejection(
+          verifyWrapApprove(defiCalldata('approve(address,uint256)', [wrapper, '1000001'])),
+          /amount does not match/
+        );
+      });
+
+      it('should reject calldata that is not approve', async function () {
+        await expectDefiRejection(
+          verifyWrapApprove(defiCalldata('transfer(address,uint256)', [address2, amount])),
+          /approve\(address,uint256\)/
+        );
+      });
+
+      it('should reject approve calldata with trailing bytes', async function () {
+        await expectDefiRejection(
+          verifyWrapApprove(defiCalldata('approve(address,uint256)', [wrapper, amount]) + '00'),
+          /expected 68 bytes/
+        );
+      });
+
+      it('should reject approve sent to a contract other than the underlying ERC-20', async function () {
+        await expectDefiRejection(
+          verifyWrapApprove(defiCalldata('approve(address,uint256)', [wrapper, amount]), { to: address2 }),
+          /must target the underlying ERC-20/
+        );
+      });
+
+      it('should reject when wrapParams is missing or names an unregistered pair', async function () {
+        const data = defiCalldata('approve(address,uint256)', [wrapper, amount]);
+        await verifyWrapApprove(data, { wrapParams: null }).should.be.rejectedWith(/requires wrapParams/);
+        await verifyWrapApprove(data, { wrapParams: { tokenName: 'hteth', amount } }).should.be.rejectedWith(
+          /not a registered ERC-7984 shield pair/
+        );
+      });
     });
 
     it('should verify TSS transaction with defiDeposit type', async function () {

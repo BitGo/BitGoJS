@@ -60,6 +60,7 @@ import {
   ChainIdNotFoundError,
   CoinFeature,
   coins,
+  Erc7984Coin,
   EthereumNetwork as EthLikeNetwork,
   ethGasConfigs,
 } from '@bitgo/statics';
@@ -82,6 +83,7 @@ import { EthLikeToken } from './ethLikeToken';
 import {
   calculateForwarderV1Address,
   coinFamiliesWithL1Fees,
+  decodeApproveCalldata,
   decodeTransferData,
   ERC1155TransferBuilder,
   ERC721TransferBuilder,
@@ -384,6 +386,8 @@ interface EthTransactionParams extends TransactionParams {
   tokenName?: string;
   feeToken?: string;
   defiParams?: DefiIntentParams;
+  /** ERC-7984 shield intent (`type: 'wrapApprove' | 'wrap'`): wrapper coin name and exact amount. */
+  wrapParams?: { tokenName: string; amount: string };
 }
 
 export interface VerifyEthTransactionOptions extends VerifyTransactionOptions {
@@ -3196,6 +3200,67 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
   }
 
   /**
+   * Decode-and-assert for the ERC-7984 shield approve leg (defense-in-depth).
+   *
+   * The approve is signed through the chain coin, whose generic checks never parse calldata.
+   * WP builds the bytes server-side; re-parse them here so the client signs only
+   * `approve(wrapper, amount)` on the pair's underlying ERC-20 with the amount from the intent.
+   * Fails closed on any deviation.
+   */
+  private async verifyWrapApproveTransaction(
+    params: VerifyEthTransactionOptions,
+    throwRecipientMismatch: (message: string, mismatchedRecipients: Recipient[]) => Promise<never>
+  ): Promise<void> {
+    const { txParams, txPrebuild } = params;
+    if (!txPrebuild?.txHex) {
+      throw new Error('missing txHex in txPrebuild');
+    }
+    const wrapParams = txParams.wrapParams;
+    if (!wrapParams?.tokenName || !wrapParams.amount) {
+      throw new Error('wrapApprove transaction requires wrapParams with tokenName and amount');
+    }
+
+    let wrapper: Erc7984Coin;
+    try {
+      const staticsCoin = coins.get(wrapParams.tokenName);
+      if (!(staticsCoin instanceof Erc7984Coin) || !staticsCoin.underlyingErc20Address) {
+        throw new Error('not an ERC-7984 pair');
+      }
+      wrapper = staticsCoin;
+    } catch {
+      throw new Error(`wrapApprove: '${wrapParams.tokenName}' is not a registered ERC-7984 shield pair`);
+    }
+
+    const txBuilder = this.getTransactionBuilder();
+    txBuilder.from(txPrebuild.txHex);
+    const txJson = (await txBuilder.build()).toJson();
+    const mismatch = (message: string, address = txJson.to, amount = txJson.value): Promise<never> =>
+      throwRecipientMismatch(message, [{ address: address || '', amount: amount || '' }]);
+
+    if (!txJson.to || txJson.to.toLowerCase() !== wrapper.underlyingErc20Address) {
+      await mismatch('wrapApprove transaction must target the underlying ERC-20 of the wrapper');
+    }
+    if (txJson.value !== undefined && String(txJson.value) !== '0') {
+      await mismatch('wrapApprove transaction must not carry native value');
+    }
+
+    let decoded: { spender: string; amount: string };
+    try {
+      decoded = decodeApproveCalldata(txJson.data || '');
+    } catch (e) {
+      return mismatch(
+        `wrapApprove transaction must use ERC-20 approve(address,uint256) calldata — ${(e as Error).message}`
+      );
+    }
+    if (decoded.spender.toLowerCase() !== wrapper.contractAddress.toLowerCase()) {
+      await mismatch('wrapApprove transaction spender does not match the wrapper contract', decoded.spender);
+    }
+    if (decoded.amount !== wrapParams.amount) {
+      await mismatch('wrapApprove transaction amount does not match the requested amount', txJson.to, decoded.amount);
+    }
+  }
+
+  /**
    * @param {VerifyEthTransactionOptions} params
    * @param {TransactionParams} params.txParams - params object passed to send
    * @param {TransactionPrebuild} params.txPrebuild - prebuild object returned by server
@@ -3388,6 +3453,10 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
           );
         }
       }
+    }
+
+    if (txParams.type === 'wrapApprove') {
+      await this.verifyWrapApproveTransaction(params, throwRecipientMismatch);
     }
 
     // Verify consolidation transactions send to base address
