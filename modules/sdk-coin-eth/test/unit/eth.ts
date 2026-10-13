@@ -13,6 +13,7 @@ import {
   InvalidAddressVerificationObjectPropertyError,
   MPCSweepTxs,
   RecoveryProviderError,
+  resolveEffectiveTxParams,
   TransactionType,
   TxIntentMismatchRecipientError,
   UnexpectedAddressError,
@@ -1000,10 +1001,170 @@ describe('ETH:', function () {
 
       it('should reject when wrapParams is missing or names an unregistered pair', async function () {
         const data = defiCalldata('approve(address,uint256)', [wrapper, amount]);
-        await verifyWrapApprove(data, { wrapParams: null }).should.be.rejectedWith(/requires wrapParams/);
-        await verifyWrapApprove(data, { wrapParams: { tokenName: 'hteth', amount } }).should.be.rejectedWith(
+        await expectDefiRejection(verifyWrapApprove(data, { wrapParams: null }), /requires wrapParams/);
+        await expectDefiRejection(
+          verifyWrapApprove(data, { wrapParams: { tokenName: 'hteth', amount } }),
           /not a registered ERC-7984 shield pair/
         );
+      });
+
+      it('should reject approve that carries native value', async function () {
+        const coin = bitgo.coin('hteth') as Hteth;
+        const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: address1 } });
+        const txBuilder = getBuilder('hteth') as TransactionBuilder;
+        txBuilder.type(TransactionType.ContractCall);
+        txBuilder.fee({ fee: '10', gasLimit: '100000' });
+        txBuilder.counter(1);
+        txBuilder.contract(underlying);
+        txBuilder.data(defiCalldata('approve(address,uint256)', [wrapper, amount]));
+        txBuilder.value('1');
+        const txHex = (await txBuilder.build()).toBroadcastFormat();
+        await expectDefiRejection(
+          coin.verifyTransaction({
+            txParams: { type: 'wrapApprove', wrapParams: { tokenName: 'hteth:cusdt', amount } } as any,
+            txPrebuild: { txHex, coin: 'hteth', walletId: 'w' } as any,
+            wallet,
+            verification: {},
+            walletType: 'tss',
+          }),
+          /must not carry native value/
+        );
+      });
+
+      it('should verify a pendingApproval re-sign where txParams are resolved from the persisted intent only', async function () {
+        const coin = bitgo.coin('hteth') as Hteth;
+        const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: address1 } });
+        // recreateTxRequest() -> signTxRequest() carries no txParams; the intent is the only source.
+        const txRequest = { intent: { intentType: 'wrapApprove', tokenName: 'hteth:cusdt', amount } } as any;
+        const txParams = resolveEffectiveTxParams(txRequest, undefined);
+        const txHex = await buildDefiTxHex(defiCalldata('approve(address,uint256)', [wrapper, amount]), underlying);
+        const result = await coin.verifyTransaction({
+          txParams: txParams as any,
+          txPrebuild: { txHex, coin: 'hteth', walletId: 'w' } as any,
+          wallet,
+          verification: {},
+          walletType: 'tss',
+        });
+        result.should.equal(true);
+      });
+    });
+
+    describe('wrapper-directed approve must be declared wrapApprove', function () {
+      const pair = coins.get('hteth:cusdt') as Erc7984Coin;
+      const wrapper = String(pair.contractAddress);
+      const underlying = pair.underlyingErc20Address as string;
+      const amount = '1000000';
+
+      const verifyAs = async (type: string, data: string, to: string = underlying) => {
+        const coin = bitgo.coin('hteth') as Hteth;
+        const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: address1 } });
+        return coin.verifyTransaction({
+          txParams: { type, defiParams: { vaultId: 'vault', amount }, wallet } as any,
+          txPrebuild: { txHex: await buildDefiTxHex(data, to), coin: 'hteth', walletId: 'w' } as any,
+          wallet,
+          verification: {},
+          walletType: 'tss',
+        });
+      };
+
+      ['tokenApproval', 'customTx', 'defiApprove'].forEach((type) => {
+        it(`should reject approve(wrapper, amount) on the underlying relabelled as ${type}`, async function () {
+          await expectDefiRejection(
+            verifyAs(type, defiCalldata('approve(address,uint256)', [wrapper, amount])),
+            /must be declared as a wrapApprove intent/
+          );
+        });
+      });
+
+      it('should reject a mutated-amount wrapper approve relabelled as customTx', async function () {
+        await expectDefiRejection(
+          verifyAs('customTx', defiCalldata('approve(address,uint256)', [wrapper, '999999999999'])),
+          /must be declared as a wrapApprove intent/
+        );
+      });
+
+      it('should reject a wrapper approve with trailing bytes (an ERC-20 ignores them)', async function () {
+        await expectDefiRejection(
+          verifyAs('customTx', defiCalldata('approve(address,uint256)', [wrapper, amount]) + '00'),
+          /must be declared as a wrapApprove intent/
+        );
+      });
+
+      it('should not affect approvals of the underlying to other spenders', async function () {
+        (await verifyAs('customTx', defiCalldata('approve(address,uint256)', [address2, amount]))).should.equal(true);
+        (await verifyAs('tokenApproval', defiCalldata('approve(address,uint256)', [address2, amount]))).should.equal(
+          true
+        );
+      });
+
+      it('should not parse the tx at all when the calldata carries no approve selector', async function () {
+        const coin = bitgo.coin('hteth') as Hteth;
+        const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: address1 } });
+        const verifyWith = async (data: string) => {
+          const txHex = await buildDefiTxHex(data, underlying);
+          // getTransactionBuilder is not part of the coin's public type, so spy through a minimal structural view.
+          const builderSpy = sinon.spy(
+            coin as unknown as { getTransactionBuilder: () => unknown },
+            'getTransactionBuilder'
+          );
+          try {
+            await coin.verifyTransaction({
+              txParams: { type: 'customTx', wallet } as any,
+              txPrebuild: { txHex, coin: 'hteth', walletId: 'w' } as any,
+              wallet,
+              verification: {},
+              walletType: 'tss',
+            });
+            return builderSpy.callCount;
+          } finally {
+            builderSpy.restore();
+          }
+        };
+
+        (await verifyWith(defiCalldata('transfer(address,uint256)', [wrapper, amount]))).should.equal(0);
+        (await verifyWith(defiCalldata('approve(address,uint256)', [address2, amount]))).should.equal(1);
+      });
+
+      it('should leave other declared types untouched for txs that are not a wrapper approve', async function () {
+        // Every type below skips the wrapApprove check and reaches the guard; none of these txs is an approve of a
+        // wrapper, so all must verify exactly as they did before the guard existed.
+        const benign: Array<[string, string, string]> = [
+          ['customTx', defiCalldata('transfer(address,uint256)', [address2, amount]), underlying],
+          ['customTx', defiCalldata('approve(address,uint256)', [address2, amount]), underlying],
+          ['customTx', defiCalldata('approve(address,uint256)', [wrapper, amount]), address2],
+          ['tokenApproval', defiCalldata('approve(address,uint256)', [address2, amount]), underlying],
+          ['tokenApproval', defiCalldata('approve(address,uint256)', [wrapper, amount]), address2],
+          ['acceleration', defiCalldata('transfer(address,uint256)', [address2, amount]), address2],
+          ['fillNonce', '0x', address2],
+          ['enabletoken', defiCalldata('transfer(address,uint256)', [address2, amount]), address2],
+        ];
+        for (const [type, data, to] of benign) {
+          (await verifyAs(type, data, to)).should.equal(true, `${type} to ${to} should still verify`);
+        }
+      });
+
+      it('should not affect transfers to the underlying or approves of the wrapper on other contracts', async function () {
+        (await verifyAs('customTx', defiCalldata('transfer(address,uint256)', [wrapper, amount]))).should.equal(true);
+        (
+          await verifyAs('customTx', defiCalldata('approve(address,uint256)', [wrapper, amount]), address2)
+        ).should.equal(true);
+      });
+
+      it('should still verify a declared wrapApprove through the full check', async function () {
+        const coin = bitgo.coin('hteth') as Hteth;
+        const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: address1 } });
+        const result = await coin.verifyTransaction({
+          txParams: { type: 'wrapApprove', wrapParams: { tokenName: 'hteth:cusdt', amount } } as any,
+          txPrebuild: {
+            txHex: await buildDefiTxHex(defiCalldata('approve(address,uint256)', [wrapper, amount]), underlying),
+            coin: 'hteth',
+            walletId: 'w',
+          } as any,
+          wallet,
+          verification: {},
+          walletType: 'tss',
+        });
+        result.should.equal(true);
       });
     });
 

@@ -168,6 +168,20 @@ export function resolveEffectiveTxParams(
     effectiveTxParams.stakingRequestId = intentStakingRequestId;
   }
 
+  // Propagate the ERC-7984 shield params from the persisted intent. Signing paths that carry no
+  // txParams (pendingApproval.approve() -> recreateTxRequest() -> signTxRequest()) would otherwise reach
+  // the coin verifier without wrapParams, and the wrapApprove calldata check would reject valid bytes.
+  // WP flattens wrapParams into intent.tokenName / intent.amount (see mpcUtils.createIntent).
+  const intent = txRequest.intent as PopulatedIntent;
+  if (
+    !effectiveTxParams.wrapParams &&
+    (intent?.intentType === 'wrapApprove' || intent?.intentType === 'wrap') &&
+    typeof intent.tokenName === 'string' &&
+    typeof intent.amount === 'string'
+  ) {
+    effectiveTxParams.wrapParams = { tokenName: intent.tokenName, amount: intent.amount };
+  }
+
   // All staking intents (BSC delegate/undelegate, CELO stake/unstake, etc.) carry
   // stakingRequestId as a required field on BaseStakeIntent (@bitgo/public-types).
   // Use its presence as a generic staking signal — no need to enumerate every intentType.
