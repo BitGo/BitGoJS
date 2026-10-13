@@ -1660,7 +1660,7 @@ describe('Liquid Staking Features', () => {
   });
 });
 
-describe('ADA RealFi USDr staking', () => {
+describe('ADA RealFi USDrf staking', () => {
   it('should have STAKING feature for stakeable USDr tokens', () => {
     ['ada:usdr', 'tada:usdr'].forEach((coinName) => {
       const coin = coins.get(coinName);

@@ -6901,8 +6901,8 @@ export const ofcCoins = [
     UnderlyingAsset['ada:wmtx']
   ),
   ofcAdaToken('e8f2a1b3-4c5d-4e6f-8a0b-1c2d3e4f5a6b', 'ofcada:usdcx', 'USDCx', 6, UnderlyingAsset['ada:usdcx']),
-  ofcAdaToken('ed2484fd-0dc1-4737-bd40-361a9ed091de', 'ofcada:usdr', 'RealFi USDr', 6, UnderlyingAsset['ada:usdr']),
-  ofcAdaToken('c2c5cac2-a642-4acf-926b-6923412105cb', 'ofcada:susdr', 'RealFi sUSDr', 6, UnderlyingAsset['ada:susdr']),
+  ofcAdaToken('ed2484fd-0dc1-4737-bd40-361a9ed091de', 'ofcada:usdr', 'RealFi USDrf', 6, UnderlyingAsset['ada:usdr']),
+  ofcAdaToken('c2c5cac2-a642-4acf-926b-6923412105cb', 'ofcada:susdr', 'RealFi sUSDrf', 6, UnderlyingAsset['ada:susdr']),
   tofcAdaToken(
     '1f4e7747-f825-4107-a71f-766e847d557b',
     'ofctada:water',
@@ -6921,14 +6921,14 @@ export const ofcCoins = [
   tofcAdaToken(
     'c4a975a7-3cc0-4c52-b453-9aa6f48bccfd',
     'ofctada:usdr',
-    'Testnet RealFi USDr',
+    'Testnet RealFi USDrf',
     6,
     UnderlyingAsset['tada:usdr']
   ),
   tofcAdaToken(
     'e1c44e27-ebea-4b31-a60f-05b9bfbe8726',
     'ofctada:susdr',
-    'Testnet RealFi sUSDr',
+    'Testnet RealFi sUSDrf',
     6,
     UnderlyingAsset['tada:susdr']
   ),
