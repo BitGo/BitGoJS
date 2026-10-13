@@ -29,7 +29,7 @@ export const adaTokens = [
   tadaToken(
     '4409cdea-b1c2-4a3d-ab4c-e8583e043916',
     'tada:usdr',
-    'Testnet RealFi USDr',
+    'Testnet RealFi USDrf',
     6,
     '0684f582b8abeb4236b20688744eca788a61cd9881422a7113637f6b',
     'USDr',
@@ -40,7 +40,7 @@ export const adaTokens = [
   tadaToken(
     'a84eff6c-4f7e-48b1-a92f-f535dcccc28c',
     'tada:susdr',
-    'Testnet RealFi sUSDr',
+    'Testnet RealFi sUSDrf',
     6,
     '0684f582b8abeb4236b20688744eca788a61cd9881422a7113637f6b',
     'sUSDr',
@@ -172,7 +172,7 @@ export const adaTokens = [
   adaToken(
     '397a7ea8-0439-4f10-a73e-ba02b0d3fa56',
     'ada:usdr',
-    'RealFi USDr',
+    'RealFi USDrf',
     6,
     '7d9e4a0ee1a3f5d5ff8159ea91a83310cf2795ee7a87170c7aea05ae',
     'USDr',
@@ -183,7 +183,7 @@ export const adaTokens = [
   adaToken(
     'e9d2b3bb-a668-404d-a6bf-bf2dfefed4d2',
     'ada:susdr',
-    'RealFi sUSDr',
+    'RealFi sUSDrf',
     6,
     '7d9e4a0ee1a3f5d5ff8159ea91a83310cf2795ee7a87170c7aea05ae',
     'sUSDr',
