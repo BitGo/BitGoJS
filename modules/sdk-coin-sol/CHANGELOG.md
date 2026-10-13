@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.15.0...@bitgo/sdk-coin-sol@8.16.0) (2026-10-13)
+
+
+### Features
+
+* honest empty vs provider-failed in recover() ([4bf92c1](https://github.com/BitGo/BitGoJS/commit/4bf92c1273a1fd0d051269ec340e44c713e9eb36))
+* **sdk-coin-sol:** add v1 payment builder for server-side transfers ([25bb75c](https://github.com/BitGo/BitGoJS/commit/25bb75c36d5c45ba2b90fa0c3b456c74e742b29b))
+* **sdk-coin-sol:** v1 envelope surface for WP ([c61f986](https://github.com/BitGo/BitGoJS/commit/c61f98659116a2ec39a0b17f81db15d2462d54c5))
+* **sdk-core:** sign EdDSA safe MPS VRF keygen messages like the HSM ([9b0adf5](https://github.com/BitGo/BitGoJS/commit/9b0adf554b43b8eb52ae4629403bcd2460ce7dd2))
+
+
+
+
+
 # [8.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.14.0...@bitgo/sdk-coin-sol@8.15.0) (2026-10-09)
 
 

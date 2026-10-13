@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@4.1.25...@bitgo/sdk-coin-xlm@4.2.0) (2026-10-13)
+
+
+### Bug Fixes
+
+* **sdk-coin-xlm:** reject op-level source on accountConfig verification ([c0e418e](https://github.com/BitGo/BitGoJS/commit/c0e418ec9b08f304d18a6f8a541f3426f876e9b5))
+* **sdk-coin-xlm:** reject unsupported setOptions fields on accountConfig ([c897d7e](https://github.com/BitGo/BitGoJS/commit/c897d7ec00955e5236d1982b97f4ba5bf36676ea))
+
+
+### Features
+
+* honest empty vs provider-failed in recover() ([4bf92c1](https://github.com/BitGo/BitGoJS/commit/4bf92c1273a1fd0d051269ec340e44c713e9eb36))
+* **sdk-coin-xlm:** verify and explain lowThreshold on accountConfig ([30bb36c](https://github.com/BitGo/BitGoJS/commit/30bb36cb0f17939ccde67be96f5acc09087834c4))
+
+
+
+
+
 ## [4.1.25](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@4.1.24...@bitgo/sdk-coin-xlm@4.1.25) (2026-10-09)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xlm

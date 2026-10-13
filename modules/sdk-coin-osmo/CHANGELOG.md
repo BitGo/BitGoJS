@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-osmo@3.7.49...@bitgo/sdk-coin-osmo@3.8.0) (2026-10-13)
+
+
+### Features
+
+* complete empty vs provider-fail in recover() ([9e16782](https://github.com/BitGo/BitGoJS/commit/9e16782a81e7b17b17be8106ee92a4ba50817635)), closes [#9932](https://github.com/BitGo/BitGoJS/issues/9932)
+
+
+
+
+
 ## [3.7.49](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-osmo@3.7.48...@bitgo/sdk-coin-osmo@3.7.49) (2026-10-09)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-osmo

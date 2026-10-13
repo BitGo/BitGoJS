@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [17.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@17.3.1...@bitgo/express@17.4.0) (2026-10-13)
+
+
+### Features
+
+* **sdk-core:** add SOL consolidation mode ([695fece](https://github.com/BitGo/BitGoJS/commit/695fece98ed5a812055d739f0fce82f52439eff2))
+* **sdk-core:** sign EdDSA safe MPS VRF keygen messages like the HSM ([9b0adf5](https://github.com/BitGo/BitGoJS/commit/9b0adf554b43b8eb52ae4629403bcd2460ce7dd2))
+
+
+
+
+
 ## [17.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@17.3.0...@bitgo/express@17.3.1) (2026-10-09)
 
 

@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@3.0.7...@bitgo/sdk-api@3.1.0) (2026-10-13)
+
+
+### Bug Fixes
+
+* **sdk-api:** cover both keychain sets in the rotation total ([f3bce88](https://github.com/BitGo/BitGoJS/commit/f3bce88c5c709a6f4b235c59c6250f58ccdae951))
+* **sdk-api:** emit terminal total for v1-only accounts ([245aa94](https://github.com/BitGo/BitGoJS/commit/245aa94823dae79f68578fe34d2934ec09d6b433))
+* **sdk-api:** route browser v1 decrypt straight to SJCL ([1ba0e92](https://github.com/BitGo/BitGoJS/commit/1ba0e92c4360b98df8e67ea593c841fcef98ed84))
+
+
+### Features
+
+* **sdk-api,sdk-core:** add progress callback for password rotation ([67e0e3a](https://github.com/BitGo/BitGoJS/commit/67e0e3abb9d6a643f00ece197106955fafb54331))
+* **sdk-api,sdk-core:** thread truthful keychain total into rotation progress ([f2a647a](https://github.com/BitGo/BitGoJS/commit/f2a647a769496c9d2a6fd2dfca2774bab2e29231))
+* **sdk-core:** report an outcome for every listed keychain (option A) ([2c456e9](https://github.com/BitGo/BitGoJS/commit/2c456e9a3a1e23f28bec3dcc50ea6a557e7f2413))
+
+
+
+
+
 ## [3.0.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@3.0.6...@bitgo/sdk-api@3.0.7) (2026-10-09)
 
 **Note:** Version bump only for package @bitgo/sdk-api
