@@ -134,6 +134,23 @@ describe('BuildParams', function () {
     assert.ok(buildParamKeys.includes('unwrapParams'), 'buildParamKeys must include unwrapParams');
   });
 
+  it('should whitelist lowThreshold while stripping unknown params', function () {
+    // XLM accountConfig builds carry lowThreshold on /tx/build; without this key the client-side
+    // pick in preBuildTransaction strips it before the platform can pin it to exactly 2.
+    assert.deepStrictEqual(
+      BuildParams.encode({
+        type: 'accountConfig',
+        lowThreshold: 2,
+        unknownField: 'should be stripped',
+      } as unknown as Parameters<typeof BuildParams.encode>[0]),
+      {
+        type: 'accountConfig',
+        lowThreshold: 2,
+      }
+    );
+    assert.ok(buildParamKeys.includes('lowThreshold'), 'buildParamKeys must include lowThreshold');
+  });
+
   it('AttestationPayload codec requires all four fields', function () {
     const valid = {
       signature: 'sig',
