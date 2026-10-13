@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@11.3.0...@bitgo/sdk-lib-mpc@11.4.0) (2026-10-13)
+
+
+### Features
+
+* **sdk-core:** add createOfflineKeyGenRound2Share to EddsaMPCv2Utils ([629c01b](https://github.com/BitGo/BitGoJS/commit/629c01ba5c3f639c9da76667cad80ef5b92c1f50))
+
+
+
+
+
 # [11.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@11.2.0...@bitgo/sdk-lib-mpc@11.3.0) (2026-10-09)
 
 

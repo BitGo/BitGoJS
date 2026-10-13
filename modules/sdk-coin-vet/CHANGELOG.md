@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.16.37...@bitgo/sdk-coin-vet@2.17.0) (2026-10-13)
+
+
+### Features
+
+* complete empty vs provider-fail in recover() ([9e16782](https://github.com/BitGo/BitGoJS/commit/9e16782a81e7b17b17be8106ee92a4ba50817635)), closes [#9932](https://github.com/BitGo/BitGoJS/issues/9932)
+
+
+
+
+
 ## [2.16.37](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.16.36...@bitgo/sdk-coin-vet@2.16.37) (2026-10-09)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-vet

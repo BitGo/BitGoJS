@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.22.0...@bitgo/statics@59.23.0) (2026-10-13)
+
+
+### Bug Fixes
+
+* **statics:** rename RealFi USDr tokens to USDrf ([c8d5d75](https://github.com/BitGo/BitGoJS/commit/c8d5d7587468ebcb390c477970642a7bd1373350))
+
+
+### Features
+
+* add new tokens from AMS API ([b00c1d3](https://github.com/BitGo/BitGoJS/commit/b00c1d302ab886459b299edf52f6ff801c87c173))
+* refresh known tokens via identity-guarded CoinMap.replace ([787e718](https://github.com/BitGo/BitGoJS/commit/787e7189aa6ae85e27ec59aaebb8ca3274ccc080))
+* **statics:** onboard jpyc testnet tokens on sepolia and polygon amoy ([099ab78](https://github.com/BitGo/BitGoJS/commit/099ab78fcf5f83ced475f579792410e714de6b5d))
+* **statics:** onboard ofcteuroc testnet OFC coin ([67855ab](https://github.com/BitGo/BitGoJS/commit/67855aba92fdf6e7bab0f0c6e185d1751062377e))
+
+
+
+
+
 # [59.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.21.0...@bitgo/statics@59.22.0) (2026-10-09)
 
 

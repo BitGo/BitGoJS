@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coredao@2.8.49...@bitgo/sdk-coin-coredao@2.9.0) (2026-10-13)
+
+
+### Features
+
+* honest empty vs provider-failed in recover() ([4bf92c1](https://github.com/BitGo/BitGoJS/commit/4bf92c1273a1fd0d051269ec340e44c713e9eb36))
+
+
+
+
+
 ## [2.8.49](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coredao@2.8.48...@bitgo/sdk-coin-coredao@2.8.49) (2026-10-09)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-coredao

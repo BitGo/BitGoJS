@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [54.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@53.4.2...bitgo@54.0.0) (2026-10-13)
+
+
+### Features
+
+* **sdk-api,sdk-core:** add progress callback for password rotation ([67e0e3a](https://github.com/BitGo/BitGoJS/commit/67e0e3abb9d6a643f00ece197106955fafb54331))
+* **sdk-api,sdk-core:** thread truthful keychain total into rotation progress ([f2a647a](https://github.com/BitGo/BitGoJS/commit/f2a647a769496c9d2a6fd2dfca2774bab2e29231))
+* **sdk-core:** add SOL consolidation mode ([695fece](https://github.com/BitGo/BitGoJS/commit/695fece98ed5a812055d739f0fce82f52439eff2))
+* **sdk-core:** report an outcome for every listed keychain (option A) ([2c456e9](https://github.com/BitGo/BitGoJS/commit/2c456e9a3a1e23f28bec3dcc50ea6a557e7f2413))
+* **sdk-core:** sign EdDSA safe MPS VRF keygen messages like the HSM ([9b0adf5](https://github.com/BitGo/BitGoJS/commit/9b0adf554b43b8eb52ae4629403bcd2460ce7dd2))
+* **sdk-core:** surface pendingApprovalId from TSS message signing ([d708154](https://github.com/BitGo/BitGoJS/commit/d708154a0f64f23014cf18b379e2654f98567fb0))
+
+
+### BREAKING CHANGES
+
+* **sdk-core:** SignedMessage is now a discriminated union on state.
+Consumers that previously read txHash or signature unguarded
+must narrow on state === 'delivered' first:
+
+  const result = await wallet.signMessage(params);
+  if (result.state === 'pendingApproval') { /* show approval UI */ }
+  else { const { txHash, signature } = result; }
+
+Refs: DEFI-1014
+
+
+
+
+
 ## [53.4.2](https://github.com/BitGo/BitGoJS/compare/bitgo@53.4.1...bitgo@53.4.2) (2026-10-09)
 
 **Note:** Version bump only for package bitgo

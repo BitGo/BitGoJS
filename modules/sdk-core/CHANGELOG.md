@@ -3,6 +3,45 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [39.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.23.0...@bitgo/sdk-core@39.0.0) (2026-10-13)
+
+
+### Bug Fixes
+
+* **abstract-eth:** propagate wrapParams, guard wrapper approves ([f59875c](https://github.com/BitGo/BitGoJS/commit/f59875cf878b18fbd626f4f9bfe36dd8b840c6fc)), closes [#9949](https://github.com/BitGo/BitGoJS/issues/9949)
+* **sdk-core:** pass lowThreshold through the client BuildParams codec ([3396b1e](https://github.com/BitGo/BitGoJS/commit/3396b1e3f87225a18537b580f31988db4a527a3e))
+
+
+### Features
+
+* honest empty vs provider-failed in recover() ([4bf92c1](https://github.com/BitGo/BitGoJS/commit/4bf92c1273a1fd0d051269ec340e44c713e9eb36))
+* **sdk-api,sdk-core:** add progress callback for password rotation ([67e0e3a](https://github.com/BitGo/BitGoJS/commit/67e0e3abb9d6a643f00ece197106955fafb54331))
+* **sdk-api,sdk-core:** thread truthful keychain total into rotation progress ([f2a647a](https://github.com/BitGo/BitGoJS/commit/f2a647a769496c9d2a6fd2dfca2774bab2e29231))
+* **sdk-core:** add createOfflineKeyGenFinalizeShare to EddsaMPCv2Utils ([6f5c0cf](https://github.com/BitGo/BitGoJS/commit/6f5c0cf982adf1e8f4156aa24e57fe12acfc3863))
+* **sdk-core:** add createOfflineKeyGenRound2Share to EddsaMPCv2Utils ([629c01b](https://github.com/BitGo/BitGoJS/commit/629c01ba5c3f639c9da76667cad80ef5b92c1f50))
+* **sdk-core:** add SOL consolidation mode ([695fece](https://github.com/BitGo/BitGoJS/commit/695fece98ed5a812055d739f0fce82f52439eff2))
+* **sdk-core:** report an outcome for every listed keychain (option A) ([2c456e9](https://github.com/BitGo/BitGoJS/commit/2c456e9a3a1e23f28bec3dcc50ea6a557e7f2413))
+* **sdk-core:** sign EdDSA safe MPS VRF keygen messages like the HSM ([9b0adf5](https://github.com/BitGo/BitGoJS/commit/9b0adf554b43b8eb52ae4629403bcd2460ce7dd2))
+* **sdk-core:** surface pendingApprovalId from TSS message signing ([d708154](https://github.com/BitGo/BitGoJS/commit/d708154a0f64f23014cf18b379e2654f98567fb0))
+* **sdk-core:** wire eddsaMPCv2Callbacks into generateWalletWithExternalSigner ([7605791](https://github.com/BitGo/BitGoJS/commit/7605791366141854cf4128878f5633f6974025cd))
+
+
+### BREAKING CHANGES
+
+* **sdk-core:** SignedMessage is now a discriminated union on state.
+Consumers that previously read txHash or signature unguarded
+must narrow on state === 'delivered' first:
+
+  const result = await wallet.signMessage(params);
+  if (result.state === 'pendingApproval') { /* show approval UI */ }
+  else { const { txHash, signature } = result; }
+
+Refs: DEFI-1014
+
+
+
+
+
 # [38.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.22.0...@bitgo/sdk-core@38.23.0) (2026-10-09)
 
 

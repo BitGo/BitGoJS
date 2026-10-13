@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xdc@1.10.29...@bitgo/sdk-coin-xdc@2.0.0) (2026-10-13)
+
+
+### Features
+
+* **sdk-core:** surface pendingApprovalId from TSS message signing ([d708154](https://github.com/BitGo/BitGoJS/commit/d708154a0f64f23014cf18b379e2654f98567fb0))
+
+
+### BREAKING CHANGES
+
+* **sdk-core:** SignedMessage is now a discriminated union on state.
+Consumers that previously read txHash or signature unguarded
+must narrow on state === 'delivered' first:
+
+  const result = await wallet.signMessage(params);
+  if (result.state === 'pendingApproval') { /* show approval UI */ }
+  else { const { txHash, signature } = result; }
+
+Refs: DEFI-1014
+
+
+
+
+
 ## [1.10.29](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xdc@1.10.28...@bitgo/sdk-coin-xdc@1.10.29) (2026-10-09)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xdc

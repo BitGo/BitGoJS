@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [13.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@13.3.0...@bitgo/abstract-utxo@13.4.0) (2026-10-13)
+
+
+### Features
+
+* honest empty vs provider-failed in recover() ([4bf92c1](https://github.com/BitGo/BitGoJS/commit/4bf92c1273a1fd0d051269ec340e44c713e9eb36))
+
+
+
+
+
 # [13.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@13.2.2...@bitgo/abstract-utxo@13.3.0) (2026-10-09)
 
 

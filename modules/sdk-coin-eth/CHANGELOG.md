@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [26.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@26.3.14...@bitgo/sdk-coin-eth@26.4.0) (2026-10-13)
+
+
+### Bug Fixes
+
+* **abstract-eth:** bound ERC-7984 wrap amount by amount / rate ([f9892a9](https://github.com/BitGo/BitGoJS/commit/f9892a962e442f5585eb53bce7b2be14264f339e))
+* **abstract-eth:** propagate wrapParams, guard wrapper approves ([f59875c](https://github.com/BitGo/BitGoJS/commit/f59875cf878b18fbd626f4f9bfe36dd8b840c6fc)), closes [#9949](https://github.com/BitGo/BitGoJS/issues/9949)
+
+
+### Features
+
+* **abstract-eth:** assert wrapApprove calldata before signing ([cd01deb](https://github.com/BitGo/BitGoJS/commit/cd01deb67720e61afcfeffc76d1b554e5bb7e6b4))
+* honest empty vs provider-failed in recover() ([4bf92c1](https://github.com/BitGo/BitGoJS/commit/4bf92c1273a1fd0d051269ec340e44c713e9eb36))
+
+
+
+
+
 ## [26.3.14](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@26.3.13...@bitgo/sdk-coin-eth@26.3.14) (2026-10-09)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-eth

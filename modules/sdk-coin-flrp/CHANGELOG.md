@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.19.3...@bitgo/sdk-coin-flrp@1.20.0) (2026-10-13)
+
+
+### Features
+
+* **sdk-core:** sign EdDSA safe MPS VRF keygen messages like the HSM ([9b0adf5](https://github.com/BitGo/BitGoJS/commit/9b0adf554b43b8eb52ae4629403bcd2460ce7dd2))
+
+
+
+
+
 ## [1.19.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.19.2...@bitgo/sdk-coin-flrp@1.19.3) (2026-10-09)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-flrp

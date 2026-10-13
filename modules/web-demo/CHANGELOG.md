@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.6.36](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@3.6.35...@bitgo/web-demo@3.6.36) (2026-10-13)
+
+
+### Bug Fixes
+
+* **sdk-api:** route browser v1 decrypt straight to SJCL ([1ba0e92](https://github.com/BitGo/BitGoJS/commit/1ba0e92c4360b98df8e67ea593c841fcef98ed84))
+
+
+
+
+
 ## [3.6.35](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@3.6.34...@bitgo/web-demo@3.6.35) (2026-10-09)
 
 **Note:** Version bump only for package @bitgo/web-demo

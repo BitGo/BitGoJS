@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.35.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.34.0...@bitgo/sdk-coin-canton@1.35.0) (2026-10-13)
+
+
+### Features
+
+* **sdk-coin-canton:** parse native Canton Coin allocate transactions ([1750f94](https://github.com/BitGo/BitGoJS/commit/1750f94ea720f1f535aabe698a6e164048f87e5c))
+
+
+
+
+
 # [1.34.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.33.3...@bitgo/sdk-coin-canton@1.34.0) (2026-10-09)
 
 
