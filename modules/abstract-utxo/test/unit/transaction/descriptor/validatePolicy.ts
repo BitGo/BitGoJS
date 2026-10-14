@@ -1,7 +1,8 @@
 import assert from 'assert';
 
 import { Triple } from '@bitgo/sdk-core';
-import { bip32 } from '@bitgo/wasm-utxo';
+import { pox5 } from '@bitgo/utxo-descriptors';
+import { bip32, Descriptor } from '@bitgo/wasm-utxo';
 import * as testutils from '@bitgo/wasm-utxo/testutils';
 
 import {
@@ -10,6 +11,7 @@ import {
   DescriptorValidationPolicy,
   getPolicyForEnv,
   getValidatorDescriptorTemplate,
+  getValidatorPox5Lockup,
 } from '../../../../src/descriptor/validatePolicy';
 import {
   NamedDescriptor,
@@ -87,5 +89,96 @@ describe('assertDescriptorPolicy', function () {
 
     // test is very permissive by default
     testAssertDescriptorPolicy([stripSignature(getNamedDescriptor('Wsh2Of2'))], getPolicyForEnv('test'), keys, null);
+  });
+});
+
+describe('PoX-5 lockup descriptor policy', function () {
+  const keys = testutils.getKeyTriple('default');
+  const stakerCommitment = Buffer.alloc(32, 0x42);
+  const earlyExitKey = Buffer.from(keys[0].derive(9).publicKey);
+
+  function getLockupDescriptor(stakerKeys: Triple<bip32.BIP32Interface> = keys): Descriptor {
+    return pox5.createPox5LockupDescriptor({
+      unlockHeight: 840_000,
+      stakerCommitment,
+      earlyExitKey,
+      stakerKeys,
+    });
+  }
+
+  function toNamed(value: string, name = 'descriptor'): NamedDescriptor {
+    return { name, value };
+  }
+
+  const external = toNamed(getDescriptor('Wsh2Of3').toString(), 'external');
+  const internal = toNamed(getDescriptor('Wsh2Of3').toString(), 'internal');
+  const lockup = toNamed(getLockupDescriptor().toString(), 'pox5-lockup-u840000');
+  const policy = getValidatorPox5Lockup(['Wsh2Of3', 'Wsh2Of3CltvDrop', 'SbtcDeposit']);
+
+  function assertAccepts(ds: NamedDescriptor[]): void {
+    assert.doesNotThrow(() =>
+      assertDescriptorPolicy(
+        ds.map((d) => toNamedDescriptorNative(d, 'derivable')),
+        policy,
+        keys
+      )
+    );
+    assert.doesNotThrow(() =>
+      assertDescriptorPolicy(
+        ds.map((d) => toNamedDescriptorNative(d, 'derivable')),
+        getPolicyForEnv('prod'),
+        keys
+      )
+    );
+  }
+
+  function assertRejects(ds: NamedDescriptor[]): void {
+    assert.throws(() =>
+      assertDescriptorPolicy(
+        ds.map((d) => toNamedDescriptorNative(d, 'derivable')),
+        policy,
+        keys
+      )
+    );
+    assert.throws(() =>
+      assertDescriptorPolicy(
+        ds.map((d) => toNamedDescriptorNative(d, 'derivable')),
+        getPolicyForEnv('prod'),
+        keys
+      )
+    );
+  }
+
+  it('accepts wallet descriptors mixed with a canonical lockup', function () {
+    assertAccepts([lockup]);
+    assertAccepts([external, internal, lockup]);
+  });
+
+  it('requires at least one lockup', function () {
+    // the template policy already accepts plain wallet descriptor groups
+    assert.throws(() =>
+      assertDescriptorPolicy(
+        [external, internal].map((d) => toNamedDescriptorNative(d, 'derivable')),
+        policy,
+        keys
+      )
+    );
+  });
+
+  it('rejects lockups with foreign staker keys', function () {
+    assertRejects([external, internal, toNamed(getLockupDescriptor(testutils.getKeyTriple('foreign')).toString())]);
+  });
+
+  it('rejects malformed and non-canonical lockups', function () {
+    const malformed = getLockupDescriptor().toString().split('#')[0].replace('multi(2,', 'multi(3,');
+    assertRejects([external, internal, toNamed(malformed)]);
+    assertRejects([external, internal, toNamed(`wsh(pk(${keys[0].neutered().toBase58()}/*))`)]);
+    assertRejects([toNamed(malformed)]);
+  });
+
+  it('returns false instead of throwing for descriptors it cannot parse', function () {
+    const nativeLockup = toNamedDescriptorNative(lockup, 'derivable');
+    assert.strictEqual(getValidatorDescriptorTemplate('Wsh2Of3').validate([nativeLockup], keys), false);
+    assert.strictEqual(getValidatorDescriptorTemplate('Wsh2Of3CltvDrop').validate([nativeLockup], keys), false);
   });
 });
