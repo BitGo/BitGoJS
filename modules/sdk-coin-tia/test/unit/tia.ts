@@ -199,6 +199,40 @@ describe('TIA', function () {
       isTransactionVerified.should.equal(true);
     });
 
+    it('should succeed to verify transaction with a memo-suffixed recipient address', async function () {
+      const txPrebuild = { txHex: TEST_TX_WITH_MEMO.signedTxBase64, txInfo: {} };
+      const txParams = {
+        recipients: [
+          {
+            address: `${TEST_TX_WITH_MEMO.to}?memoId=${TEST_TX_WITH_MEMO.memo}`,
+            amount: TEST_TX_WITH_MEMO.sendAmount,
+          },
+        ],
+      };
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification: {} });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should fail to verify transaction when the recipient memoId does not match the tx memo', async function () {
+      const txPrebuild = { txHex: TEST_TX_WITH_MEMO.signedTxBase64, txInfo: {} };
+      const txParams = {
+        recipients: [{ address: `${TEST_TX_WITH_MEMO.to}?memoId=999999`, amount: TEST_TX_WITH_MEMO.sendAmount }],
+      };
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, verification: {} })
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should fail to verify transaction when the recipient has no memoId but the tx has one', async function () {
+      const txPrebuild = { txHex: TEST_TX_WITH_MEMO.signedTxBase64, txInfo: {} };
+      const txParams = {
+        recipients: [{ address: TEST_TX_WITH_MEMO.to, amount: TEST_TX_WITH_MEMO.sendAmount }],
+      };
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, verification: {} })
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
     it('should fail to verify transaction with invalid param', async function () {
       const txPrebuild = {};
       const txParams = { recipients: undefined };
