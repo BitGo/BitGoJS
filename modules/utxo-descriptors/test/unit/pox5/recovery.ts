@@ -1,7 +1,6 @@
 import assert from 'assert/strict';
 import { createHash } from 'crypto';
 
-import { pox5 } from '@bitgo/utxo-descriptors';
 import { Psbt, type Descriptor } from '@bitgo/wasm-utxo';
 import { getKey, getKeyTriple } from '@bitgo/wasm-utxo/testutils';
 
@@ -9,11 +8,12 @@ import {
   assertPox5EarlyExitSpend,
   assertPox5LocktimeSpend,
   classifyPox5Spend,
+  createPox5LockupDescriptor,
+  matchPox5Input,
+  type Pox5InputMatch,
   POX5_MAX_UNLOCK_HEIGHT,
   preparePox5EarlyExit,
 } from '../../../src/pox5';
-
-type Pox5InputMatch = pox5.Pox5InputMatch;
 
 const UNLOCK_HEIGHT = 840_000;
 
@@ -33,7 +33,7 @@ function createPox5RecoveryPsbt(
   const [user, backup, bitgo] = getKeyTriple('utxo-staking-pox5-recovery');
   const earlyExit = getKey('utxo-staking-pox5-recovery-early-exit');
   const principalPreimage = Buffer.alloc(32, 0x42);
-  const descriptor = pox5.createPox5LockupDescriptor({
+  const descriptor = createPox5LockupDescriptor({
     unlockHeight,
     stakerCommitment: sha256(principalPreimage),
     earlyExitKey: Buffer.from(earlyExit.publicKey),
@@ -45,7 +45,7 @@ function createPox5RecoveryPsbt(
   psbt.addOutput(concreteDescriptor.scriptPubkey(), 90_000n);
   psbt.updateInputWithDescriptor(0, concreteDescriptor);
 
-  const match = pox5.matchPox5Input(psbt, 0, new Map([['pox5', concreteDescriptor]]));
+  const match = matchPox5Input(psbt, 0, new Map([['pox5', concreteDescriptor]]));
   assert.ok(match);
   return { psbt, match: match as Pox5InputMatch, principalPreimage };
 }
