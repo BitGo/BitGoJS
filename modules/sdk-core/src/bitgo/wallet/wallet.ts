@@ -1166,7 +1166,16 @@ export class Wallet implements IWallet {
     ]);
     this.bitgo.setRequestTracer(reqId);
     const response = await this.bitgo.post(this.url('/sweepWallet')).send(filteredParams).result();
-    const transaction = await this.baseCoin.explainTransaction(response);
+
+    const keychains: Keychain[] = await this.baseCoin.keychains().getKeysForSigning({ wallet: this, reqId });
+    const pubs = keychains.map((keychain) => {
+      assert(keychain.pub);
+      return keychain.pub;
+    });
+
+    // Explaining the prebuild requires the wallet pub triple: the /sweepWallet response
+    // does not include pubs and change outputs are classified against the wallet keys.
+    const transaction = await this.baseCoin.explainTransaction({ ...response, pubs });
     if (transaction?.outputs.length) {
       const invalidOutputAddress = transaction.outputs.find((output) => output.address !== params.address);
       if (invalidOutputAddress) {
@@ -1175,12 +1184,10 @@ export class Wallet implements IWallet {
     } else {
       throw new Error('invalid transaction, no destination address');
     }
-
-    const keychains = (await this.baseCoin.keychains().getKeysForSigning({ wallet: this, reqId })) as any;
-
     const transactionParams = {
       ...params,
       txPrebuild: response,
+      pubs,
       keychain: keychains[0],
       userKeychain: keychains[0],
       backupKeychain: keychains.length > 1 ? keychains[1] : null,
