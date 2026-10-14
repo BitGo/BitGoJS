@@ -3,11 +3,16 @@ import {
   DERIVABLE_ED25519_CHAIN_CODE_BYTES,
   DERIVABLE_ED25519_PUB_LENGTH,
   decodeDerivableEd25519Pub,
+  decodeEd25519ChainCode,
   decodeEd25519StrKeyPublicKey,
   decodeEd25519StrKeySecretSeed,
+  encodeAlgoKey,
   encodeDerivableEd25519Pub,
   encodeEd25519ChainCode,
   encodeEd25519StrKeyPublicKey,
+  encodeEd25519StrKeySecretSeed,
+  encodeHbarPrivateKeyDer,
+  encodeHbarPublicKeyDer,
   generateEd25519ChainCode,
   isChecksumValidStrKeyEd25519Pub,
   isDerivableEd25519Pub,
@@ -39,6 +44,15 @@ describe('ed25519Pub', function () {
       (() => encodeEd25519ChainCode(Buffer.alloc(31))).should.throw(/expected 32 bytes/);
     });
 
+    it('decodes a canonical 52-char chain code and rejects non-canonical trailing bits', function () {
+      decodeEd25519ChainCode(encodeEd25519ChainCode(CHAIN_CODE)).equals(CHAIN_CODE).should.equal(true);
+      // same 32 bytes, different spelling of the 4 padding bits in the final char
+      (() => decodeEd25519ChainCode('VOV2XK5LVOV2XK5LVOV2XK5LVOV2XK5LVOV2XK5LVOV2XK5LVOVR')).should.throw(
+        /Invalid ed25519 chain code/
+      );
+      (() => decodeEd25519ChainCode('AA')).should.throw(/Invalid ed25519 chain code/);
+    });
+
     it('rejects malformed composite values', function () {
       isDerivableEd25519Pub('not-a-root').should.equal(false);
       (() => decodeDerivableEd25519Pub('not-a-root')).should.throw(/Invalid derivable ed25519 pub/);
@@ -52,6 +66,11 @@ describe('ed25519Pub', function () {
       decodeEd25519StrKeySecretSeed(STRKEY_SEED).length.should.equal(32);
       isDerivableEd25519Pub(STRKEY_PUBLIC).should.equal(false);
       isChecksumValidStrKeyEd25519Pub(STRKEY_PUBLIC).should.equal(true);
+    });
+
+    it('encodes a 32-byte seed as an S… StrKey and round-trips the fixture', function () {
+      encodeEd25519StrKeySecretSeed(decodeEd25519StrKeySecretSeed(STRKEY_SEED)).should.equal(STRKEY_SEED);
+      (() => encodeEd25519StrKeySecretSeed(Buffer.alloc(31))).should.throw(/32 bytes/);
     });
 
     it('rejects a public key with a corrupted checksum', function () {
@@ -69,6 +88,30 @@ describe('ed25519Pub', function () {
       isValidEd25519StrKeyPublicKey('GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKY1').should.equal(false);
       isValidEd25519StrKeyPublicKey('').should.equal(false);
       isValidEd25519StrKeyPublicKey(STRKEY_PUBLIC.toLowerCase()).should.equal(false);
+    });
+  });
+
+  describe('coin child encodings', function () {
+    // Golden vectors generated with the reference implementations (js-sha512 + hi-base32),
+    // pinned here to prove the leaf's base32Encode + Node sha512-256 reproduce them byte-for-byte.
+    const SEED = Buffer.alloc(32, 0x01);
+    const PUB = Buffer.alloc(32, 0x02);
+    const ALGO_SEED = 'AEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEA5RCDXMI';
+    const ALGO_ADDRESS = 'AIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBAEAQCAIBMXPWWNQ';
+
+    it('encodes Algorand seed and address as 58-char base32 with a sha512-256 checksum', function () {
+      encodeAlgoKey(SEED).should.equal(ALGO_SEED);
+      encodeAlgoKey(SEED).should.match(/^[A-Z2-7]{58}$/);
+      encodeAlgoKey(PUB).should.equal(ALGO_ADDRESS);
+      (() => encodeAlgoKey(Buffer.alloc(31))).should.throw(/32 bytes/);
+    });
+
+    it('encodes Hedera public/private keys as DER-prefixed hex', function () {
+      encodeHbarPublicKeyDer(PUB).should.equal('302a300506032b6570032100' + PUB.toString('hex'));
+      encodeHbarPublicKeyDer(PUB).should.match(/^[0-9a-f]{88}$/);
+      encodeHbarPrivateKeyDer(SEED).should.equal('302e020100300506032b657004220420' + SEED.toString('hex'));
+      encodeHbarPrivateKeyDer(SEED).should.match(/^[0-9a-f]{96}$/);
+      (() => encodeHbarPublicKeyDer(Buffer.alloc(31))).should.throw(/32 bytes/);
     });
   });
 });

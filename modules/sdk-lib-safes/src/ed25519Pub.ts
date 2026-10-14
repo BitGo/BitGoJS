@@ -12,6 +12,7 @@
  */
 
 import { randomBytes } from 'crypto';
+import sha512 from 'js-sha512';
 
 export const DERIVABLE_ED25519_PUBLIC_KEY_BYTES = 32;
 export const DERIVABLE_ED25519_CHAIN_CODE_BYTES = 32;
@@ -19,11 +20,15 @@ export const DERIVABLE_ED25519_PUB_LENGTH = 103;
 
 const BASE32_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 const BASE32_ROOT_REGEX = /^[A-Z2-7]{103}$/;
+const CHAIN_CODE_REGEX = /^[A-Z2-7]{52}$/;
 const STRKEY_PUBLIC_KEY_REGEX = /^G[A-Z2-7]{55}$/;
 const STRKEY_SECRET_SEED_REGEX = /^S[A-Z2-7]{55}$/;
 const STRKEY_VERSION_PUBLIC_KEY = 6 << 3;
 const STRKEY_VERSION_SECRET_SEED = 18 << 3;
 const STRKEY_DECODED_BYTES = 35;
+const ALGORAND_CHECKSUM_BYTES = 4;
+const HBAR_PUBLIC_KEY_PREFIX = '302a300506032b6570032100';
+const HBAR_PRIVATE_KEY_PREFIX = '302e020100300506032b657004220420';
 
 function base32Decode(input: string): Buffer {
   const output = Buffer.alloc(Math.floor((input.length * 5) / 8));
@@ -126,6 +131,14 @@ export function encodeEd25519ChainCode(chainCode: Buffer): string {
   return base32Encode(chainCode);
 }
 
+/** Decode a canonical base32 chain code into its raw 32-byte buffer. */
+export function decodeEd25519ChainCode(chainCode: string): Buffer {
+  if (!CHAIN_CODE_REGEX.test(chainCode) || base32Encode(base32Decode(chainCode)) !== chainCode) {
+    throw new Error('Invalid ed25519 chain code: expected canonical 52-character base32');
+  }
+  return base32Decode(chainCode);
+}
+
 export function decodeEd25519StrKeyPublicKey(pub: string): Buffer {
   if (!STRKEY_PUBLIC_KEY_REGEX.test(pub)) {
     throw new Error('Invalid ed25519 StrKey public key');
@@ -159,6 +172,16 @@ export function encodeEd25519StrKeyPublicKey(rawPub: Buffer): string {
   return base32Encode(Buffer.concat([payload, checksum]));
 }
 
+export function encodeEd25519StrKeySecretSeed(rawSeed: Buffer): string {
+  if (rawSeed.length !== DERIVABLE_ED25519_PUBLIC_KEY_BYTES) {
+    throw new Error('ed25519 secret seed must be 32 bytes');
+  }
+  const payload = Buffer.concat([Buffer.from([STRKEY_VERSION_SECRET_SEED]), rawSeed]);
+  const checksum = Buffer.alloc(2);
+  checksum.writeUInt16LE(crc16Xmodem(payload), 0);
+  return base32Encode(Buffer.concat([payload, checksum]));
+}
+
 export function isChecksumValidStrKeyEd25519Pub(pub: string): boolean {
   try {
     decodeEd25519StrKeyPublicKey(pub);
@@ -166,4 +189,29 @@ export function isChecksumValidStrKeyEd25519Pub(pub: string): boolean {
   } catch {
     return false;
   }
+}
+
+/** Encode a raw 32-byte key (secret seed or public key) as an Algorand 58-character base32 value. */
+export function encodeAlgoKey(bytes: Buffer): string {
+  if (bytes.length !== DERIVABLE_ED25519_PUBLIC_KEY_BYTES) {
+    throw new Error('ed25519 key must be 32 bytes');
+  }
+  const checksum = Buffer.from(sha512.sha512_256.array(bytes).slice(28, 28 + ALGORAND_CHECKSUM_BYTES));
+  return base32Encode(Buffer.concat([bytes, checksum]));
+}
+
+/** Encode a raw 32-byte public key as a DER-prefixed Hedera public key (88 hex chars). */
+export function encodeHbarPublicKeyDer(pub: Buffer): string {
+  if (pub.length !== DERIVABLE_ED25519_PUBLIC_KEY_BYTES) {
+    throw new Error('ed25519 public key must be 32 bytes');
+  }
+  return HBAR_PUBLIC_KEY_PREFIX + pub.toString('hex');
+}
+
+/** Encode a raw 32-byte secret seed as a DER-prefixed Hedera private key (96 hex chars). */
+export function encodeHbarPrivateKeyDer(seed: Buffer): string {
+  if (seed.length !== DERIVABLE_ED25519_PUBLIC_KEY_BYTES) {
+    throw new Error('ed25519 secret seed must be 32 bytes');
+  }
+  return HBAR_PRIVATE_KEY_PREFIX + seed.toString('hex');
 }

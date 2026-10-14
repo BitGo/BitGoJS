@@ -13,6 +13,12 @@ import {
   decryptSafeKeycard,
   deriveSafeWalletKeys,
 } from '../../../../src/bitgo/safe/recovery';
+import {
+  decodeEd25519StrKeySecretSeed,
+  encodeDerivableEd25519Pub,
+  encodeEd25519ChainCode,
+  softDeriveChildPubEd25519AtPath,
+} from '../../../../src';
 import { BitGoBase } from '../../../../src/bitgo/bitgoBase';
 import { getInitializedMpcInstance } from '../../../../src/bitgo/tss/eddsa/eddsa';
 import { signEddsaMpcV2RecoveryTx } from '../../../../src/bitgo/utils/tss/eddsa/eddsaMPCv2';
@@ -354,10 +360,49 @@ describe('deriveSafeWalletKeys', () => {
     }
   });
 
-  it('rejects the unsupported ed25519Multisig slot', async () => {
-    await deriveSafeWalletKeys({ coin: 'btc', slot: 'ed25519Multisig', account: 0, roots }).should.be.rejectedWith(
-      /not supported yet/
+  it('derives the ed25519Multisig triplet at the BIP44 path', async () => {
+    const STRKEY_SEED = 'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI';
+    const backupSeed = decodeEd25519StrKeySecretSeed(STRKEY_SEED);
+    const backupRootPub = Buffer.from(ed25519.getPublicKey(backupSeed));
+    const backupChainCode = Buffer.alloc(32, 0xab);
+    const ed25519Roots: DecryptedSafeRoots = {
+      ...roots,
+      ed25519Multisig: {
+        user: STRKEY_SEED,
+        backup: { prv: STRKEY_SEED, chainCode: encodeEd25519ChainCode(backupChainCode) },
+        bitgo: encodeDerivableEd25519Pub(backupRootPub, backupChainCode),
+      },
+    };
+
+    const result = await deriveSafeWalletKeys({
+      coin: 'algo',
+      slot: 'ed25519Multisig',
+      account: 0,
+      roots: ed25519Roots,
+    });
+    if (result.slot !== 'ed25519Multisig') {
+      throw new Error('expected ed25519Multisig slot');
+    }
+
+    result.path.should.equal("m/44'/283'/2'/0'");
+
+    // user: hardened SLIP-0010 child, pinned to the leaf's golden vector
+    result.keys.user.kind.should.equal('seed');
+    result.keys.user.seed.should.equal('be69531ebbab851b69aa41bb9c905afed52d26ff4278e6418609d4d60570510c');
+    result.keys.user.pub.should.equal(
+      Buffer.from(ed25519.getPublicKey(Buffer.from(result.keys.user.seed, 'hex'))).toString('hex')
     );
+
+    // backup: extended key whose public half equals the public soft-derive of root pub ‖ chain code
+    const bitgoPub = (
+      await softDeriveChildPubEd25519AtPath(ed25519Roots.ed25519Multisig.bitgo, 'm/44/283/2/0')
+    ).toString('hex');
+    result.keys.backup.kind.should.equal('extended');
+    // Pin the private halves (self-generated; to be superseded by GV1 cross-repo vectors).
+    result.keys.backup.kL.should.equal('9ad60bb591fec65df3a72fb041ee53a3263c43e6056512bc49de6b342cff8e0f');
+    result.keys.backup.kR.should.equal('1262f2d5439c03d11f2a295d691b4ea629f14e9e25c614d4a8aff8edd1865cdf');
+    result.keys.backup.pub.should.equal(bitgoPub);
+    result.keys.bitgo.pub.should.equal(bitgoPub);
   });
 
   it('rejects a non-integer account', async () => {
