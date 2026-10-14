@@ -259,6 +259,10 @@ export class Icp extends BaseCoin {
     return 'ecdsa';
   }
 
+  allowsAccountConsolidations(): boolean {
+    return true; // platform enforces V2-only (CECHO-2443)
+  }
+
   /** @inheritDoc **/
   getHashFunction(): Hash {
     return createHash('sha256');
