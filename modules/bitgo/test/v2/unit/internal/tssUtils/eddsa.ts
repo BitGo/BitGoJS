@@ -1032,6 +1032,47 @@ describe('TSS Utils:', async function () {
       nockedCreateTx.isDone().should.be.true();
     });
 
+    it('should send videoApprovers as a top-level field, outside the intent', async function () {
+      const videoApprovers = ['5cae3130f8f4561d51dfcbfdaafba9b9'];
+      const nockedCreateTx = await nockCreateTxRequest({
+        walletId: wallet.id(),
+        requestBody: {
+          apiVersion: 'lite',
+          intent: {
+            intentType: 'payment',
+            recipients: [
+              {
+                address: {
+                  address: 'recipient',
+                },
+                amount: {
+                  value: '10000',
+                  symbol: 'tsol',
+                },
+              },
+            ],
+          },
+          videoApprovers,
+        },
+        // don't care about the actual response - just need to make sure request body matches
+        response: {},
+      });
+
+      await tssUtils.prebuildTxWithIntent({
+        reqId,
+        recipients: [
+          {
+            address: 'recipient',
+            amount: '10000',
+          },
+        ],
+        intentType: 'payment',
+        videoApprovers,
+      });
+
+      nockedCreateTx.isDone().should.be.true();
+    });
+
     it('should build multiple recipients with memo tx', async function () {
       const nockedCreateTx = await nockCreateTxRequest({
         walletId: wallet.id(),
