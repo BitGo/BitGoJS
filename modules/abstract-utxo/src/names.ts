@@ -33,7 +33,15 @@ export type UtxoCoinNameTestnet =
   | 'tbtcstxsignet';
 export type UtxoCoinName = UtxoCoinNameMainnet | UtxoCoinNameTestnet;
 
+/** Coin name used by wasm-utxo. Private Bitcoin networks map to a shared codec. */
 export function toWasmUtxoCoinName(coinName: UtxoCoinName | WasmUtxoCoinName): WasmUtxoCoinName {
+  switch (coinName) {
+    case 'tbtcstx':
+    case 'tbtcstxprivate1':
+      return 'tbtcreg';
+    case 'tbtcstxsignet':
+      return 'tbtcsig';
+  }
   if (!isCoinName(coinName)) {
     throw new Error(`coin ${coinName} is not supported by wasm-utxo`);
   }
