@@ -109,15 +109,17 @@ export class CoinMap {
   /**
    * Replace a coin (token or base coin) in the CoinMap with a new object carrying refreshed modifiable
    * fields. The existing record is looked up by id, and the swap only happens when its immutable fields
-   * (id, name, contract address and alias) are unchanged. Anything else throws before the map
-   * is touched. Coins that are not in the map yet are added.
+   * (id, name, contract address and alias) are unchanged and both records have the same coin class.
+   * Anything else throws before the map is touched. Coins that are not in the map yet are added.
    * @param {Readonly<BaseCoin>} coin new coin object
    * @throws {CoinReplacementNotAllowedError} when an immutable field differs from the existing record
+   *   or the new record has a different coin class
    */
   public replace(coin: Readonly<BaseCoin>): void {
     if (this.has(coin.id)) {
       const oldCoin = this.get(coin.id);
       CoinMap.assertImmutableFieldsUnchanged(oldCoin, coin);
+      CoinMap.assertSameCoinClass(oldCoin, coin);
       this._map.delete(oldCoin.name);
       this._coinByIds.delete(oldCoin.id);
       if (oldCoin.alias) {
@@ -146,6 +148,20 @@ export class CoinMap {
     }
     if (oldCoin.alias !== newCoin.alias) {
       throw new CoinReplacementNotAllowedError(oldCoin.name, 'immutable field alias changed');
+    }
+  }
+
+  /**
+   * A swap must never change the record's class: consumers dispatch on it (a LightningCoin swapped
+   * for a generic DynamicCoin breaks e.g. getStaticsLightningNetwork). Checked after the immutable
+   * fields so identity mismatches keep their more specific error.
+   */
+  private static assertSameCoinClass(oldCoin: Readonly<BaseCoin>, newCoin: Readonly<BaseCoin>): void {
+    if (oldCoin.constructor !== newCoin.constructor) {
+      throw new CoinReplacementNotAllowedError(
+        oldCoin.name,
+        `coin class changed from ${oldCoin.constructor.name} to ${newCoin.constructor.name}`
+      );
     }
   }
 

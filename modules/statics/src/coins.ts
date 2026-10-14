@@ -100,13 +100,18 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     }
     return constructToken(token);
   }
-  try {
-    const refreshedCoin = token.isToken ? constructToken(token) : buildDynamicCoin(token);
-    if (refreshedCoin) {
-      coins.replace(refreshedCoin);
+  // Refresh only when both the known coin and the AMS entry are tokens. Base coins keep their
+  // static record: rebuilding one from an AMS entry would swap its class (e.g. a LightningCoin
+  // becomes a generic DynamicCoin) and break every consumer that dispatches on the class.
+  if (existingCoin.isToken && token.isToken) {
+    try {
+      const refreshedCoin = constructToken(token);
+      if (refreshedCoin) {
+        coins.replace(refreshedCoin);
+      }
+    } catch {
+      // an AMS config that fails validation must not break a coin we already know
     }
-  } catch {
-    // an AMS config that fails validation must not break a coin we already know
   }
   return findExistingCoin(token);
 }
