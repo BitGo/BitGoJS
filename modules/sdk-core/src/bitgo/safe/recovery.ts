@@ -8,7 +8,7 @@ import { randomBytes } from 'crypto';
 import { bip32 } from '@bitgo/utxo-lib';
 import { coins, MAX_BIP32_INDEX, SAFE_ROOT_SLOT_ORDINALS } from '@bitgo/statics';
 import type { RootKeyType } from '@bitgo/public-types';
-import { parseSafeKeycardBox } from '@bitgo/sdk-lib-safes';
+import { Ed25519ChainCodeEntryCodec, parseSafeKeycardBox, type SafeKeycardRootEntry } from '@bitgo/sdk-lib-safes';
 import { DklsVrfUtils, MpsVrfUtils } from '@bitgo/sdk-lib-mpc';
 import { BitGoBase } from '../bitgoBase';
 import { IncorrectPasswordError } from '../errors';
@@ -18,6 +18,11 @@ export type DecryptedMpcSafeRoot = { signing: Buffer; vrf: Buffer };
 
 export type OnchainSafeRoot = { user: string; backup: string; bitgo: string };
 export type MpcSafeRoot = { user: DecryptedMpcSafeRoot; backup: DecryptedMpcSafeRoot; bitgo: string };
+export type Ed25519MultisigSafeRoot = {
+  user: string;
+  backup: { prv: string; chainCode: string };
+  bitgo: string;
+};
 
 export type Secp256k1MultisigChildKeys = {
   user: { prv: string; pub: string };
@@ -47,7 +52,7 @@ export type SafeRecoverKeyParams = {
 
 export type DecryptedSafeRoots = {
   secp256k1Multisig: OnchainSafeRoot;
-  ed25519Multisig: OnchainSafeRoot;
+  ed25519Multisig: Ed25519MultisigSafeRoot;
   ecdsaMpc: MpcSafeRoot;
   eddsaMpc: MpcSafeRoot;
 };
@@ -81,26 +86,43 @@ export async function decryptSafeKeycard(params: {
     }
   };
 
+  // Only box B's ed25519Multisig slot may carry the derivable `{ prv, chainCode }` object; every
+  // other entry — all of boxes A and C, and every non-ed25519 slot in box B — is a bare string and
+  // fails closed if it carries the object instead.
+  const requireBareString = (entry: SafeKeycardRootEntry): string => {
+    if (Ed25519ChainCodeEntryCodec.is(entry)) {
+      throw new Error('unexpected ed25519 chain-code entry where a bare string was required');
+    }
+    return entry;
+  };
+
+  const decryptEd25519Backup = async (entry: SafeKeycardRootEntry): Promise<{ prv: string; chainCode: string }> => {
+    if (!Ed25519ChainCodeEntryCodec.is(entry)) {
+      throw new Error('ed25519 backup root must carry a chain code');
+    }
+    return { prv: await decryptRoot(entry.prv), chainCode: entry.chainCode };
+  };
+
   return {
     secp256k1Multisig: {
-      user: await decryptRoot(userRoots.secp256k1Multisig),
-      backup: await decryptRoot(backupRoots.secp256k1Multisig),
-      bitgo: bitgoRoots.secp256k1Multisig,
+      user: await decryptRoot(requireBareString(userRoots.secp256k1Multisig)),
+      backup: await decryptRoot(requireBareString(backupRoots.secp256k1Multisig)),
+      bitgo: requireBareString(bitgoRoots.secp256k1Multisig),
     },
     ed25519Multisig: {
-      user: await decryptRoot(userRoots.ed25519Multisig),
-      backup: await decryptRoot(backupRoots.ed25519Multisig),
-      bitgo: bitgoRoots.ed25519Multisig,
+      user: await decryptRoot(requireBareString(userRoots.ed25519Multisig)),
+      backup: await decryptEd25519Backup(backupRoots.ed25519Multisig),
+      bitgo: requireBareString(bitgoRoots.ed25519Multisig),
     },
     ecdsaMpc: {
-      user: unwrapMpcRoot(await decryptRoot(userRoots.ecdsaMpc)),
-      backup: unwrapMpcRoot(await decryptRoot(backupRoots.ecdsaMpc)),
-      bitgo: bitgoRoots.ecdsaMpc,
+      user: unwrapMpcRoot(await decryptRoot(requireBareString(userRoots.ecdsaMpc))),
+      backup: unwrapMpcRoot(await decryptRoot(requireBareString(backupRoots.ecdsaMpc))),
+      bitgo: requireBareString(bitgoRoots.ecdsaMpc),
     },
     eddsaMpc: {
-      user: unwrapMpcRoot(await decryptRoot(userRoots.eddsaMpc)),
-      backup: unwrapMpcRoot(await decryptRoot(backupRoots.eddsaMpc)),
-      bitgo: bitgoRoots.eddsaMpc,
+      user: unwrapMpcRoot(await decryptRoot(requireBareString(userRoots.eddsaMpc))),
+      backup: unwrapMpcRoot(await decryptRoot(requireBareString(backupRoots.eddsaMpc))),
+      bitgo: requireBareString(bitgoRoots.eddsaMpc),
     },
   };
 }

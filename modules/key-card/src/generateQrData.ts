@@ -1,6 +1,7 @@
 import { BaseCoin } from '@bitgo/statics';
 import { HIGH_ENTROPY_ENCRYPTION_VERSION, Keychain, KeychainsTriplet } from '@bitgo/sdk-core';
 import { encrypt } from '@bitgo/sdk-api';
+import { decodeDerivableEd25519Pub, encodeEd25519ChainCode, type SafeKeycardRootEntry } from '@bitgo/sdk-lib-safes';
 import * as assert from 'assert';
 import {
   GenerateLightningQrDataParams,
@@ -225,6 +226,20 @@ function selectRootPrivateKey(keychain: Keychain, slot: SafeRootKeyType, role: '
   return data;
 }
 
+// Box B carries the backup's ed25519 chain code alongside the encrypted seed for slot ④ only —
+// the chain code is independent randomness and cannot be recomputed from the seed, unlike the
+// slot-① xprv whose chain code rides inside the ciphertext. Every other slot (and boxes A/C
+// everywhere) stays a bare string.
+function selectBackupRootEntry(keychain: Keychain, slot: SafeRootKeyType): SafeKeycardRootEntry {
+  const prv = selectRootPrivateKey(keychain, slot, 'backup');
+  if (slot !== 'ed25519Multisig') {
+    return prv;
+  }
+  assert.ok(keychain.pub, `Safe backup root ${slot} is missing a public key`);
+  const { chainCode } = decodeDerivableEd25519Pub(keychain.pub);
+  return { prv, chainCode: encodeEd25519ChainCode(chainCode) };
+}
+
 function selectRootPublicKey(keychain: Keychain, slot: SafeRootKeyType): string {
   const pub = getPubFromKey(keychain);
   assert.ok(pub, `Safe BitGo root ${slot} is missing a public key`);
@@ -240,7 +255,7 @@ function selectRootPublicKey(keychain: Keychain, slot: SafeRootKeyType): string 
  */
 function buildSafeBoxData(
   roots: Record<SafeRootKeyType, KeychainsTriplet>,
-  select: (root: KeychainsTriplet, slot: SafeRootKeyType) => string
+  select: (root: KeychainsTriplet, slot: SafeRootKeyType) => SafeKeycardRootEntry
 ): string {
   const box: SafeKeycardRoots = {} as SafeKeycardRoots;
   for (const slot of SAFE_ROOT_ORDER) {
@@ -267,7 +282,7 @@ export async function generateSafeQrData(params: GenerateSafeQrDataParams): Prom
     backup: {
       title: 'B: Backup Key',
       description: 'Your 4 root backup keys, encrypted with your safe password.',
-      data: buildSafeBoxData(roots, (root, slot) => selectRootPrivateKey(root.backupKeychain, slot, 'backup')),
+      data: buildSafeBoxData(roots, (root, slot) => selectBackupRootEntry(root.backupKeychain, slot)),
     },
     bitgo: {
       title: 'C: BitGo Key',

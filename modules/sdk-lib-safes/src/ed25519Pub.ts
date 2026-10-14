@@ -118,6 +118,14 @@ export function generateEd25519ChainCode(): Buffer {
   return randomBytes(DERIVABLE_ED25519_CHAIN_CODE_BYTES);
 }
 
+/** Encode a raw 32-byte chain code as canonical unpadded RFC 4648 base32 (52 characters). */
+export function encodeEd25519ChainCode(chainCode: Buffer): string {
+  if (chainCode.length !== DERIVABLE_ED25519_CHAIN_CODE_BYTES) {
+    throw new Error('Invalid ed25519 chain code: expected 32 bytes');
+  }
+  return base32Encode(chainCode);
+}
+
 export function decodeEd25519StrKeyPublicKey(pub: string): Buffer {
   if (!STRKEY_PUBLIC_KEY_REGEX.test(pub)) {
     throw new Error('Invalid ed25519 StrKey public key');

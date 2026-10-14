@@ -29,8 +29,14 @@ describe('keycardCodec', function () {
       });
     });
 
-    it('rejects a root whose value is not a string', function () {
+    it('rejects a root whose value is neither a string nor a derivable entry', function () {
       (() => parseSafeKeycardBox(JSON.stringify({ ...fullBox, ecdsaMpc: 12345 }))).should.throw(/ecdsaMpc/);
+    });
+
+    it('accepts a derivable entry object for the ed25519Multisig slot', function () {
+      const entry = { prv: 'enc-seed', chainCode: 'A'.repeat(52) };
+      const mixed = { ...fullBox, ed25519Multisig: entry };
+      parseSafeKeycardBox(JSON.stringify(mixed)).ed25519Multisig.should.deepEqual(entry);
     });
   });
 });

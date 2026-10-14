@@ -6,6 +6,7 @@ import {
   decodeEd25519StrKeyPublicKey,
   decodeEd25519StrKeySecretSeed,
   encodeDerivableEd25519Pub,
+  encodeEd25519ChainCode,
   encodeEd25519StrKeyPublicKey,
   generateEd25519ChainCode,
   isChecksumValidStrKeyEd25519Pub,
@@ -31,6 +32,11 @@ describe('ed25519Pub', function () {
 
     it('generates raw chain code for root composition', function () {
       generateEd25519ChainCode().length.should.equal(32);
+    });
+
+    it('encodes a 32-byte chain code as 52-char base32 and rejects wrong lengths', function () {
+      encodeEd25519ChainCode(CHAIN_CODE).should.match(/^[A-Z2-7]{52}$/);
+      (() => encodeEd25519ChainCode(Buffer.alloc(31))).should.throw(/expected 32 bytes/);
     });
 
     it('rejects malformed composite values', function () {

@@ -38,7 +38,7 @@ function makeDecryptMap(entries: Record<string, string>): (params: { password: s
 
 function box(values: {
   secp256k1Multisig: string;
-  ed25519Multisig: string;
+  ed25519Multisig: string | { prv: string; chainCode: string };
   ecdsaMpc: string;
   eddsaMpc: string;
 }): string {
@@ -59,7 +59,7 @@ describe('decryptSafeKeycard', () => {
     });
     const backupBox = box({
       secp256k1Multisig: 'enc-backup-secp',
-      ed25519Multisig: 'enc-backup-ed25519',
+      ed25519Multisig: { prv: 'enc-backup-ed25519', chainCode: 'C'.repeat(52) },
       ecdsaMpc: 'enc-backup-ecdsa',
       eddsaMpc: 'enc-backup-eddsa',
     });
@@ -107,7 +107,8 @@ describe('decryptSafeKeycard', () => {
     result.secp256k1Multisig.bitgo.should.equal('xpub-secp-bitgo');
 
     result.ed25519Multisig.user.should.equal('S-user-seed');
-    result.ed25519Multisig.backup.should.equal('S-backup-seed');
+    result.ed25519Multisig.backup.prv.should.equal('S-backup-seed');
+    result.ed25519Multisig.backup.chainCode.should.equal('C'.repeat(52));
     result.ed25519Multisig.bitgo.should.equal('pub-ed25519-bitgo');
 
     result.ecdsaMpc.user.signing.toString('hex').should.equal(Buffer.from('user-reduced').toString('hex'));
@@ -120,6 +121,79 @@ describe('decryptSafeKeycard', () => {
 
     // 4 slots × (user + backup) = 8 decrypts; BitGo (Box C) is never decrypted.
     (bitgo.decrypt as sinon.SinonStub).callCount.should.equal(8);
+  });
+
+  it('decrypts the seed from an object-form ed25519Multisig backup entry', async () => {
+    const userBox = box({
+      secp256k1Multisig: 'enc-user-secp',
+      ed25519Multisig: 'enc-user-ed25519',
+      ecdsaMpc: 'enc-user-ecdsa',
+      eddsaMpc: 'enc-user-eddsa',
+    });
+    const backupBox = JSON.stringify({
+      secp256k1Multisig: 'enc-backup-secp',
+      ed25519Multisig: { prv: 'enc-backup-ed25519', chainCode: 'A'.repeat(52) },
+      ecdsaMpc: 'enc-backup-ecdsa',
+      eddsaMpc: 'enc-backup-eddsa',
+    });
+    const bitgoBox = box({
+      secp256k1Multisig: 'xpub-secp-bitgo',
+      ed25519Multisig: 'pub-ed25519-bitgo',
+      ecdsaMpc: 'common-ecdsa-bitgo',
+      eddsaMpc: 'common-eddsa-bitgo',
+    });
+
+    const mpcUser = buildSafeMpcKeyEnvelopes(
+      Buffer.from('user-signing'),
+      Buffer.from('user-reduced'),
+      Buffer.from('user-vrf')
+    );
+    const mpcBackup = buildSafeMpcKeyEnvelopes(
+      Buffer.from('backup-signing'),
+      Buffer.from('backup-reduced'),
+      Buffer.from('backup-vrf')
+    );
+
+    const bitgo = makeMockBitGo(
+      makeDecryptMap({
+        'enc-user-secp': 'xprv-user',
+        'enc-backup-secp': 'xprv-backup',
+        'enc-user-ed25519': 'S-user-seed',
+        'enc-backup-ed25519': 'S-backup-seed',
+        'enc-user-ecdsa': mpcUser.reducedEnvelope.toString('base64'),
+        'enc-backup-ecdsa': mpcBackup.reducedEnvelope.toString('base64'),
+        'enc-user-eddsa': mpcUser.reducedEnvelope.toString('base64'),
+        'enc-backup-eddsa': mpcBackup.reducedEnvelope.toString('base64'),
+      })
+    );
+
+    const result = await decryptSafeKeycard({
+      bitgo,
+      userKeyBox: userBox,
+      backupKeyBox: backupBox,
+      bitgoKeyBox: bitgoBox,
+      password: PASSWORD,
+    });
+
+    result.ed25519Multisig.backup.prv.should.equal('S-backup-seed');
+    result.ed25519Multisig.backup.chainCode.should.equal('A'.repeat(52));
+  });
+
+  it('rejects an ed25519 chain-code entry in a non-backup slot (fail closed)', async () => {
+    const userBox = JSON.stringify({
+      secp256k1Multisig: { prv: 'enc-user-secp', chainCode: 'A'.repeat(52) },
+      ed25519Multisig: 'enc-user-ed25519',
+      ecdsaMpc: 'enc-user-ecdsa',
+      eddsaMpc: 'enc-user-eddsa',
+    });
+
+    await decryptSafeKeycard({
+      bitgo: makeMockBitGo(makeDecryptMap({})),
+      userKeyBox: userBox,
+      backupKeyBox: userBox,
+      bitgoKeyBox: userBox,
+      password: PASSWORD,
+    }).should.be.rejectedWith(/unexpected ed25519 chain-code entry/);
   });
 
   it('throws IncorrectPasswordError when decryption fails (wrong password)', async () => {
@@ -148,7 +222,7 @@ const MPC_ROOT = { signing: Buffer.alloc(0), vrf: Buffer.alloc(0) };
 function makeRoots(secp: { user: string; backup: string; bitgo: string }): DecryptedSafeRoots {
   return {
     secp256k1Multisig: secp,
-    ed25519Multisig: { user: 'u', backup: 'b', bitgo: 'g' },
+    ed25519Multisig: { user: 'u', backup: { prv: 'b', chainCode: 'c' }, bitgo: 'g' },
     ecdsaMpc: { user: MPC_ROOT, backup: MPC_ROOT, bitgo: 'g' },
     eddsaMpc: { user: MPC_ROOT, backup: MPC_ROOT, bitgo: 'g' },
   };
