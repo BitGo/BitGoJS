@@ -488,6 +488,11 @@ export function createTokenMapUsingConfigDetails(tokenConfigMap: Record<string, 
     'erc1155:soneiumtoken',
     'terc721:soneiumtoken',
     'terc1155:soneiumtoken',
+    'erc721:hbarevmtoken',
+    'terc721:hbarevmtoken',
+    'hbarevm:mclmongp',
+    'thbarevm:tmnft',
+    'thbarevm:tnnft',
   ]);
 
   // Add all the coins from statics coin map first
