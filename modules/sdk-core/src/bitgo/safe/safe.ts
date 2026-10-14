@@ -30,9 +30,11 @@ import {
 } from './iSafe';
 import { coinForRoot, SAFE_ROOT_SLOTS } from './rootCoin';
 import {
+  buildSafeBip44Path,
   deriveAndSelfCheckSafeChildHardened,
   deriveSafeChildEd25519Hardened,
   DerivedFromParentWithHardenedPath,
+  getSafeBip44CoinType,
   onchainSlotForCoin,
   tssSlotForCoin,
 } from '@bitgo/sdk-lib-safes';
@@ -46,7 +48,8 @@ const SafeRootKeySlot = t.keyof({
 
 const GetDerivationIndexResponse = t.type({
   slot: SafeRootKeySlot,
-  index: boundedInt(0, 0x7fffffff, 'derivationIndex'),
+  coinType: boundedInt(0, 0x7fffffff, 'coinType'),
+  account: boundedInt(0, 0x7fffffff, 'account'),
 });
 
 const CreateWalletInSafeBody = t.union([
@@ -129,13 +132,13 @@ export class Safe implements ISafe {
   }
 
   /**
-   * Mint a child wallet: peek the sequential index, derive the child keys, register
-   * them, then mint.
+   * Mint a child wallet: peek the next account for (slot, coinType), derive the child keys at
+   * `m/44'/<coinType>'/<slot>'/<account>'`, register them, then mint.
    *
-   * `onchain`: hardened-derive the user child (`m/<index>'`), register it
-   * public-only; backup and BitGo children are soft-derived on the server.
+   * `onchain`: hardened-derive the user child at that path, register it public-only; backup
+   * and BitGo children are soft-derived on the server at its soft twin.
    *
-   * `tss`: decrypt the user root blob, run the user/BitGo hard-derive ceremony,
+   * `tss`: decrypt the user root blob, run the user/BitGo hard-derive ceremony at that path,
    * register the ordered child documents, then mint.
    */
   async createWallet(params: CreateSafeWalletOptions): Promise<Wallet> {
@@ -151,12 +154,20 @@ export class Safe implements ISafe {
     const coin = this.bitgo.coin(params.coin);
     const slot = isTss ? tssSlotForCoin(coin.getChain()) : onchainSlotForCoin(coin.getChain());
 
-    const indexResponse = await this.bitgo.get(this.url('/derivation-index')).query({ slot }).result();
+    const indexResponse = await this.bitgo
+      .get(this.url('/derivation-index'))
+      .query({ slot, coin: params.coin })
+      .result();
     const peeked = decodeWithCodec(GetDerivationIndexResponse, indexResponse, 'GetDerivationIndexResponse');
     if (peeked.slot !== slot) {
       throw new Error(`derivation-index returned slot '${peeked.slot}', expected '${slot}'`);
     }
-    const { index } = peeked;
+    // A statics version skew between SDK and server would put the child on another coin's tree.
+    const expectedCoinType = getSafeBip44CoinType(coin.getChain());
+    if (peeked.coinType !== expectedCoinType) {
+      throw new Error(`derivation-index returned coinType ${peeked.coinType}, expected ${expectedCoinType}`);
+    }
+    const path = buildSafeBip44Path(peeked.coinType, slot, peeked.account);
 
     const safeData = rootIdFromSafe(this._safe, slot, 0) !== undefined ? this._safe : await this.fetchSafeData();
     const userRootId = rootIdFromSafe(safeData, slot, 0);
@@ -173,7 +184,7 @@ export class Safe implements ISafe {
       if (bitgoRootId === undefined) {
         throw new Error(`Safe ${this.id()} is missing rootKeys.hot.${slot} bitgo key`);
       }
-      return this.createTssWalletInSafe(coin, slot, userRootId, backupRootId, bitgoRootId, index, params);
+      return this.createTssWalletInSafe(coin, slot, userRootId, backupRootId, bitgoRootId, path, params);
     }
 
     const keychains = coin.keychains();
@@ -188,13 +199,8 @@ export class Safe implements ISafe {
 
     const derived =
       slot === 'ed25519Multisig'
-        ? deriveSafeChildEd25519Hardened(rootPrv, index)
-        : deriveAndSelfCheckSafeChildHardened(rootPrv, index);
-    const derivedFromParentWithHardenedPath = decodeWithCodec(
-      DerivedFromParentWithHardenedPath,
-      derived.derivationPath,
-      'derivedFromParentWithHardenedPath'
-    );
+        ? deriveSafeChildEd25519Hardened(rootPrv, path)
+        : deriveAndSelfCheckSafeChildHardened(rootPrv, path);
 
     const child = await keychains.add({
       pub: derived.pub,
@@ -202,7 +208,7 @@ export class Safe implements ISafe {
       keyType: 'independent',
       parent: userRootId,
       safeId: this.id(),
-      derivedFromParentWithPath: derivedFromParentWithHardenedPath,
+      derivedFromParentWithPath: derived.derivationPath,
     });
     const childId = child.id;
     if (childId.length === 0) {
@@ -230,7 +236,7 @@ export class Safe implements ISafe {
     userRootId: string,
     backupRootId: string,
     bitgoRootId: string,
-    index: number,
+    path: DerivedFromParentWithHardenedPath,
     params: CreateSafeWalletOptions
   ): Promise<Wallet> {
     if (slot !== 'ecdsaMpc' && slot !== 'eddsaMpc') {
@@ -258,7 +264,7 @@ export class Safe implements ISafe {
       enterprise: this.enterpriseId(),
       safeId: this.id(),
       parentKeyId: bitgoRootId,
-      derivationIndex: index,
+      path,
       userRootKeyId: userRootId,
       backupRootKeyId: backupRootId,
       userRootKeyShare: userRootMaterial.signing,

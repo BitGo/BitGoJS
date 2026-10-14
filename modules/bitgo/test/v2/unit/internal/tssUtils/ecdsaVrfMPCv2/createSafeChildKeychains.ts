@@ -4,7 +4,14 @@ import * as openpgp from 'openpgp';
 import { decode } from 'cbor-x';
 
 import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
-import { AddKeychainOptions, common, ECDSAUtils, Wallet } from '@bitgo/sdk-core';
+import {
+  AddKeychainOptions,
+  buildSafeBip44Path,
+  common,
+  DerivedFromParentWithHardenedPath,
+  ECDSAUtils,
+  Wallet,
+} from '@bitgo/sdk-core';
 import { DklsComms, DklsDrv, DklsTypes, DklsUtils, DklsVrfUtils } from '@bitgo/sdk-lib-mpc';
 import { MPCv2DeriveRound1Request, MPCv2DeriveRound2Request, MPCv2DeriveRound3Request } from '@bitgo/public-types';
 import { NonEmptyString } from 'io-ts-types';
@@ -12,10 +19,13 @@ import { BitGo, BitgoGPGPublicKey } from '../../../../../../src';
 
 const SAFE_ID = '6fa8537e3ef5a878fd3ae899f3ab7e5a';
 const USER_ROOT_KEY_ID = 'root-user-key-id';
-const DERIVATION_INDEX = 0;
+const ACCOUNT = 0;
 const BITGO_ROOT_KEY_ID = 'root-bitgo-key-id';
 const BACKUP_ROOT_KEY_ID = 'root-backup-key-id';
-const PATH_M0 = new Uint8Array([0x80, 0x00, 0x00, 0x00]);
+// hteth: coinType 60, ecdsaMpc slot 3.
+const childPath = (account: number) => buildSafeBip44Path(60, 'ecdsaMpc', account);
+const derivePathBytes = (account: number) =>
+  DklsVrfUtils.buildSafeMpcDerivePath({ coinType: 60, safeSlotOrdinal: 3, accountIndex: account });
 
 describe('TSS ECDSA safe child keychains (user/BitGo hard derive):', async function () {
   const coinName = 'hteth';
@@ -75,7 +85,14 @@ describe('TSS ECDSA safe child keychains (user/BitGo hard derive):', async funct
   it('should derive the user child and register the backup without encryptedPrv', async function () {
     const [userRoot, , bitgoRoot] = await DklsUtils.generateDKGKeyShares();
     const [vrfUser, , vrfBitgo] = await DklsVrfUtils.generateVrfDKGKeyShares();
-    const bitgoPair = new DklsDrv.Derive(3, 2, 2, bitgoRoot.getKeyShare(), vrfBitgo.getKeyShare(), PATH_M0);
+    const bitgoPair = new DklsDrv.Derive(
+      3,
+      2,
+      2,
+      bitgoRoot.getKeyShare(),
+      vrfBitgo.getKeyShare(),
+      derivePathBytes(ACCOUNT)
+    );
 
     const round1Nock = await nockDeriveRound1(bitgoPair);
     const round2Nock = await nockDeriveRound2(bitgoPair);
@@ -87,7 +104,7 @@ describe('TSS ECDSA safe child keychains (user/BitGo hard derive):', async funct
       enterprise: enterpriseId,
       safeId: SAFE_ID,
       parentKeyId: BITGO_ROOT_KEY_ID,
-      derivationIndex: DERIVATION_INDEX,
+      path: childPath(ACCOUNT),
       userRootKeyId: USER_ROOT_KEY_ID,
       backupRootKeyId: BACKUP_ROOT_KEY_ID,
       userRootKeyShare: userRoot.getKeyShare(),
@@ -115,12 +132,18 @@ describe('TSS ECDSA safe child keychains (user/BitGo hard derive):', async funct
     assert.ok(userChildShare.s_i);
   });
 
-  it('should derive at a non-zero hardened index and agree with the server', async function () {
+  it('should derive at a non-zero account and agree with the server', async function () {
     const idx = 7;
-    const path = new Uint8Array([0x80 | (idx >>> 24), 0, 0, idx]);
     const [userRoot, , bitgoRoot] = await DklsUtils.generateDKGKeyShares();
     const [vrfUser, , vrfBitgo] = await DklsVrfUtils.generateVrfDKGKeyShares();
-    const bitgoPair = new DklsDrv.Derive(3, 2, 2, bitgoRoot.getKeyShare(), vrfBitgo.getKeyShare(), path);
+    const bitgoPair = new DklsDrv.Derive(
+      3,
+      2,
+      2,
+      bitgoRoot.getKeyShare(),
+      vrfBitgo.getKeyShare(),
+      derivePathBytes(idx)
+    );
 
     const round1Nock = await nockDeriveRound1(bitgoPair, 1, idx);
     const round2Nock = await nockDeriveRound2(bitgoPair);
@@ -132,7 +155,7 @@ describe('TSS ECDSA safe child keychains (user/BitGo hard derive):', async funct
       enterprise: enterpriseId,
       safeId: SAFE_ID,
       parentKeyId: BITGO_ROOT_KEY_ID,
-      derivationIndex: idx,
+      path: childPath(idx),
       userRootKeyId: USER_ROOT_KEY_ID,
       backupRootKeyId: BACKUP_ROOT_KEY_ID,
       userRootKeyShare: userRoot.getKeyShare(),
@@ -147,10 +170,74 @@ describe('TSS ECDSA safe child keychains (user/BitGo hard derive):', async funct
     assert.equal(bitgoKeychain.commonKeychain, userKeychain.commonKeychain);
   });
 
-  it('registers the BitGo child placeholder with the hardened path and no private material', async function () {
+  it('lands on the same child key that offline recovery derives at the same path', async function () {
+    const [userRoot, backupRoot, bitgoRoot] = await DklsUtils.generateDKGKeyShares();
+    const [vrfUser, vrfBackup, vrfBitgo] = await DklsVrfUtils.generateVrfDKGKeyShares();
+    const bitgoPair = new DklsDrv.Derive(3, 2, 2, bitgoRoot.getKeyShare(), vrfBitgo.getKeyShare(), derivePathBytes(5));
+
+    await nockDeriveRound1(bitgoPair, 1, 5);
+    await nockDeriveRound2(bitgoPair);
+    await nockDeriveRound3(bitgoPair);
+    await nockAddChildKey(coinName, 3, 5);
+
+    const { userKeychain } = await tssUtils.createSafeChildKeychains({
+      passphrase: 'test',
+      enterprise: enterpriseId,
+      safeId: SAFE_ID,
+      parentKeyId: BITGO_ROOT_KEY_ID,
+      path: childPath(5),
+      userRootKeyId: USER_ROOT_KEY_ID,
+      backupRootKeyId: BACKUP_ROOT_KEY_ID,
+      userRootKeyShare: userRoot.getKeyShare(),
+      userRootVrfKeyShare: vrfUser.getKeyShare(),
+    });
+
+    const recovered = await DklsVrfUtils.deriveSafeEcdsaMpcChild({
+      userRoot: { signing: userRoot.getReducedKeyShare(), vrf: vrfUser.getKeyShare() },
+      backupRoot: { signing: backupRoot.getReducedKeyShare(), vrf: vrfBackup.getKeyShare() },
+      account: 5,
+      coinType: 60,
+      safeSlotOrdinal: 3,
+    });
+    assert.equal(userKeychain.commonKeychain, recovered.commonKeychain);
+  });
+
+  for (const badPath of ["m/0'", 'm/44/60/3/0', "m/44'/60'/9'/0'"]) {
+    it(`rejects the non-BIP44 path ${JSON.stringify(badPath)} before any request`, async function () {
+      const [userRoot] = await DklsUtils.generateDKGKeyShares();
+      const [vrfUser] = await DklsVrfUtils.generateVrfDKGKeyShares();
+      const scope = nock(bgUrl).post('/api/v2/mpc/generatekey').reply(500);
+
+      await assert.rejects(
+        () =>
+          tssUtils.createSafeChildKeychains({
+            passphrase: 'test',
+            enterprise: enterpriseId,
+            safeId: SAFE_ID,
+            parentKeyId: BITGO_ROOT_KEY_ID,
+            path: badPath as DerivedFromParentWithHardenedPath,
+            userRootKeyId: USER_ROOT_KEY_ID,
+            backupRootKeyId: BACKUP_ROOT_KEY_ID,
+            userRootKeyShare: userRoot.getKeyShare(),
+            userRootVrfKeyShare: vrfUser.getKeyShare(),
+          }),
+        /Invalid safe BIP44 path/
+      );
+      assert.ok(!scope.isDone(), 'no derive round may be sent for a non-BIP44 path');
+    });
+  }
+
+  it('registers the BitGo child placeholder with the BIP44 path and no private material', async function () {
     const [userRoot, , bitgoRoot] = await DklsUtils.generateDKGKeyShares();
     const [vrfUser, , vrfBitgo] = await DklsVrfUtils.generateVrfDKGKeyShares();
-    const bitgoPair = new DklsDrv.Derive(3, 2, 2, bitgoRoot.getKeyShare(), vrfBitgo.getKeyShare(), PATH_M0);
+    const bitgoPair = new DklsDrv.Derive(
+      3,
+      2,
+      2,
+      bitgoRoot.getKeyShare(),
+      vrfBitgo.getKeyShare(),
+      derivePathBytes(ACCOUNT)
+    );
 
     await nockDeriveRound1(bitgoPair);
     await nockDeriveRound2(bitgoPair);
@@ -170,7 +257,7 @@ describe('TSS ECDSA safe child keychains (user/BitGo hard derive):', async funct
       enterprise: enterpriseId,
       safeId: SAFE_ID,
       parentKeyId: BITGO_ROOT_KEY_ID,
-      derivationIndex: DERIVATION_INDEX,
+      path: childPath(ACCOUNT),
       userRootKeyId: USER_ROOT_KEY_ID,
       backupRootKeyId: BACKUP_ROOT_KEY_ID,
       userRootKeyShare: userRoot.getKeyShare(),
@@ -184,12 +271,12 @@ describe('TSS ECDSA safe child keychains (user/BitGo hard derive):', async funct
     // Same common keychain across all three child registrations.
     assert.equal(bitgoBody.commonKeychain, userBody.commonKeychain);
     assert.equal(bitgoBody.commonKeychain, bitgoKeychain.commonKeychain);
-    // All child paths are hardened.
-    assert.equal(userBody.derivedFromParentWithPath, "m/0'");
+    // All child paths are the hardened BIP44 path.
+    assert.equal(userBody.derivedFromParentWithPath, "m/44'/60'/3'/0'");
     assert.equal(userBody.parent, USER_ROOT_KEY_ID);
     const backupBody = addKeyBodies.find((body) => body.source === 'backup');
     assert.ok(backupBody, 'expected a backup child registration');
-    assert.equal(backupBody.derivedFromParentWithPath, "m/0'");
+    assert.equal(backupBody.derivedFromParentWithPath, "m/44'/60'/3'/0'");
     assert.equal(backupBody.parent, BACKUP_ROOT_KEY_ID);
     // Exact wire body: public-only placeholder with no private material.
     assert.deepEqual(bitgoBody, {
@@ -199,14 +286,21 @@ describe('TSS ECDSA safe child keychains (user/BitGo hard derive):', async funct
       commonKeychain: userBody.commonKeychain,
       safeId: SAFE_ID,
       parent: BITGO_ROOT_KEY_ID,
-      derivedFromParentWithPath: "m/0'",
+      derivedFromParentWithPath: "m/44'/60'/3'/0'",
     });
   });
 
   it('should reject root key material that is not a valid VRF envelope', async function () {
     const [, , bitgoRoot] = await DklsUtils.generateDKGKeyShares();
     const [, , vrfBitgo] = await DklsVrfUtils.generateVrfDKGKeyShares();
-    const bitgoPair = new DklsDrv.Derive(3, 2, 2, bitgoRoot.getKeyShare(), vrfBitgo.getKeyShare(), PATH_M0);
+    const bitgoPair = new DklsDrv.Derive(
+      3,
+      2,
+      2,
+      bitgoRoot.getKeyShare(),
+      vrfBitgo.getKeyShare(),
+      derivePathBytes(ACCOUNT)
+    );
     const round1Nock = await nockDeriveRound1(bitgoPair);
     const round2Nock = await nockDeriveRound2(bitgoPair);
     const round3Nock = await nockDeriveRound3(bitgoPair);
@@ -218,7 +312,7 @@ describe('TSS ECDSA safe child keychains (user/BitGo hard derive):', async funct
           enterprise: enterpriseId,
           safeId: SAFE_ID,
           parentKeyId: BITGO_ROOT_KEY_ID,
-          derivationIndex: DERIVATION_INDEX,
+          path: childPath(ACCOUNT),
           userRootKeyId: USER_ROOT_KEY_ID,
           backupRootKeyId: BACKUP_ROOT_KEY_ID,
           userRootKeyShare: Buffer.from('garbage'),
@@ -234,7 +328,14 @@ describe('TSS ECDSA safe child keychains (user/BitGo hard derive):', async funct
   it('should reject a root blob with a VRF partyId mismatch', async function () {
     const [userRoot, , bitgoRoot] = await DklsUtils.generateDKGKeyShares();
     const [, vrfBackup, vrfBitgo] = await DklsVrfUtils.generateVrfDKGKeyShares();
-    const bitgoPair = new DklsDrv.Derive(3, 2, 2, bitgoRoot.getKeyShare(), vrfBitgo.getKeyShare(), PATH_M0);
+    const bitgoPair = new DklsDrv.Derive(
+      3,
+      2,
+      2,
+      bitgoRoot.getKeyShare(),
+      vrfBitgo.getKeyShare(),
+      derivePathBytes(ACCOUNT)
+    );
     const round1Nock = await nockDeriveRound1(bitgoPair);
     const round2Nock = await nockDeriveRound2(bitgoPair);
     const round3Nock = await nockDeriveRound3(bitgoPair);
@@ -246,7 +347,7 @@ describe('TSS ECDSA safe child keychains (user/BitGo hard derive):', async funct
           enterprise: enterpriseId,
           safeId: SAFE_ID,
           parentKeyId: BITGO_ROOT_KEY_ID,
-          derivationIndex: DERIVATION_INDEX,
+          path: childPath(ACCOUNT),
           userRootKeyId: USER_ROOT_KEY_ID,
           backupRootKeyId: BACKUP_ROOT_KEY_ID,
           userRootKeyShare: userRoot.getKeyShare(),
@@ -274,7 +375,7 @@ describe('TSS ECDSA safe child keychains (user/BitGo hard derive):', async funct
     return bitgoGPGPublicKeyResponse;
   }
 
-  async function nockDeriveRound1(bitgoPair: DklsDrv.Derive, times = 1, index = DERIVATION_INDEX) {
+  async function nockDeriveRound1(bitgoPair: DklsDrv.Derive, times = 1, account = ACCOUNT) {
     return nock(bgUrl)
       .post(
         '/api/v2/mpc/generatekey',
@@ -282,7 +383,8 @@ describe('TSS ECDSA safe child keychains (user/BitGo hard derive):', async funct
           body.round === 'MPCv2Derive-R1' &&
           body.safeId === SAFE_ID &&
           body.payload?.parentKeyId === BITGO_ROOT_KEY_ID &&
-          body.payload?.derivationIndex === index &&
+          // TODO(WCN-2969): R1 carries the path once public-types adds it; today the account rides as derivationIndex.
+          body.payload?.derivationIndex === account &&
           body.payload?.userGpgPublicKey &&
           body.payload?.userMsg1 &&
           body.payload?.backupGpgPublicKey === undefined &&
@@ -381,9 +483,9 @@ describe('TSS ECDSA safe child keychains (user/BitGo hard derive):', async funct
   }
 
   /**
-   * Nocks the hardened child key registrations.
+   * Nocks the BIP44 child key registrations.
    */
-  async function nockAddChildKey(coin: string, times = 3, index = DERIVATION_INDEX) {
+  async function nockAddChildKey(coin: string, times = 3, account = ACCOUNT) {
     return nock('https://bitgo.fakeurl')
       .post(
         `/api/v2/${coin}/key`,
@@ -392,7 +494,7 @@ describe('TSS ECDSA safe child keychains (user/BitGo hard derive):', async funct
           body.isMPCv2 === true &&
           body.safeId === SAFE_ID &&
           !!body.parent &&
-          body.derivedFromParentWithPath === `m/${index}'`
+          body.derivedFromParentWithPath === childPath(account)
       )
       .times(times)
       .reply(200, (uri, requestBody: AddKeychainOptions) => ({

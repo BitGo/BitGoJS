@@ -18,6 +18,7 @@ import {
   MPCv2SignatureShareRound1Output,
   MPCv2SignatureShareRound2Output,
 } from '@bitgo/public-types';
+import type { DerivedFromParentWithHardenedPath } from '@bitgo/sdk-lib-safes';
 
 import { Ecdsa } from '../../../../account-lib';
 import { AddKeychainOptions, Keychain, KeyType, WebauthnKeyEncryptionInfo } from '../../../keychain';
@@ -395,8 +396,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     encryptionVersion?: EncryptionVersion,
     enterprise?: string,
     safeId?: string,
-    // Safe child registration: the parent root key ID and derivation index.
-    child?: { parentKeyId?: string; index?: number }
+    // Safe child registration: the parent root key ID and the BIP44 child path.
+    child?: { parentKeyId?: string; path?: DerivedFromParentWithHardenedPath }
   ): Promise<Keychain> {
     let source: string;
     let encryptedPrv: string | undefined = undefined;
@@ -412,7 +413,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
             participantIndex === MPCv2PartiesEnum.BACKUP &&
               safeId !== undefined &&
               child?.parentKeyId !== undefined &&
-              child.index !== undefined,
+              child.path !== undefined,
             `Private material is required for ${source} keychain`
           );
           break;
@@ -451,11 +452,6 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
         throw new Error('Invalid participant index');
     }
 
-    let derivedFromParentWithPath: string | undefined;
-    if (child?.index !== undefined) {
-      derivedFromParentWithPath = `m/${child.index}'`;
-    }
-
     const recipientKeychainParams: AddKeychainOptions = {
       source,
       keyType: 'tss' as KeyType,
@@ -465,7 +461,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       isMPCv2: true,
       safeId,
       parent: child?.parentKeyId,
-      derivedFromParentWithPath,
+      derivedFromParentWithPath: child?.path,
     };
 
     if (webauthnInfo && participantIndex === MPCv2PartiesEnum.USER && privateMaterialBase64) {
@@ -612,7 +608,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     encryptionVersion?: EncryptionVersion,
     enterprise?: string,
     safeId?: string,
-    child?: { parentKeyId?: string; index?: number }
+    child?: { parentKeyId?: string; path?: DerivedFromParentWithHardenedPath }
   ): Promise<Keychain> {
     return this.createParticipantKeychain(
       MPCv2PartiesEnum.USER,
@@ -643,14 +639,14 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     },
     encryptionVersion?: EncryptionVersion,
     safeId?: string,
-    child?: { parentKeyId?: string; index?: number }
+    child?: { parentKeyId?: string; path?: DerivedFromParentWithHardenedPath }
   ): Promise<Keychain> {
     if (privateMaterial === undefined) {
       // Safe backup child placeholder: no local private material, but always derived from a
       // parent root (hardened path).
       assert(
-        child?.parentKeyId !== undefined && child.index !== undefined,
-        'Backup placeholder requires a parent key id and derivation index'
+        child?.parentKeyId !== undefined && child.path !== undefined,
+        'Backup placeholder requires a parent key id and derivation path'
       );
     }
     return this.createParticipantKeychain(
@@ -691,7 +687,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
   protected async addBitgoKeychain(
     commonKeychain: string,
     safeId?: string,
-    child?: { parentKeyId?: string; index?: number }
+    child?: { parentKeyId?: string; path?: DerivedFromParentWithHardenedPath }
   ): Promise<Keychain> {
     return this.createParticipantKeychain(
       MPCv2PartiesEnum.BITGO,

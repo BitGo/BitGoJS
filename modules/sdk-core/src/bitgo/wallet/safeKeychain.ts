@@ -3,7 +3,8 @@
  */
 import { BitGoBase } from '../bitgoBase';
 import { decryptKeychainPrivateKey, IKeychains, Keychain, KeychainWithEncryptedPrv } from '../keychain';
-import { deriveSafeChildHardenedFromXprv, parseDerivedFromParentWithHardenedPath } from '@bitgo/sdk-lib-safes';
+import { deriveSafeChildHardenedFromXprv, DerivedFromParentWithHardenedPath } from '@bitgo/sdk-lib-safes';
+import { decodeWithCodec } from '../utils/codecs';
 import { IncorrectPasswordError } from '../errors';
 import type { DecryptedKeychainData } from './iWallet';
 
@@ -148,7 +149,11 @@ async function resolveSafeKeyMaterial(params: ResolveSafeKeyMaterialParams): Pro
 
   const derived = deriveSafeChildHardenedFromXprv(
     rootPrv,
-    parseDerivedFromParentWithHardenedPath(childKeychain.derivedFromParentWithPath)
+    decodeWithCodec(
+      DerivedFromParentWithHardenedPath,
+      childKeychain.derivedFromParentWithPath,
+      'derivedFromParentWithPath'
+    )
   );
   if (derived.pub !== childKeychain.pub) {
     throw new SafeDerivedPublicKeyMismatchError(walletId, childKeychain.pub, derived.pub);
@@ -164,7 +169,7 @@ async function resolveSafeKeyMaterial(params: ResolveSafeKeyMaterialParams): Pro
  * Resolve signing material for a safe owner (child key has no encryptedPrv).
  *
  * Onchain secp256k1: decrypt root, hardened-derive at `derivedFromParentWithPath`
- * (`m/<n>'`), and verify the registered pub.
+ * (`m/44'/<coinType>'/<slot>'/<account>'`), and verify the registered pub.
  * TSS and ed25519 onchain: throw — do not return root material or BIP32-derive the wrong curve.
  *
  * Do not use for wallet sharing — that must not receive root key material.

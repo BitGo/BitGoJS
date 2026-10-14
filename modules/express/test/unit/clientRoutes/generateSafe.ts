@@ -258,8 +258,8 @@ describe('Generate Safe (typed handler)', () => {
 
     const derivationNock = nock(bgUrl)
       .get(`/api/v2/enterprise/${ENTERPRISE_ID}/safes/${SAFE_ID}/derivation-index`)
-      .query({ slot: 'secp256k1Multisig' })
-      .reply(200, { slot: 'secp256k1Multisig', index: 0 });
+      .query({ slot: 'secp256k1Multisig', coin: 'tbtc' })
+      .reply(200, { slot: 'secp256k1Multisig', coinType: 0, account: 0 });
 
     const getRootKeyNock = nock(bgUrl).get(`/api/v2/tbtc/key/${USER_ROOT_ID}`).reply(200, {
       id: USER_ROOT_ID,
@@ -269,9 +269,14 @@ describe('Generate Safe (typed handler)', () => {
     });
 
     const addChildNock = nock(bgUrl)
-      .post('/api/v2/tbtc/key', (body: { parent?: string; safeId?: string; source?: string }) => {
-        return body.parent === USER_ROOT_ID && body.safeId === SAFE_ID && body.source === 'user';
-      })
+      .post(
+        '/api/v2/tbtc/key',
+        (body: { parent?: string; safeId?: string; source?: string; derivedFromParentWithPath?: string }) =>
+          body.parent === USER_ROOT_ID &&
+          body.safeId === SAFE_ID &&
+          body.source === 'user' &&
+          body.derivedFromParentWithPath === "m/44'/0'/1'/0'"
+      )
       .reply(200, { id: childKeyId });
 
     const mintNock = nock(bgUrl)

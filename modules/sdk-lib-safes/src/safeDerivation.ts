@@ -3,8 +3,10 @@
  *
  * @experimental Shared safe child derivation for mint, sign, and recovery.
  *
- * User child: hardened `m/<index>'` from the sequential `safe.derivationIndex[slot]`.
- * Backup / BitGo children are soft-derived at `m/<index>` client-side for recovery.
+ * User child (every slot): hardened `m/44'/<coinType>'/<slot>'/<account>'`.
+ * Multisig co-signers (backup / BitGo): the soft twin `m/44/<coinType>/<slot>/<account>`.
+ * `<coinType>` is statics `bip44CoinType`, `<slot>` is statics `SAFE_ROOT_SLOT_ORDINALS[slot]`,
+ * and `<account>` is the safe's per-(slot, coinType) counter.
  *
  * Do not use `derivedFromParentWithSeed` / `deriveKeyWithSeed` (`m/999999/a/b`) —
  * that is the custody hashed path and cannot reproduce a safe child.
@@ -12,72 +14,143 @@
 import * as t from 'io-ts';
 import * as nacl from 'tweetnacl';
 import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
-import { MAX_BIP32_INDEX } from '@bitgo/statics';
+import { coins, MAX_BIP32_INDEX, SAFE_ROOT_SLOT_ORDINALS } from '@bitgo/statics';
+import type { RootKeyType } from '@bitgo/public-types';
 import { Ed25519KeyDeriver } from './ed25519KeyDeriver';
-import { decodeWithCodec } from './codecs';
 import { decodeEd25519StrKeySecretSeed, encodeEd25519StrKeyPublicKey } from './ed25519Pub';
 
-export const DERIVED_FROM_PARENT_WITH_HARDENED_PATH = /^m\/(\d+)'$/;
+const HARDENED_BIP44_PATH = /^m\/44'\/(\d+)'\/(\d+)'\/(\d+)'$/;
+const SOFT_BIP44_PATH = /^m\/44\/(\d+)\/(\d+)\/(\d+)$/;
+const SAFE_SLOT_ORDINALS: readonly number[] = Object.values(SAFE_ROOT_SLOT_ORDINALS);
 
-export function parseSafeDerivationIndex(index: string | number): number {
-  let idx: number;
-  if (typeof index === 'number') {
-    idx = index;
-  } else if (/^\d+$/.test(index)) {
-    idx = Number(index);
-  } else {
-    throw new Error(`Invalid safe derivation index '${index}': expected a non-negative integer`);
-  }
-  if (!Number.isInteger(idx) || idx < 0 || idx > MAX_BIP32_INDEX) {
-    throw new Error(`Invalid safe derivation index '${index}': expected a non-negative integer`);
-  }
-  return idx;
+export interface SafeBip44PathSegments {
+  coinType: number;
+  slotOrdinal: number;
+  account: number;
 }
 
-export function getSafeHardenedDerivationPath(index: string | number): string {
-  return `m/${parseSafeDerivationIndex(index)}'`;
+/**
+ * Canonical decimal only: `044` and `44` name one key under two strings, so string-equality
+ * path checks (the server's unique index) would treat one child as two.
+ */
+function parseBip32Index(segment: string): number | undefined {
+  const index = Number(segment);
+  return Number.isInteger(index) && index <= MAX_BIP32_INDEX && String(index) === segment ? index : undefined;
+}
+
+function parseBip44Segments(match: RegExpExecArray | null): SafeBip44PathSegments | undefined {
+  if (!match) {
+    return undefined;
+  }
+  const coinType = parseBip32Index(match[1]);
+  const slotOrdinal = parseBip32Index(match[2]);
+  const account = parseBip32Index(match[3]);
+  if (coinType === undefined || slotOrdinal === undefined || account === undefined) {
+    return undefined;
+  }
+  if (!SAFE_SLOT_ORDINALS.includes(slotOrdinal)) {
+    return undefined;
+  }
+  return { coinType, slotOrdinal, account };
 }
 
 export interface DerivedFromParentWithHardenedPathBrand {
   readonly DerivedFromParentWithHardenedPath: unique symbol;
 }
 
+export interface DerivedFromParentWithSoftPathBrand {
+  readonly DerivedFromParentWithSoftPath: unique symbol;
+}
+
+/** Safe user-child path `m/44'/<coinType>'/<slot>'/<account>'`; also every MPC child. */
 export type DerivedFromParentWithHardenedPath = t.Branded<string, DerivedFromParentWithHardenedPathBrand>;
+
+/** Multisig co-signer path `m/44/<coinType>/<slot>/<account>`, the soft twin of a user-child path. */
+export type DerivedFromParentWithSoftPath = t.Branded<string, DerivedFromParentWithSoftPathBrand>;
+
+export function isDerivedFromParentWithHardenedPath(s: string): s is DerivedFromParentWithHardenedPath {
+  return parseBip44Segments(HARDENED_BIP44_PATH.exec(s)) !== undefined;
+}
+
+export function isDerivedFromParentWithSoftPath(s: string): s is DerivedFromParentWithSoftPath {
+  return parseBip44Segments(SOFT_BIP44_PATH.exec(s)) !== undefined;
+}
 
 export const DerivedFromParentWithHardenedPath = t.brand(
   t.string,
-  (s): s is DerivedFromParentWithHardenedPath => parseDerivedFromParentWithHardenedPathIndex(s) !== undefined,
+  (s): s is DerivedFromParentWithHardenedPath => isDerivedFromParentWithHardenedPath(s),
   'DerivedFromParentWithHardenedPath'
 );
 
-function parseDerivedFromParentWithHardenedPathIndex(path: string): number | undefined {
-  const match = DERIVED_FROM_PARENT_WITH_HARDENED_PATH.exec(path);
-  if (!match) {
-    return undefined;
+export const DerivedFromParentWithSoftPath = t.brand(
+  t.string,
+  (s): s is DerivedFromParentWithSoftPath => isDerivedFromParentWithSoftPath(s),
+  'DerivedFromParentWithSoftPath'
+);
+
+/**
+ * Reads the numeric segments out of a user/MPC child path. Rejects anything else, including a
+ * cast soft path: a hardened derive ceremony must never run at, or register, a soft path.
+ */
+export function parseSafeBip44Path(path: DerivedFromParentWithHardenedPath): SafeBip44PathSegments {
+  const segments = parseBip44Segments(HARDENED_BIP44_PATH.exec(path));
+  if (segments === undefined) {
+    throw new Error(`Invalid safe BIP44 path '${path}'`);
   }
-  try {
-    return parseSafeDerivationIndex(match[1]);
-  } catch {
-    return undefined;
-  }
+  return segments;
 }
 
-export function parseDerivedFromParentWithHardenedPath(path: string): number {
-  const validated = decodeWithCodec(DerivedFromParentWithHardenedPath, path, 'derivedFromParentWithHardenedPath');
-  const index = parseDerivedFromParentWithHardenedPathIndex(validated);
-  if (index === undefined) {
-    throw new Error(`Invalid derivedFromParentWithHardenedPath '${path}': expected m/<n>'`);
+/** The `<coinType>` segment for a coin. OFC and fiat coins have none and cannot mint a safe child. */
+export function getSafeBip44CoinType(coin: string): number {
+  const coinType = coins.get(coin).bip44CoinType;
+  if (coinType === undefined) {
+    throw new Error(`Coin '${coin}' has no BIP44 coin type and cannot derive a safe child`);
   }
-  return index;
+  return coinType;
+}
+
+/**
+ * Builds the user-child path `m/44'/<coinType>'/<slot>'/<account>'`. `coinType` comes from statics
+ * (or the derivation-index response) and `account` from the safe's per-(slot, coinType) counter.
+ */
+export function buildSafeBip44Path(
+  coinType: number,
+  slot: RootKeyType,
+  account: number
+): DerivedFromParentWithHardenedPath {
+  const path = `m/44'/${coinType}'/${SAFE_ROOT_SLOT_ORDINALS[slot]}'/${account}'`;
+  if (!isDerivedFromParentWithHardenedPath(path)) {
+    throw new Error(`Invalid safe BIP44 path segments: coinType=${coinType}, slot=${slot}, account=${account}`);
+  }
+  return path;
+}
+
+/** Strips hardening from every level: the co-signer path paired with a user-child path. */
+export function toSoftTwinPath(path: DerivedFromParentWithHardenedPath): DerivedFromParentWithSoftPath {
+  const softPath = path.replace(/'/g, '');
+  if (!isDerivedFromParentWithSoftPath(softPath)) {
+    throw new Error(`Invalid safe BIP44 path '${path}': no soft twin`);
+  }
+  return softPath;
+}
+
+/**
+ * The type alone is not enough: a cast path with a soft level on a user child would let the
+ * parent xpub plus the child prv recover the root.
+ */
+function assertHardenedPath(path: string): asserts path is DerivedFromParentWithHardenedPath {
+  if (!isDerivedFromParentWithHardenedPath(path)) {
+    throw new Error(`Invalid safe child path '${path}': expected m/44'/<coinType>'/<slot>'/<account>'`);
+  }
 }
 
 export interface SafeHardenedChildKey {
   prv: string;
   pub: string;
-  derivationPath: string;
+  derivationPath: DerivedFromParentWithHardenedPath;
 }
 
-function childFromNode(child: BIP32Interface, derivationPath: string): SafeHardenedChildKey {
+function childFromNode(child: BIP32Interface, derivationPath: DerivedFromParentWithHardenedPath): SafeHardenedChildKey {
   if (!child.privateKey) {
     throw new Error(`Failed to derive hardened safe child at ${derivationPath}`);
   }
@@ -88,16 +161,21 @@ function childFromNode(child: BIP32Interface, derivationPath: string): SafeHarde
   };
 }
 
-export function deriveSafeChildHardenedFromXprv(rootXprv: string, index: string | number): SafeHardenedChildKey {
-  const idx = parseSafeDerivationIndex(index);
-  const derivationPath = getSafeHardenedDerivationPath(idx);
-  return childFromNode(bip32.fromBase58(rootXprv).deriveHardened(idx), derivationPath);
+export function deriveSafeChildHardenedFromXprv(
+  rootXprv: string,
+  path: DerivedFromParentWithHardenedPath
+): SafeHardenedChildKey {
+  assertHardenedPath(path);
+  return childFromNode(bip32.fromBase58(rootXprv).derivePath(path), path);
 }
 
 /** Re-derive and assert both results match before the child is registered. */
-export function deriveAndSelfCheckSafeChildHardened(rootXprv: string, index: string | number): SafeHardenedChildKey {
-  const first = deriveSafeChildHardenedFromXprv(rootXprv, index);
-  const second = deriveSafeChildHardenedFromXprv(rootXprv, index);
+export function deriveAndSelfCheckSafeChildHardened(
+  rootXprv: string,
+  path: DerivedFromParentWithHardenedPath
+): SafeHardenedChildKey {
+  const first = deriveSafeChildHardenedFromXprv(rootXprv, path);
+  const second = deriveSafeChildHardenedFromXprv(rootXprv, path);
   if (first.pub !== second.pub || first.prv !== second.prv) {
     throw new Error(`Safe child self-check failed at ${first.derivationPath}: derivation was not deterministic`);
   }
@@ -107,7 +185,7 @@ export function deriveAndSelfCheckSafeChildHardened(rootXprv: string, index: str
 /**
  * SLIP-0010 hardened derivation of a safe user child from an ed25519 root secret seed.
  *
- * `rootPrv` is a Stellar StrKey `S…` secret seed (what slot-④ `ed25519Multisig` user roots store).
+ * `rootPrv` is a Stellar StrKey `S…` secret seed (what slot-② `ed25519Multisig` user roots store).
  * The derivation reuses the existing SLIP-0010 implementation {@link Ed25519KeyDeriver.derivePath}
  * (hardened-only CKDPriv over the `ed25519 seed` HMAC master), then expands the resulting 32-byte
  * child seed into a keypair with `nacl`. The child `pub` is a bare StrKey `G…`; the `prv` is the
@@ -116,16 +194,52 @@ export function deriveAndSelfCheckSafeChildHardened(rootXprv: string, index: str
  * Unlike the secp256k1 path, ed25519 hardened derivation needs no chain code — the composite
  * `pub‖chainCode` form is only for SOFT co-signer derivation and is not used here.
  */
-export function deriveSafeChildEd25519Hardened(rootPrv: string, index: string | number): SafeHardenedChildKey {
-  const idx = parseSafeDerivationIndex(index);
-  const derivationPath = getSafeHardenedDerivationPath(idx);
+export function deriveSafeChildEd25519Hardened(
+  rootPrv: string,
+  path: DerivedFromParentWithHardenedPath
+): SafeHardenedChildKey {
+  assertHardenedPath(path);
   const rawSeedHex = decodeEd25519StrKeySecretSeed(rootPrv).toString('hex');
-  const childSeed = Ed25519KeyDeriver.derivePath(derivationPath, rawSeedHex).key;
+  const childSeed = Ed25519KeyDeriver.derivePath(path, rawSeedHex).key;
   const keyPair = nacl.sign.keyPair.fromSeed(Uint8Array.from(childSeed));
   const pub = encodeEd25519StrKeyPublicKey(Buffer.from(keyPair.publicKey));
   return {
     prv: Buffer.from(childSeed).toString('hex'),
     pub,
-    derivationPath,
+    derivationPath: path,
+  };
+}
+
+export interface SafeSecp256k1ChildTriplet {
+  user: { prv: string; pub: string };
+  backup: { prv: string; pub: string };
+  bitgo: { pub: string };
+}
+
+/**
+ * Derives the slot-① (secp256k1Multisig) child triplet from the keycard roots: the user child at
+ * the hardened `path`, the backup and BitGo children at its soft twin.
+ */
+export function deriveSafeChildTriplet(
+  roots: { user: string; backup: string; bitgo: string },
+  path: DerivedFromParentWithHardenedPath
+): SafeSecp256k1ChildTriplet {
+  assertHardenedPath(path);
+  const userRoot = bip32.fromBase58(roots.user);
+  const backupRoot = bip32.fromBase58(roots.backup);
+  const bitgoRoot = bip32.fromBase58(roots.bitgo);
+  if (userRoot.isNeutered() || backupRoot.isNeutered()) {
+    throw new Error('deriveSafeChildTriplet: user and backup roots must be private (xprv)');
+  }
+  if (!bitgoRoot.isNeutered()) {
+    throw new Error('deriveSafeChildTriplet: bitgo root must be public (xpub)');
+  }
+  const softPath = toSoftTwinPath(path);
+  const user = userRoot.derivePath(path);
+  const backup = backupRoot.derivePath(softPath);
+  return {
+    user: { prv: user.toBase58(), pub: user.neutered().toBase58() },
+    backup: { prv: backup.toBase58(), pub: backup.neutered().toBase58() },
+    bitgo: { pub: bitgoRoot.derivePath(softPath).toBase58() },
   };
 }

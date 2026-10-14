@@ -12,6 +12,7 @@ import {
   SafeDerivedPublicKeyMismatchError,
   SafeShareNotImplementedError,
   Wallet,
+  buildSafeBip44Path,
   deriveSafeChildHardenedFromXprv,
 } from '../../../../src';
 import { BaseCoin } from '../../../../src/bitgo/baseCoin';
@@ -23,7 +24,8 @@ require('should-sinon');
 describe('Safe wallet spend sharing', function () {
   const prv =
     'xprv9s21ZrQH143K3hekyNj7TciR4XNYe1kMj68W2ipjJGNHETWP7o42AjDnSPgKhdZ4x8NBAvaL72RrXjuXNdmkMqLERZza73oYugGtbLFXG8g';
-  const hardened = deriveSafeChildHardenedFromXprv(prv, '123');
+  const childPath = buildSafeBip44Path(0, 'secp256k1Multisig', 123);
+  const hardened = deriveSafeChildHardenedFromXprv(prv, childPath);
   const passphrase = 'test-passphrase';
   const rootKeyId = 'root-key-id';
   const SHAREE_PUB = '0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798';
@@ -50,7 +52,7 @@ describe('Safe wallet spend sharing', function () {
     pub: hardened.pub,
     type: 'independent' as const,
     parent: rootKeyId,
-    derivedFromParentWithPath: "m/123'",
+    derivedFromParentWithPath: childPath,
   });
   const publicOnlyKeychain = (id: string) => ({ id, pub: 'pub-' + id, type: 'independent' as const });
   const rootKeychain = {
@@ -189,7 +191,7 @@ describe('Safe wallet spend sharing', function () {
           id === rootKeyId
             ? rootKeychain
             : id === 'user-key'
-            ? { ...childKeychain(id), pub: 'wrong-child-pub', derivedFromParentWithPath: "m/123'" }
+            ? { ...childKeychain(id), pub: 'wrong-child-pub' }
             : publicOnlyKeychain(id)
         )
       );
