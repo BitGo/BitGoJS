@@ -38,6 +38,7 @@ import {
   CustomMPCv2SigningRound1GeneratingFunction,
   CustomMPCv2SigningRound2GeneratingFunction,
   CustomMPCv2SigningRound3GeneratingFunction,
+  PopulatedIntent,
   RequestType,
   SignatureShareRecord,
   TSSParams,
@@ -990,9 +991,10 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       if (shouldVerifyWithSerializedTxHex(this.baseCoin) || shouldUsePreHashedSignable(this.baseCoin, unsignedTx)) {
         await this.baseCoin.verifyTransaction({
           txPrebuild: { txHex: unsignedTx.serializedTxHex, txInfo: unsignedTx.signableHex },
-          txParams: resolveEffectiveTxParams(txRequest, params.txParams),
+          txParams: resolveEffectiveTxParams(txRequest, params.txParams, this.baseCoin.getChain()),
           wallet: this.wallet,
           walletType: this.wallet.multisigType(),
+          intent: txRequest.intent as PopulatedIntent,
         });
         if (shouldVerifyWithSerializedTxHex(this.baseCoin) && isCoinWithSignableConsistency(this.baseCoin)) {
           this.baseCoin.assertSignableConsistency(unsignedTx.serializedTxHex, unsignedTx.signableHex);
@@ -1000,9 +1002,10 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       } else {
         await this.baseCoin.verifyTransaction({
           txPrebuild: { txHex: unsignedTx.signableHex },
-          txParams: resolveEffectiveTxParams(txRequest, params.txParams),
+          txParams: resolveEffectiveTxParams(txRequest, params.txParams, this.baseCoin.getChain()),
           wallet: this.wallet,
           walletType: this.wallet.multisigType(),
+          intent: txRequest.intent as PopulatedIntent,
         });
       }
       txOrMessageToSign = unsignedTx.signableHex;

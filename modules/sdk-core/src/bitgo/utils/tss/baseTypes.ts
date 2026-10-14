@@ -480,6 +480,8 @@ export interface PopulatedIntent extends PopulatedIntentBase, DefiIntentFields {
   feeToken?: string;
   hopParams?: HopParams;
   txid?: string;
+  /** Consolidation batch id; presence marks the tx as a consolidation to the wallet base address. */
+  consolidateId?: string;
   receiveAddress?: string;
   custodianTransactionId?: string;
   custodianMessageId?: string;
