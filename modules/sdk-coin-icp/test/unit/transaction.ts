@@ -60,6 +60,22 @@ describe('ICP Transaction', () => {
     payloadsData.payloads.length.should.equal(1);
   });
 
+  it('should preserve memo suffix on receiver address when building a transfer', async () => {
+    const txn = new Transaction(config);
+    txn.icpTransactionData = testData.IcpTransactionData;
+    const factory = getBuilderFactory('ticp');
+    const txBuilder = factory.getTransferBuilder();
+    txBuilder.initBuilder(txn);
+    txBuilder.sender(testData.Accounts.account1.address, testData.Accounts.account1.publicKey);
+    txBuilder.receiverId(testData.Accounts.account6.address);
+    txBuilder.amount('10');
+    txBuilder.memo(Number(testData.MetaDataWithMemo.memo));
+    await txBuilder.build();
+
+    const icpTransaction = txBuilder.transaction.icpTransaction;
+    should.equal(icpTransaction.operations[1].account.address, testData.Accounts.account6.address);
+  });
+
   it('build a json transaction from raw hex', async () => {
     await tx.fromRawTransaction(serializedTxHex);
     const json = tx.toJson();

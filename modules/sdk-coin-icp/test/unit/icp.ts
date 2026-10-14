@@ -1,5 +1,6 @@
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
+import { Ecdsa } from '@bitgo/sdk-core';
 import utils from '../../src/lib/utils';
 import { getBuilderFactory } from './getBuilderFactory';
 
@@ -430,8 +431,9 @@ describe('Internet computer', function () {
       });
     });
 
-    describe('Wallet VersionKey 2+', () => {
+    describe('V2 non-memoId wallets', () => {
       let keychains;
+      let derivedAddressAtIndex1: string;
 
       before(function () {
         keychains = [
@@ -439,6 +441,12 @@ describe('Internet computer', function () {
           { commonKeychain: addressVerificationData.commonKeychain },
           { commonKeychain: addressVerificationData.commonKeychain },
         ];
+        // Mirror addressVerification.ts:88-97: secp256k1 path m/{index}, first 33 bytes.
+        derivedAddressAtIndex1 = utils.getAddressFromPublicKey(
+          Buffer.from(new Ecdsa().deriveUnhardened(addressVerificationData.commonKeychain, 'm/1'), 'hex')
+            .subarray(0, 33)
+            .toString('hex')
+        );
       });
 
       it('should verify a valid TSS root address (index 0)', async function () {
@@ -452,6 +460,50 @@ describe('Internet computer', function () {
 
         const result = await basecoin.isWalletAddress(params);
         result.should.equal(true);
+      });
+
+      it('should verify a derived address at index 1', async function () {
+        const params = {
+          address: derivedAddressAtIndex1,
+          rootAddress: addressVerificationData.rootAddress,
+          keychains: keychains,
+          index: 1,
+          walletVersion: 2,
+        };
+
+        const result = await basecoin.isWalletAddress(params);
+        result.should.equal(true);
+      });
+
+      it('should reject when derived index-1 address is verified at index 0', async function () {
+        const params = {
+          address: derivedAddressAtIndex1,
+          rootAddress: addressVerificationData.rootAddress,
+          keychains: keychains,
+          index: 0,
+          walletVersion: 2,
+        };
+
+        await basecoin
+          .isWalletAddress(params)
+          .should.be.rejectedWith(
+            `address validation failure: address ${derivedAddressAtIndex1} is not a wallet address`
+          );
+      });
+
+      it('should reject memo-suffixed addresses for V2 wallets', async function () {
+        const addressWithMemo = `${addressVerificationData.rootAddress}?memoId=5`;
+        const params = {
+          address: addressWithMemo,
+          rootAddress: addressVerificationData.rootAddress,
+          keychains: keychains,
+          index: 0,
+          walletVersion: 2,
+        };
+
+        await basecoin
+          .isWalletAddress(params)
+          .should.be.rejectedWith(`address validation failure: address ${addressWithMemo} is not a wallet address`);
       });
 
       it('should throw error for invalid TSS address', async function () {
