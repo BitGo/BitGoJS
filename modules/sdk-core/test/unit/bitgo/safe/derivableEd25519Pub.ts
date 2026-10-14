@@ -1,19 +1,25 @@
 import 'should';
+import * as nacl from 'tweetnacl';
 import {
   DERIVABLE_ED25519_CHAIN_CODE_BYTES,
   DERIVABLE_ED25519_PUB_LENGTH,
   Ed25519BIP32,
   Eddsa,
+  bigIntFromBufferLE,
+  bigIntToBufferLE,
   decodeDerivableEd25519Pub,
   decodeEd25519StrKeyPublicKey,
   decodeEd25519StrKeySecretSeed,
   encodeDerivableEd25519Pub,
+  encodeEd25519ChainCode,
   encodeEd25519StrKeyPublicKey,
   generateEd25519ChainCode,
   isChecksumValidStrKeyEd25519Pub,
   isDerivableEd25519Pub,
   isValidEd25519StrKeyPublicKey,
   softDeriveChildPubEd25519,
+  softDeriveChildPubEd25519AtPath,
+  softDeriveChildPrvEd25519AtPath,
 } from '../../../../src';
 
 // Cross-repo fixture: byte-identical to wallet-platform
@@ -102,6 +108,36 @@ describe('derivableEd25519Pub', function () {
         /Invalid derivable ed25519 pub/
       );
       await softDeriveChildPubEd25519(STRKEY_PUBLIC, 0).should.be.rejectedWith(/Invalid derivable ed25519 pub/);
+    });
+  });
+
+  describe('multi-segment soft derivation', function () {
+    const seed = decodeEd25519StrKeySecretSeed(STRKEY_SEED);
+    const rootPub = Buffer.from(nacl.sign.keyPair.fromSeed(seed).publicKey);
+    const rootChainCode = Buffer.alloc(32, 0xab);
+    const composite = encodeDerivableEd25519Pub(rootPub, rootChainCode);
+    const chainCodeStr = encodeEd25519ChainCode(rootChainCode);
+
+    it('private derive public half matches public derive at m/0 and m/44/283/2/0', async function () {
+      for (const path of ['m/0', 'm/44/283/2/0']) {
+        const pub = await softDeriveChildPubEd25519AtPath(composite, path);
+        const prv = await softDeriveChildPrvEd25519AtPath({ seedStrKey: STRKEY_SEED, chainCode: chainCodeStr, path });
+        prv.pub.equals(pub).should.equal(true);
+        // Recompute the public point directly from kL to prove the private scalar maps to pub.
+        bigIntToBufferLE(Eddsa.curve.basePointMult(bigIntFromBufferLE(prv.kL)), 32)
+          .equals(prv.pub)
+          .should.equal(true);
+      }
+    });
+
+    it('rejects hardened and out-of-range paths', async function () {
+      await softDeriveChildPubEd25519AtPath(composite, "m/0'").should.be.rejectedWith(/Invalid soft derivation path/);
+      await softDeriveChildPrvEd25519AtPath({
+        seedStrKey: STRKEY_SEED,
+        chainCode: chainCodeStr,
+        path: "m/0'",
+      }).should.be.rejectedWith(/Invalid soft derivation path/);
+      await softDeriveChildPubEd25519AtPath(composite, 'm/2147483648').should.be.rejectedWith(/out of range/);
     });
   });
 

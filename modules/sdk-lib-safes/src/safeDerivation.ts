@@ -30,6 +30,26 @@ export interface SafeBip44PathSegments {
 }
 
 /**
+ * Assert `path` is a valid BIP32 path for the given derivation kind. Hardened paths require every
+ * segment to carry the `'` marker; soft paths reject it. Every segment must be a non-negative
+ * integer at or below {@link MAX_BIP32_INDEX}.
+ */
+export function assertBip32Path(path: string, opts: { hardened: boolean }): void {
+  const re = opts.hardened ? /^m(\/\d+')+$/ : /^m(\/\d+)+$/;
+  if (!re.test(path)) {
+    throw new Error(`Invalid ${opts.hardened ? 'hardened' : 'soft'} derivation path '${path}'`);
+  }
+  const outOfRange = path
+    .split('/')
+    .slice(1)
+    .map((segment) => Number(opts.hardened ? segment.slice(0, -1) : segment))
+    .some((index) => !Number.isInteger(index) || index < 0 || index > MAX_BIP32_INDEX);
+  if (outOfRange) {
+    throw new Error(`Invalid ${opts.hardened ? 'hardened' : 'soft'} derivation path '${path}': index out of range`);
+  }
+}
+
+/**
  * Canonical decimal only: `044` and `44` name one key under two strings, so string-equality
  * path checks (the server's unique index) would treat one child as two.
  */

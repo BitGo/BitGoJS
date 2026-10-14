@@ -10,13 +10,21 @@ import { MAX_BIP32_INDEX } from '@bitgo/statics';
 import type { RootKeyType } from '@bitgo/public-types';
 import {
   buildSafeBip44Path,
+  decodeEd25519StrKeyPublicKey,
+  deriveSafeChildEd25519Hardened,
   deriveSafeChildTriplet,
   Ed25519ChainCodeEntryCodec,
   getSafeBip44CoinType,
   parseSafeBip44Path,
   parseSafeKeycardBox,
+  toSoftTwinPath,
   type SafeKeycardRootEntry,
 } from '@bitgo/sdk-lib-safes';
+import {
+  softDeriveChildPubEd25519AtPath,
+  softDeriveChildPrvEd25519AtPath,
+  type Ed25519ExtendedKeyParts,
+} from './derivableEd25519Pub';
 import { DklsVrfUtils, MpsVrfUtils } from '@bitgo/sdk-lib-mpc';
 import { BitGoBase } from '../bitgoBase';
 import { IncorrectPasswordError } from '../errors';
@@ -46,10 +54,34 @@ export type EcdsaMpcChildKeys = {
 
 export type EddsaMpcChildKeys = EcdsaMpcChildKeys;
 
+/**
+ * A hardened (SLIP-0010) ed25519 child. The `kind` discriminator prevents a raw seed from being
+ * mistaken for an extended key downstream — both are 32-byte values that `isValidPub` would accept.
+ */
+export type SafeEd25519SeedKey = {
+  readonly kind: 'seed';
+  readonly seed: string; // 32-byte child seed (hex) — the signer input
+  readonly pub: string; // 32-byte public key (hex)
+};
+
+/**
+ * A soft (BIP32-Ed25519) ed25519 child. No 32-byte seed maps back to a soft-derived child, so the
+ * signer needs both halves directly: `kL` (the clamped scalar) and `kR` (the nonce prefix).
+ */
+export type SafeEd25519ExtendedKey = { readonly kind: 'extended' } & Ed25519ExtendedKeyParts<string>; // hex
+
+/** The three ed25519 co-signer children. BitGo is pub-only: its private key stays in the HSM. */
+export type Ed25519MultisigChildKeys = {
+  user: SafeEd25519SeedKey;
+  backup: SafeEd25519ExtendedKey;
+  bitgo: { readonly pub: string };
+};
+
 export type DerivedSafeWalletKeys =
   | { slot: 'secp256k1Multisig'; path: string; keys: Secp256k1MultisigChildKeys }
   | { slot: 'ecdsaMpc'; path: string; keys: EcdsaMpcChildKeys }
-  | { slot: 'eddsaMpc'; path: string; keys: EddsaMpcChildKeys };
+  | { slot: 'eddsaMpc'; path: string; keys: EddsaMpcChildKeys }
+  | { slot: 'ed25519Multisig'; path: string; keys: Ed25519MultisigChildKeys };
 
 export type SafeRecoverKeyParams = {
   userKey: string;
@@ -137,8 +169,7 @@ export async function decryptSafeKeycard(params: {
 
 /**
  * Derives a Safe wallet's child keys at the BIP44 path for a given slot and account.
- * Supports `secp256k1Multisig`, `ecdsaMpc`, and `eddsaMpc`; `ed25519Multisig` remains
- * unsupported until its derivation arm lands (WCN-2894).
+ * Supports all four slots: `secp256k1Multisig`, `ed25519Multisig`, `ecdsaMpc`, and `eddsaMpc`.
  */
 export async function deriveSafeWalletKeys(params: {
   coin: string;
@@ -185,6 +216,34 @@ export async function deriveSafeWalletKeys(params: {
       slot: 'eddsaMpc',
       path,
       keys: { commonKeychain, user: userChild, backup: backupChild },
+    };
+  }
+
+  if (params.slot === 'ed25519Multisig') {
+    const root = roots.ed25519Multisig;
+    const cosignerPath = toSoftTwinPath(path);
+
+    const user = deriveSafeChildEd25519Hardened(root.user, path);
+    const backup = await softDeriveChildPrvEd25519AtPath({
+      seedStrKey: root.backup.prv,
+      chainCode: root.backup.chainCode,
+      path: cosignerPath,
+    });
+    const bitgo = await softDeriveChildPubEd25519AtPath(root.bitgo, cosignerPath);
+
+    return {
+      slot: 'ed25519Multisig',
+      path,
+      keys: {
+        user: { kind: 'seed', seed: user.prv, pub: decodeEd25519StrKeyPublicKey(user.pub).toString('hex') },
+        backup: {
+          kind: 'extended',
+          kL: backup.kL.toString('hex'),
+          kR: backup.kR.toString('hex'),
+          pub: backup.pub.toString('hex'),
+        },
+        bitgo: { pub: bitgo.toString('hex') },
+      },
     };
   }
 
