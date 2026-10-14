@@ -19,8 +19,10 @@ import {
   VerifyValidityProof,
 } from './iface';
 import { compileTransactionMessage } from './serialization/compileTransactionMessage';
+import { decodeV1Message } from './serialization/codecs/v1/message';
 import { serializeWireTransaction } from './serialization/wire-transaction';
 import { solInstructionFactory } from './solInstructionFactory';
+import { buildAdvanceNonceAccountInstruction } from './v1TransactionBuilder';
 import assert from 'assert';
 
 /**
@@ -302,6 +304,19 @@ export class ConfidentialTransferBuilder extends TransactionBuilder {
     ];
 
     const instructions: TransactionInstruction[] = [];
+
+    // Durable nonce: the AdvanceNonceAccount instruction MUST be part of the
+    // message (a bare nonce hash without the instruction is invalid). It is
+    // placed first, matching the v0 web3.js convention.
+    if (this._nonceInfo) {
+      instructions.push(
+        buildAdvanceNonceAccountInstruction(
+          this._nonceInfo.params.walletNonceAddress,
+          this._nonceInfo.params.authWalletAddress
+        )
+      );
+    }
+
     for (const instruction of this._ctInstructions) {
       instructions.push(...solInstructionFactory(instruction, this._zkProofProgramId));
     }
@@ -324,14 +339,30 @@ export class ConfidentialTransferBuilder extends TransactionBuilder {
       transactionConfig: this._v1TransactionConfig,
     });
 
+    // Signer order comes from the compiled message: the first
+    // numSignerAccounts static accounts are the required signers (fee payer
+    // first, then the remaining signers in the compiled account order).
+    const decoded = decodeV1Message(messageBytes);
+    const signerAddresses = decoded.staticAccounts.slice(0, decoded.header.numSignerAccounts);
+
     const signatures: Uint8Array[] = [];
-    for (const signer of this._signers) {
-      const secretKey = signer.getKeys(true).prv;
-      assert(secretKey instanceof Uint8Array, 'Missing private key');
-      signatures.push(nacl.sign.detached(messageBytes, secretKey));
-    }
-    for (const signature of this.getAdditionalSignatures()) {
-      signatures.push(new Uint8Array(signature.signature));
+    for (const address of signerAddresses) {
+      const keyPair = this._signers.find((signer) => signer.getKeys().pub === address);
+      if (keyPair) {
+        const secretKey = keyPair.getKeys(true).prv;
+        assert(secretKey instanceof Uint8Array, 'Missing private key');
+        signatures.push(nacl.sign.detached(messageBytes, secretKey));
+        continue;
+      }
+      const external = this.getAdditionalSignatures().find((sig) => sig.publicKey.pub === address);
+      if (external) {
+        signatures.push(new Uint8Array(external.signature));
+        continue;
+      }
+      // Missing signature: zero-fill the slot so the wire shape stays valid
+      // for partial-sign flows; the transaction is not broadcastable until
+      // every required signer has a signature.
+      signatures.push(new Uint8Array(64));
     }
 
     const v1Wire = serializeWireTransaction(messageBytes, signatures);
@@ -340,9 +371,19 @@ export class ConfidentialTransferBuilder extends TransactionBuilder {
     this._transaction.v1MessageBytes = messageBytes;
 
     // Populate a metadata-only SolTransaction so toJson / loadInputsAndOutputs work.
+    // The durable nonce is carried via nonceInfo, matching the v0 model.
     const metaTx = new SolTransaction();
     metaTx.feePayer = feePayer;
     metaTx.recentBlockhash = this._recentBlockhash;
+    if (this._nonceInfo) {
+      metaTx.nonceInfo = {
+        nonce: this._recentBlockhash,
+        nonceInstruction: buildAdvanceNonceAccountInstruction(
+          this._nonceInfo.params.walletNonceAddress,
+          this._nonceInfo.params.authWalletAddress
+        ),
+      };
+    }
     metaTx.add(...instructions);
     this._transaction.solTransaction = metaTx;
 
