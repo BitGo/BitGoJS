@@ -22,6 +22,7 @@ import {
   getNetworkFeatures,
   HederaToken,
   KeyCurve,
+  LightningCoin,
   Networks,
   NetworkType,
   registerNetwork,
@@ -982,9 +983,9 @@ describe('CoinMap', function () {
   });
 
   describe('replace', () => {
-    // Replacement is only allowed for tokens whose immutable fields (id, name, contract address, alias)
-    // are unchanged; a mismatch must throw and leave the map untouched so a refreshed AMS record
-    // can never silently redefine a different asset.
+    // Replacement is only allowed for records whose immutable fields (id, name, contract address,
+    // alias) are unchanged and whose coin class matches; a mismatch must throw and leave the map
+    // untouched so a refreshed AMS record can never silently redefine a different asset.
     const template = coins.get('tusdc') as Erc20Coin;
     const buildToken = (overrides: {
       id?: string;
@@ -1070,10 +1071,40 @@ describe('CoinMap', function () {
     it('should replace a base coin when immutable fields match', () => {
       const btc = coins.get('btc');
       const coinMap = CoinMap.fromCoins([btc]);
-      const refreshed = { ...btc, fullName: 'Bitcoin renamed' };
+      // keep the prototype so the candidate is still a UtxoCoin; replace() rejects a class change
+      const refreshed = Object.assign(Object.create(Object.getPrototypeOf(btc)), btc, {
+        fullName: 'Bitcoin renamed',
+      });
       coinMap.replace(refreshed);
       coinMap.get('btc').should.equal(refreshed);
       coinMap.get(btc.id).should.equal(refreshed);
+    });
+
+    it('should throw and keep the existing coin when the new record is a different coin class', () => {
+      // AMS rebuilds undiscovered chains as DynamicCoin; such a record must never take over a
+      // statically defined coin even when every immutable field matches (CSHLD-1957: a
+      // LightningCoin swapped for a DynamicCoin broke wallet-platform coin singletons).
+      const btc = coins.get('btc');
+      const coinMap = CoinMap.fromCoins([btc]);
+      const candidate = new DynamicCoin({
+        id: btc.id,
+        name: btc.name,
+        fullName: 'Fake Bitcoin',
+        decimalPlaces: 12,
+        asset: btc.asset as string,
+        isToken: false,
+        features: [...btc.features],
+        network: btc.network,
+        primaryKeyCurve: 'secp256k1',
+        prefix: '',
+        suffix: 'BTC',
+        baseUnit: 'satoshi',
+        kind: 'crypto',
+      });
+      (() => coinMap.replace(candidate)).should.throw(
+        `coin 'btc' cannot be replaced: coin class changed from UtxoCoin to DynamicCoin`
+      );
+      coinMap.get('btc').should.equal(btc);
     });
 
     it('should throw and keep the existing base coin when the name differs', () => {
@@ -2197,17 +2228,52 @@ describe('DynamicCoin and dynamic base chain support', function () {
       coinMap.has('mydynchain2').should.be.false();
     });
 
-    it('should keep the existing coin when a refresh attempt for a known base chain fails validation', function () {
-      // id 'btc' is not a valid UUID, so the refreshed DynamicCoin fails validation and the
-      // pre-existing static btc coin is kept and returned instead of the (invalid) refreshed one.
-      const config = {
-        ...trimmedDynamicBaseChainConfig['mydynchain'][0],
-        name: 'btc',
-        id: 'btc',
+    it('should keep the existing base coin identity and class when an AMS entry matches it', function () {
+      // CSHLD-1957: with a valid UUID (as real AMS data has) the pre-fix code swapped the static
+      // coin for a generic DynamicCoin — LightningCoin -> DynamicCoin broke every wallet-platform
+      // coin singleton ("coin is not a lightning coin").
+      for (const coinName of ['tlnbtc', 'btc']) {
+        const staticCoin = coins.get(coinName);
+        const config: TrimmedAmsTokenConfig = {
+          id: staticCoin.id,
+          name: staticCoin.name,
+          fullName: staticCoin.fullName,
+          decimalPlaces: staticCoin.decimalPlaces,
+          asset: staticCoin.asset as string,
+          isToken: false,
+          network: { name: staticCoin.network.name },
+          additionalFeatures: [],
+          primaryKeyCurve: staticCoin.primaryKeyCurve as string,
+          baseUnit: staticCoin.baseUnit as string,
+          family: staticCoin.family,
+        };
+        const result = createTokenUsingTrimmedConfigDetails(config);
+        should(result).equal(staticCoin);
+        coins.get(coinName).should.equal(staticCoin);
+        coins.get(coinName).constructor.should.equal(staticCoin.constructor);
+      }
+    });
+
+    it('should keep a known base chain in the built map when an AMS entry matches it', function () {
+      const tlnbtc = coins.get('tlnbtc');
+      tlnbtc.should.be.instanceOf(LightningCoin);
+      const config: TrimmedAmsTokenConfig = {
+        id: tlnbtc.id,
+        name: tlnbtc.name,
+        fullName: tlnbtc.fullName,
+        decimalPlaces: tlnbtc.decimalPlaces,
+        asset: tlnbtc.asset as string,
         isToken: false,
+        network: { name: tlnbtc.network.name },
+        additionalFeatures: [],
+        primaryKeyCurve: tlnbtc.primaryKeyCurve as string,
+        baseUnit: tlnbtc.baseUnit as string,
+        family: tlnbtc.family,
       };
-      const coin = createTokenUsingTrimmedConfigDetails(config);
-      coin.should.equal(coins.get('btc'));
+      const coinMap = createTokenMapUsingTrimmedConfigDetails({ tlnbtc: [config] });
+      coinMap.get('tlnbtc').should.equal(tlnbtc);
+      coinMap.get('tlnbtc').should.be.instanceOf(LightningCoin);
+      coins.get('tlnbtc').should.equal(tlnbtc);
     });
   });
 });
