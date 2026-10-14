@@ -266,3 +266,36 @@ describe('ICP Transaction Builder with default memo as 0', async () => {
     signedTxn.should.be.a.String();
   });
 });
+
+describe('ICP Transaction Builder with bare (non-memo) addresses', async () => {
+  const factory = getBuilderFactory('ticp');
+
+  beforeEach(async function () {
+    // Echo back the memo the builder passes in so `metadata.memo` reflects the
+    // DEFAULT_MEMO fill-in in TransferBuilder.buildImplementation.
+    sinon.stub(utils, 'getMetaData').callsFake((memo) => ({
+      metaData: { ...testData.MetaDataWithDefaultMemo, memo: Number(memo) },
+      ingressEndTime: testData.MetaDataWithDefaultMemo.ingress_end ?? 0,
+    }));
+    sinon.stub(utils, 'validateExpireTime').returns(true);
+  });
+
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  it('should keep bare sender and receiver addresses verbatim and default the memo to 0', async () => {
+    const txBuilder = factory.getTransferBuilder();
+    txBuilder.sender(testData.Accounts.account1.address, testData.Accounts.account1.publicKey);
+    txBuilder.receiverId(testData.Accounts.account2.address);
+    txBuilder.amount('10');
+
+    await txBuilder.build();
+
+    const icpTransaction = txBuilder.transaction.icpTransaction;
+    should.equal(icpTransaction.operations[0].account.address, testData.Accounts.account1.address);
+    should.equal(icpTransaction.operations[2].account.address, testData.Accounts.account1.address);
+    should.equal(icpTransaction.operations[1].account.address, testData.Accounts.account2.address);
+    should.equal(icpTransaction.metadata.memo, DEFAULT_MEMO);
+  });
+});

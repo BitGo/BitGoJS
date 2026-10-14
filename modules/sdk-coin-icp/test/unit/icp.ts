@@ -1,5 +1,6 @@
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
+import { Ecdsa } from '@bitgo/sdk-core';
 import utils from '../../src/lib/utils';
 import { getBuilderFactory } from './getBuilderFactory';
 
@@ -49,6 +50,7 @@ describe('Internet computer', function () {
     icp.getFullName().should.equal('Internet Computer');
     icp.getBaseFactor().should.equal(1e8);
     icp.supportsTss().should.equal(true);
+    icp.allowsAccountConsolidations().should.equal(true);
 
     ticp.getChain().should.equal('ticp');
     ticp.getFamily().should.equal('icp');
@@ -259,6 +261,38 @@ describe('Internet computer', function () {
       });
       assert(response);
     });
+
+    it('should successfully verify a derived-to-root consolidation prebuild', async () => {
+      // Consolidation prebuild shape (sendAccountConsolidation): single output
+      // from a derived receive address (sender) to the bare root recipient.
+      const consolidationTxBuilder = factory.getTransferBuilder();
+      consolidationTxBuilder.sender(testData.Accounts.account1.address, testData.Accounts.account1.publicKey);
+      consolidationTxBuilder.receiverId(testData.Accounts.account2.address);
+      consolidationTxBuilder.amount('10');
+      await consolidationTxBuilder.build();
+
+      const payloadsData = consolidationTxBuilder.transaction.payloadsData;
+      const serializedTxFormat = {
+        serializedTxHex: payloadsData,
+        publicKey: testData.Accounts.account1.publicKey,
+      };
+      const serializedTxHex = Buffer.from(JSON.stringify(serializedTxFormat), 'utf-8').toString('hex');
+      const txParams = {
+        recipients: [
+          {
+            address: testData.Accounts.account2.address,
+            amount: '10',
+          },
+        ],
+      };
+      const response = await basecoin.verifyTransaction({
+        txPrebuild: {
+          txHex: serializedTxHex,
+        },
+        txParams: txParams,
+      });
+      assert(response);
+    });
   });
 
   describe('Address Verification', () => {
@@ -267,6 +301,19 @@ describe('Internet computer', function () {
         '036b38ca5e63e9800b5040af498eb6e9a9c77e244ac2858edafa4bd0926a635731c3fabde9007a5771e93621d9fcb1c879660208dc79cc609fe8ddd189f7a955ab',
       rootAddress: 'fd3eaed3e2064bd30ab497e22e8ac5a0dcadd81fa5353879dbab64e259ec70c0',
     };
+
+    // V2 (HD-derived) receive address at index 1, derived exactly the way
+    // verifyMPCWalletAddress/deriveMPCWalletAddress derives it: secp256k1 path
+    // 'm/1', first 33 bytes of the derived public key.
+    let derivedAddressAtIndex1: string;
+
+    before(function () {
+      derivedAddressAtIndex1 = utils.getAddressFromPublicKey(
+        Buffer.from(new Ecdsa().deriveUnhardened(addressVerificationData.commonKeychain, 'm/1'), 'hex')
+          .subarray(0, 33)
+          .toString('hex')
+      );
+    });
 
     describe('Wallet VersionKey 1', () => {
       let keychains;
@@ -430,7 +477,7 @@ describe('Internet computer', function () {
       });
     });
 
-    describe('Wallet VersionKey 2+', () => {
+    describe('V2 non-memoId wallets', () => {
       let keychains;
 
       before(function () {
@@ -491,6 +538,63 @@ describe('Internet computer', function () {
 
         const result = await basecoin.isWalletAddress(params);
         result.should.equal(true);
+      });
+
+      it('should verify the V2 root address at index 0', async function () {
+        const params = {
+          address: addressVerificationData.rootAddress,
+          rootAddress: addressVerificationData.rootAddress,
+          keychains: keychains,
+          index: 0,
+          walletVersion: 2,
+        };
+
+        const result = await basecoin.isWalletAddress(params);
+        result.should.equal(true);
+      });
+
+      it('should verify a derived address at its own index', async function () {
+        const params = {
+          address: derivedAddressAtIndex1,
+          rootAddress: addressVerificationData.rootAddress,
+          keychains: keychains,
+          index: 1,
+          walletVersion: 2,
+        };
+
+        const result = await basecoin.isWalletAddress(params);
+        result.should.equal(true);
+      });
+
+      it('should reject a derived address checked against a different index', async function () {
+        const params = {
+          address: derivedAddressAtIndex1,
+          rootAddress: addressVerificationData.rootAddress,
+          keychains: keychains,
+          index: 0,
+          walletVersion: 2,
+        };
+
+        await basecoin
+          .isWalletAddress(params)
+          .should.be.rejectedWith(
+            `address validation failure: address ${derivedAddressAtIndex1} is not a wallet address`
+          );
+      });
+
+      it('should reject memo-suffixed addresses for V2 non-memoId wallets', async function () {
+        const addressWithMemo = `${addressVerificationData.rootAddress}?memoId=5`;
+        const params = {
+          address: addressWithMemo,
+          rootAddress: addressVerificationData.rootAddress,
+          keychains: keychains,
+          index: 0,
+          walletVersion: 2,
+        };
+
+        await basecoin
+          .isWalletAddress(params)
+          .should.be.rejectedWith(`address validation failure: address ${addressWithMemo} is not a wallet address`);
       });
     });
 
