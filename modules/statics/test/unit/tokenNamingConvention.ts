@@ -6,6 +6,7 @@ import { nep141Tokens } from '../../src/coins/nep141Tokens';
 import { polygonTokens } from '../../src/coins/polygonTokens';
 import { solTokens } from '../../src/coins/solTokens';
 import { NetworkType } from '../../src/networks';
+import { botTokens } from 'modules/statics/src/coins/botTokens';
 
 describe('Token Naming Convention Tests', function () {
   const allTokens = [
@@ -16,6 +17,7 @@ describe('Token Naming Convention Tests', function () {
     ...nep141Tokens,
     ...polygonTokens,
     ...solTokens,
+    ...botTokens,
   ];
 
   // Helper function to filter tokens by network type
@@ -88,6 +90,38 @@ describe('Token Naming Convention Tests', function () {
       'fixed',
       'schz',
       'bgerch',
+      // AMS-onboarded bot tokens named after their on-chain symbols instead of
+      // the 't' prefix convention (Hoodi 'hteth' network and OFC twins)
+      'hteth:testamsv2',
+      'ethx1',
+      'hteth:WBTC',
+      'hteth:wsteth',
+      'hteth:fgh',
+      'hteth:asdf',
+      'hteth:lkm',
+      'hteth:xcv',
+      'hteth:lseth',
+      'hteth:cssv',
+      'hteth:amsv3',
+      'hteth:dro',
+      'hteth:sachu',
+      'hteth:amsv5',
+      'hteth:tgku',
+      'hteth:stzamakms',
+      'hteth:stzamadfns',
+      'hteth:stzamafig',
+      'hteth:stzamacop',
+      'hteth:stzamablco',
+      'hteth:tts',
+      'hteth:vbcp',
+      'hteth:real1',
+      'hteth:zamamock',
+      'hteth:loan',
+      'hteth:loanusdc',
+      'hteth:amswp0',
+      'hteth:amswp1',
+      'hteth:amswp2',
+      'hteth:deth',
     ];
 
     testnetTokens.forEach((token) => {
@@ -98,13 +132,20 @@ describe('Token Naming Convention Tests', function () {
         return;
       }
 
+      // OFC tokens are named 'ofc' + the underlying coin's name (e.g. 'ofctsol:usdc'
+      // is 'ofc' + 'tsol:usdc'), so apply the rule to the underlying name
+      const nameToCheck = tokenName.startsWith('ofc') ? tokenName.slice('ofc'.length) : tokenName;
+
       // All testnet tokens should start with 't'
-      tokenName.should.startWith('t', `Testnet token "${tokenName}" should start with 't'`);
+      nameToCheck.should.startWith('t', `Testnet token "${tokenName}" should start with 't'`);
     });
 
     mainnetTokens.forEach((token) => {
       const tokenName = token.name;
-      const parts = tokenName.split(':');
+      // OFC tokens are named 'ofc' + the underlying coin's name, so apply the
+      // rule to the underlying name
+      const underlyingName = tokenName.startsWith('ofc') ? tokenName.slice('ofc'.length) : tokenName;
+      const parts = underlyingName.split(':');
       const prefix = parts[0];
 
       // If token name has a colon, check the prefix; otherwise, check the whole name
@@ -369,8 +410,9 @@ describe('Token Naming Convention Tests', function () {
   });
 
   it('should ensure all token names are lowercase', function () {
-    // List of tokens that are exceptions to the lowercase rule
-    const lowercaseExceptions: string[] = ['tpolygon:BitGoTest'];
+    // List of tokens that are exceptions to the lowercase rule ('hteth:WBTC' and
+    // its OFC twin are AMS-onboarded under their on-chain symbol casing)
+    const lowercaseExceptions: string[] = ['tpolygon:BitGoTest', 'hteth:WBTC', 'ofchteth:WBTC'];
 
     allTokens.forEach((token) => {
       const tokenName = token.name;
