@@ -11,6 +11,8 @@ export interface ExplanationOutput {
 export interface TransactionExplanation<TFee> {
   outputs: ExplanationOutput[];
   changeOutputs: ExplanationOutput[];
+  /* nLockTime of the transaction, to be verified by the signer for time-locked spends */
+  locktime: number;
   fee: {
     /* network fee */
     fee: TFee;

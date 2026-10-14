@@ -5,6 +5,7 @@ import { DescriptorMap, NamedDescriptor } from '../../descriptor';
 import { OfflineVaultSignable, toKeyTriple } from '../OfflineVaultSignable';
 import {
   getValidatorOneOfTemplates,
+  getValidatorPox5Wallet,
   getValidatorSignedByUserKey,
   getValidatorSome,
   toDescriptorMapValidate,
@@ -12,6 +13,8 @@ import {
 import { explainPsbt, signPsbt } from '../../transaction/descriptor';
 import { TransactionExplanation } from '../TransactionExplanation';
 import { UtxoCoinName } from '../../names';
+
+import { assertPox5SpendPolicy } from './pox5';
 
 export const DescriptorTransaction = t.intersection(
   [OfflineVaultSignable, t.type({ descriptors: t.array(NamedDescriptor) })],
@@ -26,6 +29,8 @@ export function getDescriptorsFromDescriptorTransaction(tx: DescriptorTransactio
   const policy = getValidatorSome([
     // allow all 2-of-3-ish descriptors where the keys match the wallet keys
     getValidatorOneOfTemplates(['Wsh2Of3', 'Wsh2Of3CltvDrop', 'ShWsh2Of3CltvDrop']),
+    // allow 2-of-3 wallet descriptors together with PoX-5 lockup descriptors where the keys match the wallet keys
+    getValidatorPox5Wallet(),
     // allow all descriptors signed by the user key
     getValidatorSignedByUserKey(),
   ]);
@@ -35,6 +40,7 @@ export function getDescriptorsFromDescriptorTransaction(tx: DescriptorTransactio
 export function getHalfSignedPsbt(tx: DescriptorTransaction, prv: bip32.BIP32Interface, coinName: UtxoCoinName): Psbt {
   const psbt = Psbt.deserialize(Buffer.from(tx.coinSpecific.txHex, 'hex'));
   const descriptorMap = getDescriptorsFromDescriptorTransaction(tx);
+  assertPox5SpendPolicy(psbt, descriptorMap);
   signPsbt(psbt, descriptorMap, prv, { onUnknownInput: 'throw' });
   return psbt;
 }
@@ -49,6 +55,7 @@ export function getTransactionExplanationFromPsbt(
   return {
     outputs,
     changeOutputs,
+    locktime: psbt.lockTime(),
     fee: {
       /* network fee */
       fee,
