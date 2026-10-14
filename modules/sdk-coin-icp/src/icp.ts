@@ -256,6 +256,14 @@ export class Icp extends BaseCoin {
     return multisigTypes.tss;
   }
 
+  /**
+   * Account consolidations (receive address -> root address) are supported;
+   * the platform enforces V2-only consolidations (CECHO-2443).
+   */
+  allowsAccountConsolidations(): boolean {
+    return true;
+  }
+
   /** @inheritDoc */
   getMPCAlgorithm(): MPCAlgorithm {
     return 'ecdsa';
