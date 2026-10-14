@@ -13,7 +13,14 @@ import {
 import { decode } from 'cbor-x';
 import * as t from 'io-ts';
 
-import { EddsaMPCv2Utils, BitGoBase, IBaseCoin, Keychain } from '../../../../../../src';
+import {
+  buildSafeBip44Path,
+  DerivedFromParentWithHardenedPath,
+  EddsaMPCv2Utils,
+  BitGoBase,
+  IBaseCoin,
+  Keychain,
+} from '../../../../../../src';
 import { decodeWithCodec } from '../../../../../../src/bitgo/utils/codecs';
 import { buildSafeMpcKeyEnvelopes } from '../../../../../../src/bitgo/utils/tss/keyShareEnvelope';
 import { EddsaVrfMPCv2Utils } from '../../../../../../src/bitgo/utils/tss/eddsa/eddsaVrfMPCv2';
@@ -447,8 +454,8 @@ describe('EdDSA safe-child MPS derivation', function () {
   let bitgoPublicKey: pgp.Key;
 
   const sessionId = 'derive-session';
-  const derivationIndex = 7;
-  const path = "m/7'";
+  const account = 7;
+  const path = buildSafeBip44Path(501, 'eddsaMpc', account);
   const Request = t.intersection([
     t.type({ enterprise: t.string, type: t.string, curveType: t.string, round: t.string, payload: t.unknown }),
     t.partial({ safeId: t.string }),
@@ -500,7 +507,7 @@ describe('EdDSA safe-child MPS derivation', function () {
               'userMsg1',
             ]);
             assert.strictEqual(request.parentKeyId, 'bitgo-root-id');
-            assert.strictEqual(request.derivationIndex, derivationIndex);
+            assert.strictEqual(request.derivationIndex, account);
             userGpgPublicKey = request.userGpgPublicKey;
             const userGpgKey = await pgp.readKey({ armoredKey: request.userGpgPublicKey });
             const userPayload = await MPSComms.verifyMpsMessage(request.userMsg1, userGpgKey);
@@ -553,7 +560,7 @@ describe('EdDSA safe-child MPS derivation', function () {
         enterprise: 'enterprise-id',
         safeId: 'safe-id',
         parentKeyId: 'bitgo-root-id',
-        derivationIndex,
+        path,
         userRootKeyId: 'user-root-id',
         backupRootKeyId: 'backup-root-id',
         userRootKeyShare: userSigningShare,
@@ -610,27 +617,29 @@ describe('EdDSA safe-child MPS derivation', function () {
     assert.strictEqual(bitgoChild.encryptedPrv, undefined);
   });
 
-  it('rejects indexes outside the hardened Safe range before contacting WP', async function () {
-    const { bitgo, baseCoin, post, addedKeychains } = createKeychainFixture();
-    const utils = new EddsaVrfMPCv2Utils(bitgo, baseCoin);
+  for (const badPath of ["m/7'", 'm/44/501/4/7', "m/44'/501'/0'/7'"]) {
+    it(`rejects the non-BIP44 path ${JSON.stringify(badPath)} before contacting WP`, async function () {
+      const { bitgo, baseCoin, post, addedKeychains } = createKeychainFixture();
+      const utils = new EddsaVrfMPCv2Utils(bitgo, baseCoin);
 
-    await assert.rejects(
-      utils.createSafeChildKeychains({
-        passphrase: 'passphrase',
-        enterprise: 'enterprise-id',
-        safeId: 'safe-id',
-        parentKeyId: 'bitgo-root-id',
-        derivationIndex: 0x80000000,
-        userRootKeyId: 'user-root-id',
-        backupRootKeyId: 'backup-root-id',
-        userRootKeyShare: userSigningShare,
-        userRootVrfKeyShare: userVrfShare,
-      }),
-      /derivedFromParentWithPath/
-    );
-    assert.strictEqual(post.called, false);
-    assert.deepStrictEqual(addedKeychains, []);
-  });
+      await assert.rejects(
+        utils.createSafeChildKeychains({
+          passphrase: 'passphrase',
+          enterprise: 'enterprise-id',
+          safeId: 'safe-id',
+          parentKeyId: 'bitgo-root-id',
+          path: badPath as DerivedFromParentWithHardenedPath,
+          userRootKeyId: 'user-root-id',
+          backupRootKeyId: 'backup-root-id',
+          userRootKeyShare: userSigningShare,
+          userRootVrfKeyShare: userVrfShare,
+        }),
+        /Invalid safe BIP44 path/
+      );
+      assert.strictEqual(post.called, false);
+      assert.deepStrictEqual(addedKeychains, []);
+    });
+  }
 
   const faults: Array<'r1-signature' | 'r2-signature' | 'session' | 'commonKeychain'> = [
     'r1-signature',

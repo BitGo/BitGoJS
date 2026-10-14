@@ -7,6 +7,7 @@ import {
   IncorrectPasswordError,
   buildSafeMpcKeyEnvelopes,
   Safe,
+  buildSafeBip44Path,
   deriveSafeChildEd25519Hardened,
   deriveSafeChildHardenedFromXprv,
 } from '../../../../src';
@@ -17,7 +18,9 @@ const ROOT_XPRV =
 // 32-byte synthetic seed, StrKey spelling generated with stellar-sdk; pinned derivation vectors in
 // test/unit/bitgo/safe/safeDerivation.ts.
 const ROOT_ED25519_SEED_STRKEY = 'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI';
-const ed25519ChildAt0 = deriveSafeChildEd25519Hardened(ROOT_ED25519_SEED_STRKEY, 0);
+// Every ed25519 wallet coin derives from the txlm StrKey root, at the wallet coin's own coinType.
+const ed25519ChildFor = (coinType: number) =>
+  deriveSafeChildEd25519Hardened(ROOT_ED25519_SEED_STRKEY, buildSafeBip44Path(coinType, 'ed25519Multisig', 0));
 
 describe('Safe', function () {
   let safe: Safe;
@@ -173,8 +176,8 @@ describe('Safe', function () {
   });
 
   describe('createWallet (WCN-1203)', function () {
-    const childAt0 = deriveSafeChildHardenedFromXprv(ROOT_XPRV, 0);
-    const childAt7 = deriveSafeChildHardenedFromXprv(ROOT_XPRV, 7);
+    const childAt0 = deriveSafeChildHardenedFromXprv(ROOT_XPRV, buildSafeBip44Path(0, 'secp256k1Multisig', 0));
+    const childAt7 = deriveSafeChildHardenedFromXprv(ROOT_XPRV, buildSafeBip44Path(0, 'secp256k1Multisig', 7));
     let keychainsAdd: sinon.SinonStub;
     let keychainsGet: sinon.SinonStub;
     let derivationQuery: sinon.SinonStub;
@@ -208,7 +211,7 @@ describe('Safe', function () {
         throw new Error('bad ciphertext');
       });
       derivationQuery = sinon.stub().returns({
-        result: sinon.stub().resolves({ slot: 'secp256k1Multisig', index: 0 }),
+        result: sinon.stub().resolves({ slot: 'secp256k1Multisig', coinType: 0, account: 0 }),
       });
       mockBitGo.get.returns({ query: derivationQuery });
       const mintResult = sinon.stub().resolves({
@@ -224,10 +227,10 @@ describe('Safe', function () {
       mockBitGo.post.returns({ send: mintSend });
     });
 
-    it('peeks the index, registers a public-only user child, and mints', async function () {
+    it('peeks the account, registers a public-only user child at the BIP44 path, and mints', async function () {
       const wallet = await safe.createWallet({ coin: 'tbtc', label: 'desk 1', passphrase: 'pw' });
 
-      derivationQuery.calledOnceWithExactly({ slot: 'secp256k1Multisig' }).should.be.true();
+      derivationQuery.calledOnceWithExactly({ slot: 'secp256k1Multisig', coin: 'tbtc' }).should.be.true();
       keychainsGet.calledOnceWithExactly({ id: 'user-root-id' }).should.be.true();
       keychainsAdd.calledOnce.should.be.true();
       const addArgs = keychainsAdd.firstCall.args[0];
@@ -237,7 +240,7 @@ describe('Safe', function () {
         keyType: 'independent',
         parent: 'user-root-id',
         safeId: 'test-safe-id',
-        derivedFromParentWithPath: "m/0'",
+        derivedFromParentWithPath: "m/44'/0'/1'/0'",
       });
       addArgs.should.not.have.property('encryptedPrv');
       addArgs.should.not.have.property('derivedFromParentWithSeed');
@@ -259,9 +262,9 @@ describe('Safe', function () {
       mintedSafeId.should.equal('test-safe-id');
     });
 
-    it('registers the child with derivedFromParentWithPath at a non-zero mint index', async function () {
+    it('registers the child at the peeked account', async function () {
       derivationQuery.returns({
-        result: sinon.stub().resolves({ slot: 'secp256k1Multisig', index: 7 }),
+        result: sinon.stub().resolves({ slot: 'secp256k1Multisig', coinType: 0, account: 7 }),
       });
       keychainsAdd.resolves({ id: 'child-key-id', pub: childAt7.pub, type: 'independent' });
 
@@ -269,17 +272,34 @@ describe('Safe', function () {
 
       const addArgs = keychainsAdd.firstCall.args[0];
       addArgs.pub.should.equal(childAt7.pub);
-      addArgs.derivedFromParentWithPath.should.equal("m/7'");
+      addArgs.derivedFromParentWithPath.should.equal("m/44'/0'/1'/7'");
       addArgs.should.not.have.property('path');
       addArgs.should.not.have.property('derivedFromParentWithSeed');
     });
 
+    it('rejects a server coinType that differs from local statics before registering anything', async function () {
+      derivationQuery.returns({
+        result: sinon.stub().resolves({ slot: 'secp256k1Multisig', coinType: 60, account: 0 }),
+      });
+
+      await safe
+        .createWallet({ coin: 'tbtc', label: 'desk 1', passphrase: 'pw' })
+        .should.be.rejectedWith(/returned coinType 60, expected 0/);
+      keychainsGet.notCalled.should.be.true();
+      keychainsAdd.notCalled.should.be.true();
+      mintSend.notCalled.should.be.true();
+    });
+
     it('mints hteth onchain from secp256k1Multisig roots when default wallet type is tss', async function () {
       stubCoin('hteth', { getDefaultMultisigType: 'tss' });
+      derivationQuery.returns({
+        result: sinon.stub().resolves({ slot: 'secp256k1Multisig', coinType: 60, account: 0 }),
+      });
 
       await safe.createWallet({ coin: 'hteth', label: 'evm onchain', passphrase: 'pw' });
 
-      derivationQuery.calledOnceWithExactly({ slot: 'secp256k1Multisig' }).should.be.true();
+      derivationQuery.calledOnceWithExactly({ slot: 'secp256k1Multisig', coin: 'hteth' }).should.be.true();
+      keychainsAdd.firstCall.args[0].derivedFromParentWithPath.should.equal("m/44'/60'/1'/0'");
       keychainsGet.calledOnceWithExactly({ id: 'user-root-id' }).should.be.true();
       mintSend.firstCall.args[0].should.containEql({
         coin: 'hteth',
@@ -304,7 +324,7 @@ describe('Safe', function () {
         .callsFake(({ input }: { input: string }) => Promise.resolve(input.startsWith('enc:') ? input.slice(4) : ''));
 
       derivationQuery.returns({
-        result: sinon.stub().resolves({ slot: 'ecdsaMpc', index: 0 }),
+        result: sinon.stub().resolves({ slot: 'ecdsaMpc', coinType: 60, account: 0 }),
       });
 
       const ceremonyStub = sinon.stub(ECDSAUtils.EcdsaVrfMPCv2Utils.prototype, 'createSafeChildKeychains').resolves({
@@ -315,17 +335,18 @@ describe('Safe', function () {
 
       const wallet = await safe.createWallet({ coin: 'hteth', label: 'evm', passphrase: 'pw', multisigType: 'tss' });
 
-      derivationQuery.calledOnceWithExactly({ slot: 'ecdsaMpc' }).should.be.true();
+      derivationQuery.calledOnceWithExactly({ slot: 'ecdsaMpc', coin: 'hteth' }).should.be.true();
       keychainsGet.calledOnceWithExactly({ id: 'ecdsa-user' }).should.be.true();
       const ceremonyArgs = ceremonyStub.firstCall.args[0];
       ceremonyArgs.should.containEql({
         safeId: 'test-safe-id',
         enterprise: 'test-enterprise-id',
         parentKeyId: 'ecdsa-bitgo',
-        derivationIndex: 0,
+        path: "m/44'/60'/3'/0'",
         userRootKeyId: 'ecdsa-user',
         backupRootKeyId: 'ecdsa-backup',
       });
+      ceremonyArgs.should.not.have.property('derivationIndex');
       ceremonyArgs.should.not.have.property('backupRootKeyShare');
       ceremonyArgs.should.not.have.property('backupRootVrfKeyShare');
       ceremonyArgs.userRootKeyShare.should.deepEqual(Buffer.from('signing-1'));
@@ -351,7 +372,7 @@ describe('Safe', function () {
         ).envelope.toString('base64');
         keychainsGet.resolves({ id: 'eddsa-user', source: 'user', encryptedPrv: `enc:${userBlob}` });
         derivationQuery.returns({
-          result: sinon.stub().resolves({ slot: 'eddsaMpc', index: 7 }),
+          result: sinon.stub().resolves({ slot: 'eddsaMpc', coinType: 501, account: 7 }),
         });
 
         const ceremonyStub = sinon.stub(EDDSAUtils.EddsaVrfMPCv2Utils.prototype, 'createSafeChildKeychains').resolves({
@@ -367,7 +388,7 @@ describe('Safe', function () {
           multisigType: 'tss',
         });
 
-        derivationQuery.calledOnceWithExactly({ slot: 'eddsaMpc' }).should.be.true();
+        derivationQuery.calledOnceWithExactly({ slot: 'eddsaMpc', coin: chain }).should.be.true();
         keychainsGet.calledOnceWithExactly({ id: 'eddsa-user' }).should.be.true();
         ceremonyStub.calledOnce.should.be.true();
         const ceremonyArgs = ceremonyStub.firstCall.args[0];
@@ -376,12 +397,13 @@ describe('Safe', function () {
           enterprise: 'test-enterprise-id',
           safeId: 'test-safe-id',
           parentKeyId: 'eddsa-bitgo',
-          derivationIndex: 7,
+          path: "m/44'/501'/4'/7'",
           userRootKeyId: 'eddsa-user',
           backupRootKeyId: 'eddsa-backup',
         });
         ceremonyArgs.userRootKeyShare.should.deepEqual(Buffer.from('eddsa-root-signing'));
         ceremonyArgs.userRootVrfKeyShare.should.deepEqual(Buffer.from('eddsa-root-vrf'));
+        ceremonyArgs.should.not.have.property('derivationIndex');
         ceremonyArgs.should.not.have.property('backupRootKeyShare');
         ceremonyArgs.should.not.have.property('backupRootVrfKeyShare');
         keychainsAdd.notCalled.should.be.true();
@@ -396,21 +418,21 @@ describe('Safe', function () {
       });
     }
 
-    it('rejects a Solana derivation index from the wrong MPC slot before decrypting or minting', async function () {
+    it('rejects a Solana derivation account from the wrong MPC slot before decrypting or minting', async function () {
       stubCoin('tsol', { getDefaultMultisigType: 'tss' });
-      derivationQuery.returns({ result: sinon.stub().resolves({ slot: 'ecdsaMpc', index: 0 }) });
+      derivationQuery.returns({ result: sinon.stub().resolves({ slot: 'ecdsaMpc', coinType: 501, account: 0 }) });
 
       await safe
         .createWallet({ coin: 'tsol', label: 'sol desk', passphrase: 'pw', multisigType: 'tss' })
         .should.be.rejectedWith(/returned slot 'ecdsaMpc', expected 'eddsaMpc'/);
-      derivationQuery.calledOnceWithExactly({ slot: 'eddsaMpc' }).should.be.true();
+      derivationQuery.calledOnceWithExactly({ slot: 'eddsaMpc', coin: 'tsol' }).should.be.true();
       keychainsGet.notCalled.should.be.true();
       mintSend.notCalled.should.be.true();
     });
 
-    it('rejects a peeked derivation index for the wrong slot', async function () {
+    it('rejects a peeked derivation account for the wrong slot', async function () {
       derivationQuery.returns({
-        result: sinon.stub().resolves({ slot: 'ecdsaMpc', index: 0 }),
+        result: sinon.stub().resolves({ slot: 'ecdsaMpc', coinType: 0, account: 0 }),
       });
       await safe
         .createWallet({ coin: 'tbtc', label: 'desk 1', passphrase: 'pw' })
@@ -426,23 +448,24 @@ describe('Safe', function () {
         pub: 'GAB2CB576PHBBPQ5ODORRZ2LYCMWPZGWGCN2KDK7DXOIMZASKUY3QZ6Q',
         type: 'independent',
       });
-      keychainsAdd.resolves({ id: 'child-key-id', pub: ed25519ChildAt0.pub, type: 'independent' });
+      const ed25519Child = ed25519ChildFor(148);
+      keychainsAdd.resolves({ id: 'child-key-id', pub: ed25519Child.pub, type: 'independent' });
       derivationQuery.returns({
-        result: sinon.stub().resolves({ slot: 'ed25519Multisig', index: 0 }),
+        result: sinon.stub().resolves({ slot: 'ed25519Multisig', coinType: 148, account: 0 }),
       });
 
       await safe.createWallet({ coin: 'txlm', label: 'xlm desk', passphrase: 'pw' });
 
-      derivationQuery.calledOnceWithExactly({ slot: 'ed25519Multisig' }).should.be.true();
+      derivationQuery.calledOnceWithExactly({ slot: 'ed25519Multisig', coin: 'txlm' }).should.be.true();
       keychainsGet.calledOnceWithExactly({ id: 'ed-user' }).should.be.true();
       const addArgs = keychainsAdd.firstCall.args[0];
       addArgs.should.eql({
-        pub: ed25519ChildAt0.pub,
+        pub: ed25519Child.pub,
         source: 'user',
         keyType: 'independent',
         parent: 'ed-user',
         safeId: 'test-safe-id',
-        derivedFromParentWithPath: "m/0'",
+        derivedFromParentWithPath: "m/44'/148'/2'/0'",
       });
       addArgs.should.not.have.property('encryptedPrv');
       mintSend.firstCall.args[0].should.eql({
@@ -454,7 +477,10 @@ describe('Safe', function () {
       });
     });
 
-    for (const chain of ['talgo', 'thbar']) {
+    for (const [chain, coinType] of [
+      ['talgo', 283],
+      ['thbar', 3030],
+    ] as const) {
       it(`mints an ed25519 ${chain} wallet posting the user child as a StrKey (server converts)`, async function () {
         // The user child is hardened-derived from the txlm StrKey user root, so the SDK posts a
         // Stellar StrKey for EVERY ed25519 wallet coin. Wallet Platform converts the pub to the
@@ -469,19 +495,19 @@ describe('Safe', function () {
         });
         keychainsAdd.resolves({ id: 'child-key-id', pub: `converted-${chain}-pub`, type: 'independent' });
         derivationQuery.returns({
-          result: sinon.stub().resolves({ slot: 'ed25519Multisig', index: 0 }),
+          result: sinon.stub().resolves({ slot: 'ed25519Multisig', coinType, account: 0 }),
         });
 
         await safe.createWallet({ coin: chain, label: `${chain} desk`, passphrase: 'pw' });
 
         const addArgs = keychainsAdd.firstCall.args[0];
         addArgs.should.eql({
-          pub: ed25519ChildAt0.pub,
+          pub: ed25519ChildFor(coinType).pub,
           source: 'user',
           keyType: 'independent',
           parent: 'ed-user',
           safeId: 'test-safe-id',
-          derivedFromParentWithPath: "m/0'",
+          derivedFromParentWithPath: `m/44'/${coinType}'/2'/0'`,
         });
         mintSend.firstCall.args[0].should.eql({
           coin: chain,

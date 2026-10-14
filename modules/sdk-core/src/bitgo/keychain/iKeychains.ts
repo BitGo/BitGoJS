@@ -50,7 +50,7 @@ export interface Keychain {
   reducedEncryptedPrv?: string;
   derivationPath?: string;
   derivedFromParentWithSeed?: string;
-  /** Hardened path from the safe parent (`m/<n>'`). @experimental */
+  /** BIP44 path from the safe parent: `m/44'/<coinType>'/<slot>'/<account>'` (user / MPC children) or its soft twin `m/44/<coinType>/<slot>/<account>` (multisig co-signers). @experimental */
   derivedFromParentWithPath?: string;
   /** Safe root key id this child key was derived from (WCN-1172). */
   parent?: string;
@@ -200,7 +200,7 @@ export interface AddKeychainOptions {
   originalPasscodeEncryptionCode?: string;
   enterprise?: string;
   derivedFromParentWithSeed?: string;
-  /** Hardened path from the safe parent (`m/<n>'`). @experimental */
+  /** BIP44 path from the safe parent: `m/44'/<coinType>'/<slot>'/<account>'` (user / MPC children) or its soft twin `m/44/<coinType>/<slot>/<account>` (multisig co-signers). @experimental */
   derivedFromParentWithPath?: string;
   /** Safe user-root key id this child was derived from. @experimental */
   parent?: string;

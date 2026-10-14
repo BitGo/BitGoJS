@@ -6,9 +6,17 @@
 import { Buffer } from 'buffer';
 import { randomBytes } from 'crypto';
 import { bip32 } from '@bitgo/utxo-lib';
-import { coins, MAX_BIP32_INDEX, SAFE_ROOT_SLOT_ORDINALS } from '@bitgo/statics';
+import { MAX_BIP32_INDEX } from '@bitgo/statics';
 import type { RootKeyType } from '@bitgo/public-types';
-import { Ed25519ChainCodeEntryCodec, parseSafeKeycardBox, type SafeKeycardRootEntry } from '@bitgo/sdk-lib-safes';
+import {
+  buildSafeBip44Path,
+  deriveSafeChildTriplet,
+  Ed25519ChainCodeEntryCodec,
+  getSafeBip44CoinType,
+  parseSafeBip44Path,
+  parseSafeKeycardBox,
+  type SafeKeycardRootEntry,
+} from '@bitgo/sdk-lib-safes';
 import { DklsVrfUtils, MpsVrfUtils } from '@bitgo/sdk-lib-mpc';
 import { BitGoBase } from '../bitgoBase';
 import { IncorrectPasswordError } from '../errors';
@@ -127,14 +135,6 @@ export async function decryptSafeKeycard(params: {
   };
 }
 
-function buildSafeUserPath(coinType: number, slotOrdinal: number, account: number): string {
-  return `m/44'/${coinType}'/${slotOrdinal}'/${account}'`;
-}
-
-function buildSafeCosignerPath(coinType: number, slotOrdinal: number, account: number): string {
-  return `m/44/${coinType}/${slotOrdinal}/${account}`;
-}
-
 /**
  * Derives a Safe wallet's child keys at the BIP44 path for a given slot and account.
  * Supports `secp256k1Multisig`, `ecdsaMpc`, and `eddsaMpc`; `ed25519Multisig` remains
@@ -150,35 +150,12 @@ export async function deriveSafeWalletKeys(params: {
     throw new Error(`deriveSafeWalletKeys: invalid account '${params.account}'`);
   }
 
-  const coinType = coins.get(params.coin).bip44CoinType;
-  if (coinType === undefined) {
-    throw new Error(`Coin '${params.coin}' has no BIP44 coin type and cannot derive a safe child`);
-  }
-  const slotOrdinal = SAFE_ROOT_SLOT_ORDINALS[params.slot];
   const { account, roots } = params;
+  const path = buildSafeBip44Path(getSafeBip44CoinType(params.coin), params.slot, account);
+  const { coinType, slotOrdinal } = parseSafeBip44Path(path);
 
   if (params.slot === 'secp256k1Multisig') {
-    const root = roots.secp256k1Multisig;
-    const user = bip32.fromBase58(root.user).derivePath(buildSafeUserPath(coinType, slotOrdinal, account));
-    const backup = bip32.fromBase58(root.backup).derivePath(buildSafeCosignerPath(coinType, slotOrdinal, account));
-    const bitgo = bip32.fromBase58(root.bitgo).derivePath(buildSafeCosignerPath(coinType, slotOrdinal, account));
-
-    if (!user.privateKey || !backup.privateKey) {
-      throw new Error('deriveSafeWalletKeys: user and backup roots must be private (xprv)');
-    }
-    if (bitgo.privateKey) {
-      throw new Error('deriveSafeWalletKeys: bitgo root must be public (xpub)');
-    }
-
-    return {
-      slot: 'secp256k1Multisig',
-      path: buildSafeUserPath(coinType, slotOrdinal, account),
-      keys: {
-        user: { prv: user.toBase58(), pub: user.neutered().toBase58() },
-        backup: { prv: backup.toBase58(), pub: backup.neutered().toBase58() },
-        bitgo: { pub: bitgo.neutered().toBase58() },
-      },
-    };
+    return { slot: 'secp256k1Multisig', path, keys: deriveSafeChildTriplet(roots.secp256k1Multisig, path) };
   }
 
   if (params.slot === 'ecdsaMpc') {
@@ -191,7 +168,7 @@ export async function deriveSafeWalletKeys(params: {
     });
     return {
       slot: 'ecdsaMpc',
-      path: buildSafeUserPath(coinType, slotOrdinal, account),
+      path,
       keys: { commonKeychain, user: userChild, backup: backupChild },
     };
   }
@@ -206,7 +183,7 @@ export async function deriveSafeWalletKeys(params: {
     });
     return {
       slot: 'eddsaMpc',
-      path: buildSafeUserPath(coinType, slotOrdinal, account),
+      path,
       keys: { commonKeychain, user: userChild, backup: backupChild },
     };
   }

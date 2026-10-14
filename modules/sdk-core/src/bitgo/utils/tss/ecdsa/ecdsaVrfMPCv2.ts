@@ -1,4 +1,4 @@
-import { DklsComms, DklsDkg, DklsDrv, DklsTypes, DklsVrf } from '@bitgo/sdk-lib-mpc';
+import { DklsComms, DklsDkg, DklsDrv, DklsTypes, DklsVrf, DklsVrfUtils } from '@bitgo/sdk-lib-mpc';
 import assert from 'assert';
 import { NonEmptyString } from 'io-ts-types';
 import {
@@ -11,6 +11,7 @@ import {
   MPCv2KeyGenRound2Response,
   MPCv2KeyGenStateEnum,
 } from '@bitgo/public-types';
+import { DerivedFromParentWithHardenedPath, parseSafeBip44Path } from '@bitgo/sdk-lib-safes';
 import { KeychainsTriplet } from '../../../baseCoin';
 import { DecryptedRetrofitPayload } from '../../../keychain/iKeychains';
 import { EncryptionVersion } from '../../../../api';
@@ -61,19 +62,6 @@ function deserializeVrfMessages(blob: string, forParty: number): DklsTypes.Deser
       .filter((t): t is VrfMessageTransfer & { to: number } => t.to === forParty)
       .map((t) => ({ from: t.from, to: t.to, payload: new Uint8Array(Buffer.from(t.payload, 'base64')) })),
   };
-}
-
-/**
- * Encodes a hardened derivation index as the byte path the DKLS hard-derive wasm
- * expects: one big-endian u32 with the hardened bit (0x80000000) set — i.e. the
- * child path `m/<index>'`. The server derives the same hardened path from the
- * `derivationIndex` it receives on round 1.
- */
-export function hardenedDerivationPath(index: number): Uint8Array {
-  if (!Number.isInteger(index) || index < 0 || index > 0x7fffffff) {
-    throw new Error(`Invalid derivation index: ${index}`);
-  }
-  return new Uint8Array([0x80 | (index >>> 24), (index >>> 16) & 0xff, (index >>> 8) & 0xff, index & 0xff]);
 }
 
 /**
@@ -579,7 +567,7 @@ export class EcdsaVrfMPCv2Utils extends EcdsaMPCv2Utils {
   }
 
   /**
-   * Runs the safe child hard-derive ceremony and registers child key documents.
+   * Runs the safe child hard-derive ceremony at the BIP44 `path` and registers child key documents.
    */
   async createSafeChildKeychains(params: {
     passphrase: string;
@@ -587,7 +575,8 @@ export class EcdsaVrfMPCv2Utils extends EcdsaMPCv2Utils {
     safeId: string;
     /** Root key ID used for the derive. */
     parentKeyId: string;
-    derivationIndex: number;
+    /** Safe child path `m/44'/<coinType>'/<slot>'/<account>'`; every child is registered at it. */
+    path: DerivedFromParentWithHardenedPath;
     userRootKeyId: string;
     backupRootKeyId: string;
     userRootKeyShare: Buffer;
@@ -596,6 +585,7 @@ export class EcdsaVrfMPCv2Utils extends EcdsaMPCv2Utils {
     webauthnInfo?: WebauthnKeyEncryptionInfo;
     encryptionVersion?: EncryptionVersion;
   }): Promise<KeychainsTriplet> {
+    const { coinType, slotOrdinal, account } = parseSafeBip44Path(params.path);
     const userGpgKey = await generateGPGKeyPair('secp256k1');
     const { mpcv2PublicKey } = await this.getBitgoGpgPubkeyBasedOnFeatureFlags(params.enterprise, true);
     const mpcv2Key = mpcv2PublicKey ?? this.bitgoMPCv2PublicGpgKey;
@@ -615,14 +605,18 @@ export class EcdsaVrfMPCv2Utils extends EcdsaMPCv2Utils {
       gpgKey: bitgoPublicGpgKey,
     };
 
-    const path = hardenedDerivationPath(params.derivationIndex);
+    const derivePath = DklsVrfUtils.buildSafeMpcDerivePath({
+      coinType,
+      safeSlotOrdinal: slotOrdinal,
+      accountIndex: account,
+    });
     const userDeriveSession = new DklsDrv.Derive(
       3,
       2,
       MPCv2PartiesEnum.USER,
       params.userRootKeyShare,
       params.userRootVrfKeyShare,
-      path
+      derivePath
     );
 
     // Round 1: send the user's first message.
@@ -641,7 +635,8 @@ export class EcdsaVrfMPCv2Utils extends EcdsaMPCv2Utils {
       userGpgKey.publicKey,
       round1Messages,
       params.parentKeyId,
-      params.derivationIndex
+      // TODO(WCN-2969): send `path` once the public-types derive round 1 request carries it.
+      account
     );
 
     // Round 2: process the peer's first message and return the user's second.
@@ -707,7 +702,7 @@ export class EcdsaVrfMPCv2Utils extends EcdsaMPCv2Utils {
         params.encryptionVersion,
         params.enterprise,
         params.safeId,
-        { parentKeyId: params.userRootKeyId, index: params.derivationIndex }
+        { parentKeyId: params.userRootKeyId, path: params.path }
       );
       const backupKeychainPromise = this.addBackupKeychain(
         commonKeychain,
@@ -718,11 +713,11 @@ export class EcdsaVrfMPCv2Utils extends EcdsaMPCv2Utils {
         encryptionSession,
         params.encryptionVersion,
         params.safeId,
-        { parentKeyId: params.backupRootKeyId, index: params.derivationIndex }
+        { parentKeyId: params.backupRootKeyId, path: params.path }
       );
       const bitgoKeychainPromise = this.addBitgoKeychain(commonKeychain, params.safeId, {
         parentKeyId: params.parentKeyId,
-        index: params.derivationIndex,
+        path: params.path,
       });
 
       const [userKeychain, backupKeychain, bitgoKeychain] = await Promise.all([
