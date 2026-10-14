@@ -1,11 +1,19 @@
 import assert from 'assert';
-import { ClarityType, ContractCallPayload, createAddress, cvToString, cvToValue } from '@stacks/transactions';
+import {
+  ClarityType,
+  ContractCallPayload,
+  createAddress,
+  cvToString,
+  cvToValue,
+  deserializeCV,
+} from '@stacks/transactions';
 import { coins } from '@bitgo/statics';
 import should from 'should';
 
 import { BaseTransaction } from '@bitgo/sdk-core';
 import { StxLib } from '../../../src';
 import * as testData from '../resources';
+import { pox5RegisterForBondArgsHex } from '../registerForBondRealArgs';
 
 describe('Stacks: PoX-5 Builder', function () {
   const factory = new StxLib.TransactionBuilderFactory(coins.get('tstx'));
@@ -69,10 +77,42 @@ describe('Stacks: PoX-5 Builder', function () {
     should.equal(payload.functionArgs[3].type, ClarityType.ResponseOk);
     should.equal(payload.functionArgs[4].type, ClarityType.OptionalSome);
 
+    // SI-1922: the register args must be JSON-serialisable (no BigInt leaks) — this object is sent
+    // to the policy service, where fast-safe-stringify otherwise replaces the whole body.
+    should.doesNotThrow(() => JSON.stringify(tx.toJson()));
+    should.equal(typeof payload.functionArgs[3].value.data.outputs.list[0].data.amount.value, 'string');
+
     const rebuiltBuilder = factory.from(tx.toBroadcastFormat());
     rebuiltBuilder.fromPubKey(testData.TX_SENDER.pub);
     const rebuilt = await rebuiltBuilder.build();
     should.equal(rebuilt.toBroadcastFormat(), tx.toBroadcastFormat());
+  });
+
+  it('pins the real staging register-for-bond args and keeps them JSON-serialisable (SI-1922)', async () => {
+    const functionArgs = pox5RegisterForBondArgsHex.map((hex) =>
+      deserializeCV(Buffer.from(hex.replace(/^0x/, ''), 'hex'))
+    );
+    const builder = configure(factory.getPox5Builder());
+    builder.functionName('register-for-bond');
+    builder.functionArgs(functionArgs);
+    const tx = await builder.build();
+    const payload = tx.toJson().payload as any;
+
+    should.equal(payload.functionArgs.length, 5);
+    should.equal(payload.functionArgs[0].type, ClarityType.UInt);
+    should.equal(payload.functionArgs[1].type, ClarityType.PrincipalContract);
+    should.equal(payload.functionArgs[3].type, ClarityType.ResponseOk);
+    should.equal(payload.functionArgs[4].type, ClarityType.OptionalSome);
+
+    // the btc-lockup (arg 4) nested uints must be stringified — no BigInt leaks into the payload
+    should.doesNotThrow(() => JSON.stringify(tx.toJson()));
+    should.equal(typeof payload.functionArgs[3].value.data.outputs.list[0].data.amount.value, 'string');
+    should.equal(typeof payload.functionArgs[3].value.data.outputs.list[0].data['unlock-burn-height'].value, 'string');
+
+    // the fee re-build (factory.from → initBuilder) must stay byte-identical
+    const rebuilt = factory.from(tx.toBroadcastFormat());
+    rebuilt.fromPubKey(testData.TX_SENDER.pub);
+    should.equal((await rebuilt.build()).toBroadcastFormat(), tx.toBroadcastFormat());
   });
 
   it('validates the PoX-5 contract address during factory routing', async () => {
@@ -108,6 +148,7 @@ describe('Stacks: PoX-5 Builder', function () {
     const payload = tx.toJson().payload as any;
     should.equal(payload.functionArgs[3].type, ClarityType.ResponseErr);
     should.equal(cvToValue(payload.functionArgs[3].value).toString(), '10000');
+    should.doesNotThrow(() => JSON.stringify(tx.toJson()));
   });
 
   it('builds validator update, early exit, and reward calls', async () => {

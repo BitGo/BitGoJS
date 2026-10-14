@@ -1,6 +1,16 @@
 import assert from 'assert';
 import should from 'should';
-import { AddressVersion, ClarityType, IntCV, NoneCV, SomeCV, UIntCV, ListCV } from '@stacks/transactions';
+import {
+  AddressVersion,
+  ClarityType,
+  IntCV,
+  NoneCV,
+  ResponseErrorCV,
+  ResponseOkCV,
+  SomeCV,
+  UIntCV,
+  ListCV,
+} from '@stacks/transactions';
 import BigNum from 'bn.js';
 import * as testData from './resources';
 import { StxLib } from '../../src';
@@ -304,6 +314,22 @@ describe('Stx util library', function () {
     it('List type with empty list', function () {
       const input: ListCV = { type: ClarityType.List, list: [] };
       Utils.stringifyCv(input).should.deepEqual({ type: 11, list: [] });
+    });
+
+    it('ResponseOk type with uint value', function () {
+      const input: ResponseOkCV = {
+        type: ClarityType.ResponseOk,
+        value: { type: ClarityType.UInt, value: BigInt('100000') },
+      };
+      Utils.stringifyCv(input).should.deepEqual({ type: 7, value: { type: 1, value: '100000' } });
+    });
+
+    it('ResponseErr type with uint value', function () {
+      const input: ResponseErrorCV = {
+        type: ClarityType.ResponseErr,
+        value: { type: ClarityType.UInt, value: BigInt('10000') },
+      };
+      Utils.stringifyCv(input).should.deepEqual({ type: 8, value: { type: 1, value: '10000' } });
     });
   });
 
