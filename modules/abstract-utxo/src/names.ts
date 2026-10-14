@@ -34,10 +34,20 @@ export type UtxoCoinNameTestnet =
 export type UtxoCoinName = UtxoCoinNameMainnet | UtxoCoinNameTestnet;
 
 export function toWasmUtxoCoinName(coinName: UtxoCoinName | WasmUtxoCoinName): WasmUtxoCoinName {
-  if (!isCoinName(coinName)) {
-    throw new Error(`coin ${coinName} is not supported by wasm-utxo`);
+  if (isCoinName(coinName)) {
+    return coinName;
   }
-  return coinName;
+  // Stacks PoX coins share a wasm coin with their base chain for script and
+  // address codecs (see the `wasmName` of the coin classes)
+  switch (coinName) {
+    case 'tbtcstx':
+    case 'tbtcstxprivate1':
+      return 'tbtcreg';
+    case 'tbtcstxsignet':
+      return 'tbtcsig';
+    default:
+      throw new Error(`coin ${coinName} is not supported by wasm-utxo`);
+  }
 }
 
 export function isUtxoCoinNameMainnet(coinName: string): coinName is UtxoCoinNameMainnet {

@@ -1,6 +1,6 @@
 import { BitGoBase } from '@bitgo/sdk-core';
 
-import { UtxoCoinName, WasmUtxoCoinName } from '../../names';
+import { UtxoCoinName } from '../../names';
 
 import { Tbtc } from './tbtc';
 
@@ -13,9 +13,5 @@ export class Tbtcstxsignet extends Tbtc {
 
   static createInstance(bitgo: BitGoBase): Tbtcstxsignet {
     return new Tbtcstxsignet(bitgo);
-  }
-
-  override get wasmName(): WasmUtxoCoinName {
-    return 'tbtcsig';
   }
 }

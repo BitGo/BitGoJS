@@ -17,6 +17,8 @@ export interface TransactionExplanation<TFee> {
     payGoFeeString: string | number | undefined;
     payGoFeeAddress: string | undefined;
   };
+  /* PSBT nLockTime — the operator must verify it against the PoX-5 unlock height before co-signing a CLTV spend */
+  locktime: number;
 }
 
 export function getTransactionExplanation(coinName: UtxoCoinName, tx: unknown): TransactionExplanation<string> {
