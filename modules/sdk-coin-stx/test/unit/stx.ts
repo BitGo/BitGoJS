@@ -5,10 +5,11 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 import { ErrorNoInputToRecover, RecoveryProviderError, Wallet } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { coins } from '@bitgo/statics';
-import { cvToString, pubKeyfromPrivKey, publicKeyToString } from '@stacks/transactions';
+import { cvToString, deserializeCV, pubKeyfromPrivKey, publicKeyToString } from '@stacks/transactions';
 
 import * as testData from '../fixtures';
 import * as resources from './resources';
+import { pox5RegisterForBondArgsHex } from './registerForBondRealArgs';
 import { Stx, StxLib, Tstx } from '../../src';
 import { RecoveryInfo, RecoveryOptions, RecoveryTransaction } from '../../src/lib/iface';
 
@@ -194,6 +195,31 @@ describe('STX:', function () {
     explain.contractFunction.should.equal(testData.txExplainedContract.functionName);
     explain.contractFunctionArgs[0].type.should.equal(testData.txExplainedContract.functionArgs[0].type);
     explain.contractFunctionArgs[0].value.toString().should.equal(testData.txExplainedContract.functionArgs[0].value);
+  });
+
+  it('explains a register-for-bond transaction with JSON-serialisable contractFunctionArgs (SI-1922)', async function () {
+    const factory = new StxLib.TransactionBuilderFactory(coins.get(coinNameTest));
+    const functionArgs = pox5RegisterForBondArgsHex.map((hex) =>
+      deserializeCV(Buffer.from(hex.replace(/^0x/, ''), 'hex'))
+    );
+    const builder = factory.getPox5Builder();
+    builder.fee({ fee: '18810' });
+    builder.nonce(0);
+    builder.fromPubKey(resources.TX_SENDER.pub);
+    builder.numberSignatures(1);
+    builder.functionName('register-for-bond');
+    builder.functionArgs(functionArgs);
+    const tx = await builder.build();
+
+    const explain = await basecoin.explainTransaction({
+      txHex: tx.toBroadcastFormat(),
+      publicKeys: [resources.TX_SENDER.pub],
+      feeInfo: { fee: '' },
+    });
+    explain.contractName.should.equal('pox-5');
+    explain.contractFunction.should.equal('register-for-bond');
+    // the second consumer of these args (explainTransaction) must also be JSON-serialisable
+    assert.doesNotThrow(() => JSON.stringify(explain.contractFunctionArgs));
   });
 
   it('should explain a fungible token transfer transaction with memo', async function () {

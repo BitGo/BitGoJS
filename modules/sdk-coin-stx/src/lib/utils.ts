@@ -473,6 +473,12 @@ export function stringifyCv(cv: ClarityValue): any {
       return { type: cv.type, value: cv.value.toString() };
     case ClarityType.OptionalSome:
       return { type: cv.type, value: stringifyCv(cv.value) };
+    // ResponseOk/ResponseErr wrap a ClarityValue (e.g. register-for-bond's lockup tuple/list).
+    // Without these cases the inner ints reach `toJson()` as native BigInt, which JSON.stringify
+    // rejects — making the payload unserialisable for consumers such as the policy service (SI-1922).
+    case ClarityType.ResponseOk:
+    case ClarityType.ResponseErr:
+      return { type: cv.type, value: stringifyCv(cv.value) };
     case ClarityType.Tuple:
       return {
         type: cv.type,
