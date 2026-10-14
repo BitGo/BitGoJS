@@ -95,6 +95,7 @@ export enum CoinFamily {
   MANTLE = 'mantle',
   MANTRA = 'mantra',
   MEGAETH = 'megaeth',
+  MIDLBTC = 'midlbtc', // MIDL Bitcoin EVM L2
   MON = 'mon',
   XPL = 'xpl', // Plasma Network
   POLYGON = 'polygon',
@@ -716,6 +717,7 @@ export enum UnderlyingAsset {
   MANTLE = 'mantle',
   MANTRA = 'mantra',
   MEGAETH = 'megaeth',
+  MIDLBTC = 'midlbtc',
   MON = 'mon',
   MORPH = 'morph',
   MORPHETH = 'morpheth',
@@ -4930,6 +4932,7 @@ export enum BaseUnit {
   INITIA = 'uinit',
   ASI = 'afet',
   VET = 'wei',
+  MIDLBTC = 'wei',
   TCRONOS = 'basetcro',
   TASI = 'atestfet',
   CANTON = 'canton',
