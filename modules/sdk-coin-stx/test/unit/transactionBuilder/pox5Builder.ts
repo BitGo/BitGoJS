@@ -6,6 +6,9 @@ import {
   cvToString,
   cvToValue,
   deserializeCV,
+  FungibleConditionCode,
+  makeStandardSTXPostCondition,
+  PostConditionMode,
 } from '@stacks/transactions';
 import { coins } from '@bitgo/statics';
 import should from 'should';
@@ -113,6 +116,34 @@ describe('Stacks: PoX-5 Builder', function () {
     const rebuilt = factory.from(tx.toBroadcastFormat());
     rebuilt.fromPubKey(testData.TX_SENDER.pub);
     should.equal((await rebuilt.build()).toBroadcastFormat(), tx.toBroadcastFormat());
+  });
+
+  it('carries post-condition mode/conditions and preserves them across the fee re-build (SI-1936)', async () => {
+    const functionArgs = pox5RegisterForBondArgsHex.map((hex) =>
+      deserializeCV(Buffer.from(hex.replace(/^0x/, ''), 'hex'))
+    );
+    const postCondition = makeStandardSTXPostCondition(
+      testData.TX_SENDER.address,
+      FungibleConditionCode.LessEqual,
+      100000000
+    );
+    const builder = configure(factory.getPox5Builder());
+    builder.functionName('register-for-bond');
+    builder.functionArgs(functionArgs);
+    builder.postConditionMode(PostConditionMode.Deny);
+    builder.postConditions([postCondition]);
+    const tx = (await builder.build()) as StxLib.Transaction;
+
+    should.equal(tx.stxTransaction.postConditionMode, PostConditionMode.Deny);
+    should.equal(tx.stxTransaction.postConditions.values.length, 1);
+
+    // `buildTransactionWithFee` re-builds via `factory.from(hex)`; the post-conditions must survive
+    // (initBuilder restores them from the deserialized tx).
+    const rebuilt = factory.from(tx.toBroadcastFormat());
+    rebuilt.fromPubKey(testData.TX_SENDER.pub);
+    const rebuiltTx = (await rebuilt.build()) as StxLib.Transaction;
+    should.equal(rebuiltTx.stxTransaction.postConditionMode, PostConditionMode.Deny);
+    should.equal(rebuiltTx.stxTransaction.postConditions.values.length, 1);
   });
 
   it('validates the PoX-5 contract address during factory routing', async () => {
