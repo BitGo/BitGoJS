@@ -4540,6 +4540,7 @@ export class Wallet implements IWallet {
             senderAddress: params.senderAddress,
             isTestTransaction: params.isTestTransaction,
             isWalletConnectTx: params.isWalletConnectTx as boolean | undefined,
+            videoApprovers: params.videoApprovers,
           },
           apiVersion,
           params.preview
@@ -4557,6 +4558,7 @@ export class Wallet implements IWallet {
             feeToken: params.feeToken,
             unspents: params.unspents,
             sequenceId: params.sequenceId,
+            videoApprovers: params.videoApprovers,
           },
           apiVersion,
           params.preview

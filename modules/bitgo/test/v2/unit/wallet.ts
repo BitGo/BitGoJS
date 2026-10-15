@@ -4312,6 +4312,57 @@ describe('V2 Wallet:', function () {
         capturedRequestBody!.intent.should.have.property('sequenceId');
         capturedRequestBody!.intent.sequenceId.should.equal(params.sequenceId);
       });
+
+      describe('videoApprovers', function () {
+        const videoApprovers = ['5cae3130f8f4561d51dfcbfdaafba9b9', '5cae3130f8f4561d51dfcbfdaafba9ba'];
+        const adaAddress =
+          'addr_test1qz4m3ms9nxra36t6rtz4lzc9zkk3d4qwcpcr3yxwhxlslpathrhqtxv8mr5h5xk9t79s29ddzm2qasrs8zgvawdlp7rs44g5hc';
+
+        async function captureTxRequestBody(params: PrebuildTransactionOptions): Promise<any> {
+          let capturedRequestBody: any;
+          nock(bgUrl)
+            .post(`/api/v2/wallet/${tssAdaWallet.id()}/txrequests`, (body) => {
+              capturedRequestBody = body;
+              return true;
+            })
+            .reply(200, { unsignedTxs: ['tx'] });
+
+          await tssAdaWallet.prebuildTransaction({ ...params, preview: true });
+          should.exist(capturedRequestBody);
+          return capturedRequestBody;
+        }
+
+        it('should send videoApprovers as a top-level field for transfers', async function () {
+          const body = await captureTxRequestBody({
+            type: 'transfer',
+            recipients: [{ amount: '2', address: adaAddress }],
+            videoApprovers,
+          });
+
+          body.videoApprovers.should.deepEqual(videoApprovers);
+          body.intent.should.not.have.property('videoApprovers');
+        });
+
+        it('should send videoApprovers as a top-level field for token transfers', async function () {
+          const body = await captureTxRequestBody({
+            type: 'transfertoken',
+            recipients: [{ amount: '2', address: adaAddress, tokenName: 'tada:water' }],
+            videoApprovers,
+          });
+
+          body.videoApprovers.should.deepEqual(videoApprovers);
+          body.intent.should.not.have.property('videoApprovers');
+        });
+
+        it('should not send videoApprovers when none are provided', async function () {
+          const body = await captureTxRequestBody({
+            type: 'transfer',
+            recipients: [{ amount: '2', address: adaAddress }],
+          });
+
+          body.should.not.have.property('videoApprovers');
+        });
+      });
     });
 
     describe('Transaction signing', function () {

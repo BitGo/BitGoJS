@@ -175,6 +175,13 @@ export interface PrebuildTransactionOptions {
   senderAddress?: string;
 
   /**
+   * User IDs of the Video ID approvers selected for this withdrawal. Each must be in the enterprise's
+   * approved Video ID user list. When omitted, the "Video ID required" email goes to the enterprise's
+   * primary contact. Currently forwarded for TSS `transfer` and `transfertoken` transactions only.
+   */
+  videoApprovers?: string[];
+
+  /**
    * The wallet ID of the sender wallet when sender wallet is different from current wallet id.
    * @type {string}
    * @default {undefined}

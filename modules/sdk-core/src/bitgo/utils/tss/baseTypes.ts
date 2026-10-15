@@ -355,6 +355,12 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
   receiveAddress?: string;
   unspents?: string[];
   /**
+   * User IDs of the Video ID approvers selected for this withdrawal. Sent as a top-level field of the
+   * /txrequests body (not part of the intent); Wallet Platform validates each ID against the
+   * enterprise's approved Video ID users.
+   */
+  videoApprovers?: string[];
+  /**
    * MIST to redeem from the sender's address balance (SIP-58 / SUI address balances).
    * When set, the PTB includes tx.withdrawal() + redeem_funds() before the transfer.
    */
