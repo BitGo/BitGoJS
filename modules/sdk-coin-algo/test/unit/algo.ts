@@ -825,6 +825,31 @@ describe('ALGO:', function () {
         txJson.fee.should.equal(fee);
       });
 
+      it('should sign with an external backup signature without decrypting the backup key', async function () {
+        const getBalanceStub = sandBox.stub(Algo.prototype, 'getAccountBalance').resolves(nativeBalance);
+        const decryptSpy = sandBox.spy(bitgo, 'decrypt');
+
+        const recovery = await basecoin.recover({
+          userKey,
+          backupKey,
+          rootAddress,
+          walletPassphrase,
+          fee,
+          bitgoKey: bitgoPub,
+          recoveryDestination: recoveryDestination,
+          firstRound: 5002596,
+          nodeParams,
+          externalBackupSignature: {
+            publicKey: '11'.repeat(32),
+            signature: 'ab'.repeat(64),
+          },
+        });
+
+        recovery.should.have.property('tx');
+        getBalanceStub.callCount.should.equal(1);
+        decryptSpy.callCount.should.equal(1);
+      });
+
       it('should throw for invalid rootAddress', async function () {
         const invalidRootAddress = 'randomstring';
         await assert.rejects(

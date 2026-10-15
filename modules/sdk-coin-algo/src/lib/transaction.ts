@@ -117,6 +117,39 @@ export class Transaction extends BaseTransaction {
     this._signedTransaction = signedTx;
   }
 
+  /**
+   * Appends a raw Ed25519 multisig signature from an external signer.
+   *
+   * Unlike `signMultiSig`, this does not require the signer's secret key: the caller
+   * supplies the signer's address and a pre-made 64-byte signature (e.g. produced by a
+   * BIP32-Ed25519 extended key, which has no seed).
+   *
+   * @param signerAddr Algorand address of the signer (must be in the multisig signers list)
+   * @param signature raw 64-byte Ed25519 signature
+   */
+  addRawMultisigSignature(signerAddr: string, signature: Uint8Array): void {
+    if (!this._algoTransaction) {
+      throw new InvalidTransactionError('Empty transaction');
+    }
+    if (this._signers.length === 0) {
+      throw new SigningError('Signers not specified for multisig');
+    }
+    if (!this._signedTransaction) {
+      throw new SigningError('Transaction must be signed by the first signer before appending a raw signature');
+    }
+    const multiSigOptions = {
+      version: 1,
+      threshold: this._numberOfRequiredSigners,
+      addrs: this._signers,
+    };
+    this._signedTransaction = algosdk.appendSignRawMultisigSignature(
+      this._signedTransaction,
+      multiSigOptions,
+      signerAddr,
+      signature
+    ).blob;
+  }
+
   set signedTransaction(txn: Uint8Array) {
     this._signedTransaction = txn;
   }

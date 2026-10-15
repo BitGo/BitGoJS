@@ -12,6 +12,8 @@ import {
   BaseCoin,
   BitGoBase,
   ErrorNoInputToRecover,
+  assertValidExternalEd25519Signature,
+  ExternalEd25519Signature,
   InvalidAddressError,
   InvalidKey,
   KeyIndices,
@@ -157,6 +159,8 @@ export interface RecoveryOptions {
   firstRound?: number;
   note?: string;
   nodeParams: NodeParams;
+  /** Optional pre-made signature for the backup child, whose signature must be over the transaction's `bytesToSign()`. */
+  externalBackupSignature?: ExternalEd25519Signature;
 }
 
 interface RecoveryInfo {
@@ -882,6 +886,10 @@ export class Algo extends BaseCoin {
     const factory = new AlgoLib.TransactionBuilderFactory(coins.get('algo'));
     const txBuilder = factory.getTransferBuilder();
 
+    const externalBackupSignature = params.externalBackupSignature;
+    if (externalBackupSignature) {
+      assertValidExternalEd25519Signature(externalBackupSignature);
+    }
     let userPrv: string | undefined;
     let backupPrv: string | undefined;
     if (!isUnsignedSweep) {
@@ -890,9 +898,14 @@ export class Algo extends BaseCoin {
       }
       try {
         userPrv = await this.bitgo.decrypt({ input: params.userKey, password: params.walletPassphrase });
-        backupPrv = await this.bitgo.decrypt({ input: params.backupKey, password: params.walletPassphrase });
         const userKeyAddress = Utils.privateKeyToAlgoAddress(userPrv);
-        const backupKeyAddress = Utils.privateKeyToAlgoAddress(backupPrv);
+        let backupKeyAddress: string;
+        if (externalBackupSignature) {
+          backupKeyAddress = algosdk.encodeAddress(Buffer.from(externalBackupSignature.publicKey, 'hex'));
+        } else {
+          backupPrv = await this.bitgo.decrypt({ input: params.backupKey, password: params.walletPassphrase });
+          backupKeyAddress = Utils.privateKeyToAlgoAddress(backupPrv);
+        }
         txBuilder.numberOfRequiredSigners(2).setSigners([userKeyAddress, backupKeyAddress, params.bitgoKey]);
       } catch (e) {
         throw new Error(
@@ -987,9 +1000,16 @@ export class Algo extends BaseCoin {
 
     // Non-bitgo Recovery (Hot wallets)
     txBuilder.sign({ key: userPrv });
-    txBuilder.sign({ key: backupPrv });
+    if (!externalBackupSignature) {
+      txBuilder.sign({ key: backupPrv });
+    }
 
-    const tx = await txBuilder.build();
+    const tx = (await txBuilder.build()) as AlgoLib.Transaction;
+
+    if (externalBackupSignature) {
+      const { publicKey, signature } = externalBackupSignature;
+      tx.addRawMultisigSignature(algosdk.encodeAddress(Buffer.from(publicKey, 'hex')), Buffer.from(signature, 'hex'));
+    }
     const txJson = tx.toJson() as TxData;
 
     return {

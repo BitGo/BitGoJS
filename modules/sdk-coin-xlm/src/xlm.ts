@@ -23,6 +23,8 @@ import {
   checkKrsProvider,
   common,
   ErrorNoInputToRecover,
+  assertValidExternalEd25519Signature,
+  ExternalEd25519Signature,
   ExtraPrebuildParamsOptions,
   InvalidAddressError,
   InvalidMemoIdError,
@@ -71,6 +73,8 @@ interface InitiateRecoveryOptions {
 
 interface RecoveryOptions extends InitiateRecoveryOptions {
   rootAddress?: string;
+  /** Optional pre-made signature for the backup child, whose signature must be over the transaction hash (`tx.hash()`). */
+  externalBackupSignature?: ExternalEd25519Signature;
 }
 
 interface RecoveryTransaction {
@@ -741,9 +745,13 @@ export class Xlm extends BaseCoin {
       params.backupKey = Utils.encodePublicKey(Buffer.from(params.backupKey, 'hex'));
     }
 
+    const hasExternalBackupSig = Boolean(params.externalBackupSignature);
+    if (params.externalBackupSignature) {
+      assertValidExternalEd25519Signature(params.externalBackupSignature);
+    }
     // Stellar's Ed25519 public keys start with a G, while private keys start with an S
-    const isKrsRecovery = params.backupKey.startsWith('G') && !params.userKey.startsWith('G');
-    const isUnsignedSweep = params.backupKey.startsWith('G') && params.userKey.startsWith('G');
+    const isKrsRecovery = !hasExternalBackupSig && params.backupKey.startsWith('G') && !params.userKey.startsWith('G');
+    const isUnsignedSweep = !hasExternalBackupSig && params.backupKey.startsWith('G') && params.userKey.startsWith('G');
 
     if (isKrsRecovery) {
       checkKrsProvider(this, params.krsProvider);
@@ -753,7 +761,7 @@ export class Xlm extends BaseCoin {
       throw new InvalidAddressError('Invalid destination address!');
     }
 
-    const [userKey, backupKey] = await getStellarKeys(this.bitgo, params);
+    const [userKey, backupKey] = await getStellarKeys(this.bitgo, params, params.externalBackupSignature);
 
     if (!params.rootAddress || !stellar.StrKey.isValidEd25519PublicKey(params.rootAddress)) {
       throw new Error(`Invalid wallet address: ${params.rootAddress}`);
@@ -832,7 +840,15 @@ export class Xlm extends BaseCoin {
     }
 
     if (!isKrsRecovery && !isUnsignedSweep) {
-      tx.sign(backupKey);
+      const externalBackupSignature = params.externalBackupSignature;
+      if (externalBackupSignature) {
+        tx.addSignature(
+          backupKey.publicKey(),
+          Buffer.from(externalBackupSignature.signature, 'hex').toString('base64')
+        );
+      } else {
+        tx.sign(backupKey);
+      }
     }
 
     const transaction: RecoveryTransaction = {
