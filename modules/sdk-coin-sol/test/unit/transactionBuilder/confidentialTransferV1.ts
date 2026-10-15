@@ -1,5 +1,9 @@
 import 'should';
-import { KeyPair, Sol, Transaction, Utils } from '../../../src';
+import nacl from 'tweetnacl';
+import { SystemProgram } from '@solana/web3.js';
+import { decodeV1Message, KeyPair, parseWireTransaction, Sol, Transaction, Utils } from '../../../src';
+import { verifyV1Signatures } from '../../../src/lib/serialization/parseWireTransaction';
+import { SolanaKeys } from '../../../src/lib/iface';
 import * as testData from '../../resources/sol';
 import { getBuilderFactory } from '../getBuilderFactory';
 
@@ -7,6 +11,8 @@ describe('Solana Confidential Transfer Builder - v1', () => {
   const factory = getBuilderFactory('sol');
   const account = new KeyPair(testData.associatedTokenAccounts.accounts[0]).getKeys();
   const recentBlockHash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
+  const gasTank = new KeyPair({ prv: testData.prvKeys.prvKey1.base58 }).getKeys();
+  const nonceAccount = new KeyPair(testData.nonceAccount).getKeys();
 
   const mintAddress = testData.associatedTokenAccountsForSol2022.mintId;
   const tokenAddress = testData.associatedTokenAccountsForSol2022.accounts[0].ata;
@@ -76,6 +82,56 @@ describe('Solana Confidential Transfer Builder - v1', () => {
     wire.length.should.be.lessThanOrEqual(4096);
 
     // config preserved in the decoded v1 message
+  });
+
+  it('injects the AdvanceNonceAccount instruction and assembles user + gas-tank signatures in signer order for durable nonce', async () => {
+    const builder = ctBuilder();
+    addTransfer(builder);
+    builder.nonce(recentBlockHash, {
+      walletNonceAddress: nonceAccount.pub,
+      authWalletAddress: gasTank.pub,
+    });
+    builder.version(1).transactionConfig(v1Config);
+
+    const unsigned = (await builder.build()) as Transaction;
+    const messageBytes = unsigned.v1MessageBytes!;
+    unsigned.isVersionedTransaction().should.equal(true);
+    unsigned.v1TransactionBytes![0].should.equal(0x81);
+
+    // 2 required signers: user (fee payer) + gas-tank nonce authority
+    messageBytes[1].should.equal(2);
+
+    const decoded = decodeV1Message(messageBytes);
+    // nonce hash occupies the blockhash field
+    decoded.blockhash.should.equal(recentBlockHash);
+    // first instruction is AdvanceNonceAccount (System Program, discriminator 4)
+    decoded.compiledInstructions[0].data[0].should.equal(4);
+    decoded.staticAccounts[decoded.compiledInstructions[0].programAddressIndex].should.equal(
+      SystemProgram.programId.toBase58()
+    );
+    // signer order: fee payer (user) first, then gas tank
+    decoded.staticAccounts.slice(0, 2).should.deepEqual([account.pub, gasTank.pub]);
+
+    // attach the gas-tank HSM signature over the same message bytes
+    const signWith = (keyPair: SolanaKeys, msg: Uint8Array): Uint8Array => {
+      const prv = keyPair.prv;
+      if (typeof prv !== 'string') {
+        throw new Error('Missing private key for test signer');
+      }
+      const kp = new KeyPair({ prv });
+      return nacl.sign.detached(msg, kp.getKeys(true).prv as Uint8Array);
+    };
+    const gasTankSig = signWith(gasTank, messageBytes);
+    builder.addSignature({ pub: gasTank.pub }, Buffer.from(gasTankSig));
+    const signed = (await builder.build()) as Transaction;
+
+    // message byte-identity between build and sign
+    Buffer.from(signed.v1MessageBytes!).equals(Buffer.from(messageBytes)).should.be.true();
+    signed.v1TransactionBytes!.length.should.equal(messageBytes.length + 2 * 64);
+
+    const parsed = parseWireTransaction(signed.v1TransactionBytes!);
+    parsed.signerPublicKeys.should.deepEqual([account.pub, gasTank.pub]);
+    verifyV1Signatures(parsed.messageBytes, parsed.signatures, parsed.signerPublicKeys);
   });
 
   it('should require transactionConfig when version(1) is set', async () => {
