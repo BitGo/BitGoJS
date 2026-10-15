@@ -77,6 +77,7 @@ function createKeychainFixture() {
   };
   const baseCoin = {
     keychains: () => keychains,
+    getChain: () => 'tsol',
   } as unknown as IBaseCoin;
   return { bitgo, baseCoin, post, encryptedInputs, addedKeychains };
 }
@@ -458,7 +459,7 @@ describe('EdDSA safe-child MPS derivation', function () {
   const path = buildSafeBip44Path(501, 'eddsaMpc', account);
   const Request = t.intersection([
     t.type({ enterprise: t.string, type: t.string, curveType: t.string, round: t.string, payload: t.unknown }),
-    t.partial({ safeId: t.string }),
+    t.partial({ safeId: t.string, coin: t.string }),
   ]);
 
   before(async function () {
@@ -494,6 +495,7 @@ describe('EdDSA safe-child MPS derivation', function () {
           const body = decodeWithCodec(Request, rawBody, 'EdDSA derive request');
           assert.strictEqual(_url, '/mpc/generatekey');
           assert.strictEqual(body.enterprise, 'enterprise-id');
+          assert.strictEqual(body.coin, 'tsol');
           assert.strictEqual(body.type, KeyGenTypeEnum.MPCv2);
           assert.strictEqual(body.curveType, KeyCurveEnum.EdDSA);
           if (rounds++ === 0) {
@@ -501,13 +503,13 @@ describe('EdDSA safe-child MPS derivation', function () {
             assert.strictEqual(body.safeId, 'safe-id');
             const request = decodeWithCodec(EddsaMPCv2DeriveRound1Request, body.payload, 'EdDSA derive round 1');
             assert.deepStrictEqual(Object.keys(request).sort(), [
-              'derivationIndex',
               'parentKeyId',
+              'path',
               'userGpgPublicKey',
               'userMsg1',
             ]);
             assert.strictEqual(request.parentKeyId, 'bitgo-root-id');
-            assert.strictEqual(request.derivationIndex, account);
+            assert.strictEqual(request.path, path);
             userGpgPublicKey = request.userGpgPublicKey;
             const userGpgKey = await pgp.readKey({ armoredKey: request.userGpgPublicKey });
             const userPayload = await MPSComms.verifyMpsMessage(request.userMsg1, userGpgKey);

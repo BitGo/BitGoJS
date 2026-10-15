@@ -295,14 +295,13 @@ export class EddsaVrfMPCv2Utils extends EddsaMPCv2Utils {
     userGpgPublicKey: string,
     userMsg1: MPSTypes.MPSSignedMessage,
     parentKeyId: string,
-    derivationIndex: number
+    path: string
   ): Promise<EddsaMPCv2DeriveRound1Response> {
     const request = decodeWithCodec(
       EddsaMPCv2DeriveRound1Request,
-      { userGpgPublicKey, userMsg1, parentKeyId, derivationIndex },
+      { userGpgPublicKey, userMsg1, parentKeyId, path },
       'EddsaMPCv2DeriveRound1Request'
     );
-    assert(request.derivationIndex <= 0x7fffffff, 'Derivation index must fit a hardened child path');
     return decodeWithCodec(
       EddsaMPCv2DeriveRound1Response,
       await senderFn(MPCv2KeyGenStateEnum['MPCv2Derive-R1'], request),
@@ -348,7 +347,8 @@ export class EddsaVrfMPCv2Utils extends EddsaMPCv2Utils {
     assert(NonEmptyString.is(params.backupRootKeyId), 'Backup root key ID is required for child derivation');
     assert(NonEmptyString.is(params.parentKeyId), 'BitGo root key ID is required for child derivation');
     const { path } = params;
-    const { account } = parseSafeBip44Path(path);
+    // Reject a malformed path before any network call; the service re-validates it against its expected path.
+    parseSafeBip44Path(path);
 
     const userKeyPair = await generateGPGKeyPair('ed25519');
     const userGpgKey = await pgp.readPrivateKey({ armoredKey: userKeyPair.privateKey });
@@ -373,12 +373,16 @@ export class EddsaVrfMPCv2Utils extends EddsaMPCv2Utils {
     const userMsg1 = await userDeriveSession.initDerive();
     const signedUserMsg1 = await MPSComms.detachSignMpsMessage(userMsg1.payload, userGpgKey);
     const { sessionId, bitgoMsg1 } = await this.sendDerivationRound1BySender(
-      KeyGenSenderForSafeChild<EddsaMPCv2DeriveRound1Response>(this.bitgo, params.enterprise, params.safeId),
+      KeyGenSenderForSafeChild<EddsaMPCv2DeriveRound1Response>(
+        this.bitgo,
+        params.enterprise,
+        params.safeId,
+        this.baseCoin.getChain()
+      ),
       userKeyPair.publicKey,
       signedUserMsg1,
       params.parentKeyId,
-      // TODO(WCN-2969): send `path` once the public-types derive round 1 request carries it.
-      account
+      path
     );
 
     const [userMsg2] = userDeriveSession.handleIncomingMessages([
@@ -391,7 +395,12 @@ export class EddsaVrfMPCv2Utils extends EddsaMPCv2Utils {
       commonPublicKeychain,
       bitgoMsg2,
     } = await this.sendDerivationRound2BySender(
-      KeyGenSenderForSafeChild<EddsaMPCv2DeriveRound2Response>(this.bitgo, params.enterprise, params.safeId),
+      KeyGenSenderForSafeChild<EddsaMPCv2DeriveRound2Response>(
+        this.bitgo,
+        params.enterprise,
+        params.safeId,
+        this.baseCoin.getChain()
+      ),
       sessionId,
       signedUserMsg2
     );

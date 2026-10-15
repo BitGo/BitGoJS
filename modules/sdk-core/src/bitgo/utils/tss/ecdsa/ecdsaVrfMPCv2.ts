@@ -535,29 +535,27 @@ export class EcdsaVrfMPCv2Utils extends EcdsaMPCv2Utils {
     }
   }
   /**
-   * Sends round 1 for the user/BitGo hard-derive ceremony.
+   * Sends round 1 for the user/BitGo hard-derive ceremony. `path` is the full Safe child path
+   * `m/44'/<coinType>'/<slot>'/<account>'`; the service compares it with the path it expects.
    */
   async sendDerivationRound1BySender(
     senderFn: EcdsaMPCv2DeriveKeySendFn<MPCv2DeriveRound1Response>,
     userGpgPublicKey: string,
     payload: DklsTypes.AuthEncMessages,
     parentKeyId: string,
-    derivationIndex: number
+    path: string
   ): Promise<MPCv2DeriveRound1Response> {
     assert(NonEmptyString.is(userGpgPublicKey), 'User GPG public key is required');
     assert(NonEmptyString.is(parentKeyId), 'Parent key id is required');
     const userMsg1 = payload.broadcastMessages.find((m) => m.from === MPCv2PartiesEnum.USER)?.payload;
     assert(userMsg1, 'User message 1 not found in broadcast messages');
 
-    assert(
-      MPCv2DeriveRound1Request.props.derivationIndex.is(derivationIndex),
-      'Derivation index must be a non-negative safe integer'
-    );
+    assert(MPCv2DeriveRound1Request.props.path.is(path), 'Derivation path must be a hardened BIP44 Safe child path');
     const request: MPCv2DeriveRound1Request = {
       userGpgPublicKey,
       userMsg1: { from: MPCv2PartiesEnum.USER, ...userMsg1 },
       parentKeyId,
-      derivationIndex,
+      path,
     };
     return senderFn(MPCv2KeyGenStateEnum['MPCv2Derive-R1'], request);
   }
@@ -657,12 +655,16 @@ export class EcdsaVrfMPCv2Utils extends EcdsaMPCv2Utils {
     );
     assert(NonEmptyString.is(userGpgKey.publicKey), 'User GPG public key is required');
     const { sessionId, bitgoMsg1 } = await this.sendDerivationRound1BySender(
-      KeyGenSenderForSafeChild<MPCv2DeriveRound1Response>(this.bitgo, params.enterprise, params.safeId),
+      KeyGenSenderForSafeChild<MPCv2DeriveRound1Response>(
+        this.bitgo,
+        params.enterprise,
+        params.safeId,
+        this.baseCoin.getChain()
+      ),
       userGpgKey.publicKey,
       round1Messages,
       params.parentKeyId,
-      // TODO(WCN-2969): send `path` once the public-types derive round 1 request carries it.
-      account
+      params.path
     );
 
     // Round 2: process the peer's first message and return the user's second.
@@ -683,7 +685,12 @@ export class EcdsaVrfMPCv2Utils extends EcdsaMPCv2Utils {
       [userGpgPrvKey]
     );
     const { sessionId: sessionIdRound2, bitgoMsg2 } = await this.sendDerivationRound2BySender(
-      KeyGenSenderForSafeChild<MPCv2DeriveRound2Response>(this.bitgo, params.enterprise, params.safeId),
+      KeyGenSenderForSafeChild<MPCv2DeriveRound2Response>(
+        this.bitgo,
+        params.enterprise,
+        params.safeId,
+        this.baseCoin.getChain()
+      ),
       sessionId,
       round2Messages
     );
@@ -704,7 +711,12 @@ export class EcdsaVrfMPCv2Utils extends EcdsaMPCv2Utils {
 
     // Round 3: obtain the child common-keychain metadata.
     const { sessionId: sessionIdRound3, commonKeychain } = await this.sendDerivationRound3BySender(
-      KeyGenSenderForSafeChild<MPCv2DeriveRound3Response>(this.bitgo, params.enterprise, params.safeId),
+      KeyGenSenderForSafeChild<MPCv2DeriveRound3Response>(
+        this.bitgo,
+        params.enterprise,
+        params.safeId,
+        this.baseCoin.getChain()
+      ),
       sessionId
     );
     assert.equal(sessionId, sessionIdRound3, 'Round 1 and 3 Session IDs do not match');
