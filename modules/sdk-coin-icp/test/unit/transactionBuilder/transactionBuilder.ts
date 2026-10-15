@@ -207,6 +207,7 @@ describe('ICP Transaction Builder with default memo as 0', async () => {
     should.equal(icpTransaction.metadata.memo, DEFAULT_MEMO);
     should.equal(icpTransaction.operations[0].account.address, testData.Accounts.account1.address);
     should.equal(icpTransaction.operations[1].account.address, testData.Accounts.account2.address);
+    should.equal(icpTransaction.operations[2].account.address, testData.Accounts.account1.address);
     should.equal(icpTransaction.operations[0].amount.value, '-10');
     should.equal(icpTransaction.operations[1].amount.value, '10');
     should.equal(icpTransaction.operations[2].amount.value, '-10000');
