@@ -42,10 +42,41 @@ export abstract class AbstractContractBuilder extends TransactionBuilder {
       this._contractName = txData.payload.contractName;
       this._functionName = txData.payload.functionName;
       this._functionArgs = txData.payload.functionArgs;
+      // Restore post-conditions from the deserialized tx — `toJson()` does not carry them, so
+      // without this a re-build (e.g. the fee re-build via `factory.from(hex)`) would drop them and
+      // a `Deny`-mode contract call would abort on-chain (SIP-005 post-condition check).
+      if (tx.stxTransaction) {
+        this._postConditionMode = tx.stxTransaction.postConditionMode;
+        this._postConditions = tx.stxTransaction.postConditions.values as PostCondition[];
+      }
       super.initBuilder(tx);
     } else {
       throw new BuildTransactionError('Transaction should be contract call');
     }
+  }
+
+  /**
+   * Set the post-condition mode (`Allow` / `Deny`) for this contract call.
+   *
+   * @obligation callers building a contract call that moves assets MUST set a mode AND matching
+   *   post-conditions, or leave this unset and let the caller attach explicit post-conditions —
+   *   consequence: an unset mode defaults to `Deny` in `@stacks/transactions`, so any asset movement
+   *   not covered by a post-condition aborts the tx on-chain
+   * @returns {AbstractContractBuilder} this builder
+   */
+  postConditionMode(mode: PostConditionMode): this {
+    this._postConditionMode = mode;
+    return this;
+  }
+
+  /**
+   * Set the post-conditions for this contract call.
+   *
+   * @returns {AbstractContractBuilder} this builder
+   */
+  postConditions(postConditions: PostCondition[]): this {
+    this._postConditions = postConditions;
+    return this;
   }
 
   /** @inheritdoc */
