@@ -31,16 +31,21 @@ function partyIdToSignatureShareType(partyId: MPCv2PartiesEnum): SignatureShareT
 /**
  * RedPallas MPS DSG and rerand signature-share helpers.
  *
- * Groundwork for a future custodial/cold (SMC/OVC) signing flow - not yet wired up to any
- * caller in this SDK. Mirrors `../eddsa/eddsaMPCv2.ts` (same round shape, same PGP-signed-
- * message envelope), but kept as an independent copy - built on `RedPallasMPSComms` - so
- * RedPallas MPS never depends on the EdDSA MPS module, and vice versa.
+ * Consumed by the custodial/cold (SMC/OVC) signing flow: OVC builds its rerand and DSG
+ * shares with these and submits them via the /sign txRequest route (see
+ * `sendSignatureShareV2`, body types `redPallasRerand` / `redPallasMpcV2`). No caller
+ * inside this SDK yet. Mirrors `../eddsa/eddsaMPCv2.ts` (same round shape, same
+ * PGP-signed-message envelope), but kept as an independent copy - built on
+ * `RedPallasMPSComms` - so RedPallas MPS never depends on the EdDSA MPS module, and
+ * vice versa.
  *
  * Since `@bitgo/wasm-mps` 1.17.0, key re-randomization is a separate 2-round rerand
  * protocol that must run before every RedPallas DSG, between the same 2 parties that
  * will then sign: `getRerandShareRoundOne/Two` build those share records and
  * `verifyPeerRerandMessageRoundOne/Two` unwrap the peer's rerand messages (see
- * `RedPallasRerand` in `@bitgo/sdk-lib-mpc`).
+ * `RedPallasRerand` in `@bitgo/sdk-lib-mpc`). The rerand result exposes
+ * `{keyShare, pk, alpha}`; `pk` is the `rk` the DSG signature verifies under, and the
+ * DSG keyshare is the rerandomized `keyShare` - never the bare DKG keyshare.
  */
 
 /**
