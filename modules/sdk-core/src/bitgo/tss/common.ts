@@ -127,6 +127,12 @@ export async function sendSignatureShare(
 /**
  * Sends a Signature Share using the sign txRequest route
  *
+ * For RedPallas (ZEC/TZEC MPCv2), pass `signingType: 'redPallasRerand'` for the two
+ * rerand rounds (body type `redPallasRerand`); omit it for the DSG rounds (body type
+ * `redPallasMpcV2`). Rerand must run before every RedPallas DSG, between the same two
+ * parties that then sign, and the DSG keyshare is the rerandomized one — never the
+ * DKG keyshare.
+ *
  * @param {BitGoBase} bitgo - the bitgo instance
  * @param {String} walletId - the wallet id  *
  * @param {String} txRequestId - the txRequest Id
@@ -137,7 +143,10 @@ export async function sendSignatureShare(
  * @param multisigTypeVersion
  * @param signerGpgPublicKey
  * @param reqId
- * @returns {Promise<SignatureShareRecord>} - a Signature Share
+ * @param signingType - Optional protocol selector for coins with more than one signing
+ *   protocol ('redPallasRerand' for the RedPallas rerand rounds); only valid for
+ *   MPCv2 + redpallas
+ * @returns {Promise<TxRequest>} - the latest TxRequest, with BitGo's shares echoed back
  */
 export async function sendSignatureShareV2(
   bitgo: BitGoBase,
@@ -149,8 +158,12 @@ export async function sendSignatureShareV2(
   signerGpgPublicKey: string,
   signerShare?: string,
   multisigTypeVersion?: 'MPCv2' | undefined,
-  reqId?: IRequestTracer
+  reqId?: IRequestTracer,
+  signingType?: 'redPallasRerand'
 ): Promise<TxRequest> {
+  if (signingType !== undefined && (multisigTypeVersion !== 'MPCv2' || mpcAlgorithm !== 'redpallas')) {
+    throw new Error(`Invalid signingType ${signingType}: only supported for MPCv2 redpallas`);
+  }
   const addendum = requestType === RequestType.tx ? '/transactions/0' : '/messages/0';
   const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/sign';
   let type = '';
@@ -159,7 +172,7 @@ export async function sendSignatureShareV2(
   } else if (multisigTypeVersion === 'MPCv2' && mpcAlgorithm === 'eddsa') {
     type = 'eddsaMpcV2';
   } else if (multisigTypeVersion === 'MPCv2' && mpcAlgorithm === 'redpallas') {
-    type = 'redpallasMpcV2';
+    type = signingType === 'redPallasRerand' ? 'redPallasRerand' : 'redPallasMpcV2';
   } else if (multisigTypeVersion === undefined && mpcAlgorithm === 'eddsa') {
     type = 'eddsaMpcV1';
   }

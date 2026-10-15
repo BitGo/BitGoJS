@@ -10,7 +10,8 @@ describe('sendSignatureShareV2 request type dispatch', function () {
 
   async function captureRequestType(
     mpcAlgorithm: MPCAlgorithm,
-    multisigTypeVersion: 'MPCv2' | undefined
+    multisigTypeVersion: 'MPCv2' | undefined,
+    signingType?: 'redPallasRerand'
   ): Promise<string> {
     let capturedBody: { type: string } | undefined;
     const send = sinon.stub().callsFake((body) => {
@@ -32,7 +33,9 @@ describe('sendSignatureShareV2 request type dispatch', function () {
       mpcAlgorithm,
       'signerGpgPublicKey',
       undefined,
-      multisigTypeVersion
+      multisigTypeVersion,
+      undefined,
+      signingType
     );
 
     if (!capturedBody) {
@@ -49,8 +52,20 @@ describe('sendSignatureShareV2 request type dispatch', function () {
     assert.strictEqual(await captureRequestType('eddsa', 'MPCv2'), 'eddsaMpcV2');
   });
 
-  it('resolves redpallasMpcV2 for MPCv2 + redpallas', async function () {
-    assert.strictEqual(await captureRequestType('redpallas', 'MPCv2'), 'redpallasMpcV2');
+  it('resolves redPallasMpcV2 for MPCv2 + redpallas (DSG rounds)', async function () {
+    assert.strictEqual(await captureRequestType('redpallas', 'MPCv2'), 'redPallasMpcV2');
+  });
+
+  it('resolves redPallasRerand for MPCv2 + redpallas + rerand signingType', async function () {
+    assert.strictEqual(await captureRequestType('redpallas', 'MPCv2', 'redPallasRerand'), 'redPallasRerand');
+  });
+
+  it('rejects rerand signingType for non-redpallas algorithms', async function () {
+    await assert.rejects(captureRequestType('eddsa', 'MPCv2', 'redPallasRerand'), /only supported for MPCv2 redpallas/);
+    await assert.rejects(
+      captureRequestType('redpallas', undefined, 'redPallasRerand'),
+      /only supported for MPCv2 redpallas/
+    );
   });
 
   it('resolves eddsaMpcV1 for undefined multisigTypeVersion + eddsa', async function () {
