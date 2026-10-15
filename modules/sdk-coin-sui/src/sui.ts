@@ -40,7 +40,8 @@ import {
   AuditDecryptedKeyParams,
   verifyEddsaTssWalletAddress,
 } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, BaseNetwork, coins, SuiCoin } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, BaseNetwork, coins, NetworkType, SuiCoin } from '@bitgo/statics';
+import { createSuiGrpcClient, SuiGrpcClient } from './lib/grpcClient';
 import BigNumber from 'bignumber.js';
 import {
   KeyPair as SuiKeyPair,
@@ -94,6 +95,9 @@ export type SuiTransactionExplanation = TransactionExplanation;
 
 export class Sui extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
+  // The gRPC client wraps a long-lived HTTP/2 channel; memoize one per coin
+  // instance instead of paying a TCP+TLS handshake per node call.
+  private suiGrpcClientPromise?: Promise<SuiGrpcClient>;
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo);
 
@@ -313,23 +317,45 @@ export class Sui extends BaseCoin {
     return rebuiltTransaction.signablePayload;
   }
 
-  protected getPublicNodeUrl(): string {
-    return Environments[this.bitgo.getEnv()].suiNodeUrl;
+  /**
+   * Returns the gRPC endpoint for the Sui network. gRPC is the only supported
+   * transport for Sui node interactions: Sui is deprecating JSON-RPC (testnet
+   * v1.82.1 onward), so a missing gRPC URL is a configuration error.
+   */
+  protected getPublicGrpcNodeUrl(): string {
+    const url = Environments[this.bitgo.getEnv()].suiGrpcNodeUrl;
+    if (!url) {
+      throw new Error(
+        `suiGrpcNodeUrl is not configured for environment ${this.bitgo.getEnv()}; SUI node calls require a gRPC endpoint`
+      );
+    }
+    return url;
+  }
+
+  /**
+   * Creates a native-gRPC Sui client for this coin's network.
+   */
+  protected async getSuiGrpcClient(): Promise<SuiGrpcClient> {
+    this.suiGrpcClientPromise ??= (async () => {
+      const network = this.getNetwork().type === NetworkType.MAINNET ? 'mainnet' : 'testnet';
+      return await createSuiGrpcClient(this.getPublicGrpcNodeUrl(), network);
+    })();
+    return await this.suiGrpcClientPromise;
   }
 
   protected async getBalance(owner: string, coinType?: string): Promise<SuiBalanceInfo> {
-    const url = this.getPublicNodeUrl();
-    return await utils.getBalance(url, owner, coinType);
+    const client = await this.getSuiGrpcClient();
+    return await utils.getBalance(client, owner, coinType);
   }
 
   protected async getInputCoins(owner: string, coinType?: string): Promise<SuiObjectInfo[]> {
-    const url = this.getPublicNodeUrl();
-    return await utils.getInputCoins(url, owner, coinType);
+    const client = await this.getSuiGrpcClient();
+    return await utils.getInputCoins(client, owner, coinType);
   }
 
   protected async getFeeEstimate(txHex: string): Promise<BigNumber> {
-    const url = this.getPublicNodeUrl();
-    return await utils.getFeeEstimate(url, txHex);
+    const client = await this.getSuiGrpcClient();
+    return await utils.getFeeEstimate(client, txHex);
   }
 
   /**
@@ -376,7 +402,7 @@ export class Sui extends BaseCoin {
           throw e;
         }
         throw new RecoveryProviderError(
-          `Failed to query Sui balance for address ${senderAddress} at index ${idx} via ${this.getPublicNodeUrl()}: ${
+          `Failed to query Sui balance for address ${senderAddress} at index ${idx} via ${this.getPublicGrpcNodeUrl()}: ${
             (e as Error).message
           }`,
           e
@@ -442,7 +468,7 @@ export class Sui extends BaseCoin {
       // prevent replay attacks when there are no gas coin objects to anchor uniqueness.
       let validDuringExpiration: { ValidDuring: ValidDuringExpiration } | undefined;
       if (fundsInAddressBalance.gt(0) && coinObjectsBalance.eq(0)) {
-        const { epoch, chainId } = await utils.getChainContext(this.getPublicNodeUrl());
+        const { epoch, chainId } = await utils.getChainContext(await this.getSuiGrpcClient());
         const nonce = crypto.randomBytes(4).readUInt32BE(0);
         validDuringExpiration = {
           ValidDuring: {
@@ -745,12 +771,13 @@ export class Sui extends BaseCoin {
     transactions,
   }: BaseBroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult> {
     const txIds: string[] = [];
-    const url = this.getPublicNodeUrl();
     let digest = '';
     if (!!transactions) {
       for (const txn of transactions) {
         try {
-          digest = await utils.executeTransactionBlock(url, txn.serializedTx, [txn.signature!]);
+          digest = await utils.executeTransactionBlock(await this.getSuiGrpcClient(), txn.serializedTx, [
+            txn.signature!,
+          ]);
         } catch (e) {
           throw new Error(`Failed to broadcast transaction, error: ${e.message}`);
         }

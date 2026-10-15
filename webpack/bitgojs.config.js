@@ -26,6 +26,14 @@ module.exports = {
       '@bitgo/wasm-mps': path.resolve('../../node_modules/@bitgo/wasm-mps/dist/esm/js/wasm/wasm_mps.js'),
       '@bitgo/utxo-ord': path.resolve('../utxo-ord/dist/esm/index.js'),
       '@bitgo/sdk-coin-ton': path.resolve('../sdk-coin-ton/dist/esm/index.js'),
+      // @mysten/utils (transitive dep of @mysten/sui, loaded by the SUI gRPC
+      // client) imports the process polyfill with an extension-less request
+      // from a strict-ESM file; webpack's fullySpecified rule rejects it.
+      // Alias the request to the actual polyfill file.
+      'process/browser': require.resolve('process/browser.js'),
+      // Node-only (http2 at module scope); stubbed out of browser bundles.
+      '@grpc/grpc-js': false,
+      '@protobuf-ts/grpc-transport': false,
     },
     fallback: {
       constants: false,
