@@ -17,46 +17,9 @@ import {
 import { NonEmptyString } from 'io-ts-types';
 import { BitGo, BitgoGPGPublicKey } from '../../../../../../src';
 
-/**
- * VRF DKG message blobs riding the MPCv2-R1/R2 keygen payloads. Mirrors the wire
- * format produced by sdk-core's ecdsaVrfMPCv2.ts.
- */
-interface VrfMessageTransfer {
-  from: number;
-  to?: number;
-  payload: string; // base64
-}
-
-function serializeVrfMessages(messages: DklsTypes.DeserializedMessages): string {
-  const transfers: VrfMessageTransfer[] = [
-    ...messages.broadcastMessages.map((m) => ({ from: m.from, payload: Buffer.from(m.payload).toString('base64') })),
-    ...messages.p2pMessages.map((m) => ({
-      from: m.from,
-      to: m.to,
-      payload: Buffer.from(m.payload).toString('base64'),
-    })),
-  ];
-  return Buffer.from(JSON.stringify(transfers)).toString('base64');
-}
-
-function deserializeVrfMessages(blob: string, forParty: number): DklsTypes.DeserializedMessages {
-  const transfers: VrfMessageTransfer[] = JSON.parse(Buffer.from(blob, 'base64').toString());
-  return {
-    broadcastMessages: transfers
-      .filter((t) => t.to === undefined)
-      .map((t) => ({ from: t.from, payload: new Uint8Array(Buffer.from(t.payload, 'base64')) })),
-    p2pMessages: transfers
-      .filter((t): t is VrfMessageTransfer & { to: number } => t.to === forParty)
-      .map((t) => ({ from: t.from, to: t.to, payload: new Uint8Array(Buffer.from(t.payload, 'base64')) })),
-  };
-}
-
-type VrfKeyGenRequestFields = {
-  userVrfMsg1?: string;
-  backupVrfMsg1?: string;
-  userVrfMsg2?: string;
-  backupVrfMsg2?: string;
-};
+type PartyIndex = 0 | 1 | 2;
+type SignedVrfMessage = { from: PartyIndex; message: string; signature: string };
+type EncryptedVrfMessage = { from: PartyIndex; to: PartyIndex; encryptedMessage: string; signature: string };
 
 type VrfKeyshareDecoded = {
   threshold: number;
@@ -69,10 +32,17 @@ type VrfKeyshareDecoded = {
   root_chain_code: Uint8Array;
   final_session_id: Uint8Array;
 };
-type VrfKeyGenResponseFields = {
-  bitgoVrfMsg1?: string;
-  bitgoVrfMsg2?: string;
-};
+
+/** Verifies a client VRF message the way BitGo does: signed by the sender's GPG key. */
+async function verifyClientVrfMessage(
+  message: SignedVrfMessage,
+  expectedFrom: PartyIndex,
+  gpgPublicKey: string
+): Promise<Uint8Array> {
+  assert.equal(message.from, expectedFrom);
+  assert.ok(await DklsComms.verifySignedData(message, gpgPublicKey), `VRF message from ${expectedFrom} is not signed`);
+  return new Uint8Array(Buffer.from(message.message, 'base64'));
+}
 
 describe('TSS Ecdsa VRF MPCv2 Utils:', async function () {
   const coinName = 'hteth';
@@ -97,7 +67,11 @@ describe('TSS Ecdsa VRF MPCv2 Utils:', async function () {
   let userGpgPubKey: { partyId: number; gpgKey: string };
   let backupGpgPubKey: { partyId: number; gpgKey: string };
 
+  // Per-test simulated BitGo misbehaviour, reset before each test.
+  let tamper: { round1Commitment?: boolean; round2OpeningToUser?: boolean; round2OpeningToBackup?: boolean } = {};
+
   beforeEach(async function () {
+    tamper = {};
     nock.cleanAll();
     await nockGetBitgoPublicKeyBasedOnFeatureFlags(coinName, enterpriseId, bitGoGgpKey);
     nock(bgUrl).get('/api/v1/client/constants').times(16).reply(200, { ttl: 3600, constants });
@@ -179,7 +153,7 @@ describe('TSS Ecdsa VRF MPCv2 Utils:', async function () {
     assert.ok(backupKeychain.encryptedPrv);
     assert.ok(bitgoKeychain);
 
-    // The VRF DKG must have completed on the (simulated) HSM side as well.
+    // The VRF DKG must have completed on BitGo's (simulated) side as well.
     assert.ok(bitgoVrfShare, 'BitGo VRF keyshare was not produced');
 
     assert.ok(userKeychain.encryptedPrv);
@@ -228,6 +202,38 @@ describe('TSS Ecdsa VRF MPCv2 Utils:', async function () {
     assert.equal(userKeychain.commonKeychain, bitgoKeychain.commonKeychain);
   });
 
+  const keychainParams = () => ({
+    passphrase: 'test',
+    enterprise: enterpriseId,
+    originalPasscodeEncryptionCode: '123456',
+    safeId,
+  });
+
+  async function runWithTamperedBitgo() {
+    const bitgoSession = new DklsDkg.Dkg(3, 2, 2);
+    const bitgoVrfSession = new DklsVrf.VrfDkg(3, 2, 2);
+    await nockKeyGenRound1(bitgoSession, bitgoVrfSession);
+    await nockKeyGenRound2(bitgoSession, bitgoVrfSession);
+    await nockKeyGenRound3(bitgoSession, bitgoVrfSession);
+    await nockAddKeyChain(coinName, 3);
+    return tssUtils.createKeychains(keychainParams());
+  }
+
+  it('should reject a BitGo VRF round 1 commitment whose signature does not verify', async function () {
+    tamper.round1Commitment = true;
+    await assert.rejects(runWithTamperedBitgo(), /Failed to authenticate BitGo VRF message 1/);
+  });
+
+  it('should reject a BitGo VRF opening to the user whose signature does not verify', async function () {
+    tamper.round2OpeningToUser = true;
+    await assert.rejects(runWithTamperedBitgo(), /Signed digest did not match/);
+  });
+
+  it('should reject a BitGo VRF opening to the backup whose signature does not verify', async function () {
+    tamper.round2OpeningToBackup = true;
+    await assert.rejects(runWithTamperedBitgo(), /Signed digest did not match/);
+  });
+
   async function nockGetBitgoPublicKeyBasedOnFeatureFlags(
     coin: string,
     enterpriseId: string,
@@ -250,10 +256,7 @@ describe('TSS Ecdsa VRF MPCv2 Utils:', async function () {
       .times(times)
       .reply(
         200,
-        async (
-          uri,
-          { payload }: { payload: MPCv2KeyGenRound1Request & VrfKeyGenRequestFields }
-        ): Promise<MPCv2KeyGenRound1Response & VrfKeyGenResponseFields> => {
+        async (uri, { payload }: { payload: MPCv2KeyGenRound1Request }): Promise<MPCv2KeyGenRound1Response> => {
           const { userGpgPublicKey, backupGpgPublicKey, userMsg1, backupMsg1, userVrfMsg1, backupVrfMsg1 } = payload;
           assert.ok(userVrfMsg1, 'userVrfMsg1 must be present on a safe keygen round 1 payload');
           assert.ok(backupVrfMsg1, 'backupVrfMsg1 must be present on a safe keygen round 1 payload');
@@ -305,20 +308,31 @@ describe('TSS Ecdsa VRF MPCv2 Utils:', async function () {
 
           storedBitgoCommitment2 = bitgoToUserMsg2?.commitment;
 
-          // VRF DKG: BitGo commits, then consumes user and backup commitments.
+          // VRF DKG: verify the signed client commitments, then BitGo commits and consumes them.
           const bitgoVrfMsg1Unsigned = await bitgoVrfSession.initDkg();
-          const userVrfCommitments = deserializeVrfMessages(userVrfMsg1, 2);
-          const backupVrfCommitments = deserializeVrfMessages(backupVrfMsg1, 2);
-          assert.equal(userVrfCommitments.broadcastMessages.length, 1);
-          assert.equal(userVrfCommitments.broadcastMessages[0].from, 0);
-          assert.equal(backupVrfCommitments.broadcastMessages.length, 1);
-          assert.equal(backupVrfCommitments.broadcastMessages[0].from, 1);
+          const userVrfCommitment = await verifyClientVrfMessage(userVrfMsg1, 0, userGpgPublicKey);
+          const backupVrfCommitment = await verifyClientVrfMessage(backupVrfMsg1, 1, backupGpgPublicKey);
           storedBitgoVrfOpenings = await bitgoVrfSession.handleIncomingMessages({
-            broadcastMessages: [...userVrfCommitments.broadcastMessages, ...backupVrfCommitments.broadcastMessages],
+            broadcastMessages: [
+              { from: 0, payload: userVrfCommitment },
+              { from: 1, payload: backupVrfCommitment },
+            ],
             p2pMessages: [],
           });
           // BitGo's openings are addressed to each party, itself included.
           assert.equal(storedBitgoVrfOpenings.p2pMessages.length, 3);
+          assert.equal(bitgoVrfMsg1Unsigned.broadcastMessages.length, 1);
+          const bitgoVrfMsg1Signed: SignedVrfMessage = {
+            from: 2,
+            ...(await DklsComms.detachSignData(
+              Buffer.from(bitgoVrfMsg1Unsigned.broadcastMessages[0].payload),
+              bitgoGpgPrvKey.gpgKey
+            )),
+          };
+          if (tamper.round1Commitment) {
+            // Valid signature, different payload: the signature no longer covers the message.
+            bitgoVrfMsg1Signed.message = Buffer.from('forged-commitment').toString('base64');
+          }
 
           return {
             sessionId: 'testid' as NonEmptyString,
@@ -336,7 +350,7 @@ describe('TSS Ecdsa VRF MPCv2 Utils:', async function () {
               signature: bitgoToUserMsg2.payload.signature,
             },
             walletGpgPubKeySigs: 'something' as NonEmptyString,
-            bitgoVrfMsg1: serializeVrfMessages(bitgoVrfMsg1Unsigned),
+            bitgoVrfMsg1: bitgoVrfMsg1Signed,
           };
         }
       );
@@ -348,10 +362,7 @@ describe('TSS Ecdsa VRF MPCv2 Utils:', async function () {
       .times(times)
       .reply(
         200,
-        async (
-          uri,
-          { payload }: { payload: MPCv2KeyGenRound2Request & VrfKeyGenRequestFields }
-        ): Promise<MPCv2KeyGenRound2Response & VrfKeyGenResponseFields> => {
+        async (uri, { payload }: { payload: MPCv2KeyGenRound2Request }): Promise<MPCv2KeyGenRound2Response> => {
           const { sessionId, userMsg2, backupMsg2, userCommitment2, backupCommitment2, userVrfMsg2, backupVrfMsg2 } =
             payload;
           assert.ok(userVrfMsg2, 'userVrfMsg2 must be present on a safe keygen round 2 payload');
@@ -393,11 +404,11 @@ describe('TSS Ecdsa VRF MPCv2 Utils:', async function () {
           assert.ok(bitgoToUserMsg3, 'bitgoToUserMsg3 not found');
           assert.ok(bitgoToBackupMsg3, 'bitgoToBackupMsg3 not found');
 
-          // VRF DKG: BitGo consumes the openings addressed to it (its own included) and finalizes.
-          const userOpenings = deserializeVrfMessages(userVrfMsg2, 2).p2pMessages;
-          const backupOpenings = deserializeVrfMessages(backupVrfMsg2, 2).p2pMessages;
-          assert.ok(userOpenings.some((m) => m.from === 0 && m.to === 2));
-          assert.ok(backupOpenings.some((m) => m.from === 1 && m.to === 2));
+          // VRF DKG: the SDK sends only the opening addressed to BitGo, signed by the sending party.
+          const userOpening = await verifyClientVrfMessage(userVrfMsg2, 0, userGpgPubKey.gpgKey);
+          const backupOpening = await verifyClientVrfMessage(backupVrfMsg2, 1, backupGpgPubKey.gpgKey);
+          const userOpenings = [{ from: 0, to: 2, payload: userOpening }];
+          const backupOpenings = [{ from: 1, to: 2, payload: backupOpening }];
           assert.ok(storedBitgoVrfOpenings, 'BitGo VRF openings from round 1 not found');
           await bitgoVrfSession.handleIncomingMessages({
             broadcastMessages: [],
@@ -426,11 +437,49 @@ describe('TSS Ecdsa VRF MPCv2 Utils:', async function () {
               encryptedMessage: bitgoToBackupMsg3.payload.encryptedMessage,
               signature: bitgoToBackupMsg3.payload.signature,
             },
-            // BitGo's full opening batch, so user (0) and backup (1) can each pick theirs.
-            bitgoVrfMsg2: serializeVrfMessages(storedBitgoVrfOpenings),
+            // BitGo's openings, each PGP-encrypted to its recipient and signed over the plaintext.
+            bitgoVrfMsgToUser: await encryptVrfOpening(
+              storedBitgoVrfOpenings,
+              0,
+              userGpgPubKey.gpgKey,
+              tamper.round2OpeningToUser
+            ),
+            bitgoVrfMsgToBackup: await encryptVrfOpening(
+              storedBitgoVrfOpenings,
+              1,
+              backupGpgPubKey.gpgKey,
+              tamper.round2OpeningToBackup
+            ),
           };
         }
       );
+  }
+
+  /** Encrypts BitGo's VRF opening for `to` with that party's GPG key and signs the plaintext. */
+  async function encryptVrfOpening(
+    openings: DklsTypes.DeserializedMessages,
+    to: PartyIndex,
+    partyGpgPublicKey: string,
+    tamperPlaintext = false
+  ): Promise<EncryptedVrfMessage> {
+    const opening = openings.p2pMessages.find((m) => m.to === to);
+    assert.ok(opening, `BitGo VRF opening for party ${to} not found`);
+    const signedFor = Buffer.from(opening.payload);
+    const { encryptedMessage, signature } = await DklsComms.encryptAndDetachSignData(
+      signedFor,
+      partyGpgPublicKey,
+      bitgoGpgPrvKey.gpgKey
+    );
+    if (!tamperPlaintext) {
+      return { from: 2, to, encryptedMessage, signature };
+    }
+    // Encrypt a different plaintext but keep the signature over the original one.
+    const forged = await DklsComms.encryptAndDetachSignData(
+      Buffer.from('forged-opening'),
+      partyGpgPublicKey,
+      bitgoGpgPrvKey.gpgKey
+    );
+    return { from: 2, to, encryptedMessage: forged.encryptedMessage, signature };
   }
 
   async function nockKeyGenRound3(bitgoSession: DklsDkg.Dkg, bitgoVrfSession: DklsVrf.VrfDkg, times = 1) {
