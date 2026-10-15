@@ -16,6 +16,7 @@ import { Buffer } from 'buffer';
 import {
   common,
   EDDSAMethods,
+  Environments,
   ErrorNoInputToRecover,
   MPCSweepRecoveryOptions,
   MPCSweepTxs,
@@ -72,6 +73,19 @@ describe('SUI:', function () {
     tsui.getFamily().should.equal('sui');
     tsui.getFullName().should.equal('Testnet Sui');
     tsui.getBaseFactor().should.equal(1e9);
+  });
+
+  it('should fail to get the grpc node url when suiGrpcNodeUrl is not configured', function () {
+    // every named environment inherits a suiGrpcNodeUrl via object spread, so the
+    // missing-configuration path is exercised by temporarily unsetting the property
+    const mockEnv = Environments['mock'] as unknown as Record<string, unknown>;
+    const originalUrl = mockEnv.suiGrpcNodeUrl;
+    delete mockEnv.suiGrpcNodeUrl;
+    try {
+      (() => basecoin['getPublicGrpcNodeUrl']()).should.throw(/suiGrpcNodeUrl/);
+    } finally {
+      mockEnv.suiGrpcNodeUrl = originalUrl;
+    }
   });
 
   describe('Verify transaction: ', () => {
