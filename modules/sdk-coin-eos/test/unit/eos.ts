@@ -2,7 +2,7 @@
  * @prettier
  */
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { ErrorNoInputToRecover, RecoveryProviderError, Wallet } from '@bitgo/sdk-core';
+import { ErrorNoInputToRecover, RecoveryKeyMismatchError, RecoveryProviderError, Wallet } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { bip32 } from '@bitgo/secp256k1';
 import * as ecc from 'eosjs-ecc';
@@ -196,6 +196,12 @@ describe('EOS:', function () {
     const rootAddress = 'i1skda3kso43';
     const destinationAddress = 'ks13kdh245ls';
 
+    // clone the success response and drop only core_liquid_balance: the recovery keys
+    // still match the account's active permissions, so the key check passes and the
+    // balance check (which runs after the key check) throws
+    const noBalanceAccountResponse = _.cloneDeep(EosResponses.getAccountResponseSuccess1);
+    Reflect.deleteProperty(noBalanceAccountResponse.body, 'core_liquid_balance');
+
     const sandBox = sinon.createSandbox();
     const callBack = sandBox.stub(Eos.prototype, 'getDataFromNode' as any);
     callBack
@@ -203,7 +209,7 @@ describe('EOS:', function () {
         endpoint: '/v1/chain/get_account',
         payload: { account_name: rootAddress },
       })
-      .resolves({ status: 200, body: { account_name: rootAddress } });
+      .resolves(noBalanceAccountResponse);
 
     try {
       await basecoin
@@ -250,6 +256,84 @@ describe('EOS:', function () {
     } finally {
       sandBox.restore();
     }
+  });
+
+  it('should throw RecoveryKeyMismatchError when the user signer key is missing from active permissions', async function () {
+    const userKey =
+      'xpub661MyMwAqRbcH1oUADxatLuKkVjaDB2zTNJoZQsGVQEvoogpbXJw24QMokNwFKj9Qhci6KWaCcQKrzpL4LCQXXX3YpTQxgD9KLBjhDrUWo4';
+    const backupKey =
+      'xpub661MyMwAqRbcH1n6sgY29G7dAxL7twS8rt1jyuuQb1kfnA7s3FJPGoVqb9JenXkeJmC4jZ8iVscn3AH6MkYAVc61FTYCHpxv5cxWar5Jw3C';
+    const rootAddress = 'i1skda3kso43';
+    const destinationAddress = 'ks13kdh245ls';
+
+    // clone the success response: replace the user signer key with a foreign key
+    // and drop core_liquid_balance, proving the key check runs before the balance check
+    const mismatchedAccountResponse = _.cloneDeep(EosResponses.getAccountResponseSuccess1);
+    mismatchedAccountResponse.body.permissions[0].required_auth.keys[1] = {
+      key: 'EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtFGpRFk2KsFzWwd',
+      weight: 1,
+    };
+    Reflect.deleteProperty(mismatchedAccountResponse.body, 'core_liquid_balance');
+
+    const sandBox = sinon.createSandbox();
+    const callBack = sandBox.stub(Eos.prototype, 'getDataFromNode' as any);
+    callBack
+      .withArgs({
+        endpoint: '/v1/chain/get_account',
+        payload: { account_name: rootAddress },
+      })
+      .resolves(mismatchedAccountResponse);
+
+    await basecoin
+      .recover({
+        userKey,
+        backupKey,
+        bitgoKey: 'key',
+        recoveryDestination: destinationAddress,
+        rootAddress,
+      })
+      .should.be.rejectedWith(RecoveryKeyMismatchError, { code: 'recovery_key_mismatch' });
+
+    sandBox.restore();
+  });
+
+  it('should throw RecoveryKeyMismatchError when the backup signer key is missing from active permissions', async function () {
+    const userKey =
+      'xpub661MyMwAqRbcH1oUADxatLuKkVjaDB2zTNJoZQsGVQEvoogpbXJw24QMokNwFKj9Qhci6KWaCcQKrzpL4LCQXXX3YpTQxgD9KLBjhDrUWo4';
+    const backupKey =
+      'xpub661MyMwAqRbcH1n6sgY29G7dAxL7twS8rt1jyuuQb1kfnA7s3FJPGoVqb9JenXkeJmC4jZ8iVscn3AH6MkYAVc61FTYCHpxv5cxWar5Jw3C';
+    const rootAddress = 'i1skda3kso43';
+    const destinationAddress = 'ks13kdh245ls';
+
+    // clone the success response: replace the backup signer key with a foreign key
+    // and drop core_liquid_balance, proving the key check runs before the balance check
+    const mismatchedAccountResponse = _.cloneDeep(EosResponses.getAccountResponseSuccess1);
+    mismatchedAccountResponse.body.permissions[0].required_auth.keys[2] = {
+      key: 'EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtFGpRFk2KsFzWwd',
+      weight: 1,
+    };
+    Reflect.deleteProperty(mismatchedAccountResponse.body, 'core_liquid_balance');
+
+    const sandBox = sinon.createSandbox();
+    const callBack = sandBox.stub(Eos.prototype, 'getDataFromNode' as any);
+    callBack
+      .withArgs({
+        endpoint: '/v1/chain/get_account',
+        payload: { account_name: rootAddress },
+      })
+      .resolves(mismatchedAccountResponse);
+
+    await basecoin
+      .recover({
+        userKey,
+        backupKey,
+        bitgoKey: 'key',
+        recoveryDestination: destinationAddress,
+        rootAddress,
+      })
+      .should.be.rejectedWith(RecoveryKeyMismatchError, { code: 'recovery_key_mismatch' });
+
+    sandBox.restore();
   });
 
   describe('Transactions:', function () {

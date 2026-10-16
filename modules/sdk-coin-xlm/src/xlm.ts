@@ -37,6 +37,7 @@ import {
   ParsedTransaction,
   ParseTransactionOptions,
   promiseProps,
+  RecoveryKeyMismatchError,
   RecoveryProviderError,
   StellarFederationUserNotFoundError,
   TokenEnablementConfig,
@@ -791,6 +792,15 @@ export class Xlm extends BaseCoin {
       } else {
         throw new RecoveryProviderError('Unable to reach the Stellar network via Horizon.', e);
       }
+    }
+
+    const onChainSigners = new Set((accountData.signers ?? []).map((signer) => signer.key));
+    const userAddress = userKey.publicKey();
+    const backupAddress = backupKey.publicKey();
+    if (!onChainSigners.has(userAddress) || !onChainSigners.has(backupAddress)) {
+      throw new RecoveryKeyMismatchError(
+        `user signer ${userAddress} or backup signer ${backupAddress} is missing from the account signers of ${params.rootAddress}`
+      );
     }
 
     if (!accountData.sequence || !accountData.balances) {

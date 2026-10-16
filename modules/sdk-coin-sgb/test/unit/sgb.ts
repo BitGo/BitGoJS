@@ -1,3 +1,4 @@
+import assert from 'assert';
 import * as should from 'should';
 
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
@@ -7,7 +8,7 @@ import { Sgb, Tsgb } from '../../src/index';
 import { UnsignedSweepTxMPCv2 } from '@bitgo/abstract-eth';
 import { mockDataUnsignedSweep, mockDataNonBitGoRecovery } from '../resources';
 import nock from 'nock';
-import { common } from '@bitgo/sdk-core';
+import { RecoveryKeyMismatchError, common } from '@bitgo/sdk-core';
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx';
 import { stripHexPrefix } from '@ethereumjs/util';
 
@@ -107,6 +108,10 @@ describe('Non Bitgo Recovery for Hot Wallets', function () {
   const chain_id = 16;
   const gasLimitvalue = 500000;
 
+  before(function () {
+    bitgo.safeRegister('tsgb', Tsgb.createInstance);
+  });
+
   it('should generate a signed non-bitgo recovery tx', async () => {
     nock(explorerUrl)
       .get('/api')
@@ -140,5 +145,28 @@ describe('Non Bitgo Recovery for Hot Wallets', function () {
     tx.getSenderAddress().toString().should.equal(mockDataNonBitGoRecovery.walletRootAddress);
     const jsonTx = tx.toJSON();
     jsonTx.to?.should.equal(mockDataNonBitGoRecovery.recoveryDestination);
+  });
+
+  it('should throw RecoveryKeyMismatchError on signed non-bitgo recovery when walletContractAddress does not match the derived wallet base address', async () => {
+    // bitgo.coin() is statically typed as IBaseCoin, which omits the eth recover() API, hence the cast
+    const baseCoin = bitgo.coin('tsgb') as unknown as Tsgb;
+    await assert.rejects(
+      async () =>
+        await baseCoin.recover({
+          userKey: mockDataNonBitGoRecovery.userKeyData,
+          backupKey: mockDataNonBitGoRecovery.backupKeyData,
+          walletContractAddress: mockDataNonBitGoRecovery.recoveryDestination,
+          walletPassphrase: mockDataNonBitGoRecovery.walletPassphrase,
+          recoveryDestination: mockDataNonBitGoRecovery.recoveryDestination,
+          isTss: true,
+          eip1559: { maxFeePerGas: maxFeePerGasvalue, maxPriorityFeePerGas: maxPriorityFeePerGasValue },
+          gasLimit: gasLimitvalue,
+          replayProtectionOptions: {
+            chain: chain_id,
+            hardfork: 'london',
+          },
+        }),
+      (err) => err instanceof RecoveryKeyMismatchError && err.code === 'recovery_key_mismatch'
+    );
   });
 });
