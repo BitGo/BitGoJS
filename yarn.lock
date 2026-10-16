@@ -1021,10 +1021,10 @@
     "@scure/base" "1.1.5"
     micro-eth-signer "0.7.2"
 
-"@bitgo/public-types@6.83.0":
-  version "6.83.0"
-  resolved "https://registry.npmjs.org/@bitgo/public-types/-/public-types-6.83.0.tgz#1d89f56e041587cc81cad031c535d299c0de5595"
-  integrity sha512-L8Orddqr4ODQnKKkcim4hWqDlrhH2mqSDgh/faXh7h3cc5JRZbL92YRvS9ASJNVOWSs6Wk8DFVyMmbyss+ggbQ==
+"@bitgo/public-types@6.90.0":
+  version "6.90.0"
+  resolved "https://registry.npmjs.org/@bitgo/public-types/-/public-types-6.90.0.tgz#01cbded37315be24451c0e357df57f99dc7668ca"
+  integrity sha512-8JmcPhiovAjfm75/z5/BCtFJC/jjyCL6D52yE+LtQL2T2A58XccNrzEQZey5Ndo5gs1ARyFqxatL3CD8CZkoGw==
   dependencies:
     fp-ts "^2.0.0"
     io-ts "npm:@bitgo-forks/io-ts@2.1.4"

@@ -383,8 +383,9 @@ describe('TSS ECDSA safe child keychains (user/BitGo hard derive):', async funct
           body.round === 'MPCv2Derive-R1' &&
           body.safeId === SAFE_ID &&
           body.payload?.parentKeyId === BITGO_ROOT_KEY_ID &&
-          // TODO(WCN-2969): R1 carries the path once public-types adds it; today the account rides as derivationIndex.
-          body.payload?.derivationIndex === account &&
+          body.coin === coinName &&
+          body.payload?.path === childPath(account) &&
+          body.payload?.derivationIndex === undefined &&
           body.payload?.userGpgPublicKey &&
           body.payload?.userMsg1 &&
           body.payload?.backupGpgPublicKey === undefined &&

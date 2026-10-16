@@ -36,12 +36,14 @@ export type EcdsaMPCv2DeriveKeySendFn<T extends GenerateMPCv2DeriveKeyRequestRes
  * Round sender for the user/BitGo safe-child hard-derivation ceremony. The
  * derive rounds use the same endpoint as MPCv2 keygen (`/mpc/generatekey`),
  * dispatched by the `MPCv2Derive-R*` round values. The R1 payload carries the
- * BitGo root `parentKeyId` and `derivationIndex`.
+ * BitGo root `parentKeyId` and the full `path`; `coin` selects the BIP44 coin type the
+ * service expects in that path.
  */
 export function KeyGenSenderForSafeChild<T extends GenerateMPCv2DeriveKeyRequestResponse>(
   bitgo: BitGoBase,
   enterprise: string,
-  safeId: string
+  safeId: string,
+  coin: string
 ): EcdsaMPCv2DeriveKeySendFn<T> {
   return (round, payload) => {
     return bitgo
@@ -49,6 +51,7 @@ export function KeyGenSenderForSafeChild<T extends GenerateMPCv2DeriveKeyRequest
       .send({
         enterprise,
         safeId,
+        coin,
         type: KeyGenTypeEnum.MPCv2,
         round,
         payload,
