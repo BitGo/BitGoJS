@@ -1,9 +1,11 @@
-import { pox5 } from '@bitgo/utxo-descriptors';
 import { descriptorWallet, Psbt } from '@bitgo/wasm-utxo';
 
-function getPox5InputMatches(psbt: Psbt, descriptorMap: descriptorWallet.DescriptorMap): pox5.Pox5InputMatch[] {
-  return Array.from({ length: psbt.inputCount() }, (_, i) => pox5.matchPox5Input(psbt, i, descriptorMap)).filter(
-    (match): match is pox5.Pox5InputMatch => match !== undefined
+import { Pox5InputMatch, matchPox5Input } from './input';
+import { assertPox5LocktimeSpend, classifyPox5Spend } from './recovery';
+
+function getPox5InputMatches(psbt: Psbt, descriptorMap: descriptorWallet.DescriptorMap): Pox5InputMatch[] {
+  return Array.from({ length: psbt.inputCount() }, (_, i) => matchPox5Input(psbt, i, descriptorMap)).filter(
+    (match): match is Pox5InputMatch => match !== undefined
   );
 }
 
@@ -22,9 +24,9 @@ export function assertPox5SpendPolicy(psbt: Psbt, descriptorMap: descriptorWalle
     throw new Error(`expected exactly one PoX-5 lockup input, found ${matches.length}`);
   }
   const [match] = matches;
-  const branch = pox5.classifyPox5Spend(psbt, match);
+  const branch = classifyPox5Spend(psbt, match);
   if (branch !== 'locktime') {
     throw new Error(`unsupported PoX-5 spend branch: ${branch}`);
   }
-  pox5.assertPox5LocktimeSpend(psbt, matches);
+  assertPox5LocktimeSpend(psbt, matches);
 }

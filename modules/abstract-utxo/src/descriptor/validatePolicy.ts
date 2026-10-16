@@ -1,8 +1,9 @@
 import { EnvironmentName, Triple } from '@bitgo/sdk-core';
-import { pox5 } from '@bitgo/utxo-descriptors';
+import type { DescriptorExtension } from '@bitgo/utxo-descriptors';
 import { bip32, Descriptor, descriptorWallet } from '@bitgo/wasm-utxo';
 
 import { DescriptorBuilder, parseDescriptor } from './builder';
+import { defaultDescriptorExtensions } from './extensions';
 import { hasValidSignature, NamedDescriptor, NamedDescriptorNative, toNamedDescriptorNative } from './NamedDescriptor';
 
 import type { DescriptorMap } from './index';
@@ -78,41 +79,6 @@ export function getValidatorSignedByUserKey(): DescriptorValidationPolicy {
   };
 }
 
-function isCanonicalPox5Lockup(descriptor: Descriptor, walletKeys: KeyTriple): boolean {
-  try {
-    const info = pox5.parsePox5LockupDescriptor(descriptor);
-    if (!info) {
-      return false;
-    }
-    // Rebuilding the canonical descriptor from the wallet keys checks both that the
-    // staker keys are the wallet keys (with the `/*` derivation) and that the
-    // descriptor has no non-canonical encoding.
-    const canonical = pox5.createPox5LockupDescriptor({
-      unlockHeight: info.unlockHeight,
-      stakerCommitment: info.stakerCommitment,
-      earlyExitKey: info.earlyExitKey,
-      stakerKeys: [walletKeys[0], walletKeys[1], walletKeys[2]],
-    });
-    return canonical.toString() === descriptor.toString();
-  } catch {
-    // malformed lockup parameters
-    return false;
-  }
-}
-
-/**
- * Accepts descriptors that are canonical PoX-5 lockup descriptors whose staker keys
- * are the wallet keys.
- */
-export function getValidatorPox5Lockup(): DescriptorValidationPolicy {
-  return {
-    name: 'pox5Lockup',
-    validate(arr: NamedDescriptorNative[], walletKeys: KeyTriple): boolean {
-      return arr.every((d) => isCanonicalPox5Lockup(d.value, walletKeys));
-    },
-  };
-}
-
 /**
  * Accepts descriptor groups where each descriptor individually satisfies at least one of
  * the validators. Unlike `getValidatorSome`, different descriptors may match different validators.
@@ -127,11 +93,25 @@ export function getValidatorEachOneOf(validators: DescriptorValidationPolicy[]):
 }
 
 /**
- * Accepts the descriptors of a PoX-5 staking wallet: the regular 2-of-3 wallet descriptors
- * together with PoX-5 lockup descriptors, all using the wallet keys.
+ * Accepts descriptors that the extension considers valid descriptors of a wallet with the given keys.
  */
-export function getValidatorPox5Wallet(): DescriptorValidationPolicy {
-  return getValidatorEachOneOf([getValidatorDescriptorTemplate('Wsh2Of3'), getValidatorPox5Lockup()]);
+export function getValidatorExtension(extension: DescriptorExtension): DescriptorValidationPolicy {
+  return {
+    name: extension.name,
+    validate(arr: NamedDescriptorNative[], walletKeys: KeyTriple): boolean {
+      return arr.every((d) => extension.isWalletDescriptor(d.value, walletKeys));
+    },
+  };
+}
+
+/**
+ * Accepts the descriptors of a wallet with extensions: the regular 2-of-3 wallet descriptors together with
+ * the descriptors of any of the extensions, all using the wallet keys.
+ */
+export function getValidatorWalletWithExtensions(
+  extensions: readonly DescriptorExtension[] = defaultDescriptorExtensions
+): DescriptorValidationPolicy {
+  return getValidatorEachOneOf([getValidatorDescriptorTemplate('Wsh2Of3'), ...extensions.map(getValidatorExtension)]);
 }
 
 export class DescriptorPolicyValidationError extends Error {
@@ -173,8 +153,8 @@ export function getPolicyForEnv(env: EnvironmentName): DescriptorValidationPolic
         getValidatorDescriptorTemplate('Wsh2Of3CltvDrop'),
         // allow sBTC peg-in deposit descriptors where the reclaim keys match the wallet keys
         getValidatorDescriptorTemplate('SbtcDeposit'),
-        // allow 2-of-3 wallet descriptors together with PoX-5 lockup descriptors (stacks staking)
-        getValidatorPox5Wallet(),
+        // allow 2-of-3 wallet descriptors together with the descriptors of extensions (e.g. staking lockups)
+        getValidatorWalletWithExtensions(),
         // allow all descriptors signed by the user key
         getValidatorSignedByUserKey(),
       ]);
