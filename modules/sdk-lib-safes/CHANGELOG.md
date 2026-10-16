@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.6.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-lib-safes%401.5.0...%40bitgo%2Fsdk-lib-safes%401.6.0) (2026-10-16)
+
+### Features
+
+* add slot-2 safe recovery derivation ([10dfd02](https://github.com/BitGo/BitGoJS/commit/10dfd024448542ab286ba3b92025860c33949d80))
+* carry ed25519 backup chain code on keycard ([a2cc78e](https://github.com/BitGo/BitGoJS/commit/a2cc78e3b4dd864101ddcef241a8ceda7eef10bb))
+* derive safe children at BIP44 paths ([f1ed790](https://github.com/BitGo/BitGoJS/commit/f1ed790d068f94ea3e8b8439eef219c297324c26))
+
+
 # [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-safes@1.4.0...@bitgo/sdk-lib-safes@1.5.0) (2026-10-13)
 
 

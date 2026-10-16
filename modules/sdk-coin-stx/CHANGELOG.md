@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.4.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-stx%404.3.0...%40bitgo%2Fsdk-coin-stx%404.4.0) (2026-10-16)
+
+### Bug Fixes
+
+* **sdk-coin-stx:** stringify Response Clarity args to JSON-safe values ([69cbffa](https://github.com/BitGo/BitGoJS/commit/69cbffae70468c443631ef26015caced2d631a37))
+
+### Features
+
+* **sdk-coin-stx:** support post-conditions on contract calls ([654ef00](https://github.com/BitGo/BitGoJS/commit/654ef00e24aaef951dce59e4ab16fdc89f6800d6))
+
+
 # [4.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-stx@4.2.2...@bitgo/sdk-coin-stx@4.3.0) (2026-10-13)
 
 

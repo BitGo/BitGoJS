@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.25.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-icp%401.24.0...%40bitgo%2Fsdk-coin-icp%401.25.0) (2026-10-16)
+
+### Features
+
+* **sdk-coin-icp:** allow account consolidations (CECHO-2439) ([71dae72](https://github.com/BitGo/BitGoJS/commit/71dae72f6a1ef573b8cc909c22b223125a631b1e))
+
+
 # [1.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.23.37...@bitgo/sdk-coin-icp@1.24.0) (2026-10-13)
 
 

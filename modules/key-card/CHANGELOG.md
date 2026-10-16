@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.36.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fkey-card%400.35.2...%40bitgo%2Fkey-card%400.36.0) (2026-10-16)
+
+### Features
+
+* carry ed25519 backup chain code on keycard ([a2cc78e](https://github.com/BitGo/BitGoJS/commit/a2cc78e3b4dd864101ddcef241a8ceda7eef10bb))
+
+
 ## [0.35.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.35.1...@bitgo/key-card@0.35.2) (2026-10-13)
 
 **Note:** Version bump only for package @bitgo/key-card

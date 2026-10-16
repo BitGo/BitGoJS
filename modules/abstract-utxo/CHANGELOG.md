@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [13.4.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fabstract-utxo%4013.4.0...%40bitgo%2Fabstract-utxo%4013.4.1) (2026-10-16)
+
+### Bug Fixes
+
+* **abstract-utxo:** accept PoX-5 lockup descriptor in offline vault ([1afbaae](https://github.com/BitGo/BitGoJS/commit/1afbaaecaf587b72402eab3cae391131c5769e0a))
+* pass wallet pubs when explaining sweep prebuild ([0b5afcc](https://github.com/BitGo/BitGoJS/commit/0b5afcc182d1b538e2cc9f2d47330b16c7a38674))
+
+
 # [13.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@13.3.0...@bitgo/abstract-utxo@13.4.0) (2026-10-13)
 
 

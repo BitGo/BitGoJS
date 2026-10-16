@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.17.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-sol%408.16.0...%40bitgo%2Fsdk-coin-sol%408.17.0) (2026-10-16)
+
+### Features
+
+* **sdk-coin-sol:** durable-nonce support in ConfidentialTransferBuilder v1 ([b089405](https://github.com/BitGo/BitGoJS/commit/b08940598b5e5fab1f140bab1d39efd3f48d080c))
+
+
 # [8.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@8.15.0...@bitgo/sdk-coin-sol@8.16.0) (2026-10-13)
 
 

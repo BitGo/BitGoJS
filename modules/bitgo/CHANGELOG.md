@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [54.1.0](https://github.com/BitGo/BitGoJS/compare/bitgo%4054.0.0...bitgo%4054.1.0) (2026-10-16)
+
+### Bug Fixes
+
+* **sdk-core:** forward videoApprovers on TSS txrequests ([1750146](https://github.com/BitGo/BitGoJS/commit/175014669cb55363b2255b7cfcac2d897df01d94))
+
+### Features
+
+* derive safe children at BIP44 paths ([f1ed790](https://github.com/BitGo/BitGoJS/commit/f1ed790d068f94ea3e8b8439eef219c297324c26))
+
+
 # [54.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@53.4.2...bitgo@54.0.0) (2026-10-13)
 
 

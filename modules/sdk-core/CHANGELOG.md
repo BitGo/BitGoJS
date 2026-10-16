@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [39.1.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4039.0.0...%40bitgo%2Fsdk-core%4039.1.0) (2026-10-16)
+
+### Bug Fixes
+
+* pass wallet pubs when explaining sweep prebuild ([0b5afcc](https://github.com/BitGo/BitGoJS/commit/0b5afcc182d1b538e2cc9f2d47330b16c7a38674))
+* **sdk-core:** correct redPallas /sign wire types, add rerand ([9c8bc03](https://github.com/BitGo/BitGoJS/commit/9c8bc03f92bb88e58191f63093a11edffb7cd286))
+* **sdk-core:** forward videoApprovers on TSS txrequests ([1750146](https://github.com/BitGo/BitGoJS/commit/175014669cb55363b2255b7cfcac2d897df01d94))
+
+### Features
+
+* add slot-2 safe recovery derivation ([10dfd02](https://github.com/BitGo/BitGoJS/commit/10dfd024448542ab286ba3b92025860c33949d80))
+* add slot-4 EdDSA MPC Safe recovery derivation ([048df7f](https://github.com/BitGo/BitGoJS/commit/048df7fc6557fc974e2d894cc9dc0360c36e1904))
+* carry ed25519 backup chain code on keycard ([a2cc78e](https://github.com/BitGo/BitGoJS/commit/a2cc78e3b4dd864101ddcef241a8ceda7eef10bb))
+* derive safe children at BIP44 paths ([f1ed790](https://github.com/BitGo/BitGoJS/commit/f1ed790d068f94ea3e8b8439eef219c297324c26))
+
+
 # [39.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@38.23.0...@bitgo/sdk-core@39.0.0) (2026-10-13)
 
 
