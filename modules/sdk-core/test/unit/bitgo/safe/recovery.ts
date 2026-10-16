@@ -23,6 +23,10 @@ import { BitGoBase } from '../../../../src/bitgo/bitgoBase';
 import { getInitializedMpcInstance } from '../../../../src/bitgo/tss/eddsa/eddsa';
 import { signEddsaMpcV2RecoveryTx } from '../../../../src/bitgo/utils/tss/eddsa/eddsaMPCv2';
 
+// The ed25519 soft co-signer private halves asserted below are pinned cross-repo in the shared
+// GV1 fixture (byte-identical to wallet-platform's copy).
+import * as bip44Fixture from './fixtures/safeBip44Vectors.json';
+
 const PASSWORD = 'safe-password';
 
 function makeMockBitGo(decryptImpl: (params: { password: string; input: string }) => string): BitGoBase {
@@ -398,9 +402,13 @@ describe('deriveSafeWalletKeys', () => {
       await softDeriveChildPubEd25519AtPath(ed25519Roots.ed25519Multisig.bitgo, 'm/44/283/2/0')
     ).toString('hex');
     result.keys.backup.kind.should.equal('extended');
-    // Pin the private halves (self-generated; to be superseded by GV1 cross-repo vectors).
-    result.keys.backup.kL.should.equal('9ad60bb591fec65df3a72fb041ee53a3263c43e6056512bc49de6b342cff8e0f');
-    result.keys.backup.kR.should.equal('1262f2d5439c03d11f2a295d691b4ea629f14e9e25c614d4a8aff8edd1865cdf');
+    // Pin the private halves to the cross-repo GV1 golden vector for this path.
+    const algoSoft = bip44Fixture.ed25519Soft.vectors.find((v) => v.path === 'm/44/283/2/0');
+    if (algoSoft === undefined) {
+      throw new Error('fixture is missing the m/44/283/2/0 soft co-signer vector');
+    }
+    result.keys.backup.kL.should.equal(algoSoft.childKLHex);
+    result.keys.backup.kR.should.equal(algoSoft.childKRHex);
     result.keys.backup.pub.should.equal(bitgoPub);
     result.keys.bitgo.pub.should.equal(bitgoPub);
   });

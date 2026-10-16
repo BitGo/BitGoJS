@@ -95,6 +95,10 @@ describe('derivableEd25519Pub', function () {
     // reproduce, permanently bricking the wallets minted with it.
     for (const vector of fixture.softDerivation) {
       it(`derives the pinned golden child: ${vector.name}`, async function () {
+        // The pub/chainCode fields must encode to the composite actually derived from.
+        encodeDerivableEd25519Pub(Buffer.from(vector.pub, 'hex'), Buffer.from(vector.chainCode, 'hex')).should.equal(
+          vector.composite
+        );
         const child = await softDeriveChildPubEd25519(vector.composite, vector.index);
         child.toString('hex').should.equal(vector.childPub);
       });

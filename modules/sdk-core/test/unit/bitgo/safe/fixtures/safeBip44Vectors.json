@@ -1,0 +1,319 @@
+{
+  "$comment": "Shared BIP44 safe child-derivation golden vectors: byte-identical to packages/wallet-platform/test/unit/base/safes/fixtures/safeBip44Vectors.json. Scheme: the safe user child derives at the hardened path m/44'/<coinType>'/<slot>'/<account>' and the multisig co-signers at its soft twin m/44/<coinType>/<slot>/<account>, where <coinType> is the statics bip44CoinType of the coin family and <slot> is the statics SAFE_ROOT_SLOT_ORDINALS value of the root slot. Every root is a published public test vector (the BIP32 test vectors 1/2/3 seeds and the SLIP-0010-style StrKey seed SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI, raw seed 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f), so both repos reproduce every value without sharing secrets. A divergent implementation mints co-signer keys nobody else can reproduce, permanently bricking the wallets minted with it.",
+  "slotOrdinals": {
+    "secp256k1Multisig": 1,
+    "ed25519Multisig": 2,
+    "ecdsaMpc": 3,
+    "eddsaMpc": 4
+  },
+  "coinTypes": [
+    {
+      "name": "L1 bitcoin",
+      "coin": "btc",
+      "family": "btc",
+      "coinType": 0,
+      "derivable": true
+    },
+    {
+      "name": "testnet mirrors its mainnet coin type",
+      "coin": "tbtc",
+      "family": "btc",
+      "coinType": 0,
+      "derivable": true
+    },
+    {
+      "name": "ed25519 L1",
+      "coin": "xlm",
+      "family": "xlm",
+      "coinType": 148,
+      "derivable": true
+    },
+    {
+      "name": "ed25519 MPC L1",
+      "coin": "sol",
+      "family": "sol",
+      "coinType": 501,
+      "derivable": true
+    },
+    {
+      "name": "EVM L1",
+      "coin": "eth",
+      "family": "eth",
+      "coinType": 60,
+      "derivable": true
+    },
+    {
+      "name": "EVM L2 in the BitGo-assigned band",
+      "coin": "arbeth",
+      "family": "arbeth",
+      "coinType": 1879048194,
+      "derivable": true
+    },
+    {
+      "name": "second EVM L2 in the BitGo-assigned band",
+      "coin": "baseeth",
+      "family": "baseeth",
+      "coinType": 1879048198,
+      "derivable": true
+    },
+    {
+      "name": "token inherits its parent chain",
+      "coin": "usdc",
+      "family": "eth",
+      "coinType": 60,
+      "derivable": true
+    },
+    {
+      "name": "token inherits a BitGo-assigned parent",
+      "coin": "baseeth:usdc",
+      "family": "baseeth",
+      "coinType": 1879048198,
+      "derivable": true
+    }
+  ],
+  "notDerivable": [
+    {
+      "name": "OFC coin",
+      "coin": "ofcbtc"
+    },
+    {
+      "name": "fiat coin",
+      "coin": "fiatusd"
+    }
+  ],
+  "paths": [
+    {
+      "name": "btc slot 1 account 0",
+      "coin": "btc",
+      "coinType": 0,
+      "slot": "secp256k1Multisig",
+      "slotOrdinal": 1,
+      "account": 0,
+      "userPath": "m/44'/0'/1'/0'",
+      "cosignerPath": "m/44/0/1/0"
+    },
+    {
+      "name": "tbtc slot 1 account 1",
+      "coin": "tbtc",
+      "coinType": 0,
+      "slot": "secp256k1Multisig",
+      "slotOrdinal": 1,
+      "account": 1,
+      "userPath": "m/44'/0'/1'/1'",
+      "cosignerPath": "m/44/0/1/1"
+    },
+    {
+      "name": "xlm slot 2 account 0",
+      "coin": "xlm",
+      "coinType": 148,
+      "slot": "ed25519Multisig",
+      "slotOrdinal": 2,
+      "account": 0,
+      "userPath": "m/44'/148'/2'/0'",
+      "cosignerPath": "m/44/148/2/0"
+    },
+    {
+      "name": "xlm slot 2 account 7",
+      "coin": "xlm",
+      "coinType": 148,
+      "slot": "ed25519Multisig",
+      "slotOrdinal": 2,
+      "account": 7,
+      "userPath": "m/44'/148'/2'/7'",
+      "cosignerPath": "m/44/148/2/7"
+    },
+    {
+      "name": "arbeth slot 1 account 0",
+      "coin": "arbeth",
+      "coinType": 1879048194,
+      "slot": "secp256k1Multisig",
+      "slotOrdinal": 1,
+      "account": 0,
+      "userPath": "m/44'/1879048194'/1'/0'",
+      "cosignerPath": "m/44/1879048194/1/0"
+    },
+    {
+      "name": "arbeth slot 3 account 0",
+      "coin": "arbeth",
+      "coinType": 1879048194,
+      "slot": "ecdsaMpc",
+      "slotOrdinal": 3,
+      "account": 0,
+      "userPath": "m/44'/1879048194'/3'/0'",
+      "cosignerPath": "m/44/1879048194/3/0"
+    },
+    {
+      "name": "baseeth slot 3 account 0",
+      "coin": "baseeth",
+      "coinType": 1879048198,
+      "slot": "ecdsaMpc",
+      "slotOrdinal": 3,
+      "account": 0,
+      "userPath": "m/44'/1879048198'/3'/0'",
+      "cosignerPath": "m/44/1879048198/3/0"
+    },
+    {
+      "name": "sol slot 4 account 0",
+      "coin": "sol",
+      "coinType": 501,
+      "slot": "eddsaMpc",
+      "slotOrdinal": 4,
+      "account": 0,
+      "userPath": "m/44'/501'/4'/0'",
+      "cosignerPath": "m/44/501/4/0"
+    },
+    {
+      "name": "sol slot 4 max account",
+      "coin": "sol",
+      "coinType": 501,
+      "slot": "eddsaMpc",
+      "slotOrdinal": 4,
+      "account": 2147483647,
+      "userPath": "m/44'/501'/4'/2147483647'",
+      "cosignerPath": "m/44/501/4/2147483647"
+    }
+  ],
+  "secp256k1": {
+    "roots": {
+      "user": {
+        "seedHex": "000102030405060708090a0b0c0d0e0f",
+        "rootXpub": "xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8"
+      },
+      "backup": {
+        "seedHex": "fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542",
+        "rootXpub": "xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB"
+      },
+      "bitgo": {
+        "seedHex": "4b381541583be4423346c643850da4b320e46a87ae3d2a4e6da11eba819cd4acba45d239319ac14f863b8d5ab5a0d0c64d2e8a1e7d1457df2e5a3c51c73235be",
+        "rootXpub": "xpub661MyMwAqRbcEZVB4dScxMAdx6d4nFc9nvyvH3v4gJL378CSRZiYmhRoP7mBy6gSPSCYk6SzXPTf3ND1cZAceL7SfJ1Z3GC8vBgp2epUt13"
+      }
+    },
+    "vectors": [
+      {
+        "name": "btc slot 1 account 0",
+        "coin": "btc",
+        "slot": "secp256k1Multisig",
+        "account": 0,
+        "userPath": "m/44'/0'/1'/0'",
+        "cosignerPath": "m/44/0/1/0",
+        "userChildPub": "xpub6FAmCnN5quzdacVrq9uYbn68tEPZkScW6G2iDYRYsT6fGWqLKt5S1CfZdyppz139P8DJxpoRZMjTRZZfqD3FutJTd538WYrSxs77srFyGnJ",
+        "backupChildPub": "xpub6EDabqKhEeBuQY9aPL6dik9Cm5GwHzfs5vRrLaK2NTgDTDYMo5NxHqBU11JvWqrjMxZxi15LtR5inMopdXyEatxoFEgLRkmNMtMwMVErtY7",
+        "bitgoChildPub": "xpub6FKz5cr84TYXR9LgsfbMAG1RerknmpAJpA6ySF19t391LRBDqFcPHszX3TAJL1UDpgBS59brz5t3D27fcFXC8RBdJXTFjJxGNiadaozuBRU"
+      },
+      {
+        "name": "tbtc slot 1 account 1",
+        "coin": "tbtc",
+        "slot": "secp256k1Multisig",
+        "account": 1,
+        "userPath": "m/44'/0'/1'/1'",
+        "cosignerPath": "m/44/0/1/1",
+        "userChildPub": "xpub6FAmCnN5quzddSNtpAHDGVZFZL29QrxRmaWRgtyxZ2JwnTVfKuUJkmfWPXJun1GdnuwW3te9qZKK76EfpTHgvtwAU5C67Mko7bJj9SxwMhU",
+        "backupChildPub": "xpub6EDabqKhEeBuSwJunyRJ94mRp94x44i4Sv1VxKwZjWWauyAzECPvex7hqpz1MQPD8t4edCRZixFLywcWC1ZBHyuBDcuGzJPFxrYc8sRXEaH",
+        "bitgoChildPub": "xpub6FKz5cr84TYXUG5Yx9dwMLn8et5eVpwfLD4av27C7CUW9fpPckPHZFmgAhgVcbHuhgrsnFri1S93woqX9Zj3Tugca3nvcqoZ2ZjK3DAHuhf"
+      },
+      {
+        "name": "arbeth slot 1 account 0",
+        "coin": "arbeth",
+        "slot": "secp256k1Multisig",
+        "account": 0,
+        "userPath": "m/44'/1879048194'/1'/0'",
+        "cosignerPath": "m/44/1879048194/1/0",
+        "userChildPub": "xpub6FQoo8YVRvA2wY7Ztf3g3DFGonK3uHP79dsi6qh7uDXksG3DaCr4MtttrjqkaYwpzKJZCdGjv4WfsmP61HA9uRTZorDw9G8EjnaXTKjxgQU",
+        "backupChildPub": "xpub6E84BCSDnxBp3EyQyGKPVQ3R9asrS4QXw9qLsDTeTc7v1ftq3ta7Z4XqFnipDWoqAbKnrxv2QtMzuQoo1ykUoAqiEfGTPdfGFehM95rdgZ8",
+        "bitgoChildPub": "xpub6Dm6mEHtLMUJkZ4tkSnyvpX8iFTDbD2KfATKW33BAD4tFmLk7Dx2R7f335GNXCyJftGrR7fdcGxx5Wxygjg8UwYNnfTQBiE16z6s5YhaCgT"
+      }
+    ]
+  },
+  "ed25519Hardened": {
+    "rootSeedStrKey": "SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI",
+    "rootRawSeedHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+    "vectors": [
+      {
+        "name": "xlm slot 2 account 0",
+        "coin": "xlm",
+        "coinType": 148,
+        "account": 0,
+        "path": "m/44'/148'/2'/0'",
+        "childSeedHex": "855e8d991b48037b3e0161fd57f1643044878d6afe0db0243719b5201e2e4f69",
+        "childPubHex": "c7bad4aa67b948acde7bb542da1749fdf6f683757a7ceb6ce95299f4dc5d1df8",
+        "childPubStrKey": "GDD3VVFKM64URLG6PO2UFWQXJH67N5UDOV5HZ23M5FJJT5G4LUO7RJWG"
+      },
+      {
+        "name": "xlm slot 2 account 7",
+        "coin": "xlm",
+        "coinType": 148,
+        "account": 7,
+        "path": "m/44'/148'/2'/7'",
+        "childSeedHex": "3790123d377fec4805f52cbd0aa6e4f5277ed2ef75dbdbc0bf723370d10c4a82",
+        "childPubHex": "61dd24abcec24017775ec595613c3fbee5b2f9eb1b66b228efcf1fe5eae3d5fa",
+        "childPubStrKey": "GBQ52JFLZ3BEAF3XL3CZKYJ4H67OLMXZ5MNWNMRI57HR7ZPK4PK7UEEY"
+      },
+      {
+        "name": "algo slot 2 account 0",
+        "coin": "algo",
+        "coinType": 283,
+        "account": 0,
+        "path": "m/44'/283'/2'/0'",
+        "childSeedHex": "be69531ebbab851b69aa41bb9c905afed52d26ff4278e6418609d4d60570510c",
+        "childPubHex": "86d6803908e51c8bfc889fc9d788dbcaf656836f7ac4f169ebc90a1e60eeab25",
+        "childPubStrKey": "GCDNNABZBDSRZC74RCP4TV4I3PFPMVUDN55MJ4LJ5PEQUHTA52VSKJKD"
+      }
+    ]
+  },
+  "ed25519Soft": {
+    "rootSeedStrKey": "SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI",
+    "rootPubHex": "03a107bff3ce10be1d70dd18e74bc09967e4d6309ba50d5f1ddc8664125531b8",
+    "rootChainCodeHex": "abababababababababababababababababababababababababababababababab",
+    "rootComposite": "AOQQPP7TZYIL4HLQ3UMOOS6ATFT6JVRQTOSQ2XY53SDGIESVGG4KXK5LVOV2XK5LVOV2XK5LVOV2XK5LVOV2XK5LVOV2XK5LVOV2XKY",
+    "vectors": [
+      {
+        "name": "xlm slot 2 account 0",
+        "coin": "xlm",
+        "coinType": 148,
+        "slotOrdinal": 2,
+        "account": 0,
+        "path": "m/44/148/2/0",
+        "childPubHex": "ad5b0684a3655ac1a7e4a26ee6a5f178589c7461008887b0caebeca260b9a9db",
+        "childKLHex": "3add06eb83b03b2d1097137be6f1af8857693fcb2f74b7b15c729fe92dff8e0f",
+        "childKRHex": "c9277bf19fc922ec169bb1fe077e76b399a267de520796c8123831a2c9348af3"
+      },
+      {
+        "name": "algo slot 2 account 0",
+        "coin": "algo",
+        "coinType": 283,
+        "slotOrdinal": 2,
+        "account": 0,
+        "path": "m/44/283/2/0",
+        "childPubHex": "f46ca81de93e63b34378958e3a5edf8c932feac6e37fb05f178be60041db77ef",
+        "childKLHex": "9ad60bb591fec65df3a72fb041ee53a3263c43e6056512bc49de6b342cff8e0f",
+        "childKRHex": "1262f2d5439c03d11f2a295d691b4ea629f14e9e25c614d4a8aff8edd1865cdf"
+      }
+    ]
+  },
+  "mpcPathBytes": [
+    {
+      "name": "btc slot 1 account 0",
+      "coin": "btc",
+      "coinType": 0,
+      "slotOrdinal": 1,
+      "account": 0,
+      "pathBytesHex": "8000002c800000008000000180000000"
+    },
+    {
+      "name": "sol slot 4 account 0",
+      "coin": "sol",
+      "coinType": 501,
+      "slotOrdinal": 4,
+      "account": 0,
+      "pathBytesHex": "8000002c800001f58000000480000000"
+    },
+    {
+      "name": "arbeth slot 3 account 0",
+      "coin": "arbeth",
+      "coinType": 1879048194,
+      "slotOrdinal": 3,
+      "account": 0,
+      "pathBytesHex": "8000002cf00000028000000380000000"
+    }
+  ]
+}

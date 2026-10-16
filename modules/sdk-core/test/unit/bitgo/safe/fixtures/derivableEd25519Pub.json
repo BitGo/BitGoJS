@@ -64,7 +64,7 @@
       "name": "root B at max non-hardened m/2147483647",
       "index": 2147483647,
       "pub": "6af98980a20d1d090d729aee97e8cab65df61eeec9dc7b6070baa6b0e02f860d",
-      "chainCode": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+      "chainCode": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
       "composite": "NL4YTAFCBUOQSDLSTLXJP2GKWZO7MHXOZHOHWYDQXKTLBYBPQYG43TONZXG43TONZXG43TONZXG43TONZXG43TONZXG43TONZXG43TI",
       "childPub": "acda5ebd6543ed99141eb9da0cf1101e3ce11a637ee83743786b67a3b319439e"
     }
