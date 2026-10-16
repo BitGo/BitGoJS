@@ -1,9 +1,10 @@
 import { EnvironmentName, Triple } from '@bitgo/sdk-core';
 import { pox5 } from '@bitgo/utxo-descriptors';
-import { bip32, Descriptor, descriptorWallet } from '@bitgo/wasm-utxo';
+import { bip32, Descriptor, descriptorWallet, Psbt } from '@bitgo/wasm-utxo';
 
 import { DescriptorBuilder, parseDescriptor } from './builder';
 import { hasValidSignature, NamedDescriptor, NamedDescriptorNative, toNamedDescriptorNative } from './NamedDescriptor';
+import { assertPox5SpendPolicy } from './pox5SpendPolicy';
 
 import type { DescriptorMap } from './index';
 
@@ -13,6 +14,19 @@ export interface DescriptorValidationPolicy {
   name: string;
 
   validate(arr: NamedDescriptorNative[], walletKeys: KeyTriple): boolean;
+
+  /**
+   * Throws if the PSBT spends an input of a descriptor this policy covers in a way that must not be signed.
+   * Must not throw for inputs the policy does not recognize.
+   */
+  validateSpend?(psbt: Psbt, descriptorMap: descriptorWallet.DescriptorMap): void;
+}
+
+/** Spend validation of a policy that is made up of other policies: each of them checks the inputs it recognizes. */
+function validateSpendOf(
+  validators: DescriptorValidationPolicy[]
+): (psbt: Psbt, descriptorMap: descriptorWallet.DescriptorMap) => void {
+  return (psbt, descriptorMap) => validators.forEach((v) => v.validateSpend?.(psbt, descriptorMap));
 }
 
 export const policyAllowAll: DescriptorValidationPolicy = {
@@ -52,6 +66,7 @@ export function getValidatorEvery(validators: DescriptorValidationPolicy[]): Des
     validate(arr: NamedDescriptorNative[], walletKeys: KeyTriple): boolean {
       return validators.every((v) => v.validate(arr, walletKeys));
     },
+    validateSpend: validateSpendOf(validators),
   };
 }
 
@@ -61,6 +76,7 @@ export function getValidatorSome(validators: DescriptorValidationPolicy[]): Desc
     validate(arr: NamedDescriptorNative[], walletKeys: KeyTriple): boolean {
       return validators.some((v) => v.validate(arr, walletKeys));
     },
+    validateSpend: validateSpendOf(validators),
   };
 }
 
@@ -110,6 +126,7 @@ export function getValidatorPox5Lockup(): DescriptorValidationPolicy {
     validate(arr: NamedDescriptorNative[], walletKeys: KeyTriple): boolean {
       return arr.every((d) => isCanonicalPox5Lockup(d.value, walletKeys));
     },
+    validateSpend: assertPox5SpendPolicy,
   };
 }
 
@@ -123,6 +140,7 @@ export function getValidatorEachOneOf(validators: DescriptorValidationPolicy[]):
     validate(arr: NamedDescriptorNative[], walletKeys: KeyTriple): boolean {
       return arr.every((d) => validators.some((v) => v.validate([d], walletKeys)));
     },
+    validateSpend: validateSpendOf(validators),
   };
 }
 
@@ -163,22 +181,24 @@ export function toDescriptorMapValidate(
 }
 
 export function getPolicyForEnv(env: EnvironmentName): DescriptorValidationPolicy {
+  const prodPolicy = getValidatorSome([
+    // allow 2-of-3-ish descriptor groups where the keys match the wallet keys
+    getValidatorDescriptorTemplate('Wsh2Of3'),
+    // allow descriptor groups where all keys match the wallet keys plus OP_DROP (coredao staking)
+    getValidatorDescriptorTemplate('Wsh2Of3CltvDrop'),
+    // allow sBTC peg-in deposit descriptors where the reclaim keys match the wallet keys
+    getValidatorDescriptorTemplate('SbtcDeposit'),
+    // allow 2-of-3 wallet descriptors together with PoX-5 lockup descriptors (stacks staking)
+    getValidatorPox5Wallet(),
+    // allow all descriptors signed by the user key
+    getValidatorSignedByUserKey(),
+  ]);
   switch (env) {
     case 'adminProd':
     case 'prod':
-      return getValidatorSome([
-        // allow 2-of-3-ish descriptor groups where the keys match the wallet keys
-        getValidatorDescriptorTemplate('Wsh2Of3'),
-        // allow descriptor groups where all keys match the wallet keys plus OP_DROP (coredao staking)
-        getValidatorDescriptorTemplate('Wsh2Of3CltvDrop'),
-        // allow sBTC peg-in deposit descriptors where the reclaim keys match the wallet keys
-        getValidatorDescriptorTemplate('SbtcDeposit'),
-        // allow 2-of-3 wallet descriptors together with PoX-5 lockup descriptors (stacks staking)
-        getValidatorPox5Wallet(),
-        // allow all descriptors signed by the user key
-        getValidatorSignedByUserKey(),
-      ]);
+      return prodPolicy;
     default:
-      return policyAllowAll;
+      // any descriptor is accepted outside of prod, but spends are still checked
+      return { ...policyAllowAll, validateSpend: prodPolicy.validateSpend };
   }
 }

@@ -13,8 +13,7 @@ import {
 import { explainPsbt, signPsbt } from '../../transaction/descriptor';
 import { TransactionExplanation } from '../TransactionExplanation';
 import { UtxoCoinName } from '../../names';
-
-import { assertPox5SpendPolicy } from './pox5';
+import { assertPox5SpendPolicy } from '../../descriptor/pox5SpendPolicy';
 
 export const DescriptorTransaction = t.intersection(
   [OfflineVaultSignable, t.type({ descriptors: t.array(NamedDescriptor) })],
