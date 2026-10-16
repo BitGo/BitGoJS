@@ -10,6 +10,7 @@ import {
   CANTON_BLOCK_HEIGHT,
   CantonAllocationAllocatePrepareResponse,
   CantonAllocationAllocateNativePrepareResponse,
+  CantonAllocationAllocateNativeV2PreparedResponse,
   CantonAllocationAllocateV2PreparedResponse,
   CantonExerciseCommandPrepareResponse,
   CoinTransferPreapprovalCancelPrepareResponse,
@@ -192,6 +193,21 @@ describe('Canton Util', function () {
       // 0.5 Amulet in base units; the receiver is the settlement counterparty, not the DSO expectedAdmin
       assert.equal(parsedData.amount, '5000000000');
       // native Amulet carries no token: it falls back to the base coin
+      assert.equal(parsedData.token, undefined);
+    });
+
+    it('should parse the native Canton Coin V2 allocation allocate prepared transaction', () => {
+      const parsedData = utils.parseRawCantonTransactionData(
+        CantonAllocationAllocateNativeV2PreparedResponse.preparedTransaction,
+        TransactionType.AllocationAllocate
+      );
+      should.exist(parsedData);
+      // sender = allocation authorizer; receiver = otherside of its SenderSide leg (AmuletAllocationV2, no AllocationV2)
+      assert.equal(parsedData.sender, '12206::1220647c88a200186bf33cd76ceec96bd1f6db2b624955a0e802a97cbde399afcd7d');
+      assert.equal(parsedData.receiver, '12204::1220478f91bb23635c4e6bb4d8d21620f59ca2f2de699174358e183bcdb6fa4f6fca');
+      // 0.1 Amulet in base units
+      assert.equal(parsedData.amount, '1000000000');
+      // native Amulet (DSO admin) carries no token: it falls back to the base coin
       assert.equal(parsedData.token, undefined);
     });
   });

@@ -357,7 +357,9 @@ export class Utils implements BaseUtils {
         // settlement counterparty (receiver) and amount. A receiver-only allocation has no
         // SenderSide leg — the authorizer receives, so sender/receiver flip to the otherside of
         // its (first) ReceiverSide leg. The first matching leg wins for multi-leg allocations.
-        const allocationV2Fields = findCreateNodeFields('AllocationV2');
+        // Native Canton Coin (Amulet) V2 allocations create an AmuletAllocationV2 instead, with the identical
+        // `allocation` record (AmuletAllocationV2 also carries lockedAmulet, settlement and expiry fields).
+        const allocationV2Fields = findCreateNodeFields('AllocationV2') ?? findCreateNodeFields('AmuletAllocationV2');
         if (allocationV2Fields) {
           const allocationField = getField(allocationV2Fields, 'allocation');
           if (allocationField?.oneofKind === 'record') {
