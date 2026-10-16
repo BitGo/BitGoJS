@@ -1067,7 +1067,7 @@ describe('ETH:', function () {
         });
       };
 
-      ['tokenApproval', 'customTx', 'defiApprove'].forEach((type) => {
+      ['tokenApproval', 'acceleration', 'defiApprove'].forEach((type) => {
         it(`should reject approve(wrapper, amount) on the underlying relabelled as ${type}`, async function () {
           await expectDefiRejection(
             verifyAs(type, defiCalldata('approve(address,uint256)', [wrapper, amount])),
@@ -1076,62 +1076,44 @@ describe('ETH:', function () {
         });
       });
 
-      it('should reject a mutated-amount wrapper approve relabelled as customTx', async function () {
+      it('should reject customTx and contractCall outright as unsupported EVM TSS intent types', async function () {
+        for (const type of ['customTx', 'contractCall']) {
+          await verifyAs(type, defiCalldata('approve(address,uint256)', [wrapper, amount])).should.be.rejectedWith(
+            /unsupported intent type for EVM TSS/
+          );
+        }
+      });
+
+      it('should reject a mutated-amount wrapper approve relabelled as another type', async function () {
         await expectDefiRejection(
-          verifyAs('customTx', defiCalldata('approve(address,uint256)', [wrapper, '999999999999'])),
+          verifyAs('acceleration', defiCalldata('approve(address,uint256)', [wrapper, '999999999999'])),
           /must be declared as a wrapApprove intent/
         );
       });
 
       it('should reject a wrapper approve with trailing bytes (an ERC-20 ignores them)', async function () {
         await expectDefiRejection(
-          verifyAs('customTx', defiCalldata('approve(address,uint256)', [wrapper, amount]) + '00'),
+          verifyAs('acceleration', defiCalldata('approve(address,uint256)', [wrapper, amount]) + '00'),
           /must be declared as a wrapApprove intent/
         );
       });
 
       it('should not affect approvals of the underlying to other spenders', async function () {
-        (await verifyAs('customTx', defiCalldata('approve(address,uint256)', [address2, amount]))).should.equal(true);
+        (await verifyAs('acceleration', defiCalldata('approve(address,uint256)', [address2, amount]))).should.equal(
+          true
+        );
         (await verifyAs('tokenApproval', defiCalldata('approve(address,uint256)', [address2, amount]))).should.equal(
           true
         );
-      });
-
-      it('should not parse the tx at all when the calldata carries no approve selector', async function () {
-        const coin = bitgo.coin('hteth') as Hteth;
-        const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: address1 } });
-        const verifyWith = async (data: string) => {
-          const txHex = await buildDefiTxHex(data, underlying);
-          // getTransactionBuilder is not part of the coin's public type, so spy through a minimal structural view.
-          const builderSpy = sinon.spy(
-            coin as unknown as { getTransactionBuilder: () => unknown },
-            'getTransactionBuilder'
-          );
-          try {
-            await coin.verifyTransaction({
-              txParams: { type: 'customTx', wallet } as any,
-              txPrebuild: { txHex, coin: 'hteth', walletId: 'w' } as any,
-              wallet,
-              verification: {},
-              walletType: 'tss',
-            });
-            return builderSpy.callCount;
-          } finally {
-            builderSpy.restore();
-          }
-        };
-
-        (await verifyWith(defiCalldata('transfer(address,uint256)', [wrapper, amount]))).should.equal(0);
-        (await verifyWith(defiCalldata('approve(address,uint256)', [address2, amount]))).should.equal(1);
       });
 
       it('should leave other declared types untouched for txs that are not a wrapper approve', async function () {
         // Every type below skips the wrapApprove check and reaches the guard; none of these txs is an approve of a
         // wrapper, so all must verify exactly as they did before the guard existed.
         const benign: Array<[string, string, string]> = [
-          ['customTx', defiCalldata('transfer(address,uint256)', [address2, amount]), underlying],
-          ['customTx', defiCalldata('approve(address,uint256)', [address2, amount]), underlying],
-          ['customTx', defiCalldata('approve(address,uint256)', [wrapper, amount]), address2],
+          ['bridgeFunds', defiCalldata('transfer(address,uint256)', [address2, amount]), underlying],
+          ['bridgeFunds', defiCalldata('approve(address,uint256)', [address2, amount]), underlying],
+          ['bridgeFunds', defiCalldata('approve(address,uint256)', [wrapper, amount]), address2],
           ['tokenApproval', defiCalldata('approve(address,uint256)', [address2, amount]), underlying],
           ['tokenApproval', defiCalldata('approve(address,uint256)', [wrapper, amount]), address2],
           ['acceleration', defiCalldata('transfer(address,uint256)', [address2, amount]), address2],
@@ -1144,9 +1126,11 @@ describe('ETH:', function () {
       });
 
       it('should not affect transfers to the underlying or approves of the wrapper on other contracts', async function () {
-        (await verifyAs('customTx', defiCalldata('transfer(address,uint256)', [wrapper, amount]))).should.equal(true);
+        (await verifyAs('acceleration', defiCalldata('transfer(address,uint256)', [wrapper, amount]))).should.equal(
+          true
+        );
         (
-          await verifyAs('customTx', defiCalldata('approve(address,uint256)', [wrapper, amount]), address2)
+          await verifyAs('acceleration', defiCalldata('approve(address,uint256)', [wrapper, amount]), address2)
         ).should.equal(true);
       });
 
