@@ -9053,7 +9053,7 @@ export const allCoinsAndTokens = [
     'tapt:usd1',
     'Test USD1 Token',
     6,
-    '0x5b31c15a79ae79dfcaac6a591012f2dd83888e741c5a288ad1659f56097afe2a',
+    '0xf53410d4431d718a5d53890ab68b0f6809e287010b2782e702e843f273fca3e4',
     UnderlyingAsset['tapt:usd1'],
     [...APT_FEATURES, CoinFeature.STABLECOIN]
   ),
