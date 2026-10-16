@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [59.23.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fstatics%4059.23.0...%40bitgo%2Fstatics%4059.23.1) (2026-10-16)
+
+### Bug Fixes
+
+* **statics:** skip hbarevm NFTs in AMS token map ([c4fce01](https://github.com/BitGo/BitGoJS/commit/c4fce0102ab6a44d9ee898b4d20272a5525a6232))
+
+### Reverts
+
+* **statics:** remove replaceExistingCoin coin replacement ([a568186](https://github.com/BitGo/BitGoJS/commit/a568186f34db4b435ea17de5de92622a8cae62ca)), closes [#9922](https://github.com/BitGo/BitGoJS/issues/9922)
+
+
 # [59.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@59.22.0...@bitgo/statics@59.23.0) (2026-10-13)
 
 

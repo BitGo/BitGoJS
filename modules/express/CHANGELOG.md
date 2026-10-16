@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [17.5.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fexpress%4017.4.0...%40bitgo%2Fexpress%4017.5.0) (2026-10-16)
+
+### Features
+
+* derive safe children at BIP44 paths ([f1ed790](https://github.com/BitGo/BitGoJS/commit/f1ed790d068f94ea3e8b8439eef219c297324c26))
+
+
 # [17.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@17.3.1...@bitgo/express@17.4.0) (2026-10-13)
 
 

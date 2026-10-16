@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.5.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-lib-mpc%4011.4.0...%40bitgo%2Fsdk-lib-mpc%4011.5.0) (2026-10-16)
+
+### Features
+
+* add slot-4 EdDSA MPC Safe recovery derivation ([048df7f](https://github.com/BitGo/BitGoJS/commit/048df7fc6557fc974e2d894cc9dc0360c36e1904))
+
+
 # [11.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@11.3.0...@bitgo/sdk-lib-mpc@11.4.0) (2026-10-13)
 
 
