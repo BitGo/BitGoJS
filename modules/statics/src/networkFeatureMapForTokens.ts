@@ -91,6 +91,10 @@ export const networkFeatureMapForTokens: Partial<Record<CoinFamily, CoinFeature[
   eth: AccountCoin.DEFAULT_FEATURES,
   baseeth: EVM_TOKEN_FEATURES,
   eos: AccountCoin.DEFAULT_FEATURES,
+  // flow and okbxlayer must be static: botTokens.ts resolves getTokenFeatures at module load,
+  // before registerErc20Families backfills EVM families in coins.ts.
+  flow: EVM_TOKEN_FEATURES,
+  okbxlayer: EVM_TOKEN_FEATURES,
   gasevm: EVM_TOKEN_FEATURES,
   hbar: AccountCoin.DEFAULT_FEATURES,
   opeth: [...AccountCoin.DEFAULT_FEATURES, CoinFeature.EIP1559],
