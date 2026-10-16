@@ -634,6 +634,7 @@ describe('ECDSA MPC v2', async () => {
       verifyTransaction: sinon.stub().resolves(true),
       getMPCAlgorithm: sinon.stub().returns('ecdsa'),
       getConfig: sinon.stub().returns({ family: 'flrp' }),
+      getChain: sinon.stub().returns('flrp'),
       isSignablePreHashed: (unsignedTx: { serializedTxHex?: string }) =>
         unsignedTx.serializedTxHex?.startsWith('0000') ?? false,
     } as unknown as IBaseCoin;
@@ -705,6 +706,7 @@ describe('ECDSA MPC v2', async () => {
       verifyTransaction: sinon.stub().resolves(true),
       getMPCAlgorithm: sinon.stub().returns('ecdsa'),
       getConfig: sinon.stub().returns({ family: 'flr' }),
+      getChain: sinon.stub().returns('flr'),
     } as unknown as IBaseCoin;
 
     const mockWallet = {
@@ -779,6 +781,7 @@ describe('ECDSA MPC v2', async () => {
         verifyTransaction: verifyTransactionSpy,
         getMPCAlgorithm: sinon.stub().returns('ecdsa'),
         getConfig: sinon.stub().returns({ family: 'hteth' }),
+        getChain: sinon.stub().returns('hteth'),
       } as unknown as IBaseCoin;
 
       const mockWallet = {
@@ -825,6 +828,13 @@ describe('ECDSA MPC v2', async () => {
       const verifyCallArgs = verifyTransactionSpy.firstCall.args[0];
       assert.strictEqual(verifyCallArgs.txParams.type, intentType);
       assert.strictEqual(verifyCallArgs.txParams.recipients, undefined);
+      // The stored intent must reach the verifier so fail-closed EVM checks can compare
+      // decoded to / value / data against it on the pending-approval path.
+      assert.strictEqual(
+        verifyCallArgs.intent,
+        (txRequest as any).intent,
+        'stored intent must reach verifyTransaction'
+      );
     });
   });
 

@@ -1,4 +1,10 @@
-import { EncryptionVersion, EnvironmentName, IRequestTracer, V1Network } from '@bitgo/sdk-core';
+import {
+  EncryptionVersion,
+  EnvironmentName,
+  IRequestTracer,
+  TssVerificationWarningHandler,
+  V1Network,
+} from '@bitgo/sdk-core';
 import { ECPairInterface } from '@bitgo/utxo-lib';
 import { type Agent } from 'http';
 
@@ -70,6 +76,16 @@ export interface BitGoAPIOptions {
   cookiesPropagationEnabled?: boolean;
   getAdditionalHeadersCb?: AdditionalHeadersCallback;
   requestIdPrefix?: string;
+  /**
+   * Client-side opt-in: fail-closed EVM TSS verification warnings become hard failures
+   * instead of `console.warn` + `onVerificationWarning`. Never read from server data.
+   */
+  strictTssVerification?: boolean;
+  /**
+   * Sink for fail-closed EVM TSS verification warnings (decoded vs expected `to` /
+   * `value` / `data` for a transaction about to be signed).
+   */
+  onVerificationWarning?: TssVerificationWarningHandler;
   evm?: {
     [key: string]: {
       baseUrl?: string;
