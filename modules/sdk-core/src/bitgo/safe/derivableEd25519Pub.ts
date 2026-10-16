@@ -92,3 +92,61 @@ export async function softDeriveChildPrvEd25519AtPath(params: {
     pub: bigIntToBufferLE(derived.pk, 32),
   };
 }
+
+/**
+ * Sign `message` with a BIP32-Ed25519 extended key directly, without a seed.
+ *
+ * A soft-derived child has no 32-byte seed whose SHA-512 yields `(kL, kR)`, so the
+ * seed-based `nacl.sign.keyPair.fromSeed` cannot sign for it. This performs RFC 8032
+ * scalar signing straight from the clamped scalar `kL` and the nonce prefix `kR`.
+ *
+ * @param message bytes to sign
+ * @param kL 32-byte clamped signing scalar (little-endian)
+ * @param kR 32-byte nonce prefix (big-endian)
+ * @returns 64-byte Ed25519 signature `R ‖ S`
+ */
+export async function signEd25519Extended(message: Buffer, kL: Buffer, kR: Buffer): Promise<Buffer> {
+  if (kL.length !== 32) {
+    throw new Error(`Invalid Ed25519 extended key kL length: expected 32 bytes, got ${kL.length}`);
+  }
+  if (kR.length !== 32) {
+    throw new Error(`Invalid Ed25519 extended key kR length: expected 32 bytes, got ${kR.length}`);
+  }
+  await getEddsa();
+  const curve = Eddsa.curve;
+  const kLInt = bigIntFromBufferLE(kL);
+  const r = curve.scalarReduce(
+    bigIntFromBufferLE(
+      createHash('sha512')
+        .update(Buffer.concat([kR, message]))
+        .digest()
+    )
+  );
+  const R = curve.basePointMult(r);
+  const A = curve.basePointMult(kLInt);
+  const h = curve.scalarReduce(
+    bigIntFromBufferLE(
+      createHash('sha512')
+        .update(Buffer.concat([bigIntToBufferLE(R, 32), bigIntToBufferLE(A, 32), message]))
+        .digest()
+    )
+  );
+  const S = curve.scalarAdd(r, curve.scalarMult(h, kLInt));
+  return Buffer.concat([bigIntToBufferLE(R, 32), bigIntToBufferLE(S, 32)]);
+}
+
+/** An externally-produced Ed25519 signature over a transaction's signing message. */
+export type ExternalEd25519Signature = {
+  readonly publicKey: string; // raw 32-byte public key (hex)
+  readonly signature: string; // raw 64-byte signature (hex)
+};
+
+/** Fails fast if a `ExternalEd25519Signature` has malformed hex/lengths. */
+export function assertValidExternalEd25519Signature(sig: ExternalEd25519Signature): void {
+  if (!/^[0-9a-f]{64}$/i.test(sig.publicKey)) {
+    throw new Error('Invalid external Ed25519 public key: expected 32 bytes (64 hex characters)');
+  }
+  if (!/^[0-9a-f]{128}$/i.test(sig.signature)) {
+    throw new Error('Invalid external Ed25519 signature: expected 64 bytes (128 hex characters)');
+  }
+}

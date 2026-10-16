@@ -6,6 +6,8 @@ import {
   BaseCoin,
   BitGoBase,
   ErrorNoInputToRecover,
+  assertValidExternalEd25519Signature,
+  ExternalEd25519Signature,
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
@@ -117,6 +119,8 @@ export interface RecoveryOptions {
   nodeId?: string;
   startTime?: string;
   tokenId?: string;
+  /** Optional pre-made signature for the backup child, whose signature must be over the transaction body bytes (`bodyBytes`). */
+  externalBackupSignature?: ExternalEd25519Signature;
 }
 
 export interface RecoveryInfo {
@@ -591,6 +595,10 @@ export class Hbar extends BaseCoin {
       throw new Error('start time is required for unsigned sweep');
     }
 
+    if (params.externalBackupSignature) {
+      assertValidExternalEd25519Signature(params.externalBackupSignature);
+    }
+
     if (!isUnsignedSweep && !params.walletPassphrase) {
       throw new Error('walletPassphrase is required for non-bitgo recovery');
     }
@@ -600,7 +608,9 @@ export class Hbar extends BaseCoin {
     if (!isUnsignedSweep) {
       try {
         userPrv = await this.bitgo.decrypt({ input: params.userKey, password: params.walletPassphrase });
-        backUp = await this.bitgo.decrypt({ input: params.backupKey, password: params.walletPassphrase });
+        if (!params.externalBackupSignature) {
+          backUp = await this.bitgo.decrypt({ input: params.backupKey, password: params.walletPassphrase });
+        }
       } catch (e) {
         throw new Error(
           'unable to decrypt userKey or backupKey with the walletPassphrase provided, got error: ' + e.message
@@ -687,7 +697,16 @@ export class Hbar extends BaseCoin {
     }
 
     txBuilder.sign({ key: userPrv });
-    txBuilder.sign({ key: backUp });
+
+    const externalBackupSignature = params.externalBackupSignature;
+    if (externalBackupSignature) {
+      txBuilder.signature(
+        externalBackupSignature.signature,
+        new HbarKeyPair({ pub: externalBackupSignature.publicKey })
+      );
+    } else {
+      txBuilder.sign({ key: backUp });
+    }
 
     const tx = await txBuilder.build();
 

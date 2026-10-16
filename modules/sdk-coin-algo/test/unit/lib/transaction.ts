@@ -1,5 +1,7 @@
 import assert from 'assert';
 import should from 'should';
+import algosdk from 'algosdk';
+import nacl from 'tweetnacl';
 import { coins } from '@bitgo/statics';
 import * as AlgoResources from '../../fixtures/resources';
 import { Transaction } from '../../../src/lib/transaction';
@@ -140,6 +142,40 @@ describe('Algo Transaction', () => {
       txInfo.txType.should.equal('transferToken');
       txInfo.should.have.property('txType');
       txInfo.tokenName.should.equal('USON');
+    });
+  });
+
+  describe('addRawMultisigSignature', () => {
+    it('throws when the transaction is empty', () => {
+      assert.throws(() => tx.addRawMultisigSignature(address, new Uint8Array(64)), /Empty transaction/);
+    });
+
+    it('appends a raw external signature and produces a valid multisig transaction', async () => {
+      const a1 = AlgoResources.accounts.account1;
+      const a2 = AlgoResources.accounts.account2;
+      const a3 = AlgoResources.accounts.account3;
+
+      txnBuilder.numberOfRequiredSigners(2).setSigners([a1.address, a2.address, a3.address]);
+      txnBuilder.sign({ key: a1.prvKey });
+
+      const built = (await txnBuilder.build()) as Transaction;
+      const algoTxn = built.getAlgoTransaction()!;
+      const rawSig = nacl.sign.detached(algoTxn.bytesToSign(), nacl.sign.keyPair.fromSeed(a2.secretKey).secretKey);
+
+      built.addRawMultisigSignature(a2.address, rawSig);
+
+      const msigAddr = algosdk.multisigAddress({
+        version: 1,
+        threshold: 2,
+        addrs: [a1.address, a2.address, a3.address],
+      });
+      const expectedPk = algosdk.decodeAddress(msigAddr).publicKey;
+      const decoded = algosdk.decodeSignedTransaction(built.toBroadcastFormat());
+      const msig = decoded.msig;
+      if (!msig) {
+        throw new Error('Expected a multisig signature');
+      }
+      algosdk.verifyMultisig(algoTxn.bytesToSign(), msig, expectedPk).should.equal(true);
     });
   });
 });

@@ -11,7 +11,7 @@ import {
   Wallet,
 } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { Txlm } from '../../src';
+import { Txlm, getStellarKeys } from '../../src';
 import { KeyPair } from '../../src/lib/keyPair';
 
 import * as assert from 'assert';
@@ -543,6 +543,27 @@ describe('XLM:', function () {
           rootAddress: wallet.receiveAddress(),
         })
         .should.be.rejectedWith(RecoveryProviderError);
+    });
+
+    describe('getStellarKeys with external backup signature', function () {
+      it('builds a pub-only backup Keypair from the external public key', async function () {
+        const userKeypair = stellar.Keypair.random();
+        const externalBackupKeypair = stellar.Keypair.random();
+        const [userKey, backupKey] = await getStellarKeys(
+          bitgo,
+          {
+            userKey: userKeypair.secret(),
+            backupKey: 'GC3D3ZNNK7GHLMSWJA54DQO6QJUJJF7K6J5JGCEW45ZT6QMKZ6PMUHUM',
+            recoveryDestination: 'GDDHCKMYYYCVXOSAVMSEIYGYNX74LIAV3ACXYQ6WPMDUF7W3KZNWTHTH',
+          },
+          {
+            publicKey: externalBackupKeypair.rawPublicKey().toString('hex'),
+            signature: 'ab'.repeat(64),
+          }
+        );
+        userKey.publicKey().should.equal(userKeypair.publicKey());
+        backupKey.publicKey().should.equal(externalBackupKeypair.publicKey());
+      });
     });
 
     it('should fail to verify a transaction signed with the wrong key', async function () {

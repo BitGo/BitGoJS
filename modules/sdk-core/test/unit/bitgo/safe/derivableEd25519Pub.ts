@@ -1,4 +1,5 @@
 import 'should';
+import { createHash } from 'crypto';
 import * as nacl from 'tweetnacl';
 import {
   DERIVABLE_ED25519_CHAIN_CODE_BYTES,
@@ -7,6 +8,7 @@ import {
   Eddsa,
   bigIntFromBufferLE,
   bigIntToBufferLE,
+  clamp,
   decodeDerivableEd25519Pub,
   decodeEd25519StrKeyPublicKey,
   decodeEd25519StrKeySecretSeed,
@@ -17,6 +19,7 @@ import {
   isChecksumValidStrKeyEd25519Pub,
   isDerivableEd25519Pub,
   isValidEd25519StrKeyPublicKey,
+  signEd25519Extended,
   softDeriveChildPubEd25519,
   softDeriveChildPubEd25519AtPath,
   softDeriveChildPrvEd25519AtPath,
@@ -165,6 +168,39 @@ describe('derivableEd25519Pub', function () {
       isValidEd25519StrKeyPublicKey('GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKY1').should.equal(false);
       isValidEd25519StrKeyPublicKey('').should.equal(false);
       isValidEd25519StrKeyPublicKey(STRKEY_PUBLIC.toLowerCase()).should.equal(false);
+    });
+  });
+
+  describe('extended-key signing', function () {
+    const seed = decodeEd25519StrKeySecretSeed(STRKEY_SEED);
+    const message = Buffer.from('extended-key signature');
+    const rootChainCode = Buffer.alloc(32, 0xab);
+    const chainCodeStr = encodeEd25519ChainCode(rootChainCode);
+
+    it('matches the seed-based signer for a seed-backed key', async function () {
+      const h = createHash('sha512').update(seed).digest();
+      const kL = bigIntToBufferLE(clamp(bigIntFromBufferLE(h.subarray(0, 32))), 32);
+      const kR = h.subarray(32);
+      const sig = await signEd25519Extended(message, kL, kR);
+      const expected = Buffer.from(nacl.sign.detached(message, nacl.sign.keyPair.fromSeed(seed).secretKey));
+      sig.equals(expected).should.equal(true);
+    });
+
+    it('signs a soft-derived key with no seed and verifies against its pub', async function () {
+      const prv = await softDeriveChildPrvEd25519AtPath({
+        seedStrKey: STRKEY_SEED,
+        chainCode: chainCodeStr,
+        path: 'm/0',
+      });
+      const sig = await signEd25519Extended(message, prv.kL, prv.kR);
+      nacl.sign.detached.verify(message, sig, prv.pub).should.equal(true);
+      // The soft-derived scalar has no seed: treating kL as a seed yields a different pub.
+      Buffer.from(nacl.sign.keyPair.fromSeed(prv.kL).publicKey).equals(prv.pub).should.equal(false);
+    });
+
+    it('rejects kL/kR that are not 32 bytes', async function () {
+      await signEd25519Extended(message, Buffer.alloc(31), Buffer.alloc(32)).should.be.rejectedWith(/kL length/);
+      await signEd25519Extended(message, Buffer.alloc(32), Buffer.alloc(33)).should.be.rejectedWith(/kR length/);
     });
   });
 });
