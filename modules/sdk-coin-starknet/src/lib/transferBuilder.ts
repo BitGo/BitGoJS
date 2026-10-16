@@ -2,14 +2,21 @@ import { BuildTransactionError } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { StarknetCall, StarknetTransactionType } from './iface';
+import { StarknetTransactionType } from './iface';
 import { STRK_TOKEN_CONTRACT, MASK_128 } from './constants';
 import utils from './utils';
+
+export interface StarknetTransferRecipient {
+  address: string;
+  amount: string;
+  tokenContractAddress?: string;
+}
 
 export class TransferBuilder extends TransactionBuilder {
   protected _receiverAddress?: string;
   protected _amount?: string;
   protected _tokenContractAddress: string = STRK_TOKEN_CONTRACT;
+  protected _recipients: StarknetTransferRecipient[] = [];
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -23,6 +30,7 @@ export class TransferBuilder extends TransactionBuilder {
     if (!address || !utils.isValidAddress(address)) {
       throw new BuildTransactionError('Invalid or missing receiver address, got: ' + address);
     }
+    this._recipients = [];
     this._receiverAddress = address;
     return this;
   }
@@ -32,7 +40,19 @@ export class TransferBuilder extends TransactionBuilder {
     if (val < 0n) {
       throw new BuildTransactionError(`Invalid amount: ${value}`);
     }
+    this._recipients = [];
     this._amount = value;
+    return this;
+  }
+
+  public recipients(recipients: StarknetTransferRecipient[]): this {
+    this.validateRecipients(recipients);
+    this._recipients = recipients.map((recipient) => ({
+      ...recipient,
+      tokenContractAddress: recipient.tokenContractAddress ?? STRK_TOKEN_CONTRACT,
+    }));
+    this._receiverAddress = undefined;
+    this._amount = undefined;
     return this;
   }
 
@@ -47,27 +67,36 @@ export class TransferBuilder extends TransactionBuilder {
   /** @inheritdoc */
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
-    if (this._calls.length > 0) {
-      const transfer = utils.parseTransferCall(this._calls[0]);
-      if (transfer) {
-        this._receiverAddress = transfer.recipient;
-        this._amount = transfer.amount;
-        this._tokenContractAddress = transfer.tokenContract;
-      }
+    const parsedRecipients = this._calls.map((call) => utils.parseTransferCall(call));
+    if (parsedRecipients.every((recipient): recipient is NonNullable<typeof recipient> => recipient !== undefined)) {
+      this._recipients = parsedRecipients.map((recipient) => ({
+        address: recipient.recipient,
+        amount: recipient.amount,
+        tokenContractAddress: recipient.tokenContract,
+      }));
     }
   }
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    this.validateTransfer();
+    if (this._recipients.length === 0) {
+      this.validateTransfer();
+      this._recipients = [
+        {
+          address: this._receiverAddress as string,
+          amount: this._amount as string,
+          tokenContractAddress: this._tokenContractAddress,
+        },
+      ];
+    } else {
+      this.validateRecipients(this._recipients);
+    }
 
-    const transferCall: StarknetCall = {
-      contractAddress: this._tokenContractAddress,
+    this._calls = this._recipients.map((recipient) => ({
+      contractAddress: recipient.tokenContractAddress ?? STRK_TOKEN_CONTRACT,
       entrypoint: 'transfer',
-      calldata: this.compileTransferCalldata(this._receiverAddress as string, this._amount as string),
-    };
-
-    this._calls = [transferCall];
+      calldata: this.compileTransferCalldata(recipient.address, recipient.amount),
+    }));
 
     return super.buildImplementation();
   }
@@ -75,6 +104,23 @@ export class TransferBuilder extends TransactionBuilder {
   private compileTransferCalldata(recipient: string, amount: string): string[] {
     const amountBig = BigInt(amount);
     return [recipient, '0x' + (amountBig & MASK_128).toString(16), '0x' + (amountBig >> 128n).toString(16)];
+  }
+
+  private validateRecipients(recipients: StarknetTransferRecipient[]): void {
+    if (!recipients || recipients.length === 0) {
+      throw new BuildTransactionError('At least one recipient is required');
+    }
+    for (const recipient of recipients) {
+      if (!recipient.address || !utils.isValidAddress(recipient.address)) {
+        throw new BuildTransactionError(`Invalid receiver address: ${recipient.address}`);
+      }
+      if (!recipient.amount || BigInt(recipient.amount) < 0n) {
+        throw new BuildTransactionError(`Invalid amount: ${recipient.amount}`);
+      }
+      if (recipient.tokenContractAddress && !utils.isValidAddress(recipient.tokenContractAddress)) {
+        throw new BuildTransactionError(`Invalid token contract address: ${recipient.tokenContractAddress}`);
+      }
+    }
   }
 
   private validateTransfer(): void {
