@@ -539,51 +539,6 @@ describe('External signer', () => {
     cResult.should.have.property('encryptedSignerShare');
     cResult.should.have.property('encryptedUserToBitgoRShare');
     const encryptedUserToBitgoRShare = cResult.encryptedUserToBitgoRShare;
-    const reqR = {
-      bitgo: bgTest,
-      body: {
-        txRequest: {
-          apiVersion: 'full',
-          walletId: walletID,
-          transactions: [
-            {
-              unsignedTx: {
-                derivationPath,
-                signableHex: tMessage,
-              },
-            },
-          ],
-        },
-        encryptedUserToBitgoRShare,
-      },
-      decoded: {
-        coin: 'tsol',
-        sharetype: 'R',
-        txRequest: {
-          apiVersion: 'full',
-          walletId: walletID,
-          transactions: [
-            {
-              unsignedTx: {
-                derivationPath,
-                signableHex: tMessage,
-              },
-            },
-          ],
-        },
-        encryptedUserToBitgoRShare,
-      },
-      params: {
-        coin: 'tsol',
-        sharetype: 'R',
-      },
-      config: {
-        signerFileSystemPath: 'signerFileSystemPath',
-      },
-    } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>;
-    const rResult = await handleV2GenerateShareTSS(reqR);
-    rResult.should.have.property('rShare');
-
     const signingKey = MPC.keyDerive(
       userSigningMaterial.uShare,
       [userSigningMaterial.bitgoYShare, userSigningMaterial.backupYShare],
@@ -605,6 +560,54 @@ describe('External signer', () => {
       share: bitgoSignShare.rShares[1].commitment,
       type: 'commitment',
     };
+    const reqR = {
+      bitgo: bgTest,
+      body: {
+        txRequest: {
+          apiVersion: 'full',
+          walletId: walletID,
+          transactions: [
+            {
+              unsignedTx: {
+                derivationPath,
+                signableHex: tMessage,
+              },
+            },
+          ],
+        },
+        encryptedUserToBitgoRShare,
+        bitgoToUserCommitment: bitgoToUserCommitmentShare,
+      },
+      decoded: {
+        coin: 'tsol',
+        sharetype: 'R',
+        txRequest: {
+          apiVersion: 'full',
+          walletId: walletID,
+          transactions: [
+            {
+              unsignedTx: {
+                derivationPath,
+                signableHex: tMessage,
+              },
+            },
+          ],
+        },
+        encryptedUserToBitgoRShare,
+        bitgoToUserCommitment: bitgoToUserCommitmentShare,
+      },
+      params: {
+        coin: 'tsol',
+        sharetype: 'R',
+      },
+      config: {
+        signerFileSystemPath: 'signerFileSystemPath',
+      },
+    } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>;
+    const rResult = await handleV2GenerateShareTSS(reqR);
+    rResult.should.have.property('rShare');
+    rResult.should.have.property('encryptedUserToBitgoRShare');
+
     const reqG = {
       bitgo: bgTest,
       body: {
@@ -620,7 +623,7 @@ describe('External signer', () => {
             },
           ],
         },
-        userToBitgoRShare: rResult.rShare,
+        encryptedUserToBitgoRShare: rResult.encryptedUserToBitgoRShare,
         bitgoToUserRShare: signatureShareRec,
         bitgoToUserCommitment: bitgoToUserCommitmentShare,
       },
@@ -639,7 +642,7 @@ describe('External signer', () => {
             },
           ],
         },
-        userToBitgoRShare: rResult.rShare,
+        encryptedUserToBitgoRShare: rResult.encryptedUserToBitgoRShare,
         bitgoToUserRShare: signatureShareRec,
         bitgoToUserCommitment: bitgoToUserCommitmentShare,
       },
