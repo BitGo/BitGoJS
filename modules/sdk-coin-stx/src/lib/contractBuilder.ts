@@ -22,6 +22,14 @@ import { CONTRACT_NAME_SENDMANY, VALID_STAKING_CONTRACT_NAMES } from './constant
 import { AbstractContractBuilder } from './abstractContractBuilder';
 
 export class ContractBuilder extends AbstractContractBuilder {
+  private static readonly CLARITY_TYPE_VALUES = new Set<string>(Object.values(ClarityType));
+  /** Clarity values that carry no `value` property in v7. */
+  private static readonly VALUELESS_CLARITY_TYPES = new Set<string>([
+    ClarityType.OptionalNone,
+    ClarityType.BoolTrue,
+    ClarityType.BoolFalse,
+  ]);
+
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
   }
@@ -92,14 +100,33 @@ export class ContractBuilder extends AbstractContractBuilder {
 
   functionArgs(args: ClarityValueJson[] | ClarityValue[]): this {
     this._functionArgs = args.map((arg) => {
-      if (!ClarityType[arg.type]) {
-        return this.parseCv(arg);
-      } else {
+      if (this.isClarityValue(arg)) {
         // got direct clarity value after deserialization in fromImplementation
         return arg;
       }
+      return this.parseCv(arg);
     });
     return this;
+  }
+
+  /**
+   * Positive shape check: a fully-formed `ClarityValue` vs a JSON `ClarityValueJson` descriptor.
+   *
+   * In `@stacks/transactions` v7 the `ClarityType` values are lower-case strings (`'uint'`,
+   * `'contract'`, `'address'`, ...). A raw clarity value carries a `type` that is one of those values
+   * AND a `value` property (except the valueless `none` / `true` / `false`), and never a `val` field.
+   * JSON descriptors use `type` names (e.g. `optional`, `list`, `response`, `tuple`, `buffer`,
+   * `contractPrincipal`) and always carry `val` — a malformed descriptor like `{ type: 'list' }`
+   * therefore falls through to `parseCv` so its validation errors still surface.
+   */
+  private isClarityValue(arg: ClarityValueJson | ClarityValue): arg is ClarityValue {
+    if (typeof arg.type !== 'string' || !ContractBuilder.CLARITY_TYPE_VALUES.has(arg.type)) {
+      return false;
+    }
+    if ('val' in arg) {
+      return false;
+    }
+    return 'value' in arg || ContractBuilder.VALUELESS_CLARITY_TYPES.has(arg.type);
   }
 
   private parseCv(arg: ClarityValueJson): ClarityValue {

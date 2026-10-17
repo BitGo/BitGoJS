@@ -1,6 +1,6 @@
 import assert from 'assert';
 import should from 'should';
-import { StacksMainnet, StacksTestnet } from '@stacks/network';
+import { STACKS_MAINNET, STACKS_TESTNET } from '@stacks/network';
 import { TransactionType, rawPrvToExtendedKeys } from '@bitgo/sdk-core';
 
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
@@ -46,8 +46,8 @@ describe('Stacks: Send Many Builder', function () {
         const txBuilder: any = factory.getTransferBuilder();
         const txBuilderProd: any = factoryProd.getTransferBuilder();
 
-        txBuilder._network.should.deepEqual(new StacksTestnet());
-        txBuilderProd._network.should.deepEqual(new StacksMainnet());
+        txBuilder._network.should.deepEqual(STACKS_TESTNET);
+        txBuilderProd._network.should.deepEqual(STACKS_MAINNET);
       });
     });
 

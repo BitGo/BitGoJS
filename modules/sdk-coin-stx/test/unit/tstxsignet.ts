@@ -3,7 +3,7 @@ import assert from 'assert';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { Wallet } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { TransactionVersion } from '@stacks/transactions';
+import { TransactionVersion } from '@stacks/network';
 import should from 'should';
 
 import { StxLib, Tstxsignet } from '../../src';

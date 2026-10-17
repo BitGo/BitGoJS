@@ -271,12 +271,12 @@ describe('Stx util library', function () {
   describe('stringifyCv', function () {
     it('Int type', function () {
       const input: IntCV = { type: ClarityType.Int, value: BigInt('100000') };
-      Utils.stringifyCv(input).should.deepEqual({ type: 0, value: '100000' });
+      Utils.stringifyCv(input).should.deepEqual({ type: ClarityType.Int, value: '100000' });
     });
 
     it('UInt type', function () {
       const input: UIntCV = { type: ClarityType.UInt, value: BigInt('100000') };
-      Utils.stringifyCv(input).should.deepEqual({ type: 1, value: '100000' });
+      Utils.stringifyCv(input).should.deepEqual({ type: ClarityType.UInt, value: '100000' });
     });
 
     it('OptionalNone type', function () {
@@ -289,7 +289,10 @@ describe('Stx util library', function () {
         type: ClarityType.OptionalSome,
         value: { type: ClarityType.UInt, value: BigInt('100000') },
       };
-      Utils.stringifyCv(input).should.deepEqual({ type: 10, value: { type: 1, value: '100000' } });
+      Utils.stringifyCv(input).should.deepEqual({
+        type: ClarityType.OptionalSome,
+        value: { type: ClarityType.UInt, value: '100000' },
+      });
     });
 
     it('OptionalSome type with tuple value', function () {
@@ -297,23 +300,35 @@ describe('Stx util library', function () {
         type: ClarityType.OptionalSome,
         value: {
           type: ClarityType.Tuple,
-          data: {
-            hashbytes: { type: ClarityType.Buffer, buffer: Buffer.from('some-hash') },
-            version: { type: ClarityType.Buffer, buffer: new BigNum(1).toBuffer() },
+          value: {
+            hashbytes: { type: ClarityType.Buffer, value: Buffer.from('some-hash').toString('hex') },
+            version: { type: ClarityType.Buffer, value: new BigNum(1).toBuffer().toString('hex') },
           },
         },
       };
-      Utils.stringifyCv(input).should.deepEqual(input);
+      Utils.stringifyCv(input).should.deepEqual({
+        type: ClarityType.OptionalSome,
+        value: {
+          type: ClarityType.Tuple,
+          data: {
+            hashbytes: { type: ClarityType.Buffer, value: '736f6d652d68617368' },
+            version: { type: ClarityType.Buffer, value: '01' },
+          },
+        },
+      });
     });
 
     it('List type', function () {
-      const input: ListCV = { type: ClarityType.List, list: [{ type: ClarityType.UInt, value: BigInt('100000') }] };
-      Utils.stringifyCv(input).should.deepEqual({ type: 11, list: [{ type: 1, value: '100000' }] });
+      const input: ListCV = { type: ClarityType.List, value: [{ type: ClarityType.UInt, value: BigInt('100000') }] };
+      Utils.stringifyCv(input).should.deepEqual({
+        type: ClarityType.List,
+        list: [{ type: ClarityType.UInt, value: '100000' }],
+      });
     });
 
     it('List type with empty list', function () {
-      const input: ListCV = { type: ClarityType.List, list: [] };
-      Utils.stringifyCv(input).should.deepEqual({ type: 11, list: [] });
+      const input: ListCV = { type: ClarityType.List, value: [] };
+      Utils.stringifyCv(input).should.deepEqual({ type: ClarityType.List, list: [] });
     });
 
     it('ResponseOk type with uint value', function () {
@@ -321,7 +336,10 @@ describe('Stx util library', function () {
         type: ClarityType.ResponseOk,
         value: { type: ClarityType.UInt, value: BigInt('100000') },
       };
-      Utils.stringifyCv(input).should.deepEqual({ type: 7, value: { type: 1, value: '100000' } });
+      Utils.stringifyCv(input).should.deepEqual({
+        type: ClarityType.ResponseOk,
+        value: { type: ClarityType.UInt, value: '100000' },
+      });
     });
 
     it('ResponseErr type with uint value', function () {
@@ -329,7 +347,10 @@ describe('Stx util library', function () {
         type: ClarityType.ResponseErr,
         value: { type: ClarityType.UInt, value: BigInt('10000') },
       };
-      Utils.stringifyCv(input).should.deepEqual({ type: 8, value: { type: 1, value: '10000' } });
+      Utils.stringifyCv(input).should.deepEqual({
+        type: ClarityType.ResponseErr,
+        value: { type: ClarityType.UInt, value: '10000' },
+      });
     });
   });
 

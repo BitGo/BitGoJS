@@ -1,8 +1,8 @@
 import assert from 'assert';
 import should from 'should';
 import BigNum from 'bn.js';
-import { StacksTestnet, StacksMainnet } from '@stacks/network';
-import { TransactionType } from '@bitgo/sdk-core';
+import { STACKS_TESTNET, STACKS_MAINNET } from '@stacks/network';
+import { InvalidParameterValueError, TransactionType } from '@bitgo/sdk-core';
 import { bufferCV, noneCV, someCV, standardPrincipalCV, tupleCV, uintCV, intCV } from '@stacks/transactions';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
@@ -49,8 +49,8 @@ describe('Stacks: Contract Builder', function () {
         const txBuilder: any = factory.getTransferBuilder();
         const txBuilderProd: any = factoryProd.getTransferBuilder();
 
-        txBuilder._network.should.deepEqual(new StacksTestnet());
-        txBuilderProd._network.should.deepEqual(new StacksMainnet());
+        txBuilder._network.should.deepEqual(STACKS_TESTNET);
+        txBuilderProd._network.should.deepEqual(STACKS_MAINNET);
       });
     });
 
@@ -358,6 +358,15 @@ describe('Stacks: Contract Builder', function () {
               })
             ),
           ]);
+        });
+
+        it('rejects a malformed JSON descriptor instead of treating it as a ClarityValue', () => {
+          const builder = initTxBuilder();
+          // `{ type: 'list' }` / `{ type: 'tuple' }` reuse a ClarityType name but carry no
+          // `val`/`value`; they must still be validated by `parseCv` (and rejected) rather than
+          // passed through as raw ClarityValues.
+          assert.throws(() => builder.functionArgs([{ type: 'list' } as never]), InvalidParameterValueError);
+          assert.throws(() => builder.functionArgs([{ type: 'tuple' } as never]), InvalidParameterValueError);
         });
 
         it('use ClarityValue', () => {

@@ -6,7 +6,7 @@ import { StxLib } from '../../src';
  * import * as st from '@stacks/transactions';
  *
  * const secretKey1 = st.privateKeyToString(st.makeRandomPrivKey());
- * const publicKey1 = st.publicKeyToString(st.pubKeyfromPrivKey(secretKey1.data);
+ * const publicKey1 = st.publicKeyToHex(st.privateKeyToPublic(secretKey1.data);
  * const address1 = st.getAddressFromPrivateKey(secretKey1);
  * etc.
  */

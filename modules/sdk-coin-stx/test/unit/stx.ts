@@ -5,7 +5,7 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 import { ErrorNoInputToRecover, RecoveryProviderError, Wallet } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { coins } from '@bitgo/statics';
-import { cvToString, deserializeCV, pubKeyfromPrivKey, publicKeyToString } from '@stacks/transactions';
+import { cvToString, deserializeCV, privateKeyToPublic, publicKeyToHex } from '@stacks/transactions';
 
 import * as testData from '../fixtures';
 import * as resources from './resources';
@@ -466,7 +466,7 @@ describe('STX:', function () {
       const builder = factory.getSbtcWithdrawBuilder();
       builder.fee({ fee: '1000' });
       builder.nonce(1);
-      const pubKeys = prvKeysString.map((prv) => publicKeyToString(pubKeyfromPrivKey(prv)));
+      const pubKeys = prvKeysString.map((prv) => publicKeyToHex(privateKeyToPublic(prv)));
       builder.fromPubKey(pubKeys);
       builder.numberSignatures(2);
       builder.withdraw(withdrawParams);

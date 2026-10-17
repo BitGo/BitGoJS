@@ -3,14 +3,15 @@ import BigNum from 'bn.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import {
   AuthType,
-  BufferReader,
+  BytesReader,
+  compressPublicKey,
   deserializeTransaction,
   emptyMessageSignature,
   isSingleSig,
-  makeSigHashPreSign,
+  sigHashPreSign,
   nextVerification,
-  publicKeyFromSignature,
-  StacksMessageType,
+  publicKeyFromSignatureVrs,
+  StacksWireType,
   PubKeyEncoding,
 } from '@stacks/transactions';
 import { StacksNetwork } from '@stacks/network';
@@ -30,12 +31,11 @@ import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 import { SignatureData } from './iface';
 import { isValidAddress, removeHexPrefix, isValidMemo, isValidPublicKey } from './utils';
-import { ANCHOR_MODE, DEFAULT_MULTISIG_SIG_NUMBER } from './constants';
+import { DEFAULT_MULTISIG_SIG_NUMBER } from './constants';
 import { toStacksNetwork } from './network';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
-  protected _anchorMode: number;
   protected _fee: BaseFee;
   protected _nonce: number;
   protected _memo: string;
@@ -47,7 +47,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._anchorMode = ANCHOR_MODE;
     this._multiSignerKeyPairs = [];
     this._fromPubKeys = [];
     this._signatures = [];
@@ -77,19 +76,19 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       this._numberSignatures = 1;
       if (tx.stxTransaction.auth.spendingCondition.signature.data !== emptyMessageSignature().data) {
         const signature = tx.stxTransaction.auth.spendingCondition.signature;
-        sigHash = makeSigHashPreSign(
+        sigHash = sigHashPreSign(
           sigHash,
           authType,
           new BigNum(this._fee.fee).toString(),
           new BigNum(this._nonce).toString()
         );
         this._signatures.push({ ...signature, index: 0, sigHash });
-        this._fromPubKeys = [publicKeyFromSignature(sigHash, signature)];
+        this._fromPubKeys = [publicKeyFromSignatureVrs(sigHash, signature.data)];
       }
     } else {
       this._numberSignatures = tx.stxTransaction.auth.spendingCondition.signaturesRequired;
       tx.stxTransaction.auth.spendingCondition.fields.forEach((field, index) => {
-        if (field.contents.type === StacksMessageType.MessageSignature) {
+        if (field.contents.type === StacksWireType.MessageSignature) {
           const signature = field.contents;
           const nextVerify = nextVerification(
             sigHash,
@@ -97,13 +96,16 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
             new BigNum(this._fee.fee).toString(),
             new BigNum(this._nonce).toString(),
             PubKeyEncoding.Compressed, // useless param as Compressed is hardcoded in stacks lib
-            signature
+            signature.data
           );
           sigHash = nextVerify.nextSigHash;
           this._signatures.push({ ...signature, index, sigHash });
-          this._fromPubKeys.push(nextVerify.pubKey.data.toString('hex'));
+          this._fromPubKeys.push(Buffer.from(nextVerify.pubKey.data).toString('hex'));
         } else {
-          this._fromPubKeys.push(field.contents.data.toString('hex'));
+          // v7 deserializes an uncompressed-tagged pubkey field back to the 65-byte key; normalise
+          // to compressed so it matches the compressed signer keys (from signatures / `sign()`) and
+          // the append step, preventing duplicate entries on a rebuild.
+          this._fromPubKeys.push(compressPublicKey(field.contents.data));
         }
       });
     }
@@ -113,9 +115,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected fromImplementation(rawTransaction: string): Transaction {
     const tx = new Transaction(this._coinConfig);
     this.validateRawTransaction(rawTransaction);
-    const stackstransaction = deserializeTransaction(
-      BufferReader.fromBuffer(Buffer.from(removeHexPrefix(rawTransaction), 'hex'))
-    );
+    const stackstransaction = deserializeTransaction(new BytesReader(removeHexPrefix(rawTransaction)));
     tx.stxTransaction = stackstransaction;
     this.initBuilder(tx);
     return this.transaction;
@@ -125,6 +125,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     const isMultiSig: boolean = this._fromPubKeys.length > 1;
+    // `@stacks/transactions` v7 pre-populates a multisig spending condition with the public keys
+    // passed to `makeUnsigned*`. v2 left the field list empty and this builder re-derives it below
+    // (one auth field per signer: a signature when available, otherwise the public key). Clear the
+    // pre-populated keys so the serialized auth fields stay byte-identical to the previous behaviour.
+    const spendingCondition = this._transaction.stxTransaction?.auth?.spendingCondition;
+    if (spendingCondition && !isSingleSig(spendingCondition)) {
+      spendingCondition.fields = [];
+    }
     this._transaction.stxTransaction.setFee(new BigNum(this._fee.fee).toString());
     this._transaction.stxTransaction.setNonce(new BigNum(this._nonce).toString());
 
@@ -273,7 +281,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       throw new InvalidTransactionError('Raw transaction is empty');
     }
     try {
-      deserializeTransaction(BufferReader.fromBuffer(Buffer.from(removeHexPrefix(rawTransaction), 'hex')));
+      deserializeTransaction(new BytesReader(removeHexPrefix(rawTransaction)));
     } catch (e) {
       throw new ParseTransactionError('There was an error parsing the raw transaction');
     }

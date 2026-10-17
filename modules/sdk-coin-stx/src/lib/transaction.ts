@@ -1,20 +1,21 @@
 import {
   addressToString,
-  BufferReader,
+  BytesReader,
   ContractCallPayload,
-  createStacksPrivateKey,
+  createMessageSignature,
   createStacksPublicKey,
   createTransactionAuthField,
   cvToString,
   cvToValue,
   deserializeTransaction,
+  getFee,
   isSingleSig,
   MultiSigSpendingCondition,
   PayloadType,
   PubKeyEncoding,
-  StacksMessageType,
-  StacksTransaction,
-  TransactionSigner,
+  SingleSigSpendingCondition,
+  StacksTransactionWire,
+  StacksWireType,
 } from '@stacks/transactions';
 
 import { BaseCoin as CoinConfig, StacksNetwork } from '@bitgo/statics';
@@ -37,7 +38,7 @@ import { KeyPair } from './keyPair';
 import { FUNCTION_NAME_TRANSFER } from './constants';
 
 export class Transaction extends BaseTransaction {
-  private _stxTransaction: StacksTransaction;
+  private _stxTransaction: StacksTransactionWire;
   protected _type: TransactionType;
   private _sigHash: string;
 
@@ -52,25 +53,31 @@ export class Transaction extends BaseTransaction {
 
   async sign(keyPair: KeyPair[] | KeyPair, sigHash?: string): Promise<void> {
     const keyPairs = keyPair instanceof Array ? keyPair : [keyPair];
-    const signer = new TransactionSigner(this._stxTransaction);
-    signer.checkOversign = false;
-    signer.sigHash = sigHash ?? this._sigHash ?? this._stxTransaction.verifyBegin();
+    let currentSigHash = sigHash ?? this._sigHash ?? this._stxTransaction.verifyBegin();
     for (const kp of keyPairs) {
       const keys = kp.getKeys(kp.getCompressed());
       if (!keys.prv) {
         throw new SigningError('Missing private key');
       }
-      const privKey = createStacksPrivateKey(keys.prv);
-      signer.signOrigin(privKey);
-      this._sigHash = signer.sigHash;
+      // Sign directly on the transaction. The v7 `TransactionSigner` constructor rejects tx state
+      // where signature fields already reach `signaturesRequired`, which previously (v2) was only
+      // checked inside `signOrigin` and could be opted out of via `checkOversign`.
+      currentSigHash = this._stxTransaction.signNextOrigin(currentSigHash, keys.prv);
+      this._sigHash = currentSigHash;
     }
   }
 
   async appendOrigin(pubKeyString: string[] | string): Promise<void> {
     const pubKeyStrings = pubKeyString instanceof Array ? pubKeyString : [pubKeyString];
-    const signer: TransactionSigner = new TransactionSigner(this._stxTransaction);
     pubKeyStrings.forEach((pubKey) => {
-      signer.appendOrigin(createStacksPublicKey(pubKey));
+      // Append the origin public key directly on the transaction. The v7 `TransactionSigner`
+      // constructor rejects tx state where signature fields already reach `signaturesRequired`,
+      // which is exactly the multisig append step after the required signatures are collected.
+      // The key is appended **as given** (v2 semantics): the wire serializer compresses the key
+      // bytes for an uncompressed-tagged field, so this keeps the auth field byte-identical to v2
+      // (tag Uncompressed + 33-byte compressed key). The compressed normalisation needed to match
+      // signer keys on a rebuild happens in `transactionBuilder.initBuilder`.
+      this._stxTransaction.appendPubkey(createStacksPublicKey(pubKey));
     });
   }
 
@@ -81,7 +88,9 @@ export class Transaction extends BaseTransaction {
     const signatures = signature instanceof Array ? signature : [signature];
 
     if (!isMultiSig) {
-      this._stxTransaction = this._stxTransaction.createTxWithSignature(signatures[0].data);
+      (this._stxTransaction.auth.spendingCondition as SingleSigSpendingCondition).signature = createMessageSignature(
+        signatures[0].data
+      );
     } else {
       const authFields = signatures.map((sig) => createTransactionAuthField(PubKeyEncoding.Compressed, sig));
       (this._stxTransaction.auth.spendingCondition as MultiSigSpendingCondition).fields = (
@@ -100,7 +109,7 @@ export class Transaction extends BaseTransaction {
       } else {
         const signatures: string[] = [];
         this._stxTransaction.auth.spendingCondition.fields.forEach((field) => {
-          if (field.contents.type === StacksMessageType.MessageSignature) {
+          if (field.contents.type === StacksWireType.MessageSignature) {
             signatures.push(field.contents.data);
           }
         });
@@ -117,7 +126,7 @@ export class Transaction extends BaseTransaction {
     }
     const result: TxData = {
       id: this._stxTransaction.txid(),
-      fee: this._stxTransaction.auth.getFee().toString(10),
+      fee: getFee(this._stxTransaction.auth).toString(10),
       from: getTxSenderAddress(this._stxTransaction),
       nonce: this.getNonce(),
       payload: this.getPayloadData(),
@@ -133,11 +142,7 @@ export class Transaction extends BaseTransaction {
         // result.payload.memo will be padded with \u0000 up to
         // MEMO_MAX_LENGTH_BYTES as defined in @stacks/transactions
         memo: unpadMemo(payload.memo.content),
-        to: addressToString({
-          type: StacksMessageType.Address,
-          version: payload.recipient.address.version,
-          hash160: payload.recipient.address.hash160.toString(),
-        }),
+        to: payload.recipient.value,
         amount: payload.amount.toString(),
       };
       return txPayload;
@@ -163,21 +168,21 @@ export class Transaction extends BaseTransaction {
    * @returns {number} size in bytes of the serialized transaction
    */
   transactionSize(): number {
-    return this._stxTransaction.serialize().length;
+    return this._stxTransaction.serializeBytes().length;
   }
 
   toBroadcastFormat(): string {
     if (!this._stxTransaction) {
       throw new ParseTransactionError('Empty transaction');
     }
-    return this._stxTransaction.serialize().toString('hex');
+    return this._stxTransaction.serialize();
   }
 
-  get stxTransaction(): StacksTransaction {
+  get stxTransaction(): StacksTransactionWire {
     return this._stxTransaction;
   }
 
-  set stxTransaction(t: StacksTransaction) {
+  set stxTransaction(t: StacksTransactionWire) {
     this._stxTransaction = t;
   }
 
@@ -197,7 +202,7 @@ export class Transaction extends BaseTransaction {
   fromRawTransaction(rawTransaction: string): void {
     const raw = removeHexPrefix(rawTransaction);
     try {
-      this._stxTransaction = deserializeTransaction(BufferReader.fromBuffer(Buffer.from(raw, 'hex')));
+      this._stxTransaction = deserializeTransaction(new BytesReader(raw));
     } catch (e) {
       throw new ParseTransactionError('Error parsing the raw transaction');
     }

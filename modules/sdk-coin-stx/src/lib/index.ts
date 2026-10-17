@@ -7,4 +7,5 @@ export * from './sbtcWithdrawBuilder';
 export * from './btcAddressUtils';
 export * from './pox5Builder';
 export * from './iface';
+export * from './postConditions';
 export * as Utils from './utils';

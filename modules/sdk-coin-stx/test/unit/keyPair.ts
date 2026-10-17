@@ -3,7 +3,7 @@ import should from 'should';
 import * as testData from './resources';
 
 import { StxLib } from '../../src';
-import { TransactionVersion } from '@stacks/transactions';
+import { TransactionVersion } from '@stacks/network';
 
 describe('Stx KeyPair', function () {
   const defaultSeed = { seed: Buffer.alloc(64) };

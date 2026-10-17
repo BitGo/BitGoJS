@@ -1,5 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BufferReader, deserializeTransaction, PayloadType } from '@stacks/transactions';
+import { BytesReader, deserializeTransaction, PayloadType } from '@stacks/transactions';
 import {
   BaseTransactionBuilderFactory,
   InvalidTransactionError,
@@ -54,9 +54,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   private parseTransaction(rawTransaction: string): Transaction {
     const tx = new Transaction(this._coinConfig);
-    const stackstransaction = deserializeTransaction(
-      BufferReader.fromBuffer(Buffer.from(Utils.removeHexPrefix(rawTransaction), 'hex'))
-    );
+    const stackstransaction = deserializeTransaction(new BytesReader(Utils.removeHexPrefix(rawTransaction)));
     tx.stxTransaction = stackstransaction;
     return tx;
   }
