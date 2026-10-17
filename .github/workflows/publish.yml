@@ -35,6 +35,14 @@ jobs:
     # a deployment branch policy on this environment, so the job cannot run
     # from arbitrary PR branches even though it is manually dispatched.
     environment: beta-alpha-release
+    # npm processes publishes asynchronously (publish-time malware scanning), so a version can take
+    # minutes — occasionally much longer (measured: 55 minutes for @bitgo-beta/sdk-coin-tao@1.0.0-beta.1477)
+    # — to become visible on the registry after `npm publish` succeeds. Size both waits to cover that
+    # tail with headroom, and keep the job timeout comfortably above them.
+    timeout-minutes: 180
+    env:
+      BITGO_SIBLING_AVAILABILITY_TIMEOUT_MINUTES: 120
+      BITGO_PUBLISH_VISIBILITY_TIMEOUT_MINUTES: 120
 
     steps:
       - uses: socketdev/action@4337a545deecc20f19a909e52db7a2f6ba292f42 # v1
@@ -126,3 +134,6 @@ jobs:
         env:
           NPM_CONFIG_PROVENANCE: true
           RECOVERY_MODE: ${{ inputs.recovery-mode }}
+          # A recovery re-publish of bitgo must regenerate its shrinkwrap, otherwise the published
+          # tarball has none and consumers silently lose the pinned workspace siblings.
+          BITGO_GENERATE_SHRINKWRAP: true

@@ -214,7 +214,14 @@ jobs:
       - verify-back-merge
     if: ${{ always() && needs.get-release-context.result != 'failure' && needs.get-recovery-context.result != 'failure' && needs.verify-back-merge.result != 'failure' }}
     runs-on: ${{ vars.BASE_RUNNER_TYPE || 'ubuntu-latest' }}
-    timeout-minutes: 60
+    # npm processes publishes asynchronously (publish-time malware scanning), so newly published
+    # siblings can take minutes — occasionally much longer (measured: 55 minutes for a
+    # @bitgo-beta/sdk-coin-tao beta) — to become visible before bitgo's shrinkwrap can be built.
+    # These budgets cover that tail; the job timeout must stay comfortably above them.
+    timeout-minutes: 180
+    env:
+      BITGO_SIBLING_AVAILABILITY_TIMEOUT_MINUTES: 120
+      BITGO_PUBLISH_VISIBILITY_TIMEOUT_MINUTES: 120
     environment: npmjs-release
     steps:
       - name: Checkout repository
