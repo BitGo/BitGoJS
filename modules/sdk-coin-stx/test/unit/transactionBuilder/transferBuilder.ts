@@ -1,6 +1,6 @@
 import assert from 'assert';
 import should from 'should';
-import { StacksMainnet, StacksTestnet } from '@stacks/network';
+import { STACKS_MAINNET, STACKS_TESTNET } from '@stacks/network';
 import { TransactionType, rawPrvToExtendedKeys } from '@bitgo/sdk-core';
 
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
@@ -46,8 +46,8 @@ describe('Stacks: Send Many Builder', function () {
         const txBuilder: any = factory.getTransferBuilder();
         const txBuilderProd: any = factoryProd.getTransferBuilder();
 
-        txBuilder._network.should.deepEqual(new StacksTestnet());
-        txBuilderProd._network.should.deepEqual(new StacksMainnet());
+        txBuilder._network.should.deepEqual(STACKS_TESTNET);
+        txBuilderProd._network.should.deepEqual(STACKS_MAINNET);
       });
     });
 
@@ -203,6 +203,89 @@ describe('Stacks: Send Many Builder', function () {
         const builder = factory.from(testData.MULTI_SIG_SIGNED_TRANSACTION);
         const tx = await builder.build();
         should.deepEqual(tx.toBroadcastFormat(), testData.MULTI_SIG_SIGNED_TRANSACTION);
+      });
+
+      it('builds an uncompressed-key multisig transfer byte-identically to the v2 fixture', async () => {
+        // Pins the appendOrigin encoding for uncompressed keys against a v2.0.1-generated fixture:
+        // the key is appended as given (uncompressed tag) while the serialized key stays 33 bytes.
+        const uncompressedPubs = [testData.prv1, testData.prv2, testData.prv3].map(
+          (prv) => new KeyPair({ prv }).getKeys().pub
+        );
+        uncompressedPubs.forEach((pub) => should.equal(pub.length, 130));
+
+        const unsignedBuilder = initTxBuilder();
+        unsignedBuilder.fromPubKey(uncompressedPubs);
+        unsignedBuilder.numberSignatures(2);
+        const unsigned = await unsignedBuilder.build();
+        should.deepEqual(unsigned.toBroadcastFormat(), testData.UNCOMPRESSED_MULTISIG_UNSIGNED_TRANSFER);
+
+        const signingBuilder = factory.getTransferBuilder();
+        signingBuilder.from(unsigned.toBroadcastFormat());
+        signingBuilder.sign({ key: testData.prv1 });
+        signingBuilder.sign({ key: testData.prv2 });
+        signingBuilder.fromPubKey(uncompressedPubs);
+        const signed = await signingBuilder.build();
+        should.deepEqual(signed.toBroadcastFormat(), testData.UNCOMPRESSED_MULTISIG_SIGNED_TRANSFER);
+        should.deepEqual(signed.signature.length, 2);
+      });
+
+      it('re-derives the sender from compressed keys when rebuilding an uncompressed-key multisig tx', async () => {
+        // Known limitation, pre-existing (v2 behaves the same — its deserialized signature fields
+        // recover the compressed key and the appended origin field deserializes to a 33-byte key, so
+        // `initBuilder` always repopulates compressed pubkeys). A `from(hex)` rebuild therefore
+        // re-derives the sender from the compressed keys and is not byte-identical to the original
+        // uncompressed-key tx. The fresh build path above is unaffected.
+        const rebuiltBuilder = factory.from(testData.UNCOMPRESSED_MULTISIG_SIGNED_TRANSFER);
+        const rebuilt = await rebuiltBuilder.build();
+        const rebuiltSender = (
+          rebuilt as never as { stxTransaction: { auth: { spendingCondition: { signer: string } } } }
+        ).stxTransaction.auth.spendingCondition.signer;
+        should.equal(rebuiltSender, '2fe507c09dbb23c3b7e5d166c81fc4b87692510b');
+        should.notEqual(rebuilt.toBroadcastFormat(), testData.UNCOMPRESSED_MULTISIG_SIGNED_TRANSFER);
+      });
+
+      it('a compressed-key multisig tx verifies and round-trips byte-identically', async () => {
+        // The standard path: compressed keys make the signer hash match the keys recoverable from the
+        // auth fields, so the tx verifies and the `from(hex)` rebuild is byte-identical.
+        const builder = initTxBuilder();
+        builder.memo('test memo');
+        builder.sign({ key: testData.prv1 });
+        builder.sign({ key: testData.prv2 });
+        builder.fromPubKey([testData.pub1, testData.pub2, testData.pub3]);
+        builder.numberSignatures(2);
+        const tx = await builder.build();
+        should.deepEqual(tx.toBroadcastFormat(), testData.MULTI_SIG_SIGNED_TRANSACTION);
+        const verify = (t: unknown) =>
+          (t as never as { stxTransaction: { verifyOrigin: () => string } }).stxTransaction.verifyOrigin();
+        should.exist(verify(tx));
+
+        const rebuilt = await factory.from(tx.toBroadcastFormat()).build();
+        should.deepEqual(rebuilt.toBroadcastFormat(), testData.MULTI_SIG_SIGNED_TRANSACTION);
+        should.equal(verify(rebuilt), verify(tx));
+      });
+
+      it('does not verify an uncompressed-key multisig tx (pre-existing, v2-identical)', async () => {
+        // The signer hash is derived from the uncompressed keys, but the auth fields only carry the
+        // compressed key bytes, so a re-derivation from the tx's own fields can never match the
+        // signer — such txs are invalid by construction (stacks.js v2 behaves the same). Pinned so
+        // the limitation is explicit instead of assumed working.
+        const uncompressedPubs = [testData.prv1, testData.prv2, testData.prv3].map(
+          (prv) => new KeyPair({ prv }).getKeys().pub
+        );
+        const builder = factory.getTransferBuilder();
+        builder.fee({ fee: '180' });
+        builder.nonce(0);
+        builder.to(testData.TX_RECIEVER.address);
+        builder.amount('1000');
+        builder.sign({ key: testData.prv1 });
+        builder.sign({ key: testData.prv2 });
+        builder.fromPubKey(uncompressedPubs);
+        builder.numberSignatures(2);
+        const tx = await builder.build();
+        should.throws(
+          () => (tx as never as { stxTransaction: { verifyOrigin: () => string } }).stxTransaction.verifyOrigin(),
+          /Signer hash does not equal hash of public key/
+        );
       });
 
       it('a transfer transaction signed multiple times', async () => {

@@ -3,7 +3,7 @@ import assert from 'assert';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { Wallet } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { TransactionVersion } from '@stacks/transactions';
+import { TransactionVersion } from '@stacks/network';
 import should from 'should';
 
 import { StxLib, Tstxsignet } from '../../src';
@@ -27,6 +27,17 @@ describe('tstxsignet', function () {
 
   it('resolves the staking-testnet public node url', function () {
     assert.strictEqual(basecoin.getPublicNodeUrl(), 'https://api.staking-testnet.hiro.so');
+  });
+
+  it('throws when the environment has no stx signet node url', function () {
+    const bitgoEnv = (basecoin as unknown as { bitgo: { getEnv: () => string } }).bitgo;
+    const originalGetEnv = bitgoEnv.getEnv;
+    bitgoEnv.getEnv = () => 'prod';
+    try {
+      assert.throws(() => basecoin.getPublicNodeUrl(), /no stx signet node url configured for env prod/);
+    } finally {
+      bitgoEnv.getEnv = originalGetEnv;
+    }
   });
 
   describe('wallet creation', function () {

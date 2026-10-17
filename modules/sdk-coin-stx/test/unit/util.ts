@@ -1,6 +1,7 @@
 import assert from 'assert';
 import should from 'should';
 import {
+  AddressHashMode,
   AddressVersion,
   ClarityType,
   IntCV,
@@ -10,6 +11,11 @@ import {
   SomeCV,
   UIntCV,
   ListCV,
+  bufferCV,
+  bufferCVFromString,
+  listCV,
+  standardPrincipalCV,
+  uintCV,
 } from '@stacks/transactions';
 import BigNum from 'bn.js';
 import * as testData from './resources';
@@ -271,12 +277,12 @@ describe('Stx util library', function () {
   describe('stringifyCv', function () {
     it('Int type', function () {
       const input: IntCV = { type: ClarityType.Int, value: BigInt('100000') };
-      Utils.stringifyCv(input).should.deepEqual({ type: 0, value: '100000' });
+      Utils.stringifyCv(input).should.deepEqual({ type: ClarityType.Int, value: '100000' });
     });
 
     it('UInt type', function () {
       const input: UIntCV = { type: ClarityType.UInt, value: BigInt('100000') };
-      Utils.stringifyCv(input).should.deepEqual({ type: 1, value: '100000' });
+      Utils.stringifyCv(input).should.deepEqual({ type: ClarityType.UInt, value: '100000' });
     });
 
     it('OptionalNone type', function () {
@@ -289,7 +295,10 @@ describe('Stx util library', function () {
         type: ClarityType.OptionalSome,
         value: { type: ClarityType.UInt, value: BigInt('100000') },
       };
-      Utils.stringifyCv(input).should.deepEqual({ type: 10, value: { type: 1, value: '100000' } });
+      Utils.stringifyCv(input).should.deepEqual({
+        type: ClarityType.OptionalSome,
+        value: { type: ClarityType.UInt, value: '100000' },
+      });
     });
 
     it('OptionalSome type with tuple value', function () {
@@ -297,23 +306,35 @@ describe('Stx util library', function () {
         type: ClarityType.OptionalSome,
         value: {
           type: ClarityType.Tuple,
-          data: {
-            hashbytes: { type: ClarityType.Buffer, buffer: Buffer.from('some-hash') },
-            version: { type: ClarityType.Buffer, buffer: new BigNum(1).toBuffer() },
+          value: {
+            hashbytes: { type: ClarityType.Buffer, value: Buffer.from('some-hash').toString('hex') },
+            version: { type: ClarityType.Buffer, value: new BigNum(1).toBuffer().toString('hex') },
           },
         },
       };
-      Utils.stringifyCv(input).should.deepEqual(input);
+      Utils.stringifyCv(input).should.deepEqual({
+        type: ClarityType.OptionalSome,
+        value: {
+          type: ClarityType.Tuple,
+          data: {
+            hashbytes: { type: ClarityType.Buffer, value: '736f6d652d68617368' },
+            version: { type: ClarityType.Buffer, value: '01' },
+          },
+        },
+      });
     });
 
     it('List type', function () {
-      const input: ListCV = { type: ClarityType.List, list: [{ type: ClarityType.UInt, value: BigInt('100000') }] };
-      Utils.stringifyCv(input).should.deepEqual({ type: 11, list: [{ type: 1, value: '100000' }] });
+      const input: ListCV = { type: ClarityType.List, value: [{ type: ClarityType.UInt, value: BigInt('100000') }] };
+      Utils.stringifyCv(input).should.deepEqual({
+        type: ClarityType.List,
+        list: [{ type: ClarityType.UInt, value: '100000' }],
+      });
     });
 
     it('List type with empty list', function () {
-      const input: ListCV = { type: ClarityType.List, list: [] };
-      Utils.stringifyCv(input).should.deepEqual({ type: 11, list: [] });
+      const input: ListCV = { type: ClarityType.List, value: [] };
+      Utils.stringifyCv(input).should.deepEqual({ type: ClarityType.List, list: [] });
     });
 
     it('ResponseOk type with uint value', function () {
@@ -321,7 +342,10 @@ describe('Stx util library', function () {
         type: ClarityType.ResponseOk,
         value: { type: ClarityType.UInt, value: BigInt('100000') },
       };
-      Utils.stringifyCv(input).should.deepEqual({ type: 7, value: { type: 1, value: '100000' } });
+      Utils.stringifyCv(input).should.deepEqual({
+        type: ClarityType.ResponseOk,
+        value: { type: ClarityType.UInt, value: '100000' },
+      });
     });
 
     it('ResponseErr type with uint value', function () {
@@ -329,7 +353,10 @@ describe('Stx util library', function () {
         type: ClarityType.ResponseErr,
         value: { type: ClarityType.UInt, value: BigInt('10000') },
       };
-      Utils.stringifyCv(input).should.deepEqual({ type: 8, value: { type: 1, value: '10000' } });
+      Utils.stringifyCv(input).should.deepEqual({
+        type: ClarityType.ResponseErr,
+        value: { type: ClarityType.UInt, value: '10000' },
+      });
     });
   });
 
@@ -422,6 +449,98 @@ describe('Stx util library', function () {
         () => Utils.isSameBaseAddress(address5, baseAddress5).should.false(),
         new RegExp(`invalid address: ${address5}`)
       );
+    });
+  });
+
+  describe('edge cases and error branches', function () {
+    const validAddress = 'STB44HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6';
+    const compressedPubKey = '02f6d0597fb6d5467203d080e17f7b4f767ead59fc303b7d7261a832cb44305bb0';
+
+    it('should prefix a buffer with 0x', function () {
+      Utils.bufferToHexPrefixString(Buffer.from('deadbeef', 'hex')).should.equal('0xdeadbeef');
+    });
+
+    it('should reject a contract principal whose address is invalid', function () {
+      assert.throws(() => Utils.contractPrincipalCVFromString('notanaddress.contract'), /must contain a valid address/);
+    });
+
+    it('should reject a raw transaction that is not a hex string', function () {
+      Utils.isValidRawTransaction(123).should.be.false();
+      Utils.isValidRawTransaction('deadbeef').should.be.false();
+    });
+
+    it('should reject a non-string memo', function () {
+      Utils.isValidMemo(123 as unknown as string).should.be.false();
+    });
+
+    it('should reject more signatures than public keys', function () {
+      assert.throws(
+        () =>
+          Utils.getSTXAddressFromPubKeys([compressedPubKey], AddressVersion.MainnetMultiSig, AddressHashMode.P2SH, 2),
+        /Number of signatures required must be lower or equal to the number of Public Keys/
+      );
+    });
+
+    it('should reject signing a message with a public-only key pair', function () {
+      const keyPair = new KeyPair({ pub: testData.xpub1 });
+      assert.throws(() => Utils.signMessage(keyPair, 'message'), /Missing private key/);
+    });
+
+    it('should reject normalizing an invalid address or memo id', function () {
+      assert.throws(() => Utils.normalizeAddress({ address: 'invalid' }), /invalid address: invalid/);
+      assert.throws(() => Utils.normalizeAddress({ address: validAddress, memoId: '-1' }), /invalid memo id: -1/);
+    });
+
+    it('should reject an address whose query string has no memo id', function () {
+      assert.throws(() => Utils.getAddressDetails(`${validAddress}?notMemoId=1`), /invalid address with memo id/);
+    });
+
+    it('should reject malformed send-many-memo function args', function () {
+      assert.throws(() => Utils.functionArgsToSendParams([]), /don't match send-many-memo type declaration/);
+      assert.throws(
+        () => Utils.functionArgsToSendParams([listCV([uintCV(1)])]),
+        /don't match send-many-memo type declaration/
+      );
+    });
+
+    it('should reject malformed token transfer function args', function () {
+      assert.throws(() => Utils.functionArgsToTokenTransferParams([]), /don't match token transfer declaration/);
+      assert.throws(
+        () =>
+          Utils.functionArgsToTokenTransferParams([
+            uintCV(1),
+            bufferCVFromString('sender'),
+            bufferCVFromString('recipient'),
+          ]),
+        /don't match token transfer declaration/
+      );
+    });
+
+    it('should parse an optional memo in token transfer function args', function () {
+      const params = Utils.functionArgsToTokenTransferParams([
+        uintCV(1000),
+        standardPrincipalCV(validAddress),
+        standardPrincipalCV(validAddress),
+        bufferCV(Buffer.from('memo', 'ascii')),
+      ]);
+      params.memo?.should.equal('memo');
+    });
+
+    it('should resolve a supported sip10 token name and return undefined for an unsupported contract', function () {
+      should.equal(
+        Utils.findContractTokenNameUsingContract('STAG18E45W613FZ3H4ZMF6QHH426EXM5QTSAVWYH', 'tsip6dp-token'),
+        'tsip6dp-token'
+      );
+      should.equal(
+        Utils.findContractTokenNameUsingContract('SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4', 'sbtc-token'),
+        'sbtc-token'
+      );
+      should.equal(
+        Utils.findContractTokenNameUsingContract('ST1F7QA2MDF17S807EPA36TSS8AMEFY4KA9TVGWXT', 'sbtc-token'),
+        'sbtc-token'
+      );
+      should.equal(Utils.findContractTokenNameUsingContract('ST000000000000000000002AMW42H', 'not-a-token'), undefined);
+      should.equal(Utils.findTokenNameByContract('ST000000000000000000002AMW42H', 'not-a-token'), undefined);
     });
   });
 });

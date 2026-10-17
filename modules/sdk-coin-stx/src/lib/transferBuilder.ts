@@ -56,7 +56,6 @@ export class TransferBuilder extends TransactionBuilder {
       recipient: this._toAddress,
       amount: this._amount.toString(),
       memo: this._memo,
-      anchorMode: this._anchorMode,
       network: this._network,
       fee: new BigNum(this._fee.fee).toString(),
       nonce: new BigNum(this._nonce).toString(),

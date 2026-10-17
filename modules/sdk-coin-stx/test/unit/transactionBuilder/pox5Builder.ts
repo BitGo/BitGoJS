@@ -1,14 +1,15 @@
 import assert from 'assert';
 import {
   ClarityType,
+  ClarityValue,
   ContractCallPayload,
   createAddress,
   cvToString,
   cvToValue,
   deserializeCV,
-  FungibleConditionCode,
-  makeStandardSTXPostCondition,
+  Pc,
   PostConditionMode,
+  PostConditionType,
 } from '@stacks/transactions';
 import { coins } from '@bitgo/statics';
 import should from 'should';
@@ -122,11 +123,7 @@ describe('Stacks: PoX-5 Builder', function () {
     const functionArgs = pox5RegisterForBondArgsHex.map((hex) =>
       deserializeCV(Buffer.from(hex.replace(/^0x/, ''), 'hex'))
     );
-    const postCondition = makeStandardSTXPostCondition(
-      testData.TX_SENDER.address,
-      FungibleConditionCode.LessEqual,
-      100000000
-    );
+    const postCondition = Pc.principal(testData.TX_SENDER.address).willSendLte(100000000).ustx();
     const builder = configure(factory.getPox5Builder());
     builder.functionName('register-for-bond');
     builder.functionArgs(functionArgs);
@@ -144,6 +141,39 @@ describe('Stacks: PoX-5 Builder', function () {
     const rebuiltTx = (await rebuilt.build()) as StxLib.Transaction;
     should.equal(rebuiltTx.stxTransaction.postConditionMode, PostConditionMode.Deny);
     should.equal(rebuiltTx.stxTransaction.postConditions.values.length, 1);
+  });
+
+  it('register-for-bond builds Deny + a type-3 staking post-condition, byte-identical across from(hex) (SI-1936)', async () => {
+    const functionArgs = pox5RegisterForBondArgsHex.map((hex) =>
+      deserializeCV(Buffer.from(hex.replace(/^0x/, ''), 'hex'))
+    );
+    // SIP-044 staking post-condition on the register amount (contract arg index 2 = amount-ustx).
+    const amountUstx = cvToValue(functionArgs[2], true).toString();
+    const stakingPostCondition = StxLib.makeStakingPostCondition(testData.TX_SENDER.address, 'eq', amountUstx);
+
+    const builder = configure(factory.getPox5Builder());
+    builder.functionName('register-for-bond');
+    builder.functionArgs(functionArgs);
+    builder.postConditionMode(PostConditionMode.Deny);
+    builder.postConditions([stakingPostCondition]);
+    const tx = (await builder.build()) as StxLib.Transaction;
+
+    should.equal(tx.stxTransaction.postConditionMode, PostConditionMode.Deny);
+    should.equal(tx.stxTransaction.postConditions.values.length, 1);
+    should.equal(tx.stxTransaction.postConditions.values[0].conditionType, PostConditionType.Staking);
+    should.equal((tx.stxTransaction.postConditions.values[0] as { amount: bigint }).amount, BigInt(amountUstx));
+
+    // The riskiest path: `initBuilder` must restore the mode AND the post-conditions from the
+    // deserialized tx, so a `from(hex)` rebuild (the fee re-build) stays byte-identical.
+    const hex = tx.toBroadcastFormat();
+    const rebuilt = factory.from(hex);
+    rebuilt.fromPubKey(testData.TX_SENDER.pub);
+    const rebuiltTx = (await rebuilt.build()) as StxLib.Transaction;
+
+    should.equal(rebuiltTx.toBroadcastFormat(), hex);
+    should.equal(rebuiltTx.stxTransaction.postConditionMode, PostConditionMode.Deny);
+    should.equal(rebuiltTx.stxTransaction.postConditions.values.length, 1);
+    should.equal(rebuiltTx.stxTransaction.postConditions.values[0].conditionType, PostConditionType.Staking);
   });
 
   it('validates the PoX-5 contract address during factory routing', async () => {
@@ -350,9 +380,9 @@ describe('Stacks: PoX-5 Builder', function () {
       return tx.toJson().payload as StxLib.StacksContractPayload;
     }
 
-    function uintArg(cv: { type: number; value?: unknown }, expected: string): void {
+    function uintArg(cv: ClarityValue, expected: string): void {
       cv.type.should.equal(ClarityType.UInt);
-      String(cv.value).should.equal(expected);
+      String((cv as { value?: unknown }).value).should.equal(expected);
     }
 
     it('builds a stake transaction carrying the tstxsignet chain ID', async () => {
@@ -536,6 +566,32 @@ describe('Stacks: PoX-5 Builder', function () {
           }),
         /address.contract-name format/
       );
+    });
+  });
+
+  describe('calculateRewards and claimStakerRewardsForSigner', () => {
+    it('builds calculate-rewards with a list of bond indices', async () => {
+      const builder = configure(factory.getPox5Builder());
+      builder.calculateRewards([1, 2]);
+      const txJson = (await builder.build()).toJson();
+      should.exist(txJson.payload);
+    });
+
+    it('builds claim-staker-rewards for a signer with and without a bond index', async () => {
+      const withBondIndex = configure(factory.getPox5Builder());
+      withBondIndex.claimStakerRewardsForSigner({
+        staker: testData.TX_SENDER.address,
+        rewardCycle: 1,
+        bondIndex: 2,
+      });
+      should.exist((await withBondIndex.build()).toBroadcastFormat());
+
+      const withoutBondIndex = configure(factory.getPox5Builder());
+      withoutBondIndex.claimStakerRewardsForSigner({
+        staker: testData.TX_SENDER.address,
+        rewardCycle: 1,
+      });
+      should.exist((await withoutBondIndex.build()).toBroadcastFormat());
     });
   });
 });

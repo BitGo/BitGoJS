@@ -5,8 +5,7 @@ import {
   AddressVersion,
   ClarityValue,
   ContractCallPayload,
-  FungibleConditionCode,
-  makeStandardFungiblePostCondition,
+  Pc,
   PostCondition,
   PostConditionMode,
 } from '@stacks/transactions';
@@ -141,25 +140,29 @@ export class FungibleTokenTransferBuilder extends AbstractContractBuilder {
   private tokenTransferParamsToPostCondition(tokenTransferParams: TokenTransferParams): PostCondition[] {
     if (!this._tokenName) {
       const contractTokenName = findContractTokenNameUsingContract(this._contractAddress, this._contractName);
-      if (contractTokenName) {
-        this.tokenName(contractTokenName);
+      if (!contractTokenName) {
+        // Fail the build rather than serialising an `undefined` asset name: such a post-condition can
+        // never match, so a `Deny`-mode tx would only abort on-chain and burn the fee.
+        throw new InvalidParameterValueError(
+          `unknown fungible token contract: ${this._contractAddress}.${this._contractName}`
+        );
       }
+      this.tokenName(contractTokenName);
     }
     const amount: BigNum = new BigNum(tokenTransferParams.amount);
     return [
-      makeStandardFungiblePostCondition(
+      Pc.principal(
         getSTXAddressFromPubKeys(
           this._fromPubKeys,
           this._coinConfig.network.type === NetworkType.MAINNET
             ? AddressVersion.MainnetMultiSig
             : AddressVersion.TestnetMultiSig,
-          this._fromPubKeys.length > 1 ? AddressHashMode.SerializeP2SH : AddressHashMode.SerializeP2PKH,
+          this._fromPubKeys.length > 1 ? AddressHashMode.P2SH : AddressHashMode.P2PKH,
           this._numberSignatures
-        ).address,
-        FungibleConditionCode.Equal,
-        amount.toString(),
-        `${this._contractAddress}.${this._contractName}::${this._tokenName}`
-      ),
+        ).address
+      )
+        .willSendEq(amount.toString())
+        .ft(`${this._contractAddress}.${this._contractName}`, this._tokenName),
     ];
   }
 }

@@ -1,7 +1,7 @@
+import assert from 'assert';
 import should from 'should';
-import { StacksTestnet, StacksMainnet } from '@stacks/network';
-import { pubKeyfromPrivKey, publicKeyToString } from '@stacks/transactions';
-import { principalToString } from '@stacks/transactions/dist/clarity/types/principalCV';
+import { STACKS_TESTNET, STACKS_MAINNET } from '@stacks/network';
+import { cvToString, privateKeyToPublic, publicKeyToHex } from '@stacks/transactions';
 
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
@@ -42,8 +42,8 @@ describe('Stacks: Send Many Builder', function () {
       const txBuilder: any = factory.getSendmanyBuilder();
       const txBuilderProd: any = factoryProd.getSendmanyBuilder();
 
-      txBuilder._network.should.deepEqual(new StacksTestnet());
-      txBuilderProd._network.should.deepEqual(new StacksMainnet());
+      txBuilder._network.should.deepEqual(STACKS_TESTNET);
+      txBuilderProd._network.should.deepEqual(STACKS_MAINNET);
     });
 
     describe('should build ', function () {
@@ -51,8 +51,8 @@ describe('Stacks: Send Many Builder', function () {
         const builder = initTxBuilder();
 
         // corresponding public keys
-        const pubKeys = testData.prvKeysString.map(pubKeyfromPrivKey);
-        const pubKeyStrings = pubKeys.map(publicKeyToString);
+        const pubKeys = testData.prvKeysString.map(privateKeyToPublic);
+        const pubKeyStrings = pubKeys.map(publicKeyToHex);
         builder.fromPubKey(pubKeyStrings);
         for (const recipient of testData.sendManyRecipients) {
           builder.send(recipient);
@@ -75,8 +75,10 @@ describe('Stacks: Send Many Builder', function () {
         list.length.should.equal(testData.sendManyRecipients.length);
         for (let i = 0; i < testData.sendManyRecipients.length; i++) {
           list[i].data.should.have.properties(['to', 'ustx', 'memo']);
-          principalToString(list[i].data.to).should.equal(testData.sendManyRecipients[i].address);
-          list[i].data.memo.buffer.toString('ascii').should.equal(testData.sendManyRecipients[i].memo);
+          cvToString(list[i].data.to).should.equal(testData.sendManyRecipients[i].address);
+          Buffer.from(list[i].data.memo.value, 'hex')
+            .toString('ascii')
+            .should.equal(testData.sendManyRecipients[i].memo);
           list[i].data.ustx.value.should.equal(testData.sendManyRecipients[i].amount);
         }
         tx.outputs.length.should.equal(testData.sendManyRecipients.length);
@@ -108,6 +110,33 @@ describe('Stacks: Send Many Builder', function () {
         builder.sign({ key: testData.prvKeysString[1] });
         const tx = await builder.build();
         tx.toBroadcastFormat().should.equal(testData.SIGNED_SEND_MANY_WITH_MEMO);
+      });
+    });
+
+    describe('send-many builder validation and mainnet post-condition', () => {
+      const destinationAddress = 'SP10FDHQQ4F2F0KHMN6Z24RMAMGX5933SQJCWKAAR';
+
+      it('rejects a send with an invalid address, amount or memo', () => {
+        const builder = initTxBuilder();
+        assert.throws(() => builder.send({ address: '', amount: '100' }), /Invalid or missing address/);
+        assert.throws(() => builder.send({ address: 'invalid', amount: '100' }), /Invalid or missing address/);
+        assert.throws(() => builder.send({ address: destinationAddress, amount: '' }), /Invalid or missing amount/);
+        assert.throws(() => builder.send({ address: destinationAddress, amount: '-5' }), /Invalid or missing amount/);
+        assert.throws(
+          () => builder.send({ address: destinationAddress, amount: '100', memo: 'x'.repeat(200) }),
+          /Invalid memo/
+        );
+      });
+
+      it('builds a mainnet multisig send-many with a mainnet multisig post-condition', async () => {
+        const builder = factoryProd.getSendmanyBuilder();
+        builder.fee({ fee: '532' });
+        builder.nonce(1);
+        builder.fromPubKey([testData.pubKey1, testData.pubKey2]);
+        builder.numberSignatures(2);
+        builder.send({ address: destinationAddress, amount: '100' });
+        const tx = await builder.build();
+        should.exist(tx.toBroadcastFormat());
       });
     });
   });

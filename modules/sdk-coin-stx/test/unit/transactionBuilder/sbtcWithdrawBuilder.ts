@@ -1,6 +1,16 @@
 import should from 'should';
-import { ClarityType, pubKeyfromPrivKey, publicKeyToString } from '@stacks/transactions';
-import { ContractCallPayload } from '@stacks/transactions/dist/payload';
+import {
+  bufferCV,
+  bufferCVFromString,
+  ClarityType,
+  ClarityValue,
+  ContractCallPayload,
+  deserializeTransaction,
+  privateKeyToPublic,
+  publicKeyToHex,
+  tupleCV,
+  uintCV,
+} from '@stacks/transactions';
 
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
@@ -35,8 +45,8 @@ describe('Stacks: sBTC Withdraw Builder', function () {
     describe('should build', function () {
       it('a withdrawal with P2PKH address', async () => {
         const builder = initTxBuilder();
-        const pubKeys = testData.prvKeysString.map(pubKeyfromPrivKey);
-        const pubKeyStrings = pubKeys.map(publicKeyToString);
+        const pubKeys = testData.prvKeysString.map(privateKeyToPublic);
+        const pubKeyStrings = pubKeys.map(publicKeyToHex);
         builder.fromPubKey(pubKeyStrings);
         builder.numberSignatures(2);
         builder.withdraw({
@@ -59,18 +69,18 @@ describe('Stacks: sBTC Withdraw Builder', function () {
         const recipientTuple = payload.functionArgs[1];
         should.equal(recipientTuple.type, ClarityType.Tuple);
         if (recipientTuple.type === ClarityType.Tuple) {
-          const hashbytes = recipientTuple.data['hashbytes'];
+          const hashbytes = recipientTuple.value['hashbytes'];
           should.equal(hashbytes.type, ClarityType.Buffer);
           if (hashbytes.type === ClarityType.Buffer) {
-            hashbytes.buffer.length.should.equal(20);
+            Buffer.from(hashbytes.value, 'hex').length.should.equal(20);
           }
         }
       });
 
       it('a withdrawal with P2SH address', async () => {
         const builder = initTxBuilder();
-        const pubKeys = testData.prvKeysString.map(pubKeyfromPrivKey);
-        const pubKeyStrings = pubKeys.map(publicKeyToString);
+        const pubKeys = testData.prvKeysString.map(privateKeyToPublic);
+        const pubKeyStrings = pubKeys.map(publicKeyToHex);
         builder.fromPubKey(pubKeyStrings);
         builder.numberSignatures(2);
         builder.withdraw({
@@ -86,17 +96,17 @@ describe('Stacks: sBTC Withdraw Builder', function () {
         const payload = (tx as StxLib.Transaction).stxTransaction.payload as ContractCallPayload;
         const recipientTuple = payload.functionArgs[1];
         if (recipientTuple.type === ClarityType.Tuple) {
-          const hashbytes = recipientTuple.data['hashbytes'];
+          const hashbytes = recipientTuple.value['hashbytes'];
           if (hashbytes.type === ClarityType.Buffer) {
-            hashbytes.buffer.length.should.equal(20);
+            Buffer.from(hashbytes.value, 'hex').length.should.equal(20);
           }
         }
       });
 
       it('a withdrawal with P2WPKH (bech32) address', async () => {
         const builder = initTxBuilder();
-        const pubKeys = testData.prvKeysString.map(pubKeyfromPrivKey);
-        const pubKeyStrings = pubKeys.map(publicKeyToString);
+        const pubKeys = testData.prvKeysString.map(privateKeyToPublic);
+        const pubKeyStrings = pubKeys.map(publicKeyToHex);
         builder.fromPubKey(pubKeyStrings);
         builder.numberSignatures(2);
         builder.withdraw({
@@ -112,17 +122,17 @@ describe('Stacks: sBTC Withdraw Builder', function () {
         const payload = (tx as StxLib.Transaction).stxTransaction.payload as ContractCallPayload;
         const recipientTuple = payload.functionArgs[1];
         if (recipientTuple.type === ClarityType.Tuple) {
-          const hashbytes = recipientTuple.data['hashbytes'];
+          const hashbytes = recipientTuple.value['hashbytes'];
           if (hashbytes.type === ClarityType.Buffer) {
-            hashbytes.buffer.length.should.equal(20);
+            Buffer.from(hashbytes.value, 'hex').length.should.equal(20);
           }
         }
       });
 
       it('a withdrawal with P2WSH (bech32) address', async () => {
         const builder = initTxBuilder();
-        const pubKeys = testData.prvKeysString.map(pubKeyfromPrivKey);
-        const pubKeyStrings = pubKeys.map(publicKeyToString);
+        const pubKeys = testData.prvKeysString.map(privateKeyToPublic);
+        const pubKeyStrings = pubKeys.map(publicKeyToHex);
         builder.fromPubKey(pubKeyStrings);
         builder.numberSignatures(2);
         builder.withdraw({
@@ -138,17 +148,17 @@ describe('Stacks: sBTC Withdraw Builder', function () {
         const payload = (tx as StxLib.Transaction).stxTransaction.payload as ContractCallPayload;
         const recipientTuple = payload.functionArgs[1];
         if (recipientTuple.type === ClarityType.Tuple) {
-          const hashbytes = recipientTuple.data['hashbytes'];
+          const hashbytes = recipientTuple.value['hashbytes'];
           if (hashbytes.type === ClarityType.Buffer) {
-            hashbytes.buffer.length.should.equal(32);
+            Buffer.from(hashbytes.value, 'hex').length.should.equal(32);
           }
         }
       });
 
       it('a withdrawal with P2TR (bech32m) address', async () => {
         const builder = initTxBuilder();
-        const pubKeys = testData.prvKeysString.map(pubKeyfromPrivKey);
-        const pubKeyStrings = pubKeys.map(publicKeyToString);
+        const pubKeys = testData.prvKeysString.map(privateKeyToPublic);
+        const pubKeyStrings = pubKeys.map(publicKeyToHex);
         builder.fromPubKey(pubKeyStrings);
         builder.numberSignatures(2);
         builder.withdraw({
@@ -164,9 +174,9 @@ describe('Stacks: sBTC Withdraw Builder', function () {
         const payload = (tx as StxLib.Transaction).stxTransaction.payload as ContractCallPayload;
         const recipientTuple = payload.functionArgs[1];
         if (recipientTuple.type === ClarityType.Tuple) {
-          const hashbytes = recipientTuple.data['hashbytes'];
+          const hashbytes = recipientTuple.value['hashbytes'];
           if (hashbytes.type === ClarityType.Buffer) {
-            hashbytes.buffer.length.should.equal(32);
+            Buffer.from(hashbytes.value, 'hex').length.should.equal(32);
           }
         }
       });
@@ -175,8 +185,8 @@ describe('Stacks: sBTC Withdraw Builder', function () {
     describe('round-trip: serialize → deserialize → rebuild', function () {
       it('should rebuild a signed withdrawal transaction from raw hex', async () => {
         const builder = initTxBuilder();
-        const pubKeys = testData.prvKeysString.map(pubKeyfromPrivKey);
-        const pubKeyStrings = pubKeys.map(publicKeyToString);
+        const pubKeys = testData.prvKeysString.map(privateKeyToPublic);
+        const pubKeyStrings = pubKeys.map(publicKeyToHex);
         builder.fromPubKey(pubKeyStrings);
         builder.numberSignatures(2);
         builder.withdraw({
@@ -199,8 +209,8 @@ describe('Stacks: sBTC Withdraw Builder', function () {
 
       it('should rebuild an unsigned withdrawal transaction from raw hex', async () => {
         const builder = initTxBuilder();
-        const pubKeys = testData.prvKeysString.map(pubKeyfromPrivKey);
-        const pubKeyStrings = pubKeys.map(publicKeyToString);
+        const pubKeys = testData.prvKeysString.map(privateKeyToPublic);
+        const pubKeyStrings = pubKeys.map(publicKeyToHex);
         builder.fromPubKey(pubKeyStrings);
         builder.numberSignatures(2);
         builder.withdraw({
@@ -315,11 +325,96 @@ describe('Stacks: sBTC Withdraw Builder', function () {
 
       it('should fail to build without withdraw params', async () => {
         const builder = initTxBuilder();
-        const pubKeys = testData.prvKeysString.map(pubKeyfromPrivKey);
-        const pubKeyStrings = pubKeys.map(publicKeyToString);
+        const pubKeys = testData.prvKeysString.map(privateKeyToPublic);
+        const pubKeyStrings = pubKeys.map(publicKeyToHex);
         builder.fromPubKey(pubKeyStrings);
         builder.numberSignatures(2);
         await builder.build().should.be.rejectedWith(/Withdrawal params are not set/);
+      });
+    });
+
+    describe('sBTC withdraw deserialization edge cases', function () {
+      const btcAddress = '1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2';
+      const recipientTuple = () =>
+        tupleCV({ version: bufferCV(Buffer.from([0])), hashbytes: bufferCV(Buffer.alloc(32)) });
+
+      const buildWithdrawTx = async () => {
+        const builder = initTxBuilder();
+        const pubKeyStrings = testData.prvKeysString.map((key) => publicKeyToHex(privateKeyToPublic(key)));
+        builder.fromPubKey(pubKeyStrings);
+        builder.numberSignatures(2);
+        builder.withdraw({ amount: '100000', btcAddress, maxFee: '5000' });
+        return deserializeTransaction((await builder.build()).toBroadcastFormat());
+      };
+
+      const asTransaction = (wire: ReturnType<typeof deserializeTransaction>, args?: ClarityValue[]) => {
+        if (args) {
+          (wire.payload as unknown as { functionArgs: ClarityValue[] }).functionArgs = args;
+        }
+        const tx = new StxLib.Transaction(coins.get(coinNameTest));
+        tx.stxTransaction = wire;
+        return tx;
+      };
+
+      it('returns undefined withdraw params when none are set', function () {
+        should.not.exist(factory.getSbtcWithdrawBuilder().getWithdrawParams());
+      });
+
+      it('rejects a serialized withdrawal with an unexpected number of args', async function () {
+        const tx = asTransaction(await buildWithdrawTx(), [uintCV(1), uintCV(2)]);
+        should.throws(() => factory.getSbtcWithdrawBuilder(tx), /Invalid number of function args for sBTC withdrawal/);
+      });
+
+      it('rejects a serialized withdrawal whose amount is not a uint', async function () {
+        const tx = asTransaction(await buildWithdrawTx(), [bufferCVFromString('x'), recipientTuple(), uintCV(3)]);
+        should.throws(() => factory.getSbtcWithdrawBuilder(tx), /Expected uint for amount argument/);
+      });
+
+      it('rejects a serialized withdrawal whose recipient is not a tuple', async function () {
+        const tx = asTransaction(await buildWithdrawTx(), [uintCV(1), uintCV(2), uintCV(3)]);
+        should.throws(() => factory.getSbtcWithdrawBuilder(tx), /Expected tuple for recipient argument/);
+      });
+
+      it('rejects a serialized withdrawal with non-buffer recipient fields', async function () {
+        const tx = asTransaction(await buildWithdrawTx(), [
+          uintCV(1),
+          tupleCV({ version: uintCV(1), hashbytes: uintCV(2) }),
+          uintCV(3),
+        ]);
+        should.throws(() => factory.getSbtcWithdrawBuilder(tx), /Expected buffer fields in recipient tuple/);
+      });
+
+      it('rejects a serialized withdrawal whose max fee is not a uint', async function () {
+        const tx = asTransaction(await buildWithdrawTx(), [uintCV(1), recipientTuple(), bufferCVFromString('x')]);
+        should.throws(() => factory.getSbtcWithdrawBuilder(tx), /Expected uint for max-fee argument/);
+      });
+
+      it('returns undefined when the stored payload has no recipient tuple or buffers', function () {
+        const builder = factory.getSbtcWithdrawBuilder() as unknown as {
+          _withdrawParams: unknown;
+          _transaction: unknown;
+          getWithdrawParams: () => unknown;
+        };
+        builder._withdrawParams = { amount: '1', btcAddress: '', maxFee: '1' };
+        const stub = (functionArgs: unknown[]) => ({ stxTransaction: { payload: { functionArgs } } });
+
+        builder._transaction = stub([uintCV(1), uintCV(2), uintCV(3)]);
+        should.not.exist(builder.getWithdrawParams());
+
+        builder._transaction = stub([uintCV(1), tupleCV({ version: uintCV(1), hashbytes: uintCV(1) }), uintCV(3)]);
+        should.not.exist(builder.getWithdrawParams());
+      });
+
+      it('builds a mainnet withdrawal with a mainnet post-condition address', async function () {
+        const mainnetFactory = new StxLib.TransactionBuilderFactory(coins.get('stx'));
+        const builder = mainnetFactory.getSbtcWithdrawBuilder();
+        builder.fee({ fee: '1000' });
+        builder.nonce(1);
+        const pubKeyStrings = testData.prvKeysString.map((key) => publicKeyToHex(privateKeyToPublic(key)));
+        builder.fromPubKey(pubKeyStrings);
+        builder.numberSignatures(2);
+        builder.withdraw({ amount: '100000', btcAddress, maxFee: '5000' });
+        should.exist((await builder.build()).toBroadcastFormat());
       });
     });
   });

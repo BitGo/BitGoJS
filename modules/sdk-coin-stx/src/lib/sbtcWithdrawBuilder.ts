@@ -6,9 +6,8 @@ import {
   AddressVersion,
   bufferCV,
   ClarityType,
-  createAssetInfo,
-  FungibleConditionCode,
-  makeStandardFungiblePostCondition,
+  ContractCallPayload,
+  Pc,
   PostCondition,
   PostConditionMode,
   tupleCV,
@@ -19,7 +18,6 @@ import { Transaction } from './transaction';
 import { getSTXAddressFromPubKeys, isValidAmount } from './utils';
 import { SbtcWithdrawParams } from './iface';
 import { CONTRACT_NAME_SBTC_WITHDRAWAL, FUNCTION_NAME_INITIATE_WITHDRAWAL } from './constants';
-import { ContractCallPayload } from '@stacks/transactions/dist/payload';
 import { AbstractContractBuilder } from './abstractContractBuilder';
 import { decodeBtcAddress, isValidBtcAddress } from './btcAddressUtils';
 
@@ -85,8 +83,8 @@ export class SbtcWithdrawBuilder extends AbstractContractBuilder {
     if (args[1].type !== ClarityType.Tuple) {
       throw new BuildTransactionError('Expected tuple for recipient argument');
     }
-    const versionBuf = args[1].data['version'];
-    const hashbytesBuf = args[1].data['hashbytes'];
+    const versionBuf = args[1].value['version'];
+    const hashbytesBuf = args[1].value['hashbytes'];
     if (versionBuf?.type !== ClarityType.Buffer || hashbytesBuf?.type !== ClarityType.Buffer) {
       throw new BuildTransactionError('Expected buffer fields in recipient tuple');
     }
@@ -121,16 +119,16 @@ export class SbtcWithdrawBuilder extends AbstractContractBuilder {
     if (recipientTuple?.type !== ClarityType.Tuple) {
       return undefined;
     }
-    const versionBuf = recipientTuple.data['version'];
-    const hashbytesBuf = recipientTuple.data['hashbytes'];
+    const versionBuf = recipientTuple.value['version'];
+    const hashbytesBuf = recipientTuple.value['hashbytes'];
     if (versionBuf?.type !== ClarityType.Buffer || hashbytesBuf?.type !== ClarityType.Buffer) {
       return undefined;
     }
     return {
       amount: this._withdrawParams.amount,
       maxFee: this._withdrawParams.maxFee,
-      recipientVersion: versionBuf.buffer[0],
-      recipientHashBytes: Buffer.from(hashbytesBuf.buffer),
+      recipientVersion: Buffer.from(versionBuf.value, 'hex')[0],
+      recipientHashBytes: Buffer.from(hashbytesBuf.value, 'hex'),
     };
   }
 
@@ -174,19 +172,18 @@ export class SbtcWithdrawBuilder extends AbstractContractBuilder {
     const sbtcContractAddress = network.sbtcWithdrawalContractAddress;
 
     return [
-      makeStandardFungiblePostCondition(
+      Pc.principal(
         getSTXAddressFromPubKeys(
           this._fromPubKeys,
           this._coinConfig.network.type === NetworkType.MAINNET
             ? AddressVersion.MainnetMultiSig
             : AddressVersion.TestnetMultiSig,
-          this._fromPubKeys.length > 1 ? AddressHashMode.SerializeP2SH : AddressHashMode.SerializeP2PKH,
+          this._fromPubKeys.length > 1 ? AddressHashMode.P2SH : AddressHashMode.P2PKH,
           this._numberSignatures
-        ).address,
-        FungibleConditionCode.Equal,
-        amount.toString(),
-        createAssetInfo(sbtcContractAddress, SBTC_TOKEN_CONTRACT_NAME, SBTC_TOKEN_ASSET_NAME)
-      ),
+        ).address
+      )
+        .willSendEq(amount.toString())
+        .ft(`${sbtcContractAddress}.${SBTC_TOKEN_CONTRACT_NAME}`, SBTC_TOKEN_ASSET_NAME),
     ];
   }
 }

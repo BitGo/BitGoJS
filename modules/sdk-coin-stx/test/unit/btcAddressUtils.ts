@@ -1,3 +1,5 @@
+import * as bs58check from 'bs58check';
+import { bech32, bech32m } from 'bech32';
 import should from 'should';
 import { decodeBtcAddress, isValidBtcAddress, SbtcAddressVersion } from '../../src/lib/btcAddressUtils';
 
@@ -83,6 +85,28 @@ describe('btcAddressUtils', function () {
       isValidBtcAddress('').should.be.false();
       isValidBtcAddress('notanaddress').should.be.false();
       isValidBtcAddress('SP10FDHQQ4F2F0KHMN6Z24RMAMGX5933SQJCWKAAR').should.be.false(); // STX address
+    });
+  });
+
+  describe('decodeBtcAddress error branches', function () {
+    it('should reject a base58check payload whose hash is not 20 bytes', function () {
+      const address = bs58check.encode(Buffer.concat([Buffer.from([0x00]), Buffer.alloc(19)]));
+      should.throws(() => decodeBtcAddress(address), /Unable to decode Bitcoin address/);
+    });
+
+    it('should reject an unknown base58check version byte', function () {
+      const address = bs58check.encode(Buffer.concat([Buffer.from([0x99]), Buffer.alloc(20)]));
+      should.throws(() => decodeBtcAddress(address), /Unable to decode Bitcoin address/);
+    });
+
+    it('should reject an invalid witness v0 program length', function () {
+      const address = bech32.encode('bc', [0, ...bech32.toWords(Buffer.alloc(25))]);
+      should.throws(() => decodeBtcAddress(address), /Invalid witness v0 program length/);
+    });
+
+    it('should reject an invalid witness v1 program length', function () {
+      const address = bech32m.encode('bc', [1, ...bech32m.toWords(Buffer.alloc(20))]);
+      should.throws(() => decodeBtcAddress(address), /Invalid witness v1 program length/);
     });
   });
 });

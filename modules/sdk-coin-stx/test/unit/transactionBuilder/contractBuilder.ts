@@ -1,8 +1,8 @@
 import assert from 'assert';
 import should from 'should';
 import BigNum from 'bn.js';
-import { StacksTestnet, StacksMainnet } from '@stacks/network';
-import { TransactionType } from '@bitgo/sdk-core';
+import { STACKS_TESTNET, STACKS_MAINNET } from '@stacks/network';
+import { InvalidParameterValueError, TransactionType } from '@bitgo/sdk-core';
 import { bufferCV, noneCV, someCV, standardPrincipalCV, tupleCV, uintCV, intCV } from '@stacks/transactions';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
@@ -49,8 +49,8 @@ describe('Stacks: Contract Builder', function () {
         const txBuilder: any = factory.getTransferBuilder();
         const txBuilderProd: any = factoryProd.getTransferBuilder();
 
-        txBuilder._network.should.deepEqual(new StacksTestnet());
-        txBuilderProd._network.should.deepEqual(new StacksMainnet());
+        txBuilder._network.should.deepEqual(STACKS_TESTNET);
+        txBuilderProd._network.should.deepEqual(STACKS_MAINNET);
       });
     });
 
@@ -360,6 +360,15 @@ describe('Stacks: Contract Builder', function () {
           ]);
         });
 
+        it('rejects a malformed JSON descriptor instead of treating it as a ClarityValue', () => {
+          const builder = initTxBuilder();
+          // `{ type: 'list' }` / `{ type: 'tuple' }` reuse a ClarityType name but carry no
+          // `val`/`value`; they must still be validated by `parseCv` (and rejected) rather than
+          // passed through as raw ClarityValues.
+          assert.throws(() => builder.functionArgs([{ type: 'list' } as never]), InvalidParameterValueError);
+          assert.throws(() => builder.functionArgs([{ type: 'tuple' } as never]), InvalidParameterValueError);
+        });
+
         it('use ClarityValue', () => {
           const amount = '400000000';
           const builder = initTxBuilder();
@@ -489,6 +498,49 @@ describe('Stacks: Contract Builder', function () {
               builder.functionArgs([{ type: 'response', val: { type: 'maybe', val: { type: 'uint128', val: '1' } } }]),
             /response requires \{ type: ok\|err, val \}/
           );
+        });
+      });
+
+      describe('contract builder validation and init edge cases', function () {
+        it('rejects an invalid contract address and empty names', function () {
+          const builder = factory.getContractBuilder();
+          assert.throws(() => builder.contractAddress('invalid'), /Invalid address/);
+          assert.throws(() => builder.contractName(''), /Invalid name/);
+          assert.throws(() => builder.functionName(''), /Invalid name/);
+        });
+
+        it('parses a response-error Clarity value descriptor', function () {
+          const builder = factory.getContractBuilder();
+          builder.functionArgs([{ type: 'response', val: { type: 'err', val: { type: 'uint128', val: '1' } } }]);
+        });
+
+        it('rejects principal descriptors without a string val', function () {
+          const builder = factory.getContractBuilder();
+          assert.throws(
+            () => builder.functionArgs([{ type: 'contractPrincipal', val: 1 } as never]),
+            /contract principal requires string val/
+          );
+          assert.throws(
+            () => builder.functionArgs([{ type: 'standardPrincipal', val: 1 } as never]),
+            /standard principal requires string val/
+          );
+        });
+
+        it('rejects a contract-call init with a missing or non-contract-call payload', function () {
+          const builder = factory.getContractBuilder();
+          assert.throws(
+            () => builder.initBuilder({ toJson: () => ({ payload: undefined }) } as never),
+            /payload must not be undefined/
+          );
+          assert.throws(
+            () => builder.initBuilder({ toJson: () => ({ payload: { payloadType: 0 } }) } as never),
+            /Transaction should be contract call/
+          );
+        });
+
+        it('rejects building a contract call without a public key', async function () {
+          const builder = initTxBuilder();
+          await assert.rejects(builder.build(), /supply at least 1 public key/);
         });
       });
     });

@@ -8,27 +8,25 @@ import {
   addressHashModeToVersion,
   addressToString,
   AddressVersion,
-  BufferReader,
+  BytesReader,
   ClarityType,
   ClarityValue,
   contractPrincipalCV,
   createAddress,
   createMemoString,
-  createMessageSignature,
-  createStacksPrivateKey,
   createStacksPublicKey,
   cvToString,
   cvToValue,
   deserializeTransaction,
   PubKeyEncoding,
-  publicKeyFromSignature,
+  publicKeyFromSignatureVrs,
   serializeCV,
   signWithKey,
-  StacksTransaction,
+  StacksTransactionWire,
   standardPrincipalCV,
-  TransactionVersion,
   validateStacksAddress,
 } from '@stacks/transactions';
+import { StacksNetworkName, TransactionVersion } from '@stacks/network';
 import { secp256k1 } from '@noble/curves/secp256k1';
 import * as _ from 'lodash';
 import {
@@ -91,6 +89,10 @@ export function removeHexPrefix(hex: string): string {
   return stripHexPrefix(hex);
 }
 
+function transactionVersionToNetworkName(transactionVersion: TransactionVersion): StacksNetworkName {
+  return transactionVersion === TransactionVersion.Testnet ? 'testnet' : 'mainnet';
+}
+
 /**
  * Get stacks address from public key hash
  *
@@ -108,7 +110,7 @@ function getAddressFromPublicKeyHash(
     throw new Error('expected 20-byte pubkeyhash');
   }
 
-  const addrVer = addressHashModeToVersion(hashMode, transactionVersion);
+  const addrVer = addressHashModeToVersion(hashMode, transactionVersionToNetworkName(transactionVersion));
   const addr = addressFromVersionHash(addrVer, publicKeyHash.toString('hex'));
   const addrString = addressToString(addr);
   return addrString;
@@ -117,13 +119,13 @@ function getAddressFromPublicKeyHash(
 /**
  * @param tx
  */
-export function getTxSenderAddress(tx: StacksTransaction): string {
+export function getTxSenderAddress(tx: StacksTransactionWire): string {
   if (tx.auth.spendingCondition !== null && tx.auth.spendingCondition !== undefined) {
     const spendingCondition = tx.auth.spendingCondition;
     const txSender = getAddressFromPublicKeyHash(
       Buffer.from(spendingCondition.signer, 'hex'),
       spendingCondition.hashMode as number,
-      tx.version
+      tx.transactionVersion
     );
     return txSender;
   } else throw new Error('spendingCondition should not be null');
@@ -242,7 +244,7 @@ function allHexChars(maybe: string): boolean {
 export function isValidRawTransaction(rawTransaction: unknown): boolean {
   try {
     if (typeof rawTransaction === 'string') {
-      deserializeTransaction(BufferReader.fromBuffer(Buffer.from(removeHexPrefix(rawTransaction), 'hex')));
+      deserializeTransaction(new BytesReader(removeHexPrefix(rawTransaction)));
     } else {
       return false;
     }
@@ -260,6 +262,12 @@ export function isValidRawTransaction(rawTransaction: unknown): boolean {
  * @returns {boolean} - the validation result
  */
 export function isValidMemo(memo: string): boolean {
+  // v7's `createMemoString` only guards byte length via `exceedsMaxLengthBytes`, which (unlike
+  // v2's `Buffer.from(string)`) no longer throws on non-strings — it silently coerces them.
+  // Reject non-strings explicitly so a non-string memo stays invalid, matching v2 behaviour.
+  if (typeof memo !== 'string') {
+    return false;
+  }
   try {
     createMemoString(memo);
   } catch (e) {
@@ -326,7 +334,7 @@ export function unpadMemo(memo: string): string {
 export function getSTXAddressFromPubKeys(
   pubKeys: string[],
   addressVersion: AddressVersion = AddressVersion.MainnetMultiSig,
-  addressHashMode: AddressHashMode = AddressHashMode.SerializeP2SH,
+  addressHashMode: AddressHashMode = AddressHashMode.P2SH,
   signaturesRequired = 2
 ): { address: string; hash160: string } {
   if (pubKeys.length === 0) {
@@ -355,7 +363,7 @@ export function getSTXAddressFromPubKeys(
 export function signMessage(keyPair: KeyPair, data: string): string {
   const prv = keyPair.getKeys().prv;
   if (prv) {
-    return signWithKey(createStacksPrivateKey(prv), Buffer.from(data).toString('hex')).data;
+    return signWithKey(prv, Buffer.from(data).toString('hex'));
   } else {
     throw new SigningError('Missing private key');
   }
@@ -381,9 +389,7 @@ export function verifySignature(message: string, signature: string, publicKey: s
   // provided publicKey can be compressed or uncompressed
   const keyEncoding = publicKey.length === 66 ? PubKeyEncoding.Compressed : PubKeyEncoding.Uncompressed;
 
-  const messageSig = createMessageSignature(signature);
-
-  const foundKey = publicKeyFromSignature(Buffer.from(message).toString('hex'), messageSig, keyEncoding);
+  const foundKey = publicKeyFromSignatureVrs(Buffer.from(message).toString('hex'), signature, keyEncoding);
 
   return foundKey === publicKey;
 }
@@ -482,12 +488,12 @@ export function stringifyCv(cv: ClarityValue): any {
     case ClarityType.Tuple:
       return {
         type: cv.type,
-        data: _.mapValues(cv.data, (value) => stringifyCv(value)),
+        data: _.mapValues(cv.value, (value) => stringifyCv(value)),
       };
     case ClarityType.List:
       return {
         type: cv.type,
-        list: cv.list.map(stringifyCv),
+        list: cv.value.map(stringifyCv),
       };
     default:
       return cv;
@@ -504,19 +510,19 @@ export function functionArgsToSendParams(args: ClarityValue[]): SendParams[] {
   if (args.length !== 1 || args[0].type !== ClarityType.List) {
     throw new InvalidTransactionError("function args don't match send-many-memo type declaration");
   }
-  return args[0].list.map((tuple) => {
+  return args[0].value.map((tuple) => {
     if (
       tuple.type !== ClarityType.Tuple ||
-      tuple.data.to?.type !== ClarityType.PrincipalStandard ||
-      tuple.data.ustx?.type !== ClarityType.UInt ||
-      tuple.data.memo?.type !== ClarityType.Buffer
+      tuple.value.to?.type !== ClarityType.PrincipalStandard ||
+      tuple.value.ustx?.type !== ClarityType.UInt ||
+      tuple.value.memo?.type !== ClarityType.Buffer
     ) {
       throw new InvalidTransactionError("function args don't match send-many-memo type declaration");
     }
     return {
-      address: cvToString(tuple.data.to),
-      amount: cvToValue(tuple.data.ustx, true),
-      memo: tuple.data.memo.buffer.toString('ascii'),
+      address: cvToString(tuple.value.to),
+      amount: cvToValue(tuple.value.ustx, true),
+      memo: Buffer.from(tuple.value.memo.value, 'hex').toString('ascii'),
     };
   });
 }
@@ -538,7 +544,7 @@ export function functionArgsToTokenTransferParams(args: ClarityValue[]): TokenTr
     recipient: cvToString(args[2]),
   };
   if (args.length === 4 && args[3].type === ClarityType.Buffer) {
-    tokenTransferParams['memo'] = args[3].buffer.toString('ascii');
+    tokenTransferParams['memo'] = Buffer.from(args[3].value, 'hex').toString('ascii');
   }
   return tokenTransferParams;
 }
@@ -578,7 +584,7 @@ export function getEncodedPrincipal(principal: string): string {
   if (!isValidAddress(principal)) {
     throw new UtilsError(`invalid Stacks address in principal: ${principal}`);
   }
-  return serializeCV(standardPrincipalCV(principal)).toString('hex');
+  return serializeCV(standardPrincipalCV(principal));
 }
 
 /**
@@ -628,7 +634,7 @@ export function findTokenNameByContract(contractAddress: string, contractName: s
     const tokenName = coins
       .filter((coin) => coin instanceof Sip10Token && coin.assetId.includes(`${contractAddress}.${contractName}`))
       .map((coin) => coin.name);
-    return tokenName ? tokenName[0] : undefined;
+    return tokenName.length > 0 ? tokenName[0] : undefined;
   }
 }
 
@@ -644,7 +650,7 @@ export function findContractTokenNameUsingContract(contractAddress: string, cont
     const sip10Token = coins
       .filter((coin) => coin instanceof Sip10Token && coin.assetId.includes(`${contractAddress}.${contractName}`))
       .map((coin) => coin as Sip10Token);
-    return sip10Token ? sip10Token[0].assetId.split('::')[1] : undefined;
+    return sip10Token.length > 0 ? sip10Token[0].assetId.split('::')[1] : undefined;
   }
 }
 
