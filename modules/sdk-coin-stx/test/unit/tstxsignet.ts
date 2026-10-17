@@ -29,6 +29,17 @@ describe('tstxsignet', function () {
     assert.strictEqual(basecoin.getPublicNodeUrl(), 'https://api.staking-testnet.hiro.so');
   });
 
+  it('throws when the environment has no stx signet node url', function () {
+    const bitgoEnv = (basecoin as unknown as { bitgo: { getEnv: () => string } }).bitgo;
+    const originalGetEnv = bitgoEnv.getEnv;
+    bitgoEnv.getEnv = () => 'prod';
+    try {
+      assert.throws(() => basecoin.getPublicNodeUrl(), /no stx signet node url configured for env prod/);
+    } finally {
+      bitgoEnv.getEnv = originalGetEnv;
+    }
+  });
+
   describe('wallet creation', function () {
     it('generates a wallet keypair from the coin', function () {
       const keyPair = basecoin.generateKeyPair();

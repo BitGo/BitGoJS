@@ -1,8 +1,10 @@
 import _ from 'lodash';
 import nock from 'nock';
+import should from 'should';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { ITransactionRecipient, Wallet, Memo } from '@bitgo/sdk-core';
+import { coins } from '@bitgo/statics';
 
 import { Sip10Token } from '../../src';
 import * as testData from '../fixtures';
@@ -283,6 +285,34 @@ describe('Sip10Token:', function () {
       assert.deepEqual(response.txHex, testData.HOT_WALLET_TOKEN_RECOVERY_TX_HEX, 'tx hex not matching!');
     });
 
+    it('should build a signed token recover transaction to a destination with a memo id', async () => {
+      const rootAddress = testData.HOT_WALLET_ROOT_ADDRESS;
+      nock('https://api.testnet.hiro.so')
+        .get(`/extended/v2/addresses/${rootAddress}/balances/stx`)
+        .reply(200, testData.ACCOUNT_BALANCE_RESPONSE);
+      nock('https://api.testnet.hiro.so')
+        .get(`/extended/v2/addresses/${rootAddress}/balances/ft/${testData.STX_TOKEN_ASSET_ID}`)
+        .reply(200, testData.TOKEN_BALANCE_RESPONSE);
+      nock('https://api.testnet.hiro.so')
+        .get(`/extended/v1/address/${rootAddress}/nonces`)
+        .reply(200, testData.ACCOUNT_NONCE_RESPONSE);
+      nock('https://api.testnet.hiro.so', { allowUnmocked: true })
+        .post(`/v2/fees/transaction`)
+        .reply(200, testData.FEE_ESTIMATION_TOKEN_RESPONSE);
+
+      const recoveryOptions: RecoveryOptions = {
+        backupKey: testData.HOT_WALLET_KEY_CARD_INFO.BACKUP_KEY,
+        userKey: testData.HOT_WALLET_KEY_CARD_INFO.USER_KEY,
+        rootAddress: rootAddress,
+        recoveryDestination: `${testData.DESTINATION_ADDRESS_WRW}?memoId=8`,
+        bitgoKey: testData.HOT_WALLET_KEY_CARD_INFO.BITGO_PUB_KEY,
+        walletPassphrase: testData.HOT_WALLET_KEY_CARD_INFO.WALLET_PASSPHRASE,
+        contractId: 'STAG18E45W613FZ3H4ZMF6QHH426EXM5QTSAVWYH.tsip6dp-token',
+      };
+      const response = (await basecoin.recover(recoveryOptions)) as RecoveryTransaction;
+      should.exist(response.txHex);
+    });
+
     it('should build an unsigned token transaction when public keys are passed', async () => {
       const rootAddress = testData.COLD_WALLET_ROOT_ADDRESS;
       nock(`https://api.testnet.hiro.so`)
@@ -361,6 +391,38 @@ describe('Sip10Token:', function () {
       await basecoin
         .recover(recoveryOptions)
         .should.rejectedWith('invalid contract id, please provide it in the form (contractAddress.contractName)');
+    });
+  });
+
+  describe('Sip10 token metadata', function () {
+    it('exposes the configured token properties', function () {
+      const config = (
+        basecoin as unknown as {
+          tokenConfig: {
+            name: string;
+            coin: string;
+            network: string;
+            assetId: string;
+            decimalPlaces: number;
+            type: string;
+          };
+        }
+      ).tokenConfig;
+
+      basecoin.name.should.equal(config.name);
+      basecoin.coin.should.equal(config.coin);
+      basecoin.network.should.equal(config.network);
+      basecoin.assetId.should.equal(config.assetId);
+      basecoin.decimalPlaces.should.equal(config.decimalPlaces);
+      basecoin.getChain().should.equal(config.type);
+      basecoin.getBaseChain().should.equal(config.coin);
+      basecoin.getFullName().should.equal('Sip10 Token');
+      basecoin.getBaseFactor().should.equal(Math.pow(10, config.decimalPlaces));
+    });
+
+    it('returns a fungible token transfer builder from getTransaction', function () {
+      const builder = basecoin.getTransaction(coins.get(basecoin.getChain()));
+      should.exist(builder);
     });
   });
 });

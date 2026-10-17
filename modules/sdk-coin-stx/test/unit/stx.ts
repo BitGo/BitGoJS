@@ -456,6 +456,23 @@ describe('STX:', function () {
         .verifyTransaction({ txPrebuild, txParams })
         .should.be.rejectedWith('Tx memo does not match with expected txParams recipient memo');
     });
+
+    it('should derive the memo from the recipient address memo id when no memo is passed', async function () {
+      const wallet = new Wallet(bitgo, basecoin, {});
+      const txParams = {
+        recipients: [
+          {
+            address: `${testData.txExplainedTransfer.recipient}?memoId=${encodeURIComponent(
+              testData.txExplainedTransfer.memo
+            )}`,
+            amount: testData.txExplainedTransfer.outputAmount,
+          },
+        ],
+        wallet,
+      };
+      const result = await basecoin.verifyTransaction({ txPrebuild, txParams });
+      result.should.equal(true);
+    });
   });
 
   describe('Verify sBTC Withdraw Transaction', function () {
@@ -537,6 +554,20 @@ describe('STX:', function () {
       await basecoin
         .verifyTransaction({ txPrebuild: { txHex }, txParams })
         .should.be.rejectedWith(/sBTC withdrawal btcAddress does not match/);
+    });
+
+    it('should reject verifying withdrawal params against a non-withdrawal transaction', async function () {
+      const txParams = {
+        sbtcWithdrawParams: {
+          amount: '1000',
+          btcAddress: '1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2',
+          maxFee: '10000',
+        },
+        recipients: [{ address: 'SM1K9VF5GN48Q0AC2C7SB8WM5N5NR6DYC9VM3QEJE', amount: '10' }],
+      };
+      await basecoin
+        .verifyTransaction({ txPrebuild: { txHex: resources.RAW_TX_UNSIGNED }, txParams })
+        .should.be.rejectedWith(/Tx is not a valid sBTC withdrawal transaction/);
     });
   });
 
@@ -691,6 +722,52 @@ describe('STX:', function () {
         walletPassphrase: testData.HOT_WALLET_KEY_CARD_INFO.WALLET_PASSPHRASE,
       };
       await basecoin.recover(recoveryOptions).should.rejectedWith(RecoveryProviderError);
+    });
+
+    it('should include a memo when recovering to a destination with a memo id', async function () {
+      const rootAddress = testData.HOT_WALLET_ROOT_ADDRESS;
+      nock(`https://api.testnet.hiro.so`)
+        .get(`/extended/v2/addresses/${rootAddress}/balances/stx`)
+        .reply(200, testData.ACCOUNT_BALANCE_RESPONSE);
+      nock(`https://api.testnet.hiro.so`)
+        .get(`/extended/v1/address/${rootAddress}/nonces`)
+        .reply(200, testData.ACCOUNT_NONCE_RESPONSE);
+      nock(`https://api.testnet.hiro.so`, { allowUnmocked: true })
+        .post(`/v2/fees/transaction`)
+        .reply(200, testData.FEE_ESTIMATION_RESPONSE);
+
+      const recoveryOptions: RecoveryOptions = {
+        backupKey: testData.HOT_WALLET_KEY_CARD_INFO.BACKUP_KEY,
+        userKey: testData.HOT_WALLET_KEY_CARD_INFO.USER_KEY,
+        rootAddress: rootAddress,
+        recoveryDestination: `${testData.DESTINATION_ADDRESS_WRW}?memoId=8`,
+        bitgoKey: testData.HOT_WALLET_KEY_CARD_INFO.BITGO_PUB_KEY,
+        walletPassphrase: testData.HOT_WALLET_KEY_CARD_INFO.WALLET_PASSPHRASE,
+      };
+      const response: RecoveryTransaction = await basecoin.recover(recoveryOptions);
+      response.should.have.property('txHex');
+    });
+
+    it('should reject recover when the backup key is not a private key', async function () {
+      const rootAddress = testData.HOT_WALLET_ROOT_ADDRESS;
+      nock(`https://api.testnet.hiro.so`)
+        .get(`/extended/v2/addresses/${rootAddress}/balances/stx`)
+        .reply(200, testData.ACCOUNT_BALANCE_RESPONSE);
+      nock(`https://api.testnet.hiro.so`)
+        .get(`/extended/v1/address/${rootAddress}/nonces`)
+        .reply(200, testData.ACCOUNT_NONCE_RESPONSE);
+      nock(`https://api.testnet.hiro.so`, { allowUnmocked: true })
+        .post(`/v2/fees/transaction`)
+        .reply(200, testData.FEE_ESTIMATION_RESPONSE);
+
+      const recoveryOptions: RecoveryOptions = {
+        backupKey: testData.COLD_WALLET_PUBLIC_KEY_INFO.BACKUP_KEY,
+        userKey: resources.xprv1,
+        rootAddress: rootAddress,
+        recoveryDestination: testData.DESTINATION_ADDRESS_WRW,
+        bitgoKey: testData.HOT_WALLET_KEY_CARD_INFO.BITGO_PUB_KEY,
+      };
+      await basecoin.recover(recoveryOptions).should.be.rejectedWith('backupKey is not a private key');
     });
   });
 });

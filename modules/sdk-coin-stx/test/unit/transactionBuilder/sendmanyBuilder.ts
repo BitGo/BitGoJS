@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { STACKS_TESTNET, STACKS_MAINNET } from '@stacks/network';
 import { cvToString, privateKeyToPublic, publicKeyToHex } from '@stacks/transactions';
@@ -109,6 +110,33 @@ describe('Stacks: Send Many Builder', function () {
         builder.sign({ key: testData.prvKeysString[1] });
         const tx = await builder.build();
         tx.toBroadcastFormat().should.equal(testData.SIGNED_SEND_MANY_WITH_MEMO);
+      });
+    });
+
+    describe('send-many builder validation and mainnet post-condition', () => {
+      const destinationAddress = 'SP10FDHQQ4F2F0KHMN6Z24RMAMGX5933SQJCWKAAR';
+
+      it('rejects a send with an invalid address, amount or memo', () => {
+        const builder = initTxBuilder();
+        assert.throws(() => builder.send({ address: '', amount: '100' }), /Invalid or missing address/);
+        assert.throws(() => builder.send({ address: 'invalid', amount: '100' }), /Invalid or missing address/);
+        assert.throws(() => builder.send({ address: destinationAddress, amount: '' }), /Invalid or missing amount/);
+        assert.throws(() => builder.send({ address: destinationAddress, amount: '-5' }), /Invalid or missing amount/);
+        assert.throws(
+          () => builder.send({ address: destinationAddress, amount: '100', memo: 'x'.repeat(200) }),
+          /Invalid memo/
+        );
+      });
+
+      it('builds a mainnet multisig send-many with a mainnet multisig post-condition', async () => {
+        const builder = factoryProd.getSendmanyBuilder();
+        builder.fee({ fee: '532' });
+        builder.nonce(1);
+        builder.fromPubKey([testData.pubKey1, testData.pubKey2]);
+        builder.numberSignatures(2);
+        builder.send({ address: destinationAddress, amount: '100' });
+        const tx = await builder.build();
+        should.exist(tx.toBroadcastFormat());
       });
     });
   });

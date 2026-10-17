@@ -179,5 +179,100 @@ describe('Stacks: Fungible Token Transfer Builder', () => {
         );
       });
     });
+
+    describe('fungible token transfer builder validation and mainnet post-condition', function () {
+      it('rejects empty contract name and function name', function () {
+        const builder = factory.getFungibleTokenTransferBuilder();
+        assert.throws(() => builder.contractName(''), /Invalid name/);
+        assert.throws(() => builder.functionName(''), /Invalid name/);
+      });
+
+      it('rejects fewer than three function args', function () {
+        const builder = factory.getFungibleTokenTransferBuilder();
+        assert.throws(() => builder.functionArgs([uintCV(1), uintCV(2)]), /Invalid number of arguments/);
+      });
+
+      it('builds a mainnet fungible token transfer with a mainnet post-condition address', async function () {
+        const builder = factoryProd.getFungibleTokenTransferBuilder();
+        builder.fee({ fee: '180' });
+        builder.nonce(0);
+        builder.contractAddress(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.CONTRACT_ADDRESS);
+        builder.contractName(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.CONTRACT_NAME);
+        builder.functionName(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.FUNCTION_NAME);
+        builder.tokenName(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.TOKEN_NAME);
+        builder.functionArgs([
+          uintCV('10000'),
+          standardPrincipalCV(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.SENDER_ADDRESS),
+          standardPrincipalCV(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.RECEIVER_ADDRESS),
+        ]);
+        builder.fromPubKey(testData.TX_SENDER.pub);
+        builder.numberSignatures(1);
+        const tx = await builder.build();
+        should.exist(tx.toBroadcastFormat());
+      });
+
+      it('fails the build for a contract that is not a known sip10 token', async function () {
+        const builder = factory.getFungibleTokenTransferBuilder();
+        builder.fee({ fee: '180' });
+        builder.nonce(0);
+        builder.contractAddress('ST000000000000000000002AMW42H');
+        builder.contractName('not-a-token');
+        builder.functionName('transfer');
+        builder.functionArgs([
+          uintCV('10000'),
+          standardPrincipalCV(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.SENDER_ADDRESS),
+          standardPrincipalCV(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.RECEIVER_ADDRESS),
+        ]);
+        builder.fromPubKey(testData.TX_SENDER.pub);
+        builder.numberSignatures(1);
+        // must fail at build time rather than emit an 'undefined' asset name that aborts on-chain
+        await assert.rejects(builder.build(), /unknown fungible token contract/);
+      });
+    });
+
+    describe('sBTC token transfer', function () {
+      const sbtcContracts = [
+        ['tstx:tsbtc', 'ST1F7QA2MDF17S807EPA36TSS8AMEFY4KA9TVGWXT'],
+        ['stx:sbtc', 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4'],
+      ] as const;
+
+      for (const [coinName, contractAddress] of sbtcContracts) {
+        it(`builds a ${coinName} transfer with a statics-resolved sbtc-token post-condition`, async function () {
+          const sbtcFactory = new StxLib.TransactionBuilderFactory(coins.get(coinName));
+          const builder = sbtcFactory.getFungibleTokenTransferBuilder();
+          builder.fee({ fee: '180' });
+          builder.nonce(0);
+          builder.contractAddress(contractAddress);
+          builder.contractName('sbtc-token');
+          builder.functionName('transfer');
+          builder.functionArgs([
+            uintCV('10000'),
+            standardPrincipalCV(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.SENDER_ADDRESS),
+            standardPrincipalCV(testData.FUNGIBLE_TOKEN_TRANSFER_CONSTANTS.RECEIVER_ADDRESS),
+          ]);
+          builder.fromPubKey(testData.TX_SENDER.pub);
+          builder.numberSignatures(1);
+
+          const tx = await builder.build();
+
+          // no explicit tokenName was set, so it must be resolved from statics
+          const payload = (tx as Transaction).stxTransaction.payload as { contractName: { content: string } };
+          should.equal(payload.contractName.content, 'sbtc-token');
+
+          const postCondition = (tx as Transaction).stxTransaction.postConditions.values[0] as unknown as {
+            asset: { contractName: { content: string }; assetName: { content: string } };
+          };
+          should.equal(postCondition.asset.contractName.content, 'sbtc-token');
+          should.equal(postCondition.asset.assetName.content, 'sbtc-token');
+
+          // rebuild from the serialized tx must be byte-identical (post-conditions preserved).
+          // An unsigned single-sig tx carries no pubkey in its auth fields, so it is re-supplied
+          // here — same pattern as the PoX-5/contract rebuild tests.
+          const rebuilt = sbtcFactory.from(tx.toBroadcastFormat());
+          rebuilt.fromPubKey(testData.TX_SENDER.pub);
+          should.equal((await rebuilt.build()).toBroadcastFormat(), tx.toBroadcastFormat());
+        });
+      }
+    });
   });
 });

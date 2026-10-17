@@ -1,6 +1,7 @@
 import assert from 'assert';
 import should from 'should';
 import { coins } from '@bitgo/statics';
+import { createCoinbasePayload, deserializeTransaction } from '@stacks/transactions';
 import { StxLib } from '../../src';
 import * as testData from './resources';
 
@@ -46,6 +47,32 @@ describe('Stx Transaction', () => {
       const tx = new Transaction(coin);
       tx.fromRawTransaction(testData.RAW_TX_UNSIGNED);
       should.equal(tx.transactionSize(), testData.RAW_TX_UNSIGNED.length / 2);
+    });
+  });
+
+  describe('error branches', function () {
+    it('rejects signing with a public-only key pair', async function () {
+      const tx = new Transaction(coin);
+      const publicOnly = new KeyPair({ pub: testData.xpub1 });
+      await tx.sign([publicOnly], 'sighash').should.be.rejectedWith(/Missing private key/);
+    });
+
+    it('rejects signing with missing signatures', async function () {
+      const tx = new Transaction(coin);
+      await tx.signWithSignatures(undefined as never, false).should.be.rejectedWith(/Missing signatures/);
+    });
+
+    it('rejects an unsupported payload type on toJson', function () {
+      const tx = new Transaction(coin);
+      const wire = deserializeTransaction(testData.RAW_TX_UNSIGNED);
+      (wire as unknown as { payload: unknown }).payload = createCoinbasePayload(new Uint8Array(32));
+      tx.stxTransaction = wire;
+      assert.throws(() => tx.toJson(), /payload type not supported/);
+    });
+
+    it('wraps a malformed raw transaction on fromRawTransaction', function () {
+      const tx = new Transaction(coin);
+      assert.throws(() => tx.fromRawTransaction('deadbeef'), /Error parsing the raw transaction/);
     });
   });
 });

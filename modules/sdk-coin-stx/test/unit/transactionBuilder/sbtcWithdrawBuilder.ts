@@ -1,5 +1,16 @@
 import should from 'should';
-import { ClarityType, ContractCallPayload, privateKeyToPublic, publicKeyToHex } from '@stacks/transactions';
+import {
+  bufferCV,
+  bufferCVFromString,
+  ClarityType,
+  ClarityValue,
+  ContractCallPayload,
+  deserializeTransaction,
+  privateKeyToPublic,
+  publicKeyToHex,
+  tupleCV,
+  uintCV,
+} from '@stacks/transactions';
 
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
@@ -319,6 +330,91 @@ describe('Stacks: sBTC Withdraw Builder', function () {
         builder.fromPubKey(pubKeyStrings);
         builder.numberSignatures(2);
         await builder.build().should.be.rejectedWith(/Withdrawal params are not set/);
+      });
+    });
+
+    describe('sBTC withdraw deserialization edge cases', function () {
+      const btcAddress = '1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2';
+      const recipientTuple = () =>
+        tupleCV({ version: bufferCV(Buffer.from([0])), hashbytes: bufferCV(Buffer.alloc(32)) });
+
+      const buildWithdrawTx = async () => {
+        const builder = initTxBuilder();
+        const pubKeyStrings = testData.prvKeysString.map((key) => publicKeyToHex(privateKeyToPublic(key)));
+        builder.fromPubKey(pubKeyStrings);
+        builder.numberSignatures(2);
+        builder.withdraw({ amount: '100000', btcAddress, maxFee: '5000' });
+        return deserializeTransaction((await builder.build()).toBroadcastFormat());
+      };
+
+      const asTransaction = (wire: ReturnType<typeof deserializeTransaction>, args?: ClarityValue[]) => {
+        if (args) {
+          (wire.payload as unknown as { functionArgs: ClarityValue[] }).functionArgs = args;
+        }
+        const tx = new StxLib.Transaction(coins.get(coinNameTest));
+        tx.stxTransaction = wire;
+        return tx;
+      };
+
+      it('returns undefined withdraw params when none are set', function () {
+        should.not.exist(factory.getSbtcWithdrawBuilder().getWithdrawParams());
+      });
+
+      it('rejects a serialized withdrawal with an unexpected number of args', async function () {
+        const tx = asTransaction(await buildWithdrawTx(), [uintCV(1), uintCV(2)]);
+        should.throws(() => factory.getSbtcWithdrawBuilder(tx), /Invalid number of function args for sBTC withdrawal/);
+      });
+
+      it('rejects a serialized withdrawal whose amount is not a uint', async function () {
+        const tx = asTransaction(await buildWithdrawTx(), [bufferCVFromString('x'), recipientTuple(), uintCV(3)]);
+        should.throws(() => factory.getSbtcWithdrawBuilder(tx), /Expected uint for amount argument/);
+      });
+
+      it('rejects a serialized withdrawal whose recipient is not a tuple', async function () {
+        const tx = asTransaction(await buildWithdrawTx(), [uintCV(1), uintCV(2), uintCV(3)]);
+        should.throws(() => factory.getSbtcWithdrawBuilder(tx), /Expected tuple for recipient argument/);
+      });
+
+      it('rejects a serialized withdrawal with non-buffer recipient fields', async function () {
+        const tx = asTransaction(await buildWithdrawTx(), [
+          uintCV(1),
+          tupleCV({ version: uintCV(1), hashbytes: uintCV(2) }),
+          uintCV(3),
+        ]);
+        should.throws(() => factory.getSbtcWithdrawBuilder(tx), /Expected buffer fields in recipient tuple/);
+      });
+
+      it('rejects a serialized withdrawal whose max fee is not a uint', async function () {
+        const tx = asTransaction(await buildWithdrawTx(), [uintCV(1), recipientTuple(), bufferCVFromString('x')]);
+        should.throws(() => factory.getSbtcWithdrawBuilder(tx), /Expected uint for max-fee argument/);
+      });
+
+      it('returns undefined when the stored payload has no recipient tuple or buffers', function () {
+        const builder = factory.getSbtcWithdrawBuilder() as unknown as {
+          _withdrawParams: unknown;
+          _transaction: unknown;
+          getWithdrawParams: () => unknown;
+        };
+        builder._withdrawParams = { amount: '1', btcAddress: '', maxFee: '1' };
+        const stub = (functionArgs: unknown[]) => ({ stxTransaction: { payload: { functionArgs } } });
+
+        builder._transaction = stub([uintCV(1), uintCV(2), uintCV(3)]);
+        should.not.exist(builder.getWithdrawParams());
+
+        builder._transaction = stub([uintCV(1), tupleCV({ version: uintCV(1), hashbytes: uintCV(1) }), uintCV(3)]);
+        should.not.exist(builder.getWithdrawParams());
+      });
+
+      it('builds a mainnet withdrawal with a mainnet post-condition address', async function () {
+        const mainnetFactory = new StxLib.TransactionBuilderFactory(coins.get('stx'));
+        const builder = mainnetFactory.getSbtcWithdrawBuilder();
+        builder.fee({ fee: '1000' });
+        builder.nonce(1);
+        const pubKeyStrings = testData.prvKeysString.map((key) => publicKeyToHex(privateKeyToPublic(key)));
+        builder.fromPubKey(pubKeyStrings);
+        builder.numberSignatures(2);
+        builder.withdraw({ amount: '100000', btcAddress, maxFee: '5000' });
+        should.exist((await builder.build()).toBroadcastFormat());
       });
     });
   });

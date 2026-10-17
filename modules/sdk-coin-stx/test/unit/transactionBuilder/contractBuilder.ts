@@ -500,6 +500,49 @@ describe('Stacks: Contract Builder', function () {
           );
         });
       });
+
+      describe('contract builder validation and init edge cases', function () {
+        it('rejects an invalid contract address and empty names', function () {
+          const builder = factory.getContractBuilder();
+          assert.throws(() => builder.contractAddress('invalid'), /Invalid address/);
+          assert.throws(() => builder.contractName(''), /Invalid name/);
+          assert.throws(() => builder.functionName(''), /Invalid name/);
+        });
+
+        it('parses a response-error Clarity value descriptor', function () {
+          const builder = factory.getContractBuilder();
+          builder.functionArgs([{ type: 'response', val: { type: 'err', val: { type: 'uint128', val: '1' } } }]);
+        });
+
+        it('rejects principal descriptors without a string val', function () {
+          const builder = factory.getContractBuilder();
+          assert.throws(
+            () => builder.functionArgs([{ type: 'contractPrincipal', val: 1 } as never]),
+            /contract principal requires string val/
+          );
+          assert.throws(
+            () => builder.functionArgs([{ type: 'standardPrincipal', val: 1 } as never]),
+            /standard principal requires string val/
+          );
+        });
+
+        it('rejects a contract-call init with a missing or non-contract-call payload', function () {
+          const builder = factory.getContractBuilder();
+          assert.throws(
+            () => builder.initBuilder({ toJson: () => ({ payload: undefined }) } as never),
+            /payload must not be undefined/
+          );
+          assert.throws(
+            () => builder.initBuilder({ toJson: () => ({ payload: { payloadType: 0 } }) } as never),
+            /Transaction should be contract call/
+          );
+        });
+
+        it('rejects building a contract call without a public key', async function () {
+          const builder = initTxBuilder();
+          await assert.rejects(builder.build(), /supply at least 1 public key/);
+        });
+      });
     });
   });
 });

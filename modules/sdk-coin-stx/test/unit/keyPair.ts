@@ -120,4 +120,10 @@ describe('Stx KeyPair', function () {
       should.exist(pub);
     });
   });
+
+  describe('constructor', function () {
+    it('should reject source options that are not a seed, private key or public key', () => {
+      should.throws(() => new StxLib.KeyPair({ notAKey: true } as never), /Invalid key pair options/);
+    });
+  });
 });

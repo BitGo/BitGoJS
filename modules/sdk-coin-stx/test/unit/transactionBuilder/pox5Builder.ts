@@ -568,4 +568,30 @@ describe('Stacks: PoX-5 Builder', function () {
       );
     });
   });
+
+  describe('calculateRewards and claimStakerRewardsForSigner', () => {
+    it('builds calculate-rewards with a list of bond indices', async () => {
+      const builder = configure(factory.getPox5Builder());
+      builder.calculateRewards([1, 2]);
+      const txJson = (await builder.build()).toJson();
+      should.exist(txJson.payload);
+    });
+
+    it('builds claim-staker-rewards for a signer with and without a bond index', async () => {
+      const withBondIndex = configure(factory.getPox5Builder());
+      withBondIndex.claimStakerRewardsForSigner({
+        staker: testData.TX_SENDER.address,
+        rewardCycle: 1,
+        bondIndex: 2,
+      });
+      should.exist((await withBondIndex.build()).toBroadcastFormat());
+
+      const withoutBondIndex = configure(factory.getPox5Builder());
+      withoutBondIndex.claimStakerRewardsForSigner({
+        staker: testData.TX_SENDER.address,
+        rewardCycle: 1,
+      });
+      should.exist((await withoutBondIndex.build()).toBroadcastFormat());
+    });
+  });
 });
