@@ -68,7 +68,9 @@ export async function signTransaction<TNumber extends number | bigint>(
     }
     const psbt = decodeDescriptorPsbt(params.txPrebuild);
     const walletKeys = toBip32Triple(await fetchKeychains(coin, wallet));
-    const descriptorMap = getDescriptorMapFromWallet(wallet, walletKeys, getPolicyForEnv(bitgo.env));
+    const policy = getPolicyForEnv(bitgo.env);
+    const descriptorMap = getDescriptorMapFromWallet(wallet, walletKeys, policy);
+    policy.validateSpend?.(psbt, descriptorMap);
     descriptor.signPsbt(psbt, descriptorMap, signerKeychain, {
       onUnknownInput: 'throw',
     });
