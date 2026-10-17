@@ -47,7 +47,28 @@ import {
 import { SIGNATURE_SCHEME_TO_FLAG } from './keyPair';
 import blake2b from '@bitgo/blake2b';
 import { TRANSACTION_DATA_MAX_SIZE } from './mystenlab/builder/TransactionDataBlock';
-import { makeRPC } from './rpcClient';
+import { createSuiGrpcClient, SuiGrpcClient } from './grpcClient';
+
+/**
+ * First argument accepted by the exported util helpers: a pre-built gRPC
+ * client (current style) or the legacy node URL (backwards-compatible with
+ * the pre-migration signatures that took a JSON-RPC url).
+ */
+export type SuiGrpcClientOrUrl = SuiGrpcClient | string;
+
+// Test-only seam: the url->client factory is captured in a mutable slot so
+// url-style signatures can be tested without network (mirrors the
+// __setSuiEsmOverridesForTest pattern in sui.ts).
+let urlClientFactory: typeof createSuiGrpcClient = createSuiGrpcClient;
+
+async function toGrpcClient(clientOrUrl: SuiGrpcClientOrUrl): Promise<SuiGrpcClient> {
+  if (typeof clientOrUrl !== 'string') {
+    return clientOrUrl;
+  }
+  // Legacy callers passed a bare node URL; infer the network from it the same
+  // way the legacy JSON-RPC endpoints were addressed.
+  return await urlClientFactory(clientOrUrl, clientOrUrl.includes('testnet') ? 'testnet' : 'mainnet');
+}
 import assert from 'assert';
 import { BaseNetwork, coins, SuiCoin } from '@bitgo/statics';
 
@@ -534,50 +555,118 @@ export class Utils implements BaseUtils {
     );
   }
 
-  async getFeeEstimate(url: string, txHex: string): Promise<BigNumber> {
-    const result = await makeRPC(url, 'sui_dryRunTransactionBlock', [txHex]);
-    assert(result.effects);
-    assert(result.effects.gasUsed);
+  /**
+   * Test-only: swap (or reset with undefined) the factory used for url-style
+   * calls, mirroring the __setSuiEsmOverridesForTest seam in sui.ts.
+   */
+  __setUrlClientFactoryForTest(factory: typeof createSuiGrpcClient | undefined): void {
+    urlClientFactory = factory ?? createSuiGrpcClient;
+  }
 
-    if (result.effects.status.status !== 'success') {
+  /**
+   * Estimates the fee (in MIST) for a transaction by dry-running it against the
+   * Sui node with full transaction checks (sui_dryRunTransactionBlock parity).
+   * The returned estimate is max(computation + storage - rebate, computation).
+   * @param {SuiGrpcClient | string} clientOrUrl - A pre-built Sui gRPC client, or the
+   *   legacy node URL (backwards compatible; the network is inferred from the URL).
+   * @param {string} txHex - The serialized transaction in base64 format.
+   * @returns {Promise<BigNumber>} - The estimated fee, floored at the computation cost.
+   * @throws when the simulation response carries no gas summary or any gas field,
+   *   or when the simulated transaction fails execution.
+   */
+  async getFeeEstimate(clientOrUrl: SuiGrpcClientOrUrl, txHex: string): Promise<BigNumber> {
+    const client = await toGrpcClient(clientOrUrl);
+    const result = await client.core.simulateTransaction({
+      transaction: Buffer.from(txHex, 'base64'),
+      // Preserve sui_dryRunTransactionBlock semantics: unchecked simulation is
+      // the devInspect equivalent and would return effects for transactions
+      // dry-run rejects, skewing the derived gas budget.
+      checksEnabled: true,
+      include: { effects: true },
+    });
+
+    const effects = result.$kind === 'Transaction' ? result.Transaction?.effects : undefined;
+    if (!effects || !effects.gasUsed) {
+      throw new Error(`Failed to get fee estimate: no gas summary in simulation response`);
+    }
+
+    if (!effects.status?.success) {
       console.error(`Dry run failed, could not automatically determine a budget for txHex ${txHex}`);
       throw new Error(`Failed to get fee estimate`);
     }
 
-    const gasObject = result.effects.gasUsed;
+    const gasObject = effects.gasUsed;
 
-    const storageCost = new BigNumber(gasObject.storageCost);
-    const computationCost = new BigNumber(gasObject.computationCost);
-    const storageRebate = new BigNumber(gasObject.storageRebate);
-    const netCost = computationCost.plus(storageCost).minus(storageRebate);
+    // A proto shape drift would otherwise default every field to '0' and turn
+    // the estimate into a near-zero fee that fails only at broadcast.
+    const { storageCost, computationCost, storageRebate } = gasObject;
+    if (storageCost === undefined || storageCost === null) {
+      throw new Error('Failed to get fee estimate: missing storageCost in simulation response');
+    }
+    if (computationCost === undefined || computationCost === null) {
+      throw new Error('Failed to get fee estimate: missing computationCost in simulation response');
+    }
+    if (storageRebate === undefined || storageRebate === null) {
+      throw new Error('Failed to get fee estimate: missing storageRebate in simulation response');
+    }
 
-    return netCost.comparedTo(computationCost) > 0 ? netCost : computationCost;
+    const netCost = new BigNumber(computationCost).plus(storageCost).minus(storageRebate);
+
+    return netCost.comparedTo(computationCost) > 0 ? netCost : new BigNumber(computationCost);
   }
 
   /**
-   * Returns the current epoch and chain identifier of the Sui network by making RPC calls to the provided URL.
-   * @param {string} url - The URL of the Sui network RPC endpoint.
+   * Returns the current epoch and chain identifier of the Sui network via the gRPC ledger service.
+   * The chain identifier is the digest of the genesis checkpoint (sequence number 0), matching
+   * what the legacy sui_getCheckpoint('0') JSON-RPC call returned.
+   * @param {SuiGrpcClient | string} clientOrUrl - A pre-built Sui gRPC client, or the
+   *   legacy node URL (backwards compatible; the network is inferred from the URL).
    * @returns {Promise<{ epoch: number; chainId: string }>} - The current epoch and chain identifier.
    */
-  async getChainContext(url: string): Promise<{ epoch: number; chainId: string }> {
-    const [systemState, genesisCheckpoint] = await Promise.all([
-      makeRPC(url, 'suix_getLatestSuiSystemState', []),
-      makeRPC(url, 'sui_getCheckpoint', ['0']),
+  async getChainContext(clientOrUrl: SuiGrpcClientOrUrl): Promise<{ epoch: number; chainId: string }> {
+    const client = await toGrpcClient(clientOrUrl);
+    const [systemStateResponse, chainIdResponse] = await Promise.all([
+      client.core.getCurrentSystemState(),
+      client.core.getChainIdentifier(),
     ]);
-    return { epoch: Number(systemState.epoch), chainId: String(genesisCheckpoint.digest) };
+    const epoch = systemStateResponse.systemState?.epoch;
+    const chainId = chainIdResponse.chainIdentifier;
+    if (epoch === undefined || epoch === null) {
+      throw new Error('Failed to get current epoch from gRPC system state');
+    }
+    if (!chainId) {
+      throw new Error('Failed to get chain identifier from gRPC service info');
+    }
+    return { epoch: Number(epoch), chainId };
   }
 
-  async getBalance(url: string, owner: string, coinType?: string): Promise<SuiBalanceInfo> {
+  /**
+   * Returns balance information for an address via the gRPC balance service.
+   * totalBalance = Coin<T> object balance + SIP-58 address-system balance
+   * (fundsInAddressBalance is exposed separately for transaction building and
+   * must not be added to totalBalance again).
+   * @param {SuiGrpcClient | string} clientOrUrl - A pre-built Sui gRPC client, or the
+   *   legacy node URL (backwards compatible; the network is inferred from the URL).
+   * @param {string} owner - The address to query.
+   * @param {string} [coinType] - The coin type; defaults to 0x2::sui::SUI.
+   * @returns {Promise<SuiBalanceInfo>} - {totalBalance, coinObjectBalance, fundsInAddressBalance}.
+   * @throws when the gRPC response carries no balance object.
+   */
+  async getBalance(clientOrUrl: SuiGrpcClientOrUrl, owner: string, coinType?: string): Promise<SuiBalanceInfo> {
+    const client = await toGrpcClient(clientOrUrl);
     if (coinType === undefined) {
       coinType = SUI_TYPE_ARG;
     }
-    const result = await makeRPC(url, 'suix_getBalance', [owner, coinType]);
-    const totalBalance = (result.totalBalance ?? '0').toString();
-    const fundsInAddressBalance = (result.fundsInAddressBalance ?? '0').toString();
-    const coinObjectBalance = BigNumber.max(
-      0,
-      new BigNumber(totalBalance).minus(new BigNumber(fundsInAddressBalance))
-    ).toString();
+    const response = await client.core.getBalance({ owner, coinType });
+    if (!response.balance) {
+      throw new Error(`Failed to get balance: no balance object in gRPC response for ${owner}`);
+    }
+    // The gRPC balance service reports the Coin<T> object balance and the SIP-58
+    // address-system balance separately, so totalBalance is their sum (the legacy
+    // suix_getBalance totalBalance included both).
+    const coinObjectBalance = (response.balance?.coinBalance ?? '0').toString();
+    const fundsInAddressBalance = (response.balance?.addressBalance ?? '0').toString();
+    const totalBalance = new BigNumber(coinObjectBalance).plus(new BigNumber(fundsInAddressBalance)).toString();
     return {
       totalBalance,
       coinObjectBalance,
@@ -585,52 +674,83 @@ export class Utils implements BaseUtils {
     };
   }
 
-  async getInputCoins(url: string, owner: string, coinType?: string): Promise<SuiObjectInfo[]> {
+  /**
+   * Returns all unfiltered spendable coins of an address (legacy suix_getCoins
+   * semantics) via the gRPC list service: bare coin type, numeric version,
+   * objectId and balance per entry.
+   * @param {SuiGrpcClient | string} clientOrUrl - A pre-built Sui gRPC client, or the
+   *   legacy node URL (backwards compatible; the network is inferred from the URL).
+   * @param {string} owner - The address to query.
+   * @param {string} [coinType] - The coin type; defaults to 0x2::sui::SUI.
+   * @returns {Promise<SuiObjectInfo[]>} - One entry per owned coin object.
+   * @throws {RecoveryProviderError} when the node call fails.
+   */
+  async getInputCoins(clientOrUrl: SuiGrpcClientOrUrl, owner: string, coinType?: string): Promise<SuiObjectInfo[]> {
+    const client = await toGrpcClient(clientOrUrl);
     if (coinType === undefined) {
       coinType = SUI_TYPE_ARG;
     }
+    const resolvedCoinType = coinType;
+    const data: Array<{ objectId: string; version: string; digest: string; balance: string }> = [];
+    let cursor: string | null = null;
     let hasNextPage = true;
-    let cursor = undefined;
-    let params = [owner, coinType];
-    let data = [];
-    while (hasNextPage) {
-      if (cursor !== undefined) {
-        params = [owner, coinType, cursor];
+    try {
+      while (hasNextPage) {
+        const page = await client.core.listCoins({ owner, coinType: resolvedCoinType, cursor });
+        data.push(...page.objects);
+        hasNextPage = page.hasNextPage;
+        cursor = page.cursor;
       }
-      try {
-        const result = await makeRPC(url, 'suix_getCoins', params);
-        data = data.concat(result.data);
-        hasNextPage = result.hasNextPage;
-        cursor = result.nextCursor;
-      } catch (e) {
-        console.error(`Failed to get input coins from the node ${e}`);
-        throw new RecoveryProviderError(`Failed to get input coins from the node.`, e);
-      }
+    } catch (e) {
+      console.error(`Failed to get input coins from the node ${e}`);
+      throw new RecoveryProviderError(`Failed to get input coins from the node.`, e);
     }
     return data
-      .filter((object: any) => object.balance !== undefined)
-      .map((object: any) => {
+      .filter((object) => object.balance !== undefined)
+      .map((object) => {
+        // gRPC surfaces the coin type as 0x2::coin::Coin<T>; the legacy suix_getCoins
+        // response carried the bare coin type, which callers still expect.
         return {
-          coinType: object.coinType,
-          objectId: object.coinObjectId,
+          coinType: resolvedCoinType,
+          objectId: object.objectId,
           version: object.version,
           digest: object.digest,
           balance: new BigNumber(object.balance),
-        };
+        } as SuiObjectInfo;
       });
   }
 
-  async executeTransactionBlock(url: string, serializedTx: string, signatures: string[]): Promise<string> {
-    const reqType = 'WaitForEffectsCert';
-    const options = { showEffects: true };
-    const params = [serializedTx, signatures, options, reqType];
-    let result: Record<string, any>;
+  /**
+   * Broadcasts a signed transaction to the Sui node over gRPC and returns the
+   * transaction digest. Signatures are base64 strings (the gRPC layer decodes
+   * them into BCS).
+   * @param {SuiGrpcClient | string} clientOrUrl - A pre-built Sui gRPC client, or the
+   *   legacy node URL (backwards compatible; the network is inferred from the URL).
+   * @param {string} serializedTx - The serialized transaction in base64 format.
+   * @param {string[]} signatures - Base64-encoded signatures for the transaction.
+   * @returns {Promise<string>} - The transaction digest.
+   * @throws when the node response carries no digest or the broadcast fails.
+   */
+  async executeTransactionBlock(
+    clientOrUrl: SuiGrpcClientOrUrl,
+    serializedTx: string,
+    signatures: string[]
+  ): Promise<string> {
+    const client = await toGrpcClient(clientOrUrl);
+    let digest: string | undefined;
     try {
-      result = await makeRPC(url, 'sui_executeTransactionBlock', params);
+      const result = await client.core.executeTransaction({
+        transaction: Buffer.from(serializedTx, 'base64'),
+        signatures,
+      });
+      digest = (result.Transaction ?? result.FailedTransaction)?.digest;
     } catch (e) {
-      throw new Error(`${e.message}`);
+      throw new Error(`${(e as Error).message}`);
     }
-    return result.digest;
+    if (!digest) {
+      throw new Error(`Failed to broadcast transaction, no digest in response`);
+    }
+    return digest;
   }
 
   validateNonNegativeNumber(defaultVal: number, errorMsg: string, inputVal?: number): number {

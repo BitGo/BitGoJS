@@ -26,6 +26,22 @@ module.exports = {
       '@bitgo/wasm-mps': path.resolve('../../node_modules/@bitgo/wasm-mps/dist/esm/js/wasm/wasm_mps.js'),
       '@bitgo/utxo-ord': path.resolve('../utxo-ord/dist/esm/index.js'),
       '@bitgo/sdk-coin-ton': path.resolve('../sdk-coin-ton/dist/esm/index.js'),
+      // @mysten/utils (transitive dep of @mysten/sui, loaded by the SUI gRPC
+      // client) imports the process polyfill with an extension-less request
+      // from a strict-ESM file; webpack's fullySpecified rule rejects it.
+      // Alias the request to the actual polyfill file.
+      'process/browser': require.resolve('process/browser.js'),
+      // @grpc/grpc-js and its protobuf-ts transport are Node-only: they load
+      // http2 at module scope, which breaks the browser bundle at load time.
+      // assertNodeEnvironment() rejects browser callers before any of this
+      // code executes, so stub both out of browser bundles.
+      '@grpc/grpc-js': false,
+      '@protobuf-ts/grpc-transport': false,
+      // Exclude the ESM-only @mysten/sui/grpc graph (graphql, valibot,
+      // noble-curves, ...) from browser bundles entirely; the stub throws if
+      // it is ever evaluated. assertNodeEnvironment() already rejects browser
+      // callers before the module loads.
+      '@mysten/sui/grpc': path.resolve(__dirname, 'sui-grpc-browser-stub.js'),
     },
     fallback: {
       constants: false,
