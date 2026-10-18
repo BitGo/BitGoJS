@@ -110,12 +110,31 @@ export interface CantonExerciseCommand {
 
 export type CantonCommand = CantonCreateCommand | CantonExerciseCommand;
 
+/**
+ * Explicit ledger disclosure forwarded to IMS and attached at prepare time, e.g.
+ * the CCIP OffRamp/CCV/token-pool blobs clients fetch from the public EDS
+ * endpoints. Matches Chainlink's EDS disclosure response.
+ */
+export interface CantonDisclosedContract {
+  templateId: string;
+  contractId: string;
+  createdEventBlob: string;
+  synchronizerId: string;
+}
+
 export interface CantonCommandResolveContractSpec {
   templateId: string;
   actAs: string[];
   readAs?: string[];
   injectAs: string;
   resolveAll?: boolean;
+  /**
+   * Optional top-level createArgument fields to match (deep equality) when
+   * resolving from the ACS — e.g. a CCIP receiver whose `receiverFinalityConfig`
+   * matches the bridged message's finality. Without a filter, resolution picks
+   * the first active contract for the templateId.
+   */
+  createArgumentFilter?: Record<string, unknown>;
 }
 
 export interface CantonCommandParams {
@@ -123,6 +142,11 @@ export interface CantonCommandParams {
   actAs: string[];
   readAs?: string[];
   resolveContracts?: CantonCommandResolveContractSpec[];
+  /**
+   * Client-fetched explicit disclosures merged into the ledger prepare call by
+   * IMS (required by CCIP Execute/Send).
+   */
+  disclosedContracts?: CantonDisclosedContract[];
 }
 
 export enum ShareType {
