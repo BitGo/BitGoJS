@@ -4,6 +4,7 @@ import {
   ITransactionRecipient,
   CantonCommand,
   CantonCommandResolveContractSpec,
+  CantonDisclosedContract,
 } from '@bitgo/sdk-core';
 import { DamlTransaction, Metadata } from './resourcesInterface';
 
@@ -277,6 +278,8 @@ export interface CantonCommandRequest {
   command: CantonCommand;
   resolveContracts?: CantonCommandResolveContractSpec[];
   token?: string;
+  /** Explicit disclosures IMS merges into the ledger prepare call (CCIP Execute/Send). */
+  disclosedContracts?: CantonDisclosedContract[];
 }
 
 // Root command decoded from the prepared Canton transaction protobuf, used during verifyTransaction.
