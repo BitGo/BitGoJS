@@ -1851,8 +1851,8 @@ class PlasmaTestnet extends Testnet implements EthereumNetwork {
 class HypeEVMTestnet extends Testnet implements EthereumNetwork {
   name = 'HyperliquidEVMTestnet';
   family = CoinFamily.HYPEEVM;
-  explorerUrl = 'https://testnet.purrsec.com/tx/';
-  accountExplorerUrl = 'https://testnet.purrsec.com/address/';
+  explorerUrl = 'https://hyperscan.sh/tx/';
+  accountExplorerUrl = 'https://hyperscan.sh/address/';
   chainId = 998;
   nativeCoinOperationHashPrefix = '998';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
