@@ -55,7 +55,13 @@ export function assertPox5LocktimeSpend(psbt: Psbt, inputs: readonly Pox5InputMa
   }
 }
 
-/** Validate that a canonical PoX-5 input can use the principal-preimage branch. */
+/**
+ * Validate that a canonical PoX-5 input can use the principal-preimage branch.
+ *
+ * This only checks that the descriptor match belongs to the PSBT input. It does not check the nLockTime or the
+ * principal preimage, so callers that sign or finalize an early exit must check those themselves
+ * (see `assertPox5SpendPolicy` in `@bitgo/abstract-utxo`, which requires nLockTime 0 and the committed preimage).
+ */
 export function assertPox5EarlyExitSpend(psbt: Psbt, input: Pox5InputMatch): void {
   getMatchedTransactionInput(psbt, input);
 }

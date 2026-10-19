@@ -62,6 +62,8 @@ type Pox5TxParams = {
   lockupInputs?: number;
   /** add the principal preimage of the lockup input, which makes the spend an early exit */
   earlyExitPreimage?: Uint8Array;
+  /** an additional principal preimage record on the lockup input */
+  extraPreimage?: Uint8Array;
 };
 
 function createPox5Tx(params: Pox5TxParams = {}): { tx: DescriptorTransaction; rootPrv: BIP32 } {
@@ -89,6 +91,9 @@ function createPox5Tx(params: Pox5TxParams = {}): { tx: DescriptorTransaction; r
 
   if (params.earlyExitPreimage) {
     psbt.addSha256Preimage(0, params.earlyExitPreimage);
+  }
+  if (params.extraPreimage) {
+    psbt.addSha256Preimage(0, params.extraPreimage);
   }
 
   const tx: DescriptorTransaction = {
@@ -192,6 +197,20 @@ describe('OfflineVault PoX-5 lockup descriptor', function () {
           assert.throws(
             () => halfSign(coinName, earlyExit({ earlyExitPreimage: Buffer.alloc(32, 0x43) })),
             /expected exactly one PSBT_IN_SHA256 record/
+          );
+        });
+
+        it('rejects a second principal preimage record that the descriptor does not commit to', function () {
+          assert.throws(
+            () => halfSign(coinName, earlyExit({ extraPreimage: Buffer.alloc(32, 0x43) })),
+            /requires exactly one PSBT_IN_SHA256 record/
+          );
+        });
+
+        it('rejects a late exit that carries a stray principal preimage record', function () {
+          assert.throws(
+            () => halfSign(coinName, createPox5Tx({ extraPreimage: Buffer.alloc(32, 0x43) })),
+            /nLockTime must be 0/
           );
         });
 
