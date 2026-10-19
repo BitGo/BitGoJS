@@ -15,13 +15,13 @@ flow. They work for custodial wallets (access token only) and hot wallets
 
 ## What the platform resolves vs. what the client fetches
 
-| Concern | Owner |
-| --- | --- |
-| `PerPartyRouterFactory` contract id (first-run `CreateRouter`) | IMS (EDS disclosure — the factory is ccipOwner-owned and invisible to the wallet party's ACS) |
-| Wallet party's `CCIPReceiver` (payload-aware by `receiverFinalityConfig`) and `PerPartyRouter` (`routerCid`) | IMS (`resolveContracts` + `injectAs`) |
-| `feeTokenInput.feeTokenTransferFactory` (outbound fee preview) | IMS (must be computed as the wallet party by the hosting validator's transfer-instruction API; clients cannot authenticate for custodial wallets) |
-| Encoded message, CCV verifier results, EDS disclosure blobs | Client (public services) — blobs are passed back via `cantonCommandParams.disclosedContracts` |
-| Holding selection and double-spend protection (withdrawal lock, `lockedUtxos`) | wallet-platform (Send is UTXO-consuming; pass `--tokenName`) |
+| Concern                                                                                                      | Owner                                                                                                                                             |
+| ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PerPartyRouterFactory` contract id (first-run `CreateRouter`)                                               | IMS (EDS disclosure — the factory is ccipOwner-owned and invisible to the wallet party's ACS)                                                     |
+| Wallet party's `CCIPReceiver` (payload-aware by `receiverFinalityConfig`) and `PerPartyRouter` (`routerCid`) | IMS (`resolveContracts` + `injectAs`)                                                                                                             |
+| `feeTokenInput.feeTokenTransferFactory` (outbound fee preview)                                               | IMS (must be computed as the wallet party by the hosting validator's transfer-instruction API; clients cannot authenticate for custodial wallets) |
+| Encoded message, CCV verifier results, EDS disclosure blobs                                                  | Client (public services) — blobs are passed back via `cantonCommandParams.disclosedContracts`                                                     |
+| Holding selection and double-spend protection (withdrawal lock, `lockedUtxos`)                               | wallet-platform (Send is UTXO-consuming; pass `--tokenName`)                                                                                      |
 
 ## Wallet party onboarding prerequisites
 
@@ -36,7 +36,7 @@ any of them surfaces as a cryptic mid-flow ledger error:
    (`ccip-receiver-v2`, `ccip-runtime-v2`, `ccip-sender-v2`) must be
    consistently vetted by every participant hosting the party. Otherwise:
    `JSON_API_PACKAGE_SELECTION_FAILED: No package with package-name … is
-   consistently vetted by all hosting participants of party …`.
+consistently vetted by all hosting participants of party …`.
 3. **JSON-API user rights** — `CanActAs` on the exact party string for the app
    user performing submissions, plus `CanReadAs` on the USD1 registrar for
    pool/TAR visibility.
@@ -64,9 +64,14 @@ node ../../examples/js/canton/sendCcipMessage.js \
 ```
 
 Both scripts support `--dryRun` to print the fully assembled
-`cantonCommandParams` without submitting, and `--skipSetup` after the one-time
-router/receiver/sender creation. Setup steps halt on a pending approval —
-approve it in the BitGo UI/API, then rerun with `--skipSetup`.
+`cantonCommandParams` without submitting. Dry-run still reads the wallet and
+public services so EDS receives the actual party ID.
+
+Use `--skipSetup` only after both router and receiver/sender are confirmed on the
+ledger. If router creation needs approval, halt, approve and confirm it, then
+rerun with `--skipRouterSetup` to create the receiver/sender. After the second
+setup transaction is approved and confirmed, rerun with `--skipSetup`. A returned
+transaction response alone is not a ledger-confirmation guarantee.
 
 ### Receiver finality (inbound)
 
@@ -79,8 +84,11 @@ finality, pass `--finality=0|65536|<block depth>` explicitly, or pass
 
 ## Known follow-ups
 
-- Production lane constants (`LANES.prod`) still need verification against the
-  production starter-kit configuration before production enablement.
+- Production is gated: `--env=prod` requires `--laneConfig=<JSON path>` with a
+  verified production lane object. Its fields match the corresponding script's
+  lane object (coin, service URLs, and, for Send, chain selector and instruments).
+  The draft production constants are not a verification source. Production DSO,
+  CCIP operator and USD1 registrar identities must be independently checked.
 - Automatic unspent selection for outbound fee/token holdings (today:
   `--tokenHoldingCid` / `--feeHoldingCid` explicit).
 - Party preflight API (see onboarding prerequisites above).

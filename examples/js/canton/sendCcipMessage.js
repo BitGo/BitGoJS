@@ -92,7 +92,6 @@ const SENDER_INSTANCE_ID = 'prod-ccipsender';
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const contextOrEmpty = (value) => (value && Object.keys(value).length > 0 ? value : { values: {} });
 const strip0x = (s) => (s.toLowerCase().startsWith('0x') ? s.slice(2) : s);
-const hashedRawAddress = (raw) => utils.id(raw);
 const hashedInstrumentId = (instrument) => utils.id(`${instrument.id}@${instrument.admin}`);
 
 /** Canton 10-decimal amount string (e.g. 1 → "1.0000000000"). */
@@ -171,9 +170,13 @@ async function sendManyCommand(wallet, passphrase, tokenName, cantonCommandParam
 (async () => {
   const args = parseFlags(process.argv.slice(2));
   const envName = args.env === 'prod' ? 'prod' : 'test';
-  const lane = LANES[envName];
+  const lane = args.laneConfig ? require(require('path').resolve(args.laneConfig)) : LANES[envName];
+  if (envName === 'prod' && !args.laneConfig) {
+    throw new Error(
+      'Production requires --laneConfig=<verified production lane JSON>; draft constants are not verified.'
+    );
+  }
   const bitgoEnv = envName === 'prod' ? 'production' : 'test';
-  const otp = args.otp || process.env.OTP || (envName === 'test' ? '000000' : '');
 
   const walletId = args.wallet || process.env.WALLET_ID || '';
   const accessToken = args.accessToken || process.env.ACCESS_TOKEN || '';
@@ -208,6 +211,10 @@ async function sendManyCommand(wallet, passphrase, tokenName, cantonCommandParam
     throw new Error('Fee holding and token transfer holding must be different contracts.');
   }
 
+  if (!['amulet', 'link'].includes(feeTokenChoice)) {
+    throw new Error('--feeToken must be amulet or link');
+  }
+  if (!utils.parseUnits(amount, 10).gt(0)) throw new Error('--amount must be positive');
   const feeInstrument = feeTokenChoice === 'link' ? lane.ccipLinkFeeToken : lane.amuletInstrument;
   const tokenInstrument = lane.usd1Instrument;
   const tokenAmountDecimal = toCantonDecimalAmount(amount);
@@ -236,25 +243,29 @@ async function sendManyCommand(wallet, passphrase, tokenName, cantonCommandParam
     // IMS discloses the ccipOwner-owned PerPartyRouterFactory from the EDS and
     // injects its contractId as the exercise target — no ACS lookup here (the
     // wallet party cannot see cross-party contracts).
-    const routerSubmitted = await sendManyCommand(
-      wallet,
-      passphrase,
-      tokenName,
-      {
-        actAs: [partyId],
-        command: {
-          ExerciseCommand: {
-            templateId: PER_PARTY_ROUTER_FACTORY_TMPL,
-            contractId: '',
-            choice: 'CreateRouter',
-            choiceArgument: { partyOwner: partyId, instanceId: `router-${partyId}` },
+    if (!args.skipRouterSetup) {
+      const routerSubmitted = await sendManyCommand(
+        wallet,
+        passphrase,
+        tokenName,
+        {
+          actAs: [partyId],
+          command: {
+            ExerciseCommand: {
+              templateId: PER_PARTY_ROUTER_FACTORY_TMPL,
+              contractId: '',
+              choice: 'CreateRouter',
+              choiceArgument: { partyOwner: partyId, instanceId: `router-${partyId}` },
+            },
           },
         },
-      },
-      'setup 1/2: create PerPartyRouter'
-    );
-    if (!routerSubmitted) {
-      throw new Error('Setup halted: approve the pending PerPartyRouter transaction first, then rerun with --skipSetup.');
+        'setup 1/2: create PerPartyRouter'
+      );
+      if (!routerSubmitted) {
+        throw new Error(
+          'Setup halted: confirm the router transaction, then rerun with --skipRouterSetup to create the sender.'
+        );
+      }
     }
 
     const senderSubmitted = await sendManyCommand(

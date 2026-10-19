@@ -139,9 +139,13 @@ const fatal = (err) => {
 (async () => {
   const args = parseFlags(process.argv.slice(2));
   const envName = args.env === 'prod' ? 'prod' : 'test';
-  const lane = LANES[envName];
+  const lane = args.laneConfig ? require(require('path').resolve(args.laneConfig)) : LANES[envName];
+  if (envName === 'prod' && !args.laneConfig) {
+    throw new Error(
+      'Production requires --laneConfig=<verified production lane JSON>; draft constants are not verified.'
+    );
+  }
   const bitgoEnv = envName === 'prod' ? 'production' : 'test';
-  const otp = args.otp || process.env.OTP || (envName === 'test' ? '000000' : '');
   const walletId = args.wallet || process.env.WALLET_ID || '';
   const accessToken = args.accessToken || process.env.ACCESS_TOKEN || '';
   const passphrase = args.passphrase || process.env.PASSPHRASE || '';
@@ -156,7 +160,10 @@ const fatal = (err) => {
   if (!accessToken) throw new Error('Pass --accessToken=<spender token> (or set ACCESS_TOKEN)');
   if (!txHash)
     throw new Error('Pass --txHash=0x<sepolia tx> (message-id-only resolution does not yield encodedMessage)');
-  if (explicitFinality !== undefined && !Number.isInteger(explicitFinality)) {
+  if (
+    explicitFinality !== undefined &&
+    (!Number.isInteger(explicitFinality) || explicitFinality < 0 || explicitFinality > 0xffffffff)
+  ) {
     throw new Error('--finality must be an integer (0, 65536 for WaitForSafe, or a block depth)');
   }
 
@@ -204,6 +211,9 @@ const fatal = (err) => {
   // Receiver instances are finality-specific (OffRamp.PrepareExecute rejects
   // mismatches). Resolve the finality explicitly instead of assuming 0.
   const finality = explicitFinality !== undefined ? explicitFinality : messageFinality;
+  if (messageFinality !== undefined && explicitFinality !== undefined && messageFinality !== explicitFinality) {
+    throw new Error('--finality does not match the attested message finality');
+  }
   if (finality === undefined && !receiverCid) {
     throw new Error(
       'Verifier result carries no message.finality — pass --finality=<0|65536|depth> (or --receiverCid once the receiver exists)'
@@ -215,11 +225,15 @@ const fatal = (err) => {
   }));
   const attestationCcvRaw = decodeVerifierDestAddress(verifications[0].destAddress);
   console.log(`Verifier results:  ${verifications.length} (receiver ${messageReceiver.slice(0, 18)}…)`);
-  console.log(`Message finality:  ${finality === undefined ? 'n/a (explicit receiver)' : finality}  attestation CCV: ${attestationCcvRaw.slice(0, 40)}…`);
+  console.log(
+    `Message finality:  ${
+      finality === undefined ? 'n/a (explicit receiver)' : finality
+    }  attestation CCV: ${attestationCcvRaw.slice(0, 40)}…`
+  );
 
-  // ── 3. Wallet + party (skipped on --dryRun) ───────────────────────────────
+  // Read the wallet even in dry-run mode: EDS requests need the real party.
   let partyId = '';
-  if (!dryRun) {
+  {
     const bitgo = new BitGoJS.BitGo({ env: bitgoEnv });
     bitgo.authenticateWithAccessToken({ accessToken });
     // No unlock() needed — hot wallets sign via sendMany walletPassphrase
@@ -238,34 +252,40 @@ const fatal = (err) => {
     }
 
     // ── 4. One-time setup (skip with --skipSetup when contracts exist) ──────
-    if (!skipSetup) {
+    if (!skipSetup && !dryRun) {
       // IMS discloses the ccipOwner-owned PerPartyRouterFactory from the EDS and
       // injects its contractId as the exercise target — no ACS lookup here (the
       // wallet party cannot see cross-party contracts).
-      const routerSubmitted = await sendManyCommand(
-        bitgo,
-        wallet,
-        partyId,
-        passphrase,
-        {
-          actAs: [partyId],
-          command: {
-            ExerciseCommand: {
-              templateId: PER_PARTY_ROUTER_FACTORY_TMPL,
-              contractId: '',
-              choice: 'CreateRouter',
-              choiceArgument: { partyOwner: partyId, instanceId: `router-${partyId}` },
+      if (!args.skipRouterSetup) {
+        const routerSubmitted = await sendManyCommand(
+          bitgo,
+          wallet,
+          partyId,
+          passphrase,
+          {
+            actAs: [partyId],
+            command: {
+              ExerciseCommand: {
+                templateId: PER_PARTY_ROUTER_FACTORY_TMPL,
+                contractId: '',
+                choice: 'CreateRouter',
+                choiceArgument: { partyOwner: partyId, instanceId: `router-${partyId}` },
+              },
             },
           },
-        },
-        'setup 1/2: create PerPartyRouter'
-      );
-      if (!routerSubmitted) {
-        throw new Error('Setup halted: approve the pending PerPartyRouter transaction first, then rerun with --skipSetup.');
+          'setup 1/2: create PerPartyRouter'
+        );
+        if (!routerSubmitted) {
+          throw new Error(
+            'Setup halted: confirm the router transaction, then rerun with --skipRouterSetup to create the receiver.'
+          );
+        }
       }
 
       if (receiverCid) {
-        console.log(`Using explicit receiver (--receiverCid=${receiverCid.slice(0, 18)}…) — skipping receiver creation.`);
+        console.log(
+          `Using explicit receiver (--receiverCid=${receiverCid.slice(0, 18)}…) — skipping receiver creation.`
+        );
       } else {
         const receiverInstanceId = `receiver-finality${finality}-${Date.now()}-${Math.random()
           .toString(36)
@@ -294,14 +314,14 @@ const fatal = (err) => {
           'setup 2/2: create CCIPReceiver'
         );
         if (!receiverSubmitted) {
-          throw new Error('Setup halted: approve the pending CCIPReceiver transaction first, then rerun with --skipSetup.');
+          throw new Error(
+            'Setup halted: approve the pending CCIPReceiver transaction first, then rerun with --skipSetup.'
+          );
         }
       }
     } else {
       console.log('Skipping setup (--skipSetup) — router/receiver assumed to exist.');
     }
-  } else {
-    console.log('Dry run: skipping wallet fetch (receiver check deferred).');
   }
 
   // ── 5. EDS execute disclosures (public endpoints; payer = wallet party) ───
@@ -383,7 +403,7 @@ const fatal = (err) => {
   const resolveContracts = [
     { templateId: PER_PARTY_ROUTER_TMPL, actAs: [partyId], injectAs: 'ExerciseCommand.choiceArgument.routerCid' },
   ];
-  let receiverContractId = receiverCid;
+  const receiverContractId = receiverCid;
   if (!receiverCid) {
     resolveContracts.unshift({
       templateId: CCIP_RECEIVER_TMPL,
