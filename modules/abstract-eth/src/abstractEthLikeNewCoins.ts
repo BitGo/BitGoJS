@@ -85,6 +85,7 @@ import {
   coinFamiliesWithL1Fees,
   approveMethodId,
   decodeApproveCalldata,
+  decodeNativeTransferData,
   decodeTransferData,
   ERC1155TransferBuilder,
   ERC721TransferBuilder,
@@ -95,6 +96,7 @@ import {
   getRawDecoded,
   getToken,
   KeyPair as KeyPairLib,
+  sendMultisigMethodId,
   TransactionBuilder,
   TransferBuilder,
 } from './lib';
@@ -3645,6 +3647,14 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
         txExplanation
       );
     };
+    // ERC-7984 shield approval for non-TSS (onchain multisig) wallets: intent-based with no client
+    // recipients — the multisig prebuild carries the sendMultiSig-wrapped approve calldata instead.
+    // Checked before the generic recipient guards, which require txParams.recipients.
+    if (txParams?.type === 'wrapApprove') {
+      await this.verifyMultisigWrapApproveTransaction(params, throwRecipientMismatch);
+      await this.throwIfPrebuildCoinMismatch(txParams, txPrebuild);
+      return true;
+    }
 
     if (!txParams?.recipients || !txPrebuild?.recipients || !wallet) {
       throw new Error('missing params');
@@ -3746,16 +3756,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       }
     }
     // Check coin is correct for all transaction types
-    if (!this.verifyCoin(txPrebuild)) {
-      const txExplanation = await this.getTxExplanation(txPrebuild);
-      throw new TxIntentMismatchError(
-        'coin in txPrebuild did not match that in txParams supplied by client',
-        undefined,
-        [txParams],
-        txPrebuild?.txHex,
-        txExplanation
-      );
-    }
+    await this.throwIfPrebuildCoinMismatch(txParams, txPrebuild);
     return true;
   }
 
@@ -3836,6 +3837,149 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       'token enablement txPrebuild recipient must be the Zama ACL contract (base-address wallet) or match txParams recipients (forwarder wallet)',
       [{ address: txPrebuild.recipients[0].address, amount: txPrebuild.recipients[0].amount.toString() }]
     );
+  }
+
+  /**
+   * Shared tail check for verify paths: the prebuild must be for the coin performing the verification.
+   */
+  private async throwIfPrebuildCoinMismatch(
+    txParams: EthTransactionParams,
+    txPrebuild: TransactionPrebuild
+  ): Promise<void> {
+    if (this.verifyCoin(txPrebuild)) {
+      return;
+    }
+    const txExplanation = await this.getTxExplanation(txPrebuild);
+    throw new TxIntentMismatchError(
+      'coin in txPrebuild did not match that in txParams supplied by client',
+      undefined,
+      [txParams],
+      txPrebuild?.txHex,
+      txExplanation
+    );
+  }
+
+  /**
+   * Verifies an ERC-7984 wrapApprove (shield approval) transaction for non-TSS (onchain multisig) wallets.
+   *
+   * Multisig shape (server-built unsigned tx):
+   *   tx.to   = wallet contract
+   *   tx.data = sendMultiSig(underlyingErc20, 0, approve(wrapper, amount), expireTime, sequenceId, signature)
+   *   txPrebuild.recipients[0] = { address: underlyingErc20, amount: '0', data: approve calldata }
+   *
+   * Checks: the sendMultiSig inner target is the wrapper pair's underlying ERC-20, the sendMultiSig
+   * value is 0, the inner calldata is approve(wrapper, wrapParams.amount) exactly, and — when the
+   * prebuild carries build recipients — that they mirror the sendMultiSig args encoded in txHex
+   * (the client signs the operation hash over those recipients).
+   */
+  private async verifyMultisigWrapApproveTransaction(
+    params: VerifyEthTransactionOptions,
+    throwRecipientMismatch: (message: string, mismatchedRecipients: Recipient[]) => Promise<never>
+  ): Promise<void> {
+    const { txParams, txPrebuild } = params;
+    if (!txParams) {
+      throw new Error('missing params');
+    }
+    const wrapParams = txParams.wrapParams;
+    if (!txPrebuild?.txHex) {
+      throw new Error('missing txHex in txPrebuild');
+    }
+    if (!wrapParams?.tokenName || !wrapParams.amount) {
+      return throwRecipientMismatch('wrapApprove transaction requires wrapParams with tokenName and amount', []);
+    }
+
+    let wrapper: Erc7984Coin;
+    let underlyingErc20Address: string;
+    try {
+      const staticsCoin = coins.get(wrapParams.tokenName);
+      if (!(staticsCoin instanceof Erc7984Coin) || !staticsCoin.underlyingErc20Address) {
+        throw new Error('not an ERC-7984 pair');
+      }
+      wrapper = staticsCoin;
+      underlyingErc20Address = staticsCoin.underlyingErc20Address.toLowerCase();
+    } catch {
+      return throwRecipientMismatch(
+        `wrapApprove: '${wrapParams.tokenName}' is not a registered ERC-7984 shield pair`,
+        []
+      );
+    }
+
+    const txBuilder = this.getTransactionBuilder();
+    txBuilder.from(txPrebuild.txHex);
+    const txJson = (await txBuilder.build()).toJson();
+
+    let innerTo: string;
+    let innerAmount: string;
+    let innerData: string;
+    const data = txJson.data || '';
+    if (!data.toLowerCase().startsWith(sendMultisigMethodId.toLowerCase())) {
+      return throwRecipientMismatch(
+        'wrapApprove multisig transaction must encode the approve call inside sendMultiSig',
+        []
+      );
+    }
+
+    try {
+      const decoded = decodeNativeTransferData(data);
+      innerTo = decoded.to;
+      innerAmount = decoded.amount;
+      innerData = decoded.data;
+    } catch (e) {
+      return throwRecipientMismatch(
+        `wrapApprove multisig transaction failed to decode sendMultiSig calldata — ${(e as Error).message}`,
+        []
+      );
+    }
+
+    const mismatch = (message: string, address = innerTo, amount = innerAmount): Promise<never> =>
+      throwRecipientMismatch(message, [{ address: address || '', amount: amount || '' }]);
+
+    if (innerTo.toLowerCase() !== underlyingErc20Address) {
+      await mismatch('wrapApprove transaction must target the underlying ERC-20 of the wrapper');
+    }
+    if (innerAmount !== '0') {
+      await mismatch('wrapApprove transaction must not carry native value inside sendMultiSig');
+    }
+
+    let approve: { spender: string; amount: string };
+    try {
+      approve = decodeApproveCalldata(innerData || '');
+    } catch (e) {
+      return mismatch(
+        `wrapApprove transaction must use ERC-20 approve(address,uint256) calldata — ${(e as Error).message}`
+      );
+    }
+    if (approve.spender.toLowerCase() !== wrapper.contractAddress.toLowerCase()) {
+      await mismatch('wrapApprove transaction spender does not match the wrapper contract', approve.spender);
+    }
+    if (approve.amount !== wrapParams.amount) {
+      await mismatch('wrapApprove transaction amount does not match the requested amount', innerTo, approve.amount);
+    }
+
+    // Cross-check the build recipients the client signs the operation hash against — they must
+    // mirror the sendMultiSig args encoded in txHex.
+    const prebuildRecipient = txPrebuild.recipients?.[0];
+    if (prebuildRecipient) {
+      const recipientDetail = [
+        { address: prebuildRecipient.address, amount: prebuildRecipient.amount?.toString() ?? '' },
+      ];
+      if (prebuildRecipient.address?.toLowerCase() !== innerTo.toLowerCase()) {
+        await throwRecipientMismatch(
+          'wrapApprove prebuild recipient address does not match the sendMultiSig target encoded in txHex',
+          recipientDetail
+        );
+      }
+      let recipientData: string | undefined;
+      if ('data' in prebuildRecipient && typeof prebuildRecipient.data === 'string') {
+        recipientData = prebuildRecipient.data;
+      }
+      if (recipientData && stripHexPrefix(recipientData).toLowerCase() !== stripHexPrefix(innerData).toLowerCase()) {
+        await throwRecipientMismatch(
+          'wrapApprove prebuild recipient data does not match the sendMultiSig calldata encoded in txHex',
+          recipientDetail
+        );
+      }
+    }
   }
 
   private isETHAddress(address: string): boolean {
