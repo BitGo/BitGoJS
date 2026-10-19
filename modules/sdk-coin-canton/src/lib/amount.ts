@@ -7,16 +7,21 @@ import type { CantonAmount, CantonAmountInput } from './iface';
  * the value can exceed Number.MAX_SAFE_INTEGER. BigInt inputs are normalized to strings
  * because request objects are serialized as JSON.
  */
-export function normalizeCantonAmount(amount: CantonAmountInput, errorMessage: string): CantonAmount {
+export function normalizeCantonAmount(
+  amount: CantonAmountInput,
+  errorMessage: string,
+  allowZero = false
+): CantonAmount {
+  const isInvalid = (n: number | bigint): boolean => (allowZero ? n < 0 : n <= 0);
   if (typeof amount === 'bigint') {
-    if (amount <= 0n) {
+    if (isInvalid(amount)) {
       throw new Error(errorMessage);
     }
     return amount.toString();
   }
 
   if (typeof amount === 'number') {
-    if (!Number.isFinite(amount) || amount <= 0) {
+    if (!Number.isFinite(amount) || isInvalid(amount)) {
       throw new Error(errorMessage);
     }
     return amount;
@@ -24,7 +29,11 @@ export function normalizeCantonAmount(amount: CantonAmountInput, errorMessage: s
 
   const normalized = amount.trim();
   const numericAmount = new BigNumber(normalized);
-  if (!normalized || !numericAmount.isFinite() || numericAmount.isLessThanOrEqualTo(0)) {
+  if (
+    !normalized ||
+    !numericAmount.isFinite() ||
+    (allowZero ? numericAmount.isLessThan(0) : numericAmount.isLessThanOrEqualTo(0))
+  ) {
     throw new Error(errorMessage);
   }
   return normalized;

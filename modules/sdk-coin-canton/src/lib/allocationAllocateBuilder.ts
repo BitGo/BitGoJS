@@ -24,6 +24,7 @@ export class AllocationAllocateBuilder extends TransactionBuilder {
   private _receiverPartyId: string;
   private _senderPartyId: string;
   private _comment?: string;
+  private _allocationRole: 'send' | 'receive' = 'send';
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -75,13 +76,32 @@ export class AllocationAllocateBuilder extends TransactionBuilder {
   }
 
   /**
+   * Sets the role of this allocation. A 'receive' allocation is an unfunded, receive-only V2 allocation
+   * (cross-issuer trades): it locks nothing, so its amount is 0. Call before amount().
+   * @param role - 'send' (default) or 'receive'
+   * @returns The current builder instance for chaining.
+   */
+  allocationRole(role: 'send' | 'receive'): this {
+    if (role !== 'send' && role !== 'receive') {
+      throw new Error("allocationRole must be 'send' or 'receive'");
+    }
+    this._allocationRole = role;
+    return this;
+  }
+
+  /**
    * Sets the allocation amount.
    * @param amount - allocation amount. Use a string or bigint above Number.MAX_SAFE_INTEGER.
+   *   Zero is accepted only for a 'receive' allocation (set allocationRole first).
    * @returns The current builder instance for chaining.
-   * @throws Error if amount is not positive
+   * @throws Error if amount is not positive (or negative, for a receive allocation)
    */
   amount(amount: CantonAmountInput): this {
-    this._amount = normalizeCantonAmount(amount, 'amount must be a positive number');
+    this._amount = normalizeCantonAmount(
+      amount,
+      'amount must be a positive number',
+      this._allocationRole === 'receive'
+    );
     return this;
   }
 
@@ -245,6 +265,9 @@ export class AllocationAllocateBuilder extends TransactionBuilder {
     if (this._comment !== undefined) {
       result.comment = this._comment;
     }
+    if (this._allocationRole === 'receive') {
+      result.allocationRole = 'receive';
+    }
     return result;
   }
 
@@ -256,7 +279,8 @@ export class AllocationAllocateBuilder extends TransactionBuilder {
    */
   private validate(): void {
     if (!this._commandId) throw new Error('commandId is missing');
-    if (!this._amount) throw new Error('amount is missing');
+    if (this._amount === undefined || this._amount === null) throw new Error('amount is missing');
+    if (this._allocationRole === 'send' && !Number(this._amount)) throw new Error('amount is missing');
     if (!this._token) throw new Error('token is missing');
     if (!this._operatorId) throw new Error('operatorId is missing');
     if (this._contractId === undefined) throw new Error('contractId is missing');
