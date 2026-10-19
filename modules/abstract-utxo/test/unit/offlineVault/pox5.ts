@@ -18,6 +18,7 @@ import { deriveKeyWithSeed } from '../../../src/deriveKeyWithSeed';
 import { UtxoCoinName } from '../../../src/names';
 
 const UNLOCK_HEIGHT = 840_000;
+const PRINCIPAL_PREIMAGE = Buffer.alloc(32, 0x42);
 const DERIVATION_ID = 'pox5-test-seed';
 const INPUT_VALUE = 100_000n;
 const CHANGE_VALUE = 60_000n;
@@ -46,7 +47,7 @@ function getForeignKeys(): KeyTriple {
 function createLockupDescriptor(keys: KeyTriple, unlockHeight = UNLOCK_HEIGHT): Descriptor {
   return pox5.createPox5LockupDescriptor({
     unlockHeight,
-    stakerCommitment: sha256(Buffer.alloc(32, 0x42)),
+    stakerCommitment: sha256(PRINCIPAL_PREIMAGE),
     earlyExitKey: Buffer.from(getKey('pox5-offline-vault-early-exit').publicKey),
     stakerKeys: keys,
   });
@@ -59,6 +60,8 @@ type Pox5TxParams = {
   locktime?: number;
   sequence?: number;
   lockupInputs?: number;
+  /** add the principal preimage of the lockup input, which makes the spend an early exit */
+  earlyExitPreimage?: Uint8Array;
 };
 
 function createPox5Tx(params: Pox5TxParams = {}): { tx: DescriptorTransaction; rootPrv: BIP32 } {
@@ -83,6 +86,10 @@ function createPox5Tx(params: Pox5TxParams = {}): { tx: DescriptorTransaction; r
       descriptor: internal.atDerivationIndex(3),
     },
   ]);
+
+  if (params.earlyExitPreimage) {
+    psbt.addSha256Preimage(0, params.earlyExitPreimage);
+  }
 
   const tx: DescriptorTransaction = {
     xpubsWithDerivationPath: {
@@ -129,6 +136,72 @@ describe('OfflineVault PoX-5 lockup descriptor', function () {
 
       it('half-signs a late exit with nLockTime above the unlock height', function () {
         halfSign(coinName, createPox5Tx({ locktime: UNLOCK_HEIGHT + 100 }));
+      });
+
+      describe('early exit', function () {
+        const earlyExit = (params: Pox5TxParams = {}) =>
+          createPox5Tx({ locktime: 0, earlyExitPreimage: PRINCIPAL_PREIMAGE, ...params });
+
+        it('explains an early exit with a zero nLockTime', function () {
+          const explanation = getTransactionExplanation(coinName, earlyExit().tx);
+          assert.strictEqual(explanation.locktime, 0);
+          assert.strictEqual(explanation.outputs.length, 1);
+          assert.strictEqual(explanation.outputs[0].amount, EXTERNAL_VALUE.toString());
+        });
+
+        it('half-signs an early exit with the user key', function () {
+          const signed = halfSign(coinName, earlyExit());
+          const sigs = signed.getPartialSignatures(0);
+          assert.strictEqual(sigs.length, 1);
+          assert.ok(signed.validateSignatureAtInput(0, sigs[0].pubkey));
+          // the principal preimage survives signing
+          assert.ok(signed.getInputKeyValues(0).some((r) => r.type === 'known' && r.key === 'PSBT_IN_SHA256'));
+        });
+
+        it('half-signs an early exit with a final sequence', function () {
+          halfSign(coinName, earlyExit({ sequence: 0xffffffff }));
+        });
+
+        it('finalizes once the BitGo key and the early-exit key have signed', function () {
+          const early = getKey('pox5-offline-vault-early-exit');
+          const signed = halfSign(coinName, earlyExit());
+          signed.signWithXprv(getKeyTriple('pox5-offline-vault')[2].toBase58());
+          signed.signWithPrv(early.privateKey!);
+          assert.strictEqual(signed.getPartialSignatures(0).length, 3);
+          signed.finalizeInput(0);
+          const witness = signed.extractTransaction().getInputs()[0].witness;
+          assert.ok(witness.some((item) => Buffer.from(item).equals(PRINCIPAL_PREIMAGE)));
+        });
+
+        it('half-signs an early exit that already carries the early-exit key partial', function () {
+          const early = getKey('pox5-offline-vault-early-exit');
+          const { tx, rootPrv } = earlyExit();
+          const psbt = Psbt.deserialize(Buffer.from(tx.coinSpecific.txHex, 'hex'));
+          psbt.signWithPrv(early.privateKey!);
+          tx.coinSpecific.txHex = Buffer.from(psbt.serialize()).toString('hex');
+          const signed = halfSign(coinName, { tx, rootPrv });
+          assert.strictEqual(signed.getPartialSignatures(0).length, 2);
+        });
+
+        it('rejects a non-zero nLockTime', function () {
+          assert.throws(() => halfSign(coinName, earlyExit({ locktime: UNLOCK_HEIGHT })), /nLockTime must be 0/);
+          assert.throws(() => halfSign(coinName, earlyExit({ locktime: 1 })), /nLockTime must be 0/);
+        });
+
+        it('rejects a principal preimage that does not match the descriptor commitment', function () {
+          assert.throws(
+            () => halfSign(coinName, earlyExit({ earlyExitPreimage: Buffer.alloc(32, 0x43) })),
+            /expected exactly one PSBT_IN_SHA256 record/
+          );
+        });
+
+        it('rejects lockup descriptors with foreign staker keys', function () {
+          assert.throws(() => halfSign(coinName, earlyExit({ lockupKeys: getForeignKeys() })), /does not match policy/);
+        });
+
+        it('rejects more than one lockup input', function () {
+          assert.throws(() => halfSign(coinName, earlyExit({ lockupInputs: 2 })), /exactly one PoX-5 lockup input/);
+        });
       });
 
       describe('rejects', function () {

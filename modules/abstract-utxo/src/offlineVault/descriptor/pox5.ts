@@ -7,11 +7,26 @@ function getPox5InputMatches(psbt: Psbt, descriptorMap: descriptorWallet.Descrip
   );
 }
 
+/** WP builds early exits with a zero nLockTime; the early-exit branch does not evaluate the CLTV. */
+const POX5_EARLY_EXIT_LOCKTIME = 0;
+
+function assertPox5EarlyExitPolicy(psbt: Psbt, match: pox5.Pox5InputMatch): void {
+  pox5.assertPox5EarlyExitSpend(psbt, match);
+  const lockTime = psbt.lockTime();
+  if (lockTime !== POX5_EARLY_EXIT_LOCKTIME) {
+    throw new Error(`PoX-5 early exit nLockTime must be ${POX5_EARLY_EXIT_LOCKTIME}, got ${lockTime}`);
+  }
+  // throws unless exactly one PSBT_IN_SHA256 record carries the descriptor's commitment and its preimage
+  pox5.getPox5PrincipalPreimage(psbt, match.inputIndex, match.info);
+}
+
 /**
  * Apply the PoX-5 staking spend policy to a PSBT before it is signed.
  *
  * PSBTs without PoX-5 lockup inputs are not affected. Otherwise, the PSBT must spend exactly one lockup
- * input through the post-CLTV (late exit) branch, with nLockTime at or above the unlock height and a non-final sequence.
+ * input through one of two branches:
+ * - post-CLTV (late exit): nLockTime at or above the unlock height and a non-final sequence.
+ * - principal-preimage (early exit): nLockTime 0 and the principal preimage committed by the descriptor.
  */
 export function assertPox5SpendPolicy(psbt: Psbt, descriptorMap: descriptorWallet.DescriptorMap): void {
   const matches = getPox5InputMatches(psbt, descriptorMap);
@@ -23,8 +38,14 @@ export function assertPox5SpendPolicy(psbt: Psbt, descriptorMap: descriptorWalle
   }
   const [match] = matches;
   const branch = pox5.classifyPox5Spend(psbt, match);
-  if (branch !== 'locktime') {
-    throw new Error(`unsupported PoX-5 spend branch: ${branch}`);
+  switch (branch) {
+    case 'locktime':
+      pox5.assertPox5LocktimeSpend(psbt, matches);
+      return;
+    case 'early-exit':
+      assertPox5EarlyExitPolicy(psbt, match);
+      return;
+    default:
+      throw new Error(`unsupported PoX-5 spend branch: ${branch}`);
   }
-  pox5.assertPox5LocktimeSpend(psbt, matches);
 }
