@@ -84,7 +84,14 @@ allCoinsAndTokens.forEach((coin) => {
 // onboarding doesn't require hand-maintaining that map for every new EVM family.
 registerErc20Families(erc20FamilySupportsEip1559);
 
+// implement the old method where we had extracted the tokenInitialisation to a different function
 export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefined {
+  // known coins are returned untouched: base chains are never replaced, and token
+  // refreshes are owned by the map builders that hold the CoinMap being returned
+  const existingCoin = findExistingCoin(token);
+  if (existingCoin) {
+    return existingCoin;
+  }
   if (!token.isToken) {
     try {
       return buildDynamicCoin(token);
@@ -93,6 +100,10 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
       return undefined;
     }
   }
+  return constructToken(token);
+}
+
+function constructToken(token: AmsTokenConfig, preserveCoinSpecificMapping = false): Readonly<BaseCoin> | undefined {
   const initializerMap: Record<string, unknown> = {
     algo: algoToken,
     apt: aptToken,
@@ -141,8 +152,26 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     }
   }
 
-  // dynamically add erc20 token initializers for eth like chains to the initializer map
+  // dynamically add erc20 token initializers for eth like chains to the initializer map.
+  // A refresh skips this override for legacy EVM families — the set mirrors AMS's
+  // LEGACY_EVM_FAMILIES (@bitgo-private/asset-metadata-service-types, tokenFamilyManifest).
+  // Legacy families keep their per-chain factories (Erc20Coin, ArbethERC20Token, ...) so the
+  // refreshed class matches what statics registers; erc20Token builds EthLikeERC20Token, which
+  // CoinMap.replace rejects as a class change. AMS reports the mainnet family even for testnet
+  // tokens. For every non-legacy family the generic initializer is canonical, so a residual
+  // family class there is un-migrated registration drift, correctly rejected.
+  const coinSpecificErc20Families: Record<string, true> = {
+    eth: true,
+    polygon: true,
+    bsc: true,
+    arbeth: true,
+    opeth: true,
+    avaxc: true,
+    celo: true,
+    bera: true,
+  };
   Object.keys(erc20ChainToNameMap).forEach((key) => {
+    if (preserveCoinSpecificMapping && coinSpecificErc20Families[key]) return;
     initializerMap[key] = erc20Token;
   });
 
@@ -150,18 +179,6 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     initializerMap[key] = erc721Token;
   });
 
-  //return the BaseCoin from default coin map if present
-  if (isCoinPresentInCoinMap({ ...token })) {
-    if (coins.has(token.name)) {
-      return coins.get(token.name);
-    }
-    if (coins.has(token.id)) {
-      return coins.get(token.id);
-    }
-    if (token.alias && coins.has(token.alias)) {
-      return coins.get(token.alias);
-    }
-  }
   const family = token.family;
   const initializer = initializerMap[family] as (...args: unknown[]) => Readonly<BaseCoin>;
   if (!initializer) {
@@ -186,12 +203,11 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
       return initializer(
         ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
         token.contractAddress || token.tokenAddress, // contractAddress
-        token.asset,
-        token.network,
-        token.features,
-        token.prefix,
-        token.suffix,
-        token.primaryKeyCurve
+        // arg order follows the selected initializer: erc20Token takes network before
+        // features; the legacy per-chain factories take features before network
+        ...(initializer === erc20Token
+          ? [token.asset, token.network, token.features, token.prefix, token.suffix, token.primaryKeyCurve]
+          : commonArgs.slice(4)) // asset, features, prefix, suffix, network, primaryKeyCurve
       );
     case erc721ChainToNameMap[family]:
       return initializer(
@@ -454,6 +470,22 @@ export function isCoinPresentInCoinMap({ name, id, alias }: { name: string; id?:
   return Boolean(coins.has(name) || (id && coins.has(id)) || (alias && coins.has(alias)));
 }
 
+function findExistingCoin({
+  name,
+  id,
+  alias,
+}: {
+  name: string;
+  id?: string;
+  alias?: string;
+}): Readonly<BaseCoin> | undefined {
+  return (
+    coins.getOrUndefined(name) ??
+    (id ? coins.getOrUndefined(id) : undefined) ??
+    (alias ? coins.getOrUndefined(alias) : undefined)
+  );
+}
+
 export function createTokenMapUsingConfigDetails(tokenConfigMap: Record<string, AmsTokenConfig[]>): CoinMap {
   const BaseCoins: Map<string, Readonly<BaseCoin>> = new Map();
 
@@ -501,27 +533,47 @@ export function createTokenMapUsingConfigDetails(tokenConfigMap: Record<string, 
   for (const tokenConfigs of Object.values(tokenConfigMap)) {
     if (!tokenConfigs.length) continue;
     const tokenConfig = tokenConfigs[0];
-
-    if (!isCoinPresentInCoinMap({ ...tokenConfig }) && !nftAndOtherTokens.has(tokenConfig.name)) {
-      try {
-        const token = createToken(tokenConfig);
-        // A token whose name is absent from the accumulated map can still reuse a contract address
-        // (or NFT collection id) already claimed by a static or previously-accepted AMS token.
-        // Adding it would make the final CoinMap.fromCoins throw, so skip it instead.
-        if (token && !accumulatedMap.hasTokenAddressConflict(token)) {
-          BaseCoins.set(token.name, token);
-          accumulatedMap.addCoin(token);
-        } else if (token) {
+    const existingCoin = findExistingCoin({ ...tokenConfig });
+    // instead of skipping, let known tokens flow so the AMS record can refresh
+    // them; known base chains are never replaced
+    if (existingCoin && !(tokenConfig.isToken && existingCoin.isToken)) continue;
+    if (!nftAndOtherTokens.has(tokenConfig.name)) {
+      if (existingCoin) {
+        // The skip above guarantees both records are tokens — base chains never
+        // flow through, so an AMS entry can never swap a known coin's class.
+        // Guard rejections throw inside replace before mutating, so the seeded
+        // entries stay correct and only the warn fires.
+        try {
+          const refreshedCoin = constructToken(tokenConfig, true);
+          if (refreshedCoin) {
+            coins.replace(refreshedCoin);
+            BaseCoins.set(refreshedCoin.name, refreshedCoin);
+            accumulatedMap.replace(refreshedCoin);
+          }
+        } catch (error) {
+          console.warn(`Failed to refresh coin ${tokenConfig.name} (${tokenConfig.id}):`, error);
+        }
+      } else {
+        try {
+          const token = createToken(tokenConfig);
+          // A token whose name is absent from the accumulated map can still reuse a contract address
+          // (or NFT collection id) already claimed by a static or previously-accepted AMS token.
+          // Adding it would make the final CoinMap.fromCoins throw, so skip it instead.
+          if (token && !accumulatedMap.hasTokenAddressConflict(token)) {
+            BaseCoins.set(token.name, token);
+            accumulatedMap.addCoin(token);
+          } else if (token) {
+            console.warn(
+              `Skipping token with conflicting contract address or NFT collection id: name="${tokenConfig.name}" id="${tokenConfig.id}"`
+            );
+          }
+        } catch (e) {
           console.warn(
-            `Skipping token with conflicting contract address or NFT collection id: name="${tokenConfig.name}" id="${tokenConfig.id}"`
+            `Skipping malformed token: name="${tokenConfig.name}" id="${tokenConfig.id}" family="${
+              tokenConfig.family
+            }" error=${(e as Error).message}`
           );
         }
-      } catch (e) {
-        console.warn(
-          `Skipping malformed token: name="${tokenConfig.name}" id="${tokenConfig.id}" family="${
-            tokenConfig.family
-          }" error=${(e as Error).message}`
-        );
       }
     }
   }
@@ -568,7 +620,10 @@ export function createTokenMapUsingTrimmedConfigDetails(
     for (const tokenConfig of tokenConfigs) {
       const network = networkNameMap.get(tokenConfig.network.name);
 
-      if (isCoinPresentInCoinMap({ ...tokenConfig })) continue;
+      // instead of skipping, let known tokens continue so the AMS record can
+      // refresh them; known base chains are never replaced
+      const existingCoin = findExistingCoin({ ...tokenConfig });
+      if (existingCoin && !(tokenConfig.isToken && existingCoin.isToken)) continue;
 
       if (!tokenConfig.isToken) {
         // Dynamic base chain — network must be pre-registered in networkByName map before calling this function.
@@ -577,11 +632,11 @@ export function createTokenMapUsingTrimmedConfigDetails(
             { ...tokenConfig, features: tokenConfig.additionalFeatures ?? [], network },
           ];
         }
-      } else if (network && getNetworkFeatures(network.family as string)) {
-        const features = new Set([
-          ...(getNetworkFeatures(network.family as string) || []),
-          ...(tokenConfig.additionalFeatures || []),
-        ]);
+      } else if (network && (existingCoin || getNetworkFeatures(network.family as string))) {
+        // A refresh keeps the registered token's features as the base so its per-token
+        // statics features survive; only new tokens start from the family defaults.
+        const baseFeatures = existingCoin?.features ?? getNetworkFeatures(network.family as string) ?? [];
+        const features = new Set([...baseFeatures, ...(tokenConfig.additionalFeatures || [])]);
         tokenConfig.excludedFeatures?.forEach((feature) => features.delete(feature));
         amsTokenConfigMap[tokenConfig.name] = [{ ...tokenConfig, features: Array.from(features), network }];
       }
