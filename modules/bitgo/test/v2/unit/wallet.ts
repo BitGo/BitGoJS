@@ -651,6 +651,59 @@ describe('V2 Wallet:', function () {
       }
       nockKeychain.isDone().should.be.true();
     });
+
+    it('should send wrapParams to /tx/build when prebuilding wrapApprove on an onchain multi-sig wallet', async function () {
+      const wrapParams = { tokenName: 'hteth:cusdt', amount: '1000000' };
+      const buildNock = nock(bgUrl)
+        .post(`/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/tx/build`, (body) => {
+          body.type.should.equal('wrapApprove');
+          body.wrapParams.should.deepEqual(wrapParams);
+          should.not.exist(body.recipients);
+          return true;
+        })
+        .reply(200, { txHex: '0xfaketxhex', feeInfo: { fee: '1000' } });
+
+      try {
+        await ethWallet.prebuildTransaction({ type: 'wrapApprove', wrapParams });
+      } catch (e) {
+        // post-processing of the fake prebuild may fail; the contract under test is the request body
+      }
+      buildNock.isDone().should.be.true();
+    });
+
+    it('should send unwrapParams to /tx/build when prebuilding unwrap on an onchain multi-sig wallet', async function () {
+      const unwrapParams = { tokenName: 'hteth:cusdt', amount: '1000000' };
+      const buildNock = nock(bgUrl)
+        .post(`/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/tx/build`, (body) => {
+          body.type.should.equal('unwrap');
+          body.unwrapParams.should.deepEqual(unwrapParams);
+          should.not.exist(body.recipients);
+          return true;
+        })
+        .reply(200, { txHex: '0xfaketxhex', feeInfo: { fee: '1000' } });
+
+      try {
+        await ethWallet.prebuildTransaction({ type: 'unwrap', unwrapParams });
+      } catch (e) {
+        // post-processing of the fake prebuild may fail; the contract under test is the request body
+      }
+      buildNock.isDone().should.be.true();
+    });
+
+    it('should not pass recipients in sendMany when transaction type is finalizeUnwrap', async function () {
+      const recipients = [
+        {
+          address: '0x7db562c4dd465cc895761c56f83b6af0e32689ba',
+          amount: 0,
+        },
+      ];
+
+      try {
+        await ethWallet.sendMany({ recipients, type: 'finalizeUnwrap' });
+      } catch (e) {
+        e.message.should.equal('cannot provide recipients for transaction type finalizeUnwrap');
+      }
+    });
   });
 
   describe('OFC Create Address', () => {

@@ -2786,7 +2786,8 @@ export class Wallet implements IWallet {
         params.type === 'acceleration' ||
         params.type === 'wrapApprove' ||
         params.type === 'wrap' ||
-        params.type === 'unwrap')
+        params.type === 'unwrap' ||
+        params.type === 'finalizeUnwrap')
     ) {
       const error: any = new Error(`cannot provide recipients for transaction type ${params.type}`);
       error.code = 'recipients_not_allowed_for_fillnonce_and_acceleration_tx_type';
