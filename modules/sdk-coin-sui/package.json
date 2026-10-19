@@ -45,10 +45,12 @@
     "@bitgo/sdk-lib-mpc": "^11.5.0",
     "@bitgo/statics": "^59.23.1",
     "@mysten/bcs": "^0.7.0",
+    "@mysten/sui": "2.20.0",
+    "@grpc/grpc-js": "^1.14.4",
+    "@protobuf-ts/grpc-transport": "2.11.1",
     "bignumber.js": "^9.0.0",
     "bs58": "^4.0.1",
     "lodash": "^4.18.0",
-    "superagent": "3.8.2",
     "superstruct": "^1.0.3",
     "tweetnacl": "^1.0.3"
   },

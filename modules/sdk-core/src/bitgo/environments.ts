@@ -66,6 +66,10 @@ interface EnvironmentTemplate {
   hmacVerificationEnforced: boolean;
   tonNodeUrl: string;
   suiNodeUrl: string;
+  // Optional for backwards compatibility: consumers with custom environments
+  // compiled against pre-gRPC templates must not break. Node-call paths throw
+  // a descriptive runtime error only when the URL is actually needed.
+  suiGrpcNodeUrl?: string;
   iotaNodeUrl: string;
   etcNodeUrl: string;
   coredaoExplorerBaseUrl?: string;
@@ -216,6 +220,7 @@ const mainnetBase: EnvironmentTemplate = {
   hmacVerificationEnforced: true,
   tonNodeUrl: 'https://toncenter.com/api/v2/jsonRPC',
   suiNodeUrl: 'https://sui-rpc.publicnode.com',
+  suiGrpcNodeUrl: 'https://fullnode.mainnet.sui.io:443',
   iotaNodeUrl: 'https://api.mainnet.iota.cafe',
   etcNodeUrl: 'https://etc.blockscout.com',
   coredaoExplorerBaseUrl: 'https://openapi.coredao.org',
@@ -455,6 +460,7 @@ const testnetBase: EnvironmentTemplate = {
   hmacVerificationEnforced: false,
   tonNodeUrl: 'https://testnet.toncenter.com/api/v2/jsonRPC',
   suiNodeUrl: 'https://sui-testnet-rpc.publicnode.com',
+  suiGrpcNodeUrl: 'https://fullnode.testnet.sui.io:443',
   iotaNodeUrl: 'https://api.testnet.iota.cafe',
   etcNodeUrl: 'https://etc-mordor.blockscout.com',
   coredaoExplorerBaseUrl: 'https://api.test2.btcs.network',
