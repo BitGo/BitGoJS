@@ -1049,6 +1049,138 @@ describe('ETH:', function () {
       });
     });
 
+    describe('multisig wrapApprove verification', function () {
+      const pair = coins.get('hteth:cusdt') as Erc7984Coin;
+      const wrapper = String(pair.contractAddress);
+      const underlying = pair.underlyingErc20Address as string;
+      const amount = '1000000';
+      const walletContract = address2;
+
+      // Server-built multisig shape: tx.to = wallet contract,
+      // data = sendMultiSig(underlying, 0, approve(wrapper, amount), expireTime, sequenceId, signature)
+      const sendMultiSigCalldata = (toAddress: string, value: string, innerData: string): string => {
+        const types = ['address', 'uint', 'bytes', 'uint', 'uint', 'bytes'];
+        const methodId = EthereumAbi.methodID('sendMultiSig', types);
+        const encoded = EthereumAbi.rawEncode(types, [
+          toAddress,
+          new BN(value),
+          Buffer.from(innerData.slice(2), 'hex'),
+          1234,
+          1,
+          Buffer.alloc(0),
+        ]);
+        return '0x' + Buffer.concat([methodId, encoded]).toString('hex');
+      };
+
+      const verifyMultisigWrapApprove = async (
+        data: string,
+        opts: {
+          to?: string;
+          wrapParams?: { tokenName: string; amount: string } | null;
+          txPrebuildRecipients?: Array<Record<string, unknown>>;
+        } = {}
+      ) => {
+        const coin = bitgo.coin('hteth') as Hteth;
+        const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: address1 } });
+        const wrapParams =
+          opts.wrapParams === null ? undefined : opts.wrapParams ?? { tokenName: 'hteth:cusdt', amount };
+        return coin.verifyTransaction({
+          txParams: { type: 'wrapApprove', wrapParams } as any,
+          txPrebuild: {
+            txHex: await buildDefiTxHex(data, opts.to ?? walletContract),
+            coin: 'hteth',
+            walletId: 'w',
+            ...(opts.txPrebuildRecipients ? { recipients: opts.txPrebuildRecipients } : {}),
+          } as any,
+          wallet,
+          verification: {},
+        });
+      };
+
+      const approveCalldata = (spender: string, approveAmount: string) =>
+        defiCalldata('approve(address,uint256)', [spender, approveAmount]);
+
+      it('should verify approve(wrapper, amount) wrapped in sendMultiSig', async function () {
+        const data = sendMultiSigCalldata(underlying, '0', approveCalldata(wrapper, amount));
+        const result = await verifyMultisigWrapApprove(data, {
+          txPrebuildRecipients: [{ address: underlying, amount: '0', data: approveCalldata(wrapper, amount) }],
+        });
+        result.should.equal(true);
+      });
+
+      it('should verify approve wrapped in sendMultiSig without prebuild recipients', async function () {
+        const data = sendMultiSigCalldata(underlying, '0', approveCalldata(wrapper, amount));
+        const result = await verifyMultisigWrapApprove(data);
+        result.should.equal(true);
+      });
+
+      it('should reject a spender other than the wrapper inside sendMultiSig', async function () {
+        await expectDefiRejection(
+          verifyMultisigWrapApprove(sendMultiSigCalldata(underlying, '0', approveCalldata(address2, amount))),
+          /spender does not match the wrapper/
+        );
+      });
+
+      it('should reject a mutated amount inside sendMultiSig', async function () {
+        await expectDefiRejection(
+          verifyMultisigWrapApprove(sendMultiSigCalldata(underlying, '0', approveCalldata(wrapper, '1000001'))),
+          /amount does not match/
+        );
+      });
+
+      it('should reject inner calldata that is not approve', async function () {
+        await expectDefiRejection(
+          verifyMultisigWrapApprove(
+            sendMultiSigCalldata(underlying, '0', defiCalldata('transfer(address,uint256)', [address2, amount]))
+          ),
+          /approve\(address,uint256\)/
+        );
+      });
+
+      it('should reject a sendMultiSig target other than the underlying ERC-20', async function () {
+        await expectDefiRejection(
+          verifyMultisigWrapApprove(sendMultiSigCalldata(address2, '0', approveCalldata(wrapper, amount))),
+          /must target the underlying ERC-20/
+        );
+      });
+
+      it('should reject native value inside sendMultiSig', async function () {
+        await expectDefiRejection(
+          verifyMultisigWrapApprove(sendMultiSigCalldata(underlying, '1', approveCalldata(wrapper, amount))),
+          /must not carry native value/
+        );
+      });
+
+      it('should reject when wrapParams is missing or names an unregistered pair', async function () {
+        const data = sendMultiSigCalldata(underlying, '0', approveCalldata(wrapper, amount));
+        await expectDefiRejection(verifyMultisigWrapApprove(data, { wrapParams: null }), /requires wrapParams/);
+        await expectDefiRejection(
+          verifyMultisigWrapApprove(data, { wrapParams: { tokenName: 'hteth', amount } }),
+          /not a registered ERC-7984 shield pair/
+        );
+      });
+
+      it('should fail closed on a tx that is not sendMultiSig-wrapped', async function () {
+        await expectDefiRejection(verifyMultisigWrapApprove(approveCalldata(wrapper, amount)), /sendMultiSig/);
+      });
+
+      it('should reject prebuild recipients that do not mirror the sendMultiSig args in txHex', async function () {
+        const data = sendMultiSigCalldata(underlying, '0', approveCalldata(wrapper, amount));
+        await expectDefiRejection(
+          verifyMultisigWrapApprove(data, {
+            txPrebuildRecipients: [{ address: address2, amount: '0', data: approveCalldata(wrapper, amount) }],
+          }),
+          /recipient address does not match the sendMultiSig target/
+        );
+        await expectDefiRejection(
+          verifyMultisigWrapApprove(data, {
+            txPrebuildRecipients: [{ address: underlying, amount: '0', data: approveCalldata(address2, amount) }],
+          }),
+          /recipient data does not match the sendMultiSig calldata/
+        );
+      });
+    });
+
     describe('wrapper-directed approve must be declared wrapApprove', function () {
       const pair = coins.get('hteth:cusdt') as Erc7984Coin;
       const wrapper = String(pair.contractAddress);
