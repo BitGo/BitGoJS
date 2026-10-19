@@ -20,6 +20,7 @@ import {
   Wallet,
 } from '@bitgo/sdk-core';
 import BN from 'bn.js';
+import { buildFinalizeUnwrapCalldata, buildUnwrapCalldata, buildWrapCalldata } from '@bitgo/abstract-eth';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import {
   AbstractEthLikeNewCoins,
@@ -1177,6 +1178,188 @@ describe('ETH:', function () {
             txPrebuildRecipients: [{ address: underlying, amount: '0', data: approveCalldata(address2, amount) }],
           }),
           /recipient data does not match the sendMultiSig calldata/
+        );
+      });
+    });
+
+    describe('base-coin wrap / unwrap / finalizeUnwrap verification', function () {
+      const pair = coins.get('hteth:cusdt') as Erc7984Coin;
+      const wrapper = String(pair.contractAddress);
+      const amount = '1000000';
+      const walletContract = address2;
+      const handle = '0x' + '11'.repeat(32);
+      const requestId = '0x' + '22'.repeat(32);
+      const proof = '0x1234';
+
+      const sendMultiSigCalldata = (toAddress: string, value: string, innerData: string): string => {
+        const types = ['address', 'uint', 'bytes', 'uint', 'uint', 'bytes'];
+        const methodId = EthereumAbi.methodID('sendMultiSig', types);
+        const encoded = EthereumAbi.rawEncode(types, [
+          toAddress,
+          new BN(value),
+          Buffer.from(innerData.slice(2), 'hex'),
+          1234,
+          1,
+          Buffer.alloc(0),
+        ]);
+        return '0x' + Buffer.concat([methodId, encoded]).toString('hex');
+      };
+
+      // TSS: direct call on the wrapper. Multisig: tx.to = wallet contract, sendMultiSig(wrapper, 0, call, ...).
+      const verifyLeg = async (
+        walletType: 'tss' | 'onchain',
+        type: string,
+        call: string,
+        opts: { target?: string; value?: string; wrapParams?: { tokenName: string; amount: string } } = {}
+      ) => {
+        const coin = bitgo.coin('hteth') as Hteth;
+        const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: address1 } });
+        const target = opts.target ?? wrapper;
+        const txHex =
+          walletType === 'tss'
+            ? await buildDefiTxHex(call, target)
+            : await buildDefiTxHex(sendMultiSigCalldata(target, opts.value ?? '0', call), walletContract);
+        return coin.verifyTransaction({
+          txParams: { type, ...(opts.wrapParams ? { wrapParams: opts.wrapParams } : {}) } as any,
+          txPrebuild: { txHex, coin: 'hteth', walletId: 'w' } as any,
+          wallet,
+          verification: {},
+          walletType,
+        });
+      };
+
+      const legs: Array<{ type: string; good: string }> = [
+        { type: 'wrap', good: buildWrapCalldata(address1, amount) },
+        { type: 'unwrap', good: buildUnwrapCalldata(address1, address1, handle, proof) },
+        { type: 'finalizeUnwrap', good: buildFinalizeUnwrapCalldata(requestId, '5', proof) },
+      ];
+
+      for (const walletType of ['tss', 'onchain'] as const) {
+        describe(`${walletType} wallet`, function () {
+          for (const { type, good } of legs) {
+            it(`should verify a valid ${type} leg`, async function () {
+              (await verifyLeg(walletType, type, good)).should.equal(true);
+            });
+
+            it(`should reject a ${type} leg aimed at a non-wrapper address`, async function () {
+              await expectDefiRejection(
+                verifyLeg(walletType, type, good, { target: address2 }),
+                /must target a registered ERC-7984 wrapper/
+              );
+            });
+
+            it(`should reject a ${type} leg with the other wallet type's shape`, async function () {
+              const other = walletType === 'tss' ? 'onchain' : 'tss';
+              await expectDefiRejection(
+                (async () => {
+                  const coin = bitgo.coin('hteth') as Hteth;
+                  const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: address1 } });
+                  const txHex =
+                    other === 'tss'
+                      ? await buildDefiTxHex(good, wrapper)
+                      : await buildDefiTxHex(sendMultiSigCalldata(wrapper, '0', good), walletContract);
+                  return coin.verifyTransaction({
+                    txParams: { type } as any,
+                    txPrebuild: { txHex, coin: 'hteth', walletId: 'w' } as any,
+                    wallet,
+                    verification: {},
+                    walletType,
+                  });
+                })(),
+                walletType === 'tss' ? /directly on the wrapper/ : /inside sendMultiSig/
+              );
+            });
+          }
+
+          it('should reject a wrap to a recipient other than the wallet base address', async function () {
+            await expectDefiRejection(
+              verifyLeg(walletType, 'wrap', buildWrapCalldata(address2, amount)),
+              /recipient must equal the wallet base address/
+            );
+          });
+
+          it('should reject a wrap whose amount differs from wrapParams', async function () {
+            await expectDefiRejection(
+              verifyLeg(walletType, 'wrap', buildWrapCalldata(address1, amount), {
+                wrapParams: { tokenName: 'hteth:cusdt', amount: '1000001' },
+              }),
+              /amount does not match the requested amount/
+            );
+          });
+
+          it('should reject a wrap whose wrapParams name a different token', async function () {
+            await expectDefiRejection(
+              verifyLeg(walletType, 'wrap', buildWrapCalldata(address1, amount), {
+                wrapParams: { tokenName: 'hteth:ctest1', amount },
+              }),
+              /wrapper does not match the requested token/
+            );
+          });
+
+          it('should reject an unwrap whose source is not the wallet base address', async function () {
+            await expectDefiRejection(
+              verifyLeg(walletType, 'unwrap', buildUnwrapCalldata(address2, address1, handle, proof)),
+              /source must equal the wallet base address/
+            );
+          });
+
+          it('should reject an unwrap paid out to another address', async function () {
+            await expectDefiRejection(
+              verifyLeg(walletType, 'unwrap', buildUnwrapCalldata(address1, address2, handle, proof)),
+              /recipient must equal the wallet base address/
+            );
+          });
+
+          it('should reject an unwrap with a zero encrypted amount', async function () {
+            await expectDefiRejection(
+              verifyLeg(walletType, 'unwrap', buildUnwrapCalldata(address1, address1, '0x' + '00'.repeat(32), proof)),
+              /encrypted amount is missing or empty/
+            );
+          });
+
+          it('should reject a finalizeUnwrap with a zero requestId', async function () {
+            await expectDefiRejection(
+              verifyLeg(walletType, 'finalizeUnwrap', buildFinalizeUnwrapCalldata('0x' + '00'.repeat(32), '5', proof)),
+              /requestId is missing or empty/
+            );
+          });
+
+          it('should reject a leg whose calldata is another wrapper method', async function () {
+            await expectDefiRejection(
+              verifyLeg(walletType, 'wrap', buildFinalizeUnwrapCalldata(requestId, '5', proof)),
+              walletType === 'tss' ? /directly on the wrapper/ : /inside sendMultiSig/
+            );
+          });
+        });
+      }
+
+      it('should reject native value inside sendMultiSig', async function () {
+        await expectDefiRejection(
+          verifyLeg('onchain', 'wrap', buildWrapCalldata(address1, amount), { value: '1' }),
+          /must not carry native value inside sendMultiSig/
+        );
+      });
+
+      it('should reject native value on a direct TSS call', async function () {
+        const coin = bitgo.coin('hteth') as Hteth;
+        const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: address1 } });
+        const txBuilder = getBuilder('hteth') as TransactionBuilder;
+        txBuilder.type(TransactionType.ContractCall);
+        txBuilder.fee({ fee: '10', gasLimit: '100000' });
+        txBuilder.counter(1);
+        txBuilder.contract(wrapper);
+        txBuilder.data(buildWrapCalldata(address1, amount));
+        txBuilder.value('1');
+        const txHex = (await txBuilder.build()).toBroadcastFormat();
+        await expectDefiRejection(
+          coin.verifyTransaction({
+            txParams: { type: 'wrap' } as any,
+            txPrebuild: { txHex, coin: 'hteth', walletId: 'w' } as any,
+            wallet,
+            verification: {},
+            walletType: 'tss',
+          }),
+          /must not carry native value/
         );
       });
     });

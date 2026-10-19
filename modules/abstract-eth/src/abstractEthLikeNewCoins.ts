@@ -97,6 +97,14 @@ import {
   getToken,
   KeyPair as KeyPairLib,
   sendMultisigMethodId,
+  assertWrapAmountFitsUint64,
+  decodeFinalizeUnwrapCalldata,
+  decodeUnwrapCalldata,
+  decodeWrapCalldata,
+  finalizeUnwrapMethodId,
+  UINT64_MAX,
+  unwrapMethodId,
+  wrapMethodId,
   TransactionBuilder,
   TransferBuilder,
 } from './lib';
@@ -502,6 +510,35 @@ function getErc7984WrappersByUnderlying(): ReadonlyMap<string, ReadonlySet<strin
   }
   return erc7984WrappersByUnderlying;
 }
+
+let erc7984PairsByWrapper: ReadonlyMap<string, Erc7984Coin> | undefined;
+
+/**
+ * Registered ERC-7984 shield pairs keyed by the lowercased wrapper contract address. Statics is static for the
+ * lifetime of the process, so this is computed once.
+ */
+function getErc7984PairByWrapper(wrapperAddress: string): Erc7984Coin | undefined {
+  if (!erc7984PairsByWrapper) {
+    const byWrapper = new Map<string, Erc7984Coin>();
+    coins.forEach((coin) => {
+      if (coin instanceof Erc7984Coin && coin.underlyingErc20Address && coin.contractAddress) {
+        byWrapper.set(coin.contractAddress.toLowerCase(), coin);
+      }
+    });
+    erc7984PairsByWrapper = byWrapper;
+  }
+  return erc7984PairsByWrapper.get(wrapperAddress.toLowerCase());
+}
+
+/**
+ * WP-created ERC-7984 shield/unshield legs that follow `wrapApprove`, mapped to the selector of the wrapper
+ * call each one must carry.
+ */
+const ERC7984_WRAPPER_INTENT_SELECTORS: Record<string, string | undefined> = {
+  wrap: wrapMethodId,
+  unwrap: unwrapMethodId,
+  finalizeUnwrap: finalizeUnwrapMethodId,
+};
 
 export const optionalDeps = {
   get ethAbi() {
@@ -3559,6 +3596,8 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
 
     if (txParams.type === 'wrapApprove') {
       await this.verifyWrapApproveTransaction(params, throwRecipientMismatch);
+    } else if (txParams.type && ERC7984_WRAPPER_INTENT_SELECTORS[txParams.type]) {
+      await this.verifyErc7984WrapperIntentTransaction(params, throwRecipientMismatch);
     } else {
       // Declared as anything else: only an approve of a registered wrapper is rejected (see the method doc);
       // for every other tx this returns without parsing or after one best-effort parse.
@@ -3652,6 +3691,14 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     // Checked before the generic recipient guards, which require txParams.recipients.
     if (txParams?.type === 'wrapApprove') {
       await this.verifyMultisigWrapApproveTransaction(params, throwRecipientMismatch);
+      await this.throwIfPrebuildCoinMismatch(txParams, txPrebuild);
+      return true;
+    }
+
+    // ERC-7984 wrap / unwrap / finalizeUnwrap for non-TSS (onchain multisig) wallets: same reasoning as above,
+    // the prebuild carries the sendMultiSig-wrapped wrapper call and the intents have no client recipients.
+    if (txParams?.type && ERC7984_WRAPPER_INTENT_SELECTORS[txParams.type]) {
+      await this.verifyErc7984WrapperIntentTransaction(params, throwRecipientMismatch);
       await this.throwIfPrebuildCoinMismatch(txParams, txPrebuild);
       return true;
     }
@@ -3978,6 +4025,171 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
           'wrapApprove prebuild recipient data does not match the sendMultiSig calldata encoded in txHex',
           recipientDetail
         );
+      }
+    }
+  }
+
+  /**
+   * Verifies the WP-created ERC-7984 legs that follow wrapApprove — `wrap`, `unwrap` and `finalizeUnwrap` — on the
+   * wallet's base coin, which is the coin that verifies txnReqs at signing time.
+   *
+   * The wrapper is resolved from the transaction itself and must be a registered ERC-7984 pair, so the check does
+   * not depend on intent params that are absent on the pendingApproval re-sign path.
+   *
+   *   TSS (`walletType === 'tss'`):  tx.to = wrapper, tx.data = wrap | unwrap | finalizeUnwrap calldata
+   *   multisig (any other wallet):   tx.to = wallet contract,
+   *                                  tx.data = sendMultiSig(wrapper, 0, <wrapper calldata>, ...)
+   *
+   * Any other shape for the wallet type is rejected, as is native value on the outer tx or inside sendMultiSig.
+   *   wrap:           recipient is the wallet base address, amount is positive and floor(amount / rate) fits
+   *                   uint64, and wrapParams (tokenName, amount) match when present.
+   *   unwrap:         self-directed only (from == to == wallet base address) with a non-empty encrypted amount
+   *                   and input proof.
+   *   finalizeUnwrap: non-zero requestId, positive cleartext amount that fits uint64, non-empty decryption proof.
+   */
+  private async verifyErc7984WrapperIntentTransaction(
+    params: VerifyEthTransactionOptions,
+    throwRecipientMismatch: (message: string, mismatchedRecipients: Recipient[]) => Promise<never>
+  ): Promise<void> {
+    const { txParams, txPrebuild, wallet, walletType } = params;
+    const intentType = txParams.type;
+    const selector = intentType ? ERC7984_WRAPPER_INTENT_SELECTORS[intentType] : undefined;
+    if (!intentType || !selector) {
+      throw new Error('unsupported ERC-7984 wrapper intent type');
+    }
+    if (!txPrebuild?.txHex) {
+      throw new Error('missing txHex in txPrebuild');
+    }
+
+    const txBuilder = this.getTransactionBuilder();
+    txBuilder.from(txPrebuild.txHex);
+    const txJson = (await txBuilder.build()).toJson();
+
+    const mismatch = (message: string, address = txJson.to, amount = txJson.value): Promise<never> =>
+      throwRecipientMismatch(message, [{ address: address || '', amount: amount || '' }]);
+
+    if (!new BigNumber(txJson.value || 0).isEqualTo(0)) {
+      return mismatch(`${intentType} transaction must not carry native value`);
+    }
+
+    const outerData = txJson.data || '';
+    let wrapperAddress: string;
+    let innerData: string;
+    if (walletType === 'tss') {
+      if (!outerData.toLowerCase().startsWith(selector.toLowerCase())) {
+        return mismatch(`${intentType} transaction must call ${intentType} directly on the wrapper`);
+      }
+      wrapperAddress = txJson.to || '';
+      innerData = outerData;
+    } else {
+      if (!outerData.toLowerCase().startsWith(sendMultisigMethodId.toLowerCase())) {
+        return mismatch(`${intentType} multisig transaction must encode the wrapper call inside sendMultiSig`);
+      }
+      try {
+        const decoded = decodeNativeTransferData(outerData);
+        wrapperAddress = decoded.to;
+        innerData = decoded.data;
+        if (decoded.amount !== '0') {
+          return mismatch(
+            `${intentType} transaction must not carry native value inside sendMultiSig`,
+            decoded.to,
+            decoded.amount
+          );
+        }
+      } catch (e) {
+        return mismatch(
+          `${intentType} multisig transaction failed to decode sendMultiSig calldata — ${(e as Error).message}`
+        );
+      }
+      if (!innerData.toLowerCase().startsWith(selector.toLowerCase())) {
+        return mismatch(`${intentType} transaction must call ${intentType} inside sendMultiSig`, wrapperAddress);
+      }
+    }
+
+    const pair = getErc7984PairByWrapper(wrapperAddress);
+    if (!pair) {
+      return mismatch(`${intentType} transaction must target a registered ERC-7984 wrapper`, wrapperAddress);
+    }
+
+    const baseAddress = wallet?.coinSpecific()?.baseAddress;
+    if (typeof baseAddress !== 'string' || baseAddress.length === 0) {
+      throw new Error(`${intentType}: unable to determine wallet base address`);
+    }
+
+    if (intentType === 'wrap') {
+      let to: string;
+      let amount: string;
+      try {
+        ({ to, amount } = decodeWrapCalldata(innerData));
+      } catch (e) {
+        return mismatch(`wrap transaction has invalid wrap calldata — ${(e as Error).message}`, wrapperAddress);
+      }
+      if (!/^[1-9]\d*$/.test(amount)) {
+        return mismatch('wrap transaction amount must be a positive integer', to, amount);
+      }
+      if (to.toLowerCase() !== baseAddress.toLowerCase()) {
+        return mismatch('wrap transaction recipient must equal the wallet base address', to, amount);
+      }
+      if (pair.rate !== undefined) {
+        try {
+          assertWrapAmountFitsUint64(amount, pair.rate);
+        } catch (e) {
+          return mismatch(`wrap transaction ${(e as Error).message}`, to, amount);
+        }
+      }
+      const wrapParams = txParams.wrapParams;
+      if (wrapParams && wrapParams.tokenName !== pair.name) {
+        return mismatch('wrap transaction wrapper does not match the requested token', wrapperAddress, amount);
+      }
+      if (wrapParams && wrapParams.amount !== amount) {
+        return mismatch('wrap transaction amount does not match the requested amount', to, amount);
+      }
+    } else if (intentType === 'unwrap') {
+      let from: string;
+      let to: string;
+      let encryptedAmount: string;
+      let inputProof: string;
+      try {
+        ({ from, to, encryptedAmount, inputProof } = decodeUnwrapCalldata(innerData));
+      } catch (e) {
+        return mismatch(`unwrap transaction has invalid unwrap calldata — ${(e as Error).message}`, wrapperAddress);
+      }
+      if (from.toLowerCase() !== baseAddress.toLowerCase()) {
+        return mismatch('unwrap transaction source must equal the wallet base address', from);
+      }
+      if (to.toLowerCase() !== baseAddress.toLowerCase()) {
+        return mismatch('unwrap transaction recipient must equal the wallet base address', to);
+      }
+      if (!encryptedAmount || /^0x0*$/.test(encryptedAmount)) {
+        return mismatch('unwrap transaction encrypted amount is missing or empty', wrapperAddress);
+      }
+      if (!inputProof || inputProof === '0x') {
+        return mismatch('unwrap transaction input proof is missing or empty', wrapperAddress);
+      }
+    } else {
+      let requestId: string;
+      let cleartextAmount: string;
+      let decryptionProof: string;
+      try {
+        ({ requestId, cleartextAmount, decryptionProof } = decodeFinalizeUnwrapCalldata(innerData));
+      } catch (e) {
+        return mismatch(
+          `finalizeUnwrap transaction has invalid finalizeUnwrap calldata — ${(e as Error).message}`,
+          wrapperAddress
+        );
+      }
+      if (!requestId || /^0x0*$/.test(requestId)) {
+        return mismatch('finalizeUnwrap transaction requestId is missing or empty', wrapperAddress);
+      }
+      if (!/^[1-9]\d*$/.test(cleartextAmount) || BigInt(cleartextAmount) > UINT64_MAX) {
+        return mismatch(
+          'finalizeUnwrap transaction amount must be a positive integer that fits uint64',
+          wrapperAddress,
+          cleartextAmount
+        );
+      }
+      if (!decryptionProof || decryptionProof === '0x') {
+        return mismatch('finalizeUnwrap transaction decryption proof is missing or empty', wrapperAddress);
       }
     }
   }
