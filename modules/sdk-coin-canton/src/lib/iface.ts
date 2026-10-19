@@ -278,6 +278,16 @@ export interface CantonCommandRequest {
   resolveContracts?: CantonCommandResolveContractSpec[];
   token?: string;
 }
+export interface CantonAllowListCommandParams {
+  /** Fully-qualified V3 ParticipantService template ID, including package reference. */
+  templateId: string;
+  /** ParticipantService contract being exercised. */
+  participantServiceCid: string;
+  /** Participant-owned AllowList contract passed to the choice. */
+  allowListCid: string;
+  /** End-investor Credential contracts. Empty is valid and preserves DAR no-op semantics. */
+  credentialCids: string[];
+}
 
 // Root command decoded from the prepared Canton transaction protobuf, used during verifyTransaction.
 export interface CantonCommandInfo {

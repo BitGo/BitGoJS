@@ -4,9 +4,15 @@ import {
   TransactionType,
   CantonCommand,
   CantonCommandResolveContractSpec,
+  CantonExerciseCommand,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { CANTON_COMMAND_KEYS, CantonCommandRequest, CantonPrepareCommandResponse } from './iface';
+import {
+  CANTON_COMMAND_KEYS,
+  CantonAllowListCommandParams,
+  CantonCommandRequest,
+  CantonPrepareCommandResponse,
+} from './iface';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction/transaction';
 import utils from './utils';
@@ -125,6 +131,52 @@ export class CantonCommandBuilder extends TransactionBuilder {
     }
     this._command = command;
     return this;
+  }
+
+  /**
+   * Sets the V3 participant allow-list add choice.
+   *
+   * The DAML choice is exercised on ParticipantService, while allowListCid and
+   * credentialCids are supplied as the choice argument.
+   */
+  addWalletsToAllowList(params: CantonAllowListCommandParams): this {
+    return this.setAllowListCommand(params, 'ParticipantService_AddWalletsToAllowList');
+  }
+
+  /** Sets the V3 participant allow-list remove choice. */
+  removeWalletsFromAllowList(params: CantonAllowListCommandParams): this {
+    return this.setAllowListCommand(params, 'ParticipantService_RemoveWalletsFromAllowList');
+  }
+
+  private setAllowListCommand(
+    params: CantonAllowListCommandParams,
+    choice: 'ParticipantService_AddWalletsToAllowList' | 'ParticipantService_RemoveWalletsFromAllowList'
+  ): this {
+    const templateId = params?.templateId?.trim();
+    const participantServiceCid = params?.participantServiceCid?.trim();
+    const allowListCid = params?.allowListCid?.trim();
+    if (!templateId) throw new Error('templateId must be a non-empty string');
+    if (!participantServiceCid) throw new Error('participantServiceCid must be a non-empty string');
+    if (!allowListCid) throw new Error('allowListCid must be a non-empty string');
+    if (!Array.isArray(params.credentialCids)) throw new Error('credentialCids must be an array');
+
+    const credentialCids = params.credentialCids.map((credentialCid) => credentialCid?.trim());
+    if (credentialCids.some((credentialCid) => !credentialCid)) {
+      throw new Error('credentialCids must contain only non-empty strings');
+    }
+    if (new Set(credentialCids).size !== credentialCids.length) {
+      throw new Error('credentialCids must not contain duplicates');
+    }
+
+    const command: CantonExerciseCommand = {
+      ExerciseCommand: {
+        templateId,
+        contractId: participantServiceCid,
+        choice,
+        choiceArgument: { allowListCid, credentialCids },
+      },
+    };
+    return this.command(command);
   }
 
   /**
