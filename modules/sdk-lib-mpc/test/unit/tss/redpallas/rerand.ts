@@ -283,6 +283,63 @@ describe('RedPallas MPS Rerand', function () {
     });
   });
 
+  // ── Multi-spend fan-out (WCI-1949) ──────────────────────────────────────────
+  // One rerand session per Orchard spend, all seeded from the SAME DKG keyshare,
+  // driven in lockstep exactly like the OVC signer drives them per round. This
+  // validates the per-spend fan-out premise: instances are fully independent (no
+  // shared/static state) and each spend gets its own distinct rerand triple.
+  describe('Multi-spend fan-out (WCI-1949)', function () {
+    const N = 3;
+
+    it('should run 3 concurrent rerand sessions over the same DKG keyshare with distinct per-spend results', async function () {
+      const userSessions = Array.from({ length: N }, () => new RedPallasMPSRerand.RedPallasRerand(0));
+      const bitgoSessions = Array.from({ length: N }, () => new RedPallasMPSRerand.RedPallasRerand(2));
+
+      // All N user sessions init from the SAME DKG keyshare (WP does the same server-side).
+      await Promise.all([
+        ...userSessions.map((session) => session.initRerand(userKeyShare, 2)),
+        ...bitgoSessions.map((session) => session.initRerand(bitgoKeyShare, 0)),
+      ]);
+
+      // Round 0 (local commitments), interleaved across all spends.
+      const userMsg1s = userSessions.map((session) => session.getFirstMessage());
+      const bitgoMsg1s = bitgoSessions.map((session) => session.getFirstMessage());
+
+      // Mid-flight export/restore of spend 1's user session: concurrent sessions
+      // must survive persistence independently.
+      const exportedSession = userSessions[1].getSession();
+      const restoredSession = new RedPallasMPSRerand.RedPallasRerand(0);
+      await restoredSession.restoreSession(exportedSession);
+      userSessions[1] = restoredSession;
+
+      // Round 1 (commit), interleaved.
+      const userMsg2s = userSessions.map(
+        (session, spend) => session.handleIncomingMessages([userMsg1s[spend], bitgoMsg1s[spend]])[0]
+      );
+      const bitgoMsg2s = bitgoSessions.map(
+        (session, spend) => session.handleIncomingMessages([bitgoMsg1s[spend], userMsg1s[spend]])[0]
+      );
+
+      // Round 2 (open), interleaved; every session completes.
+      userSessions.forEach((session, spend) => session.handleIncomingMessages([userMsg2s[spend], bitgoMsg2s[spend]]));
+      bitgoSessions.forEach((session, spend) => session.handleIncomingMessages([bitgoMsg2s[spend], userMsg2s[spend]]));
+
+      const userResults = userSessions.map((session) => session.getRerandomizedKeyShare());
+      const bitgoResults = bitgoSessions.map((session) => session.getRerandomizedKeyShare());
+
+      // Each user/bitgo pair must agree on its own spend's pk and alpha.
+      for (let spend = 0; spend < N; spend++) {
+        assertRerandResult(userResults[spend], bitgoResults[spend], dkgPublicKey);
+      }
+
+      // Each spend must have its OWN pk/alpha: all pairwise distinct.
+      const pks = userResults.map((result) => result.pk.toString('hex'));
+      const alphas = userResults.map((result) => result.alpha.toString('hex'));
+      assert.strictEqual(new Set(pks).size, N, 'each spend must get a distinct rerand pk');
+      assert.strictEqual(new Set(alphas).size, N, 'each spend must get a distinct rerand alpha');
+    });
+  });
+
   function assertRerandResult(result1: RedPallasRerandResult, result2: RedPallasRerandResult, dkgPub: Buffer): void {
     assert.strictEqual(result1.pk.length, 32, 'pk must be 32 bytes');
     assert.strictEqual(result1.alpha.length, 32, 'alpha must be 32 bytes');
