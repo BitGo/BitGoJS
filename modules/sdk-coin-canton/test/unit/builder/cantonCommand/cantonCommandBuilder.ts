@@ -7,7 +7,7 @@ import { coins } from '@bitgo/statics';
 import { CantonCommandBuilder } from '../../../../src/lib/cantonCommandBuilder';
 import { TransactionBuilderFactory } from '../../../../src/lib/transactionBuilderFactory';
 import { Transaction } from '../../../../src/lib/transaction/transaction';
-import { CantonCommandRequest } from '../../../../src/lib/iface';
+import { CantonAllowListCommandParams, CantonCommandRequest } from '../../../../src/lib/iface';
 import { CantonExerciseCommandPrepareResponse } from '../../../resources';
 
 const PARTY_A = 'RegRegistrar::1220508e54fb709dcb1a9b4096408ad415d2217d8881ad9034a9850752933ba88ad5';
@@ -137,7 +137,81 @@ describe('CantonCommandBuilder', () => {
       assert.throws(() => builder.command(null as unknown as CantonExerciseCommand), /command must be a plain object/);
     });
   });
+  describe('participant allow-list choices', () => {
+    const allowListParams: CantonAllowListCommandParams = {
+      templateId: TEMPLATE_ID,
+      participantServiceCid: CONTRACT_ID,
+      allowListCid: 'allow-list-cid',
+      credentialCids: ['credential-a', 'credential-b'],
+    };
 
+    it('builds the V3 add choice with the ParticipantService contract', () => {
+      const builder = new CantonCommandBuilder(coins.get('tcanton'));
+      const tx = new Transaction(coins.get('tcanton'));
+      builder.initBuilder(tx);
+      builder.commandId('cmd-allow-add').actAs([PARTY_A]).addWalletsToAllowList(allowListParams);
+
+      const request = builder.toRequestObject();
+      assert.deepEqual(request.command, {
+        ExerciseCommand: {
+          templateId: TEMPLATE_ID,
+          contractId: CONTRACT_ID,
+          choice: 'ParticipantService_AddWalletsToAllowList',
+          choiceArgument: {
+            allowListCid: 'allow-list-cid',
+            credentialCids: ['credential-a', 'credential-b'],
+          },
+        },
+      });
+    });
+
+    it('builds the V3 remove choice and preserves an empty credential list', () => {
+      const builder = new CantonCommandBuilder(coins.get('tcanton'));
+      const tx = new Transaction(coins.get('tcanton'));
+      builder.initBuilder(tx);
+      builder
+        .commandId('cmd-allow-remove')
+        .actAs([PARTY_A])
+        .removeWalletsFromAllowList({
+          ...allowListParams,
+          credentialCids: [],
+        });
+
+      const request = builder.toRequestObject();
+      assert.equal(
+        (request.command as CantonExerciseCommand).ExerciseCommand.choice,
+        'ParticipantService_RemoveWalletsFromAllowList'
+      );
+      assert.deepEqual((request.command as CantonExerciseCommand).ExerciseCommand.choiceArgument, {
+        allowListCid: 'allow-list-cid',
+        credentialCids: [],
+      });
+    });
+
+    it('rejects duplicate credential IDs', () => {
+      const builder = new CantonCommandBuilder(coins.get('tcanton'));
+      const tx = new Transaction(coins.get('tcanton'));
+      builder.initBuilder(tx);
+      assert.throws(
+        () =>
+          builder.addWalletsToAllowList({
+            ...allowListParams,
+            credentialCids: ['credential-a', 'credential-a'],
+          }),
+        /credentialCids must not contain duplicates/
+      );
+    });
+
+    it('rejects missing contract identifiers', () => {
+      const builder = new CantonCommandBuilder(coins.get('tcanton'));
+      const tx = new Transaction(coins.get('tcanton'));
+      builder.initBuilder(tx);
+      assert.throws(
+        () => builder.addWalletsToAllowList({ ...allowListParams, allowListCid: '  ' }),
+        /allowListCid must be a non-empty string/
+      );
+    });
+  });
   describe('token()', () => {
     it('should set the token', function () {
       const builder = new CantonCommandBuilder(coins.get('tcanton'));
