@@ -10,6 +10,8 @@ import {
   CANTON_BLOCK_HEIGHT,
   CantonAllocationAllocatePrepareResponse,
   CantonAllocationAllocateNativePrepareResponse,
+  CantonAllocationAllocateNativeV2ReceiveOnlyPreparedResponse,
+  CantonAllocationAllocateTokenV2ReceiveOnlyPreparedResponse,
   CantonAllocationAllocateNativeV2PreparedResponse,
   CantonAllocationAllocateV2PreparedResponse,
   CantonExerciseCommandPrepareResponse,
@@ -209,6 +211,30 @@ describe('Canton Util', function () {
       assert.equal(parsedData.amount, '1000000000');
       // native Amulet (DSO admin) carries no token: it falls back to the base coin
       assert.equal(parsedData.token, undefined);
+    });
+    it('should parse a native receive-only V2 allocation allocate prepared transaction', () => {
+      const parsedData = utils.parseRawCantonTransactionData(
+        CantonAllocationAllocateNativeV2ReceiveOnlyPreparedResponse.preparedTransaction,
+        TransactionType.AllocationAllocate
+      );
+      should.exist(parsedData);
+      // authorizer (the signer) only receives: sender/receiver flip to the counterparty and the authorizer
+      assert.ok(parsedData.sender.startsWith('ravi-2-step-party::'));
+      assert.ok(parsedData.receiver.startsWith('ravi-2-step-party-new::'));
+      assert.equal(parsedData.amount, '1000000000');
+      assert.equal(parsedData.token, undefined);
+    });
+
+    it('should parse a token receive-only V2 allocation allocate prepared transaction', () => {
+      const parsedData = utils.parseRawCantonTransactionData(
+        CantonAllocationAllocateTokenV2ReceiveOnlyPreparedResponse.preparedTransaction,
+        TransactionType.AllocationAllocate
+      );
+      should.exist(parsedData);
+      assert.ok(parsedData.sender.startsWith('ravi-2-step-party-new::'));
+      assert.ok(parsedData.receiver.startsWith('ravi-2-step-party::'));
+      assert.equal(parsedData.amount, '5000000000');
+      assert.equal(parsedData.token, 'tcanton:tt');
     });
   });
 

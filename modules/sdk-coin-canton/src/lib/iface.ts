@@ -217,6 +217,8 @@ export interface CantonAllocationAllocateRequest {
   receiverPartyId: string;
   senderPartyId: string;
   comment?: string;
+  /** 'receive' marks an unfunded, receive-only V2 allocation (amount 0, nothing locked). Absent means send. */
+  allocationRole?: 'send' | 'receive';
 }
 
 /**

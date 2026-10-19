@@ -81,6 +81,52 @@ describe('AllocationAllocate Builder', () => {
     assert.equal(requestObj.comment, undefined);
   });
 
+  it('should build an unfunded receive-only allocation with amount 0', function () {
+    const txBuilder = new AllocationAllocateBuilder(coins.get('tcanton'));
+    const tx = new Transaction(coins.get('tcanton'));
+    txBuilder.initBuilder(tx);
+    buildWithAllRequired(txBuilder.allocationRole('receive')).amount(0);
+    const requestObj = txBuilder.toRequestObject();
+    assert.equal(requestObj.amount, 0);
+    assert.equal(requestObj.allocationRole, 'receive');
+  });
+
+  it('should accept a zero string amount for a receive-only allocation', function () {
+    const txBuilder = new AllocationAllocateBuilder(coins.get('tcanton'));
+    const tx = new Transaction(coins.get('tcanton'));
+    txBuilder.initBuilder(tx);
+    buildWithAllRequired(txBuilder.allocationRole('receive')).amount('0');
+    assert.equal(txBuilder.toRequestObject().amount, '0');
+  });
+
+  it('should still reject a zero amount for a send allocation', function () {
+    const txBuilder = new AllocationAllocateBuilder(coins.get('tcanton'));
+    const tx = new Transaction(coins.get('tcanton'));
+    txBuilder.initBuilder(tx);
+    assert.throws(() => txBuilder.amount(0), /amount must be a positive number/);
+    assert.throws(() => txBuilder.allocationRole('send').amount('0'), /amount must be a positive number/);
+  });
+
+  it('should reject a negative amount even for a receive-only allocation', function () {
+    const txBuilder = new AllocationAllocateBuilder(coins.get('tcanton'));
+    const tx = new Transaction(coins.get('tcanton'));
+    txBuilder.initBuilder(tx);
+    assert.throws(() => txBuilder.allocationRole('receive').amount(-1), /amount must be a positive number/);
+  });
+
+  it('should not set allocationRole on a send allocation request', function () {
+    const txBuilder = new AllocationAllocateBuilder(coins.get('tcanton'));
+    const tx = new Transaction(coins.get('tcanton'));
+    txBuilder.initBuilder(tx);
+    buildWithAllRequired(txBuilder);
+    assert.equal(txBuilder.toRequestObject().allocationRole, undefined);
+  });
+
+  it('should reject an unknown allocation role', function () {
+    const txBuilder = new AllocationAllocateBuilder(coins.get('tcanton'));
+    assert.throws(() => txBuilder.allocationRole('other' as 'send'), /allocationRole must be/);
+  });
+
   it('should set the transaction id to the commandId', function () {
     const txBuilder = new AllocationAllocateBuilder(coins.get('tcanton'));
     const tx = new Transaction(coins.get('tcanton'));
