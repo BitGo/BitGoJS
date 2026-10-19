@@ -20,7 +20,7 @@ flow. They work for custodial wallets (access token only) and hot wallets
 | `PerPartyRouterFactory` contract id (first-run `CreateRouter`)                                               | IMS (EDS disclosure — the factory is ccipOwner-owned and invisible to the wallet party's ACS)                                                     |
 | Wallet party's `CCIPReceiver` (payload-aware by `receiverFinalityConfig`) and `PerPartyRouter` (`routerCid`) | IMS (`resolveContracts` + `injectAs`)                                                                                                             |
 | `feeTokenInput.feeTokenTransferFactory` (outbound fee preview)                                               | IMS (must be computed as the wallet party by the hosting validator's transfer-instruction API; clients cannot authenticate for custodial wallets) |
-| Encoded message, CCV verifier results, EDS disclosure blobs                                                  | Client (public services) — blobs are passed back via `cantonCommandParams.disclosedContracts`                                                     |
+| Encoded message (source-chain receipt) and CCV verifier results (CCIP indexer)                                | Client — passed in the Execute choice argument; IMS resolves everything else                                                                       |
 | Holding selection and double-spend protection (withdrawal lock, `lockedUtxos`)                               | wallet-platform (Send is UTXO-consuming; pass `--tokenName`)                                                                                      |
 
 ## Wallet party onboarding prerequisites

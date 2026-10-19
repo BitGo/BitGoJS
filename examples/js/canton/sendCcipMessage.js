@@ -22,7 +22,7 @@
  *    wallets); this script leaves it empty.
  *  - `--tokenName` (e.g. tcanton:usd1) is required: Send consumes Holdings, so
  *    the platform locks and validates both holding sets against that token.
- *  - The EDS disclosure blobs ride along via cantonCommandParams.disclosedContracts.
+ *  - IMS resolves ALL ledger disclosures server-side from the EDS.
  *
  * Usage (from modules/bitgo):
  *   node ../../examples/js/canton/sendCcipMessage.js \
@@ -52,8 +52,6 @@ const LANES = {
   test: {
     coin: 'tcanton',
     destChainSelector: '16015286601757825753', // sepolia
-    edsUrl: 'https://eds.testnet.ccip.chain.link',
-    poolEdsUrl: 'https://chainlink-canton-eds.bitgo-test.com',
     usd1Instrument: {
       admin: '1220a::1220afe5f990cdf777c54b9943ef0a5532dfb28cbacf92105295109b858355f694b8',
       id: 'USD1',
@@ -70,8 +68,6 @@ const LANES = {
   prod: {
     coin: 'canton',
     destChainSelector: '5009297550715157269', // ethereum mainnet
-    edsUrl: 'https://eds.ccip.chain.link',
-    poolEdsUrl: 'https://chainlink-canton-eds.bitgo.com',
     usd1Instrument: {
       admin: '1220b::1220bab043849b986b52bc6271edf1ae962bab03d9f0c0713f071732d2278386bd02',
       id: 'USD1',
@@ -92,78 +88,11 @@ const SENDER_INSTANCE_ID = 'prod-ccipsender';
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const contextOrEmpty = (value) => (value && Object.keys(value).length > 0 ? value : { values: {} });
 const strip0x = (s) => (s.toLowerCase().startsWith('0x') ? s.slice(2) : s);
-const hashedInstrumentId = (instrument) => utils.id(`${instrument.id}@${instrument.admin}`);
-
 /** Canton 10-decimal amount string (e.g. 1 → "1.0000000000"). */
 function toCantonDecimalAmount(amount) {
   const scaled = utils.parseUnits(amount, 10);
   const digits = scaled.toString().padStart(11, '0');
   return `${digits.slice(0, -10)}.${digits.slice(-10)}`;
-}
-
-async function edsPost(baseUrl, path, body, source, timeoutMs = 30_000) {
-  const res = await fetch(`${baseUrl.replace(/\/$/, '')}${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(timeoutMs),
-  });
-  if (!res.ok) {
-    throw new Error(`${source} responded ${res.status}: ${(await res.text()).slice(0, 300)}`);
-  }
-  return res.json();
-}
-
-async function edsGet(baseUrl, path, source, timeoutMs = 30_000) {
-  const res = await fetch(`${baseUrl.replace(/\/$/, '')}${path}`, { signal: AbortSignal.timeout(timeoutMs) });
-  if (!res.ok) {
-    throw new Error(`${source} responded ${res.status}: ${(await res.text()).slice(0, 300)}`);
-  }
-  return res.json();
-}
-
-function parseFlags(argv) {
-  const args = {};
-  for (const arg of argv) {
-    const m = arg.match(/^--([A-Za-z-]+)=(.*)$/);
-    if (m) {
-      args[m[1]] = m[2];
-    } else if (arg.startsWith('--')) {
-      args[arg.slice(2)] = true;
-    }
-  }
-  return args;
-}
-
-const logParams = (label, params) => console.log(`\n${label}\n${JSON.stringify(params, null, 2)}\n`);
-const fatal = (err) => {
-  console.error('\n✗ Fatal:', err instanceof Error ? err.stack || err.message : err);
-  process.exit(1);
-};
-
-// Returns true when the transaction submitted, false when it landed in a
-// pending approval or custodial handoff — callers with dependent transactions
-// MUST stop on false rather than build on an unsubmitted step.
-async function sendManyCommand(wallet, passphrase, tokenName, cantonCommandParams, label) {
-  console.log(`\n[${label}] sendMany…`);
-  logParams(`${label} cantonCommandParams`, cantonCommandParams);
-  const transaction = await wallet.sendMany({
-    type: 'cantonCommand',
-    cantonCommandParams,
-    tokenName,
-    walletPassphrase: passphrase || undefined,
-    apiVersion: 'full',
-  });
-  if (transaction && transaction.pendingApproval) {
-    console.log(`⏳ Pending approval ${transaction.pendingApproval.id} — approve in the BitGo UI / API.`);
-    return false;
-  } else if (!transaction || !transaction.tx) {
-    console.log('⏳ No tx yet — custodial handoff. Approve in the BitGo UI.');
-    return false;
-  } else {
-    console.log(`✅ Submitted: ${JSON.stringify(transaction.tx).slice(0, 300)}`);
-    return true;
-  }
 }
 
 // ── main ────────────────────────────────────────────────────────────────────
@@ -290,107 +219,14 @@ async function sendManyCommand(wallet, passphrase, tokenName, cantonCommandParam
     console.log('Skipping setup (--skipSetup) — router/sender assumed to exist.');
   }
 
-  // ── 3. EDS send disclosures (public endpoints) ────────────────────────────
-  const edsMessage = {
-    destinationChainSelector: lane.destChainSelector,
-    sender: partyId,
-    receiver: receiverHex,
-    payload: '',
-    tokenTransfer: {
-      token: tokenInstrument,
-      amount: tokenAmountDecimal,
-      holdingContractIds: [tokenHoldingCid],
-    },
-    feeToken: feeInstrument,
-    executor: { type: '' },
-  };
-
-  console.log('\nFetching EDS disclosures…');
-  const tarLookup = await edsGet(
-    lane.edsUrl,
-    `/ccip/v1/global/TokenAdminRegistry/token/${encodeURIComponent(hashedInstrumentId(tokenInstrument))}`,
-    'TAR lookup'
-  );
-  const tokenPoolAddress = tarLookup.tokenPool || tarLookup.pool || tarLookup.rawInstanceAddress || '';
-  if (!tokenPoolAddress) throw new Error('No token pool registered for the USD1 instrument on the TokenAdminRegistry.');
-
-  const poolSend = await edsPost(
-    lane.poolEdsUrl,
-    `/ccip/v1/external/tokenPool/${encodeURIComponent(tokenPoolAddress)}/send`,
-    { message: edsMessage },
-    'token pool EDS send'
-  );
-  const sendDisclosures = [...(poolSend.disclosedContracts || [])];
-  console.log(`  token pool: ${tokenPoolAddress.slice(0, 40)}… → cid ${poolSend.contractId.slice(0, 12)}…`);
-
-  const globalSend = await edsPost(
-    lane.edsUrl,
-    '/ccip/v1/global/message/send',
-    {
-      message: edsMessage,
-      senderRequiredCCVs: [],
-      tokenPoolRequiredCCVs: poolSend.requiredCCVs || [],
-    },
-    'global EDS message/send'
-  );
-  sendDisclosures.push(...(globalSend.disclosedContracts || []));
-  const globalContext = contextOrEmpty(globalSend.contextData);
-  const feeTokenConfigCid = globalSend.feeTokenConfigCid || '';
-  if (!feeTokenConfigCid)
-    throw new Error('Global EDS did not return feeTokenConfigCid — fee token not registered in TAR.');
-  console.log(
-    `  global: ${(globalSend.disclosedContracts || []).length} disclosed, feeTokenConfig ${feeTokenConfigCid.slice(
-      0,
-      12
-    )}…`
-  );
-
-  const ccvSends = await Promise.all(
-    (globalSend.ccvs || []).map((ccvAddress) =>
-      edsPost(
-        lane.edsUrl,
-        `/ccip/v1/external/ccv/${encodeURIComponent(ccvAddress)}/send`,
-        {
-          message: edsMessage,
-        },
-        'CCV EDS send'
-      )
-    )
-  );
-  for (const ccv of ccvSends) {
-    sendDisclosures.push(...(ccv.disclosedContracts || []));
-  }
-  const ccvRawAddresses = ccvSends.map((ccv) => ccv.rawInstanceAddress || '');
-  console.log(`  ccv: ${ccvSends.length} CCV input(s)`);
-
-  let executorInput = null;
-  const executorExtraArg = noExec
-    ? { tag: 'Executor_NoExecutor', value: {} }
-    : { tag: 'Executor_UseDefault', value: { executorArgs: '' } };
-  if (!noExec && globalSend.executor) {
-    const executorSend = await edsPost(
-      lane.edsUrl,
-      `/ccip/v1/external/executor/${encodeURIComponent(globalSend.executor)}/send`,
-      { message: edsMessage, ccvs: ccvSends.map((ccv) => ccv.instanceAddress) },
-      'executor EDS send'
-    );
-    sendDisclosures.push(...(executorSend.disclosedContracts || []));
-    executorInput = {
-      executorCid: executorSend.contractId,
-      context: contextOrEmpty(executorSend.contextData),
-    };
-    console.log(`  executor: cid ${executorSend.contractId.slice(0, 12)}…`);
-  } else {
-    console.log(`  executor: ${noExec ? 'none (--noExec)' : 'default (no executor configured)'}`);
-  }
-  console.log(`  total disclosures to attach: ${sendDisclosures.length}`);
-
-  // ── 4. Assemble the Send intent ────────────────────────────────────────────
+  // ── 3. Assemble the Send intent ───────────────────────────────────────────
   // Mirrors CantonChain.generateUnsignedSendMessage. IMS resolves and injects:
-  // CCIPSender contractId + PerPartyRouter routerCid (resolveContracts), and
-  // feeTokenInput.feeTokenTransferFactory (server-side factory preview — the
-  // preview must be computed as the wallet party, which clients cannot
-  // authenticate for custodial wallets).
+  // CCIPSender contractId + PerPartyRouter routerCid (resolveContracts), the
+  // Token Admin Registry pool address, feeTokenInput.feeTokenTransferFactory
+  // and .feeTokenConfigCid, the pool/global/CCV/executor contexts and contract
+  // ids, and ALL ledger disclosures — the client supplies only the message,
+  // instruments, and holding ids. No EDS calls from the client.
+  const executorNoExec = noExec;
   const cantonCommandParams = {
     actAs: [partyId],
     command: {
@@ -400,41 +236,33 @@ async function sendManyCommand(wallet, passphrase, tokenName, cantonCommandParam
         choice: 'Send',
         choiceArgument: {
           destinationChainSelector: lane.destChainSelector,
-          context: globalContext,
           routerCid: '',
           message: {
             receiver: receiverHex,
             payload: '',
-            tokenTransfer: { token: tokenInstrument, amount: tokenAmountDecimal },
+            tokenTransfer: {
+              token: tokenInstrument,
+              amount: tokenAmountDecimal,
+            },
             feeToken: feeInstrument,
-            extraArgs: {
-              tag: 'V3',
-              value: {
-                gasLimit: String(gasLimit),
-                ccvs: ccvRawAddresses.map((raw) => ({ ccvAddress: { unpack: raw }, ccvArgs: '' })),
-                executor: executorExtraArg,
-                tokenReceiver: '',
-                tokenArgs: '',
-              },
+          },
+          extraArgs: {
+            tag: 'V3',
+            value: {
+              gasLimit: String(gasLimit),
+              executor: executorNoExec
+                ? { tag: 'Executor_NoExecutor', value: {} }
+                : { tag: 'Executor_UseDefault', value: { executorArgs: '' } },
+              tokenReceiver: '',
+              tokenArgs: '',
             },
           },
           feeTokenInput: {
             senderInputCids: [feeHoldingCid],
-            feeTokenTransferFactory: '',
-            feeTokenConfigCid,
-            feeTokenExtraArgs: { context: { values: {} }, meta: { values: {} } },
           },
-          ccvSendInputs: ccvSends.map((ccv, i) => ({
-            ccvAddress: { unpack: ccvRawAddresses[i] },
-            ccvCid: ccv.contractId,
-            context: contextOrEmpty(ccv.contextData),
-          })),
           tokenTransferInput: {
             senderInputCids: [tokenHoldingCid],
-            tokenPoolCid: poolSend.contractId,
-            context: contextOrEmpty(poolSend.contextData),
           },
-          executorInput,
         },
       },
     },
@@ -442,7 +270,6 @@ async function sendManyCommand(wallet, passphrase, tokenName, cantonCommandParam
       { templateId: CCIP_SENDER_TMPL, actAs: [partyId], injectAs: 'ExerciseCommand.contractId' },
       { templateId: PER_PARTY_ROUTER_TMPL, actAs: [partyId], injectAs: 'ExerciseCommand.choiceArgument.routerCid' },
     ],
-    disclosedContracts: sendDisclosures,
   };
   logParams('send cantonCommandParams', cantonCommandParams);
 

@@ -4,7 +4,6 @@ import {
   TransactionType,
   CantonCommand,
   CantonCommandResolveContractSpec,
-  CantonDisclosedContract,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { CANTON_COMMAND_KEYS, CantonCommandRequest, CantonPrepareCommandResponse } from './iface';
@@ -18,7 +17,6 @@ export class CantonCommandBuilder extends TransactionBuilder {
   private _readAs: string[] = [];
   private _command: CantonCommand;
   private _resolveContracts: CantonCommandResolveContractSpec[] = [];
-  private _disclosedContracts: CantonDisclosedContract[] = [];
   private _token?: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -141,18 +139,6 @@ export class CantonCommandBuilder extends TransactionBuilder {
   }
 
   /**
-   * Sets the explicit ledger disclosures IMS merges into the prepare call (e.g.
-   * the CCIP OffRamp/CCV/token-pool blobs fetched from the public EDS endpoints).
-   *
-   * @param contracts - Array of CantonDisclosedContract
-   * @returns The current builder instance for chaining.
-   */
-  disclosedContracts(contracts?: CantonDisclosedContract[] | null): this {
-    this._disclosedContracts = contracts ?? [];
-    return this;
-  }
-
-  /**
    * Sets the Canton token identifier (e.g. 'tcanton:stgusd1') forwarded to IMS for
    * choice-context resolution on token-specific commands such as mint and burn.
    *
@@ -185,9 +171,6 @@ export class CantonCommandBuilder extends TransactionBuilder {
     };
     if (this._token) {
       req.token = this._token;
-    }
-    if (this._disclosedContracts.length > 0) {
-      req.disclosedContracts = this._disclosedContracts;
     }
     return req;
   }

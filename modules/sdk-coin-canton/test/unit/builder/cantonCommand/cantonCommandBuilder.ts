@@ -181,35 +181,6 @@ describe('CantonCommandBuilder', () => {
     });
   });
 
-  describe('disclosedContracts()', () => {
-    const disclosure = {
-      templateId: TEMPLATE_ID,
-      contractId: '00disclosed-contract',
-      createdEventBlob: 'blob',
-      synchronizerId: 'global-domain::1220abc',
-    };
-
-    it('should include disclosed contracts in the request object', function () {
-      const builder = new CantonCommandBuilder(coins.get('tcanton'));
-      const tx = new Transaction(coins.get('tcanton'));
-      builder.initBuilder(tx);
-      builder
-        .commandId('cmd-disc-001')
-        .actAs([PARTY_A])
-        .command(sampleExerciseCommand)
-        .disclosedContracts([disclosure]);
-      assert.deepEqual(builder.toRequestObject().disclosedContracts, [disclosure]);
-    });
-
-    it('should omit disclosedContracts from the request when not set', function () {
-      const builder = new CantonCommandBuilder(coins.get('tcanton'));
-      const tx = new Transaction(coins.get('tcanton'));
-      builder.initBuilder(tx);
-      builder.commandId('cmd-disc-002').actAs([PARTY_A]).command(sampleExerciseCommand);
-      assert.equal(builder.toRequestObject().disclosedContracts, undefined);
-    });
-  });
-
   describe('toRequestObject()', () => {
     it('should return correct object with all required fields', function () {
       const builder = new CantonCommandBuilder(coins.get('tcanton'));

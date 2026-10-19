@@ -12,8 +12,9 @@
  * PerPartyRouter contract ids (resolveContracts + injectAs; the receiver is
  * selected payload-aware by receiverFinalityConfig). What this script fetches
  * from public services and passes to the platform: the encoded message (source
- * chain receipt), CCV verifier results (CCIP indexer), and the EDS disclosure
- * blobs (attached via cantonCommandParams.disclosedContracts).
+ * chain receipt) and the CCV verifier results (CCIP indexer) — passed in the
+ * Execute choice argument; IMS injects the CCV contract ids,
+ * contexts, the token transfer, and all ledger disclosures).
  *
  * One-time setup (first run, skippable with --skipSetup): creates the wallet
  * party's PerPartyRouter (ccipOwner factory) and CCIPReceiver (finality 0).
@@ -51,15 +52,11 @@ const LANES = {
     coin: 'tcanton',
     sourceRpc: 'https://sepolia.rpc.thirdweb.com',
     indexerUrl: 'https://indexer-1.testnet.ccip.chain.link',
-    edsUrl: 'https://eds.testnet.ccip.chain.link',
-    poolEdsUrl: 'https://chainlink-canton-eds.bitgo-test.com',
   },
   prod: {
     coin: 'canton',
     sourceRpc: 'https://ethereum-rpc.publicnode.com',
     indexerUrl: 'https://indexer-1.mainnet.ccip.chain.link',
-    edsUrl: 'https://eds.ccip.chain.link',
-    poolEdsUrl: 'https://chainlink-canton-eds.bitgo.com',
   },
 };
 
@@ -94,8 +91,6 @@ function decodeVerifierDestAddress(destAddress) {
   return trimmed;
 }
 
-const hashedRawAddress = (raw) => utils.id(raw);
-
 /** Daml JSON variant encoding of the receiver finality config. */
 function encodeFinalityConfig(finality) {
   if (finality === 0) return { tag: 'WaitForFinality', value: {} };
@@ -103,18 +98,6 @@ function encodeFinalityConfig(finality) {
   return { tag: 'BlockDepth', value: String(finality) };
 }
 
-async function edsPost(baseUrl, path, body, source, timeoutMs = 30_000) {
-  const res = await fetch(`${baseUrl.replace(/\/$/, '')}${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(timeoutMs),
-  });
-  if (!res.ok) {
-    throw new Error(`${source} responded ${res.status}: ${(await res.text()).slice(0, 300)}`);
-  }
-  return res.json();
-}
 
 function parseFlags(argv) {
   const args = {};
@@ -231,7 +214,7 @@ const fatal = (err) => {
     }  attestation CCV: ${attestationCcvRaw.slice(0, 40)}…`
   );
 
-  // Read the wallet even in dry-run mode: EDS requests need the real party.
+  // Read the wallet even in dry-run mode: the command needs the real party.
   let partyId = '';
   {
     const bitgo = new BitGoJS.BitGo({ env: bitgoEnv });
@@ -324,82 +307,13 @@ const fatal = (err) => {
     }
   }
 
-  // ── 5. EDS execute disclosures (public endpoints; payer = wallet party) ───
-  const payer = partyId;
-  console.log('\nFetching EDS disclosures…');
-  const globalExec = await edsPost(
-    lane.edsUrl,
-    '/ccip/v1/global/message/execute',
-    {
-      encodedMessage: encodedMessageHex,
-      receiver: payer,
-    },
-    'global EDS message/execute'
-  );
-  const globalContext = contextOrEmpty(globalExec.contextData);
-  const executeDisclosures = [...(globalExec.disclosedContracts || [])];
-  console.log(`  global: ${(globalExec.disclosedContracts || []).length} disclosed contracts`);
-
-  const ccvInputsRaw = verifications.map((v) => ({
-    raw: decodeVerifierDestAddress(v.destAddress),
-    ccvData: v.ccvData,
-  }));
-  const ccvResults = await Promise.all(
-    ccvInputsRaw.map(({ raw }) =>
-      edsPost(
-        lane.edsUrl,
-        `/ccip/v1/external/ccv/${encodeURIComponent(hashedRawAddress(raw))}/execute`,
-        {
-          encodedMessage: encodedMessageHex,
-          receiver: payer,
-        },
-        'CCV EDS execute'
-      )
-    )
-  );
-  for (const ccv of ccvResults) {
-    executeDisclosures.push(...(ccv.disclosedContracts || []));
-  }
-  const ccvInputsArg = ccvInputsRaw.map(({ ccvData }, i) => ({
-    ccvCid: ccvResults[i].contractId,
-    verifierResults: strip0x(ccvData),
-    context: contextOrEmpty(ccvResults[i].contextData),
-  }));
-  console.log(`  ccv: ${ccvInputsArg.length} CCV input(s)`);
-
-  let tokenTransfer = null;
-  if (globalExec.tokenPool) {
-    const poolRes = await edsPost(
-      lane.poolEdsUrl,
-      `/ccip/v1/external/tokenPool/${encodeURIComponent(globalExec.tokenPool)}/execute`,
-      { encodedMessage: encodedMessageHex, receiver: payer },
-      'token pool EDS execute'
-    );
-    executeDisclosures.push(...(poolRes.disclosedContracts || []));
-    const providedCcvHashes = ccvInputsRaw.map(({ raw }) => hashedRawAddress(raw).toLowerCase());
-    const missing = (poolRes.requiredCCVs || []).filter(
-      (required) => !providedCcvHashes.includes(hashedRawAddress(decodeVerifierDestAddress(required)).toLowerCase())
-    );
-    if (missing.length > 0) {
-      throw new Error(`Token pool requires CCV result(s) not provided by verifications: ${missing.join(', ')}`);
-    }
-    tokenTransfer = {
-      tokenPoolCid: poolRes.contractId,
-      tokenReceiverParty: payer,
-      context: contextOrEmpty(poolRes.contextData),
-    };
-    console.log(`  token pool: ${globalExec.tokenPool.slice(0, 40)}… → cid ${poolRes.contractId.slice(0, 12)}…`);
-  } else {
-    console.log('  token pool: none (message carries no token transfer)');
-  }
-  console.log(`  total disclosures to attach: ${executeDisclosures.length}`);
-
-  // ── 6. Assemble the Execute intent ─────────────────────────────────────────
+  // ── 5. Assemble the Execute intent ─────────────────────────────────────────
   // IMS resolves and injects ExerciseCommand.choiceArgument.routerCid
-  // (PerPartyRouter) via resolveContracts and the CCIPReceiver exercise target
-  // (payload-aware by receiverFinalityConfig, or the explicit --receiverCid).
-  // The EDS disclosure blobs ride along via disclosedContracts so IMS can
-  // attach them at ledger prepare time.
+  // (PerPartyRouter), the CCIPReceiver exercise target (payload-aware by
+  // receiverFinalityConfig or --receiverCid), the choice context, the CCV
+  // contract ids/contexts, the token transfer, and ALL ledger disclosures —
+  // the client supplies only the encoded message and the raw CCV verifier
+  // results. No EDS calls from the client.
   const resolveContracts = [
     { templateId: PER_PARTY_ROUTER_TMPL, actAs: [partyId], injectAs: 'ExerciseCommand.choiceArgument.routerCid' },
   ];
@@ -422,14 +336,14 @@ const fatal = (err) => {
         choiceArgument: {
           routerCid: '',
           encodedMessage: encodedMessageHex,
-          tokenTransfer,
-          ccvInputs: ccvInputsArg,
-          context: globalContext,
+          ccvInputs: verifications.map((v) => ({
+            destAddress: decodeVerifierDestAddress(v.destAddress),
+            verifierResults: strip0x(v.ccvData),
+          })),
         },
       },
     },
     resolveContracts,
-    disclosedContracts: executeDisclosures,
   };
   logParams('execute cantonCommandParams', cantonCommandParams);
 
