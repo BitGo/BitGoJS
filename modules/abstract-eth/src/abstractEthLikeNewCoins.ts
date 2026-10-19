@@ -3315,6 +3315,9 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
    * a dApp (WalletConnect) approving the wrapper directly would be rejected here, and the unbuilt Phase-2
    * `approve(0)` allowance-reset leg must be declared `wrapApprove` (or get its own branch).
    *
+   * On multisig wallets the approve is wrapped in sendMultiSig(underlying, 0, approve(...), ...), so the inner
+   * target and calldata are evaluated instead of the outer ones.
+   *
    * Parsing is best-effort: if the tx cannot be parsed by this coin's builder the check is skipped, so it can
    * never introduce a new failure for a tx that was verifiable before.
    */
@@ -3347,8 +3350,19 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       return;
     }
 
-    const wrappers = txJson.to ? wrappersByUnderlying.get(txJson.to.toLowerCase()) : undefined;
-    const data = (txJson.data || '').toLowerCase();
+    let target = txJson.to;
+    let data = (txJson.data || '').toLowerCase();
+    if (data.startsWith(sendMultisigMethodId.toLowerCase())) {
+      try {
+        const inner = decodeNativeTransferData(txJson.data || '');
+        target = inner.to;
+        data = inner.data.toLowerCase();
+      } catch {
+        // Not a decodable sendMultiSig call: leave it to the type-specific checks and the signer.
+        return;
+      }
+    }
+    const wrappers = target ? wrappersByUnderlying.get(target.toLowerCase()) : undefined;
     // Read the spender leniently (first ABI word after the selector) rather than via the strict decoder: an
     // ERC-20 ignores trailing bytes, so approve(wrapper, amount) + junk would otherwise slip past a strict parse.
     if (!wrappers || !data.startsWith(approveMethodId.toLowerCase()) || data.length < 10 + 64) {
@@ -3659,6 +3673,10 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     if (!txParams?.recipients || !txPrebuild?.recipients || !wallet) {
       throw new Error('missing params');
     }
+
+    // Every declared type that did not return above: only an approve of a registered wrapper is rejected, seen
+    // through sendMultiSig (see assertWrapperApproveIsDeclared).
+    await this.assertWrapperApproveIsDeclared(params, throwRecipientMismatch);
 
     const recipients = txParams.recipients!;
 
