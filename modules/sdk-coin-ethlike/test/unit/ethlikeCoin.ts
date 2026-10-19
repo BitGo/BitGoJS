@@ -346,6 +346,14 @@ describe('EthLikeCoin', function () {
         .reply(200, mockData.getBalanceResponse);
 
       nock(baseUrl).get('/api').query(mockData.getContractCallRequest).reply(200, mockData.getContractCallResponse);
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getIsSignerCallRequest('0x916da87c3ae51f0fa23a2bab8732d23c21d30f5e'))
+        .reply(200, mockData.getIsSignerTrueResponse);
+      nock(baseUrl)
+        .get('/api')
+        .query(mockData.getIsSignerCallRequest(backupKeyAddress))
+        .reply(200, mockData.getIsSignerTrueResponse);
 
       const baseCoin = bitgo.coin('tbaseeth') as TethLikeCoin;
       const transaction = (await baseCoin.recover({

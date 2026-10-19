@@ -7,6 +7,7 @@ import {
   Environments,
   ErrorNoInputToRecover,
   PrebuildAndSignTransactionOptions,
+  RecoveryKeyMismatchError,
   RecoveryProviderError,
   Wallet,
 } from '@bitgo/sdk-core';
@@ -472,6 +473,18 @@ describe('XLM:', function () {
               balance: '6500000000',
             },
           ],
+          signers: [
+            {
+              key: 'GA34NPQ4M54HHZBKSDZ5B3J3BZHTXKCZD4UFO2OYZERPOASK4DAATSIB',
+              weight: 1,
+              type: 'ed25519_public_key',
+            },
+            {
+              key: 'GC3D3ZNNK7GHLMSWJA54DQO6QJUJJF7K6J5JGCEW45ZT6QMKZ6PMUHUM',
+              weight: 1,
+              type: 'ed25519_public_key',
+            },
+          ],
         });
 
       nock('https://horizon-testnet.stellar.org/accounts')
@@ -564,6 +577,86 @@ describe('XLM:', function () {
         userKey.publicKey().should.equal(userKeypair.publicKey());
         backupKey.publicKey().should.equal(externalBackupKeypair.publicKey());
       });
+    });
+
+    it('should throw RecoveryKeyMismatchError when the user key is not an account signer', async function () {
+      const destinationAddress = 'GDDHCKMYYYCVXOSAVMSEIYGYNX74LIAV3ACXYQ6WPMDUF7W3KZNWTHTH';
+      nock('https://horizon-testnet.stellar.org/accounts')
+        .get('/' + wallet.receiveAddress())
+        .reply(200, {
+          sequence: '35995558267060226',
+          balances: [
+            {
+              asset_type: 'native',
+              balance: '6500000000',
+            },
+          ],
+          signers: [
+            {
+              key: 'GC3D3ZNNK7GHLMSWJA54DQO6QJUJJF7K6J5JGCEW45ZT6QMKZ6PMUHUM',
+              weight: 1,
+              type: 'ed25519_public_key',
+            },
+          ],
+        });
+
+      nock('https://horizon-testnet.stellar.org/accounts')
+        .get('/' + destinationAddress)
+        .reply(200, {
+          sequence: '35995558267060213',
+          balances: 13131313,
+        });
+
+      await assert.rejects(
+        async () =>
+          await basecoin.recover({
+            userKey: 'GA34NPQ4M54HHZBKSDZ5B3J3BZHTXKCZD4UFO2OYZERPOASK4DAATSIB',
+            backupKey: 'GC3D3ZNNK7GHLMSWJA54DQO6QJUJJF7K6J5JGCEW45ZT6QMKZ6PMUHUM',
+            recoveryDestination: destinationAddress,
+            rootAddress: wallet.receiveAddress(),
+          }),
+        (err) => err instanceof RecoveryKeyMismatchError && err.code === 'recovery_key_mismatch'
+      );
+    });
+
+    it('should throw RecoveryKeyMismatchError when the backup key is not an account signer', async function () {
+      const destinationAddress = 'GDDHCKMYYYCVXOSAVMSEIYGYNX74LIAV3ACXYQ6WPMDUF7W3KZNWTHTH';
+      nock('https://horizon-testnet.stellar.org/accounts')
+        .get('/' + wallet.receiveAddress())
+        .reply(200, {
+          sequence: '35995558267060226',
+          balances: [
+            {
+              asset_type: 'native',
+              balance: '6500000000',
+            },
+          ],
+          signers: [
+            {
+              key: 'GA34NPQ4M54HHZBKSDZ5B3J3BZHTXKCZD4UFO2OYZERPOASK4DAATSIB',
+              weight: 1,
+              type: 'ed25519_public_key',
+            },
+          ],
+        });
+
+      nock('https://horizon-testnet.stellar.org/accounts')
+        .get('/' + destinationAddress)
+        .reply(200, {
+          sequence: '35995558267060213',
+          balances: 13131313,
+        });
+
+      await assert.rejects(
+        async () =>
+          await basecoin.recover({
+            userKey: 'GA34NPQ4M54HHZBKSDZ5B3J3BZHTXKCZD4UFO2OYZERPOASK4DAATSIB',
+            backupKey: 'GC3D3ZNNK7GHLMSWJA54DQO6QJUJJF7K6J5JGCEW45ZT6QMKZ6PMUHUM',
+            recoveryDestination: destinationAddress,
+            rootAddress: wallet.receiveAddress(),
+          }),
+        (err) => err instanceof RecoveryKeyMismatchError && err.code === 'recovery_key_mismatch'
+      );
     });
 
     it('should fail to verify a transaction signed with the wrong key', async function () {
