@@ -1300,6 +1300,93 @@ describe('ETH:', function () {
       });
     });
 
+    describe('multisig wrapper-directed approve must be declared wrapApprove', function () {
+      const pair = coins.get('hteth:cusdt') as Erc7984Coin;
+      const wrapper = String(pair.contractAddress);
+      const underlying = pair.underlyingErc20Address as string;
+      const amount = '1000000';
+      const walletContract = address2;
+
+      const sendMultiSigCalldata = (toAddress: string, innerData: string): string => {
+        const types = ['address', 'uint', 'bytes', 'uint', 'uint', 'bytes'];
+        const methodId = EthereumAbi.methodID('sendMultiSig', types);
+        const encoded = EthereumAbi.rawEncode(types, [
+          toAddress,
+          new BN('0'),
+          Buffer.from(innerData.slice(2), 'hex'),
+          1234,
+          1,
+          Buffer.alloc(0),
+        ]);
+        return '0x' + Buffer.concat([methodId, encoded]).toString('hex');
+      };
+
+      const approveCalldata = (spender: string) => defiCalldata('approve(address,uint256)', [spender, amount]);
+
+      const verifyAs = async (type: string, target: string, innerData: string) => {
+        const coin = bitgo.coin('hteth') as Hteth;
+        const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: address1 } });
+        const recipients = [{ address: target, amount: '0' }];
+        return coin.verifyTransaction({
+          txParams: { type, recipients } as any,
+          txPrebuild: {
+            txHex: await buildDefiTxHex(sendMultiSigCalldata(target, innerData), walletContract),
+            coin: 'hteth',
+            walletId: 'w',
+            recipients,
+          } as any,
+          wallet,
+          verification: {},
+          walletType: 'onchain',
+        });
+      };
+
+      ['transfer', 'tokenApproval', 'customTx', 'defiApprove'].forEach((type) => {
+        it(`should reject sendMultiSig(approve(wrapper, amount)) on the underlying relabelled as ${type}`, async function () {
+          await expectDefiRejection(
+            verifyAs(type, underlying, approveCalldata(wrapper)),
+            /must be declared as a wrapApprove intent/
+          );
+        });
+      });
+
+      it('should reject a mutated-amount wrapper approve inside sendMultiSig', async function () {
+        await expectDefiRejection(
+          verifyAs('transfer', underlying, defiCalldata('approve(address,uint256)', [wrapper, '999999999999'])),
+          /must be declared as a wrapApprove intent/
+        );
+      });
+
+      it('should not affect sendMultiSig approvals of the underlying to other spenders', async function () {
+        (await verifyAs('transfer', underlying, approveCalldata(address1))).should.equal(true);
+      });
+
+      it('should not affect a sendMultiSig approve of the wrapper aimed at a non-underlying contract', async function () {
+        (await verifyAs('transfer', address1, approveCalldata(wrapper))).should.equal(true);
+      });
+
+      it('should not affect a plain native sendMultiSig transfer', async function () {
+        (await verifyAs('transfer', address1, '0x')).should.equal(true);
+      });
+
+      it('should still verify a declared wrapApprove inside sendMultiSig', async function () {
+        const coin = bitgo.coin('hteth') as Hteth;
+        const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: address1 } });
+        const result = await coin.verifyTransaction({
+          txParams: { type: 'wrapApprove', wrapParams: { tokenName: 'hteth:cusdt', amount } } as any,
+          txPrebuild: {
+            txHex: await buildDefiTxHex(sendMultiSigCalldata(underlying, approveCalldata(wrapper)), walletContract),
+            coin: 'hteth',
+            walletId: 'w',
+          } as any,
+          wallet,
+          verification: {},
+          walletType: 'onchain',
+        });
+        result.should.equal(true);
+      });
+    });
+
     it('should verify TSS transaction with defiDeposit type', async function () {
       const coin = bitgo.coin('hteth') as Hteth;
       const baseAddress = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
