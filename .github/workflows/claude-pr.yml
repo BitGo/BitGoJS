@@ -24,6 +24,7 @@ jobs:
         github.event.comment.author_association == 'MEMBER'
       )
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     env:
       AWS_REGION: us-west-2
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -80,31 +81,38 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - uses: anthropics/claude-code-action@69dec299f882fef0fff1652a1309b7e9771b9f98
+      - uses: anthropics/claude-code-action@8d70a0dd265122bd65b8e09d3d959e65373ae2a1 # v1.0.260
         if: steps.determine-prompt.outputs.use-code-review-prompt == 'true'
         env:
+          ANTHROPIC_MODEL: arn:aws:bedrock:us-west-2:168000258654:inference-profile/global.anthropic.claude-sonnet-5-5
           AWS_REGION: us-west-2
           AWS_ACCESS_KEY_ID: ${{ steps.inference-role.outputs.aws-access-key-id }}
           AWS_SECRET_ACCESS_KEY: ${{ steps.inference-role.outputs.aws-secret-access-key }}
           AWS_SESSION_TOKEN: ${{ steps.inference-role.outputs.aws-session-token }}
+          MAX_THINKING_TOKENS: '0'
         with:
-          timeout_minutes: '10'
           github_token: ${{ secrets.GITHUB_TOKEN }}
           use_bedrock: 'true'
-          anthropic_model: 'arn:aws:bedrock:us-west-2:168000258654:inference-profile/us.anthropic.claude-sonnet-4-20250514-v1:0'
-          direct_prompt: ${{ steps.read-prompt.outputs.prompt-content }}
+          claude_args: --allowed-tools 'Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*)'
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
 
-      - uses: anthropics/claude-code-action@69dec299f882fef0fff1652a1309b7e9771b9f98
+            Read this pull request with `gh pr view ${{ github.event.issue.number || github.event.pull_request.number }} --repo ${{ github.repository }}`
+            and `gh pr diff ${{ github.event.issue.number || github.event.pull_request.number }} --repo ${{ github.repository }}`.
+            Post the final review to the same pull request with `gh pr comment ${{ github.event.issue.number || github.event.pull_request.number }} --repo ${{ github.repository }}`.
+
+            ${{ steps.read-prompt.outputs.prompt-content }}
+
+      - uses: anthropics/claude-code-action@8d70a0dd265122bd65b8e09d3d959e65373ae2a1 # v1.0.260
         if: steps.determine-prompt.outputs.use-code-review-prompt == 'false'
         env:
+          ANTHROPIC_MODEL: arn:aws:bedrock:us-west-2:168000258654:inference-profile/global.anthropic.claude-sonnet-5-5
           AWS_REGION: us-west-2
           AWS_ACCESS_KEY_ID: ${{ steps.inference-role.outputs.aws-access-key-id }}
           AWS_SECRET_ACCESS_KEY: ${{ steps.inference-role.outputs.aws-secret-access-key }}
           AWS_SESSION_TOKEN: ${{ steps.inference-role.outputs.aws-session-token }}
-          COMMENT_BODY: ${{ github.event.comment.body }}
+          MAX_THINKING_TOKENS: '0'
         with:
-          timeout_minutes: '10'
           github_token: ${{ secrets.GITHUB_TOKEN }}
           use_bedrock: 'true'
-          anthropic_model: 'arn:aws:bedrock:us-west-2:168000258654:inference-profile/us.anthropic.claude-sonnet-4-20250514-v1:0'
-          direct_prompt: $COMMENT_BODY
