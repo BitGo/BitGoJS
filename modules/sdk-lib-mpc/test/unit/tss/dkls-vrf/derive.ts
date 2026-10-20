@@ -4,8 +4,8 @@ import { DklsTypes, DklsUtils, DklsVrfUtils } from '../../../../src/tss';
 import { DklsDrv } from '../../../../src/tss/ecdsa-dkls';
 import { DeriveState } from '../../../../src/tss/ecdsa-dkls/derive';
 
-// Hardened child path `m/0'` as a single big-endian u32 with the hardened bit set.
-const PATH_M0 = new Uint8Array([0x80, 0x00, 0x00, 0x00]);
+// Hardened child path `m/0'` as the UTF-8 bytes of the path string.
+const PATH_M0 = Buffer.from("m/0'", 'utf8');
 
 describe('DKLS hard derive (VRF backed)', function () {
   it('should derive a child keyshare for all parties, agreeing on the child public key', async function () {

@@ -65,8 +65,7 @@ export async function generateVrfDKGKeyShares(
  * sessions — one per SDK party. All four derived keyshares agree on the child
  * public key; the two BitGo shares are distinct private shares of that same key.
  *
- * @param path hardened derivation path bytes (e.g. `m/0'` as a 4-byte big-endian
- *   index with the hardened bit set)
+ * @param path hardened derivation path bytes: the UTF-8 bytes of the path string (e.g. `m/0'`)
  * @returns [user, backup, bitgoUserPair, bitgoBackupPair] completed Derive sessions
  */
 export async function generateHardDerivedKeyShares(
@@ -133,10 +132,9 @@ export async function generateHardDerivedKeyShares(
 
 /**
  * Builds the multi-level hardened derivation path for a Safe MPC child wallet:
- * `m/44'/<coinType>'/<safeSlotOrdinal>'/<accountIndex>'`, encoded as the byte
- * sequence the DKLS VRF hard-derive wasm expects — four 4-byte big-endian u32s,
- * each with the hardened bit (0x80000000) set, concatenated in order.
- *
+ * `m/44'/<coinType>'/<safeSlotOrdinal>'/<accountIndex>'`, encoded as the UTF-8 bytes of the
+ * path string. The hard-derive session treats the bytes as opaque, so every party must derive
+ * over this exact encoding or the child keys will differ.
  */
 export function buildSafeMpcDerivePath(params: {
   coinType: number;
@@ -145,14 +143,12 @@ export function buildSafeMpcDerivePath(params: {
 }): Uint8Array {
   const { coinType, safeSlotOrdinal, accountIndex } = params;
   const segments = [44, coinType, safeSlotOrdinal, accountIndex];
-  const path = new Uint8Array(segments.length * 4);
   segments.forEach((segment, i) => {
     if (!Number.isInteger(segment) || segment < 0 || segment > 0x7fffffff) {
       throw new Error(`Invalid BIP44 path segment at index ${i}: ${segment}`);
     }
-    path.set([0x80 | (segment >>> 24), (segment >>> 16) & 0xff, (segment >>> 8) & 0xff, segment & 0xff], i * 4);
   });
-  return path;
+  return new TextEncoder().encode(`m/${segments.map((segment) => `${segment}'`).join('/')}`);
 }
 
 export type MpcRootShare = { signing: Buffer; vrf: Buffer };
