@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.24.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fstatics%4059.23.1...%40bitgo%2Fstatics%4059.24.0) (2026-10-20)
+
+### Bug Fixes
+
+* **statics:** repoint hypeevm testnet explorer urls to hyperscan.sh ([56239f5](https://github.com/BitGo/BitGoJS/commit/56239f597b718c1d02475ddeb1fa519023e862cb))
+* **statics:** update tapt:usd1 assetId to new testnet contract ([5cc1221](https://github.com/BitGo/BitGoJS/commit/5cc1221d6bc6a3cea09059b71eb67a22d3d68c71)), closes [BitGo/usd-tokenization-service#1971](https://github.com/BitGo/usd-tokenization-service/issues/1971)
+
+### Features
+
+* add new tokens from AMS API ([4dcbbd3](https://github.com/BitGo/BitGoJS/commit/4dcbbd3bf90c07c44470841bcc492d6d4b38e9f1))
+
+
 ## [59.23.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fstatics%4059.23.0...%40bitgo%2Fstatics%4059.23.1) (2026-10-16)
 
 ### Bug Fixes

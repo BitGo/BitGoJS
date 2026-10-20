@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.9.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-sgb%401.8.51...%40bitgo%2Fsdk-coin-sgb%401.9.0) (2026-10-20)
+
+### Features
+
+* fail closed with typed RecoveryKeyMismatchError when recovery keys miss on-chain signers ([d6bbb03](https://github.com/BitGo/BitGoJS/commit/d6bbb0393651c294a74a7b1cec0a2e1fdaae2e5f))
+
+
 ## [1.8.51](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-sgb%401.8.50...%40bitgo%2Fsdk-coin-sgb%401.8.51) (2026-10-16)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sgb

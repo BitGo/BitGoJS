@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.0.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-sui%406.6.1...%40bitgo%2Fsdk-coin-sui%407.0.0) (2026-10-20)
+
+### Features
+
+* **sdk-coin-sui:** migrate node calls from JSON-RPC to gRPC ([0a3f417](https://github.com/BitGo/BitGoJS/commit/0a3f417f7d4c44a642ebdb91daefecb55121b612))
+
+### BREAKING CHANGES
+
+* **sdk-coin-sui:** SUI node calls now go through gRPC instead of JSON-RPC
+  (deprecated by Sui testnet v1.82.1+). Environments must configure
+  suiGrpcNodeUrl; node-call paths (recovery, sweep, balance, fee estimation,
+  chain context) throw at runtime if it is missing. In browsers the calls use
+  the gRPC-web transport: bundlers must stub @grpc/grpc-js and
+  @protobuf-ts/grpc-transport (reference aliases in webpack/bitgojs.config.js)
+  and the @mysten/sui gRPC graph is now included in browser bundles. Exported
+  helper signatures accept either a gRPC client or the legacy node URL, so
+  type-level consumers are unaffected.
+
+
 ## [6.6.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-sui%406.6.0...%40bitgo%2Fsdk-coin-sui%406.6.1) (2026-10-16)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sui

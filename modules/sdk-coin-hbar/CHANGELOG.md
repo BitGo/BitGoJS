@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.2.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-hbar%403.1.1...%40bitgo%2Fsdk-coin-hbar%403.2.0) (2026-10-20)
+
+### Features
+
+* add extended-key slot-2 signer for safes ([2b0790c](https://github.com/BitGo/BitGoJS/commit/2b0790c2c9a80646b79f47f2b1bc9d93fcf92b09))
+* fail closed with typed RecoveryKeyMismatchError when recovery keys miss on-chain signers ([d6bbb03](https://github.com/BitGo/BitGoJS/commit/d6bbb0393651c294a74a7b1cec0a2e1fdaae2e5f))
+
+
 ## [3.1.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-hbar%403.1.0...%40bitgo%2Fsdk-coin-hbar%403.1.1) (2026-10-16)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-hbar

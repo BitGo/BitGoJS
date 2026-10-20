@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [17.6.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fexpress%4017.5.0...%40bitgo%2Fexpress%4017.6.0) (2026-10-20)
+
+### Features
+
+* align DKLS safe VRF keygen with the HSM ([3fb0f15](https://github.com/BitGo/BitGoJS/commit/3fb0f1557503e0edb706ddfe277292b2ef487665))
+* **sdk-core:** send the full BIP44 path on safe derive round 1 ([cc54e4e](https://github.com/BitGo/BitGoJS/commit/cc54e4e0761c4da65fb013f936b2fe0bcfbf0c26))
+
+
 # [17.5.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fexpress%4017.4.0...%40bitgo%2Fexpress%4017.5.0) (2026-10-16)
 
 ### Features

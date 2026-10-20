@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [54.2.0](https://github.com/BitGo/BitGoJS/compare/bitgo%4054.1.0...bitgo%4054.2.0) (2026-10-20)
+
+### Bug Fixes
+
+* **sdk-core:** reject recipients for finalizeUnwrap sendMany (CHALO-1882) ([b3fb2d6](https://github.com/BitGo/BitGoJS/commit/b3fb2d6539d485f697c3af4b9c8901a8d987f1ef))
+
+### Features
+
+* align DKLS safe VRF keygen with the HSM ([3fb0f15](https://github.com/BitGo/BitGoJS/commit/3fb0f1557503e0edb706ddfe277292b2ef487665))
+* **sdk-core:** send the full BIP44 path on safe derive round 1 ([cc54e4e](https://github.com/BitGo/BitGoJS/commit/cc54e4e0761c4da65fb013f936b2fe0bcfbf0c26))
+
+
 # [54.1.0](https://github.com/BitGo/BitGoJS/compare/bitgo%4054.0.0...bitgo%4054.1.0) (2026-10-16)
 
 ### Bug Fixes

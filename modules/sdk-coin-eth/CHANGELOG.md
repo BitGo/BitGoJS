@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [26.5.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-eth%4026.4.1...%40bitgo%2Fsdk-coin-eth%4026.5.0) (2026-10-20)
+
+### Bug Fixes
+
+* **abstract-eth:** apply the wrapper-approve relabel guard to multi-sig wallets ([d930736](https://github.com/BitGo/BitGoJS/commit/d9307363f61a8d9be38bc0cb7140f0dec32f8165))
+
+### Features
+
+* **abstract-eth:** verify multisig wrapApprove txnRequests ([a15ac0a](https://github.com/BitGo/BitGoJS/commit/a15ac0ab431761adab25b38fa146cda3571197b9))
+* fail closed with typed RecoveryKeyMismatchError when recovery keys miss on-chain signers ([d6bbb03](https://github.com/BitGo/BitGoJS/commit/d6bbb0393651c294a74a7b1cec0a2e1fdaae2e5f))
+
+
 ## [26.4.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-eth%4026.4.0...%40bitgo%2Fsdk-coin-eth%4026.4.1) (2026-10-16)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-eth
