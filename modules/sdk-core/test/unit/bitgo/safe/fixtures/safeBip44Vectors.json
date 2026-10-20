@@ -297,7 +297,7 @@
       "coinType": 0,
       "slotOrdinal": 1,
       "account": 0,
-      "pathBytesHex": "8000002c800000008000000180000000"
+      "pathBytesHex": "6d2f3434272f30272f31272f3027"
     },
     {
       "name": "sol slot 4 account 0",
@@ -305,7 +305,7 @@
       "coinType": 501,
       "slotOrdinal": 4,
       "account": 0,
-      "pathBytesHex": "8000002c800001f58000000480000000"
+      "pathBytesHex": "6d2f3434272f353031272f34272f3027"
     },
     {
       "name": "arbeth slot 3 account 0",
@@ -313,7 +313,7 @@
       "coinType": 1879048194,
       "slotOrdinal": 3,
       "account": 0,
-      "pathBytesHex": "8000002cf00000028000000380000000"
+      "pathBytesHex": "6d2f3434272f31383739303438313934272f33272f3027"
     }
   ]
 }

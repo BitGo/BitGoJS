@@ -2,38 +2,35 @@ import assert from 'assert';
 import { DklsVrfUtils } from '../../../../src/tss';
 
 describe('buildSafeMpcDerivePath', function () {
-  it("builds the 4-level hardened path m/44'/1'/3'/0'", function () {
+  it("encodes m/44'/1'/3'/0' as the UTF-8 bytes of the path string", function () {
     const path = DklsVrfUtils.buildSafeMpcDerivePath({ coinType: 1, safeSlotOrdinal: 3, accountIndex: 0 });
-    assert.strictEqual(path.length, 16);
-    assert.deepStrictEqual(Array.from(path), [
-      0x80,
-      0x00,
-      0x00,
-      0x2c, // 44'
-      0x80,
-      0x00,
-      0x00,
-      0x01, // 1'
-      0x80,
-      0x00,
-      0x00,
-      0x03, // 3'
-      0x80,
-      0x00,
-      0x00,
-      0x00, // 0'
-    ]);
+    assert.strictEqual(Buffer.from(path).toString('utf8'), "m/44'/1'/3'/0'");
   });
 
-  it('encodes a multi-byte account without truncation', function () {
-    const path = DklsVrfUtils.buildSafeMpcDerivePath({ coinType: 1, safeSlotOrdinal: 3, accountIndex: 300 });
-    // 300' = 0x8000012c, so the last segment must span two bytes.
-    assert.deepStrictEqual(Array.from(path.slice(12)), [0x80, 0x00, 0x01, 0x2c]);
+  it('writes multi-digit coin types and accounts as plain decimals', function () {
+    const path = DklsVrfUtils.buildSafeMpcDerivePath({ coinType: 501, safeSlotOrdinal: 4, accountIndex: 300 });
+    assert.strictEqual(Buffer.from(path).toString('hex'), Buffer.from("m/44'/501'/4'/300'").toString('hex'));
+  });
+
+  it('accepts the largest index below the hardened boundary', function () {
+    const path = DklsVrfUtils.buildSafeMpcDerivePath({ coinType: 1, safeSlotOrdinal: 3, accountIndex: 0x7fffffff });
+    assert.strictEqual(Buffer.from(path).toString('utf8'), "m/44'/1'/3'/2147483647'");
   });
 
   it('rejects a segment at or above the hardened boundary', function () {
     assert.throws(
       () => DklsVrfUtils.buildSafeMpcDerivePath({ coinType: 1, safeSlotOrdinal: 3, accountIndex: 0x80000000 }),
+      /Invalid BIP44 path segment at index 3/
+    );
+  });
+
+  it('rejects a negative or non-integer segment', function () {
+    assert.throws(
+      () => DklsVrfUtils.buildSafeMpcDerivePath({ coinType: -1, safeSlotOrdinal: 3, accountIndex: 0 }),
+      /Invalid BIP44 path segment at index 1/
+    );
+    assert.throws(
+      () => DklsVrfUtils.buildSafeMpcDerivePath({ coinType: 1, safeSlotOrdinal: 3, accountIndex: 1.5 }),
       /Invalid BIP44 path segment at index 3/
     );
   });
