@@ -4365,4 +4365,46 @@ export const botOfcTokens = [
     undefined,
     'okbxlayer'
   ),
+  AccountCtors.ofcerc20(
+    '810e3db8-2e1d-4267-88f7-7787e7fa4526',
+    'ofceth:waethusde',
+    'Wrapped Aave Ethereum USDe',
+    18,
+    'eth:waethusde' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    '3aa35fad-701a-467d-9e5a-a54578f22541',
+    'ofceth:waetheurc',
+    'Wrapped Aave Ethereum EURC',
+    6,
+    'eth:waetheurc' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcerc20(
+    '8e6c50c8-56bd-40df-b88e-1195a86325f4',
+    'ofceth:waethdai',
+    'Wrapped Aave Ethereum DAI',
+    18,
+    'eth:waethdai' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
 ];
