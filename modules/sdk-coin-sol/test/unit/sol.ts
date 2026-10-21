@@ -5576,7 +5576,7 @@ describe('SOL:', function () {
           } as unknown as SolVerifyTransactionOptions),
         {
           message:
-            'Invalid transaction type on token enablement: expected "AssociatedTokenAccountInitialization", got "Send".',
+            'Invalid transaction type on token enablement: expected "AssociatedTokenAccountInitialization" or "ConfidentialTransfer", got "Send".',
         }
       );
     });

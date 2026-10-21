@@ -324,6 +324,7 @@ export abstract class MpcUtils {
           return {
             ...baseIntent,
             enableTokens: params.enableTokens,
+            configureAccount: params.configureAccount,
             feeOptions: params.feeOptions,
             feeToken: params.feeToken,
           };
@@ -408,6 +409,7 @@ export abstract class MpcUtils {
         memo: params.memo?.value,
         token: params.tokenName,
         enableTokens: params.enableTokens,
+        configureAccount: params.configureAccount,
         feeOptions: params.feeOptions,
         feeToken: params.feeToken,
       };

@@ -15,7 +15,10 @@ import {
   stakingActivateInstructionsIndexes,
   stakingDeactivateInstructionsIndexes,
   stakingWithdrawInstructionsIndexes,
+  ZK_ELGAMAL_PROOF_PROGRAM_ID,
+  CT_EXT_DISCRIMINATOR,
 } from '../../src/lib/constants';
+import { matchConfidentialTransferInstructions } from '../../src/lib/utils';
 import BigNumber from 'bignumber.js';
 import {
   TOKEN_2022_PROGRAM_ID,
@@ -751,5 +754,47 @@ describe('getInstructionType - transferCheckedWithFee', function () {
       TOKEN_2022_PROGRAM_ID
     );
     Utils.getInstructionType(ix).should.equal('TokenTransfer');
+  });
+
+  describe('matchConfidentialTransferInstructions', function () {
+    const instruction = (programId: PublicKey, data: Buffer): TransactionInstruction =>
+      new TransactionInstruction({ programId, keys: [], data });
+
+    it('returns false for an empty instruction list', function () {
+      matchConfidentialTransferInstructions([]).should.be.false();
+    });
+
+    it('returns false for Token-2022 instructions with truncated data', function () {
+      // Guards the length check: reading data[1] without it would throw.
+      matchConfidentialTransferInstructions([instruction(TOKEN_2022_PROGRAM_ID, Buffer.alloc(0))]).should.be.false();
+      matchConfidentialTransferInstructions([
+        instruction(TOKEN_2022_PROGRAM_ID, Buffer.from([CT_EXT_DISCRIMINATOR])),
+      ]).should.be.false();
+    });
+
+    it('detects a Token-2022 confidential-transfer extension instruction', function () {
+      // ConfigureAccount: extension discriminator 27, sub-instruction 2
+      matchConfidentialTransferInstructions([
+        instruction(TOKEN_2022_PROGRAM_ID, Buffer.from([CT_EXT_DISCRIMINATOR, 2])),
+      ]).should.be.true();
+    });
+
+    it('returns false for an unknown Token-2022 sub-discriminator', function () {
+      matchConfidentialTransferInstructions([
+        instruction(TOKEN_2022_PROGRAM_ID, Buffer.from([CT_EXT_DISCRIMINATOR, 0xff])),
+      ]).should.be.false();
+    });
+
+    it('detects zk-elgamal-proof instructions', function () {
+      matchConfidentialTransferInstructions([
+        instruction(new PublicKey(ZK_ELGAMAL_PROOF_PROGRAM_ID), Buffer.from([0, 1, 2])),
+      ]).should.be.true();
+    });
+
+    it('returns false for unrelated programs carrying CT-looking bytes', function () {
+      matchConfidentialTransferInstructions([
+        instruction(SystemProgram.programId, Buffer.from([CT_EXT_DISCRIMINATOR, 2])),
+      ]).should.be.false();
+    });
   });
 });

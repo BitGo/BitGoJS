@@ -106,6 +106,7 @@ export const BuildParams = t.exact(
       feeRate: t.unknown,
       feeMultiplier: t.unknown,
       enableTokens: t.unknown,
+      configureAccount: t.unknown,
       gasLimit: t.unknown,
       gasPrice: t.unknown,
       hopParams: t.unknown,

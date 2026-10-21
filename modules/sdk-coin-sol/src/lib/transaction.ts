@@ -15,6 +15,7 @@ import {
   PublicKey,
   Signer,
   Transaction as SolTransaction,
+  TransactionInstruction,
   SystemInstruction,
   VersionedTransaction,
 } from '@solana/web3.js';
@@ -44,6 +45,8 @@ import {
   WalletInit,
 } from './iface';
 import { instructionParamsFactory } from './instructionParamsFactory';
+import { parseWireTransaction } from './serialization/parseWireTransaction';
+import { decodeV1Message, V1DecodedMessage } from './serialization/codecs/v1/message';
 import {
   getInstructionType,
   getTransactionType,
@@ -52,6 +55,40 @@ import {
   validateRawMsgInstruction,
 } from './utils';
 import { SolStakingTypeEnum } from '@bitgo/public-types';
+
+/**
+ * v1 (SIMD-0296/0385) wires are prefixed with 0x81; legacy and v0 wires are not.
+ */
+function isV1Wire(rawBytes: Buffer): boolean {
+  return rawBytes.length > 0 && rawBytes[0] === 0x81;
+}
+
+/**
+ * Rebuilds a legacy-shaped SolTransaction from a decoded v1 message so explain, verify
+ * and instruction introspection keep working unchanged.
+ */
+function buildMetadataTransaction(decoded: V1DecodedMessage): SolTransaction {
+  const metaTx = new SolTransaction();
+  metaTx.feePayer = new PublicKey(decoded.staticAccounts[0]);
+  metaTx.recentBlockhash = decoded.blockhash;
+  const writableSigners = decoded.header.numSignerAccounts - decoded.header.numReadonlySignerAccounts;
+  const writableNonSigners = decoded.staticAccounts.length - decoded.header.numReadonlyNonSignerAccounts;
+  for (const compiled of decoded.compiledInstructions) {
+    metaTx.add(
+      new TransactionInstruction({
+        programId: new PublicKey(decoded.staticAccounts[compiled.programAddressIndex]),
+        keys: compiled.accountIndices.map((index) => ({
+          pubkey: new PublicKey(decoded.staticAccounts[index]),
+          isSigner: index < decoded.header.numSignerAccounts,
+          isWritable:
+            index < writableSigners || (index >= decoded.header.numSignerAccounts && index < writableNonSigners),
+        })),
+        data: Buffer.from(compiled.data),
+      })
+    );
+  }
+  return metaTx;
+}
 
 export class Transaction extends BaseTransaction {
   protected _solTransaction: SolTransaction;
@@ -383,57 +420,85 @@ export class Transaction extends BaseTransaction {
    * @param rawTransaction
    */
   fromRawTransaction(rawTransaction: string): void {
+    const rawBytes = Buffer.from(rawTransaction, 'base64');
+    if (isV1Wire(rawBytes)) {
+      this.fromRawV1Transaction(rawBytes);
+      return;
+    }
     try {
       isValidRawTransaction(rawTransaction);
       this._solTransaction = SolTransaction.from(Buffer.from(rawTransaction, 'base64'));
       if (this._solTransaction.signature && this._solTransaction.signature !== null) {
         this._id = base58.encode(this._solTransaction.signature);
       }
-      const transactionType = getTransactionType(this._solTransaction);
-      switch (transactionType) {
-        case TransactionType.WalletInitialization:
-          this.setTransactionType(TransactionType.WalletInitialization);
-          break;
-        case TransactionType.Send:
-          this.setTransactionType(TransactionType.Send);
-          break;
-        case TransactionType.StakingActivate:
-          this.setTransactionType(TransactionType.StakingActivate);
-          break;
-        case TransactionType.StakingDeactivate:
-          this.setTransactionType(TransactionType.StakingDeactivate);
-          break;
-        case TransactionType.StakingWithdraw:
-          this.setTransactionType(TransactionType.StakingWithdraw);
-          break;
-        case TransactionType.AssociatedTokenAccountInitialization:
-          this.setTransactionType(TransactionType.AssociatedTokenAccountInitialization);
-          break;
-        case TransactionType.CloseAssociatedTokenAccount:
-          this.setTransactionType(TransactionType.CloseAssociatedTokenAccount);
-          break;
-        case TransactionType.StakingAuthorize:
-          this.setTransactionType(TransactionType.StakingAuthorize);
-          break;
-        case TransactionType.StakingAuthorizeRaw:
-          this.setTransactionType(TransactionType.StakingAuthorizeRaw);
-          break;
-        case TransactionType.StakingDelegate:
-          this.setTransactionType(TransactionType.StakingDelegate);
-          break;
-        case TransactionType.CustomTx:
-          this.setTransactionType(TransactionType.CustomTx);
-          break;
-        case TransactionType.ConfidentialTransfer:
-          this.setTransactionType(TransactionType.ConfidentialTransfer);
-          break;
-      }
-      if (transactionType !== TransactionType.StakingAuthorizeRaw) {
-        this.loadInputsAndOutputs();
-      }
+      this.setTypeFromParsedInstructions();
     } catch (e) {
       throw e;
     }
+  }
+
+  /**
+   * Derives the transaction type (and inputs/outputs) from the parsed instructions.
+   * Shared by the legacy and v1 parse paths; types outside the supported set are left
+   * unset so the caller fails loudly instead of guessing.
+   */
+  private setTypeFromParsedInstructions(): void {
+    const transactionType = getTransactionType(this._solTransaction);
+    switch (transactionType) {
+      case TransactionType.WalletInitialization:
+        this.setTransactionType(TransactionType.WalletInitialization);
+        break;
+      case TransactionType.Send:
+        this.setTransactionType(TransactionType.Send);
+        break;
+      case TransactionType.StakingActivate:
+        this.setTransactionType(TransactionType.StakingActivate);
+        break;
+      case TransactionType.StakingDeactivate:
+        this.setTransactionType(TransactionType.StakingDeactivate);
+        break;
+      case TransactionType.StakingWithdraw:
+        this.setTransactionType(TransactionType.StakingWithdraw);
+        break;
+      case TransactionType.AssociatedTokenAccountInitialization:
+        this.setTransactionType(TransactionType.AssociatedTokenAccountInitialization);
+        break;
+      case TransactionType.CloseAssociatedTokenAccount:
+        this.setTransactionType(TransactionType.CloseAssociatedTokenAccount);
+        break;
+      case TransactionType.StakingAuthorize:
+        this.setTransactionType(TransactionType.StakingAuthorize);
+        break;
+      case TransactionType.StakingAuthorizeRaw:
+        this.setTransactionType(TransactionType.StakingAuthorizeRaw);
+        break;
+      case TransactionType.StakingDelegate:
+        this.setTransactionType(TransactionType.StakingDelegate);
+        break;
+      case TransactionType.CustomTx:
+        this.setTransactionType(TransactionType.CustomTx);
+        break;
+      case TransactionType.ConfidentialTransfer:
+        this.setTransactionType(TransactionType.ConfidentialTransfer);
+        break;
+    }
+    if (transactionType !== TransactionType.StakingAuthorizeRaw) {
+      this.loadInputsAndOutputs();
+    }
+  }
+
+  /**
+   * v1 (SIMD-0296/0385) wire: message-first with signatures appended. Keeps the raw
+   * message bytes for signing and builds a metadata-only SolTransaction so explain /
+   * verify continue to work; the wasm explain path derives the type from instructions.
+   */
+  private fromRawV1Transaction(rawBytes: Buffer): void {
+    const wireBytes = new Uint8Array(rawBytes);
+    const { messageBytes } = parseWireTransaction(wireBytes);
+    this._v1TransactionBytes = wireBytes;
+    this._v1MessageBytes = messageBytes;
+    this._solTransaction = buildMetadataTransaction(decodeV1Message(messageBytes));
+    this.setTypeFromParsedInstructions();
   }
 
   /** @inheritdoc */

@@ -1412,6 +1412,7 @@ function isConfidentialTransferInstruction(type: InstructionBuilderTypes): boole
     case InstructionBuilderTypes.VerifyEqualityProof:
     case InstructionBuilderTypes.VerifyValidityProof:
     case InstructionBuilderTypes.VerifyRangeProof:
+    case InstructionBuilderTypes.ReallocateConfidentialTransferAccount:
       return true;
     default:
       return false;
@@ -1491,8 +1492,13 @@ function parseConfidentialTransferInstructions(
     // Check if we have metadata for this instruction position
     if (instructionMetadata && instructionMetadata[i]) {
       const metaType = instructionMetadata[i].type;
-      // Preserve confidential transfer and custom instruction metadata as-is
-      if (isConfidentialTransferInstruction(metaType) || metaType === InstructionBuilderTypes.CustomInstruction) {
+      // Preserve confidential transfer, custom, and ATA-init metadata as-is
+      // (CT enablement txs carry CreateATA + ConfigureAccount + proofs).
+      if (
+        isConfidentialTransferInstruction(metaType) ||
+        metaType === InstructionBuilderTypes.CustomInstruction ||
+        metaType === InstructionBuilderTypes.CreateAssociatedTokenAccount
+      ) {
         instructionData.push(instructionMetadata[i]);
         continue;
       }

@@ -43,6 +43,7 @@ export type InstructionParams =
   | StakingDeactivate
   | StakingWithdraw
   | AtaInit
+  | ReallocateConfidentialTransferAccount
   | AtaClose
   | AtaRecoverNested
   | TokenTransfer
@@ -287,6 +288,17 @@ export interface AtaInit {
   };
 }
 
+export interface ReallocateConfidentialTransferAccount {
+  type: InstructionBuilderTypes.ReallocateConfidentialTransferAccount;
+  params: {
+    /** Token-2022 account receiving the ConfidentialTransferAccount extension. */
+    tokenAddress: string;
+    payerAddress: string;
+    ownerAddress: string;
+    programId?: string;
+  };
+}
+
 export interface AtaClose {
   type: InstructionBuilderTypes.CloseAssociatedTokenAccount;
   params: {
@@ -408,6 +420,8 @@ export interface ConfigureConfidentialTransferAccount {
     tokenAddress: string;
     mintAddress: string;
     authorityAddress: string;
+    /** 32-byte ElGamal pubkey registered on the token account (hex). */
+    elgamalPubkey: string;
     /** Instructions sysvar (inline proof) or context state account (pre-verified proof). Defaults to instructions sysvar. */
     instructionsSysvarOrContextStateAddress?: string;
     /** AES-encrypted zero balance (36 bytes hex). */

@@ -330,6 +330,20 @@ export function matchTransactionTypeByInstructionsOrder(
 }
 
 /**
+ * Returns true when any instruction in the transaction is a confidential-transfer
+ * instruction.
+ *
+ * Unlike the staking and ATA patterns above, CT transactions cannot be identified by a
+ * fixed instruction order: enablement carries CreateATA + Reallocate before
+ * ConfigureAccount, while spend transactions lead with ApplyPendingBalance. They are
+ * identified by program + discriminator instead, so this is a membership test rather
+ * than an ordered match.
+ */
+export function matchConfidentialTransferInstructions(instructions: TransactionInstruction[]): boolean {
+  return instructions.some(isConfidentialTransferRawInstruction);
+}
+
+/**
  * Returns true if the instruction is a confidential transfer instruction
  * (Token-2022 CT extension or zk-elgamal-proof program).
  *
@@ -414,14 +428,16 @@ export function getTransactionType(transaction: SolTransaction): TransactionType
     return TransactionType.StakingDeactivate;
   } else if (matchTransactionTypeByInstructionsOrder(instructions, stakingWithdrawInstructionsIndexes)) {
     return TransactionType.StakingWithdraw;
+  } else if (matchConfidentialTransferInstructions(instructions)) {
+    // CT wins over ATA-init because enablement carries CreateATA + Reallocate before
+    // ConfigureAccount; the CT instruction, not the ATA one, decides the parse path.
+    return TransactionType.ConfidentialTransfer;
   } else if (matchTransactionTypeByInstructionsOrder(instructions, ataInitInstructionIndexes)) {
     return TransactionType.AssociatedTokenAccountInitialization;
   } else if (matchTransactionTypeByInstructionsOrder(instructions, ataCloseInstructionIndexes)) {
     return TransactionType.CloseAssociatedTokenAccount;
   } else if (matchTransactionTypeByInstructionsOrder(instructions, ataRecoverNestedInstructionIndexes)) {
     return TransactionType.CloseAssociatedTokenAccount;
-  } else if (instructions.some(isConfidentialTransferRawInstruction)) {
-    return TransactionType.ConfidentialTransfer;
   } else {
     return TransactionType.CustomTx;
   }
