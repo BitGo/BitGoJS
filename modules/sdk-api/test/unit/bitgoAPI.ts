@@ -1562,3 +1562,24 @@ describe('wallets() v1 facade', function () {
     wallets.resendShareInvite.should.be.a.Function();
   });
 });
+
+describe('getECDHKeychain', function () {
+  const ROOT = 'https://app.example.local';
+
+  afterEach(function () {
+    nock.cleanAll();
+  });
+
+  it('rejects when the user has no ecdhKeychain in settings', async function () {
+    const bitgo = new BitGoAPI({ env: 'custom', customRootURI: ROOT });
+    nock(ROOT)
+      .get('/api/v1/user/settings')
+      .reply(200, { settings: { ecdhKeychain: null } });
+
+    await bitgo
+      .getECDHKeychain()
+      .should.be.rejectedWith(
+        'Your account is missing the sharing key needed for this action. Please contact support@bitgo.com so it can be set up.'
+      );
+  });
+});

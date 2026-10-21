@@ -1882,7 +1882,9 @@ export class BitGoAPI implements BitGoBase {
     if (!ecdhKeychainPub) {
       const result = await this.get(this.url('/user/settings')).result();
       if (!result.settings.ecdhKeychain) {
-        return new Error('ecdh keychain not found for user');
+        throw new Error(
+          'Your account is missing the sharing key needed for this action. Please contact support@bitgo.com so it can be set up.'
+        );
       }
       ecdhKeychainPub = result.settings.ecdhKeychain;
     }
