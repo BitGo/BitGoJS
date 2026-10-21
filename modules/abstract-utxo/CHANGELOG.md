@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [13.5.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fabstract-utxo%4013.4.1...%40bitgo%2Fabstract-utxo%4013.5.0) (2026-10-20)
+
+### Features
+
+* **abstract-utxo:** explain and half-sign PoX-5 early exits in offlineVault ([f317597](https://github.com/BitGo/BitGoJS/commit/f31759766aa200809599a4dadf5de81effcaed80))
+
+
 ## [13.4.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fabstract-utxo%4013.4.0...%40bitgo%2Fabstract-utxo%4013.4.1) (2026-10-16)
 
 ### Bug Fixes

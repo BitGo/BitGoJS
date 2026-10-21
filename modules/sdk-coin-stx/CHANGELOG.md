@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.0.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-stx%404.4.0...%40bitgo%2Fsdk-coin-stx%405.0.0) (2026-10-20)
+
+### Features
+
+* **sdk-coin-stx:** migrate @stacks/transactions to v7.6.0 ([754db4e](https://github.com/BitGo/BitGoJS/commit/754db4e2f1532566d176a01c0ffc66d5cd9d7f38))
+
+### BREAKING CHANGES
+
+* **sdk-coin-stx:** @stacks/transactions v7 changes the Clarity representation, so
+  the JSON returned by sdk-coin-stx `toJson()` / `explainTransaction`
+  (`payload.functionArgs`) changes shape: Clarity type tags are now strings
+  (`'uint'` vs `1`) and principal/buffer values use the v7 form
+  (`{ type: 'address', value: <c32 address> }` — prefix varies by network/version,
+  e.g. SP/ST/SN/SM; `{ type: 'buffer', value: <hex> }`) instead of v2
+  (`{ type: 5, address: { version, hash160 } }`, `{ type: 2, buffer }`). Consumers
+  that read `functionArgs` (Wallet Platform, policy service, OVC) must expect the
+  v7 shape. Serialized transaction bytes are unchanged (byte-parity preserved) —
+  signing and the HSM are unaffected.
+
+
 # [4.4.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-stx%404.3.0...%40bitgo%2Fsdk-coin-stx%404.4.0) (2026-10-16)
 
 ### Bug Fixes

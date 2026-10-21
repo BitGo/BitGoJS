@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [40.0.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4039.1.0...%40bitgo%2Fsdk-core%4040.0.0) (2026-10-20)
+
+### Bug Fixes
+
+* derive safe MPC child at UTF-8 path bytes ([49f3459](https://github.com/BitGo/BitGoJS/commit/49f3459b611001afce458d33fd49e1e42176595d))
+* **sdk-core:** reject recipients for finalizeUnwrap sendMany (CHALO-1882) ([b3fb2d6](https://github.com/BitGo/BitGoJS/commit/b3fb2d6539d485f697c3af4b9c8901a8d987f1ef))
+
+### Features
+
+* add extended-key slot-2 signer for safes ([2b0790c](https://github.com/BitGo/BitGoJS/commit/2b0790c2c9a80646b79f47f2b1bc9d93fcf92b09))
+* align DKLS safe VRF keygen with the HSM ([3fb0f15](https://github.com/BitGo/BitGoJS/commit/3fb0f1557503e0edb706ddfe277292b2ef487665))
+* fail closed with typed RecoveryKeyMismatchError when recovery keys miss on-chain signers ([d6bbb03](https://github.com/BitGo/BitGoJS/commit/d6bbb0393651c294a74a7b1cec0a2e1fdaae2e5f))
+* **sdk-coin-sui:** migrate node calls from JSON-RPC to gRPC ([0a3f417](https://github.com/BitGo/BitGoJS/commit/0a3f417f7d4c44a642ebdb91daefecb55121b612))
+* **sdk-core:** redpallas multi-spend array share helpers ([e2052ea](https://github.com/BitGo/BitGoJS/commit/e2052eafc609f153b61cce8bdb5e1014b72c6766))
+* **sdk-core:** send the full BIP44 path on safe derive round 1 ([cc54e4e](https://github.com/BitGo/BitGoJS/commit/cc54e4e0761c4da65fb013f936b2fe0bcfbf0c26))
+
+### BREAKING CHANGES
+
+* **sdk-coin-sui:** SUI node calls now go through gRPC instead of JSON-RPC
+  (deprecated by Sui testnet v1.82.1+). Environments must configure
+  suiGrpcNodeUrl; node-call paths (recovery, sweep, balance, fee estimation,
+  chain context) throw at runtime if it is missing. In browsers the calls use
+  the gRPC-web transport: bundlers must stub @grpc/grpc-js and
+  @protobuf-ts/grpc-transport (reference aliases in webpack/bitgojs.config.js)
+  and the @mysten/sui gRPC graph is now included in browser bundles. Exported
+  helper signatures accept either a gRPC client or the legacy node URL, so
+  type-level consumers are unaffected.
+
+
 # [39.1.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4039.0.0...%40bitgo%2Fsdk-core%4039.1.0) (2026-10-16)
 
 ### Bug Fixes

@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.4.2](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-ton%404.4.1...%40bitgo%2Fsdk-coin-ton%404.4.2) (2026-10-20)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-ton
+
+
+
+
+
 ## [4.4.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-ton%404.4.0...%40bitgo%2Fsdk-coin-ton%404.4.1) (2026-10-16)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ton

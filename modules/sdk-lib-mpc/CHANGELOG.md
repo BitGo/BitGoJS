@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.6.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-lib-mpc%4011.5.0...%40bitgo%2Fsdk-lib-mpc%4011.6.0) (2026-10-20)
+
+### Bug Fixes
+
+* derive safe MPC child at UTF-8 path bytes ([49f3459](https://github.com/BitGo/BitGoJS/commit/49f3459b611001afce458d33fd49e1e42176595d))
+
+### Features
+
+* **sdk-core:** redpallas multi-spend array share helpers ([e2052ea](https://github.com/BitGo/BitGoJS/commit/e2052eafc609f153b61cce8bdb5e1014b72c6766))
+
+
 # [11.5.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-lib-mpc%4011.4.0...%40bitgo%2Fsdk-lib-mpc%4011.5.0) (2026-10-16)
 
 ### Features

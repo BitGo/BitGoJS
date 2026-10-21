@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.36.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-canton%401.35.1...%40bitgo%2Fsdk-coin-canton%401.36.0) (2026-10-20)
+
+### Features
+
+* **sdk-coin-canton:** add participant allow-list command builders ([5bfc5ae](https://github.com/BitGo/BitGoJS/commit/5bfc5ae6bf51e47fde7a0e954e82ae38266f95e5))
+* **sdk-coin-canton:** parse native Canton Coin V2 allocate transactions ([786d207](https://github.com/BitGo/BitGoJS/commit/786d20727d6678547fd217919cce0a881d291be6))
+* **sdk-coin-canton:** support receive-only V2 allocate ([2ed5192](https://github.com/BitGo/BitGoJS/commit/2ed5192be4b04a237a5fb4dfadca72af136f959d))
+
+
 ## [1.35.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-canton%401.35.0...%40bitgo%2Fsdk-coin-canton%401.35.1) (2026-10-16)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-canton
