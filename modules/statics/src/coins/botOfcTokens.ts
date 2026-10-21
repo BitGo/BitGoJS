@@ -451,6 +451,18 @@ export const botOfcTokens = [
     undefined,
     undefined
   ),
+  AccountCtors.tofcsolToken(
+    '6fd38cd6-883f-43d1-b476-8bae42e3a4c8',
+    'ofctsol:t001bikb01',
+    'ofcBatmanAndKazakh',
+    2,
+    'tsol:t001bikb01' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
   AccountCtors.ofcerc20(
     '26f46d44-700d-4e32-8845-fb181e6d8027',
     'ofceth:gusdcq',
@@ -4406,5 +4418,47 @@ export const botOfcTokens = [
     undefined,
     undefined,
     'eth'
+  ),
+  AccountCtors.ofcerc20(
+    'e707e473-878d-4c82-8efb-a0bfbf48345f',
+    'ofceth:nvhome',
+    'Nuva HOME Coin',
+    12,
+    'eth:nvhome' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
+  AccountCtors.ofcPolygonErc20(
+    'a2110bc6-36fd-4298-996f-dcc533375fc7',
+    'ofcpolygon:spol',
+    'Staked POL',
+    18,
+    'polygon:spol' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'polygon'
+  ),
+  AccountCtors.ofcAvaxErc20(
+    'a0051002-fb47-46d3-8922-f52189e71d4b',
+    'ofcavaxc:kula',
+    'Kula',
+    18,
+    'avaxc:kula' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'avaxc'
   ),
 ];
