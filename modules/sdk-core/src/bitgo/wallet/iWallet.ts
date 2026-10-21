@@ -220,6 +220,11 @@ export interface PrebuildTransactionOptions {
   nftCollectionId?: string;
   nftId?: string;
   enableTokens?: TokenEnablement[];
+  /**
+   * Solana CT: also run ConfigureAccount after ATA creation (TDD decision #25).
+   * Opt-out flag for non-CMB mints; default true server-side. CMB mints always configure.
+   */
+  configureAccount?: boolean;
   nonce?: string;
   preview?: boolean;
   eip1559?: EIP1559;

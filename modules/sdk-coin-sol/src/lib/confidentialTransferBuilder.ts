@@ -7,6 +7,7 @@ import { TransactionBuilder } from './transactionBuilder';
 import { InstructionBuilderTypes } from './constants';
 import {
   ApplyPendingBalance,
+  AtaInit,
   ConfidentialDeposit,
   ConfidentialTransfer,
   ConfidentialWithdraw,
@@ -29,6 +30,7 @@ import assert from 'assert';
  * Builder for Token-2022 confidential transfer transactions.
  *
  * Provides type-safe fluent setters for the following CT instructions:
+ * - CreateAssociatedTokenAccount (CT enablement: ATA under Token-2022 before ConfigureAccount)
  * - ConfigureAccount (standalone, with VerifyPubkeyValidity proof)
  * - ApplyPendingBalance (always instruction #1 in v1 spend txs, idempotent)
  * - Deposit (public → confidential conversion)
@@ -113,6 +115,8 @@ export class ConfidentialTransferBuilder extends TransactionBuilder {
     this._ctInstructions = [];
     for (const instruction of this._instructionsData) {
       switch (instruction.type) {
+        case InstructionBuilderTypes.CreateAssociatedTokenAccount:
+        case InstructionBuilderTypes.ReallocateConfidentialTransferAccount:
         case InstructionBuilderTypes.ConfigureConfidentialTransferAccount:
         case InstructionBuilderTypes.ApplyPendingBalance:
         case InstructionBuilderTypes.ConfidentialDeposit:
@@ -131,6 +135,36 @@ export class ConfidentialTransferBuilder extends TransactionBuilder {
   }
 
   /**
+   * Add a CreateAssociatedTokenAccount (idempotent) instruction to the transaction.
+   * CT enablement only — the ATA must exist before ConfigureAccount; add this
+   * first when the ATA is not yet on-chain. For Token-2022 mints pass
+   * `programId` so the ATA is created under the Token-2022 program.
+   */
+  createAta(params: AtaInit['params']): this {
+    assert(params.mintAddress, 'Missing mintAddress param');
+    assert(params.ataAddress, 'Missing ataAddress param');
+    assert(params.ownerAddress, 'Missing ownerAddress param');
+    assert(params.payerAddress, 'Missing payerAddress param');
+
+    this._ctInstructions.push({
+      type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
+      params,
+    });
+    // ConfigureAccount requires the ConfidentialTransferAccount extension, which an ATA does
+    // not carry — Reallocate adds it and must run before ConfigureAccount.
+    this._ctInstructions.push({
+      type: InstructionBuilderTypes.ReallocateConfidentialTransferAccount,
+      params: {
+        tokenAddress: params.ataAddress,
+        payerAddress: params.payerAddress,
+        ownerAddress: params.ownerAddress,
+        programId: params.programId,
+      },
+    });
+    return this;
+  }
+
+  /**
    * Add a ConfigureAccount instruction to the transaction.
    * One-time ATA setup — registers ElGamal pubkey + AES zero ciphertext.
    * Must be accompanied by a VerifyPubkeyValidity proof instruction.
@@ -139,6 +173,7 @@ export class ConfidentialTransferBuilder extends TransactionBuilder {
     assert(params.tokenAddress, 'Missing tokenAddress param');
     assert(params.mintAddress, 'Missing mintAddress param');
     assert(params.authorityAddress, 'Missing authorityAddress param');
+    assert(params.elgamalPubkey, 'Missing elgamalPubkey param');
     assert(params.decryptableZeroBalance, 'Missing decryptableZeroBalance param');
     assert(params.maximumPendingBalanceCreditCounter, 'Missing maximumPendingBalanceCreditCounter param');
 
@@ -307,7 +342,7 @@ export class ConfidentialTransferBuilder extends TransactionBuilder {
 
     // Durable nonce: the AdvanceNonceAccount instruction MUST be part of the
     // message (a bare nonce hash without the instruction is invalid). It is
-    // placed first, matching the v0 web3.js convention.
+    // placed first, matching the v0 web3.js and v1 payment-builder convention.
     if (this._nonceInfo) {
       instructions.push(
         buildAdvanceNonceAccountInstruction(
@@ -341,7 +376,9 @@ export class ConfidentialTransferBuilder extends TransactionBuilder {
 
     // Signer order comes from the compiled message: the first
     // numSignerAccounts static accounts are the required signers (fee payer
-    // first, then the remaining signers in the compiled account order).
+    // first, then the remaining signers in the compiled account order). Missing
+    // signatures are zero-filled so unsigned/partial builds keep a valid wire
+    // shape for the server-side sign path (not broadcastable until filled).
     const decoded = decodeV1Message(messageBytes);
     const signerAddresses = decoded.staticAccounts.slice(0, decoded.header.numSignerAccounts);
 
@@ -354,9 +391,9 @@ export class ConfidentialTransferBuilder extends TransactionBuilder {
         signatures.push(nacl.sign.detached(messageBytes, secretKey));
         continue;
       }
-      const external = this.getAdditionalSignatures().find((sig) => sig.publicKey.pub === address);
-      if (external) {
-        signatures.push(new Uint8Array(external.signature));
+      const additional = this.getAdditionalSignatures().find((sig) => sig.publicKey.pub === address);
+      if (additional) {
+        signatures.push(new Uint8Array(additional.signature));
         continue;
       }
       // Missing signature: zero-fill the slot so the wire shape stays valid

@@ -346,6 +346,8 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
   }[];
   tokenName?: string;
   enableTokens?: TokenEnablement[];
+  /** Solana CT: run ConfigureAccount after ATA creation (opt-out, default true). */
+  configureAccount?: boolean;
   nonce?: string;
   selfSend?: boolean;
   feeOptions?: FeeOption | EIP1559FeeOptions;
@@ -469,6 +471,11 @@ export interface PopulatedIntent extends PopulatedIntentBase, DefiIntentFields {
   nonce?: string;
   token?: string;
   enableTokens?: TokenEnablement[];
+  /**
+   * Solana confidential transfer: also run ConfigureAccount after ATA creation so the
+   * address can hold a confidential balance. Defaults to true; ignored for CMB mints.
+   */
+  configureAccount?: boolean;
   unspents?: string[];
   fundsInAddressBalance?: string;
   /**

@@ -149,6 +149,7 @@ export enum InstructionBuilderTypes {
   Memo = 'Memo',
   NonceAdvance = 'NonceAdvance',
   CreateAssociatedTokenAccount = 'CreateAssociatedTokenAccount',
+  ReallocateConfidentialTransferAccount = 'ReallocateConfidentialTransferAccount',
   CloseAssociatedTokenAccount = 'CloseAssociatedTokenAccount',
   RecoverNestedAssociatedTokenAccount = 'RecoverNestedAssociatedTokenAccount',
   TokenTransfer = 'TokenTransfer',

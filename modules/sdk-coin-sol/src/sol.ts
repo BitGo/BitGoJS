@@ -228,7 +228,12 @@ export interface SolConsolidationRecoveryOptions extends MPCConsolidationRecover
 }
 
 const HEX_REGEX = /^[0-9a-fA-F]+$/;
-const BLIND_SIGNING_TX_TYPES_TO_CHECK = { enabletoken: 'AssociatedTokenAccountInitialization' };
+// 'enabletoken' explains as AssociatedTokenAccountInitialization for plain ATA
+// enables and as ConfidentialTransfer for CT enables (CreateATA + ConfigureAccount
+// + VerifyPubkeyValidity — CHALO-1883).
+const BLIND_SIGNING_TX_TYPES_TO_CHECK: Record<string, string[]> = {
+  enabletoken: ['AssociatedTokenAccountInitialization', 'ConfidentialTransfer'],
+};
 
 /**
  * Get amount string corrected for architecture-specific endianness issues.
@@ -347,10 +352,12 @@ export class Sol extends BaseCoin {
   }
 
   verifyTxType(expectedTypeFromUserParams: string, actualTypeFromDecoded: string | undefined): void {
-    const matchFromUserToDecodedType = BLIND_SIGNING_TX_TYPES_TO_CHECK[expectedTypeFromUserParams];
-    if (matchFromUserToDecodedType !== actualTypeFromDecoded) {
+    const allowedTypes = BLIND_SIGNING_TX_TYPES_TO_CHECK[expectedTypeFromUserParams] ?? [];
+    if (!actualTypeFromDecoded || !allowedTypes.includes(actualTypeFromDecoded)) {
       throw new Error(
-        `Invalid transaction type on token enablement: expected "${matchFromUserToDecodedType}", got "${actualTypeFromDecoded}".`
+        `Invalid transaction type on token enablement: expected "${allowedTypes.join(
+          '" or "'
+        )}", got "${actualTypeFromDecoded}".`
       );
     }
   }

@@ -4311,6 +4311,9 @@ export class Wallet implements IWallet {
       const tokenName = params.enableTokens[0]?.name;
       buildParams.type = (tokenName && teConfig.getEnableTokenType?.(tokenName)) ?? 'enabletoken';
     }
+    if (params.configureAccount !== undefined) {
+      buildParams.configureAccount = params.configureAccount;
+    }
     // Check if we build with intent
     if (this._wallet.multisigType === 'tss') {
       // Populate recipients from enableTokens so verifyTransaction can access tokenName.
@@ -4572,6 +4575,7 @@ export class Wallet implements IWallet {
             intentType: 'enableToken',
             recipients: params.recipients || [],
             enableTokens: params.enableTokens,
+            configureAccount: params.configureAccount,
             memo: params.memo,
           },
           apiVersion,
