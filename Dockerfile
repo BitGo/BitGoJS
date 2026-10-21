@@ -2,7 +2,7 @@
 # An elaborated scheme to build all the dependencies of all packages first in a cached layer
 # https://stackoverflow.com/a/63142468/134409
 # https://medium.com/@emilefugulin/building-a-sane-docker-image-for-typescript-lerna-and-prisma-2-76d8ff9926e4
-FROM node:22.22.0-bookworm-slim@sha256:f86be15afa9a8277608e141ce2a8aa55d3d9c40845921b8511f4fb7897be2554 AS filter-packages-json
+FROM node:24.15.0-bookworm-slim@sha256:4e6b70dd6cbfc88c8157ba19aa3d9f9cce6ba4703576d55459e45efcbc9c5f5d AS filter-packages-json
 LABEL maintainer="Developer Relations <developer-relations-team@bitgo.com>"
 
 COPY package.json yarn.lock lerna.json ./
@@ -12,7 +12,7 @@ COPY modules ./modules
 # delete all the non package.json files under `./modules/`
 RUN find modules \! -name "package.json" -mindepth 2 -maxdepth 2 -print | xargs rm -rf
 
-FROM node:22.22.0-bookworm-slim@sha256:f86be15afa9a8277608e141ce2a8aa55d3d9c40845921b8511f4fb7897be2554 AS builder
+FROM node:24.15.0-bookworm-slim@sha256:4e6b70dd6cbfc88c8157ba19aa3d9f9cce6ba4703576d55459e45efcbc9c5f5d AS builder
 ARG SOCKET_SECURITY_MODE=monitor
 ENV SOCKET_SECURITY_MODE=${SOCKET_SECURITY_MODE}
 RUN apt-get update && apt-get install -y git python3 make g++ libtool autoconf automake
@@ -34,8 +34,20 @@ RUN \
     rm -r modules/*/src
 
 
-FROM node:22.22.0-bookworm-slim@sha256:f86be15afa9a8277608e141ce2a8aa55d3d9c40845921b8511f4fb7897be2554
-RUN apt-get update && apt-get install -y tini
+FROM node:24.15.0-bookworm-slim@sha256:4e6b70dd6cbfc88c8157ba19aa3d9f9cce6ba4703576d55459e45efcbc9c5f5d
+# The runtime validates TLS against the system CA bundle (NODE_OPTIONS at the
+# bottom), so ca-certificates must be installed. Debian's package still trusts
+# eMudhra roots after the October 2026 CA compromise, so they are stripped here
+# until the distro removes them; scripts/verify-express-image-trust.sh asserts
+# that none remain.
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates tini && rm -rf /var/lib/apt/lists/* && \
+    for f in $(find /usr/share/ca-certificates -name '*.crt'); do \
+        if openssl x509 -in "$f" -noout -subject 2>/dev/null | grep -qi 'emudhra\|emsign'; then \
+            echo "removing compromised trust anchor: $f" && rm "$f"; \
+        fi; \
+    done && \
+    sed -i -e '/emSign/d' -e '/emudhra/Id' /etc/ca-certificates.conf && \
+    update-ca-certificates --fresh
 # copy the root node_modules to the bitgo-express parent node_modules
 COPY --from=builder /tmp/bitgo/node_modules  /var/node_modules/
 COPY --from=builder /tmp/bitgo/modules/express /var/bitgo-express/
@@ -374,5 +386,9 @@ LABEL git_hash=${GIT_HASH}
 USER node
 ENV NODE_ENV=production
 ENV BITGO_BIND=0.0.0.0
+# Validate outbound TLS against the system CA bundle instead of Node's embedded
+# root store, so OS trust updates (e.g. revoked roots) take effect.
+ENV NODE_OPTIONS=--use-openssl-ca
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 EXPOSE 3080
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/node", "/var/bitgo-express/bin/bitgo-express"]

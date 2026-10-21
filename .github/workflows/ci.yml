@@ -382,6 +382,9 @@ jobs:
             GIT_HASH=${{ github.sha }}
             SOCKET_SECURITY_MODE=${{ env.SOCKET_SECURITY_MODE }}
 
+      - name: Verify CA trust configuration
+        run: ./scripts/verify-express-image-trust.sh bitgo/express:${{ github.sha }}
+
       - name: Test Express Docker image
         id: docker-test
         run: |
