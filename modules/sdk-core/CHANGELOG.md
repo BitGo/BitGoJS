@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [40.1.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4040.0.0...%40bitgo%2Fsdk-core%4040.1.0) (2026-10-21)
+
+### Bug Fixes
+
+* **sdk-core:** finalize MPCv2 message signing via GET, not POST /send ([80551c7](https://github.com/BitGo/BitGoJS/commit/80551c71d8dda3a4c869d5ec7b5fb88afc7c6f75))
+
+### Features
+
+* **sdk-coin-sol:** confidential transfer token enablement (Refs: CHALO-1883) ([f5a7ef5](https://github.com/BitGo/BitGoJS/commit/f5a7ef59723fe2a1698a1ade5941c10aa7ccc41a)), closes [#9968](https://github.com/BitGo/BitGoJS/issues/9968)
+
+
 # [40.0.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4039.1.0...%40bitgo%2Fsdk-core%4040.0.0) (2026-10-20)
 
 ### Bug Fixes
