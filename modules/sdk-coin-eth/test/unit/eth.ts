@@ -25,6 +25,7 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 import {
   AbstractEthLikeNewCoins,
   Erc20Token,
+  Erc721Token,
   Hteth,
   Teth,
   TransactionBuilder,
@@ -3342,6 +3343,83 @@ describe('ETH:', function () {
           }),
         (err) => err instanceof RecoveryKeyMismatchError && err.code === 'recovery_key_mismatch'
       );
+    });
+
+    it('should recover with a raw xprv userKey for Erc20Token and Erc721Token', async function () {
+      // any registered token works — the explorer is stubbed
+      const erc20Coin = Erc20Token.createTokenConstructors()[0].coinConstructor(bitgo) as Erc20Token;
+      const erc721Coin = Erc721Token.createTokenConstructors()[0].coinConstructor(bitgo) as Erc721Token;
+      const walletContractAddress = TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS as string;
+      const recoveryDestination = '0xd5ADdE17feD8baed3F32b84AF05B8F2816f7b560';
+      const passphrase = 'test wallet passphrase';
+      const encryptedBackupKey = await bitgo.encrypt({ input: testData.PRIVATE_KEY, password: passphrase });
+
+      for (const tokenCoin of [erc20Coin, erc721Coin]) {
+        const stub: sinon.SinonStub = sandbox.stub(tokenCoin, 'recoveryBlockchainExplorerQuery' as any);
+        stub.callsFake(async (query: Record<string, string>) => {
+          if (query.action === 'eth_call' && query.data?.startsWith('7df73e27')) {
+            return { result: '0x' + '00'.repeat(31) + '01' };
+          }
+          if (query.action === 'txlist') {
+            return { result: [] };
+          }
+          if (query.action === 'balance') {
+            return { result: '100000000000000000' };
+          }
+          if (query.action === 'tokenbalance') {
+            return { result: '1000' };
+          }
+          if (query.action === 'eth_call' && query.data?.startsWith('a0b7967b')) {
+            return { result: '0x' + '00'.repeat(31) + '01' };
+          }
+          throw new Error(`Unexpected explorer query: ${JSON.stringify(query)}`);
+        });
+
+        const tx = await tokenCoin.recover({
+          userKey: testData.PRIVATE_KEY,
+          backupKey: encryptedBackupKey,
+          walletPassphrase: passphrase,
+          walletContractAddress,
+          recoveryDestination,
+        });
+        should.exist(tx);
+        tx.should.have.property('id');
+        tx.should.have.property('tx');
+        stub.restore();
+      }
+    });
+
+    it('should throw RecoveryKeyMismatchError on signer mismatch for Erc20Token and Erc721Token', async function () {
+      // any registered token works — the explorer is stubbed
+      const erc20Coin = Erc20Token.createTokenConstructors()[0].coinConstructor(bitgo) as Erc20Token;
+      const erc721Coin = Erc721Token.createTokenConstructors()[0].coinConstructor(bitgo) as Erc721Token;
+      const walletContractAddress = TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS as string;
+      const recoveryDestination = '0xd5ADdE17feD8baed3F32b84AF05B8F2816f7b560';
+      const passphrase = 'test wallet passphrase';
+      const encryptedBackupKey = await bitgo.encrypt({ input: testData.PRIVATE_KEY, password: passphrase });
+
+      for (const tokenCoin of [erc20Coin, erc721Coin]) {
+        const stub: sinon.SinonStub = sandbox.stub(tokenCoin, 'recoveryBlockchainExplorerQuery' as any);
+        stub.callsFake(async (query: Record<string, string>) => {
+          if (query.action === 'eth_call' && query.data?.startsWith('7df73e27')) {
+            return { result: '0x' + '00'.repeat(32) };
+          }
+          throw new Error(`Unexpected explorer query: ${JSON.stringify(query)}`);
+        });
+
+        await assert.rejects(
+          async () =>
+            await tokenCoin.recover({
+              userKey: testData.PRIVATE_KEY,
+              backupKey: encryptedBackupKey,
+              walletPassphrase: passphrase,
+              walletContractAddress,
+              recoveryDestination,
+            }),
+          (err) => err instanceof RecoveryKeyMismatchError && err.code === 'recovery_key_mismatch'
+        );
+        stub.restore();
+      }
     });
   });
 
