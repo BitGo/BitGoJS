@@ -12,8 +12,8 @@ import {
   BaseCoin,
   BitGoBase,
   ErrorNoInputToRecover,
-  assertValidExternalEd25519Signature,
-  ExternalEd25519Signature,
+  assertValidExternalEd25519Signer,
+  ExternalEd25519Signer,
   InvalidAddressError,
   InvalidKey,
   KeyIndices,
@@ -22,6 +22,7 @@ import {
   ParseTransactionOptions,
   RecoveryKeyMismatchError,
   RecoveryProviderError,
+  signWithExternalEd25519Signer,
   SignedTransaction,
   SignTransactionOptions as BaseSignTransactionOptions,
   TokenManagementType,
@@ -150,7 +151,7 @@ export interface VerifiedTransactionParameters {
 }
 
 export interface RecoveryOptions {
-  backupKey: string;
+  backupKey?: string;
   userKey: string;
   rootAddress: string;
   recoveryDestination: string;
@@ -160,8 +161,13 @@ export interface RecoveryOptions {
   firstRound?: number;
   note?: string;
   nodeParams: NodeParams;
-  /** Optional pre-made signature for the backup child, whose signature must be over the transaction's `bytesToSign()`. */
-  externalBackupSignature?: ExternalEd25519Signature;
+  /**
+   * Optional lazy signer for a seedless soft ed25519 backup child (Safe slot-2). Unlike a pre-made
+   * signature, the signature is produced here once the transaction exists: the signer receives
+   * `tx.bytesToSign()` and returns a 64-byte ed25519 signature. The private halves never leave the
+   * caller's closure.
+   */
+  externalBackupSigner?: ExternalEd25519Signer;
 }
 
 interface RecoveryInfo {
@@ -855,7 +861,8 @@ export class Algo extends BaseCoin {
   }
 
   public async recover(params: RecoveryOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
-    const isUnsignedSweep = this.isValidPub(params.userKey) && this.isValidPub(params.backupKey);
+    const backupKey = params.backupKey;
+    const isUnsignedSweep = this.isValidPub(params.userKey) && backupKey !== undefined && this.isValidPub(backupKey);
 
     if (!params.nodeParams) {
       throw new Error('Please provide the details of an ALGO node to use for recovery');
@@ -887,10 +894,13 @@ export class Algo extends BaseCoin {
     const factory = new AlgoLib.TransactionBuilderFactory(coins.get('algo'));
     const txBuilder = factory.getTransferBuilder();
 
-    const externalBackupSignature = params.externalBackupSignature;
-    if (externalBackupSignature) {
-      assertValidExternalEd25519Signature(externalBackupSignature);
+    const externalBackupSigner = params.externalBackupSigner;
+    if (externalBackupSigner) {
+      assertValidExternalEd25519Signer(externalBackupSigner);
     }
+    // The backup child's pub: the one value needed to locate the backup slot, whether the backup
+    // signs externally (lazy signer) or from a decrypted seed.
+    const externalBackupPub = externalBackupSigner?.publicKey;
     let userPrv: string | undefined;
     let backupPrv: string | undefined;
     let userKeyAddress: string;
@@ -902,10 +912,13 @@ export class Algo extends BaseCoin {
       try {
         userPrv = await this.bitgo.decrypt({ input: params.userKey, password: params.walletPassphrase });
         userKeyAddress = Utils.privateKeyToAlgoAddress(userPrv);
-        if (externalBackupSignature) {
-          backupKeyAddress = algosdk.encodeAddress(Buffer.from(externalBackupSignature.publicKey, 'hex'));
+        if (externalBackupPub) {
+          backupKeyAddress = algosdk.encodeAddress(Buffer.from(externalBackupPub, 'hex'));
         } else {
-          backupPrv = await this.bitgo.decrypt({ input: params.backupKey, password: params.walletPassphrase });
+          if (!backupKey) {
+            throw new Error('backupKey is required for non-bitgo recovery when no external backup signer is provided');
+          }
+          backupPrv = await this.bitgo.decrypt({ input: backupKey, password: params.walletPassphrase });
           backupKeyAddress = Utils.privateKeyToAlgoAddress(backupPrv);
         }
       } catch (e) {
@@ -915,8 +928,11 @@ export class Algo extends BaseCoin {
       }
       txBuilder.numberOfRequiredSigners(2).setSigners([userKeyAddress, backupKeyAddress, params.bitgoKey]);
     } else {
+      if (!backupKey) {
+        throw new Error('backupKey is required for an unsigned sweep');
+      }
       userKeyAddress = this.stellarAddressToAlgoAddress(params.userKey);
-      backupKeyAddress = this.stellarAddressToAlgoAddress(params.backupKey);
+      backupKeyAddress = this.stellarAddressToAlgoAddress(backupKey);
     }
 
     // Make sure the recovery keys are the on-chain signers of the wallet, before any node call.
@@ -994,6 +1010,9 @@ export class Algo extends BaseCoin {
 
     // Cold wallet, offline vault
     if (isUnsignedSweep) {
+      if (!backupKey) {
+        throw new Error('backupKey is required for an unsigned sweep');
+      }
       const tx = await txBuilder.build();
       const txJson = tx.toJson() as TxData;
 
@@ -1001,7 +1020,7 @@ export class Algo extends BaseCoin {
         txHex: Buffer.from(tx.toBroadcastFormat()).toString('hex'),
         type: txJson.type,
         userKey: params.userKey,
-        backupKey: params.backupKey,
+        backupKey,
         bitgoKey: params.bitgoKey,
         address: params.rootAddress,
         coin: this.getChain(),
@@ -1012,22 +1031,35 @@ export class Algo extends BaseCoin {
         genesisId: genesisId,
         genesisHash: genesisHash,
         note: txJson.note ? Buffer.from(txJson.note.buffer).toString('utf-8') : undefined,
-        keys: [params.userKey, params.backupKey, params.bitgoKey],
+        keys: [params.userKey, backupKey, params.bitgoKey],
         addressVersion: 1,
       };
     }
 
     // Non-bitgo Recovery (Hot wallets)
     txBuilder.sign({ key: userPrv });
-    if (!externalBackupSignature) {
+    if (!externalBackupPub) {
       txBuilder.sign({ key: backupPrv });
     }
 
     const tx = (await txBuilder.build()) as AlgoLib.Transaction;
 
-    if (externalBackupSignature) {
-      const { publicKey, signature } = externalBackupSignature;
-      tx.addRawMultisigSignature(algosdk.encodeAddress(Buffer.from(publicKey, 'hex')), Buffer.from(signature, 'hex'));
+    if (externalBackupSigner) {
+      // Slot-2 Safe recovery: the seedless backup child signs lazily, over the exact transaction the
+      // user key just signed. Signing anything earlier would run the risk of covering different bytes
+      // (e.g. a different round) than the transaction that actually gets built.
+      const algoTransaction = tx.getAlgoTransaction();
+      if (!algoTransaction) {
+        throw new Error('failed to build the Algorand transaction for the external backup signature');
+      }
+      // signWithExternalEd25519Signer validates the pub, the 64-byte shape, and that the signature
+      // verifies against the advertised pub — all shared, no per-coin reimplementation.
+      const message = algoTransaction.bytesToSign();
+      const signature = await signWithExternalEd25519Signer(externalBackupSigner, message);
+      tx.addRawMultisigSignature(
+        algosdk.encodeAddress(Buffer.from(externalBackupSigner.publicKey, 'hex')),
+        Buffer.from(signature, 'hex')
+      );
     }
     const txJson = tx.toJson() as TxData;
 

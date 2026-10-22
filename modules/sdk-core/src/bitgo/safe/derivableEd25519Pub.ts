@@ -10,6 +10,7 @@
  */
 
 import { createHash } from 'crypto';
+import * as nacl from 'tweetnacl';
 import {
   Ed25519BIP32,
   Eddsa,
@@ -28,7 +29,7 @@ import {
 
 /** Ed25519 extended-key halves + public point, parameterised by encoding (Buffer raw, string hex). */
 export type Ed25519ExtendedKeyParts<T> = {
-  readonly kL: T; // clamped signing scalar
+  readonly kL: T; // signing scalar, reduced mod L
   readonly kR: T; // nonce prefix
   readonly pub: T; // 32-byte public key
 };
@@ -62,7 +63,7 @@ export async function softDeriveChildPubEd25519(compositePub: string, index: num
 
 /**
  * Soft-derive an ed25519 co-signer child at an unhardened path, returning the private
- * extended-key material — the clamped scalar `kL`, the nonce prefix `kR`, and the matching
+ * extended-key material — the reduced-mod-L scalar `kL`, the nonce prefix `kR`, and the matching
  * public point — from a root secret seed plus the root chain code carried on the keycard.
  */
 export async function softDeriveChildPrvEd25519AtPath(params: {
@@ -98,10 +99,10 @@ export async function softDeriveChildPrvEd25519AtPath(params: {
  *
  * A soft-derived child has no 32-byte seed whose SHA-512 yields `(kL, kR)`, so the
  * seed-based `nacl.sign.keyPair.fromSeed` cannot sign for it. This performs RFC 8032
- * scalar signing straight from the clamped scalar `kL` and the nonce prefix `kR`.
+ * scalar signing straight from the reduced-mod-L scalar `kL` and the nonce prefix `kR`.
  *
  * @param message bytes to sign
- * @param kL 32-byte clamped signing scalar (little-endian)
+ * @param kL 32-byte signing scalar, reduced mod L (little-endian)
  * @param kR 32-byte nonce prefix (big-endian)
  * @returns 64-byte Ed25519 signature `R ‖ S`
  */
@@ -149,4 +150,51 @@ export function assertValidExternalEd25519Signature(sig: ExternalEd25519Signatur
   if (!/^[0-9a-f]{128}$/i.test(sig.signature)) {
     throw new Error('Invalid external Ed25519 signature: expected 64 bytes (128 hex characters)');
   }
+}
+
+/**
+ * A lazily-invoked external Ed25519 signer. Carries the public key up front and produces the
+ * signature on demand, once the message it must cover exists — unlike `ExternalEd25519Signature`,
+ * which is a pre-made signature. Used for seedless soft-derived backup children whose signature
+ * must cover transaction bytes that only exist at `recover()` time.
+ */
+export type ExternalEd25519Signer = {
+  readonly publicKey: string; // raw 32-byte public key (hex)
+  readonly sign: (message: Uint8Array) => Promise<{ signature: string }>; // raw 64-byte signature (hex)
+};
+
+/** Fails fast if an `ExternalEd25519Signer` is missing or mis-shaped. */
+export function assertValidExternalEd25519Signer(signer: ExternalEd25519Signer): void {
+  if (!/^[0-9a-f]{64}$/i.test(signer.publicKey)) {
+    throw new Error('Invalid external Ed25519 public key: expected 32 bytes (64 hex characters)');
+  }
+  if (typeof signer.sign !== 'function') {
+    throw new Error('Invalid external Ed25519 signer: sign must be a function');
+  }
+}
+
+/**
+ * Calls an `ExternalEd25519Signer` over `message`, fails fast unless the signature is a valid
+ * 64-byte (128-hex) signature that verifies against the signer's advertised public key, and
+ * returns the hex signature. The cryptographic check lives here — once, shared by every coin —
+ * so no caller can inject a well-formed-but-wrong signature into a transaction.
+ */
+export async function signWithExternalEd25519Signer(
+  signer: ExternalEd25519Signer,
+  message: Uint8Array
+): Promise<string> {
+  assertValidExternalEd25519Signer(signer);
+  const result = await signer.sign(message);
+  if (!result || typeof result.signature !== 'string') {
+    throw new Error('Invalid external Ed25519 signer: sign must resolve to { signature: string }');
+  }
+  if (!/^[0-9a-f]{128}$/i.test(result.signature)) {
+    throw new Error('Invalid external Ed25519 signature: expected 64 bytes (128 hex characters)');
+  }
+  const signature = Buffer.from(result.signature, 'hex');
+  const publicKey = Buffer.from(signer.publicKey, 'hex');
+  if (!nacl.sign.detached.verify(message, signature, publicKey)) {
+    throw new Error('Invalid external Ed25519 signer: signature does not verify against its public key');
+  }
+  return result.signature;
 }

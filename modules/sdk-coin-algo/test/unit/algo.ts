@@ -19,6 +19,7 @@ import {
 } from '@bitgo/sdk-core';
 import { algoBackupKey } from './fixtures/algoBackupKey';
 import nock from 'nock';
+import * as nacl from 'tweetnacl';
 
 describe('ALGO:', function () {
   let bitgo: TestBitGoAPI;
@@ -832,13 +833,23 @@ describe('ALGO:', function () {
         txJson.fee.should.equal(fee);
       });
 
-      it('should sign with an external backup signature without decrypting the backup key', async function () {
+      it('should sign with an external backup signer without decrypting the backup key', async function () {
         const getBalanceStub = sandBox.stub(Algo.prototype, 'getAccountBalance').resolves(nativeBalance);
+        // The backup seed is decrypted here in the test, not by recover(); the signer closure below
+        // holds it and signs the tx bytes lazily, exactly as the Safe slot-2 flow hands the seedless
+        // backup child to `buildSafeRecoverKeyParams`.
+        const backupPrv = await bitgo.decrypt({ input: backupKey, password: walletPassphrase });
+        const backupKeyPair = new AlgoLib.KeyPair({ prv: backupPrv });
+        const backupKeyPairPrv = backupKeyPair.getKeys().prv;
+        if (!backupKeyPairPrv) {
+          throw new Error('invalid fixture: backup key pair must have a private key');
+        }
+        const backupSeedBytes = Buffer.from(backupKeyPairPrv, 'hex');
+        const backupSecretKey = nacl.sign.keyPair.fromSeed(new Uint8Array(backupSeedBytes)).secretKey;
         const decryptSpy = sandBox.spy(bitgo, 'decrypt');
 
         const recovery = await basecoin.recover({
           userKey,
-          backupKey,
           rootAddress,
           walletPassphrase,
           fee,
@@ -846,15 +857,97 @@ describe('ALGO:', function () {
           recoveryDestination: recoveryDestination,
           firstRound: 5002596,
           nodeParams,
-          externalBackupSignature: {
+          externalBackupSigner: {
+            // raw 32-byte form of `backupPub` (6FVGZUZOH…) — the same key the multisig address embeds
             publicKey: 'f16a6cd32e3e6579cc315db23b9b12b56b86b799249046648c40522a04e2e8bf',
-            signature: 'ab'.repeat(64),
+            sign: async (message: Uint8Array) => ({
+              signature: Buffer.from(nacl.sign.detached(message, backupSecretKey)).toString('hex'),
+            }),
           },
         });
 
         recovery.should.have.property('tx');
         getBalanceStub.callCount.should.equal(1);
+        // only the user key is decrypted by recover(); the backup signed through the closure
         decryptSpy.callCount.should.equal(1);
+      });
+
+      it('calls the lazy signer with the tx bytes and rejects a non-verifying signature', async function () {
+        const getBalanceStub = sandBox.stub(Algo.prototype, 'getAccountBalance').resolves(nativeBalance);
+        const decryptSpy = sandBox.spy(bitgo, 'decrypt');
+
+        const signedMessages: Uint8Array[] = [];
+        await assert.rejects(
+          () =>
+            basecoin.recover({
+              userKey,
+              rootAddress,
+              walletPassphrase,
+              fee,
+              bitgoKey: bitgoPub,
+              recoveryDestination: recoveryDestination,
+              firstRound: 5002596,
+              nodeParams,
+              externalBackupSigner: {
+                // raw 32-byte form of `backupPub` (6FVGZUZOH…) — the same key the multisig address embeds
+                publicKey: 'f16a6cd32e3e6579cc315db23b9b12b56b86b799249046648c40522a04e2e8bf',
+                sign: async (message: Uint8Array) => {
+                  signedMessages.push(message);
+                  return { signature: 'ab'.repeat(64) };
+                },
+              },
+            }),
+          /does not verify against its public key/
+        );
+
+        getBalanceStub.callCount.should.equal(1);
+        // only the user key is decrypted; the seedless backup child is signed by the closure
+        decryptSpy.callCount.should.equal(1);
+        signedMessages.should.have.length(1);
+        signedMessages[0].should.be.an.instanceOf(Uint8Array);
+        signedMessages[0].length.should.be.greaterThan(0);
+      });
+
+      it('rejects a lazy external backup signer with a malformed public key or signature', async function () {
+        sandBox.stub(Algo.prototype, 'getAccountBalance').resolves(nativeBalance);
+
+        await assert.rejects(
+          () =>
+            basecoin.recover({
+              userKey,
+              rootAddress,
+              walletPassphrase,
+              fee,
+              bitgoKey: bitgoPub,
+              recoveryDestination: recoveryDestination,
+              firstRound: 5002596,
+              nodeParams,
+              externalBackupSigner: {
+                publicKey: 'not-hex',
+                sign: async () => ({ signature: 'ab'.repeat(64) }),
+              },
+            }),
+          /expected 32 bytes/
+        );
+
+        await assert.rejects(
+          () =>
+            basecoin.recover({
+              userKey,
+              rootAddress,
+              walletPassphrase,
+              fee,
+              bitgoKey: bitgoPub,
+              recoveryDestination: recoveryDestination,
+              firstRound: 5002596,
+              nodeParams,
+              externalBackupSigner: {
+                publicKey: 'f16a6cd32e3e6579cc315db23b9b12b56b86b799249046648c40522a04e2e8bf',
+                sign: async () => ({ signature: 'ab' }),
+              },
+            }),
+          /expected 64 bytes/
+        );
       });
 
       it('should throw for invalid rootAddress', async function () {
