@@ -52,8 +52,10 @@ export function getDefaultVersionGroupIdForVersion(version: number): number {
 }
 
 export function getDefaultConsensusBranchIdForVersion(network: ZcashNetwork, version: number): number {
-  // Testnet has not yet activated NU6.2 (testnet activation block 4052000), so keep
-  // defaulting to NU6.1 there. Mainnet activated NU6.2 at block 3364600.
+  // Deprecated legacy path: this utxolib backend is not height-aware and is frozen at
+  // NU6.1-era testnet / NU6.2-era mainnet defaults. Height-correct Zcash construction
+  // (NU6.2, NU6.3/Ironwood, NU7) lives in @bitgo/wasm-utxo. Testnet has long since
+  // activated NU6.2 (block 4052000) and NU7 (block 4465026).
   if (network === networks.zcashTest) {
     if (version === 4 || version === 5) {
       return NU6_1_BRANCH_ID;

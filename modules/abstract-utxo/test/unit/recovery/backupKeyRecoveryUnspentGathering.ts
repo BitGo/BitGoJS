@@ -131,6 +131,10 @@ describe('Backup Key Recovery - Unspent Gathering', function () {
           ...keysFullSignedRecovery,
           recoveryProvider: mockProvider,
           feeRate: defaultFeeRateSatB,
+          // Zcash: exercise v4 recovery mechanics at a historical pre-NU7 height
+          // (ignored by non-Zcash coins). The production default is the NU7
+          // activation height, at which a v4 build is rejected per ZIP-2003.
+          blockHeight: 3146400,
         });
 
         // Verify recovery succeeded (transaction hex indicates unspents were gathered)
