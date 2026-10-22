@@ -2255,5 +2255,11 @@ export class Sol extends BaseCoin {
     if (params.solVersionedTransactionData) {
       intent.solVersionedTransactionData = params.solVersionedTransactionData;
     }
+
+    // Wire-version marker for structured intents (SIMD-0296/0385). Wallet Platform
+    // selects the v1 server-side builder when the payment intent carries version: 1.
+    if (params.version !== undefined) {
+      intent.version = params.version;
+    }
   }
 }

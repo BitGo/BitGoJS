@@ -173,6 +173,12 @@ export interface PrebuildTransactionOptions {
    * This feature is supported only for specific coins, like ADA.
    */
   senderAddress?: string;
+  /**
+   * Solana wire-version marker for structured intents (SIMD-0296/0385): 1 builds the
+   * v1 envelope server-side, 0/absent keeps the v0 path. Forwarded to the intent as
+   * `version`; only the SOL coin consumes it.
+   */
+  version?: 0 | 1;
 
   /**
    * User IDs of the Video ID approvers selected for this withdrawal. Each must be in the enterprise's
