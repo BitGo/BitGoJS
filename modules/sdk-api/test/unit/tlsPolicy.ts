@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import * as nock from 'nock';
 import { execFileSync } from 'child_process';
 import * as fs from 'fs';
 import * as http from 'http';
@@ -103,6 +104,7 @@ describe('BitGo TLS policy', function () {
   const servers: https.Server[] = [];
 
   before(function () {
+    nock.enableNetConnect();
     dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tls-policy-'));
     trusted = makePki(dir, 'trusted');
     rogue = makePki(dir, 'rogue');
@@ -113,6 +115,7 @@ describe('BitGo TLS policy', function () {
   });
 
   after(function () {
+    nock.disableNetConnect();
     fs.rmSync(dir, { recursive: true, force: true });
   });
 
