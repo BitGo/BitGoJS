@@ -4540,6 +4540,8 @@ export class Wallet implements IWallet {
             feeOptions,
             feeToken: params.feeToken,
             custodianTransactionId: params.custodianTransactionId,
+            // SIMD-0296/0385 wire version for structured intents (SOL only).
+            version: params.version,
             unspents: params.unspents,
             senderAddress: params.senderAddress,
             isTestTransaction: params.isTestTransaction,

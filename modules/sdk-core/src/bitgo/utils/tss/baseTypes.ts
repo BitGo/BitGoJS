@@ -383,6 +383,11 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
    */
   solVersionedTransactionData?: SolVersionedTransactionData;
   /**
+   * Solana wire-version marker for structured intents (SIMD-0296/0385): 1 selects the
+   * v1 envelope. Forwarded to the intent as `version`.
+   */
+  version?: 0 | 1;
+  /**
    * Custom transaction parameters for Aptos entry function calls.
    * Used with the customTx intent type for Aptos smart contract interactions.
    */
@@ -507,6 +512,10 @@ export interface PopulatedIntent extends PopulatedIntentBase, DefiIntentFields {
    * Contains compiled instructions, Address Lookup Tables, and static account keys.
    */
   solVersionedTransactionData?: SolVersionedTransactionData;
+  /**
+   * Solana wire-version marker for structured intents (SIMD-0296/0385): 1 = v1 envelope.
+   */
+  version?: 0 | 1;
   /**
    * Custom Aptos transaction for use with the customTx intent type.
    */
