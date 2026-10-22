@@ -39,6 +39,8 @@ describe('Broadridge Settlement Authorization Builder', function () {
     });
     assert.equal(request.broadridge?.standard, 'CIP-56');
     assert.equal(request.broadridge?.role, 'client');
+    assert.equal(request.broadridge?.client, client);
+    assert.equal(request.broadridge?.executor, executor);
     assert.equal(request.broadridge?.entityName, 'StandingDelegationImpl_v1');
   });
 

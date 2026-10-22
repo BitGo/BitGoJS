@@ -31,7 +31,7 @@ export interface DecodedCantonTransaction {
   choice?: string;
   /** Contract ID being exercised — present for ExerciseCommand only */
   contractId?: string;
-  /** Parties acting on this command — present for ExerciseCommand only */
+  /** Parties acting on this command — submitter actAs for CreateCommand, root acting parties for ExerciseCommand */
   actingParties?: string[];
 }
 
