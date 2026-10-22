@@ -66,6 +66,7 @@ import {
 import { handlePayLightningInvoice } from './lightning/lightningInvoiceRoutes';
 import { handleUpdateLightningWalletCoinSpecific } from './lightning/lightningWalletRoutes';
 import { ProxyAgent } from 'proxy-agent';
+import { getBitGoTlsPolicy } from './tlsPolicy';
 import { isLightningCoinName } from '@bitgo/abstract-lightning';
 import { handleLightningWithdraw } from './lightning/lightningWithdrawRoutes';
 import createExpressRouter from './typedRoutes';
@@ -1803,6 +1804,7 @@ function parseBody(req: express.Request, res: express.Response, next: express.Ne
  */
 function prepareBitGo(config: Config) {
   const { env, customRootUri, customBitcoinNetwork } = config;
+  const tlsPolicy = getBitGoTlsPolicy(config);
 
   return function prepBitGo(req: express.Request, res: express.Response, next: express.NextFunction) {
     // Get access token
@@ -1824,6 +1826,7 @@ function prepareBitGo(config: Config) {
       customBitcoinNetwork,
       accessToken,
       userAgent,
+      tlsPolicy,
       ...(useProxyUrl
         ? {
             customProxyAgent: new ProxyAgent({

@@ -196,6 +196,33 @@ BitGo Express currently supports the following proxy protocols:
 - SOCKSv5
 - PAC
 
+### Restricting trust for BitGo connections
+
+By default BitGo Express trusts every certificate authority (CA) in the Node.js system store for all outbound HTTPS. `NODE_EXTRA_CA_CERTS` can only add trust, so it cannot remove a compromised CA. To shrink the blast radius of a CA compromise, Express can apply a stricter policy to BitGo hostnames only; every other destination (external signer, block explorers, webhooks, KMS) keeps using the system store.
+
+- `BITGO_CA_BUNDLE_PATH`: PEM file with the CAs allowed to issue certificates for BitGo hostnames. It replaces the system store for those hostnames.
+- `BITGO_SPKI_PINS`: optional comma-separated base64 SHA-256 digests of SubjectPublicKeyInfo. At least one certificate in the presented chain (leaf, intermediate or root) must match. Pinning a CA or intermediate key survives routine leaf rotation.
+- `BITGO_TLS_HOSTS`: extra hostnames covered by the policy. The host of the configured BitGo URL (`BITGO_ENV` or `BITGO_CUSTOM_ROOT_URI`) is always covered. Use this for any additional BitGo API hostname (CDN or regional) you use.
+
+Behavior to know before enabling:
+
+- **Redirects are not followed** for requests to policy hosts, so a redirect cannot move a request onto a host outside the policy. A 3xx from BitGo surfaces as an error.
+- **Cannot be combined with `BITGO_USE_PROXY`**; Express refuses to start, because a proxy agent owns the TLS connection and would bypass the policy.
+- **A bad bundle or pin set blocks all BitGo traffic.** Express reads the bundle at startup and fails fast if it is missing or has no certificates, but a bundle that is valid yet lacks BitGo's current issuer fails at connection time.
+
+Generate a pin from a certificate with:
+
+```shell
+openssl x509 -in cert.pem -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64
+```
+
+Rotation runbook:
+
+1. Before a CA or key change at BitGo, add the new CA to the bundle and the new key's pin to `BITGO_SPKI_PINS` alongside the current ones, and deploy. Both old and new chains now validate.
+2. After BitGo has cut over and traffic is healthy, remove the retired CA and pin.
+3. Rollback: unset `BITGO_CA_BUNDLE_PATH` and `BITGO_SPKI_PINS` and restart; Express returns to the system store.
+4. Ownership: whoever operates the Express deployment owns the bundle and pins. Alert on a rise in outbound TLS errors (`UNABLE_TO_GET_ISSUER_CERT`, `SPKI pin`) and track the expiry of every CA in the bundle.
+
 ### External Signing Mode
 
 BitGo Express can be run in an external signing mode, where the signing of transactions is performed in a separate instance of BitGo Express that has access to the private keys.
@@ -239,6 +266,9 @@ BitGo Express is able to take configuration options from either command line arg
 | N/A             | --lightningSignerFileSystemPath | `BITGO_LIGHTNING_SIGNER_FILE_SYSTEM_PATH` | N/A           | Local path specifying how to contact the lightning signer node.                                                                                                                                                                                                                                                                                      |
 | N/A             | --keepalivetimeout              | `BITGO_KEEP_ALIVE_TIMEOUT`                | N/A           | BitGo Express server KeepAliveTimeout node.                                                                                                                                                                                                                                                                                                          |
 | N/A             | --headerstimeout                | `BITGO_HEADERS_TIMEOUT`                   | N/A           | BitGo Express server HeadersTimeout node.                                                                                                                                                                                                                                                                                                            |
+| N/A             | --bitgocabundlepath             | `BITGO_CA_BUNDLE_PATH`                    | N/A           | Path to a PEM file of the only CAs trusted for BitGo hostnames. See [Restricting trust for BitGo connections](#restricting-trust-for-bitgo-connections).                                                                                                                                                                                             |
+| N/A             | --bitgospkipins                 | `BITGO_SPKI_PINS`                         | N/A           | Comma-separated base64 SHA-256 SPKI pins for BitGo hostnames. Include a backup pin.                                                                                                                                                                                                                                                                  |
+| N/A             | --bitgotlshosts                 | `BITGO_TLS_HOSTS`                         | N/A           | Comma-separated extra hostnames the policy applies to. Defaults to the host of the configured BitGo URL. A leading dot matches subdomains.                                                                                                                                                                                                           |
 
 \[0]: BitGo will also check the additional environment variables for some options for backwards compatibility, but these environment variables should be considered deprecated:
 

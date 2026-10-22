@@ -1,4 +1,5 @@
 import { EncryptionVersion, EnvironmentName, IRequestTracer, V1Network } from '@bitgo/sdk-core';
+import { type BitGoTlsPolicy } from './tlsPolicy';
 import { ECPairInterface } from '@bitgo/utxo-lib';
 import { type Agent } from 'http';
 
@@ -61,6 +62,11 @@ export interface BitGoAPIOptions {
   soneiumExplorerApiToken?: string;
   hmacVerification?: boolean;
   customProxyAgent?: Agent;
+  /**
+   * Restricts the CAs (and optionally public keys) accepted for BitGo hostnames. Cannot be combined with
+   * `customProxyAgent`, because a proxy agent owns the TLS connection and would bypass the policy.
+   */
+  tlsPolicy?: BitGoTlsPolicy;
   refreshToken?: string;
   serverXpub?: string;
   stellarFederationServerUrl?: string;
