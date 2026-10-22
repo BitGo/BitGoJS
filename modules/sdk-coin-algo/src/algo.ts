@@ -170,6 +170,10 @@ export interface RecoveryOptions {
   externalBackupSigner?: ExternalEd25519Signer;
 }
 
+/**
+ * Signed recovery result. Optional key/account fields are populated for Safe recovery when
+ * `externalBackupSigner` is supplied. They expose only public material.
+ */
 interface RecoveryInfo {
   id: string;
   tx: string;
@@ -180,6 +184,14 @@ interface RecoveryInfo {
   genesisId: string;
   genesisHash: string;
   note?: string;
+  /** Derived user public key encoded as an ALGO address, never the encrypted `userKey` input. */
+  userKey?: string;
+  /** Derived backup public key encoded as an ALGO address, not a private key or seed. */
+  backupKey?: string;
+  /** BitGo public key encoded as an ALGO address. */
+  bitgoKey?: string;
+  /** Wallet address requiring two of the three keys to authorize a transfer; not an individual key. */
+  rootAddress?: string;
 }
 
 export interface OfflineVaultTxInfo {
@@ -1073,6 +1085,14 @@ export class Algo extends BaseCoin {
       genesisId: genesisId,
       genesisHash: genesisHash,
       note: txJson.note ? Buffer.from(txJson.note.buffer).toString('utf-8') : undefined,
+      ...(externalBackupSigner
+        ? {
+            userKey: userKeyAddress,
+            backupKey: backupKeyAddress,
+            bitgoKey: this.stellarAddressToAlgoAddress(params.bitgoKey),
+            rootAddress: params.rootAddress,
+          }
+        : {}),
     };
   }
 

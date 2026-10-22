@@ -20,6 +20,8 @@ import {
   toSoftTwinPath,
   algoMultisigAddress,
   encodeAlgoKey,
+  encodeHbarPublicKeyDer,
+  encodeHbarPrivateKeyDer,
   type SafeKeycardRootEntry,
 } from '@bitgo/sdk-lib-safes';
 import {
@@ -103,7 +105,8 @@ export type SecpSafeRecoverKeyParams = {
  * `rootAddress` is the wallet's on-chain address. For ALGO it's the 2-of-3 multisig address over the
  * three child pubs — derivable here, but `recover()` still requires it as input. Note this is
  * *derived*, not independently verified against a known wallet address; callers with a recorded
- * address should cross-check it themselves.
+ * address should cross-check it themselves. For HBAR this field is omitted so the caller's
+ * network-assigned account ID is preserved when the key params are spread into a recovery request.
  */
 export type Ed25519SafeRecoverKeyParams =
   | {
@@ -112,7 +115,7 @@ export type Ed25519SafeRecoverKeyParams =
       userKey: string;
       bitgoKey: string;
       walletPassphrase: string;
-      rootAddress: string;
+      rootAddress?: string;
       /**
        * Lazy signer for the seedless backup child. The backup child has no seed, so it cannot be
        * seed-signed; and its signature must cover `tx.bytesToSign()`, which only exists once
@@ -127,7 +130,7 @@ export type Ed25519SafeRecoverKeyParams =
       userKey: string;
       backupKey: string;
       bitgoKey: string;
-      rootAddress: string;
+      rootAddress?: string;
     };
 
 export type SafeRecoverKeyParams = SecpSafeRecoverKeyParams | Ed25519SafeRecoverKeyParams;
@@ -295,14 +298,28 @@ export async function deriveSafeWalletKeys(params: {
 /**
  * Per-coin encoders for the `ed25519Multisig` slot: each slot-2 coin re-encodes the same 32-byte
  * children into its own address/seed string formats. A coin absent from the registry is not yet
- * supported for slot-2 recovery (xlm/hbar are future arms).
+ * supported for slot-2 recovery (xlm is a future arm).
  */
+const ALGO_ENCODERS = {
+  encodePub: encodeAlgoKey,
+  encodeSeed: encodeAlgoKey,
+  deriveRootAddress: (userPub: Buffer, backupPub: Buffer, bitgoPub: Buffer) =>
+    algoMultisigAddress(1, 2, [userPub, backupPub, bitgoPub]),
+};
+
 const ED25519_MULTISIG_COIN_ENCODERS: Record<
   string,
-  { encodePub: (bytes: Buffer) => string; encodeSeed: (bytes: Buffer) => string } | undefined
+  | {
+      encodePub: (bytes: Buffer) => string;
+      encodeSeed: (bytes: Buffer) => string;
+      deriveRootAddress?: (userPub: Buffer, backupPub: Buffer, bitgoPub: Buffer) => string;
+    }
+  | undefined
 > = {
-  algo: { encodePub: encodeAlgoKey, encodeSeed: encodeAlgoKey },
-  talgo: { encodePub: encodeAlgoKey, encodeSeed: encodeAlgoKey },
+  algo: ALGO_ENCODERS,
+  talgo: ALGO_ENCODERS,
+  hbar: { encodePub: encodeHbarPublicKeyDer, encodeSeed: encodeHbarPrivateKeyDer },
+  thbar: { encodePub: encodeHbarPublicKeyDer, encodeSeed: encodeHbarPrivateKeyDer },
 };
 
 /**
@@ -325,7 +342,8 @@ export type SafeRecoverKeyParamsRequest = {
  * Builds the key fields `coin.recover()` expects from derived Safe child keys.
  * Supports `secp256k1Multisig` (slot 1) and `ed25519Multisig` (slot 2); the MPC slots fail closed.
  * Signed mode re-encrypts the child secrets under a fresh ephemeral passphrase (v1/SJCL); unsigned
- * mode returns pubs. `rootAddress` is derived from the child keys, not independently verified.
+ * mode returns pubs. Where supported, `rootAddress` is derived from the child keys, not independently
+ * verified; otherwise it is omitted so the caller can supply it.
  */
 export async function buildSafeRecoverKeyParams(
   params: Extract<SafeRecoverKeyParamsRequest, { slot: 'secp256k1Multisig' }>
@@ -400,10 +418,11 @@ async function buildEd25519MultisigRecoverKeyParams(
   const backupPub = Buffer.from(keys.backup.pub, 'hex');
   const bitgoPub = Buffer.from(keys.bitgo.pub, 'hex');
 
-  // Algorand wallet addresses are the version-1 2-of-3 multisig address over the three child pubs
-  // in wallet-creation order. `Algo.recover()` recomputes and enforces the same value and throws
-  // `RecoveryKeyMismatchError` on any mismatch (sdk-coin-algo/src/algo.ts).
-  const rootAddress = algoMultisigAddress(1, 2, [userPub, backupPub, bitgoPub]);
+  // The root address is derivable from child pubs for ALGO (version-1 2-of-3 multisig), but
+  // not for HBAR (Hedera account IDs are network-assigned). Each coin declares, via its registry
+  // entry, whether it can derive one; the caller supplies it otherwise.
+  const rootAddress = encoders.deriveRootAddress?.(userPub, backupPub, bitgoPub);
+  const rootAddressParams = rootAddress === undefined ? {} : { rootAddress };
 
   if (mode === 'unsigned') {
     return {
@@ -412,7 +431,7 @@ async function buildEd25519MultisigRecoverKeyParams(
       userKey: encoders.encodePub(userPub),
       backupKey: encoders.encodePub(backupPub),
       bitgoKey: encoders.encodePub(bitgoPub),
-      rootAddress,
+      ...rootAddressParams,
     };
   }
 
@@ -432,7 +451,7 @@ async function buildEd25519MultisigRecoverKeyParams(
     userKey,
     bitgoKey: encoders.encodePub(bitgoPub),
     walletPassphrase,
-    rootAddress,
+    ...rootAddressParams,
     externalBackupSigner: {
       publicKey: keys.backup.pub,
       sign: async (message) => ({

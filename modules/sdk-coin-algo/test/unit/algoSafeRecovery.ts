@@ -1,3 +1,4 @@
+import assert from 'assert';
 import should from 'should';
 import { Talgo } from '../../src';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
@@ -10,6 +11,7 @@ import {
   deriveSafeWalletKeys,
   encodeDerivableEd25519Pub,
   encodeEd25519ChainCode,
+  RecoveryKeyMismatchError,
   type DecryptedSafeRoots,
 } from '@bitgo/sdk-core';
 import algosdk from 'algosdk';
@@ -25,13 +27,18 @@ import algosdk from 'algosdk';
  */
 describe('Safe ALGO recovery end-to-end', function () {
   let bitgo: TestBitGoAPI;
-  let basecoin;
+  let basecoin: Algo;
+  const sandbox = Sinon.createSandbox();
+
+  afterEach(function () {
+    sandbox.restore();
+  });
 
   before(function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
     bitgo.safeRegister('talgo', Talgo.createInstance);
     bitgo.initializeTestVars();
-    basecoin = bitgo.coin('talgo');
+    basecoin = bitgo.coin('talgo') as Algo;
   });
 
   // The ed25519Multisig root fixture the sdk-core unit tests pin (with a distinct BitGo root, so the
@@ -72,7 +79,6 @@ describe('Safe ALGO recovery end-to-end', function () {
   const recoveryDestination = 'GB3YETD5TSTBAIYGYHVWU3O3I7XGOB44HOZA5MOEF5M23CLLZKRQLEVAOA';
 
   it('recovers a Safe ALGO wallet whose rootAddress equals multisigAddress(1,2,[user,backup,bitgo])', async function () {
-    const sandbox = Sinon.createSandbox();
     sandbox.stub(Algo.prototype, 'getAccountBalance').resolves(nativeBalance);
 
     const roots = ed25519Roots();
@@ -106,7 +112,8 @@ describe('Safe ALGO recovery end-to-end', function () {
         algosdk.encodeAddress(Buffer.from(derived.keys.bitgo.pub, 'hex')),
       ],
     });
-    keyParams.rootAddress.should.equal(expectedRoot);
+    assert(keyParams.rootAddress);
+    assert.strictEqual(keyParams.rootAddress, expectedRoot);
 
     const recovery = await basecoin.recover({
       userKey: keyParams.userKey,
@@ -120,19 +127,64 @@ describe('Safe ALGO recovery end-to-end', function () {
       externalBackupSigner: keyParams.externalBackupSigner,
     });
 
+    assert('tx' in recovery);
     recovery.should.have.property('tx');
+    assert.strictEqual(recovery.userKey, algosdk.encodeAddress(Buffer.from(derived.keys.user.pub, 'hex')));
+    assert.strictEqual(recovery.backupKey, algosdk.encodeAddress(Buffer.from(derived.keys.backup.pub, 'hex')));
+    assert.strictEqual(recovery.bitgoKey, algosdk.encodeAddress(Buffer.from(derived.keys.bitgo.pub, 'hex')));
+    assert.strictEqual(recovery.rootAddress, expectedRoot);
+    assert.notStrictEqual(recovery.userKey, keyParams.userKey);
+    recovery.should.not.have.property('walletPassphrase');
+    recovery.should.not.have.property('externalBackupSigner');
     const decoded = algosdk.decodeSignedTransaction(Buffer.from(recovery.tx as string, 'base64'));
     should(decoded.msig).not.be.undefined();
 
     const msigPk = algosdk.decodeAddress(expectedRoot).publicKey;
     algosdk.verifyMultisig(decoded.txn.bytesToSign(), decoded.msig!, msigPk).should.equal(true);
+  });
 
-    sandbox.restore();
+  it('returns the derived public keys for an unsigned Safe recovery without encrypting or decrypting', async function () {
+    sandbox.stub(Algo.prototype, 'getAccountBalance').resolves(nativeBalance);
+    const encryptSpy = sandbox.spy(bitgo, 'encrypt');
+    const decryptSpy = sandbox.spy(bitgo, 'decrypt');
+    const derived = await deriveSafeWalletKeys({
+      coin: 'talgo',
+      slot: 'ed25519Multisig',
+      account: 0,
+      roots: ed25519Roots(),
+    });
+    assert(derived.slot === 'ed25519Multisig');
+    const keyParams = await buildSafeRecoverKeyParams({
+      bitgo,
+      coin: 'talgo',
+      slot: 'ed25519Multisig',
+      keys: derived.keys,
+      mode: 'unsigned',
+    });
+    assert(keyParams.mode === 'unsigned');
+    assert(keyParams.rootAddress);
+
+    const recovery = await basecoin.recover({
+      ...keyParams,
+      rootAddress: keyParams.rootAddress,
+      fee,
+      recoveryDestination,
+      firstRound: 5002596,
+      nodeParams,
+    });
+    assert('txHex' in recovery);
+    const expectedKeys = [derived.keys.user.pub, derived.keys.backup.pub, derived.keys.bitgo.pub].map((pub) =>
+      algosdk.encodeAddress(Buffer.from(pub, 'hex'))
+    );
+    assert.deepStrictEqual([recovery.userKey, recovery.backupKey, recovery.bitgoKey], expectedKeys);
+    assert.deepStrictEqual(recovery.keys, expectedKeys);
+    assert.strictEqual(recovery.address, keyParams.rootAddress);
+    Sinon.assert.notCalled(encryptSpy);
+    Sinon.assert.notCalled(decryptSpy);
   });
 
   it('fails closed with RecoveryKeyMismatchError when the user key does not belong to the root', async function () {
-    const sandbox = Sinon.createSandbox();
-    sandbox.stub(Algo.prototype, 'getAccountBalance').resolves(nativeBalance);
+    const getBalanceStub = sandbox.stub(Algo.prototype, 'getAccountBalance').resolves(nativeBalance);
 
     const roots = ed25519Roots();
     const derived = await deriveSafeWalletKeys({ coin: 'algo', slot: 'ed25519Multisig', account: 0, roots });
@@ -151,20 +203,21 @@ describe('Safe ALGO recovery end-to-end', function () {
     }
 
     // A rootAddress the derived keys do not control: the fail-closed check fires before any node call.
-    await basecoin
-      .recover({
-        userKey: keyParams.userKey,
-        rootAddress: algosdk.encodeAddress(Buffer.alloc(32, 0xee)),
-        bitgoKey: keyParams.bitgoKey,
-        walletPassphrase: keyParams.walletPassphrase,
-        fee,
-        recoveryDestination,
-        firstRound: 5002596,
-        nodeParams,
-        externalBackupSigner: keyParams.externalBackupSigner,
-      })
-      .should.be.rejectedWith(/does not match the given rootAddress/);
-
-    sandbox.restore();
+    await assert.rejects(
+      () =>
+        basecoin.recover({
+          userKey: keyParams.userKey,
+          rootAddress: algosdk.encodeAddress(Buffer.alloc(32, 0xee)),
+          bitgoKey: keyParams.bitgoKey,
+          walletPassphrase: keyParams.walletPassphrase,
+          fee,
+          recoveryDestination,
+          firstRound: 5002596,
+          nodeParams,
+          externalBackupSigner: keyParams.externalBackupSigner,
+        }),
+      RecoveryKeyMismatchError
+    );
+    Sinon.assert.notCalled(getBalanceStub);
   });
 });

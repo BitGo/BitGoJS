@@ -515,7 +515,7 @@ describe('buildSafeRecoverKeyParams', () => {
     }).should.be.rejectedWith(/not supported yet/);
   });
 
-  describe('ed25519Multisig (algo)', () => {
+  describe('ed25519Multisig', () => {
     // Golden vectors generated with algosdk: encodeAddress(Buffer.alloc(32, n)) and
     // multisigAddress({ version: 1, threshold: 2, addrs: [...] }) over the same pubs.
     const edKeys = {
@@ -544,6 +544,7 @@ describe('buildSafeRecoverKeyParams', () => {
       result.userKey.should.equal('EEQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQYNI53HM');
       result.backupKey.should.equal('KFIVCUKRKFIVCUKRKFIVCUKRKFIVCUKRKFIVCUKRKFIVCUKRKFI33B3AOY');
       result.bitgoKey.should.equal('MFQWCYLBMFQWCYLBMFQWCYLBMFQWCYLBMFQWCYLBMFQWCYLBMFQS3KHEHM');
+      assert(result.rootAddress);
       result.rootAddress.should.equal('LHWEIOU2UIPSKCZ3XMKQUKRYY3FM6XTZKBHDMIU737OQQEXQTYSGDFOHDM');
       result.userKey.should.match(/^[A-Z2-7]{58}$/);
       result.should.not.have.property('walletPassphrase');
@@ -606,6 +607,7 @@ describe('buildSafeRecoverKeyParams', () => {
       result.bitgoKey.should.equal(encodeAlgoKey(Buffer.from(derived.keys.bitgo.pub, 'hex')));
       result.bitgoKey.should.match(/^[A-Z2-7]{58}$/);
       // The wallet's on-chain address over the three distinct children, in wallet-creation order.
+      assert(result.rootAddress);
       result.rootAddress.should.equal(
         algoMultisigAddress(1, 2, [
           Buffer.from(derived.keys.user.pub, 'hex'),
@@ -632,6 +634,48 @@ describe('buildSafeRecoverKeyParams', () => {
         )
         .should.equal(true);
     });
+
+    for (const coin of ['hbar', 'thbar']) {
+      for (const mode of ['signed', 'unsigned'] as const) {
+        it(`${coin} ${mode} mode encodes Hedera keys without overwriting the caller's rootAddress`, async () => {
+          const encrypt = sinon.stub().callsFake(async ({ input }) => `enc(${input})`);
+          const bitgo = { encrypt } as unknown as BitGoBase;
+
+          const result = await buildSafeRecoverKeyParams({
+            bitgo,
+            coin,
+            slot: 'ed25519Multisig',
+            keys: edKeys,
+            mode,
+          });
+
+          assert(!('rootAddress' in result));
+          const rootAddress = '0.0.12345';
+          assert.strictEqual({ rootAddress, ...result }.rootAddress, rootAddress);
+          result.bitgoKey.should.equal('302a300506032b6570032100' + edKeys.bitgo.pub);
+
+          if (result.mode === 'unsigned') {
+            result.userKey.should.equal('302a300506032b6570032100' + edKeys.user.pub);
+            result.backupKey.should.equal('302a300506032b6570032100' + edKeys.backup.pub);
+            result.should.not.have.property('walletPassphrase');
+            result.should.not.have.property('externalBackupSigner');
+            sinon.assert.notCalled(encrypt);
+          } else {
+            const encodedSeed = '302e020100300506032b657004220420' + edKeys.user.seed;
+            result.userKey.should.equal(`enc(${encodedSeed})`);
+            result.should.not.have.property('backupKey');
+            result.externalBackupSigner.publicKey.should.equal(edKeys.backup.pub);
+            result.walletPassphrase.should.match(/^[0-9a-f]{64}$/);
+            sinon.assert.calledOnce(encrypt);
+            sinon.assert.calledWithExactly(encrypt, {
+              input: encodedSeed,
+              password: result.walletPassphrase,
+              encryptionVersion: 1,
+            });
+          }
+        });
+      }
+    }
 
     it('rejects slot-2 coins that have no registry entry yet', async () => {
       const bitgo = { encrypt: sinon.stub() } as unknown as BitGoBase;

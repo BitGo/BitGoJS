@@ -820,6 +820,10 @@ describe('ALGO:', function () {
         recovery.should.have.property('coin', 'talgo');
         recovery.should.have.property('firstRound');
         recovery.should.have.property('lastRound');
+        assert.deepStrictEqual(
+          Object.keys(recovery).sort(),
+          ['tx', 'id', 'coin', 'fee', 'firstRound', 'lastRound', 'genesisId', 'genesisHash', 'note'].sort()
+        );
         getBalanceStub.callCount.should.equal(1);
         const factory = new AlgoLib.TransactionBuilderFactory(coins.get('algo'));
         const txBuilder = factory.from(recovery.tx);

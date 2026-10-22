@@ -280,5 +280,21 @@ describe('derivableEd25519Pub', function () {
       signature.should.match(/^[0-9a-f]{128}$/);
       nacl.sign.detached.verify(message, Buffer.from(signature, 'hex'), keyPair.publicKey).should.equal(true);
     });
+
+    it('rejects a signer that mutates its message argument, leaving the original message intact', async function () {
+      const originalMessage = Uint8Array.from(message);
+      const mutatingSigner: ExternalEd25519Signer = {
+        publicKey,
+        sign: async (m: Uint8Array) => {
+          m.fill(0x00);
+          return { signature: Buffer.from(nacl.sign.detached(m, keyPair.secretKey)).toString('hex') };
+        },
+      };
+      await signWithExternalEd25519Signer(mutatingSigner, originalMessage).should.be.rejectedWith(
+        /does not verify against its public key/
+      );
+      // The authoritative message must be unchanged: the signer only ever saw a defensive copy.
+      Buffer.from(originalMessage).equals(Buffer.from(message)).should.equal(true);
+    });
   });
 });
