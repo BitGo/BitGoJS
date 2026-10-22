@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.20.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-sol%408.19.0...%40bitgo%2Fsdk-coin-sol%408.20.0) (2026-10-22)
+
+### Features
+
+* **sdk-core:** forward SOL intent wire version (Refs: CHALO-1603) ([c7e8dac](https://github.com/BitGo/BitGoJS/commit/c7e8dacf082cbbdb59fff6a8e292af7bb8b12ef7))
+
+
 # [8.19.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-sol%408.18.0...%40bitgo%2Fsdk-coin-sol%408.19.0) (2026-10-21)
 
 ### Features

@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.8.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-lib-safes%401.7.0...%40bitgo%2Fsdk-lib-safes%401.8.0) (2026-10-22)
+
+### Features
+
+* enable Safe recovery for ALGO ([7a24ab7](https://github.com/BitGo/BitGoJS/commit/7a24ab761adcf4156abc4fc5fabe918e511be336))
+
+
 # [1.7.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-lib-safes%401.6.0...%40bitgo%2Fsdk-lib-safes%401.7.0) (2026-10-20)
 
 ### Features

@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.25.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fstatics%4059.24.0...%40bitgo%2Fstatics%4059.25.0) (2026-10-22)
+
+### Bug Fixes
+
+* **statics:** key ERC20 duplicate-address test by chain ([6d89019](https://github.com/BitGo/BitGoJS/commit/6d8901934f5f6c6a44c60ae27b9642c28c178575))
+* **statics:** restore tokens and features dropped in AMS regeneration ([13e0c8d](https://github.com/BitGo/BitGoJS/commit/13e0c8ddca0ab670aafe78eb88afc29aad576d9d))
+
+### Features
+
+* add new tokens from AMS API ([0bd012a](https://github.com/BitGo/BitGoJS/commit/0bd012a429286c3735f60c159f4d20de54f10a75))
+* add new tokens from AMS API ([469dacb](https://github.com/BitGo/BitGoJS/commit/469dacbdd61d04364c0486d548d23ffb6880b74b))
+* add new tokens from AMS API ([815ea24](https://github.com/BitGo/BitGoJS/commit/815ea24185752379d1038e0d3d9da51c16945b8d))
+* add new tokens from AMS API ([c89b674](https://github.com/BitGo/BitGoJS/commit/c89b6745909f83cc12abc5a96ccd8708f002a83b))
+* **statics:** add go-account support for sol:grass ([12d6bdd](https://github.com/BitGo/BitGoJS/commit/12d6bdd33f556b5e3c97e521522957fb4a5b1e6f))
+
+
 # [59.24.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fstatics%4059.23.1...%40bitgo%2Fstatics%4059.24.0) (2026-10-20)
 
 ### Bug Fixes

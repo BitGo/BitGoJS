@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [40.2.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4040.1.0...%40bitgo%2Fsdk-core%4040.2.0) (2026-10-22)
+
+### Features
+
+* enable Safe recovery for ALGO ([7a24ab7](https://github.com/BitGo/BitGoJS/commit/7a24ab761adcf4156abc4fc5fabe918e511be336))
+* **sdk-core:** forward SOL intent wire version (Refs: CHALO-1603) ([c7e8dac](https://github.com/BitGo/BitGoJS/commit/c7e8dacf082cbbdb59fff6a8e292af7bb8b12ef7))
+
+
 # [40.1.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4040.0.0...%40bitgo%2Fsdk-core%4040.1.0) (2026-10-21)
 
 ### Bug Fixes

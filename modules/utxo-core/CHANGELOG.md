@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.42.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Futxo-core%401.41.6...%40bitgo%2Futxo-core%401.42.0) (2026-10-22)
+
+### Features
+
+* **sdk-coin-zec:** update wasm-utxo and zcash recovery defaults for NU7 ([4417f1a](https://github.com/BitGo/BitGoJS/commit/4417f1a5a5c356575891424e13c704a437605dc2))
+
+
 ## [1.41.6](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Futxo-core%401.41.5...%40bitgo%2Futxo-core%401.41.6) (2026-10-16)
 
 **Note:** Version bump only for package @bitgo/utxo-core

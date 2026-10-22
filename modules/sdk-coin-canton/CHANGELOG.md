@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.37.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-canton%401.36.1...%40bitgo%2Fsdk-coin-canton%401.37.0) (2026-10-22)
+
+### Features
+
+* **sdk-coin-canton:** support Broadridge allocation ([9ec518c](https://github.com/BitGo/BitGoJS/commit/9ec518c62a8d1cd7f74d574253a7d2bb8f32d0c0))
+* **sdk-coin-canton:** support Broadridge standing delegation response parsing ([348ba0d](https://github.com/BitGo/BitGoJS/commit/348ba0d144b12c91d4a5cae69f01c6e8e0389f98))
+
+
 ## [1.36.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-canton%401.36.0...%40bitgo%2Fsdk-coin-canton%401.36.1) (2026-10-21)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-canton
