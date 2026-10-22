@@ -16,6 +16,7 @@ import {
 } from '@bitgo/sdk-core';
 import { PublicKey } from '@hashgraph/sdk';
 import { proto } from '@hashgraph/proto';
+import nacl from 'tweetnacl';
 import { TxData, Transfer } from '../../src/lib/iface';
 
 import * as TestData from '../fixtures/hbar';
@@ -1028,6 +1029,7 @@ describe('Hedera Hashgraph:', function () {
         recovery.should.have.property('tx');
         recovery.should.have.property('coin', 'thbar');
         recovery.should.have.property('nodeId', defaultNodeId);
+        assert.deepStrictEqual(Object.keys(recovery).sort(), ['tx', 'id', 'coin', 'startTime', 'nodeId'].sort());
         getBalanceStub.callCount.should.equal(1);
         const txBuilder = basecoin.getBuilderFactory().from(recovery.tx);
         const tx = await txBuilder.build();
@@ -1045,27 +1047,107 @@ describe('Hedera Hashgraph:', function () {
         recovery.should.have.property('id', rootAddress + '@' + txJson.startTime);
       });
 
-      it('should sign with an external backup signature without decrypting the backup key', async function () {
+      const externalSignerRecoveryParams = {
+        userKey,
+        rootAddress,
+        walletPassphrase,
+        recoveryDestination: recoveryDestination + '?memoId=' + memo,
+      };
+
+      it('should sign with an external backup signer without decrypting the backup key', async function () {
         const getBalanceStub = sandBox
           .stub(Hbar.prototype, 'getAccountBalance')
           .resolves({ hbars: formatBalanceResponse(balance), tokens: [] });
+
+        // Prepare the fixture signer before spying: recover() must only decrypt the user key.
+        const backupPrv = await bitgo.decrypt({ input: backupKey, password: walletPassphrase });
+        const backupKeys = new KeyPair({ prv: backupPrv }).getKeys(true);
+        assert(backupKeys.prv);
+        const backupSecretKey = nacl.sign.keyPair.fromSeed(Buffer.from(backupKeys.prv, 'hex')).secretKey;
+        const sign = sandBox.spy(async (message: Uint8Array) => ({
+          signature: Buffer.from(nacl.sign.detached(message, backupSecretKey)).toString('hex'),
+        }));
         const decryptSpy = sandBox.spy(bitgo, 'decrypt');
 
         const recovery = await basecoin.recover({
-          userKey,
-          backupKey,
-          rootAddress,
-          walletPassphrase,
-          recoveryDestination: recoveryDestination + '?memoId=' + memo,
-          externalBackupSignature: {
-            publicKey: signedBackupPub.slice(24),
-            signature: 'ab'.repeat(64),
+          ...externalSignerRecoveryParams,
+          externalBackupSigner: {
+            publicKey: backupKeys.pub,
+            sign,
           },
         });
 
         recovery.should.have.property('tx');
+        assert.strictEqual(recovery.userKey, signedUserPub);
+        assert.strictEqual(recovery.backupKey, signedBackupPub);
+        assert.strictEqual(recovery.bitgoKey, undefined);
+        assert.strictEqual(recovery.rootAddress, rootAddress);
         getBalanceStub.callCount.should.equal(1);
         decryptSpy.callCount.should.equal(1);
+        sign.callCount.should.equal(1);
+
+        const { bodyBytes, sigMap } = proto.Transaction.decode(Buffer.from(recovery.tx, 'hex'));
+        assert(sigMap?.sigPair);
+        assert.deepStrictEqual(Buffer.from(sign.firstCall.args[0]), Buffer.from(bodyBytes));
+        assert.deepStrictEqual(
+          sigMap.sigPair.map((pair) => Buffer.from(pair.pubKeyPrefix ?? []).toString('hex')).sort(),
+          [PublicKey.fromString(signedUserPub).toStringRaw().toLowerCase(), backupKeys.pub].sort()
+        );
+        for (const pair of sigMap.sigPair) {
+          assert(pair.ed25519);
+          assert(pair.pubKeyPrefix);
+          assert(nacl.sign.detached.verify(bodyBytes, pair.ed25519, pair.pubKeyPrefix));
+        }
+      });
+
+      it('calls the lazy signer with the tx bytes and rejects a non-verifying signature', async function () {
+        const getBalanceStub = sandBox
+          .stub(Hbar.prototype, 'getAccountBalance')
+          .resolves({ hbars: formatBalanceResponse(balance), tokens: [] });
+        const decryptSpy = sandBox.spy(bitgo, 'decrypt');
+        const sign = sandBox.stub().resolves({ signature: 'ab'.repeat(64) });
+
+        await assert.rejects(
+          () =>
+            basecoin.recover({
+              ...externalSignerRecoveryParams,
+              externalBackupSigner: {
+                publicKey: PublicKey.fromString(signedBackupPub).toStringRaw().toLowerCase(),
+                sign,
+              },
+            }),
+          /does not verify against its public key/
+        );
+
+        getBalanceStub.callCount.should.equal(1);
+        decryptSpy.callCount.should.equal(1);
+        sign.callCount.should.equal(1);
+        assert(sign.firstCall.args[0] instanceof Uint8Array);
+        sign.firstCall.args[0].length.should.be.greaterThan(0);
+      });
+
+      it('rejects a lazy external backup signer with a malformed public key or signature', async function () {
+        sandBox
+          .stub(Hbar.prototype, 'getAccountBalance')
+          .resolves({ hbars: formatBalanceResponse(balance), tokens: [] });
+
+        for (const { publicKey, signature, expectedError } of [
+          { publicKey: 'not-hex', signature: 'ab'.repeat(64), expectedError: /expected 32 bytes/ },
+          {
+            publicKey: PublicKey.fromString(signedBackupPub).toStringRaw().toLowerCase(),
+            signature: 'ab',
+            expectedError: /expected 64 bytes/,
+          },
+        ]) {
+          await assert.rejects(
+            () =>
+              basecoin.recover({
+                ...externalSignerRecoveryParams,
+                externalBackupSigner: { publicKey, sign: async () => ({ signature }) },
+              }),
+            expectedError
+          );
+        }
       });
 
       it('should throw for invalid rootAddress', async function () {

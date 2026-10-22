@@ -6,8 +6,9 @@ import {
   BaseCoin,
   BitGoBase,
   ErrorNoInputToRecover,
-  assertValidExternalEd25519Signature,
-  ExternalEd25519Signature,
+  assertValidExternalEd25519Signer,
+  ExternalEd25519Signer,
+  signWithExternalEd25519Signer,
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
@@ -114,7 +115,7 @@ interface VerifyAddressOptions extends BaseVerifyAddressOptions {
 }
 
 export interface RecoveryOptions {
-  backupKey: string;
+  backupKey?: string;
   userKey: string;
   rootAddress: string;
   recoveryDestination: string;
@@ -124,16 +125,28 @@ export interface RecoveryOptions {
   nodeId?: string;
   startTime?: string;
   tokenId?: string;
-  /** Optional pre-made signature for the backup child, whose signature must be over the transaction body bytes (`bodyBytes`). */
-  externalBackupSignature?: ExternalEd25519Signature;
+  /** Lazy signer for the seedless backup child; the signed body bytes only exist after recover() builds the transaction. */
+  externalBackupSigner?: ExternalEd25519Signer;
 }
 
+/**
+ * Signed recovery result. Optional key/account fields are populated for Safe recovery when
+ * `externalBackupSigner` is supplied. They expose only public material.
+ */
 export interface RecoveryInfo {
   id: string;
   tx: string;
   coin: string;
   startTime: string;
   nodeId: string;
+  /** Derived user public key with the Hedera public-key prefix, never the encrypted `userKey` input. */
+  userKey?: string;
+  /** Derived backup public key with the Hedera public-key prefix, not a private key or seed. */
+  backupKey?: string;
+  /** BitGo public key with the Hedera public-key prefix, when supplied by the caller. */
+  bitgoKey?: string;
+  /** Caller-supplied Hedera account ID (for example, `0.0.12345`), not a public or private key. */
+  rootAddress?: string;
 }
 
 export interface OfflineVaultTxInfo {
@@ -566,9 +579,11 @@ export class Hbar extends BaseCoin {
    * @param params
    */
   public async recover(params: RecoveryOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
+    const backupKey = params.backupKey;
     const isUnsignedSweep =
-      (params.backupKey.startsWith(PUBLIC_KEY_PREFIX) && params.userKey.startsWith(PUBLIC_KEY_PREFIX)) ||
-      (Utils.isValidPublicKey(params.userKey) && Utils.isValidPublicKey(params.backupKey));
+      backupKey !== undefined &&
+      ((backupKey.startsWith(PUBLIC_KEY_PREFIX) && params.userKey.startsWith(PUBLIC_KEY_PREFIX)) ||
+        (Utils.isValidPublicKey(params.userKey) && Utils.isValidPublicKey(backupKey)));
 
     // Validate the root address
     if (!this.isValidAddress(params.rootAddress)) {
@@ -600,8 +615,19 @@ export class Hbar extends BaseCoin {
       throw new Error('start time is required for unsigned sweep');
     }
 
-    if (params.externalBackupSignature) {
-      assertValidExternalEd25519Signature(params.externalBackupSignature);
+    if (params.externalBackupSigner) {
+      assertValidExternalEd25519Signer(params.externalBackupSigner);
+    }
+
+    // Normalize the caller-supplied BitGo public key before any node query or signing: a malformed
+    // key must fail fast rather than surface after the backup signer has already run.
+    let bitgoPub: string | undefined;
+    if (params.externalBackupSigner && params.bitgoKey) {
+      try {
+        bitgoPub = new HbarKeyPair({ pub: params.bitgoKey }).getKeys().pub;
+      } catch (e) {
+        throw new Error('invalid bitgoKey, got: ' + params.bitgoKey);
+      }
     }
 
     if (!isUnsignedSweep && !params.walletPassphrase) {
@@ -612,13 +638,18 @@ export class Hbar extends BaseCoin {
     let backUp: string | undefined;
     let userPub: string | undefined;
     let backupPub: string | undefined;
+    const externalBackupSigner = params.externalBackupSigner;
+    const externalBackupPub = externalBackupSigner?.publicKey;
     if (!isUnsignedSweep) {
       try {
         userPrv = await this.bitgo.decrypt({ input: params.userKey, password: params.walletPassphrase });
-        if (params.externalBackupSignature) {
-          backupPub = new HbarKeyPair({ pub: params.externalBackupSignature.publicKey }).getKeys().pub;
+        if (externalBackupPub) {
+          backupPub = new HbarKeyPair({ pub: externalBackupPub }).getKeys().pub;
         } else {
-          backUp = await this.bitgo.decrypt({ input: params.backupKey, password: params.walletPassphrase });
+          if (!backupKey) {
+            throw new Error('backupKey is required for non-bitgo recovery when no external backup signer is provided');
+          }
+          backUp = await this.bitgo.decrypt({ input: backupKey, password: params.walletPassphrase });
           backupPub = new HbarKeyPair({ prv: backUp }).getKeys().pub;
         }
       } catch (e) {
@@ -635,8 +666,8 @@ export class Hbar extends BaseCoin {
     }
 
     // validate backupKey for unsigned sweep
-    if (isUnsignedSweep && !Utils.isValidPublicKey(params.backupKey)) {
-      throw new Error('invalid backupKey, got: ' + params.backupKey);
+    if (isUnsignedSweep && backupKey !== undefined && !Utils.isValidPublicKey(backupKey)) {
+      throw new Error('invalid backupKey, got: ' + backupKey);
     }
 
     const { address: destinationAddress, memoId } = Utils.getAddressDetails(params.recoveryDestination);
@@ -646,13 +677,13 @@ export class Hbar extends BaseCoin {
     const userRaw = PublicKey.fromString(userPub ?? params.userKey)
       .toStringRaw()
       .toLowerCase();
-    const backupRaw = PublicKey.fromString(backupPub ?? params.backupKey)
+    const backupRaw = PublicKey.fromString(backupPub ?? backupKey!)
       .toStringRaw()
       .toLowerCase();
     if (!onChainSigners.has(userRaw) || !onChainSigners.has(backupRaw)) {
       throw new RecoveryKeyMismatchError(
         `user key ${userPub ?? params.userKey} or backup key ${
-          backupPub ?? params.backupKey
+          backupPub ?? backupKey
         } is not in the key list of account ${params.rootAddress}`
       );
     }
@@ -711,7 +742,7 @@ export class Hbar extends BaseCoin {
         nodeId: txJson.node,
         memo: txJson.memo,
         userKey: params.userKey,
-        backupKey: params.backupKey,
+        backupKey,
         bitgoKey: params.bitgoKey,
         maxFee: fee,
         address: params.rootAddress,
@@ -723,17 +754,19 @@ export class Hbar extends BaseCoin {
 
     txBuilder.sign({ key: userPrv });
 
-    const externalBackupSignature = params.externalBackupSignature;
-    if (externalBackupSignature) {
-      txBuilder.signature(
-        externalBackupSignature.signature,
-        new HbarKeyPair({ pub: externalBackupSignature.publicKey })
-      );
-    } else {
+    if (!externalBackupPub) {
       txBuilder.sign({ key: backUp });
     }
 
-    const tx = await txBuilder.build();
+    const tx = (await txBuilder.build()) as Transaction;
+
+    if (externalBackupSigner) {
+      // Slot-2 Safe recovery: the seedless backup child signs lazily, over the exact transaction the
+      // user key just signed. A pre-made signature cannot cover the body bytes, since the amount and
+      // start time are only known once the transaction is built.
+      const signature = await signWithExternalEd25519Signer(externalBackupSigner, tx.hederaTx.bodyBytes);
+      tx.addSignature(signature, new HbarKeyPair({ pub: externalBackupSigner.publicKey }));
+    }
 
     return {
       tx: tx.toBroadcastFormat(),
@@ -741,6 +774,14 @@ export class Hbar extends BaseCoin {
       coin: this.getChain(),
       startTime: tx.toJson().startTime,
       nodeId: tx.toJson().node,
+      ...(externalBackupSigner
+        ? {
+            userKey: userPub,
+            backupKey: backupPub,
+            bitgoKey: bitgoPub,
+            rootAddress: params.rootAddress,
+          }
+        : {}),
     };
   }
 

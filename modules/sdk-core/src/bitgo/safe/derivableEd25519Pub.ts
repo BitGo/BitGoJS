@@ -184,7 +184,11 @@ export async function signWithExternalEd25519Signer(
   message: Uint8Array
 ): Promise<string> {
   assertValidExternalEd25519Signer(signer);
-  const result = await signer.sign(message);
+  // The signer gets a defensive copy: it must not be able to mutate the authoritative transaction
+  // bytes, and the signature is verified against the original message, not whatever the signer
+  // received or modified.
+  const messageForSigner = Uint8Array.from(message);
+  const result = await signer.sign(messageForSigner);
   if (!result || typeof result.signature !== 'string') {
     throw new Error('Invalid external Ed25519 signer: sign must resolve to { signature: string }');
   }
