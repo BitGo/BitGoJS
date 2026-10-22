@@ -2,6 +2,7 @@ import 'should';
 import {
   DERIVABLE_ED25519_CHAIN_CODE_BYTES,
   DERIVABLE_ED25519_PUB_LENGTH,
+  algoMultisigAddress,
   decodeDerivableEd25519Pub,
   decodeEd25519ChainCode,
   decodeEd25519StrKeyPublicKey,
@@ -104,6 +105,30 @@ describe('ed25519Pub', function () {
       encodeAlgoKey(SEED).should.match(/^[A-Z2-7]{58}$/);
       encodeAlgoKey(PUB).should.equal(ALGO_ADDRESS);
       (() => encodeAlgoKey(Buffer.alloc(31))).should.throw(/32 bytes/);
+    });
+
+    it('computes Algorand multisig addresses matching algosdk golden vectors', function () {
+      // Generated with algosdk.multisigAddress({ version: 1, threshold: 2, addrs: [encodeAddress(pk)...] })
+      // so the leaf's pure preimage hash reproduces algosdk byte-for-byte.
+      const p1 = Buffer.alloc(32, 0x01);
+      const p2 = Buffer.alloc(32, 0x02);
+      const p3 = Buffer.alloc(32, 0x03);
+      algoMultisigAddress(1, 2, [p1, p2, p3]).should.equal(
+        'KA6JJOIDCRLCG7TGB76BKSABV5FF43J6BOJ6ONIBLZ45KMP44NYT7AGRDI'
+      );
+      algoMultisigAddress(1, 2, [p1, p2]).should.equal('AUFVSAUUDXNCKKFQCIFOEMGUEKRXXKT7WMOMGWLK6KUTXNNWBXJ7CKHRUE');
+      algoMultisigAddress(1, 2, [p1, p2, p3]).should.match(/^[A-Z2-7]{58}$/);
+    });
+
+    it('multisig addresses are order-sensitive and fail closed on bad params', function () {
+      const p1 = Buffer.alloc(32, 0x01);
+      const p2 = Buffer.alloc(32, 0x02);
+      const p3 = Buffer.alloc(32, 0x03);
+      algoMultisigAddress(1, 2, [p1, p3, p2]).should.not.equal(algoMultisigAddress(1, 2, [p1, p2, p3]));
+      (() => algoMultisigAddress(2, 2, [p1, p2, p3])).should.throw(/multisig version/);
+      (() => algoMultisigAddress(1, 0, [p1, p2, p3])).should.throw(/multisig threshold/);
+      (() => algoMultisigAddress(1, 4, [p1, p2, p3])).should.throw(/multisig threshold/);
+      (() => algoMultisigAddress(1, 2, [Buffer.alloc(31), p2, p3])).should.throw(/32 bytes/);
     });
 
     it('encodes Hedera public/private keys as DER-prefixed hex', function () {

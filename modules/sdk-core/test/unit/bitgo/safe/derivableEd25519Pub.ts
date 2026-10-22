@@ -16,6 +16,8 @@ import {
   encodeEd25519ChainCode,
   encodeEd25519StrKeyPublicKey,
   generateEd25519ChainCode,
+  assertValidExternalEd25519Signer,
+  signWithExternalEd25519Signer,
   isChecksumValidStrKeyEd25519Pub,
   isDerivableEd25519Pub,
   isValidEd25519StrKeyPublicKey,
@@ -23,6 +25,7 @@ import {
   softDeriveChildPubEd25519,
   softDeriveChildPubEd25519AtPath,
   softDeriveChildPrvEd25519AtPath,
+  type ExternalEd25519Signer,
 } from '../../../../src';
 
 // Cross-repo fixture: byte-identical to wallet-platform
@@ -205,6 +208,77 @@ describe('derivableEd25519Pub', function () {
     it('rejects kL/kR that are not 32 bytes', async function () {
       await signEd25519Extended(message, Buffer.alloc(31), Buffer.alloc(32)).should.be.rejectedWith(/kL length/);
       await signEd25519Extended(message, Buffer.alloc(32), Buffer.alloc(33)).should.be.rejectedWith(/kR length/);
+    });
+  });
+
+  describe('ExternalEd25519Signer', function () {
+    const message = Buffer.from('external-signer message');
+    const keyPair = nacl.sign.keyPair.fromSeed(Buffer.alloc(32, 0x42));
+    const publicKey = Buffer.from(keyPair.publicKey).toString('hex');
+    const otherKeyPair = nacl.sign.keyPair.fromSeed(Buffer.alloc(32, 0x77));
+    const validSigner: ExternalEd25519Signer = {
+      publicKey,
+      sign: async (m: Uint8Array) => ({
+        signature: Buffer.from(nacl.sign.detached(m, keyPair.secretKey)).toString('hex'),
+      }),
+    };
+
+    it('rejects a malformed public key', function () {
+      (() =>
+        assertValidExternalEd25519Signer({
+          publicKey: 'not-hex',
+          sign: async () => ({ signature: 'a'.repeat(128) }),
+        })).should.throw(/expected 32 bytes/);
+    });
+
+    it('rejects a public key with trailing garbage after 64 hex chars', function () {
+      // Buffer.from(pub, 'hex') truncates at the first bad pair, so a length-only check would
+      // accept this; the strict regex must not.
+      (() =>
+        assertValidExternalEd25519Signer({
+          publicKey: 'f1'.repeat(32) + 'zz',
+          sign: async () => ({ signature: 'a'.repeat(128) }),
+        })).should.throw(/expected 32 bytes/);
+    });
+
+    it('rejects a signer without a sign function', function () {
+      (() =>
+        assertValidExternalEd25519Signer({
+          publicKey,
+          sign: undefined as unknown as ExternalEd25519Signer['sign'],
+        })).should.throw(/sign must be a function/);
+    });
+
+    it('rejects a non-64-byte signature', async function () {
+      await signWithExternalEd25519Signer(
+        { publicKey, sign: async () => ({ signature: 'ab' }) },
+        message
+      ).should.be.rejectedWith(/expected 64 bytes/);
+    });
+
+    it('rejects when sign resolves to a non-object', async function () {
+      await signWithExternalEd25519Signer(
+        { publicKey, sign: async () => null as unknown as { signature: string } },
+        message
+      ).should.be.rejectedWith(/sign must resolve to \{ signature: string \}/);
+    });
+
+    it('rejects a well-formed signature from the wrong key', async function () {
+      await signWithExternalEd25519Signer(
+        {
+          publicKey,
+          sign: async (m: Uint8Array) => ({
+            signature: Buffer.from(nacl.sign.detached(m, otherKeyPair.secretKey)).toString('hex'),
+          }),
+        },
+        message
+      ).should.be.rejectedWith(/does not verify against its public key/);
+    });
+
+    it('signs and returns a verified 64-byte signature', async function () {
+      const signature = await signWithExternalEd25519Signer(validSigner, message);
+      signature.should.match(/^[0-9a-f]{128}$/);
+      nacl.sign.detached.verify(message, Buffer.from(signature, 'hex'), keyPair.publicKey).should.equal(true);
     });
   });
 });

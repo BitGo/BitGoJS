@@ -200,6 +200,32 @@ export function encodeAlgoKey(bytes: Buffer): string {
   return base32Encode(Buffer.concat([bytes, checksum]));
 }
 
+/** The "MultisigAddr" preimage tag algosdk hashes for multisig addresses. */
+const ALGORAND_MULTISIG_ADDRESS_PREFIX = Buffer.from('MultisigAddr', 'utf8');
+
+/**
+ * Compute an Algorand multisig address from raw 32-byte ed25519 public keys, without algosdk.
+ *
+ * Matches `algosdk.multisigAddress`: `encodeAddress(SHA-512/256("MultisigAddr" ‖ version ‖ threshold ‖ pks))`.
+ * The pub-key order is the wallet's signer order and is part of the address — swapping two keys
+ * changes the address, so callers must pass [user, backup, bitgo] in wallet-creation order.
+ */
+export function algoMultisigAddress(version: number, threshold: number, pubKeys: Buffer[]): string {
+  if (version !== 1) {
+    throw new Error(`Invalid multisig version: expected 1, got ${version}`);
+  }
+  if (!Number.isInteger(threshold) || threshold < 1 || threshold > pubKeys.length || threshold > 255) {
+    throw new Error(`Invalid multisig threshold: expected 1..${Math.min(pubKeys.length, 255)}, got ${threshold}`);
+  }
+  for (const pubKey of pubKeys) {
+    if (pubKey.length !== DERIVABLE_ED25519_PUBLIC_KEY_BYTES) {
+      throw new Error('Invalid multisig public key: expected 32 bytes');
+    }
+  }
+  const preimage = Buffer.concat([ALGORAND_MULTISIG_ADDRESS_PREFIX, Buffer.from([version, threshold]), ...pubKeys]);
+  return encodeAlgoKey(Buffer.from(sha512.sha512_256.array(preimage)));
+}
+
 /** Encode a raw 32-byte public key as a DER-prefixed Hedera public key (88 hex chars). */
 export function encodeHbarPublicKeyDer(pub: Buffer): string {
   if (pub.length !== DERIVABLE_ED25519_PUBLIC_KEY_BYTES) {

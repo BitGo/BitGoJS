@@ -14,7 +14,8 @@ import {
   deriveSafeWalletKeys,
 } from '../../../../src/bitgo/safe/recovery';
 import {
-  decodeEd25519StrKeySecretSeed,
+  algoMultisigAddress,
+  encodeAlgoKey,
   encodeDerivableEd25519Pub,
   encodeEd25519ChainCode,
   softDeriveChildPubEd25519AtPath,
@@ -366,15 +367,18 @@ describe('deriveSafeWalletKeys', () => {
 
   it('derives the ed25519Multisig triplet at the BIP44 path', async () => {
     const STRKEY_SEED = 'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI';
-    const backupSeed = decodeEd25519StrKeySecretSeed(STRKEY_SEED);
-    const backupRootPub = Buffer.from(ed25519.getPublicKey(backupSeed));
     const backupChainCode = Buffer.alloc(32, 0xab);
+    // Distinct BitGo root + chain code: if the BitGo composite were derived from the backup root, the
+    // backup child and the BitGo child would be the same key and a slot swap would pass every golden.
+    const bitgoSeed = Buffer.alloc(32, 0x22);
+    const bitgoRootPub = Buffer.from(ed25519.getPublicKey(bitgoSeed));
+    const bitgoChainCode = Buffer.alloc(32, 0xcd);
     const ed25519Roots: DecryptedSafeRoots = {
       ...roots,
       ed25519Multisig: {
         user: STRKEY_SEED,
         backup: { prv: STRKEY_SEED, chainCode: encodeEd25519ChainCode(backupChainCode) },
-        bitgo: encodeDerivableEd25519Pub(backupRootPub, backupChainCode),
+        bitgo: encodeDerivableEd25519Pub(bitgoRootPub, bitgoChainCode),
       },
     };
 
@@ -409,7 +413,9 @@ describe('deriveSafeWalletKeys', () => {
     }
     result.keys.backup.kL.should.equal(algoSoft.childKLHex);
     result.keys.backup.kR.should.equal(algoSoft.childKRHex);
-    result.keys.backup.pub.should.equal(bitgoPub);
+    // With distinct roots the three children are provably distinct, so a slot swap cannot sneak through.
+    result.keys.user.pub.should.not.equal(result.keys.backup.pub);
+    result.keys.backup.pub.should.not.equal(result.keys.bitgo.pub);
     result.keys.bitgo.pub.should.equal(bitgoPub);
   });
 
@@ -504,9 +510,150 @@ describe('buildSafeRecoverKeyParams', () => {
       bitgo,
       coin: 'btc',
       slot: 'eddsaMpc',
-      keys,
+      keys: { commonKeychain: 'ck', user: 'u', backup: 'b' },
       mode: 'signed',
     }).should.be.rejectedWith(/not supported yet/);
+  });
+
+  describe('ed25519Multisig (algo)', () => {
+    // Golden vectors generated with algosdk: encodeAddress(Buffer.alloc(32, n)) and
+    // multisigAddress({ version: 1, threshold: 2, addrs: [...] }) over the same pubs.
+    const edKeys = {
+      user: { kind: 'seed', seed: '11'.repeat(32), pub: '21'.repeat(32) },
+      backup: { kind: 'extended', kL: '31'.repeat(32), kR: '41'.repeat(32), pub: '51'.repeat(32) },
+      bitgo: { pub: '61'.repeat(32) },
+    } as const;
+
+    it('unsigned mode returns ALGO addresses and the multisig rootAddress, and never encrypts', async () => {
+      const encrypt = sinon.stub().callsFake(async () => {
+        throw new Error('encrypt should not be called');
+      });
+      const bitgo = { encrypt } as unknown as BitGoBase;
+
+      const result = await buildSafeRecoverKeyParams({
+        bitgo,
+        coin: 'algo',
+        slot: 'ed25519Multisig',
+        keys: edKeys,
+        mode: 'unsigned',
+      });
+      if (result.slot !== 'ed25519Multisig' || result.mode !== 'unsigned') {
+        throw new Error('expected unsigned ed25519Multisig key params');
+      }
+
+      result.userKey.should.equal('EEQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQYNI53HM');
+      result.backupKey.should.equal('KFIVCUKRKFIVCUKRKFIVCUKRKFIVCUKRKFIVCUKRKFIVCUKRKFI33B3AOY');
+      result.bitgoKey.should.equal('MFQWCYLBMFQWCYLBMFQWCYLBMFQWCYLBMFQWCYLBMFQWCYLBMFQS3KHEHM');
+      result.rootAddress.should.equal('LHWEIOU2UIPSKCZ3XMKQUKRYY3FM6XTZKBHDMIU737OQQEXQTYSGDFOHDM');
+      result.userKey.should.match(/^[A-Z2-7]{58}$/);
+      result.should.not.have.property('walletPassphrase');
+      result.should.not.have.property('externalBackupSigner');
+      encrypt.callCount.should.equal(0);
+    });
+
+    it('signed mode encrypts the 58-char seed and returns a lazy external backup signer', async () => {
+      // Real derivation output, with a distinct BitGo root so the backup child and the BitGo child
+      // are different keys — a slot swap between them must change the outputs.
+      const STRKEY_SEED = 'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI';
+      const backupChainCode = Buffer.alloc(32, 0xab);
+      const bitgoSeed = Buffer.alloc(32, 0x22);
+      const bitgoRootPub = Buffer.from(ed25519.getPublicKey(bitgoSeed));
+      const bitgoChainCode = Buffer.alloc(32, 0xcd);
+      const ed25519Roots: DecryptedSafeRoots = {
+        ...makeRoots({ user: 'x', backup: 'y', bitgo: 'z' }),
+        ed25519Multisig: {
+          user: STRKEY_SEED,
+          backup: { prv: STRKEY_SEED, chainCode: encodeEd25519ChainCode(backupChainCode) },
+          bitgo: encodeDerivableEd25519Pub(bitgoRootPub, bitgoChainCode),
+        },
+      };
+      const derived = await deriveSafeWalletKeys({
+        coin: 'algo',
+        slot: 'ed25519Multisig',
+        account: 0,
+        roots: ed25519Roots,
+      });
+      if (derived.slot !== 'ed25519Multisig') {
+        throw new Error('expected ed25519Multisig slot');
+      }
+
+      const passphrases: string[] = [];
+      const encrypt = sinon.stub().callsFake(async ({ input, password, encryptionVersion }) => {
+        passphrases.push(password);
+        encryptionVersion.should.equal(1);
+        return `enc(${input})`;
+      });
+      const bitgo = { encrypt } as unknown as BitGoBase;
+
+      const result = await buildSafeRecoverKeyParams({
+        bitgo,
+        coin: 'talgo',
+        slot: 'ed25519Multisig',
+        keys: derived.keys,
+        mode: 'signed',
+      });
+      if (result.slot !== 'ed25519Multisig' || result.mode !== 'signed') {
+        throw new Error('expected signed ed25519Multisig key params');
+      }
+
+      derived.keys.user.pub.should.not.equal(derived.keys.backup.pub);
+      derived.keys.backup.pub.should.not.equal(derived.keys.bitgo.pub);
+
+      // user seed re-encoded as the 58-char ALGO seed before encryption; no backupKey — the
+      // seedless backup child only exists as the lazy signer.
+      result.userKey.should.equal(`enc(${encodeAlgoKey(Buffer.from(derived.keys.user.seed, 'hex'))})`);
+      result.should.not.have.property('backupKey');
+      result.bitgoKey.should.equal(encodeAlgoKey(Buffer.from(derived.keys.bitgo.pub, 'hex')));
+      result.bitgoKey.should.match(/^[A-Z2-7]{58}$/);
+      // The wallet's on-chain address over the three distinct children, in wallet-creation order.
+      result.rootAddress.should.equal(
+        algoMultisigAddress(1, 2, [
+          Buffer.from(derived.keys.user.pub, 'hex'),
+          Buffer.from(derived.keys.backup.pub, 'hex'),
+          Buffer.from(derived.keys.bitgo.pub, 'hex'),
+        ])
+      );
+      result.rootAddress.should.match(/^[A-Z2-7]{58}$/);
+      result.walletPassphrase.should.be.a.String();
+      passphrases.should.have.length(1);
+      passphrases[0].should.equal(result.walletPassphrase);
+      encrypt.callCount.should.equal(1);
+
+      // the lazy signer signs with the real extended key halves and its pub matches the backup child
+      result.externalBackupSigner.publicKey.should.equal(derived.keys.backup.pub);
+      const message = Buffer.from('deadbeef', 'hex');
+      const { signature } = await result.externalBackupSigner.sign(message);
+      signature.should.match(/^[0-9a-f]{128}$/);
+      ed25519
+        .verify(
+          new Uint8Array(Buffer.from(signature, 'hex')),
+          new Uint8Array(message),
+          new Uint8Array(Buffer.from(result.externalBackupSigner.publicKey, 'hex'))
+        )
+        .should.equal(true);
+    });
+
+    it('rejects slot-2 coins that have no registry entry yet', async () => {
+      const bitgo = { encrypt: sinon.stub() } as unknown as BitGoBase;
+      await buildSafeRecoverKeyParams({
+        bitgo,
+        coin: 'xlm',
+        slot: 'ed25519Multisig',
+        keys: edKeys,
+        mode: 'signed',
+      }).should.be.rejectedWith(/coin 'xlm' ed25519Multisig is not supported yet/);
+    });
+
+    it('rejects ed25519 children with malformed public keys', async () => {
+      const bitgo = { encrypt: sinon.stub() } as unknown as BitGoBase;
+      await buildSafeRecoverKeyParams({
+        bitgo,
+        coin: 'algo',
+        slot: 'ed25519Multisig',
+        keys: { ...edKeys, bitgo: { pub: '1234' } },
+        mode: 'unsigned',
+      }).should.be.rejectedWith(/ed25519 child public keys must be 32 bytes/);
+    });
   });
 });
 
