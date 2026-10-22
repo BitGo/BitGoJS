@@ -1,0 +1,5123 @@
+{
+  "tlnbtc": [
+    {
+      "id": "3cbabaa7-a063-4db3-b3a8-ea8cc38033e5",
+      "fullName": "Testnet Lightning Bitcoin",
+      "name": "tlnbtc",
+      "prefix": "",
+      "suffix": "TLNBTC",
+      "baseUnit": "millisatoshi",
+      "kind": "crypto",
+      "family": "lnbtc",
+      "isToken": false,
+      "decimalPlaces": 11,
+      "asset": "btc",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 998,
+      "genericAsset": "TLNBTC",
+      "network": {
+        "name": "LightningBitcoinTestnet"
+      }
+    }
+  ],
+  "tbch": [
+    {
+      "id": "aae6fafc-5091-4b10-9a11-aa6cefea2805",
+      "fullName": "Testnet Bitcoin Cash",
+      "name": "tbch",
+      "prefix": "",
+      "suffix": "TBCH",
+      "baseUnit": "satoshi",
+      "kind": "crypto",
+      "family": "bch",
+      "isToken": false,
+      "decimalPlaces": 8,
+      "asset": "bch",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 145,
+      "genericAsset": "TBCH",
+      "network": {
+        "name": "BitcoinCashTestnet"
+      }
+    }
+  ],
+  "tbcha": [
+    {
+      "id": "af8de1e0-3e33-47bf-94d3-fb3c2bebead2",
+      "fullName": "Testnet ECash",
+      "name": "tbcha",
+      "prefix": "",
+      "suffix": "TBCHA",
+      "baseUnit": "satoshi",
+      "kind": "crypto",
+      "family": "bcha",
+      "isToken": false,
+      "decimalPlaces": 8,
+      "asset": "bcha",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 899,
+      "genericAsset": "TBCHA",
+      "network": {
+        "name": "ECashTestnet"
+      }
+    }
+  ],
+  "tbsv": [
+    {
+      "id": "7cb81518-85d7-400f-960e-7bc00b3bfa62",
+      "fullName": "Testnet Bitcoin SV",
+      "name": "tbsv",
+      "prefix": "",
+      "suffix": "TBSV",
+      "baseUnit": "satoshi",
+      "kind": "crypto",
+      "family": "bsv",
+      "isToken": false,
+      "decimalPlaces": 8,
+      "asset": "bsv",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 236,
+      "genericAsset": "TBSV",
+      "network": {
+        "name": "BitcoinSVTestnet"
+      }
+    }
+  ],
+  "tbtc": [
+    {
+      "id": "cde7559d-a536-4d12-8de4-90baa09f90bd",
+      "fullName": "Testnet Bitcoin",
+      "name": "tbtc",
+      "prefix": "",
+      "suffix": "TBTC",
+      "baseUnit": "satoshi",
+      "kind": "crypto",
+      "family": "btc",
+      "isToken": false,
+      "decimalPlaces": 8,
+      "asset": "btc",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 0,
+      "genericAsset": "TBTC",
+      "network": {
+        "name": "BitcoinTestnet"
+      }
+    }
+  ],
+  "tbtcsig": [
+    {
+      "id": "a0d53dc9-2dcc-4ebb-a2d4-51983fe20da6",
+      "fullName": "Public Signet Bitcoin",
+      "name": "tbtcsig",
+      "prefix": "",
+      "suffix": "TBTCSIG",
+      "baseUnit": "satoshi",
+      "kind": "crypto",
+      "family": "btc",
+      "isToken": false,
+      "decimalPlaces": 8,
+      "asset": "btc",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 0,
+      "genericAsset": "TBTCSIG",
+      "network": {
+        "name": "BitcoinPublicSignet"
+      }
+    }
+  ],
+  "tbtc4": [
+    {
+      "id": "f76cec3f-7aef-473d-af5d-4c47dd40dfa8",
+      "fullName": "Testnet4 Bitcoin",
+      "name": "tbtc4",
+      "prefix": "",
+      "suffix": "TBTC4",
+      "baseUnit": "satoshi",
+      "kind": "crypto",
+      "family": "btc",
+      "isToken": false,
+      "decimalPlaces": 8,
+      "asset": "btc",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 0,
+      "genericAsset": "TBTC4",
+      "network": {
+        "name": "BitcoinTestnet4"
+      }
+    }
+  ],
+  "tbtcbgsig": [
+    {
+      "id": "722522dc-a613-4bff-a1d1-183ebe5138ae",
+      "fullName": "BitGo Signet Bitcoin",
+      "name": "tbtcbgsig",
+      "prefix": "",
+      "suffix": "TBTCBGSIG",
+      "baseUnit": "satoshi",
+      "kind": "crypto",
+      "family": "btc",
+      "isToken": false,
+      "decimalPlaces": 8,
+      "asset": "btc",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 0,
+      "genericAsset": "TBTCBGSIG",
+      "network": {
+        "name": "BitcoinBitGoSignet"
+      }
+    }
+  ],
+  "tbtcstx": [
+    {
+      "id": "f3e1c2d4-5b6a-47c8-9012-3456789abcde",
+      "fullName": "Stacks Bitcoin (Regtest)",
+      "name": "tbtcstx",
+      "prefix": "",
+      "suffix": "TBTCSTX",
+      "baseUnit": "satoshi",
+      "kind": "crypto",
+      "family": "btc",
+      "isToken": false,
+      "decimalPlaces": 8,
+      "asset": "btc",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 0,
+      "genericAsset": "TBTCSTX",
+      "network": {
+        "name": "BitcoinStx"
+      }
+    }
+  ],
+  "tbtcstxprivate1": [
+    {
+      "id": "b1f9e6d0-8a4c-4c67-9d0a-2c7e5b8f3146",
+      "fullName": "Stacks Bitcoin (Private-1 Regtest)",
+      "name": "tbtcstxprivate1",
+      "prefix": "",
+      "suffix": "TBTCSTXPRIVATE1",
+      "baseUnit": "satoshi",
+      "kind": "crypto",
+      "family": "btc",
+      "isToken": false,
+      "decimalPlaces": 8,
+      "asset": "btc",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 0,
+      "genericAsset": "TBTCSTXPRIVATE1",
+      "network": {
+        "name": "BitcoinStxPrivate1"
+      }
+    }
+  ],
+  "tbtcstxsignet": [
+    {
+      "id": "086a53bc-052a-4ab4-b812-3f6f13d66c88",
+      "fullName": "Stacks Bitcoin (Signet)",
+      "name": "tbtcstxsignet",
+      "prefix": "",
+      "suffix": "TBTCSTXSIGNET",
+      "baseUnit": "satoshi",
+      "kind": "crypto",
+      "family": "btc",
+      "isToken": false,
+      "decimalPlaces": 8,
+      "asset": "btc",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 0,
+      "genericAsset": "TBTCSTXSIGNET",
+      "network": {
+        "name": "BitcoinStxSignet"
+      }
+    }
+  ],
+  "tbtg": [
+    {
+      "id": "633246f2-af21-41b8-8b9e-ba9ae25d386f",
+      "fullName": "Testnet Bitcoin Gold",
+      "name": "tbtg",
+      "prefix": "",
+      "suffix": "TBTG",
+      "baseUnit": "satoshi",
+      "kind": "crypto",
+      "family": "btg",
+      "isToken": false,
+      "decimalPlaces": 8,
+      "asset": "btg",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 156,
+      "genericAsset": "TBTG",
+      "network": {
+        "name": "BitcoinGoldTestnet"
+      }
+    }
+  ],
+  "tltc": [
+    {
+      "id": "1aca32c8-a3e5-42eb-82df-4c263d8bfc68",
+      "fullName": "Testnet Litecoin",
+      "name": "tltc",
+      "prefix": "",
+      "suffix": "TLTC",
+      "baseUnit": "microlitecoins",
+      "kind": "crypto",
+      "family": "ltc",
+      "isToken": false,
+      "decimalPlaces": 8,
+      "asset": "ltc",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 2,
+      "genericAsset": "TLTC",
+      "network": {
+        "name": "LitecoinTestnet"
+      }
+    }
+  ],
+  "tdash": [
+    {
+      "id": "5950d78f-e8dd-457a-ab5d-310e6b476bb1",
+      "fullName": "Testnet Dash",
+      "name": "tdash",
+      "prefix": "",
+      "suffix": "TDASH",
+      "baseUnit": "duff",
+      "kind": "crypto",
+      "family": "dash",
+      "isToken": false,
+      "decimalPlaces": 8,
+      "asset": "dash",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 5,
+      "genericAsset": "TDASH",
+      "network": {
+        "name": "DashTestnet"
+      }
+    }
+  ],
+  "tzec": [
+    {
+      "id": "549a4499-387c-42d3-9048-c01d6724d98a",
+      "fullName": "Testnet ZCash",
+      "name": "tzec",
+      "prefix": "",
+      "suffix": "TZEC",
+      "baseUnit": "zatoshi",
+      "kind": "crypto",
+      "family": "zec",
+      "isToken": false,
+      "decimalPlaces": 8,
+      "asset": "zec",
+      "primaryKeyCurve": "secp256k1",
+      "otherSupportedKeyCurves": ["pallas"],
+      "bip44CoinType": 133,
+      "genericAsset": "TZEC",
+      "network": {
+        "name": "ZCashTestnet"
+      }
+    }
+  ],
+  "tpearl": [
+    {
+      "id": "5d88723a-7e86-43c7-9fb1-f4cee7abc48f",
+      "fullName": "Testnet Pearl",
+      "name": "tpearl",
+      "prefix": "",
+      "suffix": "TPEARL",
+      "baseUnit": "satoshi",
+      "kind": "crypto",
+      "family": "pearl",
+      "isToken": false,
+      "decimalPlaces": 8,
+      "asset": "pearl",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048235,
+      "genericAsset": "TPEARL",
+      "network": {
+        "name": "PearlTestnet"
+      }
+    }
+  ],
+  "tdoge": [
+    {
+      "id": "7a1597e8-fd8e-4b68-8086-f9159e37e0ce",
+      "fullName": "Testnet Dogecoin",
+      "name": "tdoge",
+      "prefix": "",
+      "suffix": "TDOGE",
+      "baseUnit": "satoshi",
+      "kind": "crypto",
+      "family": "doge",
+      "isToken": false,
+      "decimalPlaces": 8,
+      "asset": "doge",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 3,
+      "genericAsset": "TDOGE",
+      "network": {
+        "name": "DogecoinTestnet"
+      }
+    }
+  ],
+  "tavaxp": [
+    {
+      "id": "ea330a11-3814-4b74-994b-e61e05b34ec3",
+      "fullName": "Testnet Avalanche P-Chain",
+      "name": "tavaxp",
+      "prefix": "",
+      "suffix": "TAVAXP",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "avaxp",
+      "isToken": false,
+      "decimalPlaces": 9,
+      "asset": "avaxp",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048197,
+      "genericAsset": "TAVAXP",
+      "network": {
+        "name": "AvalanchePTestnet"
+      }
+    }
+  ],
+  "tflrp": [
+    {
+      "id": "e8a58db3-eedd-423c-89ae-817dfb6c6249",
+      "fullName": "Testnet Flare P-Chain",
+      "name": "tflrp",
+      "prefix": "",
+      "suffix": "TFLRP",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "flrp",
+      "isToken": false,
+      "decimalPlaces": 9,
+      "asset": "flrp",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048210,
+      "genericAsset": "TFLRP",
+      "network": {
+        "name": "FlarePTestnet"
+      }
+    }
+  ],
+  "tkaspa": [
+    {
+      "id": "96b7ccfb-6130-43b2-a324-783f86752b94",
+      "fullName": "Testnet Kaspa",
+      "name": "tkaspa",
+      "prefix": "",
+      "suffix": "TKASPA",
+      "baseUnit": "sompi",
+      "kind": "crypto",
+      "family": "kaspa",
+      "isToken": false,
+      "decimalPlaces": 8,
+      "asset": "kaspa",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 111111,
+      "genericAsset": "TKASPA",
+      "network": {
+        "name": "Testnet Kaspa"
+      }
+    }
+  ],
+  "tada": [
+    {
+      "id": "1cbfb5aa-94ba-415b-b5c2-c51e801e21b3",
+      "fullName": "Testnet Cardano ADA",
+      "name": "tada",
+      "prefix": "",
+      "suffix": "TADA",
+      "baseUnit": "lovelace",
+      "kind": "crypto",
+      "family": "ada",
+      "isToken": false,
+      "decimalPlaces": 6,
+      "asset": "ada",
+      "primaryKeyCurve": "ed25519",
+      "bip44CoinType": 1815,
+      "genericAsset": "TADA",
+      "network": {
+        "name": "AdaCardanoTestnet"
+      }
+    }
+  ],
+  "talgo": [
+    {
+      "id": "9595aa8c-7add-4ede-a61b-b176cadade81",
+      "fullName": "Testnet Algorand",
+      "name": "talgo",
+      "prefix": "",
+      "suffix": "TALGO",
+      "baseUnit": "microAlgo",
+      "kind": "crypto",
+      "family": "algo",
+      "isToken": false,
+      "decimalPlaces": 6,
+      "asset": "algo",
+      "primaryKeyCurve": "ed25519",
+      "bip44CoinType": 283,
+      "genericAsset": "TALGO",
+      "network": {
+        "name": "AlgorandTestnet"
+      }
+    }
+  ],
+  "tavaxc": [
+    {
+      "id": "91a971d1-1dc1-4953-8828-82bef859acfa",
+      "fullName": "Testnet Avalanche C-Chain",
+      "name": "tavaxc",
+      "prefix": "",
+      "suffix": "TAVAXC",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "avaxc",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "avaxc",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 9005,
+      "genericAsset": "TAVAXC",
+      "network": {
+        "name": "AvalancheCTestnet"
+      }
+    }
+  ],
+  "tcspr": [
+    {
+      "id": "bd8f0b27-d13b-41c8-9f60-84fc1f201d89",
+      "fullName": "Testnet Casper",
+      "name": "tcspr",
+      "prefix": "",
+      "suffix": "TCSPR",
+      "baseUnit": "mote",
+      "kind": "crypto",
+      "family": "cspr",
+      "isToken": false,
+      "decimalPlaces": 9,
+      "asset": "cspr",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 506,
+      "genericAsset": "TCSPR",
+      "network": {
+        "name": "CasperTestnet"
+      }
+    }
+  ],
+  "tdot": [
+    {
+      "id": "85b966bd-d1cc-4a86-a937-b1afab659e7b",
+      "fullName": "Testnet Polkadot",
+      "name": "tdot",
+      "prefix": "",
+      "suffix": "TDOT",
+      "baseUnit": "planck",
+      "kind": "crypto",
+      "family": "dot",
+      "isToken": false,
+      "decimalPlaces": 12,
+      "asset": "dot",
+      "primaryKeyCurve": "ed25519",
+      "bip44CoinType": 354,
+      "genericAsset": "TDOT",
+      "network": {
+        "name": "WestendAssetHub"
+      }
+    }
+  ],
+  "teth": [
+    {
+      "id": "25f9ade1-d768-45ec-8b44-e55c2e5f472d",
+      "fullName": "Kovan Testnet Ethereum (Deprecated)",
+      "name": "teth",
+      "prefix": "",
+      "suffix": "TETH",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "eth",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "eth",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 60,
+      "genericAsset": "TETH",
+      "network": {
+        "name": "Kovan"
+      },
+      "additionalFeatures": [
+        "supports-tokens",
+        "enterprise-pays-fees",
+        "wallet-connect-defi",
+        "evm_coin",
+        "stuck-transaction-management-onchain",
+        "shared-evm-message-signing",
+        "deprecated",
+        "EIP1559"
+      ],
+      "excludedFeatures": []
+    }
+  ],
+  "gteth": [
+    {
+      "id": "41b75ac4-46d6-4dac-b741-bf11406b142f",
+      "fullName": "Goerli Testnet Ethereum",
+      "name": "gteth",
+      "prefix": "",
+      "suffix": "GTETH",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "eth",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "eth",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 60,
+      "genericAsset": "GTETH",
+      "network": {
+        "name": "Goerli"
+      },
+      "additionalFeatures": [
+        "supports-tokens",
+        "enterprise-pays-fees",
+        "wallet-connect-defi",
+        "evm_coin",
+        "stuck-transaction-management-onchain",
+        "shared-evm-message-signing",
+        "staking",
+        "metamask-institutional",
+        "tss",
+        "tss-cold",
+        "multisig-cold",
+        "evm-wallet",
+        "custody-bitgo-germany",
+        "custody-bitgo-new-york",
+        "custody-bitgo-switzerland",
+        "EIP1559",
+        "deprecated"
+      ],
+      "excludedFeatures": []
+    }
+  ],
+  "hteth": [
+    {
+      "id": "68aec0bd-1d9a-40fa-bcef-7fa9538f65d3",
+      "fullName": "Hoodi Testnet Ethereum",
+      "name": "hteth",
+      "prefix": "",
+      "suffix": "HTETH",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "eth",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "eth",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 60,
+      "genericAsset": "HTETH",
+      "network": {
+        "name": "Hoodi"
+      },
+      "additionalFeatures": [
+        "supports-tokens",
+        "enterprise-pays-fees",
+        "wallet-connect-defi",
+        "evm_coin",
+        "stuck-transaction-management-onchain",
+        "shared-evm-message-signing",
+        "staking",
+        "metamask-institutional",
+        "tss",
+        "tss-cold",
+        "mpcv2",
+        "multisig-cold",
+        "evm-wallet",
+        "custody-bitgo-germany",
+        "custody-bitgo-new-york",
+        "custody-bitgo-switzerland",
+        "custody-bitgo-korea",
+        "bulk-transaction",
+        "stuck-transaction-management-onchain",
+        "stuck-transaction-management-tss",
+        "EIP1559",
+        "erc20-bulk-transaction",
+        "custody-bulk-transaction"
+      ],
+      "excludedFeatures": []
+    }
+  ],
+  "sepeth": [
+    {
+      "id": "26f8f544-831b-4d40-bca4-835f1b45f4db",
+      "fullName": "Sepolia Testnet Ethereum",
+      "name": "sepeth",
+      "prefix": "",
+      "suffix": "SEPETH",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "eth",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "sepeth",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 60,
+      "genericAsset": "SEPETH",
+      "network": {
+        "name": "Sepolia"
+      },
+      "additionalFeatures": [
+        "supports-tokens",
+        "enterprise-pays-fees",
+        "wallet-connect-defi",
+        "evm_coin",
+        "stuck-transaction-management-onchain",
+        "shared-evm-message-signing",
+        "staking",
+        "metamask-institutional",
+        "tss",
+        "tss-cold",
+        "mpcv2",
+        "multisig-cold",
+        "evm-wallet",
+        "custody-bitgo-germany",
+        "custody-bitgo-new-york",
+        "custody-bitgo-switzerland",
+        "custody-bitgo-korea",
+        "bulk-transaction",
+        "stuck-transaction-management-onchain",
+        "stuck-transaction-management-tss",
+        "EIP1559",
+        "erc20-bulk-transaction",
+        "custody-bulk-transaction"
+      ],
+      "excludedFeatures": []
+    }
+  ],
+  "txtzevm": [
+    {
+      "id": "e7fdbd6f-93ff-4dda-8a57-81580827188e",
+      "fullName": "Testnet Etherlink",
+      "name": "txtzevm",
+      "prefix": "",
+      "suffix": "TXTZEVM",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "xtzevm",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "xtzevm",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048250,
+      "genericAsset": "TXTZEVM",
+      "network": {
+        "name": "Testnet Etherlink"
+      }
+    }
+  ],
+  "tbaseeth": [
+    {
+      "id": "2660f6f6-1980-4584-a0b3-487d4a832b9f",
+      "fullName": "Base Ethereum Testnet",
+      "name": "tbaseeth",
+      "prefix": "",
+      "suffix": "TBaseETH",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "baseeth",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "baseeth",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048198,
+      "genericAsset": "TBASEETH",
+      "network": {
+        "name": "BaseChainTestnet"
+      }
+    }
+  ],
+  "topbnb": [
+    {
+      "id": "2b5c52f8-0d0c-4a17-8052-d56373f5d264",
+      "fullName": "opBNB Testnet",
+      "name": "topbnb",
+      "prefix": "",
+      "suffix": "TOPBNB",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "opbnb",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "opbnb",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048233,
+      "genericAsset": "TOPBNB",
+      "network": {
+        "name": "OpBNBTestnet"
+      }
+    }
+  ],
+  "tfantom": [
+    {
+      "id": "a97b6e81-33fb-4f63-83b6-7ca91e95f8b4",
+      "fullName": "Fantom Testnet",
+      "name": "tfantom",
+      "prefix": "",
+      "suffix": "TFANTOM",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "fantom",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "fantom",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1007,
+      "genericAsset": "TFANTOM",
+      "network": {
+        "name": "FantomTestnet"
+      }
+    }
+  ],
+  "tcotieth": [
+    {
+      "id": "c4f8e2a1-9b3d-4e5f-a6c7-8d9e0f1a2b3c",
+      "fullName": "COTI Ethereum Testnet",
+      "name": "tcotieth",
+      "prefix": "",
+      "suffix": "TCOTIETH",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "cotieth",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "cotieth",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048204,
+      "genericAsset": "TCOTIETH",
+      "network": {
+        "name": "CotiethTestnet"
+      }
+    }
+  ],
+  "tetc": [
+    {
+      "id": "49c048a1-40b3-4c85-8bbd-adf7ef9393be",
+      "fullName": "Testnet Ethereum Classic",
+      "name": "tetc",
+      "prefix": "",
+      "suffix": "TETC",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "etc",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "etc",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 61,
+      "genericAsset": "TETC",
+      "network": {
+        "name": "EthereumClassicTestnet"
+      }
+    }
+  ],
+  "teos": [
+    {
+      "id": "024af1f1-41d8-4df9-b8a1-df74dac5907a",
+      "fullName": "Testnet Eos",
+      "name": "teos",
+      "prefix": "",
+      "suffix": "TEOS",
+      "baseUnit": "eos",
+      "kind": "crypto",
+      "family": "eos",
+      "isToken": false,
+      "decimalPlaces": 4,
+      "asset": "eos",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 194,
+      "genericAsset": "TEOS",
+      "network": {
+        "name": "EosTestnet"
+      }
+    }
+  ],
+  "trbtc": [
+    {
+      "id": "626b060b-597e-499b-88dd-414f931a743e",
+      "fullName": "Testnet Rootstock RSK",
+      "name": "trbtc",
+      "prefix": "",
+      "suffix": "TRBTC",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "rbtc",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "rbtc",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 137,
+      "genericAsset": "TRBTC",
+      "network": {
+        "name": "RbtcTestnet"
+      }
+    }
+  ],
+  "ttrx": [
+    {
+      "id": "7e0c65f7-dfdc-4d22-8c31-37936a39d717",
+      "fullName": "Testnet Tron",
+      "name": "ttrx",
+      "prefix": "",
+      "suffix": "TTRX",
+      "baseUnit": "sun",
+      "kind": "crypto",
+      "family": "trx",
+      "isToken": false,
+      "decimalPlaces": 6,
+      "asset": "trx",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 195,
+      "genericAsset": "TTRX",
+      "network": {
+        "name": "TrxTestnet"
+      }
+    }
+  ],
+  "txrp": [
+    {
+      "id": "cdf3b41b-176a-4b48-859b-88b7869c51e9",
+      "fullName": "Testnet Ripple",
+      "name": "txrp",
+      "prefix": "",
+      "suffix": "TXRP",
+      "baseUnit": "drop",
+      "kind": "crypto",
+      "family": "xrp",
+      "isToken": false,
+      "decimalPlaces": 6,
+      "asset": "xrp",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 144,
+      "genericAsset": "TXRP",
+      "network": {
+        "name": "XrpTestnet"
+      }
+    }
+  ],
+  "txlm": [
+    {
+      "id": "dea5261e-dbe1-4870-b1db-5db9ed0ce63d",
+      "fullName": "Testnet Stellar",
+      "name": "txlm",
+      "prefix": "",
+      "suffix": "TXLM",
+      "baseUnit": "stroop",
+      "kind": "crypto",
+      "family": "xlm",
+      "isToken": false,
+      "decimalPlaces": 7,
+      "asset": "xlm",
+      "primaryKeyCurve": "ed25519",
+      "bip44CoinType": 148,
+      "genericAsset": "TXLM",
+      "network": {
+        "name": "StellarTestnet"
+      }
+    }
+  ],
+  "txtz": [
+    {
+      "id": "1792f953-c4be-4842-97b3-69efb4f0832c",
+      "fullName": "Testnet Tezos",
+      "name": "txtz",
+      "prefix": "",
+      "suffix": "TXTZ",
+      "baseUnit": "micro xtz",
+      "kind": "crypto",
+      "family": "xtz",
+      "isToken": false,
+      "decimalPlaces": 6,
+      "asset": "xtz",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1729,
+      "genericAsset": "TXTZ",
+      "network": {
+        "name": "XtzTestnet"
+      }
+    }
+  ],
+  "tsusd": [
+    {
+      "id": "e424034a-22e6-4bcf-bd04-c598507afe3d",
+      "fullName": "Testnet Silvergate USD",
+      "name": "tsusd",
+      "prefix": "",
+      "suffix": "TSUSD",
+      "baseUnit": "USD",
+      "kind": "crypto",
+      "family": "susd",
+      "isToken": false,
+      "decimalPlaces": 2,
+      "asset": "usd",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048242,
+      "genericAsset": "TSUSD",
+      "network": {
+        "name": "SUSDTestnet"
+      }
+    }
+  ],
+  "tstx": [
+    {
+      "id": "287fc055-e1f6-4ab9-8f2c-97cad4b0f328",
+      "fullName": "Testnet Stacks",
+      "name": "tstx",
+      "prefix": "",
+      "suffix": "TSTX",
+      "baseUnit": "micro-STX",
+      "kind": "crypto",
+      "family": "stx",
+      "isToken": false,
+      "decimalPlaces": 6,
+      "asset": "stx",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 5757,
+      "genericAsset": "TSTX",
+      "network": {
+        "name": "StxTestnet"
+      }
+    }
+  ],
+  "tstxsignet": [
+    {
+      "id": "ec52d215-34c0-4aca-b49b-2eeaab8f9615",
+      "fullName": "Testnet Stacks (Signet)",
+      "name": "tstxsignet",
+      "prefix": "",
+      "suffix": "TSTXSIGNET",
+      "baseUnit": "micro-STX",
+      "kind": "crypto",
+      "family": "stx",
+      "isToken": false,
+      "decimalPlaces": 6,
+      "asset": "stx",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 5757,
+      "genericAsset": "TSTXSIGNET",
+      "network": {
+        "name": "StxSignet"
+      }
+    }
+  ],
+  "tsol": [
+    {
+      "id": "16445f37-624c-4343-90f2-c62429551871",
+      "fullName": "Testnet Solana",
+      "name": "tsol",
+      "prefix": "",
+      "suffix": "TSOL",
+      "baseUnit": "lamport",
+      "kind": "crypto",
+      "family": "sol",
+      "isToken": false,
+      "decimalPlaces": 9,
+      "asset": "sol",
+      "primaryKeyCurve": "ed25519",
+      "bip44CoinType": 501,
+      "genericAsset": "TSOL",
+      "network": {
+        "name": "SolTestnet"
+      }
+    }
+  ],
+  "tsui": [
+    {
+      "id": "2eb07d12-3a42-49d7-ae98-bf559849b334",
+      "fullName": "Testnet Sui",
+      "name": "tsui",
+      "prefix": "",
+      "suffix": "TSUI",
+      "baseUnit": "MIST",
+      "kind": "crypto",
+      "family": "sui",
+      "isToken": false,
+      "decimalPlaces": 9,
+      "asset": "sui",
+      "primaryKeyCurve": "ed25519",
+      "bip44CoinType": 784,
+      "genericAsset": "TSUI",
+      "network": {
+        "name": "Testnet Sui"
+      }
+    }
+  ],
+  "tatom": [
+    {
+      "id": "9869004c-d372-42e1-bdd5-9ac8716c86cb",
+      "fullName": "Testnet Cosmos Hub ATOM",
+      "name": "tatom",
+      "prefix": "",
+      "suffix": "TATOM",
+      "baseUnit": "uatom",
+      "kind": "crypto",
+      "family": "atom",
+      "isToken": false,
+      "decimalPlaces": 6,
+      "asset": "atom",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 118,
+      "genericAsset": "TATOM",
+      "network": {
+        "name": "Testnet Cosmos Hub ATOM"
+      }
+    }
+  ],
+  "tosmo": [
+    {
+      "id": "d813e9c9-f9b9-4d10-a4e2-57d9e3b65e2c",
+      "fullName": "Testnet Osmosis",
+      "name": "tosmo",
+      "prefix": "",
+      "suffix": "TOSMO",
+      "baseUnit": "uosmo",
+      "kind": "crypto",
+      "family": "osmo",
+      "isToken": false,
+      "decimalPlaces": 6,
+      "asset": "osmo",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 10000118,
+      "genericAsset": "TOSMO",
+      "network": {
+        "name": "Testnet Osmosis"
+      }
+    }
+  ],
+  "ttia": [
+    {
+      "id": "6ea4f120-6d26-4070-a12a-a0cac39ea552",
+      "fullName": "Testnet Celestia",
+      "name": "ttia",
+      "prefix": "",
+      "suffix": "TTIA",
+      "baseUnit": "utia",
+      "kind": "crypto",
+      "family": "tia",
+      "isToken": false,
+      "decimalPlaces": 6,
+      "asset": "tia",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048244,
+      "genericAsset": "TTIA",
+      "network": {
+        "name": "Testnet Celestia"
+      }
+    }
+  ],
+  "thash": [
+    {
+      "id": "feadf3d5-5a9a-427e-8144-7a5085b4d258",
+      "fullName": "Testnet Provenance",
+      "name": "thash",
+      "prefix": "",
+      "suffix": "THASH",
+      "baseUnit": "nhash",
+      "kind": "crypto",
+      "family": "hash",
+      "isToken": false,
+      "decimalPlaces": 9,
+      "asset": "hash",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 505,
+      "genericAsset": "THASH",
+      "network": {
+        "name": "Testnet Provenance"
+      }
+    }
+  ],
+  "tbld": [
+    {
+      "id": "e093184f-4134-455f-b870-da0bac213f00",
+      "fullName": "Testnet Agoric",
+      "name": "tbld",
+      "prefix": "",
+      "suffix": "TBLD",
+      "baseUnit": "ubld",
+      "kind": "crypto",
+      "family": "bld",
+      "isToken": false,
+      "decimalPlaces": 6,
+      "asset": "bld",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 564,
+      "genericAsset": "TBLD",
+      "network": {
+        "name": "Testnet Agoric"
+      }
+    }
+  ],
+  "tog": [
+    {
+      "id": "0d2d6a7f-70a9-4475-afca-2af5cfaddff6",
+      "fullName": "Zero Gravity Testnet",
+      "name": "tog",
+      "prefix": "",
+      "suffix": "T0G",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "og",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "og",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048231,
+      "genericAsset": "TOG",
+      "network": {
+        "name": "Zero Gravity Testnet"
+      }
+    }
+  ],
+  "tsei": [
+    {
+      "id": "5be8a3f3-5c71-41ff-8d87-1ade63ce2543",
+      "fullName": "Testnet Sei",
+      "name": "tsei",
+      "prefix": "",
+      "suffix": "TSEI",
+      "baseUnit": "usei",
+      "kind": "crypto",
+      "family": "sei",
+      "isToken": false,
+      "decimalPlaces": 6,
+      "asset": "sei",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 19000118,
+      "genericAsset": "TSEI",
+      "network": {
+        "name": "Testnet Sei"
+      }
+    }
+  ],
+  "tlineaeth": [
+    {
+      "id": "700a7869-1493-4d91-ab9b-465480bcab0c",
+      "fullName": "Linea Ethereum Testnet",
+      "name": "tlineaeth",
+      "prefix": "",
+      "suffix": "TLineaETH",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "lineaeth",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "lineaeth",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048225,
+      "genericAsset": "TLINEAETH",
+      "network": {
+        "name": "Linea Ethereum Testnet"
+      }
+    }
+  ],
+  "tseievm": [
+    {
+      "id": "42cd26d1-706d-40f6-bcce-7cb125e6f617",
+      "fullName": "Sei EVM Testnet",
+      "name": "tseievm",
+      "prefix": "",
+      "suffix": "TSEIEVM",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "seievm",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "seievm",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048238,
+      "genericAsset": "TSEIEVM",
+      "network": {
+        "name": "SeiEvmTestnet"
+      }
+    }
+  ],
+  "tgasevm": [
+    {
+      "id": "c61b81b8-c216-435c-8281-8f8b649e1f94",
+      "fullName": "Testnet Neo X",
+      "name": "tgasevm",
+      "prefix": "",
+      "suffix": "TGASEVM",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "gasevm",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "gasevm",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048212,
+      "genericAsset": "TGASEVM",
+      "network": {
+        "name": "Testnet Neo X"
+      }
+    }
+  ],
+  "tzeta": [
+    {
+      "id": "1aeb7754-1518-4aac-8cc0-e4bb07713a31",
+      "fullName": "Testnet Zeta",
+      "name": "tzeta",
+      "prefix": "",
+      "suffix": "TZETA",
+      "baseUnit": "azeta",
+      "kind": "crypto",
+      "family": "zeta",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "zeta",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 7000,
+      "genericAsset": "TZETA",
+      "network": {
+        "name": "Testnet Zeta"
+      }
+    }
+  ],
+  "tinjective": [
+    {
+      "id": "6ae81d6a-011c-499c-a3c8-15ac7dcac48a",
+      "fullName": "Testnet Injective",
+      "name": "tinjective",
+      "prefix": "",
+      "suffix": "TINJECTIVE",
+      "baseUnit": "inj",
+      "kind": "crypto",
+      "family": "injective",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "injective",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 22000119,
+      "genericAsset": "TINJECTIVE",
+      "network": {
+        "name": "InjectiveTestnet"
+      }
+    }
+  ],
+  "tiota": [
+    {
+      "id": "23c64fc0-69af-405e-86e2-f8403f08fb64",
+      "fullName": "Testnet Iota",
+      "name": "tiota",
+      "prefix": "",
+      "suffix": "TIOTA",
+      "baseUnit": "iota",
+      "kind": "crypto",
+      "family": "iota",
+      "isToken": false,
+      "decimalPlaces": 9,
+      "asset": "iota",
+      "primaryKeyCurve": "ed25519",
+      "bip44CoinType": 4218,
+      "gasTankLowBalanceAlertFactor": 80,
+      "gasTankMinBalanceRecommendationFactor": 200,
+      "genericAsset": "TIOTA",
+      "network": {
+        "name": "Testnet Iota"
+      }
+    }
+  ],
+  "tkavacosmos": [
+    {
+      "id": "62895d6b-6e99-4eba-82f1-9ce4e7658998",
+      "fullName": "Testnet Kava Cosmos",
+      "name": "tkavacosmos",
+      "prefix": "",
+      "suffix": "TKAVACOSMOS",
+      "baseUnit": "ukava",
+      "kind": "crypto",
+      "family": "kavacosmos",
+      "isToken": false,
+      "decimalPlaces": 6,
+      "asset": "kavacosmos",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 459,
+      "genericAsset": "TKAVACOSMOS",
+      "network": {
+        "name": "KavaCosmosTestnet"
+      }
+    }
+  ],
+  "tdydxcosmos": [
+    {
+      "id": "a2b4c6d8-e1f3-5a7b-9c2d-4e6f8a1b3c5d",
+      "fullName": "Testnet dYdX Cosmos",
+      "name": "tdydxcosmos",
+      "prefix": "",
+      "suffix": "TDYDXCOSMOS",
+      "baseUnit": "adydx",
+      "kind": "crypto",
+      "family": "dydxcosmos",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "dydxcosmos",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 22000118,
+      "genericAsset": "TDYDXCOSMOS",
+      "network": {
+        "name": "DydxTestnet"
+      }
+    }
+  ],
+  "tcoreum": [
+    {
+      "id": "df2f040b-89f3-4bb3-8da7-2445c7fdefca",
+      "fullName": "Testnet TX",
+      "name": "tcoreum",
+      "prefix": "",
+      "suffix": "TCOREUM",
+      "baseUnit": "utestcore",
+      "kind": "crypto",
+      "family": "coreum",
+      "isToken": false,
+      "decimalPlaces": 6,
+      "asset": "coreum",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048203,
+      "genericAsset": "TCOREUM",
+      "network": {
+        "name": "Testnet TX"
+      }
+    }
+  ],
+  "tthorchain:rune": [
+    {
+      "id": "7281ab3b-0451-4ef9-b367-8623d9bcfd87",
+      "fullName": "Testnet Rune",
+      "name": "tthorchain:rune",
+      "prefix": "",
+      "suffix": "TTHORCHAIN:RUNE",
+      "baseUnit": "rune",
+      "kind": "crypto",
+      "family": "thor",
+      "isToken": false,
+      "decimalPlaces": 8,
+      "asset": "rune",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 931,
+      "genericAsset": "RUNE",
+      "network": {
+        "name": "RuneTestNet"
+      }
+    }
+  ],
+  "tbaby": [
+    {
+      "id": "ee22282b-c307-4861-b706-d9a178326ad5",
+      "fullName": "Testnet Babylon",
+      "name": "tbaby",
+      "prefix": "",
+      "suffix": "TBABY",
+      "baseUnit": "ubbn",
+      "kind": "crypto",
+      "family": "baby",
+      "isToken": false,
+      "decimalPlaces": 6,
+      "asset": "baby",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 736,
+      "genericAsset": "TBABY",
+      "network": {
+        "name": "Testnet Babylon"
+      }
+    }
+  ],
+  "tmantra": [
+    {
+      "id": "cc900f12-f229-4eb3-9ca7-2a05a445f362",
+      "fullName": "Testnet Mantra",
+      "name": "tmantra",
+      "prefix": "",
+      "suffix": "TMANTRA",
+      "baseUnit": "uom",
+      "kind": "crypto",
+      "family": "mantra",
+      "isToken": false,
+      "decimalPlaces": 6,
+      "asset": "mantra",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048227,
+      "genericAsset": "TMANTRA",
+      "network": {
+        "name": "Testnet Mantra"
+      }
+    }
+  ],
+  "tcronos": [
+    {
+      "id": "49d56512-bddb-41aa-ac7f-f4a4c494b412",
+      "fullName": "Testnet Cronos POS",
+      "name": "tcronos",
+      "prefix": "",
+      "suffix": "TCRONOS",
+      "baseUnit": "basecro",
+      "kind": "crypto",
+      "family": "cronos",
+      "isToken": false,
+      "decimalPlaces": 8,
+      "asset": "cronos",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048205,
+      "genericAsset": "TCRONOS",
+      "network": {
+        "name": "Testnet Cronos POS"
+      }
+    }
+  ],
+  "tfetchai": [
+    {
+      "id": "e285caf3-e9b8-407a-aa72-ee4094d1cf9f",
+      "fullName": "Testnet Fetch",
+      "name": "tfetchai",
+      "prefix": "",
+      "suffix": "TFETCHAI",
+      "baseUnit": "afet",
+      "kind": "crypto",
+      "family": "fetchai",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "fetchai",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048208,
+      "genericAsset": "TFETCHAI",
+      "network": {
+        "name": "Testnet Fetch"
+      }
+    }
+  ],
+  "tinitia": [
+    {
+      "id": "2d10a918-01f4-40a5-b1db-a5e5247d21d7",
+      "fullName": "Testnet Initia",
+      "name": "tinitia",
+      "prefix": "",
+      "suffix": "TINITIA",
+      "baseUnit": "uinit",
+      "kind": "crypto",
+      "family": "initia",
+      "isToken": false,
+      "decimalPlaces": 6,
+      "asset": "initia",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048219,
+      "genericAsset": "TINITIA",
+      "network": {
+        "name": "Testnet Initia"
+      }
+    }
+  ],
+  "tasi": [
+    {
+      "id": "1b7dfc3e-3431-48ca-883a-e9e8e32b17f2",
+      "fullName": "Testnet Fetch Native",
+      "name": "tasi",
+      "prefix": "",
+      "suffix": "TASI",
+      "baseUnit": "afet",
+      "kind": "crypto",
+      "family": "asi",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "asi",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048196,
+      "genericAsset": "TASI",
+      "network": {
+        "name": "Testnet Fetch Native"
+      }
+    }
+  ],
+  "tislm": [
+    {
+      "id": "02eced2c-cf1d-4660-832c-858685ae7107",
+      "fullName": "Testnet Islamic Coin",
+      "name": "tislm",
+      "prefix": "",
+      "suffix": "TISLM",
+      "baseUnit": "aISLM",
+      "kind": "crypto",
+      "family": "islm",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "islm",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1348,
+      "genericAsset": "TISLM",
+      "network": {
+        "name": "HaqqTestnet"
+      }
+    }
+  ],
+  "tnear": [
+    {
+      "id": "5f076cd2-fbb6-4ef6-9aa6-adc0d8851b4b",
+      "fullName": "Testnet Near",
+      "name": "tnear",
+      "prefix": "",
+      "suffix": "TNEAR",
+      "baseUnit": "yocto",
+      "kind": "crypto",
+      "family": "near",
+      "isToken": false,
+      "decimalPlaces": 24,
+      "asset": "near",
+      "primaryKeyCurve": "ed25519",
+      "bip44CoinType": 397,
+      "genericAsset": "TNEAR",
+      "network": {
+        "name": "NearTestnet"
+      }
+    }
+  ],
+  "tbsc": [
+    {
+      "id": "0a205427-f7c9-48a4-a238-c4b33ba6384d",
+      "fullName": "Testnet Native BNB",
+      "name": "tbsc",
+      "prefix": "",
+      "suffix": "TBSC",
+      "baseUnit": "jager",
+      "kind": "crypto",
+      "family": "bsc",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "bsc",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048200,
+      "genericAsset": "TBSC",
+      "network": {
+        "name": "BinanceSmartChainTestnet"
+      }
+    }
+  ],
+  "tpolygon": [
+    {
+      "id": "aa7b72d1-9197-492d-b2ca-2c9c9732115d",
+      "fullName": "Testnet Polygon",
+      "name": "tpolygon",
+      "prefix": "",
+      "suffix": "TPOLYGON",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "polygon",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "polygon",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 966,
+      "genericAsset": "TPOLYGON",
+      "network": {
+        "name": "PolygonTestnet"
+      }
+    }
+  ],
+  "tton": [
+    {
+      "id": "8244f85f-943c-4520-8e68-9e7f4361a13f",
+      "fullName": "Testnet Gram",
+      "name": "tton",
+      "prefix": "",
+      "suffix": "TTON",
+      "baseUnit": "nanoton",
+      "kind": "crypto",
+      "family": "ton",
+      "isToken": false,
+      "decimalPlaces": 9,
+      "asset": "ton",
+      "primaryKeyCurve": "ed25519",
+      "bip44CoinType": 607,
+      "genericAsset": "TTON",
+      "network": {
+        "name": "Testnet Gram"
+      }
+    }
+  ],
+  "tarbeth": [
+    {
+      "id": "1c51d919-9a1a-48b6-ac6d-ec3c593af949",
+      "fullName": "Testnet Arbitrum Ethereum (L2 Chain)",
+      "name": "tarbeth",
+      "prefix": "",
+      "suffix": "TARBETH",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "arbeth",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "arbeth",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048194,
+      "genericAsset": "TARBETH",
+      "network": {
+        "name": "ArbitrumTestnet"
+      }
+    }
+  ],
+  "topeth": [
+    {
+      "id": "efe943c4-1144-44d2-ae34-acdbe469cfcd",
+      "fullName": "Testnet Optimism Ethereum (L2 Chain)",
+      "name": "topeth",
+      "prefix": "",
+      "suffix": "TOPETH",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "opeth",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "opeth",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048234,
+      "genericAsset": "TOPETH",
+      "network": {
+        "name": "OptimismTestnet"
+      }
+    }
+  ],
+  "tzketh": [
+    {
+      "id": "e34d835d-5730-4b66-96f1-cace79e2bc88",
+      "fullName": "Testnet zkSync Ethereum",
+      "name": "tzketh",
+      "prefix": "",
+      "suffix": "TZKETH",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "zketh",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "zketh",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048251,
+      "genericAsset": "TZKETH",
+      "network": {
+        "name": "ZkSyncTestnet"
+      }
+    }
+  ],
+  "tzksyncera": [
+    {
+      "id": "fc901cec-26fa-4afb-830a-6793425d7064",
+      "fullName": "Testnet zkSync Era",
+      "name": "tzksyncera",
+      "prefix": "",
+      "suffix": "TZKSYNCERA",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "zksyncera",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "zksyncera",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048252,
+      "genericAsset": "TZKSYNCERA",
+      "network": {
+        "name": "ZkSyncEraTestnet"
+      }
+    }
+  ],
+  "tbera": [
+    {
+      "id": "038522b7-9ebf-492f-9e51-81756f8a354a",
+      "fullName": "Testnet Berachain",
+      "name": "tbera",
+      "prefix": "",
+      "suffix": "TBERA",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "bera",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "bera",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 8008,
+      "genericAsset": "TBERA",
+      "network": {
+        "name": "BeraTestnet"
+      }
+    }
+  ],
+  "toas": [
+    {
+      "id": "b5316b57-8aa3-4f0b-9736-96b7838dbde8",
+      "fullName": "Testnet Oasys",
+      "name": "toas",
+      "prefix": "",
+      "suffix": "TOAS",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "oas",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "oas",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 685,
+      "genericAsset": "TOAS",
+      "network": {
+        "name": "OasTestnet"
+      }
+    }
+  ],
+  "tcoredao": [
+    {
+      "id": "d1d5e492-be8c-4b60-b2ab-3ed26b7dd8c8",
+      "fullName": "Testnet Core",
+      "name": "tcoredao",
+      "prefix": "",
+      "suffix": "TCOREDAO",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "coredao",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "coredao",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1116,
+      "genericAsset": "TCOREDAO",
+      "network": {
+        "name": "CoredaoTestnet"
+      }
+    }
+  ],
+  "tabstracteth": [
+    {
+      "id": "dd6c9539-90e1-4fb1-a428-c2dee96107f8",
+      "fullName": "Testnet Abstract Ethereum",
+      "name": "tabstracteth",
+      "prefix": "",
+      "suffix": "TABSTRACTETH",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "abstracteth",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "abstracteth",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048192,
+      "genericAsset": "TABSTRACTETH",
+      "network": {
+        "name": "Testnet Abstract Ethereum"
+      }
+    }
+  ],
+  "tapechain": [
+    {
+      "id": "b3610694-f960-4ef4-a714-c3cb9e02f4b6",
+      "fullName": "Testnet Ape Chain",
+      "name": "tapechain",
+      "prefix": "",
+      "suffix": "TAPECHAIN",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "apechain",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "apechain",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048193,
+      "genericAsset": "TAPECHAIN",
+      "network": {
+        "name": "ApeChainTestnet"
+      }
+    }
+  ],
+  "txdc": [
+    {
+      "id": "e6ecb22e-0ae8-463a-b2fb-61502fd54240",
+      "fullName": "Testnet XDC",
+      "name": "txdc",
+      "prefix": "",
+      "suffix": "TXDC",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "xdc",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "xdc",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 550,
+      "genericAsset": "TXDC",
+      "network": {
+        "name": "XdcChainTestnet"
+      }
+    }
+  ],
+  "twemix": [
+    {
+      "id": "b18517e3-2fba-44df-be39-7ba062d14895",
+      "fullName": "Testnet wemix",
+      "name": "twemix",
+      "prefix": "",
+      "suffix": "TWEMIX",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "wemix",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "wemix",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048247,
+      "genericAsset": "TWEMIX",
+      "network": {
+        "name": "WemixChainTestnet"
+      }
+    }
+  ],
+  "tmon": [
+    {
+      "id": "5c5ebe50-fa27-4312-ae3d-7032520aedb5",
+      "fullName": "Testnet Monad",
+      "name": "tmon",
+      "prefix": "",
+      "suffix": "TMON",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "mon",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "mon",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 268435779,
+      "genericAsset": "TMON",
+      "network": {
+        "name": "MonadTestnet"
+      }
+    }
+  ],
+  "tworld": [
+    {
+      "id": "1cd29730-f70b-4c7d-a19c-eb3345f01acb",
+      "fullName": "Worldchain Testnet",
+      "name": "tworld",
+      "prefix": "",
+      "suffix": "TWORLD",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "world",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "world",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048248,
+      "genericAsset": "TWORLD",
+      "network": {
+        "name": "WorldchainTestnet"
+      }
+    }
+  ],
+  "tphrs": [
+    {
+      "id": "06b62cc0-1ab1-4473-8d14-c86f31e0b224",
+      "fullName": "Pharos Testnet",
+      "name": "tphrs",
+      "prefix": "",
+      "suffix": "TPHRS",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "phrs",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "phrs",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 3172,
+      "genericAsset": "TPHRS",
+      "network": {
+        "name": "PharosTestnet"
+      }
+    }
+  ],
+  "tctc": [
+    {
+      "id": "25740604-3bcb-4171-8fbe-e4a20c2c98bb",
+      "fullName": "Creditcoin Testnet",
+      "name": "tctc",
+      "prefix": "",
+      "suffix": "TCTC",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "ctc",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "ctc",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 583,
+      "genericAsset": "TCTC",
+      "network": {
+        "name": "CreditcoinTestnet"
+      }
+    }
+  ],
+  "tip": [
+    {
+      "id": "86e7b7d6-02db-4ef7-9552-e8aeeeec2d52",
+      "fullName": "Data Network Testnet",
+      "name": "tip",
+      "prefix": "",
+      "suffix": "TIP",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "ip",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "ip",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048221,
+      "genericAsset": "TIP",
+      "network": {
+        "name": "Data Network Testnet"
+      }
+    }
+  ],
+  "thyperliquid": [
+    {
+      "id": "d0754b12-26fa-47c2-887f-f19099156ea2",
+      "fullName": "Hyperliquid Testnet",
+      "name": "thyperliquid",
+      "prefix": "",
+      "suffix": "THYPERLIQUID",
+      "baseUnit": "hype",
+      "kind": "crypto",
+      "family": "hyperliquid",
+      "isToken": false,
+      "decimalPlaces": 8,
+      "asset": "hyperliquid",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 2457,
+      "genericAsset": "THYPERLIQUID",
+      "network": {
+        "name": "HyperliquidTestnet"
+      }
+    }
+  ],
+  "thypeevm": [
+    {
+      "id": "e0500947-1105-404c-af52-765b1cb2a7c1",
+      "fullName": "Hyperliquid EVM Testnet",
+      "name": "thypeevm",
+      "prefix": "",
+      "suffix": "THYPEEVM",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "hypeevm",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "hypeevm",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048218,
+      "tokenId": 1105,
+      "systemAddress": "0x2222222222222222222222222222222222222222",
+      "genericAsset": "THYPEEVM",
+      "network": {
+        "name": "HyperliquidEVMTestnet"
+      }
+    }
+  ],
+  "tsonic": [
+    {
+      "id": "b150906d-f3e0-4e81-859d-c33d92c73afb",
+      "fullName": "Sonic Testnet",
+      "name": "tsonic",
+      "prefix": "",
+      "suffix": "TSONIC",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "sonic",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "sonic",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 10007,
+      "genericAsset": "TSONIC",
+      "network": {
+        "name": "SonicTestnet"
+      }
+    }
+  ],
+  "tusdt0": [
+    {
+      "id": "fd6b7af0-aff3-45fb-9a71-2d7100a1cd89",
+      "fullName": "Testnet StableEVM",
+      "name": "tusdt0",
+      "prefix": "",
+      "suffix": "TUSDT0",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "usdt0",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "usdt0",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048246,
+      "genericAsset": "TUSDT0",
+      "network": {
+        "name": "Testnet StableEVM"
+      }
+    }
+  ],
+  "txpl": [
+    {
+      "id": "f99e8326-ea4f-4a84-8033-194d421daedb",
+      "fullName": "Plasma Testnet",
+      "name": "txpl",
+      "prefix": "",
+      "suffix": "TXPL",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "xpl",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "xpl",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048249,
+      "genericAsset": "TXPL",
+      "network": {
+        "name": "PlasmaTestnet"
+      }
+    }
+  ],
+  "tkavaevm": [
+    {
+      "id": "a443481c-9d7e-4352-a1f4-77ea9c08e4fd",
+      "fullName": "Testnet Kava EVM",
+      "name": "tkavaevm",
+      "prefix": "",
+      "suffix": "TKAVAEVM",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "kavaevm",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "kavaevm",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048224,
+      "genericAsset": "TKAVAEVM",
+      "network": {
+        "name": "KavaEVMTestnet"
+      }
+    }
+  ],
+  "tkaia": [
+    {
+      "id": "f6be6f3d-ebac-49fc-8c73-e5b1fc115778",
+      "fullName": "Kaia Testnet",
+      "name": "tkaia",
+      "prefix": "",
+      "suffix": "TKAIA",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "kaia",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "kaia",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 8217,
+      "genericAsset": "TKAIA",
+      "network": {
+        "name": "KaiaTestnet"
+      }
+    }
+  ],
+  "tirys": [
+    {
+      "id": "8861d96c-f1a1-436a-8eb7-950f73f53c3a",
+      "fullName": "Irys Testnet",
+      "name": "tirys",
+      "prefix": "",
+      "suffix": "TIRYS",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "irys",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "irys",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 3282,
+      "genericAsset": "TIRYS",
+      "network": {
+        "name": "IrysTestnet"
+      }
+    }
+  ],
+  "tsoneium": [
+    {
+      "id": "a4587ed1-a4a6-4bbe-b965-3119b52e76cf",
+      "fullName": "Soneium Testnet",
+      "name": "tsoneium",
+      "prefix": "",
+      "suffix": "TSONEIUM",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "soneium",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "soneium",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048240,
+      "genericAsset": "TSONEIUM",
+      "network": {
+        "name": "SoneiumTestnet"
+      }
+    }
+  ],
+  "tscrolleth": [
+    {
+      "id": "406827a0-9bf8-4f83-ae94-bcf22d8ecf6a",
+      "fullName": "Scroll Sepolia Testnet",
+      "name": "tscrolleth",
+      "prefix": "",
+      "suffix": "TSCROLLETH",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "scrolleth",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "scrolleth",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 534352,
+      "genericAsset": "TSCROLLETH",
+      "network": {
+        "name": "Scroll Sepolia"
+      }
+    }
+  ],
+  "tstt": [
+    {
+      "id": "1bf486a9-47ed-4bea-8e9a-a23a074cdc9a",
+      "fullName": "Somnia Testnet",
+      "name": "tstt",
+      "prefix": "",
+      "suffix": "TSTT",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "stt",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "stt",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048241,
+      "genericAsset": "TSTT",
+      "network": {
+        "name": "SomniaTestnet"
+      }
+    }
+  ],
+  "tflr": [
+    {
+      "id": "338fc340-08be-4796-9c04-96e5a5078393",
+      "fullName": "Testnet flare",
+      "name": "tflr",
+      "prefix": "",
+      "suffix": "TFLR",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "flr",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "flr",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048209,
+      "genericAsset": "TFLR",
+      "network": {
+        "name": "FlarechainTestnet"
+      }
+    }
+  ],
+  "tsgb": [
+    {
+      "id": "c6b8f90b-1f89-4d26-b296-4097927f6b30",
+      "fullName": "Testnet songbird",
+      "name": "tsgb",
+      "prefix": "",
+      "suffix": "TSGB",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "sgb",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "sgb",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048239,
+      "genericAsset": "TSGB",
+      "network": {
+        "name": "SongbirdchainTestnet"
+      }
+    }
+  ],
+  "tapt": [
+    {
+      "id": "7aca10bf-79dd-428b-aeb6-54f03f9aec0f",
+      "fullName": "Testnet Aptos",
+      "name": "tapt",
+      "prefix": "",
+      "suffix": "TAPT",
+      "baseUnit": "octa",
+      "kind": "crypto",
+      "family": "apt",
+      "isToken": false,
+      "decimalPlaces": 8,
+      "asset": "apt",
+      "primaryKeyCurve": "ed25519",
+      "bip44CoinType": 637,
+      "gasTankLowBalanceAlertFactor": 80,
+      "gasTankMinBalanceRecommendationFactor": 200,
+      "genericAsset": "TAPT",
+      "network": {
+        "name": "Testnet Apt"
+      }
+    }
+  ],
+  "ttao": [
+    {
+      "id": "0f7a1a5b-7f34-4593-80bc-2fb4ea15ebfc",
+      "fullName": "Testnet Bittensor",
+      "name": "ttao",
+      "prefix": "",
+      "suffix": "TTAO",
+      "baseUnit": "rao",
+      "kind": "crypto",
+      "family": "tao",
+      "isToken": false,
+      "decimalPlaces": 9,
+      "asset": "tao",
+      "primaryKeyCurve": "ed25519",
+      "bip44CoinType": 1005,
+      "genericAsset": "TTAO",
+      "network": {
+        "name": "Testnet Tao"
+      }
+    }
+  ],
+  "ticp": [
+    {
+      "id": "ce572773-26c2-4038-a96d-26649a9a96df",
+      "fullName": "Testnet Internet Computer",
+      "name": "ticp",
+      "prefix": "",
+      "suffix": "TICP",
+      "baseUnit": "e8s",
+      "kind": "crypto",
+      "family": "icp",
+      "isToken": false,
+      "decimalPlaces": 8,
+      "asset": "icp",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 223,
+      "genericAsset": "TICP",
+      "network": {
+        "name": "Testnet Internet Computer"
+      }
+    }
+  ],
+  "tstarknet": [
+    {
+      "id": "2a359f78-0cfa-4c15-8026-be508b05a37b",
+      "fullName": "Testnet Starknet",
+      "name": "tstarknet",
+      "prefix": "",
+      "suffix": "TSTARKNET",
+      "baseUnit": "fri",
+      "kind": "crypto",
+      "family": "starknet",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "starknet",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 9004,
+      "genericAsset": "TSTARKNET",
+      "network": {
+        "name": "Testnet Starknet"
+      }
+    }
+  ],
+  "tpolyx": [
+    {
+      "id": "74af0095-b6bd-427a-a7ca-d0e5888f6417",
+      "fullName": "Testnet Polymesh",
+      "name": "tpolyx",
+      "prefix": "",
+      "suffix": "TPOLYX",
+      "baseUnit": "micropolyx",
+      "kind": "crypto",
+      "family": "polyx",
+      "isToken": false,
+      "decimalPlaces": 6,
+      "asset": "polyx",
+      "primaryKeyCurve": "ed25519",
+      "bip44CoinType": 595,
+      "genericAsset": "TPOLYX",
+      "network": {
+        "name": "PolymeshTestnet"
+      }
+    }
+  ],
+  "tflow": [
+    {
+      "id": "29a233d0-6d60-4e1e-8f76-16712fee3bf5",
+      "fullName": "Testnet Flow",
+      "name": "tflow",
+      "prefix": "",
+      "suffix": "TFLOW",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "flow",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "flow",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 539,
+      "genericAsset": "TFLOW",
+      "network": {
+        "name": "FlowTestnet"
+      }
+    }
+  ],
+  "tplume": [
+    {
+      "id": "3c7ccfca-d229-4238-a0f1-3115e592c28c",
+      "fullName": "Testnet Plume",
+      "name": "tplume",
+      "prefix": "",
+      "suffix": "TPLUME",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "plume",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "plume",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048236,
+      "genericAsset": "TPLUME",
+      "network": {
+        "name": "PlumeTestnet"
+      }
+    }
+  ],
+  "tmegaeth": [
+    {
+      "id": "2f510e0f-7dad-4765-881d-6fd185d20866",
+      "fullName": "Testnet MegaETH",
+      "name": "tmegaeth",
+      "prefix": "",
+      "suffix": "TMEGAETH",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "megaeth",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "megaeth",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048228,
+      "genericAsset": "TMEGAETH",
+      "network": {
+        "name": "MegaETHTestnet"
+      }
+    }
+  ],
+  "thbarevm": [
+    {
+      "id": "d38fb9c4-2949-404b-85be-7c828a416de9",
+      "fullName": "Testnet Hedera EVM",
+      "name": "thbarevm",
+      "prefix": "",
+      "suffix": "THBAREVM",
+      "baseUnit": "tinybar",
+      "kind": "crypto",
+      "family": "hbarevm",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "hbarevm",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048214,
+      "genericAsset": "THBAREVM",
+      "network": {
+        "name": "Testnet Hedera EVM"
+      }
+    }
+  ],
+  "tkatanaeth": [
+    {
+      "id": "dd0cf6a6-2723-42c4-a020-81a1238d8cc4",
+      "fullName": "Testnet Katana",
+      "name": "tkatanaeth",
+      "prefix": "",
+      "suffix": "TKATANAETH",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "katanaeth",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "katanaeth",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048223,
+      "genericAsset": "TKATANAETH",
+      "network": {
+        "name": "Testnet Katana"
+      }
+    }
+  ],
+  "tinketh": [
+    {
+      "id": "8bfa7960-008f-4aa0-b49a-589c3127dd46",
+      "fullName": "Testnet INK",
+      "name": "tinketh",
+      "prefix": "",
+      "suffix": "TINKETH",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "inketh",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "inketh",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048220,
+      "genericAsset": "TINKETH",
+      "network": {
+        "name": "INK Testnet"
+      }
+    }
+  ],
+  "themieth": [
+    {
+      "id": "df0007d9-974b-4099-bf37-9dc59399c058",
+      "fullName": "Testnet Hemi Ethereum",
+      "name": "themieth",
+      "prefix": "",
+      "suffix": "THEMIETH",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "hemieth",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "hemieth",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048215,
+      "genericAsset": "THEMIETH",
+      "network": {
+        "name": "Testnet Hemi Ethereum"
+      }
+    }
+  ],
+  "tbobaeth": [
+    {
+      "id": "8fc7c710-e64e-4743-8ce7-03bcf71d7723",
+      "fullName": "Boba Network Testnet",
+      "name": "tbobaeth",
+      "prefix": "",
+      "suffix": "TBOBAETH",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "bobaeth",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "bobaeth",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048199,
+      "genericAsset": "TBOBAETH",
+      "network": {
+        "name": "Boba Testnet"
+      }
+    }
+  ],
+  "tprividiumeth": [
+    {
+      "id": "b0067fb1-d00d-4959-981c-6f6009862418",
+      "fullName": "Testnet Prividium",
+      "name": "tprividiumeth",
+      "prefix": "",
+      "suffix": "TPRIVIDIUMETH",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "prividiumeth",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "prividiumeth",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048237,
+      "genericAsset": "TPRIVIDIUMETH",
+      "network": {
+        "name": "Prividium Ethereum Testnet"
+      }
+    }
+  ],
+  "tfluenteth": [
+    {
+      "id": "8f6ed7e4-cce2-4686-bdab-ae8f54e2c05e",
+      "fullName": "Testnet Fluent Ethereum",
+      "name": "tfluenteth",
+      "prefix": "",
+      "suffix": "TFluentETH",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "fluenteth",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "fluenteth",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048211,
+      "genericAsset": "TFLUENTETH",
+      "network": {
+        "name": "Testnet Fluent Ethereum"
+      }
+    }
+  ],
+  "tmantle": [
+    {
+      "id": "53cd61e4-1fdd-4c95-a8da-cb39bf383c2e",
+      "fullName": "Testnet Mantle Native",
+      "name": "tmantle",
+      "prefix": "",
+      "suffix": "TMANTLE",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "mantle",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "mantle",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048226,
+      "genericAsset": "TMANTLE",
+      "network": {
+        "name": "Testnet Mantle Native"
+      }
+    }
+  ],
+  "tjovayeth": [
+    {
+      "id": "200f9547-79ad-48a3-bc8f-3f074d51bc35",
+      "fullName": "Testnet Jovay Ethereum",
+      "name": "tjovayeth",
+      "prefix": "",
+      "suffix": "TJovayETH",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "jovayeth",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "jovayeth",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048222,
+      "genericAsset": "TJOVAYETH",
+      "network": {
+        "name": "Testnet Jovay Ethereum"
+      }
+    }
+  ],
+  "tunieth": [
+    {
+      "id": "9eb4b6e4-7dcf-4ce7-b1c2-2ae9fa894fb6",
+      "fullName": "Testnet Unichain",
+      "name": "tunieth",
+      "prefix": "",
+      "suffix": "TUniETH",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "unieth",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "unieth",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048245,
+      "genericAsset": "TUNIETH",
+      "network": {
+        "name": "Testnet Unichain"
+      }
+    }
+  ],
+  "thppeth": [
+    {
+      "id": "2e4011ee-9512-4c51-896f-5b24ac477b52",
+      "fullName": "Testnet House Party Protocol",
+      "name": "thppeth",
+      "prefix": "",
+      "suffix": "THppETH",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "hppeth",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "hppeth",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048217,
+      "genericAsset": "THPPETH",
+      "network": {
+        "name": "Testnet House Party Protocol"
+      }
+    }
+  ],
+  "thoodeth": [
+    {
+      "id": "f0e3aa10-8e76-483c-ad4d-35aefb74b77b",
+      "fullName": "Testnet Robinhood Chain",
+      "name": "thoodeth",
+      "prefix": "",
+      "suffix": "THoodETH",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "hoodeth",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "hoodeth",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048216,
+      "genericAsset": "THOODETH",
+      "network": {
+        "name": "Testnet Robinhood Chain"
+      }
+    }
+  ],
+  "th": [
+    {
+      "id": "e23f84e3-9b6a-4b0a-8a1e-6dc8e57650a8",
+      "fullName": "Testnet Humanity Protocol",
+      "name": "th",
+      "prefix": "",
+      "suffix": "TH",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "h",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "h",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048213,
+      "genericAsset": "TH",
+      "network": {
+        "name": "Testnet Humanity Protocol"
+      }
+    }
+  ],
+  "tokbxlayer": [
+    {
+      "id": "6f29e239-1bcd-4d29-b638-e17b5efc3f6c",
+      "fullName": "Testnet OKB (X layer)",
+      "name": "tokbxlayer",
+      "prefix": "",
+      "suffix": "TOKBXLAYER",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "okbxlayer",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "okbxlayer",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048232,
+      "genericAsset": "TOKBXLAYER",
+      "network": {
+        "name": "Testnet X Layer"
+      }
+    }
+  ],
+  "tmorph": [
+    {
+      "id": "9352fddb-3b01-40a3-b09a-a047bc1595bd",
+      "fullName": "Morph Testnet",
+      "name": "tmorph",
+      "prefix": "",
+      "suffix": "TMORPH",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "morph",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "morph",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048229,
+      "genericAsset": "TMORPH",
+      "network": {
+        "name": "Morph Testnet"
+      }
+    }
+  ],
+  "tmorpheth": [
+    {
+      "id": "f99419da-0ee8-46c3-af81-3bd43af29642",
+      "fullName": "Morph Ethereum Testnet",
+      "name": "tmorpheth",
+      "prefix": "",
+      "suffix": "TMORPHETH",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "morpheth",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "morpheth",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048230,
+      "genericAsset": "TMORPHETH",
+      "network": {
+        "name": "Morph Ethereum Testnet"
+      }
+    }
+  ],
+  "tdogeos": [
+    {
+      "id": "887eebff-5d50-47f7-aea5-905e25c2e846",
+      "fullName": "DogeOS Testnet",
+      "name": "tdogeos",
+      "prefix": "",
+      "suffix": "TDOGEOS",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "dogeos",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "dogeos",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048206,
+      "genericAsset": "TDOGEOS",
+      "network": {
+        "name": "Doge OS Testnet"
+      }
+    }
+  ],
+  "tarcusdc": [
+    {
+      "id": "cf06d1ea-f7c4-4a26-95fd-f71983eba58f",
+      "fullName": "USDC (ARC) Testnet",
+      "name": "tarcusdc",
+      "prefix": "",
+      "suffix": "TARCUSDC",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "arcusdc",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "arcusdc",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048195,
+      "genericAsset": "TARCUSDC",
+      "network": {
+        "name": "USDC (ARC) Testnet"
+      }
+    }
+  ],
+  "ttempo": [
+    {
+      "id": "dfa99966-438d-43e3-8bf1-a6979fee6822",
+      "fullName": "Tempo Testnet",
+      "name": "ttempo",
+      "prefix": "",
+      "suffix": "TTEMPO",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "tempo",
+      "isToken": false,
+      "decimalPlaces": 6,
+      "asset": "tempo",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048243,
+      "genericAsset": "TTEMPO",
+      "network": {
+        "name": "Tempo Testnet"
+      }
+    }
+  ],
+  "tcanton": [
+    {
+      "id": "f5d7f76b-fc5a-4da8-b1d0-a86ad0fd269e",
+      "fullName": "Testnet Canton",
+      "name": "tcanton",
+      "prefix": "",
+      "suffix": "TCANTON",
+      "baseUnit": "canton",
+      "kind": "crypto",
+      "family": "canton",
+      "isToken": false,
+      "decimalPlaces": 10,
+      "asset": "canton",
+      "primaryKeyCurve": "ed25519",
+      "bip44CoinType": 6767,
+      "genericAsset": "TCANTON",
+      "network": {
+        "name": "CantonTestnet"
+      }
+    }
+  ],
+  "tvet": [
+    {
+      "id": "b3158e80-f6ea-4922-98ab-d773a680ce76",
+      "fullName": "Testnet VeChain",
+      "name": "tvet",
+      "prefix": "",
+      "suffix": "TVET",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "vet",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "vet",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 818,
+      "gasTankLowBalanceAlertFactor": 80,
+      "gasTankMinBalanceRecommendationFactor": 200,
+      "gasTankToken": "TVET:VTHO",
+      "genericAsset": "TVET",
+      "network": {
+        "name": "VeChainTestnet"
+      }
+    }
+  ],
+  "tcelo": [
+    {
+      "id": "dd0fc389-1292-4845-b9c8-f560514593e4",
+      "fullName": "Testnet Celo Gold",
+      "name": "tcelo",
+      "prefix": "",
+      "suffix": "TCELO",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "celo",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "celo",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 52752,
+      "contractAddress": "0x471ece3750da237f93b8e339c536989b8978a438",
+      "genericAsset": "TCELO",
+      "network": {
+        "name": "CeloTestnet"
+      }
+    }
+  ],
+  "tchiliz": [
+    {
+      "id": "c014b2ec-02ea-468f-b73f-24442146208e",
+      "fullName": "Testnet Chiliz",
+      "name": "tchiliz",
+      "prefix": "",
+      "suffix": "TCHILIZ",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "chiliz",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "chiliz",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048201,
+      "genericAsset": "TCHILIZ",
+      "network": {
+        "name": "ChilizTestnet"
+      }
+    }
+  ],
+  "tcodexeth": [
+    {
+      "id": "3fe052be-5dc0-42b1-a5a8-63406296d06f",
+      "fullName": "Testnet Codex Ethereum",
+      "name": "tcodexeth",
+      "prefix": "",
+      "suffix": "TCODEXETH",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "codexeth",
+      "isToken": false,
+      "decimalPlaces": 18,
+      "asset": "codexeth",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048202,
+      "genericAsset": "TCODEXETH",
+      "network": {
+        "name": "Testnet Codex Ethereum"
+      }
+    }
+  ],
+  "thbar": [
+    {
+      "id": "0d251e8d-5c95-49d2-a505-db66ff5440ba",
+      "fullName": "Testnet Hedera HBAR",
+      "name": "thbar",
+      "prefix": "",
+      "suffix": "THBAR",
+      "baseUnit": "tinybar",
+      "kind": "crypto",
+      "family": "hbar",
+      "isToken": false,
+      "decimalPlaces": 8,
+      "asset": "hbar",
+      "primaryKeyCurve": "ed25519",
+      "bip44CoinType": 3030,
+      "nodeAccountId": "0.0.3",
+      "genericAsset": "THBAR",
+      "network": {
+        "name": "HederaTestnet"
+      }
+    }
+  ],
+  "tfiatusd": [
+    {
+      "id": "8691cc4f-a425-4192-b6cb-3b0b6f646cbc",
+      "fullName": "Testnet US Dollar",
+      "name": "tfiatusd",
+      "prefix": "",
+      "suffix": "TFIATUSD",
+      "baseUnit": "fiatCoin",
+      "kind": "fiat",
+      "family": "fiat",
+      "isToken": false,
+      "decimalPlaces": 2,
+      "asset": "usd",
+      "primaryKeyCurve": "secp256k1",
+      "genericAsset": "TFIATUSD",
+      "network": {
+        "name": "FiatTestnet"
+      }
+    }
+  ],
+  "tfiateur": [
+    {
+      "id": "5d22d71c-49a7-42ff-8367-744b59b5fe88",
+      "fullName": "Testnet European Union Euro",
+      "name": "tfiateur",
+      "prefix": "",
+      "suffix": "TFIATEUR",
+      "baseUnit": "fiatCoin",
+      "kind": "fiat",
+      "family": "fiat",
+      "isToken": false,
+      "decimalPlaces": 2,
+      "asset": "eur",
+      "primaryKeyCurve": "secp256k1",
+      "genericAsset": "TFIATEUR",
+      "network": {
+        "name": "FiatTestnet"
+      }
+    }
+  ],
+  "tfiatgbp": [
+    {
+      "id": "c32e8edc-ec51-4084-9b81-3426605f13b9",
+      "fullName": "Testnet British Pound Sterling",
+      "name": "tfiatgbp",
+      "prefix": "",
+      "suffix": "TFIATGBP",
+      "baseUnit": "fiatCoin",
+      "kind": "fiat",
+      "family": "fiat",
+      "isToken": false,
+      "decimalPlaces": 2,
+      "asset": "gbp",
+      "primaryKeyCurve": "secp256k1",
+      "genericAsset": "TFIATGBP",
+      "network": {
+        "name": "FiatTestnet"
+      }
+    }
+  ],
+  "tfiatinr": [
+    {
+      "id": "5455f07e-0b96-4e8e-a651-d68f1f13d9ce",
+      "fullName": "Testnet Indian Rupee",
+      "name": "tfiatinr",
+      "prefix": "",
+      "suffix": "TFIATINR",
+      "baseUnit": "fiatCoin",
+      "kind": "fiat",
+      "family": "fiat",
+      "isToken": false,
+      "decimalPlaces": 2,
+      "asset": "inr",
+      "primaryKeyCurve": "secp256k1",
+      "genericAsset": "TFIATINR",
+      "network": {
+        "name": "FiatTestnet"
+      }
+    }
+  ],
+  "tfiataed": [
+    {
+      "id": "47f21e91-c2e0-4aaf-a0c8-e8bb3126688c",
+      "fullName": "Testnet United Arab Emirates Dirham",
+      "name": "tfiataed",
+      "prefix": "",
+      "suffix": "TFIATAED",
+      "baseUnit": "fiatCoin",
+      "kind": "fiat",
+      "family": "fiat",
+      "isToken": false,
+      "decimalPlaces": 2,
+      "asset": "aed",
+      "primaryKeyCurve": "secp256k1",
+      "genericAsset": "TFIATAED",
+      "network": {
+        "name": "FiatTestnet"
+      }
+    }
+  ],
+  "tfiatsgd": [
+    {
+      "id": "61c863bc-9e22-457c-b6f2-dcab35f32ff6",
+      "fullName": "Testnet Singapore Dollar",
+      "name": "tfiatsgd",
+      "prefix": "",
+      "suffix": "TFIATSGD",
+      "baseUnit": "fiatCoin",
+      "kind": "fiat",
+      "family": "fiat",
+      "isToken": false,
+      "decimalPlaces": 2,
+      "asset": "sgd",
+      "primaryKeyCurve": "secp256k1",
+      "genericAsset": "TFIATSGD",
+      "network": {
+        "name": "FiatTestnet"
+      }
+    }
+  ],
+  "tfiatcad": [
+    {
+      "id": "5cfd5822-10a5-4bb2-9956-358312bc9331",
+      "fullName": "Testnet Canadian Dollar",
+      "name": "tfiatcad",
+      "prefix": "",
+      "suffix": "TFIATCAD",
+      "baseUnit": "fiatCoin",
+      "kind": "fiat",
+      "family": "fiat",
+      "isToken": false,
+      "decimalPlaces": 2,
+      "asset": "cad",
+      "primaryKeyCurve": "secp256k1",
+      "genericAsset": "TFIATCAD",
+      "network": {
+        "name": "FiatTestnet"
+      }
+    }
+  ],
+  "tfiataud": [
+    {
+      "id": "950d1c1b-867c-4e2a-84ad-18c6f16ec7b9",
+      "fullName": "Testnet Australian Dollar",
+      "name": "tfiataud",
+      "prefix": "",
+      "suffix": "TFIATAUD",
+      "baseUnit": "fiatCoin",
+      "kind": "fiat",
+      "family": "fiat",
+      "isToken": false,
+      "decimalPlaces": 2,
+      "asset": "aud",
+      "primaryKeyCurve": "secp256k1",
+      "genericAsset": "TFIATAUD",
+      "network": {
+        "name": "FiatTestnet"
+      }
+    }
+  ],
+  "tfiathkd": [
+    {
+      "id": "e25c3d93-9ba4-451e-99f2-fc4d1a33b41d",
+      "fullName": "Testnet Hong Kong Dollar",
+      "name": "tfiathkd",
+      "prefix": "",
+      "suffix": "TFIATHKD",
+      "baseUnit": "fiatCoin",
+      "kind": "fiat",
+      "family": "fiat",
+      "isToken": false,
+      "decimalPlaces": 2,
+      "asset": "hkd",
+      "primaryKeyCurve": "secp256k1",
+      "genericAsset": "TFIATHKD",
+      "network": {
+        "name": "FiatTestnet"
+      }
+    }
+  ],
+  "tfiatchf": [
+    {
+      "id": "49c021e5-02bf-4055-a927-a36f215c4d7d",
+      "fullName": "Testnet Swiss Franc",
+      "name": "tfiatchf",
+      "prefix": "",
+      "suffix": "TFIATCHF",
+      "baseUnit": "fiatCoin",
+      "kind": "fiat",
+      "family": "fiat",
+      "isToken": false,
+      "decimalPlaces": 2,
+      "asset": "chf",
+      "primaryKeyCurve": "secp256k1",
+      "genericAsset": "TFIATCHF",
+      "network": {
+        "name": "FiatTestnet"
+      }
+    }
+  ],
+  "tfiatsek": [
+    {
+      "id": "57152223-6f41-458f-857d-0550f93ecfea",
+      "fullName": "Testnet Swedish Krona",
+      "name": "tfiatsek",
+      "prefix": "",
+      "suffix": "TFIATSEK",
+      "baseUnit": "fiatCoin",
+      "kind": "fiat",
+      "family": "fiat",
+      "isToken": false,
+      "decimalPlaces": 2,
+      "asset": "sek",
+      "primaryKeyCurve": "secp256k1",
+      "genericAsset": "TFIATSEK",
+      "network": {
+        "name": "FiatTestnet"
+      }
+    }
+  ],
+  "tfiatnok": [
+    {
+      "id": "94313f1c-aa50-48de-a837-33489f57cfbe",
+      "fullName": "Testnet Norwegian Krone",
+      "name": "tfiatnok",
+      "prefix": "",
+      "suffix": "TFIATNOK",
+      "baseUnit": "fiatCoin",
+      "kind": "fiat",
+      "family": "fiat",
+      "isToken": false,
+      "decimalPlaces": 2,
+      "asset": "nok",
+      "primaryKeyCurve": "secp256k1",
+      "genericAsset": "TFIATNOK",
+      "network": {
+        "name": "FiatTestnet"
+      }
+    }
+  ],
+  "tfiatjpy": [
+    {
+      "id": "323662dd-3e78-4c95-8df1-f65a822cedc0",
+      "fullName": "Testnet Japanese Yen",
+      "name": "tfiatjpy",
+      "prefix": "",
+      "suffix": "TFIATJPY",
+      "baseUnit": "fiatCoin",
+      "kind": "fiat",
+      "family": "fiat",
+      "isToken": false,
+      "decimalPlaces": 0,
+      "asset": "jpy",
+      "primaryKeyCurve": "secp256k1",
+      "genericAsset": "TFIATJPY",
+      "network": {
+        "name": "FiatTestnet"
+      }
+    }
+  ],
+  "tfiatcny": [
+    {
+      "id": "594749b7-753a-4c02-a61c-c8af8b85cd90",
+      "fullName": "Testnet Chinese Yuan",
+      "name": "tfiatcny",
+      "prefix": "",
+      "suffix": "TFIATCNY",
+      "baseUnit": "fiatCoin",
+      "kind": "fiat",
+      "family": "fiat",
+      "isToken": false,
+      "decimalPlaces": 2,
+      "asset": "cny",
+      "primaryKeyCurve": "secp256k1",
+      "genericAsset": "TFIATCNY",
+      "network": {
+        "name": "FiatTestnet"
+      }
+    }
+  ],
+  "tfiatnzd": [
+    {
+      "id": "14260efb-d3a9-4f99-969a-132bcedd57ee",
+      "fullName": "Testnet New Zealand Dollar",
+      "name": "tfiatnzd",
+      "prefix": "",
+      "suffix": "TFIATNZD",
+      "baseUnit": "fiatCoin",
+      "kind": "fiat",
+      "family": "fiat",
+      "isToken": false,
+      "decimalPlaces": 2,
+      "asset": "nzd",
+      "primaryKeyCurve": "secp256k1",
+      "genericAsset": "TFIATNZD",
+      "network": {
+        "name": "FiatTestnet"
+      }
+    }
+  ],
+  "tfiatidr": [
+    {
+      "id": "88476628-3ca3-4272-9f58-f212379de00d",
+      "fullName": "Testnet Indonesian Rupiah",
+      "name": "tfiatidr",
+      "prefix": "",
+      "suffix": "TFIATIDR",
+      "baseUnit": "fiatCoin",
+      "kind": "fiat",
+      "family": "fiat",
+      "isToken": false,
+      "decimalPlaces": 2,
+      "asset": "idr",
+      "primaryKeyCurve": "secp256k1",
+      "genericAsset": "TFIATIDR",
+      "network": {
+        "name": "FiatTestnet"
+      }
+    }
+  ],
+  "tfiatkrw": [
+    {
+      "id": "41d3b521-59f6-4124-a5d9-959a568eb7f3",
+      "fullName": "Testnet South Korean Won",
+      "name": "tfiatkrw",
+      "prefix": "",
+      "suffix": "TFIATKRW",
+      "baseUnit": "fiatCoin",
+      "kind": "fiat",
+      "family": "fiat",
+      "isToken": false,
+      "decimalPlaces": 0,
+      "asset": "krw",
+      "primaryKeyCurve": "secp256k1",
+      "genericAsset": "TFIATKRW",
+      "network": {
+        "name": "FiatTestnet"
+      }
+    }
+  ],
+  "tfiatzar": [
+    {
+      "id": "ce11127c-e698-41de-b66a-9639fb015f0c",
+      "fullName": "Testnet South African Rand",
+      "name": "tfiatzar",
+      "prefix": "",
+      "suffix": "TFIATZAR",
+      "baseUnit": "fiatCoin",
+      "kind": "fiat",
+      "family": "fiat",
+      "isToken": false,
+      "decimalPlaces": 2,
+      "asset": "zar",
+      "primaryKeyCurve": "secp256k1",
+      "genericAsset": "TFIATZAR",
+      "network": {
+        "name": "FiatTestnet"
+      }
+    }
+  ],
+  "fixed": [
+    {
+      "id": "0205f0d6-0647-47c9-ad8b-c48d048e54f3",
+      "fullName": "Goerli Example Fixed Supply Token",
+      "name": "fixed",
+      "prefix": "",
+      "suffix": "FIXED",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "eth",
+      "isToken": true,
+      "decimalPlaces": 18,
+      "asset": "fixed",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 60,
+      "contractAddress": "0xa13de8df4ef9d6016f0826858d48045848429390",
+      "genericAsset": "FIXED",
+      "network": {
+        "name": "Goerli"
+      },
+      "additionalFeatures": ["bulk-transaction"],
+      "excludedFeatures": []
+    }
+  ],
+  "tavaxc:link": [
+    {
+      "id": "cd107316-6e78-4936-946f-70e8fd5d8040",
+      "fullName": "Test Chainlink",
+      "name": "tavaxc:link",
+      "prefix": "",
+      "suffix": "TAVAXC:LINK",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "avaxc",
+      "isToken": true,
+      "decimalPlaces": 18,
+      "asset": "avaxc:link",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 9005,
+      "contractAddress": "0x0b9d5d9136855f6fec3c0993fee6e9ce8a297846",
+      "genericAsset": "LINK",
+      "network": {
+        "name": "AvalancheCTestnet"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": []
+    }
+  ],
+  "tbsc:busd": [
+    {
+      "id": "b31aa2b5-8d8c-4ac1-b5e5-0f9d59377eab",
+      "fullName": "Test Binance USD Token",
+      "name": "tbsc:busd",
+      "prefix": "",
+      "suffix": "TBSC:BUSD",
+      "baseUnit": "jager",
+      "kind": "crypto",
+      "family": "bsc",
+      "isToken": true,
+      "decimalPlaces": 18,
+      "asset": "tbsc:busd",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048200,
+      "contractAddress": "0xed24fc36d5ee211ea25a80239fb8c4cfd80f12ee",
+      "genericAsset": "BUSD",
+      "network": {
+        "name": "BinanceSmartChainTestnet"
+      },
+      "additionalFeatures": ["stablecoin"],
+      "excludedFeatures": []
+    }
+  ],
+  "tpolygon:derc20": [
+    {
+      "id": "09ba76d0-331e-4b75-bb75-739285c3e03a",
+      "fullName": "Polygon Test ERC20",
+      "name": "tpolygon:derc20",
+      "prefix": "",
+      "suffix": "TPOLYGON:DERC20",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "polygon",
+      "isToken": true,
+      "decimalPlaces": 18,
+      "asset": "tpolygon:derc20",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 966,
+      "contractAddress": "0xfe4f5145f6e09952a5ba9e956ed0c25e3fa4c7f1",
+      "genericAsset": "DERC20",
+      "network": {
+        "name": "PolygonTestnet"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": []
+    }
+  ],
+  "tsol:srm": [
+    {
+      "id": "b98c5a7a-49c5-45f1-a6ee-b08dff596a7d",
+      "fullName": "Serum",
+      "name": "tsol:srm",
+      "prefix": "",
+      "suffix": "TSOL:SRM",
+      "baseUnit": "lamport",
+      "kind": "crypto",
+      "family": "sol",
+      "isToken": true,
+      "decimalPlaces": 9,
+      "asset": "tsol:srm",
+      "primaryKeyCurve": "ed25519",
+      "bip44CoinType": 501,
+      "tokenAddress": "D8YXLiwWQMibWRaxCTs9k6HwaYE6vtsbzK9KrQVMXU1K",
+      "contractAddress": "D8YXLiwWQMibWRaxCTs9k6HwaYE6vtsbzK9KrQVMXU1K",
+      "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+      "genericAsset": "SRM",
+      "network": {
+        "name": "SolTestnet"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": []
+    }
+  ],
+  "tstx:tsbtc": [
+    {
+      "id": "74b5f05c-9cfa-45bf-b6a4-bc7f6dde37f9",
+      "fullName": "Test sBTC",
+      "name": "tstx:tsbtc",
+      "prefix": "",
+      "suffix": "TSTX:TSBTC",
+      "baseUnit": "micro-STX",
+      "kind": "crypto",
+      "family": "stx",
+      "isToken": true,
+      "decimalPlaces": 8,
+      "asset": "tstx:tsbtc",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 5757,
+      "assetId": "ST1F7QA2MDF17S807EPA36TSS8AMEFY4KA9TVGWXT.sbtc-token::sbtc-token",
+      "genericAsset": "TSBTC",
+      "network": {
+        "name": "StxTestnet"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": []
+    }
+  ],
+  "tnear:tnep24dp": [
+    {
+      "id": "de55cb4b-afaf-4ac0-b271-d7eba49eb8e9",
+      "fullName": "Test NEP141 Token 24 Decimals",
+      "name": "tnear:tnep24dp",
+      "prefix": "",
+      "suffix": "TNEAR:TNEP24DP",
+      "baseUnit": "yocto",
+      "kind": "crypto",
+      "family": "near",
+      "isToken": true,
+      "decimalPlaces": 24,
+      "asset": "tnear:tnep24dp",
+      "primaryKeyCurve": "ed25519",
+      "bip44CoinType": 397,
+      "contractAddress": "ft-tnep24dp.testnet",
+      "storageDepositAmount": "1250000000000000000000",
+      "genericAsset": "TNEP24DP",
+      "network": {
+        "name": "NearTestnet"
+      },
+      "additionalFeatures": [
+        "account-model",
+        "requires-big-number",
+        "valueless-transfer",
+        "transaction-data",
+        "custody",
+        "custody-bitgo-trust",
+        "custody-bitgo-mena-fze",
+        "custody-bitgo-custody-mena-fze",
+        "custody-bitgo-singapore",
+        "custody-bitgo-europe-aps",
+        "custody-bitgo-frankfurt",
+        "custody-bitgo-india",
+        "tss",
+        "tss-cold",
+        "rebuild-on-custody-signing"
+      ]
+    }
+  ],
+  "tvet:vtho": [
+    {
+      "id": "27dd32d2-7311-4552-9beb-c57f76d09205",
+      "fullName": "Testnet VeThor",
+      "name": "tvet:vtho",
+      "prefix": "",
+      "suffix": "TVET:VTHO",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "vet",
+      "isToken": true,
+      "decimalPlaces": 18,
+      "asset": "tvet:vtho",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 818,
+      "contractAddress": "0x0000000000000000000000000000456e65726779",
+      "gasTankToken": "TVET:VTHO",
+      "genericAsset": "VTHO",
+      "network": {
+        "name": "VeChainTestnet"
+      },
+      "additionalFeatures": [
+        "account-model",
+        "requires-big-number",
+        "valueless-transfer",
+        "transaction-data",
+        "custody",
+        "custody-bitgo-trust",
+        "custody-bitgo-mena-fze",
+        "custody-bitgo-custody-mena-fze",
+        "custody-bitgo-singapore",
+        "custody-bitgo-europe-aps",
+        "custody-bitgo-frankfurt",
+        "custody-bitgo-india",
+        "tss",
+        "tss-cold",
+        "bulk-transaction",
+        "enterprise-pays-fees",
+        "tss-enterprise-pays-fees",
+        "fees-paid-with-token",
+        "mpcv2"
+      ]
+    }
+  ],
+  "thash:ylds": [
+    {
+      "id": "252dd264-a189-48e3-96e0-27802fc11b8d",
+      "fullName": "Testnet YLDS Token",
+      "name": "thash:ylds",
+      "prefix": "",
+      "suffix": "THASH:YLDS",
+      "denom": "uylds.fcc",
+      "baseUnit": "nhash",
+      "kind": "crypto",
+      "family": "hash",
+      "isToken": true,
+      "decimalPlaces": 6,
+      "asset": "thash:ylds",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 505,
+      "genericAsset": "YLDS",
+      "network": {
+        "name": "Testnet Provenance"
+      },
+      "additionalFeatures": [
+        "account-model",
+        "requires-big-number",
+        "valueless-transfer",
+        "transaction-data",
+        "custody",
+        "custody-bitgo-trust",
+        "custody-bitgo-mena-fze",
+        "custody-bitgo-custody-mena-fze",
+        "custody-bitgo-singapore",
+        "custody-bitgo-europe-aps",
+        "custody-bitgo-frankfurt",
+        "custody-bitgo-india",
+        "tss",
+        "tss-cold",
+        "mpcv2",
+        "sha256-with-ecdsa-tss",
+        "cosmos_like_coins",
+        "rebuild-on-custody-signing",
+        "increased-tx-request-rebuild-limit",
+        "bulk-transaction",
+        "stuck-transaction-management-tss",
+        "alphanumeric-memo-id",
+        "supports-tokens",
+        "custody-bulk-transaction",
+        "staking",
+        "bulk-staking-transaction"
+      ]
+    }
+  ],
+  "tada:water": [
+    {
+      "id": "a7678172-84b3-4c7e-ac46-9875d23a1cb7",
+      "fullName": "Test ADA Token",
+      "name": "tada:water",
+      "prefix": "",
+      "suffix": "TADA:WATER",
+      "baseUnit": "lovelace",
+      "kind": "crypto",
+      "family": "ada",
+      "isToken": true,
+      "decimalPlaces": 0,
+      "asset": "tada:water",
+      "primaryKeyCurve": "ed25519",
+      "bip44CoinType": 1815,
+      "policyId": "2533cca6eb42076e144e9f2772c390dece9fce173bc38c72294b39245741544552",
+      "assetName": "WATER",
+      "contractAddress": "asset1n69xf60d0760xvn8v2ffd5frvsm0cl2r8hfjf6",
+      "genericAsset": "WATER",
+      "network": {
+        "name": "AdaCardanoTestnet"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": []
+    }
+  ],
+  "tton:ukwny-us": [
+    {
+      "id": "a442d4fc-bc65-4ef5-92eb-fbefdd1f991f",
+      "fullName": "Test Unknown TokenY-US",
+      "name": "tton:ukwny-us",
+      "prefix": "",
+      "suffix": "TTON:UKWNY-US",
+      "baseUnit": "nanoton",
+      "kind": "crypto",
+      "family": "ton",
+      "isToken": true,
+      "decimalPlaces": 9,
+      "asset": "tton:ukwny-us",
+      "primaryKeyCurve": "ed25519",
+      "bip44CoinType": 607,
+      "contractAddress": "kQD8EQMavE1w6gvgMXUhN8hi7pSk4bKYM-W2dgkNqV54Y16Y",
+      "genericAsset": "UKWNY-US",
+      "network": {
+        "name": "Testnet Gram"
+      },
+      "additionalFeatures": [
+        "account-model",
+        "requires-big-number",
+        "valueless-transfer",
+        "transaction-data",
+        "custody",
+        "custody-bitgo-trust",
+        "custody-bitgo-mena-fze",
+        "custody-bitgo-custody-mena-fze",
+        "custody-bitgo-singapore",
+        "custody-bitgo-europe-aps",
+        "custody-bitgo-frankfurt",
+        "custody-bitgo-india",
+        "tss",
+        "tss-cold",
+        "rebuild-on-custody-signing",
+        "alphanumeric-memo-id"
+      ]
+    }
+  ],
+  "tpolyx:nvbitgot": [
+    {
+      "id": "a63b4f8d-84d6-45d3-bc67-625239e40811",
+      "fullName": "NVBITGOT Fungible Asset",
+      "name": "tpolyx:nvbitgot",
+      "prefix": "",
+      "suffix": "TPOLYX:NVBITGOT",
+      "baseUnit": "micropolyx",
+      "kind": "crypto",
+      "family": "polyx",
+      "isToken": true,
+      "decimalPlaces": 6,
+      "asset": "tpolyx:nvbitgot",
+      "primaryKeyCurve": "ed25519",
+      "bip44CoinType": 595,
+      "ticker": "NVBITGOT",
+      "assetId": "0x780602887b358cf48989d0d9aa6c8d28",
+      "genericAsset": "NVBITGOT",
+      "network": {
+        "name": "PolymeshTestnet"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": []
+    }
+  ],
+  "thoodeth:amzn": [
+    {
+      "id": "3493d608-fd3e-45dc-926d-783d54a8fe4d",
+      "fullName": "Amazon",
+      "name": "thoodeth:amzn",
+      "prefix": "",
+      "suffix": "THOODETH:AMZN",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "hoodeth",
+      "isToken": true,
+      "decimalPlaces": 18,
+      "asset": "thoodeth:amzn",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048216,
+      "contractAddress": "0x5884ad2f920c162cfbbacc88c9c51aa75ec09e02",
+      "genericAsset": "AMZN",
+      "network": {
+        "name": "Testnet Robinhood Chain"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": [
+        "supports-tokens",
+        "enterprise-pays-fees",
+        "wallet-connect-defi",
+        "evm_coin",
+        "stuck-transaction-management-onchain",
+        "shared-evm-message-signing",
+        "tss",
+        "tss-cold",
+        "mpcv2",
+        "evm-wallet",
+        "bulk-transaction",
+        "stuck-transaction-management-tss",
+        "shared-evm-signing",
+        "shared-evm-sdk",
+        "evm-compatible-ims",
+        "evm-compatible-ui",
+        "evm-compatible-wp",
+        "supports-erc20-token"
+      ]
+    }
+  ],
+  "tgasevm:usd1": [
+    {
+      "id": "bcd18a2e-8b19-4c6a-9f0a-9350ad5c29cf",
+      "fullName": "USD1",
+      "name": "tgasevm:usd1",
+      "prefix": "",
+      "suffix": "TGASEVM:USD1",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "gasevm",
+      "isToken": true,
+      "decimalPlaces": 18,
+      "asset": "tgasevm:usd1",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048212,
+      "contractAddress": "0xf5618919e1b0931f8b0f93f1fc9e8fb6f90f0f93",
+      "genericAsset": "USD1",
+      "network": {
+        "name": "Testnet Neo X"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": [
+        "supports-tokens",
+        "enterprise-pays-fees",
+        "wallet-connect-defi",
+        "evm_coin",
+        "stuck-transaction-management-onchain",
+        "shared-evm-message-signing",
+        "tss",
+        "tss-cold",
+        "mpcv2",
+        "evm-wallet",
+        "bulk-transaction",
+        "stuck-transaction-management-tss",
+        "shared-evm-signing",
+        "shared-evm-sdk",
+        "evm-compatible-ims",
+        "evm-compatible-ui",
+        "evm-compatible-wp",
+        "supports-erc20-token"
+      ]
+    }
+  ],
+  "tabstracteth:tmt": [
+    {
+      "id": "3531e4da-5c4c-4b34-b936-aed409e21dde",
+      "fullName": "Test Mintable Token",
+      "name": "tabstracteth:tmt",
+      "prefix": "",
+      "suffix": "TABSTRACTETH:TMT",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "abstracteth",
+      "isToken": true,
+      "decimalPlaces": 6,
+      "asset": "tabstracteth:tmt",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048192,
+      "contractAddress": "0x23d6e0dd3a066daf6cfdff6344e6e271945b7d8f",
+      "genericAsset": "TMT",
+      "network": {
+        "name": "Testnet Abstract Ethereum"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": [
+        "supports-tokens",
+        "enterprise-pays-fees",
+        "wallet-connect-defi",
+        "evm_coin",
+        "stuck-transaction-management-onchain",
+        "shared-evm-message-signing",
+        "tss",
+        "tss-cold",
+        "mpcv2",
+        "evm-wallet",
+        "bulk-transaction",
+        "stuck-transaction-management-tss",
+        "shared-evm-signing",
+        "shared-evm-sdk",
+        "evm-compatible-ims",
+        "evm-compatible-ui",
+        "evm-compatible-wp",
+        "supports-erc20-token"
+      ]
+    }
+  ],
+  "tinketh:usdc": [
+    {
+      "id": "f25e85e8-09f8-477d-af35-8f67ee47bf43",
+      "fullName": "Test USDC",
+      "name": "tinketh:usdc",
+      "prefix": "",
+      "suffix": "TINKETH:USDC",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "inketh",
+      "isToken": true,
+      "decimalPlaces": 6,
+      "asset": "tinketh:usdc",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048220,
+      "contractAddress": "0xfabab97dce620294d2b0b0e46c68964e326300ac",
+      "genericAsset": "USDC",
+      "network": {
+        "name": "INK Testnet"
+      },
+      "additionalFeatures": ["stablecoin"],
+      "excludedFeatures": [
+        "supports-tokens",
+        "enterprise-pays-fees",
+        "wallet-connect-defi",
+        "evm_coin",
+        "stuck-transaction-management-onchain",
+        "shared-evm-message-signing",
+        "tss",
+        "tss-cold",
+        "mpcv2",
+        "evm-wallet",
+        "bulk-transaction",
+        "stuck-transaction-management-tss",
+        "EIP1559",
+        "shared-evm-signing",
+        "shared-evm-sdk",
+        "evm-compatible-ims",
+        "evm-compatible-ui",
+        "evm-compatible-wp",
+        "supports-erc20-token"
+      ]
+    }
+  ],
+  "terc721:hbarevmtoken": [
+    {
+      "id": "a7604e03-7f40-41f0-8efa-2e7673ac2a9f",
+      "fullName": "Testnet Hedera EVM NFT",
+      "name": "terc721:hbarevmtoken",
+      "prefix": "",
+      "suffix": "TERC721:HBAREVMTOKEN",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "hbarevm",
+      "isToken": true,
+      "decimalPlaces": 0,
+      "asset": "erc721",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048214,
+      "contractAddress": "0x00000000000000000000000000000000007103a5",
+      "genericAsset": "HBAREVMTOKEN",
+      "network": {
+        "name": "Testnet Hedera EVM"
+      },
+      "additionalFeatures": ["genericToken"],
+      "excludedFeatures": [
+        "custody",
+        "custody-bitgo-trust",
+        "custody-bitgo-mena-fze",
+        "custody-bitgo-custody-mena-fze",
+        "custody-bitgo-singapore",
+        "custody-bitgo-europe-aps",
+        "custody-bitgo-frankfurt",
+        "custody-bitgo-india",
+        "supports-tokens",
+        "enterprise-pays-fees",
+        "wallet-connect-defi",
+        "evm_coin",
+        "stuck-transaction-management-onchain",
+        "shared-evm-message-signing",
+        "tss",
+        "tss-cold",
+        "mpcv2",
+        "evm-wallet",
+        "bulk-transaction",
+        "stuck-transaction-management-tss",
+        "EIP1559",
+        "shared-evm-signing",
+        "shared-evm-sdk",
+        "evm-compatible-ims",
+        "evm-compatible-ui",
+        "evm-compatible-wp",
+        "supports-erc20-token"
+      ]
+    }
+  ],
+  "tmantle:bgerch": [
+    {
+      "id": "10fd0f49-d71a-4815-bbd0-ce1ca67b7982",
+      "fullName": "BGERCH",
+      "name": "tmantle:bgerch",
+      "prefix": "",
+      "suffix": "TMANTLE:BGERCH",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "mantle",
+      "isToken": true,
+      "decimalPlaces": 18,
+      "asset": "tmantle:bgerch",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048226,
+      "contractAddress": "0x13b62c9cd2b294acbb527335eaf36f85fe37ee55",
+      "genericAsset": "BGERCH",
+      "network": {
+        "name": "Testnet Mantle Native"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": [
+        "supports-tokens",
+        "enterprise-pays-fees",
+        "wallet-connect-defi",
+        "evm_coin",
+        "stuck-transaction-management-onchain",
+        "shared-evm-message-signing",
+        "tss",
+        "tss-cold",
+        "mpcv2",
+        "evm-wallet",
+        "bulk-transaction",
+        "stuck-transaction-management-tss",
+        "shared-evm-signing",
+        "shared-evm-sdk",
+        "evm-compatible-ims",
+        "evm-compatible-ui",
+        "evm-compatible-wp",
+        "supports-erc20-token"
+      ]
+    }
+  ],
+  "tunieth:usdc": [
+    {
+      "id": "e385606b-e79c-49a1-9f1f-c0d31f939390",
+      "fullName": "Test USDC",
+      "name": "tunieth:usdc",
+      "prefix": "",
+      "suffix": "TUNIETH:USDC",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "unieth",
+      "isToken": true,
+      "decimalPlaces": 6,
+      "asset": "tunieth:usdc",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048245,
+      "contractAddress": "0x31d0220469e10c4e71834a79b1f276d740d3768f",
+      "genericAsset": "USDC",
+      "network": {
+        "name": "Testnet Unichain"
+      },
+      "additionalFeatures": ["stablecoin"],
+      "excludedFeatures": [
+        "supports-tokens",
+        "enterprise-pays-fees",
+        "wallet-connect-defi",
+        "evm_coin",
+        "stuck-transaction-management-onchain",
+        "shared-evm-message-signing",
+        "tss",
+        "tss-cold",
+        "mpcv2",
+        "evm-wallet",
+        "bulk-transaction",
+        "stuck-transaction-management-tss",
+        "EIP1559",
+        "shared-evm-signing",
+        "shared-evm-sdk",
+        "evm-compatible-ims",
+        "evm-compatible-ui",
+        "evm-compatible-wp",
+        "supports-erc20-token"
+      ]
+    }
+  ],
+  "tjovayeth:tcmn": [
+    {
+      "id": "240568cc-8de7-47d2-a5d0-90be0a3d54fe",
+      "fullName": "Common",
+      "name": "tjovayeth:tcmn",
+      "prefix": "",
+      "suffix": "TJOVAYETH:TCMN",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "jovayeth",
+      "isToken": true,
+      "decimalPlaces": 18,
+      "asset": "tjovayeth:tcmn",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048222,
+      "contractAddress": "0x607bafa38ab8ed0f0f15a7f28625d4399612db7f",
+      "genericAsset": "TCMN",
+      "network": {
+        "name": "Testnet Jovay Ethereum"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": [
+        "supports-tokens",
+        "enterprise-pays-fees",
+        "wallet-connect-defi",
+        "evm_coin",
+        "stuck-transaction-management-onchain",
+        "shared-evm-message-signing",
+        "tss",
+        "tss-cold",
+        "mpcv2",
+        "evm-wallet",
+        "bulk-transaction",
+        "stuck-transaction-management-tss",
+        "shared-evm-signing",
+        "shared-evm-sdk",
+        "evm-compatible-ims",
+        "evm-compatible-ui",
+        "evm-compatible-wp",
+        "supports-erc20-token"
+      ]
+    }
+  ],
+  "tokbxlayer:tzeb": [
+    {
+      "id": "2b149c11-d8d6-4d5e-88f6-3d1372592201",
+      "fullName": "Zebra testnet",
+      "name": "tokbxlayer:tzeb",
+      "prefix": "",
+      "suffix": "TOKBXLAYER:TZEB",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "okbxlayer",
+      "isToken": true,
+      "decimalPlaces": 18,
+      "asset": "tokbxlayer:tzeb",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048232,
+      "contractAddress": "0x8ab88ea756a039abe3e2590c1adc90e7d9ee47e9",
+      "genericAsset": "TZEB",
+      "network": {
+        "name": "Testnet X Layer"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": [
+        "supports-tokens",
+        "enterprise-pays-fees",
+        "wallet-connect-defi",
+        "evm_coin",
+        "stuck-transaction-management-onchain",
+        "shared-evm-message-signing",
+        "tss",
+        "tss-cold",
+        "mpcv2",
+        "evm-wallet",
+        "bulk-transaction",
+        "stuck-transaction-management-tss",
+        "shared-evm-signing",
+        "shared-evm-sdk",
+        "evm-compatible-ims",
+        "evm-compatible-ui",
+        "evm-compatible-wp",
+        "supports-erc20-token"
+      ]
+    }
+  ],
+  "ttempo:pathusd": [
+    {
+      "id": "e1872fd8-14ee-4dc9-bc5e-fd52552d9c60",
+      "fullName": "Testnet pathUSD",
+      "name": "ttempo:pathusd",
+      "prefix": "",
+      "suffix": "TTEMPO:PATHUSD",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "tempo",
+      "isToken": true,
+      "decimalPlaces": 6,
+      "asset": "ttempo:pathusd",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048243,
+      "contractAddress": "0x20c0000000000000000000000000000000000000",
+      "genericAsset": "PATHUSD",
+      "network": {
+        "name": "Tempo Testnet"
+      },
+      "additionalFeatures": [
+        "account-model",
+        "requires-big-number",
+        "valueless-transfer",
+        "transaction-data",
+        "custody",
+        "custody-bitgo-trust",
+        "custody-bitgo-mena-fze",
+        "custody-bitgo-custody-mena-fze",
+        "custody-bitgo-singapore",
+        "custody-bitgo-europe-aps",
+        "custody-bitgo-frankfurt",
+        "custody-bitgo-india",
+        "supports-tokens",
+        "wallet-connect-defi",
+        "evm_coin",
+        "stuck-transaction-management-onchain",
+        "shared-evm-message-signing",
+        "tss",
+        "tss-cold",
+        "mpcv2",
+        "evm-wallet",
+        "bulk-transaction",
+        "stuck-transaction-management-tss",
+        "EIP1559",
+        "evm-keyring-unsupported",
+        "stablecoin",
+        "evm-non-bitgo-recovery",
+        "evm-unsigned-sweep-recovery"
+      ]
+    }
+  ],
+  "tbaseeth:usdc": [
+    {
+      "id": "16c438c1-714a-4ad7-bdb1-fb8d2575c466",
+      "fullName": "Testnet USDC",
+      "name": "tbaseeth:usdc",
+      "prefix": "",
+      "suffix": "TBASEETH:USDC",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "baseeth",
+      "isToken": true,
+      "decimalPlaces": 6,
+      "asset": "tbaseeth:usdc",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048198,
+      "contractAddress": "0x036cbd53842c5426634e7929541ec2318f3dcf7e",
+      "genericAsset": "USDC",
+      "network": {
+        "name": "BaseChainTestnet"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": [
+        "supports-tokens",
+        "enterprise-pays-fees",
+        "wallet-connect-defi",
+        "evm_coin",
+        "stuck-transaction-management-onchain",
+        "shared-evm-message-signing",
+        "tss",
+        "tss-cold",
+        "mpcv2",
+        "evm-wallet",
+        "bulk-transaction",
+        "stuck-transaction-management-tss",
+        "shared-evm-signing",
+        "shared-evm-sdk",
+        "evm-compatible-ims",
+        "evm-compatible-ui",
+        "evm-compatible-wp",
+        "supports-erc20-token"
+      ]
+    }
+  ],
+  "txdc:tmt": [
+    {
+      "id": "5fc561e7-5fb5-4702-9860-9f48d90f1d45",
+      "fullName": "XDC Network TMT",
+      "name": "txdc:tmt",
+      "prefix": "",
+      "suffix": "TXDC:TMT",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "xdc",
+      "isToken": true,
+      "decimalPlaces": 6,
+      "asset": "txdc:tmt",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 550,
+      "contractAddress": "0xb283ec8dad644effc5c4c50bb7bb21442ac3c2db",
+      "genericAsset": "TMT",
+      "network": {
+        "name": "XdcChainTestnet"
+      },
+      "additionalFeatures": [
+        "account-model",
+        "requires-big-number",
+        "valueless-transfer",
+        "transaction-data",
+        "custody",
+        "custody-bitgo-trust",
+        "custody-bitgo-mena-fze",
+        "custody-bitgo-custody-mena-fze",
+        "custody-bitgo-singapore",
+        "custody-bitgo-europe-aps",
+        "custody-bitgo-frankfurt",
+        "custody-bitgo-india",
+        "tss-verify-use-serialized-tx-hex"
+      ]
+    }
+  ],
+  "tmon:tmt": [
+    {
+      "id": "25053eca-e1aa-48c2-8969-afa4cbe96f12",
+      "fullName": "Test Mintable Token",
+      "name": "tmon:tmt",
+      "prefix": "",
+      "suffix": "TMON:TMT",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "mon",
+      "isToken": true,
+      "decimalPlaces": 6,
+      "asset": "tmon:tmt",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 268435779,
+      "contractAddress": "0x119abe0ba145873072e94baa98da26e11da067ad",
+      "genericAsset": "TMT",
+      "network": {
+        "name": "MonadTestnet"
+      },
+      "additionalFeatures": [
+        "account-model",
+        "requires-big-number",
+        "valueless-transfer",
+        "transaction-data",
+        "custody",
+        "custody-bitgo-trust",
+        "custody-bitgo-mena-fze",
+        "custody-bitgo-custody-mena-fze",
+        "custody-bitgo-singapore",
+        "custody-bitgo-europe-aps",
+        "custody-bitgo-frankfurt",
+        "custody-bitgo-india"
+      ]
+    }
+  ],
+  "thypeevm:usdc": [
+    {
+      "id": "b1bbf865-6b85-44d7-bdb1-3c1233a592f6",
+      "fullName": "Testnet HypeEVM USDC",
+      "name": "thypeevm:usdc",
+      "prefix": "",
+      "suffix": "THYPEEVM:USDC",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "hypeevm",
+      "isToken": true,
+      "decimalPlaces": 6,
+      "asset": "thypeevm:usdc",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048218,
+      "contractAddress": "0x2b3370ee501b4a559b57d449569354196457d8ab",
+      "genericAsset": "USDC",
+      "network": {
+        "name": "HyperliquidEVMTestnet"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": [
+        "supports-tokens",
+        "enterprise-pays-fees",
+        "wallet-connect-defi",
+        "evm_coin",
+        "stuck-transaction-management-onchain",
+        "shared-evm-message-signing",
+        "tss",
+        "tss-cold",
+        "mpcv2",
+        "evm-wallet",
+        "bulk-transaction",
+        "stuck-transaction-management-tss",
+        "shared-evm-signing",
+        "shared-evm-sdk",
+        "evm-compatible-ims",
+        "evm-compatible-ui",
+        "evm-compatible-wp",
+        "supports-erc20-token"
+      ]
+    }
+  ],
+  "tip:usdc": [
+    {
+      "id": "f9a9c36f-8938-4206-bf0d-5016a861c58f",
+      "fullName": "Testnet Data Network USDC",
+      "name": "tip:usdc",
+      "prefix": "",
+      "suffix": "TIP:USDC",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "ip",
+      "isToken": true,
+      "decimalPlaces": 6,
+      "asset": "tip:usdc",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048221,
+      "contractAddress": "0x8c7c52eabb0fcbcaebce2556d9a719d539ea02d8",
+      "genericAsset": "USDC",
+      "network": {
+        "name": "Data Network Testnet"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": [
+        "supports-tokens",
+        "enterprise-pays-fees",
+        "wallet-connect-defi",
+        "evm_coin",
+        "stuck-transaction-management-onchain",
+        "shared-evm-message-signing",
+        "tss",
+        "tss-cold",
+        "mpcv2",
+        "evm-wallet",
+        "bulk-transaction",
+        "stuck-transaction-management-tss",
+        "shared-evm-signing",
+        "shared-evm-sdk",
+        "evm-compatible-ims",
+        "evm-compatible-ui",
+        "evm-compatible-wp",
+        "supports-erc20-token"
+      ]
+    }
+  ],
+  "tmegaeth:tmt": [
+    {
+      "id": "b8a7c96f-96af-4c2f-94eb-582aa21ac6bb",
+      "fullName": "Test Mintable Token",
+      "name": "tmegaeth:tmt",
+      "prefix": "",
+      "suffix": "TMEGAETH:TMT",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "megaeth",
+      "isToken": true,
+      "decimalPlaces": 6,
+      "asset": "tmegaeth:tmt",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048228,
+      "contractAddress": "0x9abf1ca968783ba2ad3a75b6b7b2beece80a4fc2",
+      "genericAsset": "TMT",
+      "network": {
+        "name": "MegaETHTestnet"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": [
+        "supports-tokens",
+        "enterprise-pays-fees",
+        "wallet-connect-defi",
+        "evm_coin",
+        "stuck-transaction-management-onchain",
+        "shared-evm-message-signing",
+        "tss",
+        "tss-cold",
+        "mpcv2",
+        "evm-wallet",
+        "bulk-transaction",
+        "stuck-transaction-management-tss",
+        "shared-evm-signing",
+        "shared-evm-sdk",
+        "evm-compatible-ims",
+        "evm-compatible-ui",
+        "evm-compatible-wp",
+        "supports-erc20-token"
+      ]
+    }
+  ],
+  "tmorph:tmt": [
+    {
+      "id": "7949177e-0c92-4a02-8f34-cee1cbfb38d1",
+      "fullName": "Test Mintable Token",
+      "name": "tmorph:tmt",
+      "prefix": "",
+      "suffix": "TMORPH:TMT",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "morph",
+      "isToken": true,
+      "decimalPlaces": 6,
+      "asset": "tmorph:tmt",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048229,
+      "contractAddress": "0x5257950b5277dac30536eae4742ffef4e5af5256",
+      "genericAsset": "TMT",
+      "network": {
+        "name": "Morph Testnet"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": [
+        "supports-tokens",
+        "enterprise-pays-fees",
+        "wallet-connect-defi",
+        "evm_coin",
+        "stuck-transaction-management-onchain",
+        "shared-evm-message-signing",
+        "tss",
+        "tss-cold",
+        "mpcv2",
+        "evm-wallet",
+        "bulk-transaction",
+        "stuck-transaction-management-tss",
+        "shared-evm-signing",
+        "shared-evm-sdk",
+        "evm-compatible-ims",
+        "evm-compatible-ui",
+        "evm-compatible-wp",
+        "supports-erc20-token"
+      ]
+    }
+  ],
+  "tmorpheth:tmt": [
+    {
+      "id": "3383765b-37f9-4609-baf3-37c42f0ffee7",
+      "fullName": "Test Mintable Token",
+      "name": "tmorpheth:tmt",
+      "prefix": "",
+      "suffix": "TMORPHETH:TMT",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "morpheth",
+      "isToken": true,
+      "decimalPlaces": 6,
+      "asset": "tmorpheth:tmt",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048230,
+      "contractAddress": "0x5257950b5277dac30536eae4742ffef4e5af5256",
+      "genericAsset": "TMT",
+      "network": {
+        "name": "Morph Ethereum Testnet"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": [
+        "supports-tokens",
+        "enterprise-pays-fees",
+        "wallet-connect-defi",
+        "evm_coin",
+        "stuck-transaction-management-onchain",
+        "shared-evm-message-signing",
+        "tss",
+        "tss-cold",
+        "mpcv2",
+        "evm-wallet",
+        "bulk-transaction",
+        "stuck-transaction-management-tss",
+        "shared-evm-signing",
+        "shared-evm-sdk",
+        "evm-compatible-ims",
+        "evm-compatible-ui",
+        "evm-compatible-wp",
+        "supports-erc20-token"
+      ]
+    }
+  ],
+  "tplume:usdc": [
+    {
+      "id": "67a140e3-c73e-4984-af13-7b1555ee3ff3",
+      "fullName": "Testnet Plume USDC",
+      "name": "tplume:usdc",
+      "prefix": "",
+      "suffix": "TPLUME:USDC",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "plume",
+      "isToken": true,
+      "decimalPlaces": 6,
+      "asset": "tplume:usdc",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048236,
+      "contractAddress": "0xcb5f30e335672893c7eb944b374c196392c19d18",
+      "genericAsset": "USDC",
+      "network": {
+        "name": "PlumeTestnet"
+      },
+      "additionalFeatures": [
+        "account-model",
+        "requires-big-number",
+        "valueless-transfer",
+        "transaction-data",
+        "custody",
+        "custody-bitgo-trust",
+        "custody-bitgo-mena-fze",
+        "custody-bitgo-custody-mena-fze",
+        "custody-bitgo-singapore",
+        "custody-bitgo-europe-aps",
+        "custody-bitgo-frankfurt",
+        "custody-bitgo-india",
+        "EIP1559"
+      ]
+    }
+  ],
+  "tprividiumeth:USB-ESCROW-D": [
+    {
+      "id": "68596b5b-089c-4cf2-b4c8-4d84b799a74b",
+      "fullName": "USB Escrow Token",
+      "name": "tprividiumeth:USB-ESCROW-D",
+      "prefix": "",
+      "suffix": "TPRIVIDIUMETH:USB-ESCROW-D",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "prividiumeth",
+      "isToken": true,
+      "decimalPlaces": 2,
+      "asset": "tprividiumeth:USB-ESCROW-D",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048237,
+      "contractAddress": "0x2e392eee4da541dc8aab48d4a4c5eb3a8d8f468b",
+      "genericAsset": "USB-ESCROW-D",
+      "network": {
+        "name": "Prividium Ethereum Testnet"
+      },
+      "additionalFeatures": ["EIP1559"],
+      "excludedFeatures": [
+        "supports-tokens",
+        "enterprise-pays-fees",
+        "wallet-connect-defi",
+        "evm_coin",
+        "stuck-transaction-management-onchain",
+        "shared-evm-message-signing",
+        "tss",
+        "tss-cold",
+        "mpcv2",
+        "evm-wallet",
+        "bulk-transaction",
+        "stuck-transaction-management-tss",
+        "shared-evm-signing",
+        "shared-evm-sdk",
+        "evm-compatible-ims",
+        "evm-compatible-ui",
+        "evm-compatible-wp",
+        "supports-erc20-token"
+      ]
+    }
+  ],
+  "thbar:usdc": [
+    {
+      "id": "842c2119-3071-409d-b86f-49f0b46b676e",
+      "fullName": "Testnet Hedera USD Coin",
+      "name": "thbar:usdc",
+      "prefix": "",
+      "suffix": "THBAR:USDC",
+      "baseUnit": "tinybar",
+      "kind": "crypto",
+      "family": "hbar",
+      "isToken": true,
+      "decimalPlaces": 6,
+      "asset": "usdc",
+      "primaryKeyCurve": "ed25519",
+      "bip44CoinType": 3030,
+      "nodeAccountId": "0.0.3",
+      "tokenId": "0.0.429274",
+      "contractAddress": "0.0.429274",
+      "genericAsset": "USDC",
+      "network": {
+        "name": "HederaTestnet"
+      },
+      "additionalFeatures": ["stablecoin"],
+      "excludedFeatures": []
+    }
+  ],
+  "tcusd": [
+    {
+      "id": "a7fb510c-de32-4cd5-9215-4e55c81d5489",
+      "fullName": "Test Celo USD Token",
+      "name": "tcusd",
+      "prefix": "",
+      "suffix": "TCUSD",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "celo",
+      "isToken": true,
+      "decimalPlaces": 18,
+      "asset": "cusd",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 52752,
+      "contractAddress": "0x874069fa1eb16d44d622f2e0ca25eea172369bc1",
+      "genericAsset": "TCUSD",
+      "network": {
+        "name": "CeloTestnet"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": [
+        "custody",
+        "custody-bitgo-trust",
+        "custody-bitgo-mena-fze",
+        "custody-bitgo-custody-mena-fze",
+        "custody-bitgo-singapore",
+        "custody-bitgo-europe-aps",
+        "custody-bitgo-frankfurt",
+        "custody-bitgo-india"
+      ]
+    }
+  ],
+  "txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU": [
+    {
+      "id": "47887cb5-98bb-4942-bd25-3ccca0847f36",
+      "fullName": "BitGo Shield Token",
+      "name": "txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU",
+      "prefix": "",
+      "suffix": "TXLM:BST",
+      "baseUnit": "stroop",
+      "kind": "crypto",
+      "family": "xlm",
+      "isToken": true,
+      "decimalPlaces": 7,
+      "asset": "txlm:BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU",
+      "primaryKeyCurve": "ed25519",
+      "bip44CoinType": 148,
+      "domain": "bitgo.com",
+      "genericAsset": "BST-GCWHAO4SVB4KX3Q62QZGZUHUH2GSH3OIV7IS7Y3MPQOFGQFGBP6IYCOU",
+      "network": {
+        "name": "StellarTestnet"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": []
+    }
+  ],
+  "ttrx:wbtc": [
+    {
+      "id": "4ece7f15-a5c9-4302-8c82-787d7eb7e3c9",
+      "fullName": "Test Tron Wrapped Bitcoin",
+      "name": "ttrx:wbtc",
+      "prefix": "",
+      "suffix": "TTRX:WBTC",
+      "baseUnit": "sun",
+      "kind": "crypto",
+      "family": "trx",
+      "isToken": true,
+      "decimalPlaces": 8,
+      "asset": "wbtc",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 195,
+      "contractAddress": "TGkfUshdbAiNj5G1mynp2meq2BfF6XSGPf",
+      "genericAsset": "WBTC",
+      "network": {
+        "name": "TrxTestnet"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": []
+    }
+  ],
+  "talgo:USDC-10458941": [
+    {
+      "id": "0e20b757-3e62-4400-887d-caff117481c8",
+      "fullName": "USDC",
+      "name": "talgo:USDC-10458941",
+      "alias": "talgo:10458941",
+      "prefix": "",
+      "suffix": "USDC",
+      "baseUnit": "microAlgo",
+      "kind": "crypto",
+      "family": "algo",
+      "isToken": true,
+      "decimalPlaces": 6,
+      "asset": "talgo:USDC-10458941",
+      "primaryKeyCurve": "ed25519",
+      "bip44CoinType": 283,
+      "genericAsset": "USDC-10458941",
+      "network": {
+        "name": "AlgorandTestnet"
+      },
+      "additionalFeatures": ["stablecoin"],
+      "excludedFeatures": []
+    }
+  ],
+  "teos:CHEX": [
+    {
+      "id": "1c627bb5-4bee-4ab0-8bb6-3d535e17a769",
+      "fullName": "Chintai",
+      "name": "teos:CHEX",
+      "prefix": "",
+      "suffix": "CHEX",
+      "baseUnit": "eos",
+      "kind": "crypto",
+      "family": "eos",
+      "isToken": true,
+      "decimalPlaces": 8,
+      "asset": "chex",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 194,
+      "contractName": "testtoken113",
+      "contractAddress": "testtoken113",
+      "symbol": "CHEX",
+      "genericAsset": "CHEX",
+      "network": {
+        "name": "EosTestnet"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": []
+    }
+  ],
+  "terc721:soneiumtoken": [
+    {
+      "id": "c3fd9b27-b7df-4287-8991-58c15d004e83",
+      "fullName": "Generic Soneium ERC721",
+      "name": "terc721:soneiumtoken",
+      "prefix": "",
+      "suffix": "",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "soneium",
+      "isToken": true,
+      "decimalPlaces": 0,
+      "asset": "erc721",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048240,
+      "contractAddress": "0xterc721:soneiumtoken",
+      "genericAsset": "SONEIUMTOKEN",
+      "network": {
+        "name": "SoneiumTestnet"
+      },
+      "additionalFeatures": [
+        "account-model",
+        "requires-big-number",
+        "valueless-transfer",
+        "transaction-data",
+        "genericToken"
+      ]
+    }
+  ],
+  "tarbeth:link": [
+    {
+      "id": "d6a8869d-3da4-4b95-a9af-f2a059ca651f",
+      "fullName": "Arbitrum Test LINK",
+      "name": "tarbeth:link",
+      "prefix": "",
+      "suffix": "TARBETH:LINK",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "arbeth",
+      "isToken": true,
+      "decimalPlaces": 18,
+      "asset": "tarbeth:link",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048194,
+      "contractAddress": "0x143e1dae4f018ff86051a01d44a1b49b13704056",
+      "genericAsset": "LINK",
+      "network": {
+        "name": "ArbitrumTestnet"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": ["EIP1559"]
+    }
+  ],
+  "topeth:terc18dp": [
+    {
+      "id": "3c06bc28-1af2-4869-a632-bd081376fb46",
+      "fullName": "Optimism Test ERC Token 18 Decimals",
+      "name": "topeth:terc18dp",
+      "prefix": "",
+      "suffix": "TOPETH:TERC18DP",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "opeth",
+      "isToken": true,
+      "decimalPlaces": 18,
+      "asset": "topeth:terc18dp",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048234,
+      "contractAddress": "0xe9df68a54bba438c8a6192e95f0f2c53ac93d997",
+      "genericAsset": "TERC18DP",
+      "network": {
+        "name": "OptimismTestnet"
+      },
+      "additionalFeatures": ["bulk-transaction"],
+      "excludedFeatures": ["EIP1559"]
+    }
+  ],
+  "tzketh:link": [
+    {
+      "id": "ef49b6d1-b7a7-4c5c-8c53-43d22c15cc17",
+      "fullName": "zkSync Test LINK",
+      "name": "tzketh:link",
+      "prefix": "",
+      "suffix": "TZKETH:LINK",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "zksyncera",
+      "isToken": true,
+      "decimalPlaces": 18,
+      "asset": "tzketh:link",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048252,
+      "contractAddress": "0xcccb29bac5ad81290383643c6fb38130cda9d881",
+      "genericAsset": "LINK",
+      "network": {
+        "name": "ZkSyncEraTestnet"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": [
+        "supports-tokens",
+        "enterprise-pays-fees",
+        "wallet-connect-defi",
+        "evm_coin",
+        "stuck-transaction-management-onchain",
+        "shared-evm-message-signing",
+        "tss",
+        "tss-cold",
+        "mpcv2",
+        "evm-wallet",
+        "bulk-transaction",
+        "stuck-transaction-management-tss",
+        "EIP1559",
+        "shared-evm-signing",
+        "shared-evm-sdk",
+        "evm-compatible-ims",
+        "evm-compatible-ui",
+        "evm-compatible-wp",
+        "supports-erc20-token"
+      ]
+    }
+  ],
+  "tbera:bgt": [
+    {
+      "id": "24af5e18-ab4b-43e5-80db-0ddb9beb01b3",
+      "fullName": "Bera Testnet BGT",
+      "name": "tbera:bgt",
+      "prefix": "",
+      "suffix": "TBERA:BGT",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "bera",
+      "isToken": true,
+      "decimalPlaces": 18,
+      "asset": "tbera:bgt",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 8008,
+      "contractAddress": "0xbda130737bdd9618301681329bf2e46a016ff9ad",
+      "genericAsset": "BGT",
+      "network": {
+        "name": "BeraTestnet"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": ["EIP1559"]
+    }
+  ],
+  "tcoredao:stcore": [
+    {
+      "id": "b4448868-8beb-4dd8-b607-3b36e11f1df4",
+      "fullName": "Testnet stCore token",
+      "name": "tcoredao:stcore",
+      "prefix": "",
+      "suffix": "TCOREDAO:STCORE",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "coredao",
+      "isToken": true,
+      "decimalPlaces": 18,
+      "asset": "tcoredao:stcore",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1116,
+      "contractAddress": "0x6401f24ef7c54032f4f54e67492928973ab87650",
+      "genericAsset": "STCORE",
+      "network": {
+        "name": "CoredaoTestnet"
+      },
+      "additionalFeatures": [
+        "account-model",
+        "requires-big-number",
+        "valueless-transfer",
+        "transaction-data",
+        "custody",
+        "custody-bitgo-trust",
+        "custody-bitgo-mena-fze",
+        "custody-bitgo-custody-mena-fze",
+        "custody-bitgo-singapore",
+        "custody-bitgo-europe-aps",
+        "custody-bitgo-frankfurt",
+        "custody-bitgo-india"
+      ]
+    }
+  ],
+  "tworld:wld": [
+    {
+      "id": "c5acdc9b-d0d4-4e0c-88fe-2cc68504cf86",
+      "fullName": "Worldcoin Testnet",
+      "name": "tworld:wld",
+      "prefix": "",
+      "suffix": "TWORLD:WLD",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "world",
+      "isToken": true,
+      "decimalPlaces": 18,
+      "asset": "tworld:wld",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048248,
+      "contractAddress": "0x8803e47fd253915f9c860837f391aa71b3e03c5a",
+      "genericAsset": "WLD",
+      "network": {
+        "name": "WorldchainTestnet"
+      },
+      "additionalFeatures": [
+        "account-model",
+        "requires-big-number",
+        "valueless-transfer",
+        "transaction-data",
+        "custody",
+        "custody-bitgo-trust",
+        "custody-bitgo-mena-fze",
+        "custody-bitgo-custody-mena-fze",
+        "custody-bitgo-singapore",
+        "custody-bitgo-europe-aps",
+        "custody-bitgo-frankfurt",
+        "custody-bitgo-india"
+      ]
+    }
+  ],
+  "tflr:wflr": [
+    {
+      "id": "ff4dd56d-8fa0-4e92-b764-88c56ea48549",
+      "fullName": "Wrapped Flare Testnet",
+      "name": "tflr:wflr",
+      "prefix": "",
+      "suffix": "TFLR:WFLR",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "flr",
+      "isToken": true,
+      "decimalPlaces": 18,
+      "asset": "tflr:wflr",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 1879048209,
+      "contractAddress": "0xab6fad89389b73dbc887d31206a26fd88d719d1f",
+      "genericAsset": "WFLR",
+      "network": {
+        "name": "FlarechainTestnet"
+      },
+      "additionalFeatures": [
+        "account-model",
+        "requires-big-number",
+        "valueless-transfer",
+        "transaction-data",
+        "custody",
+        "custody-bitgo-trust",
+        "custody-bitgo-mena-fze",
+        "custody-bitgo-custody-mena-fze",
+        "custody-bitgo-singapore",
+        "custody-bitgo-europe-aps",
+        "custody-bitgo-frankfurt",
+        "custody-bitgo-india",
+        "stablecoin"
+      ]
+    }
+  ],
+  "txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd": [
+    {
+      "id": "8ef16158-1015-4a67-b6fe-db669c18ab2b",
+      "fullName": "XRPL Testnet Token",
+      "name": "txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd",
+      "prefix": "",
+      "suffix": "TXRP:TST-RP9JPYP5KYVFRB6ZIRGHAGW5U8SGAMU4BD",
+      "baseUnit": "drop",
+      "kind": "crypto",
+      "family": "xrp",
+      "isToken": true,
+      "decimalPlaces": 15,
+      "asset": "txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd",
+      "primaryKeyCurve": "secp256k1",
+      "bip44CoinType": 144,
+      "domain": "xrpl.org",
+      "issuerAddress": "rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd",
+      "currencyCode": "TST",
+      "contractAddress": "rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd::TST",
+      "genericAsset": "TST-RP9JPYP5KYVFRB6ZIRGHAGW5U8SGAMU4BD",
+      "network": {
+        "name": "XrpTestnet"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": []
+    }
+  ],
+  "tsui:deep": [
+    {
+      "id": "0b8a7919-c37e-4be8-8338-7fc13c6c875e",
+      "fullName": "Deepbook",
+      "name": "tsui:deep",
+      "prefix": "",
+      "suffix": "TSUI:DEEP",
+      "baseUnit": "MIST",
+      "kind": "crypto",
+      "family": "sui",
+      "isToken": true,
+      "decimalPlaces": 6,
+      "asset": "tsui:deep",
+      "primaryKeyCurve": "ed25519",
+      "bip44CoinType": 784,
+      "packageId": "0x36dbef866a1d62bf7328989a10fb2f07d769f4ee587c0de4a0a256e57e0a58a8",
+      "module": "deep",
+      "symbol": "DEEP",
+      "contractAddress": "0x36dbef866a1d62bf7328989a10fb2f07d769f4ee587c0de4a0a256e57e0a58a8::deep::DEEP",
+      "genericAsset": "DEEP",
+      "network": {
+        "name": "Testnet Sui"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": []
+    }
+  ],
+  "ttao:apex": [
+    {
+      "id": "b8b5fded-65f8-49eb-8f83-ad97d08d07f2",
+      "fullName": "Apex",
+      "name": "ttao:apex",
+      "prefix": "",
+      "suffix": "TTAO:APEX",
+      "baseUnit": "rao",
+      "kind": "crypto",
+      "family": "tao",
+      "isToken": true,
+      "decimalPlaces": 9,
+      "asset": "ttao:apex",
+      "primaryKeyCurve": "ed25519",
+      "bip44CoinType": 1005,
+      "subnetId": "1",
+      "genericAsset": "APEX",
+      "network": {
+        "name": "Testnet Tao"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": []
+    }
+  ],
+  "tapt:stgusd1": [
+    {
+      "id": "5cce2ccc-977c-4791-b4f0-de5eb8da17b6",
+      "fullName": "Test USD1 Token",
+      "name": "tapt:stgusd1",
+      "prefix": "",
+      "suffix": "TAPT:STGUSD1",
+      "baseUnit": "octa",
+      "kind": "crypto",
+      "family": "apt",
+      "isToken": true,
+      "decimalPlaces": 6,
+      "asset": "tapt:stgusd1",
+      "primaryKeyCurve": "ed25519",
+      "bip44CoinType": 637,
+      "assetId": "0xa291072c398d4224abc2f4898ace15cc61a949a093c69e757d6fc8efcb62802b",
+      "genericAsset": "STGUSD1",
+      "network": {
+        "name": "Testnet Apt"
+      },
+      "additionalFeatures": ["stablecoin"],
+      "excludedFeatures": []
+    }
+  ],
+  "ofctunieth:usdc": [
+    {
+      "id": "ac0ccb52-0813-4e2f-9b87-606a26bb9a86",
+      "fullName": "Test USDC",
+      "name": "ofctunieth:usdc",
+      "prefix": "",
+      "suffix": "TUNIETH:USDC",
+      "baseUnit": "wei",
+      "kind": "crypto",
+      "family": "ofc",
+      "isToken": true,
+      "decimalPlaces": 6,
+      "asset": "tunieth:usdc",
+      "primaryKeyCurve": "secp256k1",
+      "addressCoin": "tunieth",
+      "minimumDenomination": 1000000,
+      "genericAsset": "USDC",
+      "network": {
+        "name": "OfcTestnet"
+      },
+      "additionalFeatures": [
+        "account-model",
+        "requires-big-number",
+        "valueless-transfer",
+        "transaction-data",
+        "custody",
+        "custody-bitgo-trust",
+        "custody-bitgo-mena-fze",
+        "custody-bitgo-custody-mena-fze",
+        "custody-bitgo-singapore",
+        "custody-bitgo-europe-aps",
+        "custody-bitgo-frankfurt",
+        "custody-bitgo-india",
+        "stablecoin",
+        "account-model",
+        "requires-big-number"
+      ],
+      "excludedFeatures": []
+    }
+  ],
+  "tcanton:mmuat20": [
+    {
+      "id": "00a1cbbe-9d3d-44bc-a68b-eb5f8cdbe68b",
+      "fullName": "TST UAT RIT CAP & TST760105",
+      "name": "tcanton:mmuat20",
+      "prefix": "",
+      "suffix": "TCANTON:MMUAT20",
+      "baseUnit": "canton",
+      "kind": "crypto",
+      "family": "canton",
+      "isToken": true,
+      "decimalPlaces": 10,
+      "asset": "tcanton:mmuat20",
+      "primaryKeyCurve": "ed25519",
+      "bip44CoinType": 6767,
+      "baseUrl": "https://app.pse.cts.dtcc-da.com/api/token-standard/v0/registrars/",
+      "contractAddress": "registrar::12201f35613afb7ab587b420f7f0e856e16d60dc4cf63978a4be6d7c8e590235f9cb:mmuat20",
+      "genericAsset": "MMUAT20",
+      "network": {
+        "name": "CantonTestnet"
+      },
+      "additionalFeatures": [],
+      "excludedFeatures": []
+    }
+  ]
+}

@@ -1,9 +1,13 @@
 import 'should';
 import {
+  assertImmutableFieldsUnchanged,
+  BaseCoin,
   BaseNetwork,
   BaseUnit,
+  CoinClassMismatchError,
   CoinFamily,
   CoinFeature,
+  CoinImmutableFieldsMismatchError,
   CoinMap,
   coins,
   createToken,
@@ -57,6 +61,31 @@ import {
   terc20,
 } from '../../src/account';
 import { allCoinsAndTokens } from '../../src/allCoinsAndTokens';
+
+// Global coin map isolation: fixtures spread real statics tokens (e.g.
+// amsTokenConfigWithCustomToken carries hteth:gousd), and the AMS refresh paths
+// legitimately replace known tokens in the global map. Restore any drifted entry
+// after every test so each test sees pristine statics.
+const pristineCoins = new Map<string, Readonly<BaseCoin>>();
+beforeEach(function () {
+  coins.forEach((coin, name) => pristineCoins.set(name, coin));
+});
+afterEach(function () {
+  coins.forEach((coin, name) => {
+    const original = pristineCoins.get(name);
+    if (original !== undefined && original !== coin) {
+      coins.replace(original);
+    }
+  });
+  pristineCoins.clear();
+});
+
+function cloneCoinWithMutations(coin: Readonly<BaseCoin>, mutations: Record<string, unknown>): Readonly<BaseCoin> {
+  // object spreads drop the prototype, which trips the class guard before the
+  // field guards run — clone onto the same prototype to exercise one field alone
+  const clone = Object.assign(Object.create(Object.getPrototypeOf(coin)), coin, mutations) as Readonly<BaseCoin>;
+  return Object.freeze(clone);
+}
 
 interface DuplicateCoinObject {
   name: string;
@@ -1577,14 +1606,23 @@ describe('create token map using config details', () => {
     });
   });
 
-  it('should give precedence to static coin map over ams coin map', () => {
-    const tokenMap = createTokenMapUsingConfigDetails(incorrectAmsTokenConfig);
+  it('should refresh a known token from the ams coin map (tokens only)', () => {
+    // Since CSHLD-1957 the identity guard (not statics precedence) protects known
+    // coins: AMS is authoritative for known *tokens*, base chains are never replaced.
     const tokenName = 'thbar:usdc';
-    const token = tokenMap.get(tokenName);
-    token.decimalPlaces.should.eql(coins.get(tokenName).decimalPlaces);
-    token.baseUnit.should.eql(coins.get(tokenName).baseUnit);
-    token.decimalPlaces.should.not.eql(incorrectAmsTokenConfig[tokenName][0].decimalPlaces);
-    token.baseUnit.should.not.eql(incorrectAmsTokenConfig[tokenName][0].baseUnit);
+    const staticCoin = coins.get(tokenName);
+    try {
+      const tokenMap = createTokenMapUsingConfigDetails(incorrectAmsTokenConfig);
+      const token = tokenMap.get(tokenName);
+      token.decimalPlaces.should.eql(incorrectAmsTokenConfig[tokenName][0].decimalPlaces);
+      token.decimalPlaces.should.not.eql(staticCoin.decimalPlaces);
+      // the identity guard: refresh never changes the coin class
+      token.constructor.should.equal(staticCoin.constructor);
+      coins.get(tokenName).constructor.should.equal(staticCoin.constructor);
+    } finally {
+      coins.replace(staticCoin);
+    }
+    coins.get(tokenName).should.equal(staticCoin);
   });
 
   it('should create a coin map and get formatted tokens from it', () => {
@@ -1644,14 +1682,15 @@ describe('create token map using config details', () => {
     });
   });
 
-  it('should return the base coin present in default coin map', () => {
+  it('returns the existing coin untouched for a known record (createToken is pure)', () => {
+    // refresh ownership moved to the map builders: createToken must never mutate
+    // the global coin map for a record that is already known to statics
     const tokenName = 'thbar:usdc';
-    const token = createToken(incorrectAmsTokenConfig[tokenName][0]);
-    token?.should.not.be.undefined();
-    token?.decimalPlaces.should.eql(coins.get(tokenName).decimalPlaces);
-    token?.baseUnit.should.eql(coins.get(tokenName).baseUnit);
-    token?.decimalPlaces.should.not.eql(incorrectAmsTokenConfig[tokenName][0].decimalPlaces);
-    token?.baseUnit.should.not.eql(incorrectAmsTokenConfig[tokenName][0].baseUnit);
+    const staticCoin = coins.get(tokenName);
+    const returned = createToken(incorrectAmsTokenConfig[tokenName][0]);
+    returned?.should.equal(staticCoin);
+    coins.get(tokenName).should.equal(staticCoin);
+    coins.get(tokenName).decimalPlaces.should.eql(staticCoin.decimalPlaces);
   });
 
   it('should be able to create base coin from trimmed token config', () => {
@@ -2076,6 +2115,349 @@ describe('DynamicCoin and dynamic base chain support', function () {
       };
       const coin = createTokenUsingTrimmedConfigDetails(config);
       should(coin).be.undefined();
+    });
+  });
+
+  describe('identity-guarded coin refresh (CSHLD-1957)', function () {
+    // Fixture built from a captured AMS assetsList payload: EVERY base chain with
+    // its exact details, plus one token per family, preferring a token that already
+    // exists in statics so the replace path is exercised. If the baseChainParity
+    // test below fails, statics base chains changed — regenerate the fixture from
+    // a live /api/v1/assets/list/testnet response.
+    const amsFixture = require('./fixtures/amsBaseChainsAndFamilyTokens.json') as Record<
+      string,
+      TrimmedAmsTokenConfig[]
+    >;
+    const fixtureBaseChainNames = Object.keys(amsFixture).filter((name) => amsFixture[name][0]?.isToken === false);
+    const fixtureTokenNames = Object.keys(amsFixture).filter((name) => amsFixture[name][0]?.isToken === true);
+
+    it('fixture base chains exactly match the statics testnet base chain set', function () {
+      // canary: statics base chains are the poison vectors of the CSHLD-1957
+      // regression, so the fixture must track them 1:1 (name and id)
+      const staticsTestnetBaseChains = new Map<string, Readonly<BaseCoin>>();
+      coins.forEach((coin, name) => {
+        if (!coin.isToken && coin.network.type === NetworkType.TESTNET) {
+          staticsTestnetBaseChains.set(name, coin);
+        }
+      });
+      fixtureBaseChainNames.forEach((name) => {
+        const staticsCoin = staticsTestnetBaseChains.get(name);
+        should.exist(staticsCoin, `fixture base chain ${name} is not in statics`);
+        staticsCoin.id.should.equal(amsFixture[name][0].id);
+      });
+      staticsTestnetBaseChains.forEach((coin, name) => {
+        should.exist(amsFixture[name], `statics testnet base chain ${name} is missing from the fixture`);
+      });
+    });
+
+    it('does not replace a known base chain matched by a valid AMS id', function () {
+      // Regression: statics 2138 swapped tlnbtc's LightningCoin for a DynamicCoin
+      // when the AMS record carried a valid UUID. The real staging AMS id is used.
+      const before = coins.get('tlnbtc');
+      const refreshed = createToken({
+        id: '3cbabaa7-a063-4db3-b3a8-ea8cc38033e5',
+        name: 'tlnbtc',
+        fullName: 'Testnet Lightning Bitcoin',
+        family: 'lnbtc',
+        decimalPlaces: before.decimalPlaces,
+        asset: before.asset,
+        isToken: false,
+        network: { name: before.network.name },
+      });
+      should.exist(refreshed);
+      refreshed.should.equal(before);
+      coins.get('tlnbtc').should.equal(before);
+      coins.get('tlnbtc').constructor.should.equal(before.constructor);
+    });
+
+    it('refreshes a known token with AMS metadata and preserves its class', function () {
+      const before = coins.get('tsol:usdc');
+      try {
+        const coinMap = createTokenMapUsingConfigDetails({
+          'tsol:usdc': [
+            {
+              id: before.id,
+              name: before.name,
+              fullName: 'USD Coin (AMS refreshed)',
+              family: before.family,
+              decimalPlaces: before.decimalPlaces,
+              asset: before.asset,
+              isToken: true,
+              network: before.network,
+              tokenAddress: before.tokenAddress,
+              contractAddress: before.contractAddress,
+              features: before.features as string[],
+            },
+          ],
+        });
+        coins.get('tsol:usdc').fullName.should.equal('USD Coin (AMS refreshed)');
+        coins.get('tsol:usdc').should.not.equal(before);
+        coins.get('tsol:usdc').constructor.should.equal(before.constructor);
+        // the returned map mirrors the record the global map now holds
+        coinMap.get('tsol:usdc').should.equal(coins.get('tsol:usdc'));
+      } finally {
+        // restore the statics record so other tests see pristine data
+        coins.replace(before);
+      }
+      coins.get('tsol:usdc').should.equal(before);
+    });
+
+    it('rejects a same-id replacement that changes the coin class', function () {
+      const usdc = coins.get('tsol:usdc');
+      // Unknown name/id, so createToken builds it without touching the map. The
+      // spread clone carries usdc's id with a different prototype — exactly the
+      // class-swapping replacement CoinMap.replace must refuse.
+      const impostor = createToken({
+        id: '00000000-0000-4000-8000-000000000001',
+        name: 'sol:classmismatch',
+        fullName: 'Class Mismatch Impostor',
+        family: 'sol',
+        decimalPlaces: 6,
+        asset: 'sol:classmismatch' as unknown as UnderlyingAsset,
+        isToken: true,
+        network: Networks.main.sol,
+        tokenAddress: 'GqivH1VnEGdbuGMPz6B4qZ4GeRyyX6JZciUW6CUnRM3C',
+      });
+      should.exist(impostor);
+      const idThief = { ...impostor, id: usdc.id } as unknown as Readonly<BaseCoin>;
+      (() => coins.replace(idThief)).should.throw(CoinClassMismatchError);
+      // and with a genuine coin of another class claiming usdc's id — the exact
+      // staging failure shape (a real DynamicCoin displacing a real LightningCoin)
+      const talgoUsdc = coins.get('talgo:USDC-10458941');
+      (() => coins.replace(cloneCoinWithMutations(talgoUsdc, { id: usdc.id }))).should.throw(CoinClassMismatchError);
+      coins.get('tsol:usdc').should.equal(usdc);
+      coins.get('talgo:USDC-10458941').should.equal(talgoUsdc);
+    });
+
+    it('does not refresh a known token whose identity fields differ', function () {
+      // id, name and contract address are immutable: an AMS record that redefines
+      // any of them is rejected by the guard and both maps keep the statics coin
+      const before = coins.get('tsol:usdc');
+      const coinMap = createTokenMapUsingConfigDetails({
+        [before.name]: [
+          {
+            id: before.id,
+            name: before.name,
+            fullName: 'USDC Impostor Mint',
+            family: before.family,
+            decimalPlaces: before.decimalPlaces,
+            asset: before.asset,
+            isToken: true,
+            network: before.network,
+            tokenAddress: 'GqivH1VnEGdbuGMPz6B4qZ4GeRyyX6JZciUW6CUnRM3C',
+          },
+        ],
+      });
+      coins.get('tsol:usdc').should.equal(before);
+      coinMap.get('tsol:usdc').should.equal(before);
+
+      // same name but a re-issued id — matched via name, still refused
+      const reidentifiedMap = createTokenMapUsingConfigDetails({
+        [before.name]: [
+          {
+            id: '00000000-0000-4000-8000-000000000002',
+            name: before.name,
+            fullName: 'USDC Re-identified',
+            family: before.family,
+            decimalPlaces: before.decimalPlaces,
+            asset: before.asset,
+            isToken: true,
+            network: before.network,
+            tokenAddress: before.tokenAddress,
+          },
+        ],
+      });
+      coins.get('tsol:usdc').should.equal(before);
+      reidentifiedMap.get('tsol:usdc').should.equal(before);
+    });
+
+    it('rejects replacements that redefine any immutable field', function () {
+      // each identity field (id, name, alias, contract address) must be covered:
+      // a replacement differing in exactly one must be refused, map untouched
+      const usdc = coins.get('tsol:usdc');
+      // replace is keyed by id, so the id branch is unreachable through replace —
+      // exercise the exported guard directly for that field
+      (() =>
+        assertImmutableFieldsUnchanged(usdc, {
+          id: '00000000-0000-4000-8000-000000000003',
+          name: usdc.name,
+        })).should.throw(CoinImmutableFieldsMismatchError);
+      (() => coins.replace(cloneCoinWithMutations(usdc, { name: 'tsol:usdc-renamed' }))).should.throw(
+        CoinImmutableFieldsMismatchError
+      );
+      (() => coins.replace(cloneCoinWithMutations(usdc, { alias: 'tsol-usdc-migrated' }))).should.throw(
+        CoinImmutableFieldsMismatchError
+      );
+      (() =>
+        coins.replace(
+          cloneCoinWithMutations(usdc, { contractAddress: 'GqivH1VnEGdbuGMPz6B4qZ4GeRyyX6JZciUW6CUnRM3C' })
+        )).should.throw(CoinImmutableFieldsMismatchError);
+      // both alias directions on a coin that carries an alias
+      const talgoUsdc = coins.get('talgo:USDC-10458941');
+      (() => coins.replace(cloneCoinWithMutations(talgoUsdc, { alias: 'talgo:10458941-renamed' }))).should.throw(
+        CoinImmutableFieldsMismatchError
+      );
+      (() => coins.replace(cloneCoinWithMutations(talgoUsdc, { alias: undefined }))).should.throw(
+        CoinImmutableFieldsMismatchError
+      );
+      coins.get('tsol:usdc').should.equal(usdc);
+      coins.get('talgo:USDC-10458941').should.equal(talgoUsdc);
+    });
+
+    it('does not refresh a known token whose alias would be dropped', function () {
+      // constructToken does not propagate alias, so an AMS refresh of an aliased
+      // token builds a replacement without one — the guard must treat that as an
+      // alias redefinition ('talgo:10458941' -> 'none') and keep the statics record
+      const name = 'talgo:USDC-10458941';
+      const before = coins.get(name);
+      // address fields live on token subclasses, not BaseCoin — narrow at runtime
+      const beforeTokenAddress =
+        'tokenAddress' in before && typeof before.tokenAddress === 'string' ? before.tokenAddress : undefined;
+      const beforeContractAddress =
+        'contractAddress' in before && typeof before.contractAddress === 'string' ? before.contractAddress : undefined;
+      const warnings: string[] = [];
+      const originalWarn = console.warn;
+      console.warn = (...args: unknown[]) => {
+        warnings.push(args.map((arg) => String(arg)).join(' '));
+      };
+      let coinMap: CoinMap;
+      try {
+        coinMap = createTokenMapUsingConfigDetails({
+          [name]: [
+            {
+              id: before.id,
+              name: before.name,
+              fullName: before.fullName,
+              family: before.family,
+              decimalPlaces: before.decimalPlaces,
+              asset: before.asset,
+              isToken: true,
+              network: before.network,
+              tokenAddress: beforeTokenAddress,
+              contractAddress: beforeContractAddress,
+              features: before.features as string[],
+            },
+          ],
+        });
+      } finally {
+        console.warn = originalWarn;
+      }
+      coins.get(name).should.equal(before);
+      coinMap.get(name).should.equal(before);
+      warnings.join('\n').should.match(/alias/);
+    });
+
+    it('applies AMS feature updates while preserving identity', function () {
+      // features are mutable metadata: the refresh must carry AMS feature updates
+      // through while every identity field stays untouched
+      const before = coins.get('tsol:usdc');
+      const updatedFeatures = (before.features as string[]).slice(0, -1);
+      const beforeContractAddress =
+        'contractAddress' in before && typeof before.contractAddress === 'string' ? before.contractAddress : undefined;
+      try {
+        const coinMap = createTokenMapUsingConfigDetails({
+          'tsol:usdc': [
+            {
+              id: before.id,
+              name: before.name,
+              fullName: before.fullName,
+              family: before.family,
+              decimalPlaces: before.decimalPlaces,
+              asset: before.asset,
+              isToken: true,
+              network: before.network,
+              tokenAddress: before.tokenAddress,
+              contractAddress: beforeContractAddress,
+              features: updatedFeatures,
+            },
+          ],
+        });
+        const after = coins.get('tsol:usdc');
+        after.should.not.equal(before);
+        after.constructor.should.equal(before.constructor);
+        after.features.should.eql(updatedFeatures);
+        after.id.should.equal(before.id);
+        after.name.should.equal(before.name);
+        const afterContractAddress =
+          'contractAddress' in after && typeof after.contractAddress === 'string' ? after.contractAddress : undefined;
+        afterContractAddress.should.equal(beforeContractAddress);
+        coinMap.get('tsol:usdc').should.equal(after);
+      } finally {
+        coins.replace(before);
+      }
+      coins.get('tsol:usdc').should.equal(before);
+    });
+
+    it('replaces known family tokens from the fixture in the global map', function () {
+      // Replace-behavior test: the fixture carries one token per family, each
+      // already known to statics — refreshable families (initializer class matches
+      // the statics class) must genuinely swap the global record. Families whose
+      // initializer builds a different class are rejected by the guard and keep
+      // their statics instance.
+      const before = new Map<string, Readonly<BaseCoin>>();
+      coins.forEach((coin, name) => before.set(name, coin));
+      try {
+        const coinMap = createTokenMapUsingTrimmedConfigDetails(amsFixture);
+        let replacedCount = 0;
+        fixtureTokenNames.forEach((name) => {
+          const original = before.get(name);
+          const after = coins.getOrUndefined(name);
+          should.exist(original);
+          should.exist(after);
+          if (after === original) return; // guarded rejection — instance preserved
+          replacedCount += 1;
+          after.constructor.should.equal(original.constructor);
+          after.id.should.equal(original.id);
+          after.name.should.equal(original.name);
+          // the returned map mirrors the record the global map now holds
+          coinMap.get(name).should.equal(after);
+        });
+        replacedCount.should.be.above(0);
+      } finally {
+        before.forEach((coin, name) => {
+          const current = coins.getOrUndefined(name);
+          if (current !== coin) {
+            coins.replace(coin);
+          }
+        });
+      }
+    });
+
+    it('building the fixture map preserves every known base chain and coin class', function () {
+      const before = new Map<string, Readonly<BaseCoin>>();
+      coins.forEach((coin, name) => before.set(name, coin));
+      try {
+        const coinMap = createTokenMapUsingTrimmedConfigDetails(amsFixture);
+        let baseChainCount = 0;
+        before.forEach((coin, name) => {
+          const after = coinMap.get(name);
+          should.exist(after);
+          if (!coin.isToken) {
+            // the regression: base chains must keep their exact instance
+            baseChainCount += 1;
+            after.should.equal(coin);
+          } else {
+            after.constructor.should.equal(coin.constructor);
+          }
+          const globalAfter = coins.getOrUndefined(name);
+          should.exist(globalAfter);
+          if (!coin.isToken) {
+            globalAfter.should.equal(coin);
+          } else {
+            globalAfter.constructor.should.equal(coin.constructor);
+          }
+        });
+        baseChainCount.should.be.above(0);
+        // tlnbtc specifically remains the lightning coin class it shipped as
+        coinMap.get('tlnbtc').constructor.name.should.equal(before.get('tlnbtc').constructor.name);
+      } finally {
+        before.forEach((coin, name) => {
+          const current = coins.getOrUndefined(name);
+          if (current !== coin) {
+            coins.replace(coin);
+          }
+        });
+      }
     });
   });
 });

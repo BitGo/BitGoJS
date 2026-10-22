@@ -2,12 +2,57 @@ import { BaseCoin } from './base';
 import {
   DuplicateCoinDefinitionError,
   CoinNotDefinedError,
+  CoinClassMismatchError,
+  CoinImmutableFieldsMismatchError,
   DuplicateCoinIdDefinitionError,
   DuplicateContractAddressDefinitionError,
   DuplicateNftCollectionIdDefinitionError,
 } from './errors';
 import { ContractAddressDefinedToken, NFTCollectionIdDefinedToken } from './account';
 import { EthereumNetwork } from './networks';
+
+type ContractAddressRecord = { contractAddress?: string; tokenAddress?: string };
+
+function getContractAddress(coin: Readonly<BaseCoin> | ContractAddressRecord): string | undefined {
+  // BaseCoin doesn't declare the optional address fields (they live on token
+  // subclasses); the structural read casts once inside this boundary
+  const record = coin as ContractAddressRecord;
+  return (record.contractAddress ?? record.tokenAddress)?.toLowerCase();
+}
+
+/**
+ * Identity fields an AMS refresh must never redefine. Throws
+ * CoinImmutableFieldsMismatchError on the first mismatched field.
+ */
+export function assertImmutableFieldsUnchanged(
+  existingCoin: Readonly<BaseCoin>,
+  // accepts either a full coin or the identity fields of an AMS token record
+  replacement: { id: string; name: string; alias?: string } & ContractAddressRecord
+): void {
+  if (existingCoin.id !== replacement.id) {
+    throw new CoinImmutableFieldsMismatchError(existingCoin.name, `id '${existingCoin.id}' -> '${replacement.id}'`);
+  }
+  if (existingCoin.name !== replacement.name) {
+    throw new CoinImmutableFieldsMismatchError(
+      existingCoin.name,
+      `name '${existingCoin.name}' -> '${replacement.name}'`
+    );
+  }
+  if (existingCoin.alias !== replacement.alias) {
+    throw new CoinImmutableFieldsMismatchError(
+      existingCoin.name,
+      `alias '${existingCoin.alias ?? 'none'}' -> '${replacement.alias ?? 'none'}'`
+    );
+  }
+  const existingAddress = getContractAddress(existingCoin);
+  const replacementAddress = getContractAddress(replacement);
+  if (existingAddress !== replacementAddress) {
+    throw new CoinImmutableFieldsMismatchError(
+      existingCoin.name,
+      `contractAddress '${existingAddress ?? 'none'}' -> '${replacementAddress ?? 'none'}'`
+    );
+  }
+}
 
 export class CoinMap {
   private readonly _map = new Map<string, Readonly<BaseCoin>>();
@@ -111,8 +156,15 @@ export class CoinMap {
    * @param {Readonly<BaseCoin>} coin new coin object
    */
   public replace(coin: Readonly<BaseCoin>): void {
-    if (this.has(coin.id)) {
-      const oldCoin = this.get(coin.id);
+    const oldCoin = this.getOrUndefined(coin.id);
+    if (oldCoin) {
+      // an id match must always be the same coin class — swapping classes would
+      // silently change behavior for every consumer keyed off this map
+      if (oldCoin.constructor !== coin.constructor) {
+        throw new CoinClassMismatchError(oldCoin.name, oldCoin.constructor.name, coin.constructor.name);
+      }
+      // immutable identity fields (id, name, alias, contract address) must survive a replacement
+      assertImmutableFieldsUnchanged(oldCoin, coin);
       this._map.delete(oldCoin.name);
       this._coinByIds.delete(oldCoin.id);
       if (oldCoin.alias) {
