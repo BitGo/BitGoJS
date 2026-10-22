@@ -365,6 +365,50 @@ describe('SendMany V2 codec tests', function () {
       result.body.should.have.property('error');
     });
 
+    it('should redact secrets when sendMany mutates the cloned params and then fails', async function () {
+      const walletPassphrase = 'test_passphrase_12345';
+      const requestBody = {
+        recipients: [
+          { address: 'mzKTJw3XJNb7VfkFP77mzPJJz4Dkp4M1T6', amount: 1000000 },
+          { address: 'mvQewFHmFjJVr5G7K9TJWNQxB7cLGhJpJV', amount: 500000 },
+        ],
+        walletPassphrase,
+      };
+
+      // Mimic the SDK: attach a self-referencing wallet to the params (as Wallet.prebuildTransaction
+      // does with Object.assign(params, { wallet: this })), drop the passphrase from them, then fail
+      // with an error that leaks the passphrase.
+      let sdkParams: Record<string, unknown> | undefined;
+      const sendMany = sinon.stub().callsFake(async (params: Record<string, unknown>) => {
+        sdkParams = params;
+        const circularWallet: Record<string, unknown> = { id: walletId };
+        circularWallet.self = circularWallet;
+        Object.assign(params, { wallet: circularWallet });
+        delete params.walletPassphrase;
+        throw new Error(`failed to sign with ${walletPassphrase}`);
+      });
+      const mockWallet = { sendMany, _wallet: { multisigType: 'onchain' } };
+      const mockCoin = { wallets: sinon.stub().returns({ get: sinon.stub().resolves(mockWallet) }) };
+      sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as unknown as ReturnType<BitGo['coin']>);
+      const consoleLog = sinon.stub(console, 'log');
+
+      const result = await agent
+        .post(`/api/v2/${coin}/wallet/${walletId}/sendmany`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+      consoleLog.restore();
+
+      assert.strictEqual(result.status, 400);
+      assert.strictEqual(result.body.message, 'failed to sign with [REDACTED]');
+      assert.ok(!JSON.stringify(result.body).includes(walletPassphrase));
+      assert.ok(!consoleLog.args.flat().join(' ').includes(walletPassphrase));
+      // The SDK received a copy of the request body, not the body itself
+      assert.ok(sdkParams);
+      assert.ok(sdkParams.wallet);
+      assert.strictEqual(sdkParams.walletPassphrase, undefined);
+    });
+
     it('should support token transfer parameters', async function () {
       const requestBody = {
         recipients: [

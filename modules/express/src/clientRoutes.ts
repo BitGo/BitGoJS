@@ -1163,6 +1163,10 @@ async function handleV2AccelerateTransaction(req: ExpressApiRouteRequest<'expres
   return wallet.accelerateTransaction(createSendParams(req));
 }
 
+function cloneRequestBody(req: express.Request) {
+  return req.body !== null && typeof req.body === 'object' && !Array.isArray(req.body) ? { ...req.body } : req.body;
+}
+
 function createSendParams(req: express.Request) {
   if (req.config?.externalSignerUrl !== undefined) {
     return {
@@ -1170,7 +1174,7 @@ function createSendParams(req: express.Request) {
       customSigningFunction: createCustomSigningFunction(req.config.externalSignerUrl),
     };
   } else {
-    return req.body;
+    return cloneRequestBody(req);
   }
 }
 
@@ -1241,7 +1245,7 @@ function createTSSSendParams(req: express.Request, wallet: Wallet) {
       throw new Error(`MPC Algorithm ${coin.getMPCAlgorithm()} is not supported.`);
     }
   } else {
-    return req.body;
+    return cloneRequestBody(req);
   }
 }
 
@@ -1846,36 +1850,59 @@ interface RequestHandler extends express.RequestHandler<ParamsDictionary, any, R
     | Promise<RequestHandlerResponse>;
 }
 
-function collectSensitiveRequestValues(value: unknown, values = new Set<string>()): Set<string> {
+function isTraversableObject(value: unknown): value is Record<string, unknown> | unknown[] {
+  return value !== null && typeof value === 'object';
+}
+
+function collectSensitiveRequestValues(
+  value: unknown,
+  values = new Set<string>(),
+  seen = new WeakSet<Record<string, unknown> | unknown[]>()
+): Set<string> {
+  if (!isTraversableObject(value) || seen.has(value)) {
+    return values;
+  }
+  seen.add(value);
   if (Array.isArray(value)) {
-    value.forEach((item) => collectSensitiveRequestValues(item, values));
-  } else if (value !== null && typeof value === 'object') {
+    value.forEach((item) => collectSensitiveRequestValues(item, values, seen));
+  } else {
     Object.entries(value).forEach(([key, item]) => {
       if (SENSITIVE_REQUEST_KEYS.has(key.toLowerCase()) && typeof item === 'string' && item.length > 0) {
         values.add(item);
       }
-      collectSensitiveRequestValues(item, values);
+      collectSensitiveRequestValues(item, values, seen);
     });
   }
   return values;
 }
 
-function redactSensitiveValues(value: unknown, sensitiveValues: Set<string>): unknown {
+function redactSensitiveValues(
+  value: unknown,
+  sensitiveValues: Set<string>,
+  ancestors = new WeakSet<Record<string, unknown> | unknown[]>()
+): unknown {
   if (typeof value === 'string') {
     return [...sensitiveValues].reduce((redacted, secret) => redacted.split(secret).join('[REDACTED]'), value);
   }
-  if (Array.isArray(value)) {
-    return value.map((item) => redactSensitiveValues(item, sensitiveValues));
+  if (!isTraversableObject(value)) {
+    return value;
   }
-  if (value !== null && typeof value === 'object') {
-    return Object.fromEntries(
-      Object.entries(value).map(([key, item]) => [
-        key,
-        SENSITIVE_REQUEST_KEYS.has(key.toLowerCase()) ? '[REDACTED]' : redactSensitiveValues(item, sensitiveValues),
-      ])
-    );
+  if (ancestors.has(value)) {
+    return '[Circular]';
   }
-  return value;
+  ancestors.add(value);
+  const redacted = Array.isArray(value)
+    ? value.map((item) => redactSensitiveValues(item, sensitiveValues, ancestors))
+    : Object.fromEntries(
+        Object.entries(value).map(([key, item]) => [
+          key,
+          SENSITIVE_REQUEST_KEYS.has(key.toLowerCase())
+            ? '[REDACTED]'
+            : redactSensitiveValues(item, sensitiveValues, ancestors),
+        ])
+      );
+  ancestors.delete(value);
+  return redacted;
 }
 
 function handleRequestHandlerError(res: express.Response, error: unknown, requestBody?: unknown) {
