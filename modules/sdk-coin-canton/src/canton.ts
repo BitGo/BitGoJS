@@ -31,7 +31,8 @@ import { auditEddsaPrivateKey } from '@bitgo/sdk-lib-mpc';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { TransactionBuilderFactory } from './lib';
 import { KeyPair as CantonKeyPair } from './lib/keyPair';
-import { CantonCommandKind, TxData } from './lib/iface';
+import { BroadridgeCommandParams, CantonCommandKind, TxData } from './lib/iface';
+import { broadridgeDescriptorFromCommand } from './lib/broadridge';
 import { Transaction } from './lib/transaction/transaction';
 import utils from './lib/utils';
 
@@ -45,6 +46,7 @@ export interface ExplainTransactionOptions {
 
 export interface CantonTransactionParams extends TransactionParams {
   cantonCommandParams?: CantonCommandParams;
+  broadridgeCommandParams?: BroadridgeCommandParams;
 }
 
 export class Canton extends BaseCoin {
@@ -123,6 +125,10 @@ export class Canton extends BaseCoin {
     const txBuilder = new TransactionBuilderFactory(coinConfig).from(rawTx);
     const transaction = txBuilder.transaction;
     const explainedTx = transaction.explainTransaction();
+    const broadridgeParams = (txParams as CantonTransactionParams).broadridgeCommandParams;
+    if (broadridgeParams) {
+      return this.verifyBroadridgeCommandTransaction(transaction, broadridgeParams);
+    }
     switch (transaction.type) {
       case TransactionType.WalletInitialization:
       case TransactionType.TransferAccept:
@@ -236,6 +242,43 @@ export class Canton extends BaseCoin {
         throw new Error(`unknown transaction type, ${transaction.type}`);
       }
     }
+  }
+  private verifyBroadridgeCommandTransaction(transaction: BaseTransaction, params: BroadridgeCommandParams): boolean {
+    const rawPrepared = (transaction as Transaction).prepareCommand?.preparedTransaction;
+    if (!rawPrepared) {
+      throw new Error('Broadridge verifyTransaction: missing preparedTransaction protobuf');
+    }
+    const actual = utils.extractCantonCommandInfo(rawPrepared);
+    const actualDescriptor = broadridgeDescriptorFromCommand(actual);
+    if (!actualDescriptor) {
+      throw new Error('Broadridge verifyTransaction: prepared command is not a supported Broadridge template');
+    }
+    const expected = params.descriptor;
+    const expectedTemplate = utils.parseCantonTemplateId(expected.templateId);
+    if (!expectedTemplate || expected.protocol !== 'broadridge') {
+      throw new Error('Broadridge verifyTransaction: invalid protocol descriptor');
+    }
+    if (
+      expected.standard !== actualDescriptor.standard ||
+      expectedTemplate.pkg !== actualDescriptor.packageId ||
+      expectedTemplate.moduleName !== actualDescriptor.moduleName ||
+      expectedTemplate.entityName !== actualDescriptor.entityName ||
+      expected.choice !== actualDescriptor.choice ||
+      expected.role !== actualDescriptor.role
+    ) {
+      throw new Error('Broadridge verifyTransaction: template, package, protocol, choice, or role mismatch');
+    }
+    if (!utils.sameElements(expected.actors, actualDescriptor.actors)) {
+      throw new Error('Broadridge verifyTransaction: actor set mismatch');
+    }
+    const expectedContractId = expected.contractId ?? expected.requestCid ?? expected.agreementCid;
+    if (expectedContractId !== undefined && expectedContractId !== actual.contractId) {
+      throw new Error('Broadridge verifyTransaction: contract/request/agreement CID mismatch');
+    }
+    if (params.argument !== undefined) {
+      utils.assertDeepCantonMatch(params.argument, actual.argument, new Set());
+    }
+    return true;
   }
 
   private verifyCantonCommandTransaction(

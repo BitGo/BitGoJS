@@ -9,6 +9,7 @@ import { AllocationAllocateBuilder } from './allocationAllocateBuilder';
 import { AllocationAllocateWithdrawnBuilder } from './allocationAllocateWithdrawnBuilder';
 import { AllocationRejectBuilder } from './allocationRejectBuilder';
 import { AllocationRequestBuilder } from './allocationRequestBuilder';
+import { BroadridgeSettlementAuthorizationBuilder } from './broadridgeSettlementAuthorizationBuilder';
 import { CantonCommandBuilder } from './cantonCommandBuilder';
 import { EndInvestorOnboardingOfferBuilder } from './endInvestorOnboardingOfferBuilder';
 import { CosignDelegationAcceptBuilder } from './cosignDelegationAcceptBuilder';
@@ -109,6 +110,13 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getCantonCommandBuilder(tx?: Transaction): CantonCommandBuilder {
     return TransactionBuilderFactory.initializeBuilder(tx, new CantonCommandBuilder(this._coinConfig));
+  }
+
+  getBroadridgeSettlementAuthorizationBuilder(tx?: Transaction): BroadridgeSettlementAuthorizationBuilder {
+    return TransactionBuilderFactory.initializeBuilder(
+      tx,
+      new BroadridgeSettlementAuthorizationBuilder(this._coinConfig)
+    );
   }
 
   getEndInvestorOnboardingOfferBuilder(tx?: Transaction): EndInvestorOnboardingOfferBuilder {

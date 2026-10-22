@@ -8,7 +8,19 @@ import { computePreparedTransaction } from '../../resources/hash/hash.js';
 import { PreparedTransaction } from '../../resources/proto/preparedTransaction.js';
 
 import { CryptoKeyFormat, SigningAlgorithmSpec, SigningKeySpec } from './constant';
-import { CantonCommandInfo, PreparedTransaction as IPreparedTransaction, PreparedTxnParsedInfo } from './iface';
+import {
+  BroadridgeAllocationRequestData,
+  BroadridgeSettlementAuthorizationData,
+  CantonCommandInfo,
+  PreparedTransaction as IPreparedTransaction,
+  PreparedTxnParsedInfo,
+} from './iface';
+import {
+  broadridgeDescriptorFromCommand,
+  parseBroadridgeAllocationOutcome,
+  parseBroadridgeAllocationRequest,
+  parseBroadridgeSettlementAuthorization,
+} from './broadridge';
 import { RecordField, Value } from './resourcesInterface';
 
 export class Utils implements BaseUtils {
@@ -99,6 +111,30 @@ export class Utils implements BaseUtils {
     let memoId: string | undefined;
     let instrumentId: string | undefined;
     let instrumentAdmin: string | undefined;
+    let broadridgeAllocationRequestData: BroadridgeAllocationRequestData | undefined;
+    let broadridgeSettlementAuthorizationData: BroadridgeSettlementAuthorizationData | undefined;
+
+    try {
+      const commandInfo = this.extractCantonCommandInfo(rawData);
+      const allocationRequest = parseBroadridgeAllocationRequest(commandInfo);
+      const allocationOutcome = parseBroadridgeAllocationOutcome(commandInfo);
+      const descriptor = broadridgeDescriptorFromCommand(commandInfo);
+      if (allocationRequest) {
+        broadridgeAllocationRequestData = allocationRequest;
+      } else if (allocationOutcome && descriptor) {
+        broadridgeAllocationRequestData = {
+          version: descriptor.standard === 'CIP-112' ? 'v2' : 'v1',
+          templateId: descriptor.templateId,
+          requestCid: allocationOutcome.requestCid,
+          outcome: allocationOutcome,
+          raw: {},
+        };
+      }
+      broadridgeSettlementAuthorizationData = parseBroadridgeSettlementAuthorization(commandInfo);
+    } catch {
+      // Transfer transactions often have several roots or no Broadridge command. The
+      // venue-specific parser is best-effort and the existing transfer parser remains authoritative.
+    }
 
     /**
      * Returns the argument fields of the first create node matching the given entity name.
@@ -595,6 +631,33 @@ export class Utils implements BaseUtils {
       }
     }
 
+    if (!sender || !receiver || !amount) {
+      const executeFields = findExerciseNodeFields('Allocation_ExecuteTransfer');
+      const cancelFields = findExerciseNodeFields('Allocation_Cancel');
+      const effectFields = executeFields ?? cancelFields;
+      if (effectFields) {
+        for (const fieldName of ['transfer', 'transferLeg', 'allocation']) {
+          const field = getField(effectFields, fieldName);
+          if (field?.oneofKind !== 'record') continue;
+          const nestedFields = field.record?.fields ?? [];
+          const transferField = getField(nestedFields, 'transferLeg');
+          const transferFields =
+            transferField?.oneofKind === 'record' ? transferField.record?.fields ?? [] : nestedFields;
+          extractFromTransferRecord(transferFields, 'instrumentId', 'admin');
+          if (sender && receiver && amount) break;
+        }
+      }
+    }
+
+    if (broadridgeAllocationRequestData || broadridgeSettlementAuthorizationData) {
+      return {
+        sender,
+        receiver,
+        amount: amount ? this.convertAmountToLowestUnit(new BigNumber(amount)) : '0',
+        broadridgeAllocationRequestData,
+        broadridgeSettlementAuthorizationData,
+      };
+    }
     if (!sender || !receiver || !amount) {
       const missingFields: string[] = [];
       if (!sender) missingFields.push('sender');

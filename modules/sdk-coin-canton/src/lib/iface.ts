@@ -12,14 +12,17 @@ export interface TransactionExplanation extends BaseTransactionExplanation {
   inputs?: ITransactionRecipient[];
   inputAmount?: string;
   cantonCommand?: CantonCommandExplain;
+  broadridge?: BroadridgeProtocolDescriptor;
+  broadridgeAllocationRequestData?: BroadridgeAllocationRequestData;
+  broadridgeSettlementAuthorizationData?: BroadridgeSettlementAuthorizationData;
 }
-
 export interface CantonCommandExplain {
   kind: CantonCommandKind;
   templateId: string;
   actAs: string[];
   choice?: string;
   contractId?: string;
+  broadridge?: BroadridgeProtocolDescriptor;
 }
 
 /**
@@ -34,18 +37,133 @@ export interface TxData {
   acknowledgeData?: TransferAcknowledge;
   cosignDelegationProposalData?: CosignDelegationProposal;
   allocationRequestData?: AllocationRequest;
+  broadridgeAllocationRequestData?: BroadridgeAllocationRequestData;
+  broadridgeSettlementAuthorizationData?: BroadridgeSettlementAuthorizationData;
   endInvestorOnboardingOfferData?: EndInvestorOnboardingOfferData;
   memoId?: string;
   token?: string;
   cantonCommand?: CantonCommandExplain;
+  broadridge?: BroadridgeProtocolDescriptor;
 }
-
 export interface PreparedTxnParsedInfo {
   sender: string;
   receiver: string;
   amount: string;
   memoId?: string;
   token?: string;
+  broadridgeAllocationRequestData?: BroadridgeAllocationRequestData;
+  broadridgeSettlementAuthorizationData?: BroadridgeSettlementAuthorizationData;
+}
+
+export interface BroadridgeSettlementIdentity {
+  executor?: string;
+  executors?: string[];
+  id?: string;
+  cid?: string;
+  requestedAt?: string;
+  allocateBefore?: string;
+  settleBefore?: string;
+  settleAt?: string;
+  meta?: unknown;
+}
+
+export interface BroadridgeAllocationLeg {
+  legId?: string;
+  side?: 'SenderSide' | 'ReceiverSide' | string;
+  senderPartyId?: string;
+  receiverPartyId?: string;
+  amount?: CantonAmount;
+  instrumentId?: string;
+  instrumentAdmin?: string;
+  meta?: unknown;
+  [key: string]: unknown;
+}
+export interface BroadridgeAllocationSpecification {
+  admin?: string;
+  authorizer?: {
+    owner?: string;
+    provider?: string;
+    id?: string;
+    [key: string]: unknown;
+  };
+  transferLegSides?: BroadridgeAllocationLeg[];
+  receiverOnly?: boolean;
+  inputHoldingCids?: string[];
+  deadline?: string;
+  committed?: boolean;
+  nextIterationFunding?: unknown;
+  meta?: unknown;
+  [key: string]: unknown;
+}
+
+export interface BroadridgeAllocationRequestData {
+  version: 'v1' | 'v2';
+  templateId: string;
+  requestCid?: string;
+  executor?: string;
+  settlement?: BroadridgeSettlementIdentity;
+  transferLegs?: BroadridgeAllocationLeg[];
+  allocations?: BroadridgeAllocationSpecification[];
+  requestedAt?: string;
+  settleAt?: string;
+  meta?: unknown;
+  originalRequestCid?: string;
+  outcome?: BroadridgeAllocationRequestOutcome;
+  raw: Record<string, unknown>;
+}
+
+export type BroadridgeAllocationRequestOutcome = {
+  choice: 'AllocationRequest_Accept' | 'AllocationRequest_Reject' | 'AllocationRequest_Withdraw' | 'Archive';
+  requestCid?: string;
+  actors: string[];
+  meta?: unknown;
+  result?: unknown;
+  status: 'accepted' | 'rejected' | 'withdrawn' | 'archived';
+};
+
+export interface BroadridgeProtocolDescriptor {
+  protocol: 'broadridge';
+  standard: 'CIP-56' | 'CIP-112';
+  packageId: string;
+  moduleName: string;
+  entityName: string;
+  templateId: string;
+  choice?: string;
+  role: 'client' | 'executor' | 'trading-party' | 'agreement' | 'request' | 'allocation';
+  actors: string[];
+  contractId?: string;
+  requestCid?: string;
+  agreementCid?: string;
+  settlement?: BroadridgeSettlementIdentity;
+  allocationCids?: string[];
+  reason?: unknown;
+  result?: unknown;
+}
+
+export interface BroadridgeSettlementAuthorizationData {
+  descriptor: BroadridgeProtocolDescriptor;
+  client?: string;
+  executor?: string;
+  tradingParties?: string[];
+  approvers?: string[];
+  settlement?: BroadridgeSettlementIdentity;
+  delegationCid?: string;
+  proposalCid?: string;
+  agreementCid?: string;
+  allocationCids?: string[];
+  meta?: unknown;
+  reason?: unknown;
+  result?: unknown;
+}
+
+export interface BroadridgeCommandParams {
+  descriptor: BroadridgeProtocolDescriptor;
+  /** Optional command argument subset to compare after descriptor checks. */
+  argument?: unknown;
+}
+
+export interface BroadridgeCommandRequest extends CantonCommandRequest {
+  broadridge?: BroadridgeProtocolDescriptor;
 }
 
 export interface WalletInitTxData {
@@ -130,9 +248,10 @@ export interface TransactionBroadcastData {
   cosignDelegationProposalData?: CosignDelegationProposal;
   allocationRequestData?: AllocationRequest;
   endInvestorOnboardingOfferData?: EndInvestorOnboardingOfferData;
+  broadridge?: BroadridgeProtocolDescriptor;
   prepareCommandResponse?: CantonPrepareCommandResponse;
-  txType: string;
   preparedTransaction?: string;
+  txType: string;
   partySignatures?: {
     signatures: PartySignature[];
   };

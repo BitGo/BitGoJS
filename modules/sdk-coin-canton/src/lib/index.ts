@@ -6,6 +6,7 @@ export { AllocationAllocateBuilder } from './allocationAllocateBuilder';
 export { AllocationAllocateWithdrawnBuilder } from './allocationAllocateWithdrawnBuilder';
 export { AllocationRejectBuilder } from './allocationRejectBuilder';
 export { AllocationRequestBuilder } from './allocationRequestBuilder';
+export { BroadridgeSettlementAuthorizationBuilder } from './broadridgeSettlementAuthorizationBuilder';
 export { EndInvestorOnboardingOfferBuilder } from './endInvestorOnboardingOfferBuilder';
 export { CosignDelegationAcceptBuilder } from './cosignDelegationAcceptBuilder';
 export { CosignDelegationProposalBuilder } from './cosignDelegationProposalBuilder';
@@ -24,5 +25,6 @@ export { WalletInitBuilder } from './walletInitBuilder';
 export { WalletInitTransaction } from './walletInitialization/walletInitTransaction';
 
 export { Utils, Interface };
+export * from './broadridge';
 export * from './messages';
 export * from './clearSigning';
