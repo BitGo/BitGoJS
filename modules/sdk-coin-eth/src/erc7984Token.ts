@@ -951,7 +951,7 @@ export class Erc7984Token extends Eth {
     }
 
     const isKrsRecovery = getIsKrsRecovery(params);
-    const isUnsignedSweep = getIsUnsignedSweep(params);
+    const isUnsignedSweep = params.isUnsignedSweep ?? getIsUnsignedSweep(params);
 
     if (isKrsRecovery) {
       checkKrsProvider(this, params.krsProvider, { checkCoinFamilySupport: false });
@@ -965,19 +965,16 @@ export class Erc7984Token extends Eth {
       : new optionalDeps.ethUtil.BN(this.setGasPrice(params.gasPrice));
     const gasLimit = new optionalDeps.ethUtil.BN(this.setGasLimit(params.gasLimit));
 
-    let userPrv: string | undefined;
-    if (!isUnsignedSweep) {
-      if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
-        try {
-          userKey = await this.bitgo.decrypt({
-            input: userKey,
-            password: params.walletPassphrase,
-          });
-        } catch (e) {
-          throw new Error(`Error decrypting user keychain: ${(e as Error).message}`);
-        }
+    // Decrypt private keys from KeyCard values
+    if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
+      try {
+        userKey = await this.bitgo.decrypt({
+          input: userKey,
+          password: params.walletPassphrase,
+        });
+      } catch (e) {
+        throw new Error(`Error decrypting user keychain: ${(e as Error).message}`);
       }
-      userPrv = userKey;
     }
 
     let backupKeyAddress: string;
@@ -1002,6 +999,13 @@ export class Erc7984Token extends Eth {
       backupSigningKey = backupHDNode.privateKey as Buffer;
       backupKeyAddress = `0x${optionalDeps.ethUtil.privateToAddress(backupSigningKey).toString('hex')}`;
     }
+
+    await this.assertRecoveryKeysAreWalletSigners(
+      userKey,
+      backupKeyAddress,
+      params.walletContractAddress,
+      params.apiKey
+    );
 
     const backupKeyNonce = await this.getAddressNonce(backupKeyAddress, params.apiKey);
 
@@ -1047,7 +1051,7 @@ export class Erc7984Token extends Eth {
     let signature: string | undefined;
     if (!isUnsignedSweep) {
       operationHash = this.getOperationSha3ForExecuteAndConfirm(recipients, this.getDefaultExpireTime(), sequenceId);
-      signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv!));
+      signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userKey));
 
       try {
         Util.ecRecoverEthAddress(operationHash, signature);

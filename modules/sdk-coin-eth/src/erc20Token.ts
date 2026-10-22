@@ -153,14 +153,14 @@ export class Erc20Token extends Eth {
     }
 
     const isKrsRecovery = getIsKrsRecovery(params);
-    const isUnsignedSweep = getIsUnsignedSweep(params);
+    const isUnsignedSweep = params.isUnsignedSweep ?? getIsUnsignedSweep(params);
 
     if (isKrsRecovery) {
       checkKrsProvider(this, params.krsProvider, { checkCoinFamilySupport: false });
     }
 
     // Clean up whitespace from entered values
-    const userKey = params.userKey.replace(/\s/g, '');
+    let userKey = params.userKey.replace(/\s/g, '');
     const backupKey = params.backupKey.replace(/\s/g, '');
 
     // Set new eth tx fees (default to using platform values if none are provided)
@@ -170,10 +170,9 @@ export class Erc20Token extends Eth {
     const gasLimit = new optionalDeps.ethUtil.BN(this.setGasLimit(params.gasLimit));
 
     // Decrypt private keys from KeyCard values
-    let userPrv;
     if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
       try {
-        userPrv = await this.bitgo.decrypt({
+        userKey = await this.bitgo.decrypt({
           input: userKey,
           password: params.walletPassphrase,
         });
@@ -205,6 +204,13 @@ export class Erc20Token extends Eth {
       backupSigningKey = backupHDNode.privateKey;
       backupKeyAddress = `0x${optionalDeps.ethUtil.privateToAddress(backupSigningKey).toString('hex')}`;
     }
+
+    await this.assertRecoveryKeysAreWalletSigners(
+      userKey,
+      backupKeyAddress,
+      params.walletContractAddress,
+      params.apiKey
+    );
 
     // Get nonce for backup key (should be 0)
     let backupKeyNonce = 0;
@@ -264,7 +270,7 @@ export class Erc20Token extends Eth {
     if (!isUnsignedSweep) {
       // Get operation hash and sign it
       operationHash = this.getOperationSha3ForExecuteAndConfirm(recipients, this.getDefaultExpireTime(), sequenceId);
-      signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv));
+      signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userKey));
 
       try {
         Util.ecRecoverEthAddress(operationHash, signature);

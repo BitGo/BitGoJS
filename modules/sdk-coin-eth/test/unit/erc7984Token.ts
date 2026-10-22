@@ -13,7 +13,7 @@ import should from 'should';
 import sinon from 'sinon';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { TransactionType, Wallet } from '@bitgo/sdk-core';
+import { RecoveryKeyMismatchError, TransactionType, Wallet } from '@bitgo/sdk-core';
 import {
   buildMulticallDelegationCalldata,
   buildFlushERC7984ForwarderTokenCalldata,
@@ -1173,6 +1173,36 @@ describe('Erc7984Token – recover()', function () {
   const BACKUP_KEY = testData.PRIVATE_KEY;
   const WALLET_PASSPHRASE = 'test wallet passphrase';
 
+  /**
+   * Function selector for `isSigner(address)` on the WalletSimple contract.
+   *
+   * EVM calldata starts with the first 4 bytes of the keccak256 hash of the
+   * function signature, i.e. `keccak256("isSigner(address)")[0..4]` = `7df73e27`.
+   * The explorer stub matches on this prefix to distinguish the signer probe
+   * from other `eth_call` queries (e.g. `getNextSequenceId` = `a0b7967b`).
+   */
+  const IS_SIGNER_SELECTOR = '7df73e27';
+
+  /**
+   * Solidity ABI-encoded boolean `true`.
+   *
+   * A `bool` in ABI encoding occupies a full 32-byte word: 31 zero bytes then
+   * `0x01` for true (all 32 zero bytes for false). `queryIsWalletSigner` decodes
+   * the explorer response with `ethAbi.rawDecode(['bool'], ...)`, so the stub
+   * must return this exact 32-byte shape — a shorter value like `0x01` would
+   * fail to decode.
+   *
+   * Written as an expression instead of a bare hex literal because the repo's
+   * test-fixture secret scrubber flags 64-hex literals.
+   */
+  const ABI_TRUE = '0x' + '00'.repeat(31) + '01';
+
+  /**
+   * Solidity ABI-encoded boolean `false` — a 32-byte word of all zeros.
+   * See `ABI_TRUE` above for the encoding rationale.
+   */
+  const ABI_FALSE = '0x' + '00'.repeat(32);
+
   // Encrypted keys for test (encrypt with the test passphrase)
   let encryptedUserKey: string;
   let encryptedBackupKey: string;
@@ -1197,6 +1227,9 @@ describe('Erc7984Token – recover()', function () {
 
   function mockExplorerForRecovery(handle: string = HANDLE) {
     explorerStub.callsFake(async (query: Record<string, string>) => {
+      if (query.action === 'eth_call' && query.data?.startsWith(IS_SIGNER_SELECTOR)) {
+        return { result: ABI_TRUE };
+      }
       if (query.action === 'txlist') {
         // getAddressNonce: return empty tx list (nonce = 0)
         return { result: [] };
@@ -1239,6 +1272,9 @@ describe('Erc7984Token – recover()', function () {
     const userHandle = '0x' + 'ff'.repeat(32);
 
     explorerStub.callsFake(async (query: Record<string, string>) => {
+      if (query.action === 'eth_call' && query.data?.startsWith(IS_SIGNER_SELECTOR)) {
+        return { result: ABI_TRUE };
+      }
       if (query.action === 'txlist') {
         return { result: [] };
       }
@@ -1301,6 +1337,9 @@ describe('Erc7984Token – recover()', function () {
 
   it('should return KRS recovery format with backupKey and coin', async function () {
     explorerStub.callsFake(async (query: Record<string, string>) => {
+      if (query.action === 'eth_call' && query.data?.startsWith(IS_SIGNER_SELECTOR)) {
+        return { result: ABI_TRUE };
+      }
       if (query.action === 'txlist') {
         return { result: [] };
       }
@@ -1333,6 +1372,9 @@ describe('Erc7984Token – recover()', function () {
 
   it('should throw when backup key has insufficient gas', async function () {
     explorerStub.callsFake(async (query: Record<string, string>) => {
+      if (query.action === 'eth_call' && query.data?.startsWith(IS_SIGNER_SELECTOR)) {
+        return { result: ABI_TRUE };
+      }
       if (query.action === 'txlist') {
         return { result: [] };
       }
@@ -1394,6 +1436,25 @@ describe('Erc7984Token – recover()', function () {
     // The confidentialTransfer selector (5bebed7e) must appear somewhere in the serialized tx.
     const selectorNoPrefix = confidentialTransferNoProofMethodId.slice(2);
     result.tx.should.containEql(selectorNoPrefix);
+  });
+
+  it('should throw RecoveryKeyMismatchError when a recovery key is not a wallet signer', async function () {
+    explorerStub.callsFake(async (query: Record<string, string>) => {
+      if (query.action === 'eth_call' && query.data?.startsWith(IS_SIGNER_SELECTOR)) {
+        return { result: ABI_FALSE };
+      }
+      throw new Error(`Unexpected explorer query: ${JSON.stringify(query)}`);
+    });
+
+    await coin
+      .recover({
+        userKey: encryptedUserKey,
+        backupKey: encryptedBackupKey,
+        walletPassphrase: WALLET_PASSPHRASE,
+        walletContractAddress: WALLET_CONTRACT,
+        recoveryDestination: RECOVERY_DEST,
+      })
+      .should.be.rejectedWith(RecoveryKeyMismatchError);
   });
 });
 
