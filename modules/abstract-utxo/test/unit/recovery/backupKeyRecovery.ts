@@ -87,6 +87,12 @@ function run(
           keys: signingKeys,
           recoveryDestination,
           feeRateSatVB: defaultFeeRateSatB,
+          // Zcash: pin the historical pre-NU7 heights the recorded fixtures
+          // were generated with (NU6.1-era branch ids). Production defaults
+          // to the NU7 activation heights, at which a v4 build is rejected
+          // per ZIP-2003; these tests exercise v4 recovery mechanics, not
+          // broadcastability.
+          blockHeight: coin.getChain() === 'zec' ? 3146400 : coin.getChain() === 'tzec' ? 3536500 : undefined,
         },
         recoverUnspents
       );

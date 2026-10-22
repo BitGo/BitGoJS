@@ -49,12 +49,17 @@ function isZcash(coinName: CoinName): coinName is 'zec' | 'tzec' {
 
 /**
  * Default block heights for Zcash networks if not provided.
- * These should be set to a height after the latest network upgrade.
+ * These are the latest network upgrade's activation heights (NU7, ZIP-259):
+ * zec 3543405 (mainnet, ~2026-11-05) and tzec 4465026 (testnet, 2026-10-06).
+ * Version 4 transactions are invalid at/after NU7 per ZIP-2003, so a v4 build at
+ * these heights is rejected by @bitgo/wasm-utxo at build time rather than signed
+ * and left unbroadcastable; recovering post-NU7 funds requires constructing a v6
+ * (Ironwood) transaction instead.
  * TODO(BTC-2901): get the height from blockchair API instead of hardcoding.
  */
 const ZCASH_DEFAULT_BLOCK_HEIGHTS: Record<'zec' | 'tzec', number> = {
-  zec: 3146400,
-  tzec: 3536500,
+  zec: 3543405,
+  tzec: 4465026,
 };
 
 /**
