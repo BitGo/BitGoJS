@@ -21,6 +21,7 @@ import {
   TransferAcknowledge,
   TxData,
 } from '../iface';
+import { broadridgeDescriptorFromCommand } from '../broadridge';
 import utils from '../utils';
 import { DUMMY_HASH, HASHING_SCHEME_VERSION, SIGNATURE_ALGORITHM_SPEC, SIGNATURE_FORMAT } from '../constant';
 
@@ -118,7 +119,7 @@ export class Transaction extends BaseTransaction {
       };
       return Buffer.from(JSON.stringify(minData)).toString('base64');
     }
-    if (this._type === TransactionType.AllocationRequest) {
+    if (this._type === TransactionType.AllocationRequest && !this._prepareCommand) {
       if (!this._allocationRequestData) {
         throw new InvalidTransactionError('AllocationRequestData is not set');
       }
@@ -216,7 +217,7 @@ export class Transaction extends BaseTransaction {
       result.cosignDelegationProposalData = this._cosignDelegationProposalData;
       return result;
     }
-    if (this._type === TransactionType.AllocationRequest) {
+    if (this._type === TransactionType.AllocationRequest && !this._prepareCommand) {
       if (!this._allocationRequestData) {
         throw new InvalidTransactionError('AllocationRequestData is not set');
       }
@@ -237,6 +238,18 @@ export class Transaction extends BaseTransaction {
       const commandSummary = this.buildCantonCommandSummary();
       if (commandSummary) {
         result.cantonCommand = commandSummary;
+      }
+      try {
+        const parsedInfo = utils.parseRawCantonTransactionData(this._prepareCommand.preparedTransaction, this.type);
+        if (parsedInfo.broadridgeAllocationRequestData) {
+          result.broadridgeAllocationRequestData = parsedInfo.broadridgeAllocationRequestData;
+        }
+        if (parsedInfo.broadridgeSettlementAuthorizationData) {
+          result.broadridgeSettlementAuthorizationData = parsedInfo.broadridgeSettlementAuthorizationData;
+          result.broadridge = parsedInfo.broadridgeSettlementAuthorizationData.descriptor;
+        }
+      } catch {
+        // Generic CantonCommand callers retain the existing summary when the command is not Broadridge.
       }
       return result;
     }
@@ -259,6 +272,13 @@ export class Transaction extends BaseTransaction {
     if (parsedInfo.token) {
       result.token = parsedInfo.token;
     }
+    if (parsedInfo.broadridgeAllocationRequestData) {
+      result.broadridgeAllocationRequestData = parsedInfo.broadridgeAllocationRequestData;
+    }
+    if (parsedInfo.broadridgeSettlementAuthorizationData) {
+      result.broadridgeSettlementAuthorizationData = parsedInfo.broadridgeSettlementAuthorizationData;
+      result.broadridge = parsedInfo.broadridgeSettlementAuthorizationData.descriptor;
+    }
     return result;
   }
 
@@ -266,7 +286,7 @@ export class Transaction extends BaseTransaction {
     if (
       this._type === TransactionType.TransferAcknowledge ||
       this._type === TransactionType.CosignDelegationProposal ||
-      this._type === TransactionType.AllocationRequest ||
+      (this._type === TransactionType.AllocationRequest && !this._prepareCommand) ||
       this._type === TransactionType.EndInvestorOnboardingOffer
     ) {
       return Buffer.from(DUMMY_HASH, 'base64');
@@ -285,7 +305,15 @@ export class Transaction extends BaseTransaction {
     try {
       const decoded: TransactionBroadcastData = JSON.parse(Buffer.from(rawTx, 'base64').toString('utf8'));
       this.id = decoded.submissionId;
-      this.transactionType = TransactionType[decoded.txType];
+      const txTypeAliases: Record<string, TransactionType> = {
+        AllocationRequest_Accept: TransactionType.AllocationRequest,
+        AllocationRequest_Reject: TransactionType.AllocationReject,
+        AllocationRequest_Withdraw: TransactionType.AllocationRequest,
+        Archive: TransactionType.AllocationRequest,
+        Allocation_ExecuteTransfer: TransactionType.AllocationAllocate,
+        Allocation_Cancel: TransactionType.AllocationAllocateWithdrawn,
+      };
+      this.transactionType = TransactionType[decoded.txType] ?? txTypeAliases[decoded.txType];
       if (this.type === TransactionType.TransferAcknowledge) {
         if (decoded.acknowledgeData) {
           this.acknowledgeData = decoded.acknowledgeData;
@@ -294,7 +322,7 @@ export class Transaction extends BaseTransaction {
         if (decoded.cosignDelegationProposalData) {
           this.cosignDelegationProposalData = decoded.cosignDelegationProposalData;
         }
-      } else if (this.type === TransactionType.AllocationRequest) {
+      } else if (this.type === TransactionType.AllocationRequest && !decoded.prepareCommandResponse) {
         if (decoded.allocationRequestData) {
           this.allocationRequestData = decoded.allocationRequestData;
         }
@@ -409,6 +437,29 @@ export class Transaction extends BaseTransaction {
         inputAmount = txData.amount;
         break;
       }
+      case TransactionType.AllocationRequest:
+      case TransactionType.AllocationReject: {
+        const txData = this.toJson();
+        return {
+          id: this.id,
+          displayOrder,
+          outputs: [],
+          outputAmount: '0',
+          inputs: [],
+          inputAmount: '0',
+          changeOutputs: [],
+          changeAmount: '0',
+          fee: { fee: '0' },
+          type: this.type,
+          ...(txData.broadridge ? { broadridge: txData.broadridge } : {}),
+          ...(txData.broadridgeAllocationRequestData
+            ? { broadridgeAllocationRequestData: txData.broadridgeAllocationRequestData }
+            : {}),
+          ...(txData.broadridgeSettlementAuthorizationData
+            ? { broadridgeSettlementAuthorizationData: txData.broadridgeSettlementAuthorizationData }
+            : {}),
+        };
+      }
       case TransactionType.CantonCommand: {
         const commandSummary = this.buildCantonCommandSummary();
         const explanation: TransactionExplanation = {
@@ -425,6 +476,18 @@ export class Transaction extends BaseTransaction {
         };
         if (commandSummary) {
           explanation.cantonCommand = commandSummary;
+          if (commandSummary.broadridge) explanation.broadridge = commandSummary.broadridge;
+        }
+        try {
+          const txData = this.toJson();
+          if (txData.broadridgeAllocationRequestData) {
+            explanation.broadridgeAllocationRequestData = txData.broadridgeAllocationRequestData;
+          }
+          if (txData.broadridgeSettlementAuthorizationData) {
+            explanation.broadridgeSettlementAuthorizationData = txData.broadridgeSettlementAuthorizationData;
+          }
+        } catch {
+          // A malformed generic command still retains its validated command summary.
         }
         return explanation;
       }
@@ -489,6 +552,8 @@ export class Transaction extends BaseTransaction {
       };
       if (info.choice !== undefined) summary.choice = info.choice;
       if (info.contractId !== undefined && info.contractId !== '') summary.contractId = info.contractId;
+      const broadridge = broadridgeDescriptorFromCommand(info);
+      if (broadridge) summary.broadridge = broadridge;
       return summary;
     } catch {
       return undefined;

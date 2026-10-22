@@ -2,9 +2,10 @@ import assert from 'assert';
 import should from 'should';
 
 import { coins } from '@bitgo/statics';
+import { PublicKey } from '@bitgo/sdk-core';
 
 import { AllocationRequestBuilder, Transaction } from '../../../../src';
-import { AllocationRequest } from '../../../../src/lib/iface';
+import { AllocationRequest, CantonPrepareCommandResponse } from '../../../../src/lib/iface';
 
 const updateId = '12205b0b024b6f72c5484696271e8e87d7c1e0cc7bed5e9c901088b41ebe97a09a43';
 const operatorId = 'treasury-tokenization-1::1220906cb6b369890324880c977a44d10e91b70b4cc9abe62d031bdafcf5dabecf89';
@@ -269,7 +270,7 @@ describe('AllocationRequest Builder', () => {
     assert.throws(() => txBuilder.toRequestObject(), /token is missing/);
   });
 
-  it('should throw if receiveToken is missing for a non-fee request', function () {
+  it('should allow a payment-only request without receive fields', function () {
     const txBuilder = new AllocationRequestBuilder(coins.get('tcanton'));
     txBuilder.initBuilder(new Transaction(coins.get('tcanton')));
     txBuilder
@@ -282,10 +283,11 @@ describe('AllocationRequest Builder', () => {
       .receiverPartyId(receiverPartyId)
       .amount(amount)
       .token(token)
-      .receiveAmount(receiveAmount)
       .allocateBefore(allocateBefore)
       .settleBefore(settleBefore);
-    assert.throws(() => txBuilder.toRequestObject(), /receiveToken is missing/);
+    const requestObj = txBuilder.toRequestObject();
+    assert.equal(requestObj.receiveToken, undefined);
+    assert.equal(requestObj.receiveAmount, undefined);
   });
 
   it('should throw if amount was never set', function () {
@@ -307,7 +309,7 @@ describe('AllocationRequest Builder', () => {
     assert.throws(() => txBuilder.toRequestObject(), /amount is missing/);
   });
 
-  it('should throw if receiveAmount was never set for a non-fee request', function () {
+  it('should allow a payment-only request without receive amount', function () {
     const txBuilder = new AllocationRequestBuilder(coins.get('tcanton'));
     txBuilder.initBuilder(new Transaction(coins.get('tcanton')));
     txBuilder
@@ -323,7 +325,8 @@ describe('AllocationRequest Builder', () => {
       .receiveToken(receiveToken)
       .allocateBefore(allocateBefore)
       .settleBefore(settleBefore);
-    assert.throws(() => txBuilder.toRequestObject(), /receiveAmount is missing/);
+    const requestObj = txBuilder.toRequestObject();
+    assert.equal(requestObj.receiveAmount, undefined);
   });
 
   it('should throw if allocateBefore is missing', function () {
@@ -558,15 +561,19 @@ describe('AllocationRequest Builder', () => {
     assert.throws(() => txBuilder.settleBefore(''), /settleBefore must be a non-empty string/);
   });
 
-  // --- not-implemented methods ---
+  // --- prepared transaction methods ---
 
-  it('should throw on setTransaction', function () {
+  it('should set a prepared transaction', function () {
     const txBuilder = new AllocationRequestBuilder(coins.get('tcanton'));
-    assert.throws(() => txBuilder.setTransaction({} as any), /Not implemented/);
+    const tx = new Transaction(coins.get('tcanton'));
+    txBuilder.initBuilder(tx);
+    const prepare = { preparedTransactionHash: 'hash', hashingSchemeVersion: 'v' } as CantonPrepareCommandResponse;
+    txBuilder.setTransaction(prepare);
+    assert.equal(tx.prepareCommand, prepare);
   });
 
-  it('should throw on addSignature', function () {
+  it('should reject signing before a transaction is initialized', function () {
     const txBuilder = new AllocationRequestBuilder(coins.get('tcanton'));
-    assert.throws(() => txBuilder.addSignature({} as any, Buffer.from('')), /Not implemented/);
+    assert.throws(() => txBuilder.addSignature({} as PublicKey, Buffer.from('')), /transaction is empty/);
   });
 });

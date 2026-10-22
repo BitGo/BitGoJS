@@ -6,12 +6,13 @@ import { Transaction } from './transaction/transaction';
 import { normalizeCantonAmount } from './amount';
 
 /**
- * Builder for an AllocationRequest txRequest — an internal, non-signable transaction
- * that surfaces the DvP trade leg details to the allocating party. The party reviews
- * this request and then submits a separate AllocationAllocate to lock their asset.
+ * Builder for an AllocationRequest txRequest — an internal request that surfaces the DvP trade
+ * leg details to the allocating party. The party reviews this request and then submits a
+ * separate AllocationAllocate to lock their asset.
  *
- * setTransaction and addSignature are intentionally not implemented because this
- * transaction type is never signed or broadcast directly.
+ * Allocation requests are not normally signed or broadcast as standalone transactions, but the
+ * builder still supports the standard prepared-transaction and signature hooks for transaction
+ * builder compatibility.
  */
 export class AllocationRequestBuilder extends TransactionBuilder {
   private _updateId: string;
@@ -49,12 +50,15 @@ export class AllocationRequestBuilder extends TransactionBuilder {
   }
 
   setTransaction(transaction: CantonPrepareCommandResponse): void {
-    throw new Error('Not implemented!');
+    this.transaction.prepareCommand = transaction;
   }
 
   /** @inheritDoc */
   addSignature(publicKey: PublicKey, signature: Buffer): void {
-    throw new Error('Not implemented!');
+    if (!this.transaction) {
+      throw new Error('transaction is empty!');
+    }
+    this._signatures.push({ publicKey, signature });
   }
 
   /**
@@ -294,13 +298,8 @@ export class AllocationRequestBuilder extends TransactionBuilder {
     if (!this._receiverPartyId) throw new Error('receiverPartyId is missing');
     if (this._amount === undefined || this._amount === null) throw new Error('amount is missing');
     if (!this._token) throw new Error('token is missing');
-    if (this._legType !== 'fee') {
-      // Trade legs (explicit or legacy) always carry the receive side of the settlement;
-      // fee legs are payment-only — the fee payer receives nothing — so the receive fields are omitted.
-      if (!this._receiveToken) throw new Error('receiveToken is missing');
-      if (this._receiveAmount === undefined || this._receiveAmount === null)
-        throw new Error('receiveAmount is missing');
-    }
+    // CIP-56 payment-only requests legitimately have no receive leg. Keep receive
+    // fields optional rather than inventing a counter-leg for the wallet.
     if (!this._allocateBefore) throw new Error('allocateBefore is missing');
     if (!this._settleBefore) throw new Error('settleBefore is missing');
   }
