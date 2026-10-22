@@ -58,11 +58,6 @@ import {
 } from '../../src/account';
 import { allCoinsAndTokens } from '../../src/allCoinsAndTokens';
 
-interface DuplicateCoinObject {
-  name: string;
-  network: BaseNetwork;
-}
-
 const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   algo: {
     features: [
@@ -1152,32 +1147,26 @@ describe('WTGXX Trust-only custody', () => {
 });
 
 describe('ERC20 Coins', () => {
-  it('should have no duplicate contract addresses', () => {
+  it('should have no duplicate contract addresses on the same chain', () => {
+    // Mirrors the invariant enforced by `CoinMap.addCoin`: a token claims a
+    // `family:contractAddress` key and two tokens may only share it when they live on networks of
+    // a different type (mainnet vs testnet). Sharing a contract address across different chains
+    // is legitimate (e.g. an xStock deployed at a deterministic address on both Ethereum and
+    // OKB X Layer), so it must not be flagged as a duplicate.
+    const seen = new Map<string, string>();
     coins
       .filter((coin) => coin instanceof Erc20Coin)
-      .reduce((acc: { [index: string]: DuplicateCoinObject }, token) => {
+      .forEach((token) => {
         const address = (token as Readonly<Erc20Coin>).contractAddress.toString();
-
-        // If not ETH, should never have duplicates
-        if (acc[address] && token.network.family !== CoinFamily.ETH) {
+        const key = `${token.family}:${address}:${token.network.type}`;
+        const duplicate = seen.get(key);
+        if (duplicate) {
           throw new Error(
-            `ERC20 tokens '${acc[address].name}' and '${token.name}' have identical contract address '${address}'`
+            `ERC20 tokens '${duplicate}' and '${token.name}' have identical contract address '${address}' on the same chain (${token.family})`
           );
         }
-
-        // If ETH, must check if chainId is different for the tokens before concluding they are duplicates
-        if (acc[address] && token.network.family === CoinFamily.ETH) {
-          const network = token.network as EthereumNetwork;
-          const accEntry = acc[address].network as EthereumNetwork;
-          if (network.chainId === accEntry.chainId) {
-            throw new Error(
-              `ERC20 tokens '${acc[address]}' and '${token.name}' have identical contract address '${address}'`
-            );
-          }
-        }
-        acc[address] = { name: token.name, network: token.network };
-        return acc;
-      }, {});
+        seen.set(key, token.name);
+      });
   });
 });
 
