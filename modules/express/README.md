@@ -97,6 +97,18 @@ Environment: prod
 Base URI: https://0.0.0.0:4000
 ```
 
+### TLS trust
+
+The BitGo Express image validates outbound TLS against the system CA
+store (`/etc/ssl/certs/ca-certificates.crt`, from the Debian
+`ca-certificates` package) instead of Node's embedded root store. The
+container sets `NODE_OPTIONS=--use-openssl-ca` and
+`SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt`. To trust an
+additional CA (for example an internal CA), set `NODE_EXTRA_CA_CERTS`
+to a PEM file that contains it — extra certificates are added on top
+of the configured system store — or point `SSL_CERT_FILE` at a bundle
+that includes it (this replaces the default bundle).
+
 ### Building the Docker container
 
 To build the BitGo Express Docker container yourself from the source code, check out the latest **master** branch and run `docker build` from the project root.
