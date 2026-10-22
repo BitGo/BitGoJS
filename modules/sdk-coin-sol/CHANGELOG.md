@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.19.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-sol%408.18.0...%40bitgo%2Fsdk-coin-sol%408.19.0) (2026-10-21)
+
+### Features
+
+* **sdk-coin-sol:** confidential transfer token enablement (Refs: CHALO-1883) ([f5a7ef5](https://github.com/BitGo/BitGoJS/commit/f5a7ef59723fe2a1698a1ade5941c10aa7ccc41a)), closes [#9968](https://github.com/BitGo/BitGoJS/issues/9968)
+
+
 # [8.18.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-sol%408.17.0...%40bitgo%2Fsdk-coin-sol%408.18.0) (2026-10-20)
 
 ### Features

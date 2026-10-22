@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [8.6.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fabstract-lightning%408.6.0...%40bitgo%2Fabstract-lightning%408.6.1) (2026-10-21)
+
+**Note:** Version bump only for package @bitgo/abstract-lightning
+
+
+
+
+
 # [8.6.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fabstract-lightning%408.5.1...%40bitgo%2Fabstract-lightning%408.6.0) (2026-10-20)
 
 ### Features
