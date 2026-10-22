@@ -9,6 +9,7 @@ import {
   CANTON_ADDRESSES,
   CANTON_BLOCK_HEIGHT,
   CantonAllocationAllocatePrepareResponse,
+  CantonStandingDelegationPrepareResponse,
   CantonAllocationAllocateNativePrepareResponse,
   CantonAllocationAllocateNativeV2ReceiveOnlyPreparedResponse,
   CantonAllocationAllocateTokenV2ReceiveOnlyPreparedResponse,
@@ -235,6 +236,32 @@ describe('Canton Util', function () {
       assert.ok(parsedData.receiver.startsWith('ravi-2-step-party::'));
       assert.equal(parsedData.amount, '5000000000');
       assert.equal(parsedData.token, 'tcanton:tt');
+    });
+
+    it('should parse the Broadridge standing delegation prepared transaction', () => {
+      const parsedData = utils.parseRawCantonTransactionData(
+        CantonStandingDelegationPrepareResponse.preparedTransaction,
+        TransactionType.CantonCommand
+      );
+      should.exist(parsedData.broadridgeSettlementAuthorizationData);
+      assert.equal(parsedData.sender, '');
+      assert.equal(parsedData.receiver, '');
+      assert.equal(parsedData.amount, '0');
+      assert.equal(
+        parsedData.broadridgeSettlementAuthorizationData?.descriptor.entityName,
+        'StandingDelegationImpl_v1'
+      );
+      assert.equal(
+        parsedData.broadridgeSettlementAuthorizationData?.client,
+        'test-delegation::122092e7d33ac10c0f3d55976342f37555df05da5b742956d56a62ae2367769079d2'
+      );
+      assert.equal(
+        parsedData.broadridgeSettlementAuthorizationData?.executor,
+        'btgo-operator::1220eb693ade486ff8a112f999e6392fc0427bc14da42ee20e51998575a53efef0cd'
+      );
+      assert.deepStrictEqual(parsedData.broadridgeSettlementAuthorizationData?.descriptor.actors, [
+        'test-delegation::122092e7d33ac10c0f3d55976342f37555df05da5b742956d56a62ae2367769079d2',
+      ]);
     });
   });
 

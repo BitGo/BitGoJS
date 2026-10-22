@@ -172,6 +172,9 @@ export class BroadridgeSettlementAuthorizationBuilder extends CantonCommandBuild
             },
           };
     this.command(command);
+    const createArguments = operation === 'Create' ? params.choiceArgument ?? {} : {};
+    const client = typeof createArguments.client === 'string' ? createArguments.client : undefined;
+    const executor = typeof createArguments.executor === 'string' ? createArguments.executor : undefined;
     this._broadridge = {
       protocol: 'broadridge',
       standard: 'CIP-56',
@@ -182,7 +185,8 @@ export class BroadridgeSettlementAuthorizationBuilder extends CantonCommandBuild
       ...(operation !== 'Create' ? { choice: operation } : {}),
       role,
       actors: [...params.actAs],
-      ...(params.contractId ? { contractId: params.contractId } : {}),
+      ...(client ? { client } : {}),
+      ...(executor ? { executor } : {}),
       ...(params.requestCid ? { requestCid: params.requestCid } : {}),
       ...(params.agreementCid ? { agreementCid: params.agreementCid } : {}),
       ...(params.settlement ? { settlement: params.settlement } : {}),

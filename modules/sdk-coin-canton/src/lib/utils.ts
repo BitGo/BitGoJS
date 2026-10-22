@@ -791,6 +791,7 @@ export class Utils implements BaseUtils {
           entityName: createNode.templateId.entityName,
         },
         argument: this.damlValueToJson(createNode.argument),
+        actingParties: [...(decoded.metadata?.submitterInfo?.actAs ?? [])],
       };
     }
     if (nodeType.oneofKind === 'exercise') {

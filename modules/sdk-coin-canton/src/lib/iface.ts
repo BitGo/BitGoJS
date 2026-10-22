@@ -131,6 +131,8 @@ export interface BroadridgeProtocolDescriptor {
   choice?: string;
   role: 'client' | 'executor' | 'trading-party' | 'agreement' | 'request' | 'allocation';
   actors: string[];
+  client?: string;
+  executor?: string;
   contractId?: string;
   requestCid?: string;
   agreementCid?: string;
@@ -421,5 +423,5 @@ export interface CantonCommandInfo {
   argument: unknown;
   choice?: string; // ExerciseCommand only
   contractId?: string; // ExerciseCommand only
-  actingParties?: string[]; // ExerciseCommand only
+  actingParties?: string[]; // Submitter actAs for CreateCommand; root acting parties for ExerciseCommand
 }
