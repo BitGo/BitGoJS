@@ -1,3 +1,4 @@
+import * as t from 'io-ts';
 import { EDDSA } from '../../../../account-lib/mpc/tss';
 import BaseTSSUtils from '../baseTSSUtils';
 import { CreateKeychainParamsBase, UnsignedTransactionTss } from '../baseTypes';
@@ -26,6 +27,18 @@ export interface EddsaMPCv2RecoveryKeyShares {
   userVrfKeyShare?: Buffer;
   backupVrfKeyShare?: Buffer;
 }
+
+/** Codec for an MPCv1 SignShare decrypted from the external signer's persisted signing state */
+export const SignShareCodec = t.type({
+  xShare: t.type({ i: t.number, y: t.string, u: t.string, r: t.string, R: t.string }),
+  rShares: t.record(
+    t.string,
+    t.intersection([
+      t.type({ i: t.number, j: t.number, u: t.string, r: t.string, R: t.string, commitment: t.string }),
+      t.partial({ v: t.string }),
+    ])
+  ),
+});
 
 export type CreateEddsaBitGoKeychainParams = Omit<CreateEddsaKeychainParams, 'bitgoKeychain'>;
 
