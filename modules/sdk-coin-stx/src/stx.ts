@@ -283,7 +283,9 @@ export class Stx extends BaseCoin {
    */
   async signTransaction(params: StxSignTransactionOptions): Promise<SignedTransaction> {
     const factory = new StxLib.TransactionBuilderFactory(coins.get(this.getChain()));
-    const txBuilder = factory.from(params.txPrebuild.txHex);
+    const txBuilder = factory.from(params.txPrebuild.txHex, {
+      allowedStakingContracts: params.allowedStakingContracts,
+    });
     const prvKeys = params.prv instanceof Array ? params.prv : [params.prv];
     prvKeys.forEach((prv) => txBuilder.sign({ key: prv }));
     if (params.pubKeys) txBuilder.fromPubKey(params.pubKeys);
@@ -316,7 +318,7 @@ export class Stx extends BaseCoin {
     }
 
     const factory = new StxLib.TransactionBuilderFactory(coins.get(this.getChain()));
-    const txBuilder = factory.from(txHex);
+    const txBuilder = factory.from(txHex, { allowedStakingContracts: params.allowedStakingContracts });
 
     if (params.publicKeys !== undefined) {
       txBuilder.fromPubKey(params.publicKeys);

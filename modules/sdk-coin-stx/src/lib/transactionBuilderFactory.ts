@@ -22,7 +22,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  from(raw: string): TransactionBuilder {
+  from(
+    raw: string,
+    params?: { allowedStakingContracts?: ReadonlyArray<{ name: string; address: string }> }
+  ): TransactionBuilder {
     this.validateRawTransaction(raw);
     try {
       const tx = this.parseTransaction(raw);
@@ -42,7 +45,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           if (Pox5Builder.isValidContractCall(this._coinConfig, tx.stxTransaction.payload)) {
             return this.getPox5Builder(tx);
           }
-          return this.getContractBuilder(tx);
+          return this.getContractBuilder(tx, params?.allowedStakingContracts);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
@@ -69,8 +72,14 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     return TransactionBuilderFactory.initializeBuilder(new TransferBuilder(this._coinConfig), tx);
   }
 
-  getContractBuilder(tx?: Transaction): ContractBuilder {
-    return TransactionBuilderFactory.initializeBuilder(new ContractBuilder(this._coinConfig), tx);
+  getContractBuilder(
+    tx?: Transaction,
+    allowedStakingContracts?: ReadonlyArray<{ name: string; address: string }>
+  ): ContractBuilder {
+    return TransactionBuilderFactory.initializeBuilder(
+      new ContractBuilder(this._coinConfig, allowedStakingContracts),
+      tx
+    );
   }
 
   getSendmanyBuilder(tx?: Transaction): SendmanyBuilder {
