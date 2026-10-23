@@ -49,6 +49,7 @@ module.exports = {
         'HSM-',
         'INC-',
         'INF-',
+        'INFOSEC-',
         'IR-',
         'IS-',
         'ITHD-',
