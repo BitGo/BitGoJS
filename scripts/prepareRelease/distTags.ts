@@ -12,6 +12,9 @@ export async function getDistTags(packageName: string): Promise<DistTags> {
   console.log(`Fetching dist tags for ${packageName}`);
   const url = `https://registry.npmjs.org/-/package/${packageName}/dist-tags`;
   const response = await fetch(url);
+  if (response.status === 404) {
+    return {};
+  }
   if (!response.ok) {
     throw new Error(`Failed ${url}: ${response.status} ${response.statusText} ${await response.text()}`);
   }
@@ -87,12 +90,7 @@ export async function getDistTagsForModuleNames(moduleNames: string[]): Promise<
               console.warn(`Skipping ${moduleName} as it's not published to npm`);
               return [];
           }
-          try {
-            return [[moduleName, await getDistTags(moduleName)]];
-          } catch (e) {
-            console.warn(`Failed to fetch dist tags for ${moduleName}`, e);
-            return [];
-          }
+          return [[moduleName, await getDistTags(moduleName)]];
         })
       )
     ).flat()

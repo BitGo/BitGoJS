@@ -11,7 +11,7 @@
  * Usage: npx tsx scripts/prepare-release.ts [preid] --scope [scope] --root-dir [dir]
  */
 import assert from 'node:assert';
-import { readFileSync, writeFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import path from 'path';
 import { inc, lt } from 'semver';
 import yargs from 'yargs';
@@ -24,6 +24,7 @@ import {
   changeScopeInFile,
   setDependencyVersion,
   findFirstUnpublishedVersion,
+  getDistTagsCache,
   DistTags,
   LernaModule,
 } from './prepareRelease';
@@ -100,6 +101,7 @@ async function incrementVersionsForModuleLocation(
   module: LernaModule,
   tags: DistTags | undefined,
   allModules: LernaModule[],
+  probeRegistry: boolean,
 ): Promise<string | undefined> {
   const json = readModulePackageJson(module);
 
@@ -112,22 +114,22 @@ async function incrementVersionsForModuleLocation(
       prevTag = lt(version[0], latest[0])
         ? `${tags.latest}-${preid}`
         : tags[preid];
-    } else {
+    } else if (tags.latest) {
       prevTag = `${tags.latest}-${preid}`;
     }
   }
 
-  if (prevTag) {
-    const initialCandidate = inc(prevTag, 'prerelease', undefined, preid);
+  if (prevTag || (tags && Object.keys(tags).length === 0)) {
+    const initialCandidate = prevTag
+      ? inc(prevTag, 'prerelease', undefined, preid)
+      : json.version;
     assert(
       typeof initialCandidate === 'string',
       `Failed to increment version for ${json.name} prevTag=${prevTag}`,
     );
-    const next = await findFirstUnpublishedVersion(
-      json.name,
-      initialCandidate,
-      preid,
-    );
+    const next = probeRegistry
+      ? await findFirstUnpublishedVersion(json.name, initialCandidate, preid)
+      : initialCandidate;
     console.log(`Setting next version for ${json.name} to ${next}`);
     json.version = next;
     writeModulePackageJson(module, json);
@@ -165,6 +167,8 @@ async function incrementVersions(
   preid: string,
   lernaModules: LernaModule[],
 ): Promise<void> {
+  const cachePath = getDistTagsCache();
+  const probeRegistry = !(cachePath && existsSync(cachePath));
   const distTags = await getDistTagsForModules(lernaModules);
 
   for (const m of lernaModules) {
@@ -174,6 +178,7 @@ async function incrementVersions(
         m,
         distTags.get(m),
         lernaModules,
+        probeRegistry,
       );
     } catch (e) {
       console.error(

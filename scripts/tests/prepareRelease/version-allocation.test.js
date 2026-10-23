@@ -3,6 +3,8 @@ require('tsx/cjs');
 const assert = require('node:assert/strict');
 const {
   findFirstUnpublishedVersion,
+  getDistTags,
+  getDistTagsForModuleNames,
 } = require('../../prepareRelease/distTags.ts');
 
 describe('prerelease version allocation', function () {
@@ -41,5 +43,35 @@ describe('prerelease version allocation', function () {
       ),
       /registry unavailable/,
     );
+  });
+
+  it('treats a missing dist-tag document as a new package', async function () {
+    const originalFetch = global.fetch;
+    global.fetch = async () =>
+      new Response('', { status: 404, statusText: 'Not Found' });
+
+    try {
+      assert.deepEqual(await getDistTags('@bitgo-beta/new-package'), {});
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
+
+  it('fails instead of dropping a module when dist-tag lookup fails', async function () {
+    const originalFetch = global.fetch;
+    global.fetch = async () =>
+      new Response('unavailable', {
+        status: 503,
+        statusText: 'Service Unavailable',
+      });
+
+    try {
+      await assert.rejects(
+        getDistTagsForModuleNames(['@bitgo-beta/sdk-core']),
+        /503 Service Unavailable/,
+      );
+    } finally {
+      global.fetch = originalFetch;
+    }
   });
 });
