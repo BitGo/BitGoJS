@@ -70,7 +70,7 @@ jobs:
 
       - name: Run Claude Code (Bedrock)
         id: claude
-        uses: anthropics/claude-code-action@459ad358ae43fea66bfefd0a1f8d840b4b9791fb # v1.0.194
+        uses: anthropics/claude-code-action@8d70a0dd265122bd65b8e09d3d959e65373ae2a1 # v1.0.260
         with:
           prompt: ${{ steps.agent.outputs.content }}
           use_commit_signing: 'true'
@@ -79,7 +79,7 @@ jobs:
           use_bedrock: 'true'
           github_token: ${{ secrets.GITHUB_TOKEN }}
         env:
-          ANTHROPIC_MODEL: arn:aws:bedrock:us-west-2:168000258654:inference-profile/us.anthropic.claude-sonnet-5-5
+          ANTHROPIC_MODEL: arn:aws:bedrock:us-west-2:168000258654:inference-profile/global.anthropic.claude-sonnet-5-5
           # Bedrock: replaying a tool-call turn requires a leading thinking block; disable to avoid 400.
           MAX_THINKING_TOKENS: '0'
           AWS_REGION: us-west-2
