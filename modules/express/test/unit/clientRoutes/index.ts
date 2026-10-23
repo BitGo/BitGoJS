@@ -212,5 +212,29 @@ describe('common methods', () => {
       consoleLog.args.flat().join(' ').should.not.containEql(privateKey);
       consoleLog.args.flat().join(' ').should.not.containEql(walletPassphrase);
     });
+    it('should handle circular request bodies while redacting errors', async () => {
+      const passphrase = 'circular-passphrase';
+      const requestBody: { credentials: { passphrase: string }; self?: unknown } = {
+        credentials: { passphrase },
+      };
+      requestBody.self = requestBody;
+      const errorResult: { secret: string; self?: unknown } = { secret: passphrase };
+      errorResult.self = errorResult;
+      const handler = sandbox
+        .stub()
+        .rejects(Object.assign(new Error(`failed with ${passphrase}`), { result: errorResult }));
+      const req = { body: requestBody } as express.Request;
+      const status = sandbox.stub().returnsThis();
+      const send = sandbox.stub().returnsThis();
+      const res = { status, send } as unknown as express.Response;
+
+      const next: express.NextFunction = () => undefined;
+      await promiseWrapper(handler)(req, res, next);
+
+      status.calledWith(500).should.be.true();
+      send.firstCall.args[0].message.should.equal('failed with [REDACTED]');
+      send.firstCall.args[0].secret.should.equal('[REDACTED]');
+      send.firstCall.args[0].self.should.equal('[Circular]');
+    });
   });
 });
