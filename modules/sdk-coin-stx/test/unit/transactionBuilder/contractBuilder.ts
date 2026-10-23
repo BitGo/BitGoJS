@@ -2,7 +2,7 @@ import assert from 'assert';
 import should from 'should';
 import BigNum from 'bn.js';
 import { STACKS_TESTNET, STACKS_MAINNET } from '@stacks/network';
-import { InvalidParameterValueError, TransactionType } from '@bitgo/sdk-core';
+import { InvalidParameterValueError, ParseTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { bufferCV, noneCV, someCV, standardPrincipalCV, tupleCV, uintCV, intCV } from '@stacks/transactions';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
@@ -166,6 +166,126 @@ describe('Stacks: Contract Builder', function () {
         should.deepEqual(txJson.payload.contractName, 'pox-5');
         should.deepEqual(txJson.payload.functionName, 'register-for-bond');
         txJson.payload.functionArgs.length.should.equal(5);
+      });
+
+      it('an unsigned caller-allowlisted non-canonical pox-5 (dummy) contract call transaction', async () => {
+        // The caller supplies the staking contract it is configured for — no SDK change needed.
+        const builder = factoryProd.getContractBuilder();
+        builder.allowedStakingContracts([
+          { name: 'pox-5-dummy-v1', address: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY' },
+        ]);
+        builder.fee({ fee: '180' });
+        builder.nonce(0);
+        builder.contractAddress('SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY');
+        builder.contractName('pox-5-dummy-v1');
+        builder.functionName('register-for-bond');
+        builder.functionArgs([
+          { type: 'uint128', val: '210' },
+          { type: 'principal', val: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY.signer-manager-stackslabs-dummy-v1' },
+          { type: 'uint128', val: '1005000' },
+          { type: 'optional' },
+          { type: 'optional' },
+        ]);
+        builder.fromPubKey(testData.TX_SENDER.pub);
+        builder.numberSignatures(1);
+
+        const tx = await builder.build();
+        const txJson = tx.toJson();
+        should.deepEqual(txJson.payload.contractName, 'pox-5-dummy-v1');
+        should.deepEqual(txJson.payload.contractAddress, 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY');
+        should.deepEqual(txJson.payload.functionName, 'register-for-bond');
+      });
+
+      it('rehydrates an allowlisted non-canonical contract call (sign / explain / fee-rebuild path)', async () => {
+        // `signTransaction` / `explainTransaction` / the fee re-build all go through `factory.from(hex)`,
+        // which re-creates the builder — re-parsing must not reject the allowlisted contract.
+        const allowlist = [{ name: 'pox-5-dummy-v1', address: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY' }];
+        const builder = factoryProd.getContractBuilder();
+        builder.allowedStakingContracts(allowlist);
+        builder.fee({ fee: '180' });
+        builder.nonce(0);
+        builder.contractAddress('SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY');
+        builder.contractName('pox-5-dummy-v1');
+        builder.functionName('register-for-bond');
+        builder.functionArgs([
+          { type: 'uint128', val: '210' },
+          { type: 'principal', val: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY.signer-manager-stackslabs-dummy-v1' },
+          { type: 'uint128', val: '1005000' },
+          { type: 'optional' },
+          { type: 'optional' },
+        ]);
+        builder.fromPubKey(testData.TX_SENDER.pub);
+        builder.numberSignatures(1);
+        const tx = await builder.build();
+
+        const reparsed = factoryProd.from(tx.toBroadcastFormat(), { allowedStakingContracts: allowlist });
+        reparsed.fromPubKey(testData.TX_SENDER.pub);
+        reparsed.numberSignatures(1);
+        const payload = (await reparsed.build()).toJson().payload;
+        should.deepEqual(payload.contractAddress, 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY');
+        should.deepEqual(payload.contractName, 'pox-5-dummy-v1');
+
+        // Without the allowlist the rebuild is rejected — canonical validation is preserved (no relaxation).
+        (() => factoryProd.from(tx.toBroadcastFormat())).should.throw(ParseTransactionError);
+      });
+
+      it('rejects an allowlisted name followed by a canonical address (order-independent pair check)', function () {
+        const builder = factoryProd.getContractBuilder();
+        builder.allowedStakingContracts([
+          { name: 'pox-5-dummy-v1', address: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY' },
+        ]);
+        builder.contractName('pox-5-dummy-v1'); // allowlisted name first
+        (() => builder.contractAddress('SP000000000000000000002Q6VF78')).should.throw(/not an allowlisted pair/);
+      });
+
+      it('rejects an allowlisted address followed by a canonical name (order-independent pair check)', function () {
+        const builder = factoryProd.getContractBuilder();
+        builder.allowedStakingContracts([
+          { name: 'pox-5-dummy-v1', address: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY' },
+        ]);
+        builder.contractAddress('SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY'); // allowlisted address first
+        (() => builder.contractName('pox-5')).should.throw(/not an allowlisted pair/);
+      });
+
+      it('rejects duplicate allowlisted contract names', function () {
+        const builder = factoryProd.getContractBuilder();
+        (() =>
+          builder.allowedStakingContracts([
+            { name: 'pox-5-dummy-v1', address: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY' },
+            { name: 'pox-5-dummy-v1', address: 'SP000000000000000000002Q6VF78' },
+          ])).should.throw(/Duplicate staking contract name/);
+      });
+
+      it('rejects an allowlisted name paired with a different address', function () {
+        const builder = factoryProd.getContractBuilder();
+        builder.allowedStakingContracts([
+          { name: 'pox-5-dummy-v1', address: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY' },
+        ]);
+        builder.contractAddress('SP000000000000000000002Q6VF78'); // canonical address, wrong pair
+        (() => builder.contractName('pox-5-dummy-v1')).should.throw(/not an allowlisted pair/);
+      });
+
+      it('rejects a function that is not in the pox-5 set for an allowlisted contract', function () {
+        const builder = factoryProd.getContractBuilder();
+        builder.allowedStakingContracts([
+          { name: 'pox-5-dummy-v1', address: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY' },
+        ]);
+        builder.contractAddress('SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY');
+        builder.contractName('pox-5-dummy-v1');
+        // `stack-stx` is a pox-4 function, not part of the pox-5 ABI the dummy mirrors.
+        (() => builder.functionName('stack-stx')).should.throw(/is not supported contract function name/);
+      });
+
+      it('rejects a contract name that is not allowlisted', function () {
+        const builder = factory.getContractBuilder();
+        (() => builder.contractName('some-other-contract')).should.throw(/Only pox-4, pox-5, and send-many-memo/);
+      });
+
+      it('rejects a contract address that is not allowlisted', function () {
+        const builder = factory.getContractBuilder();
+        (() => builder.contractAddress('SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY')).should.throw(
+          /Invalid contract address/
+        );
       });
 
       it('a signed contract call with args', async () => {

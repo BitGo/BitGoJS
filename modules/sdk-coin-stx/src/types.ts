@@ -29,6 +29,11 @@ export interface ExplainTransactionOptions {
   };
   publicKeys?: string[];
   feeInfo: TransactionFee;
+  /**
+   * Non-canonical staking contracts to accept while re-parsing (e.g. a dummy pox-5), passed
+   * explicitly so no shared/instance state is involved. Empty/omitted ⇒ canonical-only.
+   */
+  allowedStakingContracts?: ReadonlyArray<{ name: string; address: string }>;
 }
 
 export interface StxSignTransactionOptions extends SignTransactionOptions {
@@ -36,6 +41,8 @@ export interface StxSignTransactionOptions extends SignTransactionOptions {
   prv: string | string[];
   pubKeys?: string[];
   numberSignature?: number;
+  /** @see ExplainTransactionOptions.allowedStakingContracts */
+  allowedStakingContracts?: ReadonlyArray<{ name: string; address: string }>;
 }
 
 export interface TransactionPrebuild extends BaseTransactionPrebuild {
