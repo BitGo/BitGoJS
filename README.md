@@ -47,24 +47,24 @@ Examples can be found in each of the modules specific to the module use cases. S
 
 # NodeJS Version Support Policy
 
-BitGoJS packages declare a minimum supported Node version of 22; CI tests supported LTS versions and checks the Current release line non-blocking:
+BitGoJS currently provides support for the following Node versions per package.json engines policy:
 
 ```
 "engines": {
-  "node": ">=22",
+  "node": ">=22 <25",
   "npm": ">=3.10.10"
 }
 ```
 
-The engines range sets a minimum Node version rather than an upper bound. The required CI matrix covers supported LTS versions; other versions may work but are not covered by required tests, except the Current release line as a non-blocking signal.
+We specifically limit our support to these versions of Node, not because this package won't work on other versions, but because these versions tend to be the most widely used in practice. It's possible the packages in this repository will work correctly on newer or older versions of Node, but we typically don't run automated tests against non-specified versions of Node (including odd versions), with the possible exception of the latest odd numbered version for advanced awareness of upcoming breaks in version support.
 
-As the oldest supported Node LTS reaches end-of-life, raise the minimum `node` engines version to the next supported LTS. Removing support for an LTS version is a breaking change and entails publishing a new major version. We will not accept requests to support an end-of-life version of Node. We will accept code that allows this package to run on newer, non-LTS versions and will attempt to ensure changes work on the latest Node release.
+As each Node LTS version reaches its end-of-life we will exclude that version from the node engines property of our package's package.json file. Removing a Node version is considered a breaking change and will entail the publishing of a new major version of this package. We will not accept any requests to support an end-of-life version of Node, and any pull requests or issues regarding support for an end-of-life version of Node will be closed. We will accept code that allows this package to run on newer, non-LTS, versions of Node. Furthermore, we will attempt to ensure our own changes work on the latest version of Node. To help in that commitment, our continuous integration setup runs the full test suite on the latest release of the following versions of node:
 
 - `22` (Maintenance LTS) — required to pass
 - `24` (Active LTS) — required to pass
 - `26` (Current) — run non-blocking; a failure posts a warning comment on the PR instead of blocking merge
 
-When a new Node major becomes Active LTS, update the `node-version` matrix in `.github/workflows/ci.yml` (moving the outgoing Current version into the required set and adding the new Current release). When the minimum supported LTS changes, raise `engines.node` across package manifests accordingly.
+When a new Node major becomes Active LTS, update the `node-version` matrix in `.github/workflows/ci.yml` (moving the outgoing Current version into the required set and adding the new Current release), and bump the `engines.node` range across all `modules/*/package.json` files accordingly.
 
 JavaScript package managers should allow you to install this package with any version of Node, with, at most, a warning if your version of Node does not fall within the range specified by our node engines property. If you encounter issues installing this package on a supported version of Node, please report the issue to us.
 
