@@ -103,7 +103,11 @@ export class Generator {
     if (config.symbol.includes('..') || config.symbol.includes('/') || config.symbol.includes('\\')) {
       throw new Error('Symbol cannot contain path traversal characters');
     }
-    if (config.testnetSymbol.includes('..') || config.testnetSymbol.includes('/') || config.testnetSymbol.includes('\\')) {
+    if (
+      config.testnetSymbol.includes('..') ||
+      config.testnetSymbol.includes('/') ||
+      config.testnetSymbol.includes('\\')
+    ) {
       throw new Error('Testnet symbol cannot contain path traversal characters');
     }
 
@@ -350,9 +354,6 @@ export class Generator {
       'Run tests: yarn test',
     ];
 
-    p.note(
-      nextSteps.map((step, i) => `${i + 1}. ${step}`).join('\n'),
-      '📋 Next steps'
-    );
+    p.note(nextSteps.map((step, i) => `${i + 1}. ${step}`).join('\n'), '📋 Next steps');
   }
 }

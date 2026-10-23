@@ -5,11 +5,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Build and Development Commands
 
 ### Installation
+
 ```bash
 yarn install
 ```
 
 ### Development
+
 ```bash
 # Watch mode for development (compiles all TypeScript packages and watches for changes)
 yarn dev
@@ -19,6 +21,7 @@ yarn
 ```
 
 ### Linting
+
 ```bash
 # Lint all packages
 yarn lint
@@ -34,6 +37,7 @@ yarn check-commits
 ```
 
 ### Testing
+
 ```bash
 # Run all unit tests
 yarn unit-test
@@ -55,6 +59,7 @@ yarn coverage
 ```
 
 ### Browser Compatibility
+
 ```bash
 # Run browser tests
 yarn browser-tests
@@ -73,11 +78,13 @@ For modules that need browser support (especially those using `@bitgo/wasm-utxo`
 ## Code Style
 
 ### Commits
+
 BitGoJS uses conventional commits. All commits MUST pass the spec described in `commitlint.config.js`.
 
 Every commit needs a footer issue reference (`references-empty: never`). Web Experience side work without a Linear ticket may use `WEB-000` in the footer (junk-drawer reference, same pattern as `BTC-000` / `CSHLD-000`). Branches named `WEB-000-*` get `TICKET: WEB-000` appended automatically by `scripts/prepare-commit-msg.js`.
 
 ### TypeScript Guidelines
+
 - **Avoid `any` type**: Use specific types, interfaces, or union types instead of `any`. If absolutely necessary, prefer `unknown` and use type guards for safety.
 
 ## Code Architecture
@@ -85,20 +92,24 @@ Every commit needs a footer issue reference (`references-empty: never`). Web Exp
 BitGoJS is a monorepo composed of multiple modules, each implementing specific functionality:
 
 ### Core Modules
+
 - `bitgo`: Main module providing authentication, wallet management, cryptographic primitives, and coin interfaces
 - `@bitgo/sdk-core`: Core SDK functionality, base classes, and interfaces
 - `@bitgo/sdk-api`: API client utilities
 - `@bitgo/statics`: Static configuration values used across the platform
 
 ### Coin Implementation Modules
+
 - `@bitgo/sdk-coin-*`: Individual cryptocurrency implementations (e.g., btc, eth, sol, etc.)
 - `@bitgo/abstract-eth`, `@bitgo/abstract-utxo`, etc.: Abstract base classes for similar coin families
 
 ### Transaction Building and Signing
+
 - `@bitgo/account-lib`: Build and sign transactions for account-based coins
 - `@bitgo/utxo-lib`: Build and sign transactions for UTXO-based coins
 
 ### Other Utility Modules
+
 - `@bitgo/blockapis`: Access public block explorer APIs for various coins
 - `@bitgo/express`: Local BitGo transaction signing server and proxy
 - `@bitgo/unspents`: Utilities for UTXO chains
@@ -122,6 +133,7 @@ The BitGoJS SDK follows a modular architecture:
 ## Adding New Coins
 
 To implement a new coin:
+
 ```bash
 yarn sdk-coin:new
 ```
@@ -130,4 +142,4 @@ This will generate the necessary boilerplate for a new coin implementation.
 
 ## Node.js Version Support
 
-BitGoJS supports Node.js versions >=22, with NPM >=3.10.10.
+BitGoJS supports Node.js versions 22 and later, including Node.js 26, with NPM >=3.10.10.
