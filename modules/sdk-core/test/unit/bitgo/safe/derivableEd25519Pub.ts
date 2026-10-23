@@ -275,6 +275,21 @@ describe('derivableEd25519Pub', function () {
       ).should.be.rejectedWith(/does not verify against its public key/);
     });
 
+    it('rejects a signature over mutated bytes without changing the original message', async function () {
+      const input = Uint8Array.from(message);
+      await signWithExternalEd25519Signer(
+        {
+          publicKey,
+          sign: async (m: Uint8Array) => {
+            m[0] ^= 0xff;
+            return { signature: Buffer.from(nacl.sign.detached(m, keyPair.secretKey)).toString('hex') };
+          },
+        },
+        input
+      ).should.be.rejectedWith(/does not verify against its public key/);
+      Buffer.from(input).equals(message).should.equal(true);
+    });
+
     it('signs and returns a verified 64-byte signature', async function () {
       const signature = await signWithExternalEd25519Signer(validSigner, message);
       signature.should.match(/^[0-9a-f]{128}$/);

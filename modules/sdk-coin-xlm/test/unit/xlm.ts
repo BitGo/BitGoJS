@@ -558,7 +558,7 @@ describe('XLM:', function () {
         .should.be.rejectedWith(RecoveryProviderError);
     });
 
-    describe('getStellarKeys with external backup signature', function () {
+    describe('getStellarKeys with external backup signer', function () {
       it('builds a pub-only backup Keypair from the external public key', async function () {
         const userKeypair = stellar.Keypair.random();
         const externalBackupKeypair = stellar.Keypair.random();
@@ -566,16 +566,149 @@ describe('XLM:', function () {
           bitgo,
           {
             userKey: userKeypair.secret(),
-            backupKey: 'GC3D3ZNNK7GHLMSWJA54DQO6QJUJJF7K6J5JGCEW45ZT6QMKZ6PMUHUM',
             recoveryDestination: 'GDDHCKMYYYCVXOSAVMSEIYGYNX74LIAV3ACXYQ6WPMDUF7W3KZNWTHTH',
           },
           {
             publicKey: externalBackupKeypair.rawPublicKey().toString('hex'),
-            signature: 'ab'.repeat(64),
+            sign: async () => ({ signature: 'ab'.repeat(64) }),
           }
         );
         userKey.publicKey().should.equal(userKeypair.publicKey());
         backupKey.publicKey().should.equal(externalBackupKeypair.publicKey());
+      });
+
+      it('rejects when neither a backupKey nor an external backup signer is provided', async function () {
+        const userKeypair = stellar.Keypair.random();
+        await assert.rejects(
+          () =>
+            getStellarKeys(bitgo, {
+              userKey: userKeypair.secret(),
+              recoveryDestination: 'GDDHCKMYYYCVXOSAVMSEIYGYNX74LIAV3ACXYQ6WPMDUF7W3KZNWTHTH',
+            }),
+          /backupKey is required/
+        );
+      });
+    });
+
+    describe('recover with an external backup signer', function () {
+      const userKeypair = stellar.Keypair.fromSecret(userKeychain.prv);
+      const backupKeypair = stellar.Keypair.fromSecret(backupKeychain.prv);
+      const publicKey = backupKeypair.rawPublicKey().toString('hex');
+      const params = {
+        userKey: userKeychain.prv,
+        rootAddress: userKeychain.pub,
+        recoveryDestination: 'GDDHCKMYYYCVXOSAVMSEIYGYNX74LIAV3ACXYQ6WPMDUF7W3KZNWTHTH',
+      };
+
+      beforeEach(function () {
+        nock.disableNetConnect();
+        nock('https://horizon-testnet.stellar.org/accounts')
+          .get('/' + params.rootAddress)
+          .reply(200, {
+            sequence: '35995558267060226',
+            balances: [{ asset_type: 'native', balance: '6500000000' }],
+            signers: [
+              { key: userKeypair.publicKey(), weight: 1, type: 'ed25519_public_key' },
+              { key: backupKeypair.publicKey(), weight: 1, type: 'ed25519_public_key' },
+            ],
+          });
+
+        nock('https://horizon-testnet.stellar.org/accounts')
+          .get('/' + params.recoveryDestination)
+          .reply(200, { sequence: '35995558267060213', balances: 13131313 });
+
+        nock('https://horizon-testnet.stellar.org')
+          .get('/ledgers')
+          .query({ order: 'desc', limit: 1 })
+          .reply(200, {
+            records: [{ base_reserve_in_stroops: '5000000', base_fee_in_stroops: 100 }],
+          })
+          .persist();
+      });
+
+      afterEach(function () {
+        nock.cleanAll();
+        nock.enableNetConnect();
+      });
+
+      it('should attach verifiable user and external backup signatures over the transaction hash', async function () {
+        const signedMessages: Buffer[] = [];
+        const recovery = await basecoin.recover({
+          ...params,
+          externalBackupSigner: {
+            publicKey,
+            sign: async (message: Uint8Array) => {
+              signedMessages.push(Buffer.from(message));
+              return { signature: backupKeypair.sign(Buffer.from(message)).toString('hex') };
+            },
+          },
+        });
+
+        const tx = new stellar.Transaction(recovery.txBase64, basecoin.getStellarNetwork());
+        assert.strictEqual(tx.signatures.length, 2);
+        assert.ok(userKeypair.verify(tx.hash(), tx.signatures[0].signature()));
+        assert.ok(backupKeypair.verify(tx.hash(), tx.signatures[1].signature()));
+        assert.deepStrictEqual(signedMessages, [tx.hash()]);
+      });
+
+      it('should preserve recovery signed with the local backup seed', async function () {
+        const recovery = await basecoin.recover({ ...params, backupKey: backupKeychain.prv });
+        const tx = new stellar.Transaction(recovery.txBase64, basecoin.getStellarNetwork());
+
+        assert.strictEqual(tx.signatures.length, 2);
+        assert.ok(userKeypair.verify(tx.hash(), tx.signatures[0].signature()));
+        assert.ok(backupKeypair.verify(tx.hash(), tx.signatures[1].signature()));
+      });
+
+      for (const { description, signature, error } of [
+        { description: 'does not verify', signature: 'ab'.repeat(64), error: /does not verify against its public key/ },
+        { description: 'is malformed', signature: 'ab', error: /expected 64 bytes/ },
+      ]) {
+        it(`should reject an external backup signer whose signature ${description}`, async function () {
+          await assert.rejects(
+            () =>
+              basecoin.recover({
+                ...params,
+                externalBackupSigner: { publicKey, sign: async () => ({ signature }) },
+              }),
+            error
+          );
+        });
+      }
+
+      it('should reject an external backup signer with a malformed public key', async function () {
+        await assert.rejects(
+          () =>
+            basecoin.recover({
+              ...params,
+              externalBackupSigner: {
+                publicKey: 'not-hex',
+                sign: async () => ({ signature: 'ab'.repeat(64) }),
+              },
+            }),
+          /expected 32 bytes/
+        );
+      });
+
+      it('should propagate an external backup signer failure', async function () {
+        const signingError = new Error('external signer unavailable');
+        await assert.rejects(
+          () =>
+            basecoin.recover({
+              ...params,
+              externalBackupSigner: {
+                publicKey,
+                sign: async () => {
+                  throw signingError;
+                },
+              },
+            }),
+          (error) => error === signingError
+        );
+      });
+
+      it('should require a backup key when no external signer is provided', async function () {
+        await assert.rejects(() => basecoin.recover(params), /backupKey is required/);
       });
     });
 
