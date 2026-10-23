@@ -1,10 +1,10 @@
 // Karma configuration
 // Generated on Tue Aug 11 2020 16:34:20 GMT-0700 (Pacific Daylight Time)
-if (!process.env.CHROME_BIN) {
-  process.env.CHROME_BIN = require('puppeteer').executablePath();
-}
+module.exports = async function (config) {
+  if (!process.env.CHROME_BIN) {
+    process.env.CHROME_BIN = await require('puppeteer').executablePath();
+  }
 
-module.exports = function (config) {
   config.set({
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: '',
