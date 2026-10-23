@@ -214,7 +214,7 @@ export class Generator {
       author: 'BitGo SDK Team <sdkteam@bitgo.com>',
       license: 'MIT',
       engines: {
-        node: '>=20 <23',
+        node: '>=22',
       },
       repository: {
         type: 'git',
