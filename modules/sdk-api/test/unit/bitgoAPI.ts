@@ -1582,4 +1582,15 @@ describe('getECDHKeychain', function () {
         'Your account is missing the sharing key needed for this action. Please contact support@bitgo.com so it can be set up.'
       );
   });
+
+  it('returns undefined when the user has no ecdhKeychain and allowMissing is true', async function () {
+    const bitgo = new BitGoAPI({ env: 'custom', customRootURI: ROOT });
+    nock(ROOT)
+      .get('/api/v1/user/settings')
+      .reply(200, { settings: { ecdhKeychain: null } });
+
+    const keychain = await bitgo.getECDHKeychain(undefined, { allowMissing: true });
+
+    assert.strictEqual(keychain, undefined);
+  });
 });

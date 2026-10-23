@@ -48,7 +48,7 @@ export interface BitGoBase {
   readonly env: EnvironmentName;
   fetchConstants(): Promise<any>;
   get(url: string): BitGoRequest;
-  getECDHKeychain(ecdhKeychainPub?: string): Promise<any>;
+  getECDHKeychain(ecdhKeychainPub?: string, options?: { allowMissing?: boolean }): Promise<any | undefined>;
   getEcdhKeypairPrivate(password: string, entId?: string): Promise<EcdhDerivedKeypair>;
   getEnv(): EnvironmentName;
   getSharingKey({ email }: GetSharingKeyOptions): Promise<any>;

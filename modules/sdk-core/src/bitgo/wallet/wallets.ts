@@ -1358,9 +1358,14 @@ export class Wallets implements IWallets {
       throw new Error('No valid wallet shares found to accept');
     }
 
+    const hasSharesRequiringDecryption = walletShares.some(
+      (walletShare) => !walletShare.userMultiKeyRotationRequired && walletShare.keychain
+    );
+    const sharingKeychain = await this.bitgo.getECDHKeychain(undefined, {
+      allowMissing: !hasSharesRequiringDecryption,
+    });
     let sharingKeychainPrv: string | undefined;
-    if (walletShares.some((walletShare) => !walletShare.userMultiKeyRotationRequired && walletShare.keychain)) {
-      const sharingKeychain = await this.bitgo.getECDHKeychain();
+    if (sharingKeychain) {
       if (_.isUndefined(sharingKeychain.encryptedXprv)) {
         throw new Error('encryptedXprv was not found on sharing keychain');
       }
