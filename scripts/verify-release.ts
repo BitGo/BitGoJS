@@ -101,6 +101,7 @@ async function verify(preid?: string) {
     if (!(await verifyPackage(dir, preid))) {
       console.error('Failed to verify outstanding packages.');
       if (!RECOVERY_MODE) {
+        process.exitCode = 1;
         return;
       }
       // keep bumping/retrying the rest of the packages instead of aborting on the first stuck one

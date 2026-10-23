@@ -23,6 +23,7 @@ import {
   getLernaModules,
   changeScopeInFile,
   setDependencyVersion,
+  findFirstUnpublishedVersion,
   DistTags,
   LernaModule,
 } from './prepareRelease';
@@ -94,12 +95,12 @@ function writeModulePackageJson(module: LernaModule, json: any): void {
  * @param {LernaModule[]} allModules - All modules for dependency updates
  * @returns {String|undefined} - The new version if set, undefined otherwise
  */
-function incrementVersionsForModuleLocation(
+async function incrementVersionsForModuleLocation(
   preid: string,
   module: LernaModule,
   tags: DistTags | undefined,
   allModules: LernaModule[],
-): string | undefined {
+): Promise<string | undefined> {
   const json = readModulePackageJson(module);
 
   let prevTag: string | undefined = undefined;
@@ -117,10 +118,15 @@ function incrementVersionsForModuleLocation(
   }
 
   if (prevTag) {
-    const next = inc(prevTag, 'prerelease', undefined, preid);
+    const initialCandidate = inc(prevTag, 'prerelease', undefined, preid);
     assert(
-      typeof next === 'string',
+      typeof initialCandidate === 'string',
       `Failed to increment version for ${json.name} prevTag=${prevTag}`,
+    );
+    const next = await findFirstUnpublishedVersion(
+      json.name,
+      initialCandidate,
+      preid,
     );
     console.log(`Setting next version for ${json.name} to ${next}`);
     json.version = next;
@@ -163,18 +169,18 @@ async function incrementVersions(
 
   for (const m of lernaModules) {
     try {
-      incrementVersionsForModuleLocation(
+      await incrementVersionsForModuleLocation(
         preid,
         m,
         distTags.get(m),
         lernaModules,
       );
     } catch (e) {
-      // it's not necessarily a blocking error. Let lerna try and publish anyways
-      console.warn(
+      console.error(
         `Couldn't set next version for ${m.name} at ${m.location}`,
         e,
       );
+      throw e;
     }
   }
 }

@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import path from 'path';
+import { inc } from 'semver';
 import { LernaModule } from './getLernaModules';
 
 export type DistTags = Record<string, string>;
@@ -15,6 +16,47 @@ export async function getDistTags(packageName: string): Promise<DistTags> {
     throw new Error(`Failed ${url}: ${response.status} ${response.statusText} ${await response.text()}`);
   }
   return response.json();
+}
+
+export type PackageVersionExists = (
+  packageName: string,
+  version: string,
+) => Promise<boolean>;
+
+export const packageVersionExists: PackageVersionExists = async (
+  packageName,
+  version,
+) => {
+  const url = `https://registry.npmjs.org/${encodeURIComponent(packageName)}/${encodeURIComponent(version)}`;
+  const response = await fetch(url);
+  if (response.status === 404 || response.status === 410) {
+    return false;
+  }
+  if (!response.ok) {
+    throw new Error(
+      `Failed ${url}: ${response.status} ${response.statusText} ${await response.text()}`,
+    );
+  }
+  return true;
+};
+
+export async function findFirstUnpublishedVersion(
+  packageName: string,
+  initialCandidate: string,
+  preid: string,
+  versionExists: PackageVersionExists = packageVersionExists,
+): Promise<string> {
+  let candidate = initialCandidate;
+  while (await versionExists(packageName, candidate)) {
+    const next = inc(candidate, 'prerelease', undefined, preid);
+    if (!next) {
+      throw new Error(
+        `Failed to increment occupied version ${packageName}@${candidate}`,
+      );
+    }
+    candidate = next;
+  }
+  return candidate;
 }
 
 // Add this function to read from cache
