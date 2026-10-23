@@ -16,20 +16,6 @@ export const botOfcTokens = [
     'hteth'
   ),
   AccountCtors.tofcerc20(
-    'd7c2c0ee-3af7-411d-88a7-9a5e8170f250',
-    'ofchteth:WBTC',
-    'Wrapped BTC',
-    8,
-    'hteth:WBTC' as unknown as UnderlyingAsset,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    'hteth'
-  ),
-  AccountCtors.tofcerc20(
     'abb40366-999b-4bdd-a222-7ba2edbd19d8',
     'ofchteth:wsteth',
     'Wrapped liquid staked Ether 2.0',
