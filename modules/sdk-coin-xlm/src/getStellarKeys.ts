@@ -1,19 +1,20 @@
-import { BitGoBase, ExternalEd25519Signature, InitiateRecoveryOptions } from '@bitgo/sdk-core';
+import { BitGoBase, ExternalEd25519Signer, InitiateRecoveryOptions } from '@bitgo/sdk-core';
 import * as stellar from 'stellar-sdk';
 import { Utils } from './lib';
 
 export async function getStellarKeys(
   bitgo: BitGoBase,
-  params: InitiateRecoveryOptions,
-  externalBackupSignature?: ExternalEd25519Signature
+  params: Omit<InitiateRecoveryOptions, 'backupKey'> & { backupKey?: string },
+  externalBackupSigner?: ExternalEd25519Signer
 ): Promise<stellar.Keypair[]> {
   const keys: stellar.Keypair[] = [];
   let userKey = params.userKey;
   let backupKey = params.backupKey;
 
   // Stellar's Ed25519 public keys start with a G, while private keys start with an S
-  const isKrsRecovery = !externalBackupSignature && backupKey.startsWith('G') && !userKey.startsWith('G');
-  const isUnsignedSweep = !externalBackupSignature && backupKey.startsWith('G') && userKey.startsWith('G');
+  const hasPublicBackupKey = backupKey !== undefined && backupKey.startsWith('G');
+  const isKrsRecovery = !externalBackupSigner && hasPublicBackupKey && !userKey.startsWith('G');
+  const isUnsignedSweep = !externalBackupSigner && hasPublicBackupKey && userKey.startsWith('G');
 
   /**
    * Get User Key
@@ -42,13 +43,16 @@ export async function getStellarKeys(
   /**
    * Get Backup Key
    */
-  if (externalBackupSignature) {
+  if (externalBackupSigner) {
     keys.push(
       stellar.Keypair.fromPublicKey(
-        stellar.StrKey.encodeEd25519PublicKey(Buffer.from(externalBackupSignature.publicKey, 'hex'))
+        stellar.StrKey.encodeEd25519PublicKey(Buffer.from(externalBackupSigner.publicKey, 'hex'))
       )
     );
   } else {
+    if (!backupKey) {
+      throw new Error('backupKey is required for non-bitgo recovery when no external backup signer is provided');
+    }
     try {
       if (!backupKey.startsWith('S') && !isKrsRecovery && !isUnsignedSweep) {
         backupKey = await bitgo.decrypt({

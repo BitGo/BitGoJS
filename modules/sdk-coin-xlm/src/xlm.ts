@@ -23,8 +23,9 @@ import {
   checkKrsProvider,
   common,
   ErrorNoInputToRecover,
-  assertValidExternalEd25519Signature,
-  ExternalEd25519Signature,
+  assertValidExternalEd25519Signer,
+  ExternalEd25519Signer,
+  signWithExternalEd25519Signer,
   ExtraPrebuildParamsOptions,
   InvalidAddressError,
   InvalidMemoIdError,
@@ -66,7 +67,7 @@ interface Memo {
 
 interface InitiateRecoveryOptions {
   userKey: string;
-  backupKey: string;
+  backupKey?: string;
   recoveryDestination: string;
   krsProvider?: string;
   walletPassphrase?: string;
@@ -74,8 +75,8 @@ interface InitiateRecoveryOptions {
 
 interface RecoveryOptions extends InitiateRecoveryOptions {
   rootAddress?: string;
-  /** Optional pre-made signature for the backup child, whose signature must be over the transaction hash (`tx.hash()`). */
-  externalBackupSignature?: ExternalEd25519Signature;
+  /** Signs `tx.hash()` once the network-dependent transaction fields are fixed. */
+  externalBackupSigner?: ExternalEd25519Signer;
 }
 
 interface RecoveryTransaction {
@@ -740,19 +741,25 @@ export class Xlm extends BaseCoin {
       params.userKey = Utils.encodePublicKey(Buffer.from(params.userKey, 'hex'));
     }
 
-    if (Utils.isValidRootPrivateKey(params.backupKey)) {
-      params.backupKey = Utils.encodePrivateKey(Buffer.from(params.backupKey.slice(0, 64), 'hex'));
-    } else if (Utils.isValidRootPublicKey(params.backupKey)) {
-      params.backupKey = Utils.encodePublicKey(Buffer.from(params.backupKey, 'hex'));
+    if (params.backupKey) {
+      if (Utils.isValidRootPrivateKey(params.backupKey)) {
+        params.backupKey = Utils.encodePrivateKey(Buffer.from(params.backupKey.slice(0, 64), 'hex'));
+      } else if (Utils.isValidRootPublicKey(params.backupKey)) {
+        params.backupKey = Utils.encodePublicKey(Buffer.from(params.backupKey, 'hex'));
+      }
     }
 
-    const hasExternalBackupSig = Boolean(params.externalBackupSignature);
-    if (params.externalBackupSignature) {
-      assertValidExternalEd25519Signature(params.externalBackupSignature);
+    const externalBackupSigner = params.externalBackupSigner;
+    if (externalBackupSigner) {
+      assertValidExternalEd25519Signer(externalBackupSigner);
+    }
+    if (!externalBackupSigner && !params.backupKey) {
+      throw new Error('backupKey is required for non-bitgo recovery when no external backup signer is provided');
     }
     // Stellar's Ed25519 public keys start with a G, while private keys start with an S
-    const isKrsRecovery = !hasExternalBackupSig && params.backupKey.startsWith('G') && !params.userKey.startsWith('G');
-    const isUnsignedSweep = !hasExternalBackupSig && params.backupKey.startsWith('G') && params.userKey.startsWith('G');
+    const hasPublicBackupKey = params.backupKey !== undefined && params.backupKey.startsWith('G');
+    const isKrsRecovery = !externalBackupSigner && hasPublicBackupKey && !params.userKey.startsWith('G');
+    const isUnsignedSweep = !externalBackupSigner && hasPublicBackupKey && params.userKey.startsWith('G');
 
     if (isKrsRecovery) {
       checkKrsProvider(this, params.krsProvider);
@@ -762,7 +769,7 @@ export class Xlm extends BaseCoin {
       throw new InvalidAddressError('Invalid destination address!');
     }
 
-    const [userKey, backupKey] = await getStellarKeys(this.bitgo, params, params.externalBackupSignature);
+    const [userKey, backupKey] = await getStellarKeys(this.bitgo, params, externalBackupSigner);
 
     if (!params.rootAddress || !stellar.StrKey.isValidEd25519PublicKey(params.rootAddress)) {
       throw new Error(`Invalid wallet address: ${params.rootAddress}`);
@@ -850,12 +857,9 @@ export class Xlm extends BaseCoin {
     }
 
     if (!isKrsRecovery && !isUnsignedSweep) {
-      const externalBackupSignature = params.externalBackupSignature;
-      if (externalBackupSignature) {
-        tx.addSignature(
-          backupKey.publicKey(),
-          Buffer.from(externalBackupSignature.signature, 'hex').toString('base64')
-        );
+      if (externalBackupSigner) {
+        const signature = await signWithExternalEd25519Signer(externalBackupSigner, tx.hash());
+        tx.addSignature(backupKey.publicKey(), Buffer.from(signature, 'hex').toString('base64'));
       } else {
         tx.sign(backupKey);
       }
