@@ -9,6 +9,7 @@ import { Keypair, PublicKey, SystemProgram, TransactionInstruction } from '@sola
 import * as base58 from 'bs58';
 import * as nacl from 'tweetnacl';
 
+import { SolToken } from '../../src/solToken';
 import { compileTransactionMessage } from '../../src/lib/serialization/compileTransactionMessage';
 import { serializeWireTransaction } from '../../src/lib/serialization/wire-transaction';
 
@@ -966,6 +967,33 @@ describe('SOL:', function () {
         wallet: feePayerWallet,
       } as any);
       validTransaction.should.equal(true);
+    });
+
+    it('should default a missing recipient tokenName to the token on a token wallet', async function () {
+      const { name, coinConstructor } = SolToken.createTokenConstructors().find((t) => t.name === 'tsol:usdc')!;
+      bitgo.register(name, coinConstructor);
+      const tokenCoin = bitgo.coin('tsol:usdc');
+      const address = 'AF5H6vBkFnJuVqChRPgPQ4JRcQ5Gk25HBFhQQkyojmvg'; // Native SOL address
+      const txParams = newTxParamsTokenTransfer();
+      txParams.recipients = [{ address, amount: '1' }];
+      const txPrebuild = newTxPrebuildTokenTransfer();
+      const wallet = new Wallet(bitgo, tokenCoin, {
+        id: '5b34252f1bf349930e34020a00000000',
+        coin: 'tsol',
+        keys: [
+          '5b3424f91bf349930e34017500000000',
+          '5b3424f91bf349930e34017600000000',
+          '5b3424f91bf349930e34017700000000',
+        ],
+        coinSpecific: { rootAddress: '4DujymUFbQ8GBKtAwAZrQ6QqpvtBEivL48h4ta2oJGd2' },
+        multisigType: 'tss',
+      });
+      (await tokenCoin.verifyTransaction({ txParams, txPrebuild, wallet } as any)).should.equal(true);
+
+      txParams.recipients = [{ address, amount: '2' }];
+      await tokenCoin
+        .verifyTransaction({ txParams, txPrebuild, wallet } as any)
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
     });
 
     it('should fail to verify token transaction with different recipient tokenName', async function () {
