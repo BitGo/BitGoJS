@@ -117,13 +117,15 @@ $ yarn build-docker-express
 $ docker run -it bitgo-express:latest
 ```
 
+The BitGo Express Docker image tracks the older of the two most recent Node.js Long-Term Support (LTS) releases. It currently builds and runs on Node.js 24.
+
 ## From source
 
 For users who are unable to run BitGo Express as a Docker container, we recommend building and running from the source code.
 
 ### Prerequisites
 
-Ensure you're running at least Node version 16. We recommend using `nvm`, the [Node Version Manager](https://github.com/creationix/nvm/blob/master/README.markdown#installation), for setting your Node version. BitGo Express has become a first class citizen of the monorepo so we recommend using `yarn` for local setup.
+Use Node.js 22 or later. The required continuous integration checks cover Node.js 22, 24, and 26. We recommend using `nvm`, the [Node Version Manager](https://github.com/creationix/nvm/blob/master/README.markdown#installation), for setting your Node.js version. BitGo Express is part of the monorepo, so use `yarn` for local setup.
 
 ### Cloning the repository and installing dependencies
 
