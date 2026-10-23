@@ -8138,10 +8138,10 @@ bn.js@4.11.6, bn.js@5.1.1, bn.js@5.2.0, bn.js@5.2.1, bn.js@5.2.3, bn.js@^4.0.0, 
   resolved "https://registry.npmjs.org/bn.js/-/bn.js-5.2.3.tgz#16a9e409616b23fef3ccbedb8d42f13bff80295e"
   integrity sha512-EAcmnPkxpntVL+DS7bO1zhcZNvCkxqtkd0ZY53h06GNQ3DEkkGZ/gKgmDv6DdZQGj9BgfSPKtJJ7Dp1GPP8f7w==
 
-body-parser@1.20.3, body-parser@1.20.6, body-parser@^1.19.0, body-parser@^1.20.3:
-  version "1.20.6"
-  resolved "https://registry.npmjs.org/body-parser/-/body-parser-1.20.6.tgz#60c789c78e0992d906da0a29d71ae01d15c1ed76"
-  integrity sha512-p5tAzS57i5MV9fZFDj9LeIiTZEufbSe2eDozP+ElheSUq1m74CRq1jI4mYNDdVs9vQztXFLuk/Gd6BWTdwRJ5g==
+body-parser@1.20.3, body-parser@1.20.9, body-parser@^1.19.0, body-parser@^1.20.3:
+  version "1.20.9"
+  resolved "https://registry.npmjs.org/body-parser/-/body-parser-1.20.9.tgz#b64358a113b4d200d7484752cd154b66933e2009"
+  integrity sha512-FISIQxV5u91Y9gvuFq3q/tA/qTqLJn3AhRcEvyozyhJTh5OBFFtv827AdHU7Rbyct4r+Ba1/99oFa1Y3yuFsdw==
   dependencies:
     bytes "~3.1.2"
     content-type "~1.0.5"
@@ -8151,7 +8151,7 @@ body-parser@1.20.3, body-parser@1.20.6, body-parser@^1.19.0, body-parser@^1.20.3
     http-errors "~2.0.1"
     iconv-lite "~0.4.24"
     on-finished "~2.4.1"
-    qs "~6.15.1"
+    qs "~6.16.0"
     raw-body "~2.5.3"
     type-is "~1.6.18"
     unpipe "~1.0.0"
