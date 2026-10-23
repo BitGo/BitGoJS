@@ -87,6 +87,7 @@ export async function getDistTagsForModuleNames(moduleNames: string[]): Promise<
             case '@bitgo-beta/express':
             case '@bitgo-beta/web-demo':
             case '@bitgo-beta/sdk-test':
+            case '@bitgo-beta/beta-tools':
               console.warn(`Skipping ${moduleName} as it's not published to npm`);
               return [];
           }
