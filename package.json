@@ -61,7 +61,7 @@
   },
   "resolutions": {
     "fflate": "0.8.3",
-    "toml": "4.3.0",
+    "toml": "5.0.1",
     "smol-toml": "1.7.1",
     "**/cliui/strip-ansi": "6.0.1",
     "**/cliui/string-width": "4.2.3",
