@@ -98,6 +98,34 @@ export type SecpSafeRecoverKeyParams = {
 };
 
 /**
+ * Slot-3 (ecdsaMpc) safe recovery key params. A discriminated union on `mode`, so the invalid
+ * combos are not representable: signed mode always carries the re-encrypted child reduced shares
+ * and the ephemeral passphrase; unsigned mode carries only the child common keychain.
+ *
+ * `broadcast: false` is always set so Safe recovery never auto-broadcasts: WRW's coin-agnostic
+ * engine spreads these params into `coin.recover()`, and ICP is the one coin whose `recover()`
+ * would otherwise submit the sweep to the network.
+ */
+export type EcdsaMpcSafeRecoverKeyParams =
+  | {
+      slot: 'ecdsaMpc';
+      mode: 'signed';
+      userKey: string;
+      backupKey: string;
+      bitgoKey: string;
+      walletPassphrase: string;
+      isTss: true;
+      broadcast: false;
+    }
+  | {
+      slot: 'ecdsaMpc';
+      mode: 'unsigned';
+      bitgoKey: string;
+      isTss: true;
+      broadcast: false;
+    };
+
+/**
  * Slot-2 (ed25519Multisig) safe recovery key params. A discriminated union on `mode`, so the invalid
  * combos are not representable: signed mode always carries the lazy signer and never a `backupKey`,
  * unsigned mode always carries the encoded `backupKey` and never a signer or passphrase.
@@ -133,7 +161,10 @@ export type Ed25519SafeRecoverKeyParams =
       rootAddress?: string;
     };
 
-export type SafeRecoverKeyParams = SecpSafeRecoverKeyParams | Ed25519SafeRecoverKeyParams;
+export type SafeRecoverKeyParams =
+  | SecpSafeRecoverKeyParams
+  | Ed25519SafeRecoverKeyParams
+  | EcdsaMpcSafeRecoverKeyParams;
 
 export type DecryptedSafeRoots = {
   secp256k1Multisig: OnchainSafeRoot;
@@ -340,10 +371,12 @@ export type SafeRecoverKeyParamsRequest = {
 
 /**
  * Builds the key fields `coin.recover()` expects from derived Safe child keys.
- * Supports `secp256k1Multisig` (slot 1) and `ed25519Multisig` (slot 2); the MPC slots fail closed.
- * Signed mode re-encrypts the child secrets under a fresh ephemeral passphrase (v1/SJCL); unsigned
- * mode returns pubs. Where supported, `rootAddress` is derived from the child keys, not independently
- * verified; otherwise it is omitted so the caller can supply it.
+ * Supports `secp256k1Multisig` (slot 1), `ed25519Multisig` (slot 2), and `ecdsaMpc` (slot 3);
+ * `eddsaMpc` fails closed. Signed mode re-encrypts the child secrets under a fresh ephemeral
+ * passphrase (v1/SJCL); unsigned mode returns pubs / the child common keychain. Where supported,
+ * `rootAddress` is derived from the child keys, not independently verified; otherwise it is
+ * omitted so the caller can supply it. `ecdsaMpc` params always carry `broadcast: false` so Safe
+ * recovery never auto-broadcasts.
  */
 export async function buildSafeRecoverKeyParams(
   params: Extract<SafeRecoverKeyParamsRequest, { slot: 'secp256k1Multisig' }>
@@ -351,12 +384,46 @@ export async function buildSafeRecoverKeyParams(
 export async function buildSafeRecoverKeyParams(
   params: Extract<SafeRecoverKeyParamsRequest, { slot: 'ed25519Multisig' }>
 ): Promise<Ed25519SafeRecoverKeyParams>;
+export async function buildSafeRecoverKeyParams(
+  params: Extract<SafeRecoverKeyParamsRequest, { slot: 'ecdsaMpc' }>
+): Promise<EcdsaMpcSafeRecoverKeyParams>;
 export async function buildSafeRecoverKeyParams(params: SafeRecoverKeyParamsRequest): Promise<SafeRecoverKeyParams>;
 export async function buildSafeRecoverKeyParams(params: SafeRecoverKeyParamsRequest): Promise<SafeRecoverKeyParams> {
   const { bitgo, mode } = params;
 
   if (params.slot === 'ed25519Multisig') {
     return buildEd25519MultisigRecoverKeyParams(bitgo, params.coin, params.keys, mode);
+  }
+
+  if (params.slot === 'ecdsaMpc') {
+    const keys = params.keys;
+
+    if (mode === 'unsigned') {
+      return {
+        slot: 'ecdsaMpc',
+        mode: 'unsigned',
+        bitgoKey: keys.commonKeychain,
+        isTss: true,
+        broadcast: false,
+      };
+    }
+
+    const walletPassphrase = randomBytes(32).toString('hex');
+    const [userKey, backupKey] = await Promise.all([
+      bitgo.encrypt({ input: keys.user, password: walletPassphrase, encryptionVersion: 1 }),
+      bitgo.encrypt({ input: keys.backup, password: walletPassphrase, encryptionVersion: 1 }),
+    ]);
+
+    return {
+      slot: 'ecdsaMpc',
+      mode: 'signed',
+      userKey,
+      backupKey,
+      bitgoKey: keys.commonKeychain,
+      walletPassphrase,
+      isTss: true,
+      broadcast: false,
+    };
   }
 
   if (params.slot === 'secp256k1Multisig') {

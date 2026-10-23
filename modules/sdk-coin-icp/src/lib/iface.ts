@@ -186,18 +186,35 @@ export interface RawTransaction {
 }
 
 export interface RecoveryOptions {
-  userKey: string; // Box A
-  backupKey: string; // Box B
+  /** Box A: encrypted user key share. Required for signed recovery. */
+  userKey?: string;
+  /** Box B: encrypted backup key share. Required for signed recovery. */
+  backupKey?: string;
+  /** Child common keychain. Required for unsigned sweep; when provided in signed mode, must match the keys. */
   bitgoKey?: string;
+  /** Expected sender address; when provided, must match the address derived from the keys. */
   rootAddress?: string;
   recoveryDestination: string;
-  walletPassphrase: string;
+  /** Passphrase to decrypt `userKey`/`backupKey`. Required for signed recovery. */
+  walletPassphrase?: string;
   memo?: number | BigInt;
+  /**
+   * Whether to submit the signed transaction to the network.
+   * When false, the signed transaction payload is returned without broadcasting (offline / Safe mode).
+   * Defaults to true.
+   */
+  broadcast?: boolean;
 }
 
 export interface RecoveryTransaction {
   id: string;
   tx: string;
+  /**
+   * Present when the transaction was produced offline (`broadcast: false`): the same signed
+   * payload as `tx`, named for the offline / Safe recovery hand-off.
+   */
+  txHex?: string;
+  coin?: string;
 }
 
 export interface UnsignedSweepRecoveryTransaction {
