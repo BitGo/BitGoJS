@@ -11,7 +11,7 @@
  * Usage: npx tsx scripts/prepare-release.ts [preid] --scope [scope] --root-dir [dir]
  */
 import assert from 'node:assert';
-import { readFileSync, writeFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import path from 'path';
 import { inc, lt } from 'semver';
 import yargs from 'yargs';
@@ -23,6 +23,8 @@ import {
   getLernaModules,
   changeScopeInFile,
   setDependencyVersion,
+  findFirstUnpublishedVersion,
+  getDistTagsCache,
   DistTags,
   LernaModule,
 } from './prepareRelease';
@@ -94,12 +96,13 @@ function writeModulePackageJson(module: LernaModule, json: any): void {
  * @param {LernaModule[]} allModules - All modules for dependency updates
  * @returns {String|undefined} - The new version if set, undefined otherwise
  */
-function incrementVersionsForModuleLocation(
+async function incrementVersionsForModuleLocation(
   preid: string,
   module: LernaModule,
   tags: DistTags | undefined,
   allModules: LernaModule[],
-): string | undefined {
+  probeRegistry: boolean,
+): Promise<string | undefined> {
   const json = readModulePackageJson(module);
 
   let prevTag: string | undefined = undefined;
@@ -111,17 +114,22 @@ function incrementVersionsForModuleLocation(
       prevTag = lt(version[0], latest[0])
         ? `${tags.latest}-${preid}`
         : tags[preid];
-    } else {
+    } else if (tags.latest) {
       prevTag = `${tags.latest}-${preid}`;
     }
   }
 
-  if (prevTag) {
-    const next = inc(prevTag, 'prerelease', undefined, preid);
+  if (prevTag || (tags && Object.keys(tags).length === 0)) {
+    const initialCandidate = prevTag
+      ? inc(prevTag, 'prerelease', undefined, preid)
+      : json.version;
     assert(
-      typeof next === 'string',
+      typeof initialCandidate === 'string',
       `Failed to increment version for ${json.name} prevTag=${prevTag}`,
     );
+    const next = probeRegistry
+      ? await findFirstUnpublishedVersion(json.name, initialCandidate, preid)
+      : initialCandidate;
     console.log(`Setting next version for ${json.name} to ${next}`);
     json.version = next;
     writeModulePackageJson(module, json);
@@ -159,22 +167,25 @@ async function incrementVersions(
   preid: string,
   lernaModules: LernaModule[],
 ): Promise<void> {
+  const cachePath = getDistTagsCache();
+  const probeRegistry = !(cachePath && existsSync(cachePath));
   const distTags = await getDistTagsForModules(lernaModules);
 
   for (const m of lernaModules) {
     try {
-      incrementVersionsForModuleLocation(
+      await incrementVersionsForModuleLocation(
         preid,
         m,
         distTags.get(m),
         lernaModules,
+        probeRegistry,
       );
     } catch (e) {
-      // it's not necessarily a blocking error. Let lerna try and publish anyways
-      console.warn(
+      console.error(
         `Couldn't set next version for ${m.name} at ${m.location}`,
         e,
       );
+      throw e;
     }
   }
 }

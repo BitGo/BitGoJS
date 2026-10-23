@@ -38,7 +38,8 @@ For each module, the script:
    - If a beta tag exists and its base version >= latest, use the beta tag as base
    - If the beta tag's base version < latest, start a new prerelease from latest
    - If no beta tag exists, create one from latest
-3. Computes the next version via `semver.inc(prevTag, 'prerelease', preid)`
+3. Computes a candidate via `semver.inc(prevTag, 'prerelease', preid)`
+4. Checks the exact package/version endpoint and keeps incrementing until the candidate is not already published
 
 Example: `8.2.1-beta.1009` → `8.2.1-beta.1010`
 
