@@ -788,9 +788,8 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
-        // Verify error response - runtime error returns 500
-        assert.strictEqual(result.status, 500);
-        assert.ok(result.body);
+        assert.strictEqual(result.status, 400);
+        assert.strictEqual(result.body.error, 'Missing required field: walletId');
       });
 
       it('should fail when neither txRequest nor tssParams is provided', async function () {
@@ -806,9 +805,8 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
-        // Verify error response
-        assert.strictEqual(result.status, 500);
-        assert.ok(result.body);
+        assert.strictEqual(result.status, 400);
+        assert.strictEqual(result.body.error, 'Missing required field: walletId');
       });
 
       it('should fail when wallet passphrase environment variable is missing', async function () {

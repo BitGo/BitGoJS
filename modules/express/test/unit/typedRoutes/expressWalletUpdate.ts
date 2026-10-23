@@ -270,28 +270,63 @@ describe('Express Wallet Update Typed Routes Tests', function () {
         }),
       });
 
-      const walletStub = {
-        url: sinon.stub().returns(`/api/v2/${coin}/wallet/${walletId}`),
-        coin: sinon.stub().returns(coin),
-        subType: sinon.stub().returns('lightningSelfCustody'),
-        bitgo: {
-          decrypt: sinon.stub().returns('decryptedPrivateKey'),
-          put: putStub,
-        },
-        keys: ['userAuthKeyId', 'backupKeyId', 'nodeAuthKeyId'],
-      } as any;
-
-      const getWalletStub = sinon.stub().resolves(walletStub);
-      const walletsStub = { get: getWalletStub } as any;
-
-      const keychainsGetStub = sinon.stub().resolves({
-        id: 'keyId',
+      const userAuthKey = {
+        id: 'userAuthKeyId',
+        pub: 'xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8',
         encryptedPrv: 'encryptedPrivateKey',
-      });
+        source: 'user' as const,
+        coinSpecific: {
+          [coin]: {
+            purpose: 'userAuth',
+          },
+        },
+      };
+      const nodeAuthKey = {
+        id: 'nodeAuthKeyId',
+        pub: 'xpub661MyMwAqRbcGczjuMoRm6dXaLDEhW1u34gKenbeYqAix21mdUKJyuyu5F1rzYGVxyL6tmgBUAEPrEz92mBXjByMRiJdba9wpnN37RLLAXa',
+        encryptedPrv: 'encryptedNodeAuthKey',
+        source: 'user' as const,
+        coinSpecific: {
+          [coin]: {
+            purpose: 'nodeAuth',
+          },
+        },
+      };
+
+      const keychainsGetStub = sinon.stub();
+      keychainsGetStub.withArgs({ id: userAuthKey.id }).resolves(userAuthKey);
+      keychainsGetStub.withArgs({ id: nodeAuthKey.id }).resolves(nodeAuthKey);
 
       const keychainsStub = {
         get: keychainsGetStub,
       } as any;
+
+      const baseCoinStub = {
+        getFamily: sinon.stub().returns('lnbtc'),
+        getChain: sinon.stub().returns(coin),
+        keychains: sinon.stub().returns(keychainsStub),
+      } as any;
+
+      const walletStub = {
+        url: sinon.stub().returns(`/api/v2/${coin}/wallet/${walletId}`),
+        coin: sinon.stub().returns(coin),
+        subType: sinon.stub().returns('lightningSelfCustody'),
+        baseCoin: baseCoinStub,
+        coinSpecific: sinon.stub().returns({
+          keys: [userAuthKey.id, nodeAuthKey.id],
+        }),
+        bitgo: {
+          decrypt: sinon
+            .stub()
+            .resolves(
+              'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi'
+            ),
+          put: putStub,
+        },
+      } as any;
+
+      const getWalletStub = sinon.stub().resolves(walletStub);
+      const walletsStub = { get: getWalletStub } as any;
 
       const coinStub = {
         wallets: sinon.stub().returns(walletsStub),
@@ -308,7 +343,8 @@ describe('Express Wallet Update Typed Routes Tests', function () {
       });
 
       res.status.should.equal(500);
-      res.body.should.have.property('error');
+      res.body.error.should.equal('API error');
+      putStub.should.have.been.calledOnce();
     });
 
     it('should return 400 when signerHost is missing', async function () {

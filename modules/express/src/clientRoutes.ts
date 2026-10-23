@@ -453,9 +453,11 @@ async function decryptPrivKey(bg: BitGo, encryptedPrivKey: string, walletPw: str
 export async function handleV2GenerateShareTSS(
   req: ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>
 ): Promise<any> {
-  const walletId = req.body.txRequest ? req.body.txRequest.walletId : req.body.tssParams.txRequest.walletId;
-  if (!walletId) {
-    throw new Error('Missing required field: walletId');
+  const txRequest = req.body.txRequest ?? req.body.tssParams?.txRequest;
+  const walletId =
+    txRequest && typeof txRequest === 'object' && !Array.isArray(txRequest) ? txRequest.walletId : undefined;
+  if (typeof walletId !== 'string' || !walletId) {
+    throw new ApiResponseError('Missing required field: walletId', 400);
   }
 
   const walletPw = getWalletPwFromEnv(walletId);

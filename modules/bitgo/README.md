@@ -15,7 +15,7 @@ If you have questions or comments about this API, email support@bitgo.com.
 
 # Installation
 
-Ensure you're running Node version 20 or higher (preferably the latest LTS release) and NPM version 10.
+Ensure you're running Node.js version 22 or later, including Node.js 26, and NPM version 10.
 For setting your Node version, we recommend using `nvm` - the [Node Version Manager](https://github.com/creationix/nvm/blob/master/README.markdown#installation).
 
 `npm install --save bitgo`
