@@ -160,7 +160,7 @@
     "karma-typescript": "5.5.4",
     "keccak": "3.0.3",
     "libsodium-wrappers-sumo": "^0.7.9",
-    "puppeteer": "^23.10.0",
+    "puppeteer": "^25.16.0",
     "q": "^1.1.2"
   },
   "optionalDependencies": {

@@ -100,7 +100,6 @@
     "ua-parser-js": ">0.7.30 <0.8.0",
     "secp256k1": "5.0.1",
     "socks": "2.8.9",
-    "web3-utils": "4.2.1",
     "@polkadot/api": "16.5.6",
     "@polkadot/api-augment": "16.5.6",
     "@polkadot/types": "16.5.6",
@@ -167,7 +166,8 @@
     "proxy-addr": "2.0.8",
     "shell-quote": "1.11.0",
     "source-map-js": "1.2.2",
-    "pbkdf2": "3.1.7"
+    "pbkdf2": "3.1.7",
+    "zod": "4.6.7"
   },
   "overrides": {
     "qs": "6.16.0",
@@ -198,7 +198,6 @@
     "ua-parser-js": ">0.7.30 <0.8.0",
     "secp256k1": "5.0.1",
     "socks": "2.8.9",
-    "web3-utils": "4.2.1",
     "@polkadot/api": "16.5.6",
     "@polkadot/api-augment": "16.5.6",
     "@polkadot/types": "16.5.6",
@@ -244,6 +243,7 @@
     "shell-quote": "1.11.0",
     "source-map-js": "1.2.2",
     "pbkdf2": "3.1.7",
+    "zod": "4.6.7",
     "cliui": {
       "strip-ansi": "6.0.1",
       "string-width": "4.2.3"
