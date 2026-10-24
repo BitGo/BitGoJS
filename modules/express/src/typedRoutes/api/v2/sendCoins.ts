@@ -17,15 +17,18 @@ export const SendCoinsRequestParams = {
  * Request body for sending to a single recipient (v2)
  *
  * This endpoint is a convenience wrapper around sendMany that accepts a single
- * address and amount instead of a recipients array. It supports the full set of
- * parameters available in sendMany.
+ * address or Go Account wallet ID and amount instead of a recipients array. It
+ * supports the full set of parameters available in sendMany.
  *
  * Internally, wallet.send() converts the address and amount into a recipients array
  * and calls wallet.sendMany(), so the response structure is identical.
  */
 export const SendCoinsRequestBody = {
-  /** Destination address (length ≤ 500) */
-  address: t.string,
+  /** Destination address (length ≤ 500), unless walletId is provided */
+  address: optional(t.string),
+
+  /** Go Account wallet ID destination, instead of address */
+  walletId: optional(t.string),
 
   /** Amount in base units (e.g. satoshi, wei, drops, stroops). For doge, only string is allowed. */
   amount: t.union([t.number, t.string]),

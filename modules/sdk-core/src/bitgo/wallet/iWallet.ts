@@ -1005,6 +1005,7 @@ export interface SubmitTransactionOptions {
 
 export interface SendOptions {
   address?: string;
+  walletId?: string;
   amount?: number | string;
   data?: string;
   feeLimit?: string;

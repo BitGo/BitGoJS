@@ -3020,6 +3020,7 @@ export class Wallet implements IWallet {
    * Send coins to a recipient
    * @param params
    * @param params.address - the destination address
+   * @param params.walletId - the destination Go Account wallet ID
    * @param params.amount - the amount in satoshis/wei/base value to be sent
    * @param params.message - optional message to attach to transaction
    * @param params.data - [Ethereum Specific] optional data to pass to transaction
@@ -3031,14 +3032,14 @@ export class Wallet implements IWallet {
    * @returns {*}
    */
   async send(params: SendOptions = {}): Promise<any> {
-    common.validateParams(params, ['address'], ['message', 'data']);
+    common.validateParams(params, [], ['message', 'data']);
 
     if (_.isUndefined(params.amount)) {
       throw new Error('missing required parameter amount');
     }
 
-    if (_.isUndefined(params.address)) {
-      throw new Error('missing required parameter address');
+    if (_.isUndefined(params.address) && _.isUndefined(params.walletId)) {
+      throw new Error('missing required parameter address or walletId');
     }
 
     const coin = this.baseCoin;
@@ -3055,12 +3056,12 @@ export class Wallet implements IWallet {
       }
     });
 
-    const recipients: SendManyOptions['recipients'] = [
+    const recipients = [
       {
-        address: params.address,
+        ...(params.address !== undefined ? { address: params.address } : { walletId: params.walletId }),
         amount: params.amount,
       },
-    ];
+    ] as NonNullable<SendManyOptions['recipients']>;
     if (params.tokenName) {
       recipients[0].tokenName = params.tokenName;
     }
