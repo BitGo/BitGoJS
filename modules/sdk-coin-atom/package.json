@@ -52,7 +52,6 @@
   "devDependencies": {
     "@bitgo/sdk-api": "^3.1.4",
     "@bitgo/sdk-test": "^9.1.89",
-    "@types/lodash": "^4.14.183",
     "axios": "1.18.0"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
