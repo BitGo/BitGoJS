@@ -330,6 +330,9 @@ const mainnetBase: EnvironmentTemplate = {
     hemieth: {
       baseUrl: 'https://explorer.hemi.xyz/api',
     },
+    midlbtc: {
+      baseUrl: 'https://blockscout.mainnet.midl.xyz/api',
+    },
     katanaeth: {
       baseUrl: 'https://katanascan.com/api',
     },
@@ -570,6 +573,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     hemieth: {
       baseUrl: 'https://testnet.explorer.hemi.xyz/api',
+    },
+    midlbtc: {
+      baseUrl: 'https://blockscout.staging.midl.xyz/api',
     },
     tkatanaeth: {
       baseUrl: 'https://explorer-bokuto.katanarpc.com/api',
