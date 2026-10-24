@@ -35,8 +35,49 @@ export interface ExplainTonTransactionWasmOptions {
   toAddressBounceable?: boolean;
 }
 
-function extractOutputs(
-  parsed: WasmParsedTransaction,
+type EffectiveAmountKind = 'Exact' | 'CarryInboundValue' | 'AllRemainingBalance';
+
+interface ParsedTonSendAction {
+  mode: number;
+  nominalAmount?: bigint;
+  effectiveAmountKind?: EffectiveAmountKind;
+  carriesInboundValue?: boolean;
+  carriesAllBalance?: boolean;
+  destroyAccountIfZero?: boolean;
+  /** @bitgo/wasm-ton@1.1.1 calls mode-3 nominal grams `amount`. */
+  amount?: bigint;
+  destination: string;
+  destinationBounceable: string;
+  jettonTransfer?: { destination: string; amount: bigint };
+  withdrawAmount?: bigint;
+}
+
+type ParsedTonTransaction = Omit<WasmParsedTransaction, 'sendActions'> & {
+  sendActions: ParsedTonSendAction[];
+};
+
+function exactNominalAmount(action: ParsedTonSendAction): bigint {
+  if (
+    action.mode !== 3 ||
+    (action.effectiveAmountKind !== undefined && action.effectiveAmountKind !== 'Exact') ||
+    action.carriesInboundValue === true ||
+    action.carriesAllBalance === true ||
+    action.destroyAccountIfZero === true
+  ) {
+    throw new Error('TON send actions must use exact, non-destructive mode 3');
+  }
+
+  // Only the strict mode-3 allowlist may use the legacy field while deployed
+  // @bitgo/wasm-ton@1.1.1 is being replaced by the nominalAmount API.
+  const amount = action.nominalAmount ?? action.amount;
+  if (amount === undefined) {
+    throw new Error('TON send action is missing its nominal amount');
+  }
+  return amount;
+}
+
+export function extractOutputs(
+  parsed: Pick<ParsedTonTransaction, 'sendActions'>,
   toAddressBounceable: boolean
 ): {
   outputs: { address: string; amount: string }[];
@@ -47,6 +88,8 @@ function extractOutputs(
   let withdrawAmount: string | undefined;
 
   for (const action of parsed.sendActions) {
+    const nominalAmount = exactNominalAmount(action);
+
     if (action.jettonTransfer) {
       outputs.push({
         address: action.jettonTransfer.destination,
@@ -57,7 +100,7 @@ function extractOutputs(
       // destination respects the original bounce flag (UQ... when bounce=false)
       outputs.push({
         address: toAddressBounceable ? action.destinationBounceable : action.destination,
-        amount: String(action.amount),
+        amount: String(nominalAmount),
       });
     }
 
@@ -83,7 +126,7 @@ export async function explainTonTransaction(params: ExplainTonTransactionWasmOpt
   const { Transaction: WasmTonTransaction, parseTransaction } = await loadWasmTon();
   const toAddressBounceable = params.toAddressBounceable !== false;
   const tx = WasmTonTransaction.fromBytes(Buffer.from(params.txBase64, 'base64'));
-  const parsed: WasmParsedTransaction = parseTransaction(tx);
+  const parsed = parseTransaction(tx) as ParsedTonTransaction;
 
   const { outputs, outputAmount, withdrawAmount } = extractOutputs(parsed, toAddressBounceable);
 
