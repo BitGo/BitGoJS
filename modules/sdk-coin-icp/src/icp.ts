@@ -16,6 +16,7 @@ import {
   multisigTypes,
   ParsedTransaction,
   ParseTransactionOptions,
+  RecoveryKeyMismatchError,
   RecoveryProviderError,
   SignedTransaction,
   SigningError,
@@ -24,7 +25,7 @@ import {
   verifyMPCWalletAddress,
   UnexpectedAddressError,
 } from '@bitgo/sdk-core';
-import { coins, NetworkType, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { NetworkType, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { Principal } from '@dfinity/principal';
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
@@ -345,7 +346,7 @@ export class Icp extends BaseCoin {
   }
 
   private getBuilderFactory(): TransactionBuilderFactory {
-    return new TransactionBuilderFactory(coins.get(this.getBaseChain()));
+    return new TransactionBuilderFactory(this._staticsCoin);
   }
 
   /**
@@ -390,6 +391,7 @@ export class Icp extends BaseCoin {
   /**
    * Builds a funds recovery transaction without BitGo
    * @param params
+   * @returns the broadcast result when broadcasting, or the signed transaction payload when `broadcast` is false
    */
   async recover(params: RecoveryOptions): Promise<RecoveryTransaction | UnsignedSweepRecoveryTransaction> {
     try {
@@ -397,18 +399,23 @@ export class Icp extends BaseCoin {
         throw new Error('invalid recoveryDestination');
       }
 
-      const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
+      const userKey = params.userKey?.replace(/\s/g, '');
+      const backupKey = params.backupKey?.replace(/\s/g, '');
+      const bitgoKey = params.bitgoKey?.replace(/\s/g, '');
+      const isUnsignedSweep = !userKey && !backupKey && !params.walletPassphrase;
 
       let publicKey: string | undefined;
-      let userKeyShare, backupKeyShare, commonKeyChain;
+      let userKeyShare: Buffer | undefined;
+      let backupKeyShare: Buffer | undefined;
+      let commonKeyChain: string | undefined;
       const MPC = new Ecdsa();
 
       if (!isUnsignedSweep) {
-        if (!params.userKey) {
+        if (!userKey) {
           throw new Error('missing userKey');
         }
 
-        if (!params.backupKey) {
+        if (!backupKey) {
           throw new Error('missing backupKey');
         }
 
@@ -416,18 +423,19 @@ export class Icp extends BaseCoin {
           throw new Error('missing wallet passphrase');
         }
 
-        const userKey = params.userKey.replace(/\s/g, '');
-        const backupKey = params.backupKey.replace(/\s/g, '');
-
         ({ userKeyShare, backupKeyShare, commonKeyChain } = await ECDSAUtils.getMpcV2RecoveryKeyShares(
           userKey,
           backupKey,
           params.walletPassphrase,
           this.bitgo
         ));
+
+        if (bitgoKey && commonKeyChain !== bitgoKey) {
+          throw new RecoveryKeyMismatchError('commonKeyChain from recovery keys does not match bitgoKey');
+        }
+
         publicKey = MPC.deriveUnhardened(commonKeyChain, ROOT_PATH).slice(0, 66);
       } else {
-        const bitgoKey = params.bitgoKey;
         if (!bitgoKey) {
           throw new Error('missing bitgoKey');
         }
@@ -450,6 +458,11 @@ export class Icp extends BaseCoin {
       }
 
       const senderAddress = this.getAddressFromPublicKey(publicKey);
+      if (params.rootAddress && senderAddress !== params.rootAddress) {
+        throw new RecoveryKeyMismatchError(
+          `derived address ${senderAddress} does not match rootAddress ${params.rootAddress}`
+        );
+      }
       const balance = await this.getAccountBalance(publicKey);
       const feeData = await this.getFeeData();
       if (balance.isLessThanOrEqualTo(0)) {
@@ -462,7 +475,7 @@ export class Icp extends BaseCoin {
 
       const factory = this.getBuilderFactory();
       const txBuilder = factory.getTransferBuilder();
-      txBuilder.sender(senderAddress, publicKey as string);
+      txBuilder.sender(senderAddress, publicKey);
       txBuilder.receiverId(params.recoveryDestination);
       txBuilder.amount(actualBalance.toString());
       if (params.memo !== undefined && utils.validateMemo(params.memo)) {
@@ -480,6 +493,10 @@ export class Icp extends BaseCoin {
         };
       }
 
+      if (!userKeyShare || !backupKeyShare || !commonKeyChain) {
+        throw new Error('failed to derive key shares');
+      }
+
       const signatures = await this.signatures(
         txBuilder.transaction.payloadsData,
         publicKey,
@@ -493,15 +510,31 @@ export class Icp extends BaseCoin {
       txBuilder.transaction.addSignature(signatures);
       txBuilder.combine();
       const broadcastableTxn = txBuilder.transaction.toBroadcastFormat();
-      await this.broadcastTransaction({ serializedSignedTransaction: broadcastableTxn });
       const txId = txBuilder.transaction.id;
+
+      if (params.broadcast === false) {
+        // Offline / Safe mode: return the signed payload without any network mutation.
+        // The payload is byte-identical to what legacy broadcasting would have submitted.
+        return {
+          id: txId,
+          tx: broadcastableTxn,
+          txHex: broadcastableTxn,
+          coin: this.getChain(),
+        };
+      }
+
+      await this.broadcastTransaction({ serializedSignedTransaction: broadcastableTxn });
       const recoveredTransaction: RecoveryTransaction = {
         id: txId,
         tx: broadcastableTxn,
       };
       return recoveredTransaction;
     } catch (error) {
-      if (error instanceof RecoveryProviderError || error instanceof ErrorNoInputToRecover) {
+      if (
+        error instanceof RecoveryProviderError ||
+        error instanceof ErrorNoInputToRecover ||
+        error instanceof RecoveryKeyMismatchError
+      ) {
         throw error;
       }
       throw new Error(`Error during ICP recovery: ${error.message || error}`);

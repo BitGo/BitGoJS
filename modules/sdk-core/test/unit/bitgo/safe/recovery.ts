@@ -699,6 +699,67 @@ describe('buildSafeRecoverKeyParams', () => {
       }).should.be.rejectedWith(/ed25519 child public keys must be 32 bytes/);
     });
   });
+
+  describe('ecdsaMpc', () => {
+    const mpcKeys = { commonKeychain: 'ck', user: 'user-child-share', backup: 'backup-child-share' };
+
+    it('signed mode re-encrypts the child reduced shares under a single ephemeral passphrase', async () => {
+      const passphrases: string[] = [];
+      const encrypt = sinon.stub().callsFake(async ({ input, password, encryptionVersion }) => {
+        passphrases.push(password);
+        encryptionVersion.should.equal(1);
+        return `enc(${input})`;
+      });
+      const bitgo = { encrypt } as unknown as BitGoBase;
+
+      const result = await buildSafeRecoverKeyParams({
+        bitgo,
+        coin: 'icp',
+        slot: 'ecdsaMpc',
+        keys: mpcKeys,
+        mode: 'signed',
+      });
+
+      if (result.slot !== 'ecdsaMpc' || result.mode !== 'signed') {
+        throw new Error('expected signed ecdsaMpc key params');
+      }
+      result.userKey.should.equal('enc(user-child-share)');
+      result.backupKey.should.equal('enc(backup-child-share)');
+      result.bitgoKey.should.equal('ck');
+      result.isTss.should.equal(true);
+      result.broadcast.should.equal(false);
+      result.walletPassphrase.should.be.a.String();
+      passphrases.should.have.length(2);
+      passphrases[0].should.equal(passphrases[1]);
+      passphrases[0].should.equal(result.walletPassphrase);
+      encrypt.callCount.should.equal(2);
+    });
+
+    it('unsigned mode returns the child common keychain and never encrypts', async () => {
+      const encrypt = sinon.stub().callsFake(async () => {
+        throw new Error('encrypt should not be called');
+      });
+      const bitgo = { encrypt } as unknown as BitGoBase;
+
+      const result = await buildSafeRecoverKeyParams({
+        bitgo,
+        coin: 'icp',
+        slot: 'ecdsaMpc',
+        keys: mpcKeys,
+        mode: 'unsigned',
+      });
+
+      result.slot.should.equal('ecdsaMpc');
+      result.mode.should.equal('unsigned');
+      result.bitgoKey.should.equal('ck');
+      result.isTss.should.equal(true);
+      result.broadcast.should.equal(false);
+      result.should.not.have.property('userKey');
+      result.should.not.have.property('backupKey');
+      result.should.not.have.property('walletPassphrase');
+      encrypt.callCount.should.equal(0);
+    });
+  });
 });
 
 describe('Safe ecdsaMpc derive → sign (gate)', function () {
