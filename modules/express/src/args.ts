@@ -62,6 +62,18 @@ parser.addArgument(['-n', '--custombitcoinnetwork'], {
   help: 'Force custom bitcoin network (e.g. testnet)',
 });
 
+parser.addArgument(['--bitgocabundlepath'], {
+  help: 'Path to a PEM file of the only CAs trusted for BitGo hostnames. Other hostnames keep using the system CA store.',
+});
+
+parser.addArgument(['--bitgospkipins'], {
+  help: 'Comma-separated base64 SHA-256 SPKI pins for BitGo hostnames. Include a backup pin.',
+});
+
+parser.addArgument(['--bitgotlshosts'], {
+  help: 'Comma-separated extra hostnames the BitGo TLS policy applies to (default: host of the configured BitGo URL). A leading dot matches subdomains.',
+});
+
 parser.addArgument(['-l', '--logfile'], {
   help: 'Filepath to write the access log',
 });

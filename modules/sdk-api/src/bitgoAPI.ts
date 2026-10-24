@@ -90,6 +90,7 @@ import {
   VerifyShardsOptions,
   WebhookOptions,
 } from './types';
+import { type BitGoTlsPolicy } from './tlsPolicy';
 import shamir = require('secrets.js-grempe');
 import pjson = require('../package.json');
 const debug = debugLib('bitgo:api');
@@ -268,6 +269,7 @@ export class BitGoAPI implements BitGoBase {
   protected _validate: boolean;
   public readonly cookiesPropagationEnabled: boolean;
   private _customProxyAgent?: Agent;
+  private _tlsPolicy?: BitGoTlsPolicy;
   private _requestIdPrefix?: string;
   private getAdditionalHeadersCb?: AdditionalHeadersCallback;
   protected _hmacAuthStrategy: IHmacAuthStrategy;
@@ -445,7 +447,11 @@ export class BitGoAPI implements BitGoBase {
       throw new Error('should not use https proxy while in browser');
     }
 
+    if (params.tlsPolicy && params.customProxyAgent) {
+      throw new Error('tlsPolicy cannot be combined with customProxyAgent');
+    }
     this._customProxyAgent = params.customProxyAgent;
+    this._tlsPolicy = params.tlsPolicy;
     this._hmacAuthStrategy = params.hmacAuthStrategy ?? new DefaultHmacAuthStrategy();
 
     // Only fetch constants from constructor if clientConstants was not provided
@@ -487,6 +493,11 @@ export class BitGoAPI implements BitGoBase {
     let req: superagent.SuperAgentRequest = superagent[method](url);
     if (this.cookiesPropagationEnabled) {
       req = req.withCredentials();
+    }
+    if (this._tlsPolicy?.appliesTo(url)) {
+      // superagent keeps agent/ca on the request across redirects, so a redirect off the allowlisted hosts
+      // would be sent with the restricted trust. Refuse redirects instead of following them.
+      req.agent(this._tlsPolicy.agent).redirects(0);
     }
     return req;
   }

@@ -43,6 +43,17 @@ export interface Config {
   lightningSignerFileSystemPath?: string;
   keepAliveTimeout?: number;
   headersTimeout?: number;
+  bitgoCaBundlePath?: string;
+  bitgoSpkiPins?: string[];
+  bitgoTlsHosts?: string[];
+}
+
+function splitList(value: string | undefined): string[] | undefined {
+  const items = (value ?? '')
+    .split(',')
+    .map((v) => v.trim())
+    .filter((v) => v !== '');
+  return items.length > 0 ? items : undefined;
 }
 
 export const ArgConfig = (args): Partial<Config> => ({
@@ -69,6 +80,9 @@ export const ArgConfig = (args): Partial<Config> => ({
   lightningSignerFileSystemPath: args.lightningSignerFileSystemPath,
   keepAliveTimeout: args.keepalivetimeout,
   headersTimeout: args.headerstimeout,
+  bitgoCaBundlePath: args.bitgocabundlepath,
+  bitgoSpkiPins: splitList(args.bitgospkipins),
+  bitgoTlsHosts: splitList(args.bitgotlshosts),
 });
 
 export const EnvConfig = (): Partial<Config> => ({
@@ -95,6 +109,9 @@ export const EnvConfig = (): Partial<Config> => ({
   lightningSignerFileSystemPath: readEnvVar('BITGO_LIGHTNING_SIGNER_FILE_SYSTEM_PATH'),
   keepAliveTimeout: Number(readEnvVar('BITGO_KEEP_ALIVE_TIMEOUT')),
   headersTimeout: Number(readEnvVar('BITGO_HEADERS_TIMEOUT')),
+  bitgoCaBundlePath: readEnvVar('BITGO_CA_BUNDLE_PATH'),
+  bitgoSpkiPins: splitList(readEnvVar('BITGO_SPKI_PINS')),
+  bitgoTlsHosts: splitList(readEnvVar('BITGO_TLS_HOSTS')),
 });
 
 export const DefaultConfig: Config = {
@@ -181,6 +198,9 @@ function mergeConfigs(...configs: Partial<Config>[]): Config {
     lightningSignerFileSystemPath: get('lightningSignerFileSystemPath'),
     keepAliveTimeout: get('keepAliveTimeout'),
     headersTimeout: get('headersTimeout'),
+    bitgoCaBundlePath: get('bitgoCaBundlePath'),
+    bitgoSpkiPins: get('bitgoSpkiPins'),
+    bitgoTlsHosts: get('bitgoTlsHosts'),
   };
 }
 

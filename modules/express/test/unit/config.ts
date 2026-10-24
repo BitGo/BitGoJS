@@ -128,6 +128,9 @@ describe('Config:', () => {
       BITGO_LIGHTNING_SIGNER_FILE_SYSTEM_PATH: 'envlightningSignerFileSystemPath',
       BITGO_KEEP_ALIVE_TIMETOUT: 'envkeepalivetimeout',
       BITGO_HEADERS_TIMETOUT: 'envheaderstimeout',
+      BITGO_CA_BUNDLE_PATH: 'envcabundle',
+      BITGO_SPKI_PINS: 'envpin1, envpin2',
+      BITGO_TLS_HOSTS: 'envhost',
     });
 
     const { config: proxyConfig } = proxyquire('../../src/config', {
@@ -156,6 +159,8 @@ describe('Config:', () => {
             lightningSignerFileSystemPath: 'arglightningSignerFileSystemPath',
             keepalivetimeout: 'argkeepalivetimeout',
             headerstimeout: 'argheaderstimeout',
+            bitgocabundlepath: 'argcabundle',
+            bitgospkipins: 'argpin1,argpin2',
           };
         },
       },
@@ -184,6 +189,9 @@ describe('Config:', () => {
       lightningSignerFileSystemPath: 'arglightningSignerFileSystemPath',
       keepAliveTimeout: 'argkeepalivetimeout',
       headersTimeout: 'argheaderstimeout',
+      bitgoCaBundlePath: 'argcabundle',
+      bitgoSpkiPins: ['argpin1', 'argpin2'],
+      bitgoTlsHosts: ['envhost'],
     });
     envStub.restore();
   });
