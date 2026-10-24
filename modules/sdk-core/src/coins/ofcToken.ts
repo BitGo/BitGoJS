@@ -139,7 +139,7 @@ export class OfcToken extends Ofc {
       throw new Error('You must pass in either one of wallet or prv');
     }
 
-    return { halfSigned: { payload, signature } } as any;
+    return { halfSigned: { payload, signature } };
   }
 
   /**

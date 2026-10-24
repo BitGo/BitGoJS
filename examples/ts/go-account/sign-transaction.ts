@@ -59,9 +59,8 @@ const prebuildPayload = process.env.OFC_PREBUILD_PAYLOAD || 'your_payload';
 async function main() {
   console.log('=== Go Account: Sign Transaction Payload (Step 2 of 3) ===\n');
 
-  // Validate the payload is present and is parseable JSON.
-  // JSON.parse + JSON.stringify normalizes escaping so the string sent to the
-  // finalize endpoint is guaranteed to be valid JSON.
+  // Keep the payload as the exact JSON string returned by the build step.
+  // The signature is over that string; do not pass the parsed object.
   if (!prebuildPayload) {
     throw new Error(
       'OFC_PREBUILD_PAYLOAD environment variable is required.\n' +
@@ -69,16 +68,7 @@ async function main() {
         'Tip: run go-account-withdrawal.ts to see the prebuild result.'
     );
   }
-  let normalizedPayload: string;
-  try {
-    normalizedPayload = JSON.stringify(JSON.parse(prebuildPayload));
-  } catch {
-    throw new Error(
-      'OFC_PREBUILD_PAYLOAD is not valid JSON.\n' +
-        'Do not hardcode it as a JS string literal — pass it via the environment variable\n' +
-        'using the raw JSON string from the prebuild API response.'
-    );
-  }
+  const payload = prebuildPayload;
 
   console.log(`Fetching wallet ${walletId}...`);
   const wallet = await bitgo.coin(coin).wallets().get({ id: walletId });
@@ -99,21 +89,21 @@ async function main() {
   const tradingAccount = wallet.toTradingAccount();
 
   const signature = await tradingAccount.signPayload({
-    payload: normalizedPayload,
+    payload,
     walletPassphrase,
   });
 
   console.log('✓ Payload signed successfully\n');
   console.log('='.repeat(60));
   console.log('Payload (pass to Step 3):');
-  console.log(normalizedPayload);
+  console.log(payload);
   console.log('\nSignature (hex, pass to Step 3):');
   console.log(signature);
   console.log('='.repeat(60));
 
   console.log('\nNext step — submit the signed transaction:');
   console.log('  await wallet.submitTransaction({');
-  console.log('    halfSigned: { payload, txHex: signature },');
+  console.log('    halfSigned: { payload, signature },');
   console.log('  });');
 }
 
