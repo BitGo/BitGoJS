@@ -29,10 +29,22 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
   'disableToken',
   'disabletoken',
   'customTx',
-  // DeFi vault operations — recipients/calldata built server-side from defiParams
+  // DeFi vault operations — recipients/calldata built server-side from defiParams.
+  // Both spellings registered on purpose (see the wrapNative note below): the stored
+  // WP intentType is kebab-case while buildParams.type is camelCase. These types are
+  // NOT skipped by verifyTssTransaction — the DeFi handlers decode and compare the
+  // calldata against defiParams; this entry only waives the missing-recipients guard.
   'defiApprove',
+  'defi-approve',
   'defiDeposit',
+  'defi-deposit',
   'defiWithdraw',
+  'defi-withdraw',
+  // defi-redeem has no EVM verifier handler and is flagged as a violation there;
+  // listed here so the pending-approval path reaches the verifier instead of
+  // failing earlier on the missing-recipients guard.
+  'defi-redeem',
+  'defiRedeem',
   // Native wrap/unwrap (WETH9 deposit()/withdraw()) — calldata and the WETH9
   // address are resolved server-side from the vault binding, so no recipients.
   // Registered in BOTH spellings on purpose: this set is matched against
