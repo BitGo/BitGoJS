@@ -265,6 +265,9 @@ function handleApproveTransaction(req: ExpressApiRouteRequest<'express.v1.pendin
       if (params.state === 'approved') {
         return pendingApproval.approve(params);
       }
+      if (params.state === 'canceled') {
+        return pendingApproval.cancel(params);
+      }
       return pendingApproval.reject(params);
     });
 }
@@ -908,6 +911,9 @@ async function handleV2PendingApproval(req: ExpressApiRouteRequest<'express.pend
   const pendingApproval = await coin.pendingApprovals().get({ id: req.decoded.id });
   if (params.state === 'approved') {
     return pendingApproval.approve(params);
+  }
+  if (params.state === 'canceled') {
+    return pendingApproval.cancel(params);
   }
   return pendingApproval.reject(params);
 }

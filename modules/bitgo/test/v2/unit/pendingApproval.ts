@@ -174,6 +174,23 @@ describe('Pending Approvals:', () => {
     paScope.isDone().should.be.true();
   });
 
+  it('should cancel a pending approval without approving or rejecting it', async () => {
+    const pendingApproval = new PendingApproval(bitgo, basecoin, pendingApprovalData, wallet);
+    const paScope = nock(bgUrl)
+      .put(`/api/v2/${coin}/pendingapprovals/${pendingApprovalData.id}`, {
+        state: 'canceled',
+      })
+      .reply(200, {
+        ...pendingApprovalData,
+        state: State.CANCELED,
+      });
+
+    const response = await pendingApproval.cancel();
+
+    response.state.should.equal(State.CANCELED);
+    paScope.isDone().should.be.true();
+  });
+
   function testRecreateTransaction(coinName: string, recreateTransaction: boolean, type: Type) {
     it(`[${coinName}] should ${
       recreateTransaction ? 'not ' : ''

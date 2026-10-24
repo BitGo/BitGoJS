@@ -225,13 +225,11 @@ export class PendingApproval implements IPendingApproval {
   }
 
   /**
-   * Alias for PendingApproval.reject()
-   *
-   * @deprecated
+   * Sets this PendingApproval to a canceled state.
    * @param params
    */
   async cancel(params: Record<string, never> = {}): Promise<any> {
-    return await this.reject(params);
+    return await this.bitgo.put(this.url()).send({ state: 'canceled' }).result();
   }
 
   /**

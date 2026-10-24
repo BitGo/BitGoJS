@@ -321,6 +321,14 @@ describe('V2 PendingApproval API Tests', function () {
       wallet: 'wallet123',
     };
 
+    const mockCanceledResponse = {
+      id: 'approval123',
+      state: 'canceled',
+      creator: 'user123',
+      info: { type: 'transactionRequest' },
+      wallet: 'wallet123',
+    };
+
     afterEach(function () {
       sinon.restore();
     });
@@ -387,6 +395,36 @@ describe('V2 PendingApproval API Tests', function () {
         assert.strictEqual(result.status, 200);
         assert.strictEqual(result.body.state, 'rejected');
         sinon.assert.calledOnce(mockPendingApprovalObject.reject);
+      });
+
+      it('should successfully cancel pending approval', async function () {
+        const coin = 'tbtc';
+        const approvalId = '123456789abcdef';
+        const cancel = sinon.stub().resolves(mockCanceledResponse);
+
+        const mockPendingApprovalObject = {
+          approve: sinon.stub().resolves(mockApprovedResponse),
+          reject: sinon.stub().resolves(mockRejectedResponse),
+          cancel,
+        };
+
+        const mockCoin = {
+          pendingApprovals: sinon.stub().returns({
+            get: sinon.stub().resolves(mockPendingApprovalObject),
+          }),
+        };
+
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .put(`/api/v2/${coin}/pendingapprovals/${approvalId}`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send({ state: 'canceled' });
+
+        assert.strictEqual(result.status, 200);
+        assert.strictEqual(result.body.state, 'canceled');
+        sinon.assert.calledOnce(cancel);
       });
 
       it('should default to rejection with empty body', async function () {

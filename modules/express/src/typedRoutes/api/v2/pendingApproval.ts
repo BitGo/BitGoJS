@@ -17,7 +17,7 @@ export const PendingApprovalParams = {
  * Request body for approving or rejecting a pending approval
  */
 export const PendingApprovalRequestBody = {
-  /** New state for the pending approval: 'approved' to approve, omit or 'rejected' to reject */
+  /** New state: 'approved' to approve, 'canceled' to cancel, omit or 'rejected' to reject */
   state: optional(t.string),
   /** Passphrase to decrypt the user key on the wallet */
   walletPassphrase: optional(t.string),
@@ -48,6 +48,7 @@ export const PendingApprovalState = t.union([
   t.literal('approved'),
   t.literal('processing'),
   t.literal('rejected'),
+  t.literal('canceled'),
 ]);
 
 /**
