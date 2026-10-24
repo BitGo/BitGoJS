@@ -1878,11 +1878,16 @@ export class BitGoAPI implements BitGoBase {
   /**
    * Gets the user's private ECDH keychain
    */
-  async getECDHKeychain(ecdhKeychainPub?: string): Promise<any> {
+  async getECDHKeychain(ecdhKeychainPub?: string, options: { allowMissing?: boolean } = {}): Promise<any | undefined> {
     if (!ecdhKeychainPub) {
       const result = await this.get(this.url('/user/settings')).result();
       if (!result.settings.ecdhKeychain) {
-        return new Error('ecdh keychain not found for user');
+        if (options.allowMissing) {
+          return undefined;
+        }
+        throw new Error(
+          'Your account is missing the sharing key needed for this action. Please contact support@bitgo.com so it can be set up.'
+        );
       }
       ecdhKeychainPub = result.settings.ecdhKeychain;
     }

@@ -145,6 +145,70 @@ describe('Wallets - encryptionVersion threading', function () {
       assert.strictEqual(call.args[1], undefined);
     });
 
+    it('accepts a UMKR-only batch when the user has no ECDH keychain', async function () {
+      mockBitGo.getECDHKeychain.resolves(undefined);
+
+      await wallets.bulkAcceptShare({
+        walletShareIds: ['share-id'],
+        userLoginPassword: 'login-password',
+      });
+
+      assert.deepStrictEqual(mockBitGo.getECDHKeychain.firstCall.args, [undefined, { allowMissing: true }]);
+      assert.strictEqual(mockBitGo.decrypt.called, false);
+      assert.strictEqual(mockBitGo.put.called, true);
+    });
+
+    it('validates the login password against an existing ECDH keychain for a UMKR-only batch', async function () {
+      mockBitGo.decrypt.rejects(new Error('password error'));
+
+      await assert.rejects(
+        wallets.bulkAcceptShare({
+          walletShareIds: ['share-id'],
+          userLoginPassword: 'incorrect-password',
+        }),
+        { message: 'password error' }
+      );
+
+      assert.deepStrictEqual(mockBitGo.getECDHKeychain.firstCall.args, [undefined, { allowMissing: true }]);
+      assert.deepStrictEqual(mockBitGo.decrypt.firstCall.args, [{ password: 'incorrect-password', input: 'encXprv' }]);
+      assert.strictEqual(mockBitGo.createEncryptionSession.called, false);
+      assert.strictEqual(mockKeychains.create.called, false);
+      assert.strictEqual(mockBitGo.put.called, false);
+    });
+
+    it('still requires the ECDH keychain when the batch also holds a share with a keychain', async function () {
+      mockBitGo.get.returns({
+        result: sinon.stub().resolves({
+          incoming: [
+            ...walletSharesList.incoming,
+            {
+              id: 'keychain-share-id',
+              keychain: {
+                pub: 'pub',
+                toPubKey: 'toPubKey',
+                fromPubKey: 'fromPubKey',
+                encryptedPrv: 'prv',
+                path: 'm/0',
+              },
+              permissions: ['spend'],
+            },
+          ],
+          outgoing: [],
+        }),
+      });
+      mockBitGo.getECDHKeychain.resolves({});
+
+      await assert.rejects(
+        wallets.bulkAcceptShare({
+          walletShareIds: ['share-id', 'keychain-share-id'],
+          userLoginPassword: 'login-password',
+        }),
+        { message: 'encryptedXprv was not found on sharing keychain' }
+      );
+      assert.strictEqual(mockBitGo.getECDHKeychain.calledOnce, true);
+      assert.deepStrictEqual(mockBitGo.getECDHKeychain.firstCall.args, [undefined, { allowMissing: false }]);
+    });
+
     it('processes shares in batches of 16 to avoid WASM memory exhaustion', async function () {
       // 20 shares → 2 batches (16 + 4), verifying the batch boundary is crossed
       const manyShares = Array.from({ length: 20 }, (_, i) => ({
