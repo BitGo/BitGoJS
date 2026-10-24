@@ -9,7 +9,6 @@ import {
   MPCAlgorithm,
   MultisigType,
   multisigTypes,
-  NO_RECIPIENT_TX_TYPES,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, CoinFeature, coins, CoinFamily } from '@bitgo/statics';
 import {
@@ -20,7 +19,6 @@ import {
   recoveryBlockchainExplorerQuery,
   TransactionBuilder as EthLikeTransactionBuilder,
   UnsignedSweepTxMPCv2,
-  VerifyEthTransactionOptions,
 } from '@bitgo/abstract-eth';
 import { TransactionBuilder } from './lib';
 import { isHtsEvmAddress, recovery_HBAREVM_BlockchainExplorerQuery, validateHederaAccountId } from './lib/utils';
@@ -95,47 +93,6 @@ export class EvmCoin extends AbstractEthLikeNewCoins {
       default:
         return await recoveryBlockchainExplorerQuery(query, explorerUrl as string, apiToken as string);
     }
-  }
-
-  /** @inheritDoc */
-  async verifyTssTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
-    const supportsEIP1559 = this.staticsCoin?.features?.includes(CoinFeature.EIP1559);
-    if (supportsEIP1559) {
-      return await super.verifyTssTransaction(params);
-    } else {
-      return await this.verifyLegacyTssTransaction(params);
-    }
-  }
-
-  /**
-   * Verifies legacy (non-EIP-1559) TSS transactions with basic validation.
-   */
-  private async verifyLegacyTssTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
-    const { txParams, txPrebuild, wallet } = params;
-
-    // Basic validation for legacy transactions only
-    if (
-      !txParams?.recipients &&
-      !(
-        txParams.prebuildTx?.consolidateId ||
-        txParams.stakingRequestId ||
-        txParams.prebuildTx?.stakingRequestId ||
-        (txParams.type && NO_RECIPIENT_TX_TYPES.has(txParams.type))
-      )
-    ) {
-      throw new Error(`missing txParams`);
-    }
-
-    if (!wallet || !txPrebuild) {
-      throw new Error(`missing params`);
-    }
-
-    if (txParams.hop && txParams.recipients && txParams.recipients.length > 1) {
-      throw new Error(`tx cannot be both a batch and hop transaction`);
-    }
-
-    // If validation passes, consider it verified
-    return true;
   }
 
   /** @inheritDoc */

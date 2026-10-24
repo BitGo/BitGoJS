@@ -53,8 +53,17 @@ import {
   DeriveAddressResult,
   NO_RECIPIENT_TX_TYPES,
   CoinWithSignableConsistency,
+  TssVerificationWarning,
 } from '@bitgo/sdk-core';
 import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
+import {
+  buildEvmTssIntentContext,
+  canonicalizeEvmTssIntentType,
+  DecodedEvmTx,
+  evaluateEvmTssIntent,
+  isUnsupportedEvmTssIntentType,
+  mapDefiParamsFromIntent,
+} from './tssVerification';
 import { bip32 } from '@bitgo/secp256k1';
 import {
   BaseCoin as StaticsBaseCoin,
@@ -3454,15 +3463,27 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
   }
 
   /**
+   * Verify that a TSS transaction prebuild complies with the original intention before the
+   * user key share signs it (TOB-BITGOEDMPC-2 / INFOSEC-671).
+   *
+   * The intent type picks the verifier handler; each handler accepts a closed set of decoded
+   * transaction shapes and anything unmatched is a violation. Checks that historically threw
+   * keep throwing (including on the pending-approval path, where the type comes from the
+   * stored intent). New checks report violations via `console.warn` plus the optional
+   * `onVerificationWarning` callback, and become hard failures when the client opts into
+   * `BitGoAPI`'s `strictTssVerification`.
+   *
    * @param {VerifyEthTransactionOptions} params
    * @param {TransactionParams} params.txParams - params object passed to send
    * @param {TransactionPrebuild} params.txPrebuild - prebuild object returned by server
    * @param {Wallet} params.wallet - Wallet object to obtain keys to verify against
+   * @param {PopulatedIntent} params.intent - stored tx request intent (pending-approval path)
    * @returns {boolean}
    * @throws {TxIntentMismatchRecipientError} if transaction recipients don't match user intent
    */
   async verifyTssTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
-    const { txParams, txPrebuild, wallet } = params;
+    const ethNetwork = this.getNetwork();
+    const { txParams, txPrebuild, wallet, intent } = params;
 
     // Helper to throw TxIntentMismatchRecipientError with recipient details
     const throwRecipientMismatch = async (message: string, mismatchedRecipients: Recipient[]): Promise<never> => {
@@ -3482,6 +3503,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       !(
         txParams.prebuildTx?.consolidateId ||
         txPrebuild?.consolidateId ||
+        intent?.consolidateId ||
         txParams.stakingRequestId ||
         txParams.prebuildTx?.stakingRequestId ||
         (txParams.type && NO_RECIPIENT_TX_TYPES.has(txParams.type))
@@ -3497,7 +3519,27 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       throw new Error('tx cannot be both a batch and hop transaction');
     }
 
-    if (txParams.type && ['transfer'].includes(txParams.type)) {
+    // Canonical verifier intent type. Caller-supplied txParams.type wins; on the
+    // pending-approval path resolveEffectiveTxParams stores the raw intent type in
+    // txParams.type, so the stored spelling (payment, defi-approve, …) is normalized here.
+    const explicitType =
+      canonicalizeEvmTssIntentType(txParams.type) || canonicalizeEvmTssIntentType(intent?.intentType);
+    const consolidateId =
+      txParams.prebuildTx?.consolidateId || txPrebuild?.consolidateId || intent?.consolidateId || undefined;
+    const isConsolidation =
+      !!params.verification?.consolidationToBaseAddress || explicitType === 'consolidate' || !!consolidateId;
+    const canonicalType = explicitType || (isConsolidation ? 'consolidate' : 'transfer');
+
+    // contractCall / customTx cannot be created on EVM and carry arbitrary calldata with no
+    // intent shape to verify — never let them reach signing on this path.
+    if (isUnsupportedEvmTssIntentType(canonicalType)) {
+      throw new Error(`unsupported intent type for EVM TSS: ${canonicalType}`);
+    }
+
+    // Historical checks, unchanged and still throwing: a single native recipient must match
+    // `to` and `value`, and an ERC-20 transfer's decoded recipient and amount must match.
+    // Now also reached on the pending-approval path via payment → transfer type mapping.
+    if (canonicalType === 'transfer') {
       if (txParams.recipients && txParams.recipients.length === 1) {
         const recipients = txParams.recipients;
         const expectedAmount = recipients[0].amount.toString();
@@ -3560,13 +3602,15 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       }
     }
 
-    if (txParams.type && ['defiApprove', 'defiDeposit', 'defiWithdraw'].includes(txParams.type)) {
+    // DeFi vault calldata vs defiParams. Stored defi-* intents reach this branch through the
+    // intent type mapping, with defiParams reconstructed from the stored intent fields.
+    if (['defiApprove', 'defiDeposit', 'defiWithdraw'].includes(canonicalType)) {
       if (!txPrebuild.txHex) {
         throw new Error('missing txHex in txPrebuild');
       }
 
       const baseAddress = wallet.coinSpecific()?.baseAddress;
-      const defiParams = txParams.defiParams;
+      const defiParams = txParams.defiParams ?? (intent ? mapDefiParamsFromIntent(intent) : undefined);
       if (!baseAddress || !defiParams) {
         await throwRecipientMismatch('DeFi transaction is missing required intent parameters', []);
         return false;
@@ -3581,7 +3625,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
         throwRecipientMismatch(message, [{ address: address || '', amount: amount || '' }]);
       const data = txJson.data || '';
 
-      if (txParams.type === 'defiApprove') {
+      if (canonicalType === 'defiApprove') {
         const selector = addHexPrefix(optionalDeps.ethAbi.methodID('approve', ['address', 'uint256']).toString('hex'));
         if (!data.startsWith(selector)) {
           await mismatch('defiApprove transaction must use ERC-20 approve(address,uint256) calldata');
@@ -3594,7 +3638,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
             amount.toString()
           );
         }
-      } else if (txParams.type === 'defiDeposit') {
+      } else if (canonicalType === 'defiDeposit') {
         const selector = addHexPrefix(optionalDeps.ethAbi.methodID('deposit', ['uint256', 'address']).toString('hex'));
         if (!data.startsWith(selector)) {
           await mismatch('defiDeposit transaction must use deposit(uint256,address) calldata');
@@ -3648,7 +3692,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       }
     }
 
-    if (txParams.type === 'wrapApprove') {
+    if (canonicalType === 'wrapApprove') {
       await this.verifyWrapApproveTransaction(params, throwRecipientMismatch);
     } else {
       // Declared as anything else: only an approve of a registered wrapper is rejected (see the method doc);
@@ -3656,55 +3700,158 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       await this.assertWrapperApproveIsDeclared(params, throwRecipientMismatch);
     }
 
-    // Verify consolidation transactions send to base address
-    if (params.verification?.consolidationToBaseAddress) {
-      const coinSpecific = wallet.coinSpecific();
-      if (!coinSpecific || !coinSpecific.baseAddress) {
-        throw new Error('Unable to determine base address for consolidation');
-      }
-      const baseAddress = coinSpecific.baseAddress;
-
-      if (!txPrebuild.txHex) {
-        throw new Error('missing txHex in txPrebuild');
-      }
-
-      const txBuilder = this.getTransactionBuilder();
-      txBuilder.from(txPrebuild.txHex);
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
-
-      // Verify the transaction recipient matches the base address
-      if (!txJson.to) {
-        throw new Error('Consolidation transaction is missing recipient address');
-      }
-
-      const erc20TransferSelector = addHexPrefix(
-        optionalDeps.ethAbi.methodID('transfer', ['address', 'uint256']).toString('hex')
-      );
-
-      if (txJson.data && txJson.data.startsWith(erc20TransferSelector)) {
-        // For ERC20 token consolidations, txJson.to is the token contract address,
-        // not the actual transfer recipient. The real recipient is encoded in the
-        // transfer(address,uint256) calldata. Decode it and verify against baseAddress.
-        const [recipientAddress] = getRawDecoded(
-          ['address', 'uint256'],
-          getBufferedByteCode(erc20TransferSelector, txJson.data)
-        );
-        const decodedRecipient = addHexPrefix(recipientAddress.toString()).toLowerCase();
-        if (decodedRecipient !== baseAddress.toLowerCase()) {
-          await throwRecipientMismatch('Consolidation transaction recipient does not match wallet base address', [
-            { address: decodedRecipient, amount: txJson.value },
-          ]);
+    // Verify consolidation transactions send to base address. Runs when the caller sets
+    // consolidationToBaseAddress (throws on mismatch — unchanged), and automatically for
+    // consolidate intents / consolidateId flows, where mismatches are flagged instead
+    // (warn now, hard failure under strictTssVerification) so the pending-approval path is
+    // covered without fail-stopping consolidation shapes the checks do not model yet.
+    const violations: TssVerificationWarning[] = [];
+    const consolidationMode: 'throw' | 'warn' | 'skip' = params.verification?.consolidationToBaseAddress
+      ? 'throw'
+      : isConsolidation
+      ? 'warn'
+      : 'skip';
+    if (consolidationMode !== 'skip') {
+      try {
+        await this.verifyConsolidationToBaseAddress(params, async (message, mismatchedRecipients) => {
+          if (consolidationMode === 'throw') {
+            await throwRecipientMismatch(message, mismatchedRecipients);
+          }
+          violations.push({
+            intentType: 'consolidate',
+            reason: message,
+            expected: { to: (wallet.coinSpecific()?.baseAddress as string) ?? '' },
+            decoded: mismatchedRecipients[0]
+              ? { to: mismatchedRecipients[0].address, value: String(mismatchedRecipients[0].amount) }
+              : {},
+          });
+        });
+      } catch (e) {
+        if (consolidationMode === 'throw') {
+          throw e;
         }
-      } else if (txJson.to.toLowerCase() !== baseAddress.toLowerCase()) {
-        // Native coin consolidation: txJson.to is the actual recipient
-        await throwRecipientMismatch('Consolidation transaction recipient does not match wallet base address', [
-          { address: txJson.to, amount: txJson.value },
+        // The automatic consolidate-intent trigger is a new check: structural failures
+        // (unparseable bytes, missing base address) are flagged like any other new
+        // violation — warn now, hard failure under strictTssVerification.
+        violations.push({
+          intentType: 'consolidate',
+          reason: `consolidation destination could not be verified: ${(e as Error).message}`,
+          expected: { to: (wallet.coinSpecific()?.baseAddress as string) ?? '' },
+          decoded: {},
+        });
+      }
+    }
+
+    // Fail-closed handler pass: compare the decoded to / value / data against the intent for
+    // the canonical type (TOB-BITGOEDMPC-2 / INFOSEC-671). Anything unmatched or unhandled is
+    // a violation — warn by default, throw under BitGoAPI's strictTssVerification. The
+    // historically-throwing checks above run first and keep precedence.
+    const baseAddress = wallet.coinSpecific()?.baseAddress;
+    const ctx = buildEvmTssIntentContext({
+      intentType: canonicalType,
+      txParams,
+      intent,
+      baseAddress: typeof baseAddress === 'string' ? baseAddress : undefined,
+      batcherAddress: ethNetwork?.batcherContractAddress,
+    });
+    let decodedTx: DecodedEvmTx = { to: '', value: '0', data: '0x' };
+    if (!txPrebuild.txHex) {
+      violations.push({
+        intentType: canonicalType,
+        reason: 'missing txHex in txPrebuild: transaction bytes cannot be verified against intent',
+        expected: {},
+        decoded: {},
+      });
+    } else {
+      try {
+        const txBuilder = this.getTransactionBuilder();
+        txBuilder.from(txPrebuild.txHex);
+        const txJson = (await txBuilder.build()).toJson();
+        decodedTx = { to: txJson.to ?? '', value: txJson.value ?? '0', data: txJson.data ?? '0x' };
+      } catch (e) {
+        violations.push({
+          intentType: canonicalType,
+          reason: `transaction bytes could not be decoded to verify intent: ${(e as Error).message}`,
+          expected: {},
+          decoded: {},
+        });
+      }
+    }
+    violations.push(...evaluateEvmTssIntent(ctx, decodedTx));
+
+    if (violations.length) {
+      if (this.bitgo?.strictTssVerification) {
+        const first = violations[0];
+        await throwRecipientMismatch(first.reason, [
+          { address: first.decoded.to ?? '', amount: first.decoded.value ?? '' },
         ]);
+      }
+      for (const warning of violations) {
+        console.warn(
+          `[tss verification] ${warning.reason}`,
+          JSON.stringify({ expected: warning.expected, decoded: warning.decoded })
+        );
+        this.bitgo?.onVerificationWarning?.(warning);
       }
     }
 
     return true;
+  }
+
+  /**
+   * Verify a consolidation transaction sends to the wallet base address. `report` receives
+   * every recipient mismatch; the caller decides whether that throws (the historical
+   * consolidationToBaseAddress contract) or becomes a flag (consolidate intent flows).
+   */
+  private async verifyConsolidationToBaseAddress(
+    params: VerifyEthTransactionOptions,
+    report: (message: string, mismatchedRecipients: Recipient[]) => Promise<void>
+  ): Promise<void> {
+    const { txPrebuild, wallet } = params;
+    const coinSpecific = wallet.coinSpecific();
+    if (!coinSpecific || !coinSpecific.baseAddress) {
+      throw new Error('Unable to determine base address for consolidation');
+    }
+    const baseAddress = coinSpecific.baseAddress;
+
+    if (!txPrebuild.txHex) {
+      throw new Error('missing txHex in txPrebuild');
+    }
+
+    const txBuilder = this.getTransactionBuilder();
+    txBuilder.from(txPrebuild.txHex);
+    const tx = await txBuilder.build();
+    const txJson = tx.toJson();
+
+    // Verify the transaction recipient matches the base address
+    if (!txJson.to) {
+      throw new Error('Consolidation transaction is missing recipient address');
+    }
+
+    const erc20TransferSelector = addHexPrefix(
+      optionalDeps.ethAbi.methodID('transfer', ['address', 'uint256']).toString('hex')
+    );
+
+    if (txJson.data && txJson.data.startsWith(erc20TransferSelector)) {
+      // For ERC20 token consolidations, txJson.to is the token contract address,
+      // not the actual transfer recipient. The real recipient is encoded in the
+      // transfer(address,uint256) calldata. Decode it and verify against baseAddress.
+      const [recipientAddress] = getRawDecoded(
+        ['address', 'uint256'],
+        getBufferedByteCode(erc20TransferSelector, txJson.data)
+      );
+      const decodedRecipient = addHexPrefix(recipientAddress.toString()).toLowerCase();
+      if (decodedRecipient !== baseAddress.toLowerCase()) {
+        await report('Consolidation transaction recipient does not match wallet base address', [
+          { address: decodedRecipient, amount: txJson.value },
+        ]);
+      }
+    } else if (txJson.to.toLowerCase() !== baseAddress.toLowerCase()) {
+      // Native coin consolidation: txJson.to is the actual recipient
+      await report('Consolidation transaction recipient does not match wallet base address', [
+        { address: txJson.to, amount: txJson.value },
+      ]);
+    }
   }
 
   /**
