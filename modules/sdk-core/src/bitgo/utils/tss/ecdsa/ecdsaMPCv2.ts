@@ -1146,16 +1146,6 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       params.reqId
     );
 
-    // Messages are combined and marked delivered by wallet-platform inside
-    // the final share submission itself (the signed-message Kafka event is
-    // published there too): by the time this call returns, a message request
-    // is already terminal. POSTing /send afterwards — as the transaction
-    // flow does — would be rejected by wallet-platform's pendingDelivery
-    // assert on the already-delivered request. Re-fetch the request instead,
-    // mirroring the legacy MPCv1 ECDSA message path.
-    if (requestType === RequestType.message) {
-      return getTxRequest(this.bitgo, txRequest.walletId, txRequest.txRequestId, params.reqId);
-    }
     return sendTxRequest(this.bitgo, txRequest.walletId, txRequest.txRequestId, requestType, params.reqId);
   }
 
