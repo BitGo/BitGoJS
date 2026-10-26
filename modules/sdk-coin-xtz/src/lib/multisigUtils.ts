@@ -1,6 +1,13 @@
 import * as _ from 'lodash';
 import { IndexedSignature, OriginationData, OriginationOp, RevealOp, TransactionOp, TransferData } from './iface';
-import { DEFAULT_FEE, DEFAULT_GAS_LIMIT, DEFAULT_STORAGE_LIMIT, hashTypes, isValidKey } from './utils';
+import {
+  DEFAULT_FEE,
+  DEFAULT_GAS_LIMIT,
+  DEFAULT_STORAGE_LIMIT,
+  hashTypes,
+  isValidKey,
+  isValidPublicKey,
+} from './utils';
 
 // Default n of m for multisig wallets
 const DEFAULT_N = 2;
@@ -524,6 +531,43 @@ export function getOwnersPublicKeys(operation: OriginationOp): string[] {
     return [];
   }
   return ownersArgs.map((o) => o.string);
+}
+
+/**
+ * Upper bound on the number of owners we will accept from contract storage. The BitGo generic
+ * multisig wallet contract has exactly three owners; the bound guards against a compromised or
+ * misbehaving explorer returning an unbounded list.
+ */
+const MAX_CONTRACT_OWNERS = 100;
+
+/**
+ * Extract the owner public key list from the TZKT normalized storage returned by
+ * `/v1/contracts/{address}/storage`. TZKT returns storage keyed by its Michelson field
+ * annotations, so the generic multisig storage type
+ * `pair (nat %stored_counter) (pair (nat %threshold) (list %keys key))` yields a flat
+ * `{ stored_counter, threshold, keys: ["sppk…", …] }` object whose `keys` array holds base58
+ * public key strings. Returns undefined for any shape that does not match, so the caller
+ * fails closed instead of guessing.
+ *
+ * @param storage the normalized storage JSON from TZKT
+ * @returns the owner public keys, or undefined if the shape is unexpected
+ */
+export function extractContractOwnerKeys(storage: unknown): string[] | undefined {
+  if (!storage || typeof storage !== 'object' || Array.isArray(storage) || !('keys' in storage)) {
+    return undefined;
+  }
+  const keys = storage.keys;
+  if (!Array.isArray(keys) || keys.length === 0 || keys.length > MAX_CONTRACT_OWNERS) {
+    return undefined;
+  }
+  const ownerKeys: string[] = [];
+  for (const key of keys) {
+    if (typeof key !== 'string' || !isValidPublicKey(key)) {
+      return undefined;
+    }
+    ownerKeys.push(key);
+  }
+  return ownerKeys;
 }
 
 /**

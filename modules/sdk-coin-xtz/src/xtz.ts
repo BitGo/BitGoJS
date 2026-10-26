@@ -6,6 +6,7 @@ import {
   MethodNotImplementedError,
   ParsedTransaction,
   ParseTransactionOptions,
+  RecoveryKeyMismatchError,
   RecoveryProviderError,
   KeyPair as SdkCoreKeyPair,
   SignedTransaction,
@@ -16,12 +17,17 @@ import {
   multisigTypes,
   AuditDecryptedKeyParams,
   common,
+  getIsUnsignedSweep,
+  isValidPrv,
+  isValidXprv,
+  isValidXpub,
   TransactionType,
 } from '@bitgo/sdk-core';
 import { bip32 } from '@bitgo/secp256k1';
 import { CoinFamily, coins, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import { Interface, KeyPair, TransactionBuilder, Utils } from './lib';
+import { extractContractOwnerKeys } from './lib/multisigUtils';
 import { RecoverOptions } from './lib/iface';
 import {
   generateDataToSign,
@@ -247,9 +253,10 @@ export class Xtz extends BaseCoin {
   /**
    * Method to validate recovery params
    * @param {RecoverOptions} params
+   * @param {boolean} isUnsignedSweep whether the caller is building an unsigned sweep
    * @returns {void}
    */
-  validateRecoveryParams(params: RecoverOptions): void {
+  validateRecoveryParams(params: RecoverOptions, isUnsignedSweep: boolean): void {
     if (params.userKey === undefined) {
       throw new Error('missing userKey');
     }
@@ -258,7 +265,11 @@ export class Xtz extends BaseCoin {
       throw new Error('missing backupKey');
     }
 
-    if (!params.isUnsignedSweep && params.walletPassphrase === undefined && !params.userKey.startsWith('xpub')) {
+    if (
+      !isUnsignedSweep &&
+      params.walletPassphrase === undefined &&
+      !params.userKey.replace(/\s/g, '').startsWith('xpub')
+    ) {
       throw new Error('missing wallet passphrase');
     }
 
@@ -268,6 +279,91 @@ export class Xtz extends BaseCoin {
 
     if (params.recoveryDestination === undefined || !this.isValidAddress(params.recoveryDestination)) {
       throw new Error('invalid recoveryDestination');
+    }
+  }
+
+  /**
+   * Resolve a recovery key into a KeyPair. Mirrors exactly the formats `KeyPair.recordKeysFromPrivateKey`
+   * accepts (keyPair.ts:56-67): an xpub in unsigned mode, a raw xprv / hex / spsk private key directly,
+   * or a decrypted v1/v2 SJCL envelope. Consolidates the user/backup key resolution so the raw-vs-decrypt
+   * decision (and its error wording) lives in exactly one place.
+   *
+   * @param {string} key the (whitespace-cleaned) recovery key
+   * @param {string} walletPassphrase the wallet passphrase for encrypted envelopes
+   * @param {boolean} isUnsignedSweep whether this is an unsigned sweep (pub-backed keys)
+   * @param {string} descriptor 'user' or 'backup', for error messages
+   * @returns {Promise<KeyPair>}
+   */
+  private async resolveKeyPair(
+    key: string,
+    walletPassphrase: string | undefined,
+    isUnsignedSweep: boolean,
+    descriptor: string
+  ): Promise<KeyPair> {
+    if (isUnsignedSweep) {
+      return new KeyPair({ pub: key });
+    }
+    if (isValidXprv(key) || isValidPrv(key) || Utils.isValidKey(key, Utils.hashTypes.spsk)) {
+      return new KeyPair({ prv: key });
+    }
+    let prv;
+    try {
+      prv = await this.bitgo.decrypt({ input: key, password: walletPassphrase });
+    } catch (e) {
+      throw new Error(`Error decrypting ${descriptor} keychain: ${e.message}`);
+    }
+    return new KeyPair({ prv });
+  }
+
+  /**
+   * Fails closed with RecoveryKeyMismatchError when any of the user, backup, or bitgo keys is not
+   * an owner of the wallet contract (KT1). Runs before the fee-account balance check or any signing
+   * step so Safe per-address scanning can distinguish "these keys do not control this address" from
+   * "nothing to recover". Safe recovery only: legacy callers (no bitgoKey) bypass by design.
+   *
+   * @param {string} walletContractAddress the KT1 wallet contract to verify against
+   * @param {KeyPair} userKeyPair resolved user key pair
+   * @param {KeyPair} backupKeyPair resolved backup key pair
+   * @param {string} bitgoKey the BitGo xpub from the Safe key params
+   * @param {string} apiKey optional explorer API key
+   * @returns {Promise<void>}
+   */
+  private async assertRecoveryKeysAreContractOwners(
+    walletContractAddress: string,
+    userKeyPair: KeyPair,
+    backupKeyPair: KeyPair,
+    bitgoKey: string,
+    apiKey?: string
+  ): Promise<void> {
+    let storage;
+    try {
+      storage = await this.recoveryBlockchainExplorerQuery(
+        { actionPath: 'contracts', address: walletContractAddress, action: 'storage', timeout: 30000 },
+        apiKey
+      );
+    } catch {
+      // Static message, no raw cause: the underlying explorer error embeds the request URL,
+      // which can include the caller's apiKey.
+      throw new RecoveryProviderError(`unable to fetch contract storage for ${walletContractAddress}`);
+    }
+
+    const ownerKeys = extractContractOwnerKeys(storage);
+    if (!ownerKeys) {
+      throw new RecoveryProviderError(`unable to parse contract storage for ${walletContractAddress}`);
+    }
+
+    const ownerKeyPairs = [
+      { name: 'user', keyPair: userKeyPair },
+      { name: 'backup', keyPair: backupKeyPair },
+      { name: 'bitgo', keyPair: new KeyPair({ pub: bitgoKey }) },
+    ] as const;
+    for (const { name, keyPair } of ownerKeyPairs) {
+      const pub = keyPair.getKeys().pub;
+      if (!ownerKeys.includes(pub)) {
+        throw new RecoveryKeyMismatchError(
+          `${name} key ${pub} is missing from the wallet contract owners of ${walletContractAddress}`
+        );
+      }
     }
   }
 
@@ -282,16 +378,20 @@ export class Xtz extends BaseCoin {
       actionPath: string;
       address?: string;
       action?: string;
+      /** Optional superagent response timeout in ms. Omitted for legacy recovery calls so the
+       * legacy path (and its existing test stub on request.get) is untouched. */
+      timeout?: number;
     },
     apiKey?: string
   ): Promise<unknown> {
     let response;
     try {
-      response = await request.get(
+      const req = request.get(
         `${common.Environments[this.bitgo.getEnv()].xtzExplorerBaseUrl}/v1/${params.actionPath}${
           params.address ? '/' + params.address : ''
         }${params.action ? '/' + params.action : ''}${apiKey ? `?apikey=${apiKey}` : ''}`
       );
+      response = await (params.timeout ? req.timeout({ response: params.timeout }) : req);
     } catch (e) {
       throw new RecoveryProviderError('could not reach TZKT', e);
     }
@@ -393,11 +493,25 @@ export class Xtz extends BaseCoin {
    * @param params
    */
   async recover(params: RecoverOptions): Promise<unknown> {
-    const isUnsignedSweep = params.isUnsignedSweep;
-    this.validateRecoveryParams(params);
+    // Clean up whitespace before inference/validation so a whitespace-padded xpub is still
+    // detected as an unsigned sweep. Fall back to '' so a missing key surfaces as the documented
+    // 'missing userKey'/'missing backupKey' Error from validateRecoveryParams, not a TypeError.
+    const userKey = (params.userKey ?? '').replace(/\s/g, '');
+    const backupKey = (params.backupKey ?? '').replace(/\s/g, '');
 
-    // Clean up whitespace from entered values
-    const backupKey = params.backupKey.replace(/\s/g, '');
+    // Safe key params (from buildSafeRecoverKeyParams) always carry bitgoKey and omit the
+    // isUnsignedSweep flag; legacy callers never pass bitgoKey. Infer unsigned mode for Safe
+    // calls only, so accidental xpub/xprv inputs to legacy recovery keep failing loudly as before.
+    const isUnsignedSweep = Boolean(
+      params.isUnsignedSweep ?? (params.bitgoKey !== undefined && getIsUnsignedSweep({ userKey, backupKey }))
+    );
+    this.validateRecoveryParams(params, isUnsignedSweep);
+
+    // Validate the Safe marker before any network call so a malformed (e.g. private) bitgoKey is
+    // rejected with no explorer round-trip and without echoing its value.
+    if (params.bitgoKey !== undefined && !isValidXpub(params.bitgoKey)) {
+      throw new Error('invalid bitgo key for Safe recovery');
+    }
 
     const userAddressDetails = await this.getAddressDetails(params.walletContractAddress, params.apiKey);
 
@@ -405,27 +519,29 @@ export class Xtz extends BaseCoin {
       throw new Error('Unable to fetch user address details');
     }
 
-    // Decrypt backup private key and get address
-    let backupPrv;
-    let keyPair;
-    let backupSigningKey;
+    // Resolve the backup key into a KeyPair and, in signed mode, its signing private key
+    const keyPair = await this.resolveKeyPair(backupKey, params.walletPassphrase, isUnsignedSweep, 'backup');
+    const backupSigningKey = keyPair.getKeys().prv;
+    if (!isUnsignedSweep && !backupSigningKey) {
+      throw new Error('no private key');
+    }
 
-    if (isUnsignedSweep) {
-      keyPair = new KeyPair({ pub: backupKey });
-    } else {
-      try {
-        backupPrv = await this.bitgo.decrypt({
-          input: backupKey,
-          password: params.walletPassphrase,
-        });
-      } catch (e) {
-        throw new Error(`Error decrypting backup keychain: ${e.message}`);
-      }
-      keyPair = new KeyPair({ prv: backupPrv });
-      backupSigningKey = keyPair.getKeys().prv;
-      if (!backupSigningKey) {
-        throw new Error('no private key');
-      }
+    // Safe recovery (slot-1): the derived keys must be owners of the wallet contract. Gated on
+    // bitgoKey, which buildSafeRecoverKeyParams always emits and legacy calls never pass, so
+    // legacy recovery makes no additional network calls and stays byte-for-byte unchanged.
+    if (params.bitgoKey !== undefined) {
+      // The user key may be an xpub/sppk in unsigned Safe params, or a public key passed directly
+      // in signed mode; only resolve/decrypt private formats (xprv/hex/spsk/envelope).
+      const userKeyPair = Utils.isValidPublicKey(userKey)
+        ? new KeyPair({ pub: userKey })
+        : await this.resolveKeyPair(userKey, params.walletPassphrase, false, 'user');
+      await this.assertRecoveryKeysAreContractOwners(
+        params.walletContractAddress,
+        userKeyPair,
+        keyPair,
+        params.bitgoKey,
+        params.apiKey
+      );
     }
 
     const backupKeyAddress = keyPair.getAddress();

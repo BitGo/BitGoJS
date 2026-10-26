@@ -140,6 +140,7 @@ export interface IndexedSignature extends IndexedData {
 export type RecoverOptions = {
   userKey: string;
   backupKey: string;
+  bitgoKey?: string;
   walletPassphrase?: string;
   walletContractAddress: string; // use this as walletBaseAddress for TSS
   recoveryDestination: string;
