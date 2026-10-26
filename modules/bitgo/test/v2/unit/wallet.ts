@@ -704,6 +704,26 @@ describe('V2 Wallet:', function () {
         e.message.should.equal('cannot provide recipients for transaction type finalizeUnwrap');
       }
     });
+
+    it('still rejects recipients when prebuilding wrapApprove without a pendingApprovalId', async function () {
+      const recipients = [
+        {
+          address: '0x7db562c4dd465cc895761c56f83b6af0e32689ba',
+          amount: 0,
+        },
+      ];
+
+      let caught: (Error & { code?: string }) | undefined;
+      try {
+        await ethWallet.prebuildAndSignTransaction({ recipients, type: 'wrapApprove' });
+      } catch (e) {
+        caught = e;
+      }
+
+      should.exist(caught);
+      caught!.message.should.equal('cannot provide recipients for transaction type wrapApprove');
+      caught!.code!.should.equal('recipients_not_allowed_for_fillnonce_and_acceleration_tx_type');
+    });
   });
 
   describe('OFC Create Address', () => {
