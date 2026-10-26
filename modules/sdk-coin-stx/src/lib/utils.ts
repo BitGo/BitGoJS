@@ -280,6 +280,9 @@ export function isValidMemo(memo: string): boolean {
 /**
  * Checks for valid contract address
  *
+ * Accepts the canonical staking / send-many-memo / sbtc-withdrawal addresses plus any
+ * deployment-configured `network.allowedStakingContractAddresses` (e.g. a non-canonical pox-5).
+ *
  * @param {string} addr - contract deployer address
  * @param {BitgoStacksNetwork} network - network object
  * @returns {boolean} - the validation result
@@ -288,7 +291,8 @@ export function isValidContractAddress(addr: string, network: BitgoStacksNetwork
   return (
     addr === network.stakingContractAddress ||
     addr === network.sendmanymemoContractAddress ||
-    addr === network.sbtcWithdrawalContractAddress
+    addr === network.sbtcWithdrawalContractAddress ||
+    (network.allowedStakingContractAddresses ?? []).includes(addr)
   );
 }
 

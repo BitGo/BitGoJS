@@ -209,6 +209,16 @@ export interface StacksNetwork extends AccountNetwork {
   readonly chainId?: number;
   /** Transaction version byte. Omitted for the stock Stacks mainnet/testnet deployments. */
   readonly transactionVersion?: number;
+  /**
+   * Additional staking contract deployer addresses this network accepts, in addition to the
+   * canonical `stakingContractAddress`. Deployment-specific and temporary: used to allow a
+   * non-canonical pox-5 deployment (e.g. the Stacks Foundation test contract) without the caller
+   * passing an allowlist. Empty/omitted by default, so behaviour is unchanged unless configured.
+   *
+   * @obligation remove once the test deployment is retired — an address listed here is trusted for
+   *   every Stacks transaction on this network
+   */
+  readonly allowedStakingContractAddresses?: ReadonlyArray<string>;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -1362,6 +1372,10 @@ class Stx extends Mainnet implements StacksNetwork {
   sendmanymemoContractAddress = 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE';
   stakingContractAddress = 'SP000000000000000000002Q6VF78';
   sbtcWithdrawalContractAddress = 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4';
+  // Temporary: the Stacks Foundation pox-5 test contract (standard name `pox-5`, non-canonical boot
+  // address). Allows transactions targeting it to parse/build without a caller-supplied allowlist.
+  // Remove with the test.
+  allowedStakingContractAddresses = ['SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY'];
 }
 
 class StxTestnet extends Testnet implements StacksNetwork {

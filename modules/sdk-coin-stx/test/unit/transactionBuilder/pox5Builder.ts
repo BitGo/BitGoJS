@@ -196,6 +196,40 @@ describe('Stacks: PoX-5 Builder', function () {
     );
   });
 
+  it('accepts a deployment-configured non-canonical pox-5 address during factory routing', async () => {
+    // Mainnet `Stx` statics carry the Stacks Foundation test contract under
+    // `allowedStakingContractAddresses`, so a pox-5 call to it routes to the PoX-5 builder with no
+    // caller allowlist.
+    const factoryProd = new StxLib.TransactionBuilderFactory(coins.get('stx'));
+    const configuredAddress = 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY';
+    const builder = configure(factoryProd.getPox5Builder());
+    builder.contractAddress(configuredAddress);
+    builder.registerForBond({
+      bondIndex: 210,
+      signerManager,
+      amountUstx: '1005000',
+      lockup: { kind: 'btc', unlockBytes: '00', outputs: [validLockupOutput()] },
+    });
+    const tx = await builder.build();
+    const payload = (tx as StxLib.Transaction).stxTransaction.payload as any;
+
+    should.equal(StxLib.Pox5Builder.isValidContractCall(coins.get('stx'), payload), true);
+    // an unknown address is still rejected
+    should.equal(
+      StxLib.Pox5Builder.isValidContractCall(coins.get('stx'), {
+        ...payload,
+        contractAddress: createAddress(testData.ACCOUNT_1.address),
+      }),
+      false
+    );
+
+    // No allowlist: the raw tx rehydrates back through the PoX-5 builder.
+    const reparsed = factoryProd.from(tx.toBroadcastFormat());
+    reparsed.should.be.an.instanceOf(StxLib.Pox5Builder);
+    reparsed.fromPubKey(testData.TX_SENDER.pub);
+    should.equal((await reparsed.build()).toBroadcastFormat(), tx.toBroadcastFormat());
+  });
+
   it('builds sBTC registration using response error', async () => {
     const builder = configure(factory.getPox5Builder());
     builder.registerForBond({

@@ -18,6 +18,7 @@ import {
   uintCV,
 } from '@stacks/transactions';
 import BigNum from 'bn.js';
+import { coins } from '@bitgo/statics';
 import * as testData from './resources';
 import { StxLib } from '../../src';
 
@@ -120,6 +121,26 @@ describe('Stx util library', function () {
           ]),
         /Invalid public key/
       );
+    });
+  });
+
+  describe('isValidContractAddress', function () {
+    const network = coins.get('stx').network as any;
+    const configuredAddress = 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY';
+
+    it('accepts the canonical staking address and a deployment-configured address', function () {
+      Utils.isValidContractAddress(network.stakingContractAddress, network).should.be.true();
+      Utils.isValidContractAddress(network.sendmanymemoContractAddress, network).should.be.true();
+      Utils.isValidContractAddress(configuredAddress, network).should.be.true();
+    });
+
+    it('rejects an address that is neither canonical nor configured', function () {
+      Utils.isValidContractAddress('SP2T758K6T2YRKG9Q0TJ16B6FP5QQREWZSESRS0PY', network).should.be.false();
+    });
+
+    it('does not accept the configured address on a network that does not carry it', function () {
+      const testnet = coins.get('tstx').network as any;
+      Utils.isValidContractAddress(configuredAddress, testnet).should.be.false();
     });
   });
 

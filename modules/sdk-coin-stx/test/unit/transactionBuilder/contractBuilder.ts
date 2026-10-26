@@ -30,6 +30,9 @@ describe('Stacks: Contract Builder', function () {
   describe('Stx Contract call Builder', () => {
     const factory = new StxLib.TransactionBuilderFactory(coins.get(coinNameTest));
     const factoryProd = new StxLib.TransactionBuilderFactory(coins.get(coinName));
+    // Deployment-configured non-canonical pox-5 address (Stacks Foundation test contract) set on the
+    // mainnet `Stx` statics network as `allowedStakingContractAddresses`.
+    const CONFIGURED_STAKING_ADDRESS = 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY';
 
     const initTxBuilder = () => {
       const txBuilder = factory.getContractBuilder();
@@ -240,10 +243,11 @@ describe('Stacks: Contract Builder', function () {
 
       it('rejects an allowlisted address followed by a canonical name (order-independent pair check)', function () {
         const builder = factoryProd.getContractBuilder();
-        builder.allowedStakingContracts([
-          { name: 'pox-5-dummy-v1', address: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY' },
-        ]);
-        builder.contractAddress('SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY'); // allowlisted address first
+        // A dummy address that is NOT the network-configured pox-5 (otherwise the canonical `pox-5`
+        // name would legitimately pair with it) — keeps the allowlist pair check under test.
+        const dummyAddress = 'SP2T758K6T2YRKG9Q0TJ16B6FP5QQREWZSESRS0PY';
+        builder.allowedStakingContracts([{ name: 'pox-5-dummy-v1', address: dummyAddress }]);
+        builder.contractAddress(dummyAddress); // allowlisted address first
         (() => builder.contractName('pox-5')).should.throw(/not an allowlisted pair/);
       });
 
@@ -286,6 +290,69 @@ describe('Stacks: Contract Builder', function () {
         (() => builder.contractAddress('SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY')).should.throw(
           /Invalid contract address/
         );
+      });
+
+      it('accepts a deployment-configured staking address on the canonical pox-5 name (no allowlist)', async () => {
+        // The network statics carry the configured address, so a canonical pox-5 call targeting it
+        // builds/parses with no caller-supplied allowlist.
+        const builder = factoryProd.getContractBuilder();
+        builder.fee({ fee: '180' });
+        builder.nonce(0);
+        builder.contractAddress(CONFIGURED_STAKING_ADDRESS);
+        builder.contractName('pox-5');
+        builder.functionName('register-for-bond');
+        builder.functionArgs([
+          { type: 'uint128', val: '210' },
+          { type: 'principal', val: `${CONFIGURED_STAKING_ADDRESS}.signer-manager` },
+          { type: 'uint128', val: '1005000' },
+          { type: 'optional' },
+          { type: 'optional' },
+        ]);
+        builder.fromPubKey(testData.TX_SENDER.pub);
+        builder.numberSignatures(1);
+
+        const tx = await builder.build();
+        tx.toJson().payload.contractAddress.should.equal(CONFIGURED_STAKING_ADDRESS);
+        tx.toJson().payload.contractName.should.equal('pox-5');
+      });
+
+      it('rehydrates a configured-address pox-5 call with NO allowlist (OVC path)', async () => {
+        // The key behaviour: `factory.from(hex)` — used by sign / explain / fee-rebuild — must parse
+        // a register-for-bond targeting the configured address without any allowlist, so the offline
+        // vault console needs no code change.
+        const builder = factoryProd.getContractBuilder();
+        builder.fee({ fee: '180' });
+        builder.nonce(0);
+        builder.contractAddress(CONFIGURED_STAKING_ADDRESS);
+        builder.contractName('pox-5');
+        builder.functionName('register-for-bond');
+        builder.functionArgs([
+          { type: 'uint128', val: '210' },
+          { type: 'principal', val: `${CONFIGURED_STAKING_ADDRESS}.signer-manager` },
+          { type: 'uint128', val: '1005000' },
+          { type: 'optional' },
+          { type: 'optional' },
+        ]);
+        builder.fromPubKey(testData.TX_SENDER.pub);
+        builder.numberSignatures(1);
+        const tx = await builder.build();
+
+        // Routes to the pox-5 builder (parity) with no allowlist supplied.
+        should.equal(
+          StxLib.Pox5Builder.isValidContractCall(
+            coins.get(coinName),
+            (tx as StxLib.Transaction).stxTransaction.payload as any
+          ),
+          true
+        );
+
+        const reparsed = factoryProd.from(tx.toBroadcastFormat());
+        reparsed.should.be.an.instanceOf(StxLib.Pox5Builder);
+        reparsed.fromPubKey(testData.TX_SENDER.pub);
+        reparsed.numberSignatures(1);
+        const payload = (await reparsed.build()).toJson().payload as any;
+        should.deepEqual(payload.contractAddress, CONFIGURED_STAKING_ADDRESS);
+        should.deepEqual(payload.contractName, 'pox-5');
       });
 
       it('a signed contract call with args', async () => {

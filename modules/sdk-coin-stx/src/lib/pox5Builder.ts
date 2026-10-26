@@ -167,10 +167,13 @@ export class Pox5Builder extends ContractBuilder {
   }
 
   public static isValidContractCall(coinConfig: Readonly<CoinConfig>, payload: ContractCallPayload): boolean {
-    return (
-      (coinConfig.network as BitgoStacksNetwork).stakingContractAddress === addressToString(payload.contractAddress) &&
-      payload.contractName.content === CONTRACT_NAME_POX5
-    );
+    const network = coinConfig.network as BitgoStacksNetwork;
+    const address = addressToString(payload.contractAddress);
+    // Canonical pox-5, or a deployment-configured non-canonical pox-5 (same standard name), so the
+    // tx routes to this builder (and keeps its pox-5-specific behaviour) without a caller allowlist.
+    const isPox5Address =
+      network.stakingContractAddress === address || (network.allowedStakingContractAddresses ?? []).includes(address);
+    return isPox5Address && payload.contractName.content === CONTRACT_NAME_POX5;
   }
 
   registerForBond(params: Pox5RegisterForBondParams): this {
