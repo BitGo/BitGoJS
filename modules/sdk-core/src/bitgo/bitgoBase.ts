@@ -12,7 +12,12 @@ import { IBaseCoin } from './baseCoin';
 import { CoinConstructor } from './coinFactory';
 import { EnvironmentName } from './environments';
 import { EcdhDerivedKeypair, GetSigningKeyApi } from './keychain';
-import type { BitGoApiV1Wallets } from './v1Wallets';
+import type { BitGoApiV1Wallets, EcdhKeychain } from './v1Wallets';
+
+export interface GetEcdhKeychainOptions {
+  /** Return undefined instead of throwing when the user has no ECDH keychain. */
+  allowMissing?: boolean;
+}
 
 export type {
   BitGoApiV1AddWalletParams,
@@ -20,6 +25,7 @@ export type {
   BitGoApiV1Callback,
   BitGoApiV1CreateForwardWalletParams,
   BitGoApiV1CreateWalletWithKeychainsParams,
+  EcdhKeychain,
   BitGoApiV1GetWalletParams,
   BitGoApiV1Keychains,
   BitGoApiV1ListWalletsParams,
@@ -48,7 +54,15 @@ export interface BitGoBase {
   readonly env: EnvironmentName;
   fetchConstants(): Promise<any>;
   get(url: string): BitGoRequest;
-  getECDHKeychain(ecdhKeychainPub?: string, options?: { allowMissing?: boolean }): Promise<any | undefined>;
+  getECDHKeychain(ecdhKeychainPub?: string, options?: { allowMissing?: false }): Promise<EcdhKeychain>;
+  getECDHKeychain(
+    ecdhKeychainPub: string | undefined,
+    options: { allowMissing: true }
+  ): Promise<EcdhKeychain | undefined>;
+  getECDHKeychain(
+    ecdhKeychainPub: string | undefined,
+    options: GetEcdhKeychainOptions
+  ): Promise<EcdhKeychain | undefined>;
   getEcdhKeypairPrivate(password: string, entId?: string): Promise<EcdhDerivedKeypair>;
   getEnv(): EnvironmentName;
   getSharingKey({ email }: GetSharingKeyOptions): Promise<any>;

@@ -1593,4 +1593,24 @@ describe('getECDHKeychain', function () {
 
     assert.strictEqual(keychain, undefined);
   });
+
+  it('rejects signing-key derivation when the ECDH keychain has no encrypted private key', async function () {
+    const bitgo = new BitGoAPI({ env: 'custom', customRootURI: ROOT });
+    sinon.stub(bitgo, 'getSigningKeyForUser').resolves({
+      userId: 'user-id',
+      userEmail: 'user@example.com',
+      derivedPubkey: 'derived-pubkey',
+      derivationPath: 'm/0',
+      ecdhKeychain: 'xpub',
+    });
+    sinon.stub(bitgo, 'getECDHKeychain').resolves({ xpub: 'xpub' });
+    const decrypt = sinon.spy(bitgo, 'decrypt');
+
+    await assert.rejects(
+      bitgo.getEcdhKeypairPrivate('password', 'enterprise-id'),
+      /Something went wrong with the user keychain/
+    );
+
+    assert.strictEqual(decrypt.called, false);
+  });
 });

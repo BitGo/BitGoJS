@@ -1,5 +1,13 @@
 import type { BitGoRequest, DecryptOptions, EncryptionVersion, EncryptOptions } from '../api';
 
+/** User-level Elliptic Curve Diffie-Hellman (ECDH) sharing key returned by the legacy keychain API. */
+export type EcdhKeychain = {
+  encryptedXprv?: string;
+  xprv?: string;
+  xpub?: string;
+  [key: string]: unknown;
+};
+
 /**
  * Minimal BitGo client surface used by the **v1** Wallets facade
  * (`modules/sdk-api/src/v1/wallets.ts`).
@@ -18,7 +26,7 @@ export type BitGoApiV1BitGo = {
   url(path: string, version?: number): string;
   encrypt(params: EncryptOptions): Promise<string>;
   decrypt(params: DecryptOptions): Promise<string>;
-  getECDHKeychain(): Promise<{ encryptedXprv?: string; xprv?: string }>;
+  getECDHKeychain(): Promise<EcdhKeychain>;
   keychains(): BitGoApiV1Keychains;
 };
 

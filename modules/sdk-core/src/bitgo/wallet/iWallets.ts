@@ -367,6 +367,10 @@ export interface AcceptShareOptions {
 
 export interface BulkAcceptShareOptions {
   walletShareIds: string[];
+  /**
+   * Decrypts an existing ECDH sharing key. For a passkey account accepting only user multi-key rotation shares,
+   * no login password or ECDH key exists; `newWalletPassphrase` or this value encrypts the fresh wallet key.
+   */
   userLoginPassword: string;
   newWalletPassphrase?: string;
   webauthnInfo?: WebauthnKeyEncryptionInfo;

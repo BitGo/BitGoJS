@@ -1322,13 +1322,13 @@ export class Wallets implements IWallets {
 
   /**
    * Bulk Accept wallet shares, adding the wallets to the user's list
-   * Needs a user's password to decrypt the shared key
+   * Decrypts conventional shared keys or creates fresh user keys for multi-key rotation shares.
    *
    * @param params BulkAcceptShareOptions
-   * @param params.walletShareId - array of the wallet shares to accept
-   * @param params.userPassword - user's password to decrypt the shared wallet key
+   * @param params.walletShareIds - wallet shares to accept
+   * @param params.userLoginPassword - password used to decrypt an existing ECDH sharing key
    * @param params.newWalletPassphrase - new wallet passphrase for saving the shared wallet prv.
-   *                                     If left blank then the user's login password is used.
+   *                                     If left blank then userLoginPassword is used.
    *
    *@returns {Promise<BulkAcceptShareResponse>}
    */
@@ -1361,9 +1361,9 @@ export class Wallets implements IWallets {
     const hasSharesRequiringDecryption = walletShares.some(
       (walletShare) => !walletShare.userMultiKeyRotationRequired && walletShare.keychain
     );
-    const sharingKeychain = await this.bitgo.getECDHKeychain(undefined, {
-      allowMissing: !hasSharesRequiringDecryption,
-    });
+    const sharingKeychain = hasSharesRequiringDecryption
+      ? await this.bitgo.getECDHKeychain(undefined, { allowMissing: false })
+      : await this.bitgo.getECDHKeychain(undefined, { allowMissing: true });
     let sharingKeychainPrv: string | undefined;
     if (sharingKeychain) {
       if (_.isUndefined(sharingKeychain.encryptedXprv)) {

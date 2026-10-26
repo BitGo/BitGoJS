@@ -11,12 +11,14 @@ import {
   DecryptOptions,
   defaultConstants,
   EcdhDerivedKeypair,
+  EcdhKeychain,
   EncryptionVersion,
   EncryptOptions,
   EnvironmentName,
   generateRandomPassword,
   getAddressP2PKH,
   getSharedSecret,
+  GetEcdhKeychainOptions,
   GetSharingKeyOptions,
   GetSigningKeyApi,
   GlobalCoinFactory,
@@ -1876,9 +1878,22 @@ export class BitGoAPI implements BitGoBase {
   }
 
   /**
-   * Gets the user's private ECDH keychain
+   * Gets the user's private ECDH keychain.
+   * Returns undefined only when allowMissing is true and the user has no ECDH keychain.
    */
-  async getECDHKeychain(ecdhKeychainPub?: string, options: { allowMissing?: boolean } = {}): Promise<any | undefined> {
+  async getECDHKeychain(ecdhKeychainPub?: string, options?: { allowMissing?: false }): Promise<EcdhKeychain>;
+  async getECDHKeychain(
+    ecdhKeychainPub: string | undefined,
+    options: { allowMissing: true }
+  ): Promise<EcdhKeychain | undefined>;
+  async getECDHKeychain(
+    ecdhKeychainPub: string | undefined,
+    options: GetEcdhKeychainOptions
+  ): Promise<EcdhKeychain | undefined>;
+  async getECDHKeychain(
+    ecdhKeychainPub?: string,
+    options: GetEcdhKeychainOptions = {}
+  ): Promise<EcdhKeychain | undefined> {
     if (!ecdhKeychainPub) {
       const result = await this.get(this.url('/user/settings')).result();
       if (!result.settings.ecdhKeychain) {
@@ -1906,6 +1921,9 @@ export class BitGoAPI implements BitGoBase {
       throw new Error('Something went wrong with the user keychain. Please contact support@bitgo.com.');
     }
     const userEcdhKeychain = await this.getECDHKeychain(userSigningKey.ecdhKeychain);
+    if (!userEcdhKeychain.encryptedXprv) {
+      throw new Error('Something went wrong with the user keychain. Please contact support@bitgo.com.');
+    }
     let xprv;
     try {
       xprv = await this.decrypt({

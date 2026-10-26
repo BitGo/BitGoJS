@@ -145,7 +145,7 @@ describe('Wallets - encryptionVersion threading', function () {
       assert.strictEqual(call.args[1], undefined);
     });
 
-    it('accepts a UMKR-only batch when the user has no ECDH keychain', async function () {
+    it('accepts a multi-key rotation-only batch for a passkey account without an ECDH keychain', async function () {
       mockBitGo.getECDHKeychain.resolves(undefined);
 
       await wallets.bulkAcceptShare({
