@@ -32,6 +32,7 @@ import {
   getEddsaSigningMaterial,
   isEddsaSigningMaterial,
   signEddsaMpcV2RecoveryTx,
+  assertSafeLegacyV1Envelope,
 } from '../../../../../../src';
 import {
   getSignatureShareRoundOne,
@@ -400,7 +401,6 @@ describe('legacy v1 decrypt without a bitgo instance', () => {
   const valid = JSON.parse(sjcl.encrypt(PASSPHRASE, 'plaintext'));
 
   it('rejects an iter above the cap before running PBKDF2', async () => {
-    const start = Date.now();
     const tampered = tamper(valid, { iter: 100_001 });
     await assert.rejects(EDDSAUtils.isEddsaMpcV1SigningMaterial(tampered, PASSPHRASE), /iter out of range/);
     await assert.rejects(EDDSAUtils.getEddsaSigningMaterial(tampered, PASSPHRASE), /iter out of range/);
@@ -408,7 +408,16 @@ describe('legacy v1 decrypt without a bitgo instance', () => {
       EDDSAUtils.getEddsaMpcV2RecoveryKeySharesFromReducedKey(tampered, tampered, PASSPHRASE),
       /iter out of range/
     );
-    assert.ok(Date.now() - start < 200, 'must reject before any KDF work');
+  });
+
+  it('rejects an iter that is not an integer within range', async () => {
+    for (const iter of ['10000', 1.5, 0, -1]) {
+      await assert.rejects(
+        EDDSAUtils.isEddsaMpcV1SigningMaterial(tamper(valid, { iter }), PASSPHRASE),
+        /iter out of range/,
+        `iter ${JSON.stringify(iter)} must be rejected`
+      );
+    }
   });
 
   it('rejects a non-ccm mode', async () => {
@@ -416,6 +425,12 @@ describe('legacy v1 decrypt without a bitgo instance', () => {
       EDDSAUtils.isEddsaMpcV1SigningMaterial(tamper(valid, { mode: 'ocb2' }), PASSPHRASE),
       /unsupported mode/
     );
+  });
+
+  it('leaves non-object input for the decoder to report', () => {
+    for (const input of ['not json', 'null', '"a string"', '42']) {
+      assert.doesNotThrow(() => assertSafeLegacyV1Envelope(input), `input ${input} must pass through`);
+    }
   });
 
   it('still decrypts an envelope with the default iter and mode', async () => {

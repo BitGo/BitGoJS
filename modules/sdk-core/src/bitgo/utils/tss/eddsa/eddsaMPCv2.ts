@@ -36,6 +36,7 @@ import {
 } from '../../../tss/eddsa/eddsaMPCv2';
 import { getInitializedMpcInstance } from '../../../tss/eddsa/eddsa';
 import { generateGPGKeyPair } from '../../opengpgUtils';
+import { assertSafeLegacyV1Envelope } from '../../legacyV1Envelope';
 import { MPCv2PartiesEnum } from '../ecdsa/typesMPCv2';
 import {
   CustomEddsaMPCv2SigningRound1GeneratingFunction,
@@ -1382,34 +1383,11 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
 }
 
 /**
- * Upper bound on PBKDF2 iterations accepted from a v1 envelope. Mirrors the cap in
- * sdk-api (V1_MAX_ITER); BitGo only ever wrote 10,000.
- */
-const LEGACY_V1_MAX_ITER = 100_000;
-
-/**
- * v1-only decrypt used when no `bitgo` instance is available. SJCL reads `iter` and
- * `mode` from the envelope and has no upper bound on either, so a tampered keycard
- * could stall the caller with a huge PBKDF2 run or select the weak OCB2 mode. Refuse
- * both before SJCL sees the envelope. Absent fields take SJCL's safe defaults.
+ * v1-only decrypt used when no `bitgo` instance is available. Hostile envelopes are refused
+ * before SJCL runs.
  */
 function decryptLegacyV1(walletPassphrase: string | undefined, ciphertext: string): string {
-  let envelope: { iter?: unknown; mode?: unknown } | undefined;
-  try {
-    envelope = JSON.parse(ciphertext);
-  } catch {
-    // not JSON: let SJCL report it
-  }
-  const iter = envelope?.iter;
-  if (
-    iter !== undefined &&
-    !(Number.isInteger(iter) && (iter as number) >= 1 && (iter as number) <= LEGACY_V1_MAX_ITER)
-  ) {
-    throw new Error(`v1 envelope: iter out of range, expected an integer between 1 and ${LEGACY_V1_MAX_ITER}`);
-  }
-  if (envelope?.mode !== undefined && envelope.mode !== 'ccm') {
-    throw new Error('v1 envelope: unsupported mode, expected ccm');
-  }
+  assertSafeLegacyV1Envelope(ciphertext);
   return sjcl.decrypt(walletPassphrase, ciphertext);
 }
 
