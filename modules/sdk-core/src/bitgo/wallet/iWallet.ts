@@ -349,6 +349,8 @@ export interface PrebuildTransactionOptions {
    * Parameters for executing DAML commands on Canton.
    */
   cantonCommandParams?: CantonCommandParams;
+  /** External settlement executor party ID (cantonBroadridgeStandingDelegation intent). */
+  executorPartyId?: string;
   /** Canton party ID of the end investor to onboard (cantonEndInvestorOnboardingOffer intent). */
   endInvestorPartyId?: string;
   /** Reason for rejecting the onboarding offer (cantonEndInvestorOnboardingReject intent). */

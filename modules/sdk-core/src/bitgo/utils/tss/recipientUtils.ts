@@ -83,6 +83,7 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
   'allocationAllocate',
   'allocationOfferWithdrawn',
   'cantonCommand',
+  'cantonBroadridgeStandingDelegation',
   'cantonEndInvestorOnboardingOffer',
   'cantonEndInvestorOnboardingAccept',
   'cantonEndInvestorOnboardingReject',
@@ -159,6 +160,12 @@ export function resolveEffectiveTxParams(
   // Propagate the resolved type so downstream callers
   if (!effectiveTxParams.type && txType) {
     effectiveTxParams.type = txType;
+  }
+  if (
+    !effectiveTxParams.executorPartyId &&
+    typeof (txRequest.intent as PopulatedIntent)?.executorPartyId === 'string'
+  ) {
+    effectiveTxParams.executorPartyId = (txRequest.intent as PopulatedIntent).executorPartyId;
   }
 
   // Propagate stakingRequestId from intent into effectiveTxParams so verifyTssTransaction

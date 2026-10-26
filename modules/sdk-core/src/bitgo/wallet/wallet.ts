@@ -4844,6 +4844,23 @@ export class Wallet implements IWallet {
         );
         break;
       }
+      case 'cantonBroadridgeStandingDelegation': {
+        if (!params.executorPartyId) {
+          throw new Error('executorPartyId is required for cantonBroadridgeStandingDelegation intent');
+        }
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'cantonBroadridgeStandingDelegation',
+            executorPartyId: params.executorPartyId,
+            comment: params.comment,
+            sequenceId: params.sequenceId,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      }
       case 'cantonCommand': {
         if (!params.cantonCommandParams) {
           throw new Error('cantonCommandParams is required for cantonCommand intent');

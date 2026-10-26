@@ -63,11 +63,11 @@ describe('recipientUtils', function () {
         'allocationAllocate',
         'allocationOfferWithdrawn',
         'cantonCommand',
+        'cantonBroadridgeStandingDelegation',
         'cantonEndInvestorOnboardingOffer',
         'cantonEndInvestorOnboardingAccept',
         'cantonEndInvestorOnboardingReject',
         'cantonParticipantOnboardingRequest',
-
         'pledge',
         // Avalanche / Flare cross-chain atomic imports
         'import',
@@ -113,6 +113,18 @@ describe('recipientUtils', function () {
       const txRequest = makeTxRequest({ intent: { intentType: 'consolidate' } as any });
       const result = resolveEffectiveTxParams(txRequest, {});
       assert.strictEqual(result.type, 'consolidate');
+    });
+    it('propagates the executor party from a Canton standing delegation intent', function () {
+      const txRequest = makeTxRequest({
+        intent: {
+          intentType: 'cantonBroadridgeStandingDelegation',
+          executorPartyId: 'executor::1220bbbb',
+        } as PopulatedIntent,
+      });
+      const result = resolveEffectiveTxParams(txRequest, undefined);
+      assert.strictEqual(result.type, 'cantonBroadridgeStandingDelegation');
+      assert.strictEqual(result.executorPartyId, 'executor::1220bbbb');
+      assert.strictEqual(result.recipients, undefined);
     });
 
     describe('ERC-7984 shield wrapParams propagation', function () {
@@ -188,6 +200,7 @@ describe('recipientUtils', function () {
         'cantonEndInvestorOnboardingAccept',
         'cantonEndInvestorOnboardingReject',
         'cantonParticipantOnboardingRequest',
+        'cantonBroadridgeStandingDelegation',
       ];
 
       for (const intentType of cantonIntentTypes) {
