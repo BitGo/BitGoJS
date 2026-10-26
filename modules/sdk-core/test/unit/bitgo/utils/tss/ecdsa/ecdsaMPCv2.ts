@@ -1414,8 +1414,22 @@ describe('signRequestBase message finalization', () => {
    * using the signBitgoMPCv2RoundX helpers. Only the HTTP transport is faked
    * (bitgo.get / bitgo.post chains), which is exactly the surface the
    * finalization-tail decision acts on: GET txrequests vs POST /send.
+   *
+   * deliveredAtIngestion models the custodial flow (wallet-platform combines
+   * and delivers the message inside share ingestion); when false, the first
+   * GET still shows the un-combined pendingDelivery/readyToCombineShares
+   * request, as it does for self-custodial wallets. sendFails makes the
+   * POST /send reject; neverDelivers keeps every GET un-combined to assert
+   * genuine send errors still surface.
    */
-  const runFullSigningFlow = async (params: { requestType: 'tx' | 'message'; txRequest: TxRequest }) => {
+  const runFullSigningFlow = async (params: {
+    requestType: 'tx' | 'message';
+    txRequest: TxRequest;
+    deliveredAtIngestion?: boolean;
+    sendFails?: boolean;
+    neverDelivers?: boolean;
+  }) => {
+    const { deliveredAtIngestion = true, sendFails = false, neverDelivers = false } = params;
     const postedUrls: string[] = [];
     const getUrls: string[] = [];
     const hashBuffer = Buffer.alloc(32, 1);
@@ -1430,6 +1444,22 @@ describe('signRequestBase message finalization', () => {
     const carrier = { transactions: [{ signatureShares: [] }] } as unknown as TxRequest;
     let signPostCount = 0;
 
+    const deliveredResponse = {
+      ...params.txRequest,
+      state: 'delivered',
+      [params.requestType === 'message' ? 'messages' : 'transactions']: [
+        {
+          state: 'signed',
+          txHash: '0xsigned-message-hash',
+          signatureShares: [],
+          ...(params.requestType === 'tx'
+            ? { unsignedTx: { derivationPath, signableHex: 'abcd', serializedTxHex: 'abcd' } }
+            : {}),
+        },
+      ],
+    } as unknown as TxRequest;
+
+    let getCallCount = 0;
     const mockBg = {
       getEnv: () => 'test',
       setRequestTracer: () => undefined,
@@ -1443,24 +1473,31 @@ describe('signRequestBase message finalization', () => {
         },
         async result() {
           getUrls.push(url);
-          return {
-            txRequests: [
-              {
-                ...params.txRequest,
-                state: 'delivered',
-                [params.requestType === 'message' ? 'messages' : 'transactions']: [
-                  {
-                    state: 'signed',
-                    txHash: '0xsigned-message-hash',
-                    signatureShares: [],
-                    ...(params.requestType === 'tx'
-                      ? { unsignedTx: { derivationPath, signableHex: 'abcd', serializedTxHex: 'abcd' } }
-                      : {}),
-                  },
-                ],
-              },
-            ],
-          };
+          getCallCount += 1;
+          // First fetch after the final share for a self-custodial wallet:
+          // nothing has combined the shares yet.
+          if (
+            params.requestType === 'message' &&
+            (!deliveredAtIngestion || neverDelivers) &&
+            (getCallCount === 1 || neverDelivers)
+          ) {
+            return {
+              txRequests: [
+                {
+                  ...params.txRequest,
+                  state: 'pendingDelivery',
+                  messages: [
+                    {
+                      ...(params.txRequest.messages![0] as Record<string, unknown>),
+                      state: 'readyToCombineShares',
+                      signatureShares: [],
+                    },
+                  ],
+                },
+              ],
+            };
+          }
+          return { txRequests: [deliveredResponse] };
         },
       }),
       post: (url: string) => {
@@ -1473,7 +1510,12 @@ describe('signRequestBase message finalization', () => {
           },
           async result() {
             if (!url.endsWith('/sign')) {
-              return { ...params.txRequest, state: 'delivered' };
+              if (sendFails) {
+                throw new Error(
+                  'Expected transaction request to be in state pendingDelivery but it is in state delivered.'
+                );
+              }
+              return deliveredResponse;
             }
             signPostCount += 1;
             const body = this._body as { signatureShares: SignatureShareRecord[]; signerGpgPublicKey: string };
@@ -1532,24 +1574,27 @@ describe('signRequestBase message finalization', () => {
     return { result, postedUrls, getUrls };
   };
 
-  it('message requests finalize via GET (wallet-platform delivers at share ingestion), never POST /send', async () => {
+  const messageTxRequest = (txRequestId: string) =>
+    ({
+      txRequestId,
+      walletId: walletID,
+      apiVersion: 'full',
+      state: 'pendingDelivery',
+      messages: [{ messageRaw: 'raw', messageEncoded: 'abcd', derivationPath: 'm/0' }],
+    } as unknown as TxRequest);
+
+  it('message requests delivered at share ingestion (custodial) finalize via GET without POST /send', async () => {
     const txRequestId = 'msg-txreq-finalization';
     const { result, postedUrls, getUrls } = await runFullSigningFlow({
       requestType: 'message',
-      txRequest: {
-        txRequestId,
-        walletId: walletID,
-        apiVersion: 'full',
-        state: 'pendingDelivery',
-        messages: [{ messageRaw: 'raw', messageEncoded: 'abcd', derivationPath: 'm/0' }],
-      } as unknown as TxRequest,
+      txRequest: messageTxRequest(txRequestId),
     });
 
     assert.strictEqual(result.state, 'delivered');
     assert.strictEqual(
       postedUrls.filter((url) => url.endsWith('/send')).length,
       0,
-      'message signing must not POST /send (wallet-platform already delivered at share ingestion)'
+      'an already-delivered message must not POST /send (wallet-platform rejects it)'
     );
     assert.ok(
       postedUrls.every((url) => url.includes(`/txrequests/${txRequestId}/messages/0/sign`)),
@@ -1559,6 +1604,54 @@ describe('signRequestBase message finalization', () => {
     // final re-fetch.
     assert.strictEqual(getUrls.length, 1);
     assert.ok(getUrls[0].includes('/txrequests'));
+  });
+
+  it('message requests left un-combined at ingestion (self-custodial) finalize via POST /send', async () => {
+    const txRequestId = 'msg-txreq-self-custodial';
+    const { result, postedUrls, getUrls } = await runFullSigningFlow({
+      requestType: 'message',
+      txRequest: messageTxRequest(txRequestId),
+      deliveredAtIngestion: false,
+    });
+
+    assert.strictEqual(result.state, 'delivered');
+    assert.strictEqual(
+      postedUrls.filter((url) => url.endsWith(`/txrequests/${txRequestId}/messages/0/send`)).length,
+      1,
+      'self-custodial message signing must POST /send to trigger the combine and delivery'
+    );
+    assert.strictEqual(getUrls.length, 1, 'the pre-send GET is the only fetch when /send succeeds');
+  });
+
+  it('a /send rejection falls back to a re-fetch when the message became terminal concurrently', async () => {
+    const txRequestId = 'msg-txreq-send-race';
+    const { result, postedUrls, getUrls } = await runFullSigningFlow({
+      requestType: 'message',
+      txRequest: messageTxRequest(txRequestId),
+      deliveredAtIngestion: false,
+      sendFails: true,
+    });
+
+    assert.strictEqual(result.state, 'delivered');
+    assert.strictEqual(
+      postedUrls.filter((url) => url.endsWith(`/txrequests/${txRequestId}/messages/0/send`)).length,
+      1,
+      'the /send attempt must have been made before the fallback fetch'
+    );
+    assert.strictEqual(getUrls.length, 2, 'the tail must re-fetch once after the /send rejection');
+  });
+
+  it('a /send rejection for a request that is still un-combined still surfaces the error', async () => {
+    await assert.rejects(
+      runFullSigningFlow({
+        requestType: 'message',
+        txRequest: messageTxRequest('msg-txreq-send-fails'),
+        deliveredAtIngestion: false,
+        sendFails: true,
+        neverDelivers: true,
+      }),
+      /pendingDelivery/
+    );
   });
 
   it('transaction requests still finalize via POST /send', async () => {

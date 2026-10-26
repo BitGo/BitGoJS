@@ -1146,15 +1146,34 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       params.reqId
     );
 
-    // Messages are combined and marked delivered by wallet-platform inside
-    // the final share submission itself (the signed-message Kafka event is
-    // published there too): by the time this call returns, a message request
-    // is already terminal. POSTing /send afterwards — as the transaction
-    // flow does — would be rejected by wallet-platform's pendingDelivery
-    // assert on the already-delivered request. Re-fetch the request instead,
-    // mirroring the legacy MPCv1 ECDSA message path.
+    // Message finalization differs by custody model:
+    // - Custodial wallets: wallet-platform combines the shares and marks the
+    //   message delivered inside the final share submission itself (the
+    //   signed-message Kafka event is published there too), so the request is
+    //   already terminal by the time this call returns. A follow-up POST /send
+    //   would be rejected by wallet-platform's pendingDelivery assert on the
+    //   already-delivered request — re-fetch and return instead.
+    // - Self-custodial wallets: nothing combines the shares at ingestion;
+    //   the request stays pendingDelivery/readyToCombineShares until the
+    //   client POSTs /send, which triggers the combine, the delivered-state
+    //   transition and the signed-message Kafka publish.
     if (requestType === RequestType.message) {
-      return getTxRequest(this.bitgo, txRequest.walletId, txRequest.txRequestId, params.reqId);
+      const fetched = await getTxRequest(this.bitgo, txRequest.walletId, txRequest.txRequestId, params.reqId);
+      if (fetched.state === 'delivered' || fetched.messages?.[0]?.txHash) {
+        return fetched;
+      }
+      try {
+        return await sendTxRequest(this.bitgo, txRequest.walletId, txRequest.txRequestId, requestType, params.reqId);
+      } catch (err) {
+        // The combine/delivery may have completed concurrently (e.g. a
+        // custodial ingestion commit landing between the GET and the POST).
+        // If the request is now terminal, surface it instead of the error.
+        const refetched = await getTxRequest(this.bitgo, txRequest.walletId, txRequest.txRequestId, params.reqId);
+        if (refetched.state === 'delivered' || refetched.messages?.[0]?.txHash) {
+          return refetched;
+        }
+        throw err;
+      }
     }
     return sendTxRequest(this.bitgo, txRequest.walletId, txRequest.txRequestId, requestType, params.reqId);
   }
