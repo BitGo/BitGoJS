@@ -3,10 +3,19 @@ import should from 'should';
 import BigNum from 'bn.js';
 import { STACKS_TESTNET, STACKS_MAINNET } from '@stacks/network';
 import { InvalidParameterValueError, ParseTransactionError, TransactionType } from '@bitgo/sdk-core';
-import { bufferCV, noneCV, someCV, standardPrincipalCV, tupleCV, uintCV, intCV } from '@stacks/transactions';
+import {
+  bufferCV,
+  ContractCallPayload,
+  noneCV,
+  someCV,
+  standardPrincipalCV,
+  tupleCV,
+  uintCV,
+  intCV,
+} from '@stacks/transactions';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { coins } from '@bitgo/statics';
+import { coins, BaseCoin as CoinConfig } from '@bitgo/statics';
 
 import { Stx, Tstx, StxLib } from '../../../src';
 import * as testData from '../resources';
@@ -171,17 +180,15 @@ describe('Stacks: Contract Builder', function () {
       it('an unsigned caller-allowlisted non-canonical pox-5 (dummy) contract call transaction', async () => {
         // The caller supplies the staking contract it is configured for — no SDK change needed.
         const builder = factoryProd.getContractBuilder();
-        builder.allowedStakingContracts([
-          { name: 'pox-5-dummy-v1', address: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY' },
-        ]);
+        builder.allowedStakingContracts([{ name: 'pox-5-test', address: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY' }]);
         builder.fee({ fee: '180' });
         builder.nonce(0);
         builder.contractAddress('SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY');
-        builder.contractName('pox-5-dummy-v1');
+        builder.contractName('pox-5-test');
         builder.functionName('register-for-bond');
         builder.functionArgs([
           { type: 'uint128', val: '210' },
-          { type: 'principal', val: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY.signer-manager-stackslabs-dummy-v1' },
+          { type: 'principal', val: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY.signer-manager-stackslabs-test' },
           { type: 'uint128', val: '1005000' },
           { type: 'optional' },
           { type: 'optional' },
@@ -191,7 +198,7 @@ describe('Stacks: Contract Builder', function () {
 
         const tx = await builder.build();
         const txJson = tx.toJson();
-        should.deepEqual(txJson.payload.contractName, 'pox-5-dummy-v1');
+        should.deepEqual(txJson.payload.contractName, 'pox-5-test');
         should.deepEqual(txJson.payload.contractAddress, 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY');
         should.deepEqual(txJson.payload.functionName, 'register-for-bond');
       });
@@ -199,17 +206,17 @@ describe('Stacks: Contract Builder', function () {
       it('rehydrates an allowlisted non-canonical contract call (sign / explain / fee-rebuild path)', async () => {
         // `signTransaction` / `explainTransaction` / the fee re-build all go through `factory.from(hex)`,
         // which re-creates the builder — re-parsing must not reject the allowlisted contract.
-        const allowlist = [{ name: 'pox-5-dummy-v1', address: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY' }];
+        const allowlist = [{ name: 'pox-5-test', address: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY' }];
         const builder = factoryProd.getContractBuilder();
         builder.allowedStakingContracts(allowlist);
         builder.fee({ fee: '180' });
         builder.nonce(0);
         builder.contractAddress('SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY');
-        builder.contractName('pox-5-dummy-v1');
+        builder.contractName('pox-5-test');
         builder.functionName('register-for-bond');
         builder.functionArgs([
           { type: 'uint128', val: '210' },
-          { type: 'principal', val: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY.signer-manager-stackslabs-dummy-v1' },
+          { type: 'principal', val: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY.signer-manager-stackslabs-test' },
           { type: 'uint128', val: '1005000' },
           { type: 'optional' },
           { type: 'optional' },
@@ -223,7 +230,7 @@ describe('Stacks: Contract Builder', function () {
         reparsed.numberSignatures(1);
         const payload = (await reparsed.build()).toJson().payload;
         should.deepEqual(payload.contractAddress, 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY');
-        should.deepEqual(payload.contractName, 'pox-5-dummy-v1');
+        should.deepEqual(payload.contractName, 'pox-5-test');
 
         // Without the allowlist the rebuild is rejected — canonical validation is preserved (no relaxation).
         (() => factoryProd.from(tx.toBroadcastFormat())).should.throw(ParseTransactionError);
@@ -231,47 +238,39 @@ describe('Stacks: Contract Builder', function () {
 
       it('rejects an allowlisted name followed by a canonical address (order-independent pair check)', function () {
         const builder = factoryProd.getContractBuilder();
-        builder.allowedStakingContracts([
-          { name: 'pox-5-dummy-v1', address: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY' },
-        ]);
-        builder.contractName('pox-5-dummy-v1'); // allowlisted name first
+        builder.allowedStakingContracts([{ name: 'pox-5-test', address: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY' }]);
+        builder.contractName('pox-5-test'); // allowlisted name first
         (() => builder.contractAddress('SP000000000000000000002Q6VF78')).should.throw(/not an allowlisted pair/);
       });
 
       it('rejects an allowlisted address followed by a canonical name (order-independent pair check)', function () {
         const builder = factoryProd.getContractBuilder();
-        builder.allowedStakingContracts([
-          { name: 'pox-5-dummy-v1', address: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY' },
-        ]);
+        builder.allowedStakingContracts([{ name: 'pox-5-test', address: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY' }]);
         builder.contractAddress('SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY'); // allowlisted address first
-        (() => builder.contractName('pox-5')).should.throw(/not an allowlisted pair/);
+        (() => builder.contractName('pox-4')).should.throw(/not an allowlisted pair/);
       });
 
       it('rejects duplicate allowlisted contract names', function () {
         const builder = factoryProd.getContractBuilder();
         (() =>
           builder.allowedStakingContracts([
-            { name: 'pox-5-dummy-v1', address: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY' },
-            { name: 'pox-5-dummy-v1', address: 'SP000000000000000000002Q6VF78' },
+            { name: 'pox-5-test', address: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY' },
+            { name: 'pox-5-test', address: 'SP000000000000000000002Q6VF78' },
           ])).should.throw(/Duplicate staking contract name/);
       });
 
       it('rejects an allowlisted name paired with a different address', function () {
         const builder = factoryProd.getContractBuilder();
-        builder.allowedStakingContracts([
-          { name: 'pox-5-dummy-v1', address: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY' },
-        ]);
+        builder.allowedStakingContracts([{ name: 'pox-5-test', address: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY' }]);
         builder.contractAddress('SP000000000000000000002Q6VF78'); // canonical address, wrong pair
-        (() => builder.contractName('pox-5-dummy-v1')).should.throw(/not an allowlisted pair/);
+        (() => builder.contractName('pox-5-test')).should.throw(/not an allowlisted pair/);
       });
 
       it('rejects a function that is not in the pox-5 set for an allowlisted contract', function () {
         const builder = factoryProd.getContractBuilder();
-        builder.allowedStakingContracts([
-          { name: 'pox-5-dummy-v1', address: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY' },
-        ]);
+        builder.allowedStakingContracts([{ name: 'pox-5-test', address: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY' }]);
         builder.contractAddress('SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY');
-        builder.contractName('pox-5-dummy-v1');
+        builder.contractName('pox-5-test');
         // `stack-stx` is a pox-4 function, not part of the pox-5 ABI the dummy mirrors.
         (() => builder.functionName('stack-stx')).should.throw(/is not supported contract function name/);
       });
@@ -286,6 +285,148 @@ describe('Stacks: Contract Builder', function () {
         (() => builder.contractAddress('SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY')).should.throw(
           /Invalid contract address/
         );
+      });
+
+      describe('network-configured staking contract pairs (SI-2089)', function () {
+        // The mainnet Stx network declares this as a pair-scoped, self-expiring pox-5 allowance.
+        const CONFIGURED_ADDRESS = 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY';
+        const CANONICAL_ADDRESS = 'SP000000000000000000002Q6VF78';
+
+        const withPairs = (pairs: ReadonlyArray<{ name: string; address: string; expiresAt?: string }>) =>
+          ({
+            ...coins.get(coinName),
+            network: { ...coins.get(coinName).network, allowedStakingContracts: pairs },
+          } as unknown as Readonly<CoinConfig>);
+
+        const buildRegisterForBond = (factoryInstance: StxLib.TransactionBuilderFactory) => {
+          const builder = factoryInstance.getContractBuilder();
+          builder.fee({ fee: '180' });
+          builder.nonce(0);
+          builder.contractAddress(CONFIGURED_ADDRESS);
+          builder.contractName('pox-5');
+          builder.functionName('register-for-bond');
+          builder.functionArgs([
+            { type: 'uint128', val: '210' },
+            { type: 'principal', val: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY.signer-manager' },
+            { type: 'uint128', val: '1005000' },
+            { type: 'optional' },
+            { type: 'optional' },
+          ]);
+          builder.fromPubKey(testData.TX_SENDER.pub);
+          builder.numberSignatures(1);
+          return builder;
+        };
+
+        it('accepts pox-5 at the configured network address', async function () {
+          // Injected pair with a far-future expiry so the test exercises the pair logic and does not
+          // depend on the shipped `expiresAt` in the mainnet statics (which would break CI once past).
+          const builder = buildRegisterForBond(
+            new StxLib.TransactionBuilderFactory(
+              withPairs([{ name: 'pox-5', address: CONFIGURED_ADDRESS, expiresAt: '2999-01-01' }])
+            )
+          );
+          const tx = await builder.build();
+          should.deepEqual(tx.toJson().payload.contractAddress, CONFIGURED_ADDRESS);
+          should.deepEqual(tx.toJson().payload.contractName, 'pox-5');
+        });
+
+        it('parses a configured-address register-for-bond via from(hex) with NO caller allowlist', async function () {
+          const factory = new StxLib.TransactionBuilderFactory(
+            withPairs([{ name: 'pox-5', address: CONFIGURED_ADDRESS, expiresAt: '2999-01-01' }])
+          );
+          const tx = await buildRegisterForBond(factory).build();
+          const reparsed = factory.from(tx.toBroadcastFormat());
+          reparsed.fromPubKey(testData.TX_SENDER.pub);
+          reparsed.numberSignatures(1);
+          const payload = (await reparsed.build()).toJson().payload as unknown as ContractCallPayload;
+          should.deepEqual(payload.contractAddress, CONFIGURED_ADDRESS);
+          should.deepEqual(payload.contractName, 'pox-5');
+        });
+
+        it('rejects pox-4 at the configured network address (reviewer regression)', function () {
+          // Injected non-expired pair: the rejection must be the PAIR check, not the address check —
+          // reading the shipped pin would flip this to "Invalid contract address" once it expires.
+          const builder = new StxLib.TransactionBuilderFactory(
+            withPairs([{ name: 'pox-5', address: CONFIGURED_ADDRESS, expiresAt: '2999-01-01' }])
+          ).getContractBuilder();
+          builder.contractName('pox-4');
+          (() => builder.contractAddress(CONFIGURED_ADDRESS)).should.throw(/not an allowlisted pair/);
+        });
+
+        it('rejects send-many-memo at the configured network address', function () {
+          const builder = new StxLib.TransactionBuilderFactory(
+            withPairs([{ name: 'pox-5', address: CONFIGURED_ADDRESS, expiresAt: '2999-01-01' }])
+          ).getContractBuilder();
+          builder.contractName('send-many-memo');
+          (() => builder.contractAddress(CONFIGURED_ADDRESS)).should.throw(/not an allowlisted pair/);
+        });
+
+        it('rejects an unknown address', function () {
+          const builder = factoryProd.getContractBuilder();
+          (() => builder.contractAddress('SP2TYC2AVC4GSB01F78H0XSVTH8WRGV95BXFG4BBR')).should.throw(
+            /Invalid contract address/
+          );
+        });
+
+        it('still accepts canonical pox-5 and pox-4 at the canonical address', function () {
+          const pox5 = factoryProd.getContractBuilder();
+          pox5.contractName('pox-5');
+          (() => pox5.contractAddress(CANONICAL_ADDRESS)).should.not.throw();
+          const pox4 = factoryProd.getContractBuilder();
+          pox4.contractName('pox-4');
+          (() => pox4.contractAddress(CANONICAL_ADDRESS)).should.not.throw();
+        });
+
+        it('honours the expiry: expired entry rejected, non-expired and absent accepted', function () {
+          const expired = new StxLib.TransactionBuilderFactory(
+            withPairs([{ name: 'pox-5', address: CONFIGURED_ADDRESS, expiresAt: '2020-01-01' }])
+          );
+          const expiredBuilder = expired.getContractBuilder();
+          expiredBuilder.contractName('pox-5');
+          (() => expiredBuilder.contractAddress(CONFIGURED_ADDRESS)).should.throw(/Invalid contract address/);
+
+          const active = new StxLib.TransactionBuilderFactory(
+            withPairs([{ name: 'pox-5', address: CONFIGURED_ADDRESS, expiresAt: '2999-01-01' }])
+          );
+          const activeBuilder = active.getContractBuilder();
+          activeBuilder.contractName('pox-5');
+          (() => activeBuilder.contractAddress(CONFIGURED_ADDRESS)).should.not.throw();
+
+          const noExpiry = new StxLib.TransactionBuilderFactory(
+            withPairs([{ name: 'pox-5', address: CONFIGURED_ADDRESS }])
+          );
+          const noExpiryBuilder = noExpiry.getContractBuilder();
+          noExpiryBuilder.contractName('pox-5');
+          (() => noExpiryBuilder.contractAddress(CONFIGURED_ADDRESS)).should.not.throw();
+        });
+
+        it('keeps the caller-supplied allowlist as a working override', async function () {
+          // A caller-only pair (not declared on the network) still works when passed explicitly.
+          const DUMMY_ADDRESS = 'SP2T758K6T2YRKG9Q0TJ16B6FP5QQREWZSESRS0PY';
+          const builder = factoryProd.getContractBuilder();
+          builder.allowedStakingContracts([{ name: 'pox-5-test', address: DUMMY_ADDRESS }]);
+          builder.fee({ fee: '180' });
+          builder.nonce(0);
+          builder.contractAddress(DUMMY_ADDRESS);
+          builder.contractName('pox-5-test');
+          builder.functionName('register-for-bond');
+          builder.functionArgs([
+            { type: 'uint128', val: '210' },
+            { type: 'principal', val: `${DUMMY_ADDRESS}.signer-manager` },
+            { type: 'uint128', val: '1005000' },
+            { type: 'optional' },
+            { type: 'optional' },
+          ]);
+          builder.fromPubKey(testData.TX_SENDER.pub);
+          builder.numberSignatures(1);
+          const tx = await builder.build();
+          should.deepEqual(tx.toJson().payload.contractAddress, DUMMY_ADDRESS);
+
+          // Without the caller allowlist the same address is not accepted by the network.
+          (() => factoryProd.getContractBuilder().contractAddress(DUMMY_ADDRESS)).should.throw(
+            /Invalid contract address/
+          );
+        });
       });
 
       it('a signed contract call with args', async () => {

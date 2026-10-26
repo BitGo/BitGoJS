@@ -26,7 +26,7 @@ import {
   FUNCTION_NAME_UNSTAKE,
   FUNCTION_NAME_UPDATE_BOND_REGISTRATION,
 } from './constants';
-import { contractPrincipalCVFromString, standardPrincipalCVFromString } from './utils';
+import { contractPrincipalCVFromString, isExpired, standardPrincipalCVFromString } from './utils';
 
 type Integer = bigint | number | string;
 type ByteValue = Buffer | Uint8Array | string;
@@ -167,10 +167,14 @@ export class Pox5Builder extends ContractBuilder {
   }
 
   public static isValidContractCall(coinConfig: Readonly<CoinConfig>, payload: ContractCallPayload): boolean {
-    return (
-      (coinConfig.network as BitgoStacksNetwork).stakingContractAddress === addressToString(payload.contractAddress) &&
-      payload.contractName.content === CONTRACT_NAME_POX5
+    const network = coinConfig.network as BitgoStacksNetwork;
+    const address = addressToString(payload.contractAddress);
+    const isCanonical = network.stakingContractAddress === address;
+    // A configured (non-expired) network pair may point pox-5 at a different deployer.
+    const isConfiguredPair = (network.allowedStakingContracts ?? []).some(
+      (pair) => pair.name === CONTRACT_NAME_POX5 && pair.address === address && !isExpired(pair.expiresAt)
     );
+    return (isCanonical || isConfiguredPair) && payload.contractName.content === CONTRACT_NAME_POX5;
   }
 
   registerForBond(params: Pox5RegisterForBondParams): this {
