@@ -231,6 +231,26 @@ describe('decryptV1 (native, SJCL-free)', () => {
       );
     });
 
+    it('rejects a hostile iter or mode hidden by whitespace in the key', async () => {
+      const ct = await encrypt(password, plaintext, { encryptionVersion: 1 });
+      const spacedIter = ct.replace(/"iter":\d+/, '"it er":3000000');
+      const spacedMode = ct.replace('"mode":"ccm"', '"mo de":"ocb2"');
+      assert.notStrictEqual(spacedIter, ct);
+      assert.notStrictEqual(spacedMode, ct);
+      for (const isBrowser of [true, false]) {
+        const start = Date.now();
+        await assert.rejects(
+          () => decryptV1WithFallback(password, spacedIter, decryptV1, isBrowser),
+          /iter out of range/
+        );
+        await assert.rejects(
+          () => decryptV1WithFallback(password, spacedMode, decryptV1, isBrowser),
+          /unsupported mode/
+        );
+        assert.ok(Date.now() - start < 2000, 'must not run the inflated PBKDF2');
+      }
+    });
+
     it('still decrypts a legacy envelope without a v field', async () => {
       const envelope = JSON.parse(await encrypt(password, plaintext, { encryptionVersion: 1 }));
       delete envelope.v;
