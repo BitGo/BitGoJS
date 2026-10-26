@@ -1358,15 +1358,23 @@ export class Wallets implements IWallets {
       throw new Error('No valid wallet shares found to accept');
     }
 
-    const sharingKeychain = await this.bitgo.getECDHKeychain();
-    if (_.isUndefined(sharingKeychain.encryptedXprv)) {
-      throw new Error('encryptedXprv was not found on sharing keychain');
-    }
-
-    sharingKeychain.prv = await this.bitgo.decrypt({
-      password: params.userLoginPassword,
-      input: sharingKeychain.encryptedXprv,
+    const hasSharesRequiringDecryption = walletShares.some(
+      (walletShare) => !walletShare.userMultiKeyRotationRequired && walletShare.keychain
+    );
+    const sharingKeychain = await this.bitgo.getECDHKeychain(undefined, {
+      allowMissing: !hasSharesRequiringDecryption,
     });
+    let sharingKeychainPrv: string | undefined;
+    if (sharingKeychain) {
+      if (_.isUndefined(sharingKeychain.encryptedXprv)) {
+        throw new Error('encryptedXprv was not found on sharing keychain');
+      }
+
+      sharingKeychainPrv = await this.bitgo.decrypt({
+        password: params.userLoginPassword,
+        input: sharingKeychain.encryptedXprv,
+      });
+    }
     const newWalletPassphrase = params.newWalletPassphrase || params.userLoginPassword;
     const webauthnInfo = params.webauthnInfo;
 
@@ -1409,8 +1417,12 @@ export class Wallets implements IWallets {
       if (!walletShare.keychain) {
         return [];
       }
+      assert(
+        sharingKeychainPrv,
+        'Unable to accept this wallet share because your sharing key could not be loaded. Please try again, or contact support@bitgo.com if the problem continues.'
+      );
       const secret = getSharedSecret(
-        bip32.fromBase58(sharingKeychain.prv).derivePath(sanitizeLegacyPath(walletShare.keychain.path)),
+        bip32.fromBase58(sharingKeychainPrv).derivePath(sanitizeLegacyPath(walletShare.keychain.path)),
         Buffer.from(walletShare.keychain.fromPubKey, 'hex')
       ).toString('hex');
 
