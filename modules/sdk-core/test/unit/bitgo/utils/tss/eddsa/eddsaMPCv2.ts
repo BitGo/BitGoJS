@@ -393,6 +393,36 @@ describe('EdDSA MPS DSG helper functions', async () => {
   });
 });
 
+describe('legacy v1 decrypt without a bitgo instance', () => {
+  const PASSPHRASE = 'test-passphrase';
+  const tamper = (envelope: Record<string, unknown>, change: Record<string, unknown>): string =>
+    JSON.stringify({ ...envelope, ...change });
+  const valid = JSON.parse(sjcl.encrypt(PASSPHRASE, 'plaintext'));
+
+  it('rejects an iter above the cap before running PBKDF2', async () => {
+    const start = Date.now();
+    const tampered = tamper(valid, { iter: 100_001 });
+    await assert.rejects(EDDSAUtils.isEddsaMpcV1SigningMaterial(tampered, PASSPHRASE), /iter out of range/);
+    await assert.rejects(EDDSAUtils.getEddsaSigningMaterial(tampered, PASSPHRASE), /iter out of range/);
+    await assert.rejects(
+      EDDSAUtils.getEddsaMpcV2RecoveryKeySharesFromReducedKey(tampered, tampered, PASSPHRASE),
+      /iter out of range/
+    );
+    assert.ok(Date.now() - start < 200, 'must reject before any KDF work');
+  });
+
+  it('rejects a non-ccm mode', async () => {
+    await assert.rejects(
+      EDDSAUtils.isEddsaMpcV1SigningMaterial(tamper(valid, { mode: 'ocb2' }), PASSPHRASE),
+      /unsupported mode/
+    );
+  });
+
+  it('still decrypts an envelope with the default iter and mode', async () => {
+    assert.strictEqual(await EDDSAUtils.isEddsaMpcV1SigningMaterial(JSON.stringify(valid), PASSPHRASE), false);
+  });
+});
+
 describe('getEddsaMPCv2RecoveryKeyShares', () => {
   const walletPassphrase = 'testPass';
 

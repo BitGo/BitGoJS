@@ -1382,6 +1382,38 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
 }
 
 /**
+ * Upper bound on PBKDF2 iterations accepted from a v1 envelope. Mirrors the cap in
+ * sdk-api (V1_MAX_ITER); BitGo only ever wrote 10,000.
+ */
+const LEGACY_V1_MAX_ITER = 100_000;
+
+/**
+ * v1-only decrypt used when no `bitgo` instance is available. SJCL reads `iter` and
+ * `mode` from the envelope and has no upper bound on either, so a tampered keycard
+ * could stall the caller with a huge PBKDF2 run or select the weak OCB2 mode. Refuse
+ * both before SJCL sees the envelope. Absent fields take SJCL's safe defaults.
+ */
+function decryptLegacyV1(walletPassphrase: string | undefined, ciphertext: string): string {
+  let envelope: { iter?: unknown; mode?: unknown } | undefined;
+  try {
+    envelope = JSON.parse(ciphertext);
+  } catch {
+    // not JSON: let SJCL report it
+  }
+  const iter = envelope?.iter;
+  if (
+    iter !== undefined &&
+    !(Number.isInteger(iter) && (iter as number) >= 1 && (iter as number) <= LEGACY_V1_MAX_ITER)
+  ) {
+    throw new Error(`v1 envelope: iter out of range, expected an integer between 1 and ${LEGACY_V1_MAX_ITER}`);
+  }
+  if (envelope?.mode !== undefined && envelope.mode !== 'ccm') {
+    throw new Error('v1 envelope: unsupported mode, expected ccm');
+  }
+  return sjcl.decrypt(walletPassphrase, ciphertext);
+}
+
+/**
  * Detect whether an encrypted keycard contains MPCv1 signing material.
  *
  * Decrypts the keycard and checks for the JSON shape produced by the MPCv1 TSS
@@ -1417,7 +1449,7 @@ export async function isEddsaMpcV1SigningMaterial(
 ): Promise<boolean> {
   const decrypted = bitgo
     ? await bitgo.decrypt({ input: encryptedKeyShare, password: walletPassphrase })
-    : sjcl.decrypt(walletPassphrase, encryptedKeyShare);
+    : decryptLegacyV1(walletPassphrase, encryptedKeyShare);
   return parseEddsaMpcV1Material(decrypted) !== null;
 }
 
@@ -1446,7 +1478,7 @@ export async function getEddsaMpcV2RecoveryKeySharesFromReducedKey(
   ): Promise<{ reduced: MPSTypes.EddsaReducedKeyShare; vrfKeyShare?: Buffer }> => {
     const decrypted = bitgo
       ? await bitgo.decrypt({ input: encryptedKey, password: walletPassphrase })
-      : sjcl.decrypt(walletPassphrase, encryptedKey);
+      : decryptLegacyV1(walletPassphrase, encryptedKey);
     const parsed = parseMpcV2KeyShareEnvelope(decrypted);
     let reduced: MPSTypes.EddsaReducedKeyShare;
     try {
@@ -1566,7 +1598,7 @@ export async function getEddsaSigningMaterial(
   try {
     decrypted = bitgo
       ? await bitgo.decrypt({ input: normalized, password: walletPassphrase })
-      : sjcl.decrypt(walletPassphrase, normalized);
+      : decryptLegacyV1(walletPassphrase, normalized);
   } catch (e) {
     throw new Error(`Error decrypting user keychain: ${e instanceof Error ? e.message : String(e)}`);
   }
