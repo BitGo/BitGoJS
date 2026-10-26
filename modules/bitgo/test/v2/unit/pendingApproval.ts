@@ -1,23 +1,28 @@
 /**
  * @prettier
  */
-import 'should';
+import should = require('should');
 import nock = require('nock');
 import * as sinon from 'sinon';
 import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src';
+import * as ethAbi from 'ethereumjs-abi';
+import { coins as staticsCoins } from '@bitgo/statics';
 
 import {
   BaseCoin,
   ECDSAUtils,
   EddsaUtils,
   Environments,
+  Keychains,
   PendingApproval,
   PendingApprovalData,
   PendingApprovalInfo,
   RequestTracer,
   SignatureShareType,
+  SignedTransaction,
   State,
+  TransactionType,
   TssUtils,
   TxRequest,
   Type,
@@ -448,6 +453,257 @@ describe('Pending Approvals:', () => {
       prebuildAndSignStub.calledOnce.should.be.true();
       const prebuildParamsArg = prebuildAndSignStub.getCall(0).args[0]!;
       (prebuildParamsArg.verification === undefined).should.be.true();
+    });
+
+    function makeEthIntentPendingApproval(legType: 'wrap' | 'finalizeUnwrap') {
+      const htethCoin = bitgo.coin('hteth');
+      const paData: PendingApprovalData = {
+        id: `pa-${legType}`,
+        info: {
+          type: Type.TRANSACTION_REQUEST,
+          transactionRequest: {
+            coinSpecific: { hteth: {} },
+            recipients: [{ address: '0x7db562c4dd465cc895761c56f83b6af0e32689ba', amount: '1000000' }],
+            buildParams: { type: legType },
+            sourceWallet: walletId,
+          },
+        },
+        wallet: walletId,
+        state: State.PENDING,
+        creator: 'test',
+      };
+      const ethWallet = new Wallet(bitgo, htethCoin, {
+        id: walletId,
+        coin: 'hteth',
+        pendingApprovals: [paData],
+      });
+      return { pendingApproval: ethWallet.pendingApprovals()[0], htethCoin, paData };
+    }
+
+    (['wrap', 'finalizeUnwrap'] as const).forEach((legType) => {
+      it(`strips stored recipients when approving a ${legType} intent pending approval`, async () => {
+        const { pendingApproval, htethCoin, paData } = makeEthIntentPendingApproval(legType);
+
+        const prebuildAndSignStub = sandbox
+          .stub(Wallet.prototype, 'prebuildAndSignTransaction')
+          .resolves({ halfSigned: { txHex: 'half-signed-hex' } });
+        sandbox.stub(htethCoin, 'parseTransaction').resolves({});
+
+        const paScope = nock(bgUrl)
+          .put(`/api/v2/hteth/pendingapprovals/pa-${legType}`, (body) => {
+            body.state.should.equal('approved');
+            body.halfSigned.txHex.should.equal('half-signed-hex');
+            return true;
+          })
+          .reply(200, { ...paData, state: 'approved' });
+
+        await pendingApproval.approve({ xprv: 'nonsense', walletPassphrase: 'pw' });
+
+        paScope.isDone().should.be.true();
+        prebuildAndSignStub.calledOnce.should.be.true();
+        const prebuildParamsArg = prebuildAndSignStub.getCall(0).args[0]!;
+        should.not.exist(prebuildParamsArg.recipients);
+        prebuildParamsArg.type!.should.equal(legType);
+        (prebuildParamsArg.pendingApprovalId as string).should.equal(`pa-${legType}`);
+      });
+    });
+
+    it('keeps forwarding stored recipients for a transfer-type pending approval rebuild', async () => {
+      const htethCoin = bitgo.coin('hteth');
+      const transferPaData: PendingApprovalData = {
+        id: 'pa-transfer',
+        info: {
+          type: Type.TRANSACTION_REQUEST,
+          transactionRequest: {
+            coinSpecific: { hteth: {} },
+            recipients: [{ address: '0x7db562c4dd465cc895761c56f83b6af0e32689ba', amount: '1000000' }],
+            buildParams: {},
+            sourceWallet: walletId,
+          },
+        },
+        wallet: walletId,
+        state: State.PENDING,
+        creator: 'test',
+      };
+      const ethWallet = new Wallet(bitgo, htethCoin, {
+        id: walletId,
+        coin: 'hteth',
+        pendingApprovals: [transferPaData],
+      });
+      const pendingApproval = ethWallet.pendingApprovals()[0];
+
+      const prebuildAndSignStub = sandbox
+        .stub(Wallet.prototype, 'prebuildAndSignTransaction')
+        .resolves({ txHex: 'signed-tx-hex' });
+      sandbox.stub(htethCoin, 'parseTransaction').resolves({});
+
+      await pendingApproval.recreateAndSignTransaction({});
+
+      const prebuildParamsArg = prebuildAndSignStub.getCall(0).args[0]!;
+      prebuildParamsArg.recipients!.should.deepEqual([
+        { address: '0x7db562c4dd465cc895761c56f83b6af0e32689ba', amount: '1000000' },
+      ]);
+    });
+
+    describe('real prebuildAndSignTransaction on ERC-7984 intent legs', function () {
+      const baseAddress = '0x7db562c4dd465cc895761c56f83b6af0e32689ba';
+      const otherAddress = '0x1b85b55b88ba9f5b803bb9ebe5c0cfc6a045b9aa';
+      const pair = staticsCoins.get('hteth:cusdt') as unknown as { contractAddress: string };
+      const wrapper = pair.contractAddress;
+      const amount = '1000000';
+      const unwrapParams = { tokenName: 'hteth:cusdt', amount };
+      const requestId = Buffer.alloc(32, 0xab);
+      const encryptedAmount = Buffer.alloc(32, 0xcd);
+      const proof = Buffer.from('deadbeef', 'hex');
+
+      const encodeCall = (name: string, types: string[], values: unknown[]): string =>
+        '0x' + Buffer.concat([ethAbi.methodID(name, types), ethAbi.rawEncode(types, values)]).toString('hex');
+
+      afterEach(() => {
+        nock.cleanAll();
+      });
+
+      // Rebuilds the leg through the real prebuildAndSignTransaction: only the signing seams are stubbed, so
+      // the real verifyTransaction runs against the nocked /tx/build prebuild.
+      async function setupLegApproval(
+        legType: 'wrap' | 'unwrap' | 'finalizeUnwrap',
+        innerCalldata: string,
+        paBuildParams: NonNullable<PendingApprovalInfo['transactionRequest']>['buildParams']
+      ) {
+        const paId = `pa-${legType}-real`;
+        const sendMultiSigCalldata = encodeCall(
+          'sendMultiSig',
+          ['address', 'uint', 'bytes', 'uint', 'uint', 'bytes'],
+          [wrapper, 0, Buffer.from(innerCalldata.slice(2), 'hex'), 1234, 1, Buffer.alloc(0)]
+        );
+
+        const htethCoin = bitgo.coin('hteth');
+        // AbstractEthLikeNewCoins is not a bitgo-module dependency; the builder is used structurally.
+        const txBuilder = (
+          htethCoin as unknown as {
+            getTransactionBuilder(): {
+              type(type: TransactionType): void;
+              fee(fee: { fee: string; gasLimit: string }): void;
+              counter(counter: number): void;
+              contract(contract: string): void;
+              data(data: string): void;
+              build(): Promise<{ toBroadcastFormat(): string }>;
+            };
+          }
+        ).getTransactionBuilder();
+        txBuilder.type(TransactionType.ContractCall);
+        txBuilder.fee({ fee: '10', gasLimit: '100000' });
+        txBuilder.counter(1);
+        txBuilder.contract(baseAddress);
+        txBuilder.data(sendMultiSigCalldata);
+        const txHex = (await txBuilder.build()).toBroadcastFormat();
+
+        const paData: PendingApprovalData = {
+          id: paId,
+          info: {
+            type: Type.TRANSACTION_REQUEST,
+            transactionRequest: {
+              coinSpecific: { hteth: {} },
+              recipients: [{ address: wrapper, amount: '0' }],
+              buildParams: paBuildParams,
+              sourceWallet: walletId,
+            },
+          },
+          wallet: walletId,
+          state: State.PENDING,
+          creator: 'test',
+        };
+        const ethWallet = new Wallet(bitgo, htethCoin, {
+          id: walletId,
+          coin: 'hteth',
+          coinSpecific: { baseAddress },
+          multisigType: 'onchain',
+          pendingApprovals: [paData],
+        });
+
+        sandbox.stub(htethCoin, 'parseTransaction').resolves({});
+        sandbox
+          .stub(Keychains.prototype, 'getKeysForSigning')
+          .resolves([{ id: 'k1', type: 'independent', pub: '0x02' + 'aa'.repeat(64) }]);
+        sandbox
+          .stub(Wallet.prototype, 'signTransaction')
+          .resolves({ halfSigned: { txHex: 'half-signed-hex' } } as unknown as SignedTransaction);
+
+        const buildScope = nock(bgUrl)
+          .post(`/api/v2/hteth/wallet/${walletId}/tx/build`, (body) => {
+            body.type.should.equal(legType);
+            body.pendingApprovalId.should.equal(paId);
+            should.not.exist(body.recipients);
+            should.not.exist(body.wrapParams);
+            if (legType === 'unwrap') {
+              body.unwrapParams.should.deepEqual(unwrapParams);
+            } else {
+              should.not.exist(body.unwrapParams);
+            }
+            return true;
+          })
+          .reply(200, {
+            txHex,
+            recipients: [{ address: wrapper, amount: '0', data: innerCalldata }],
+            feeInfo: { fee: '1000' },
+            coin: 'hteth',
+            walletId,
+          });
+        const paScope = nock(bgUrl)
+          .put(`/api/v2/hteth/pendingapprovals/${paId}`, (body) => {
+            body.state.should.equal('approved');
+            body.halfSigned.txHex.should.equal('half-signed-hex');
+            return true;
+          })
+          .reply(200, { ...paData, state: 'approved' });
+
+        return { pendingApproval: ethWallet.pendingApprovals()[0], buildScope, paScope };
+      }
+
+      const wrapCalldata = encodeCall('wrap', ['address', 'uint256'], [baseAddress, amount]);
+      const legs = [
+        { legType: 'wrap', inner: wrapCalldata, paBuildParams: { type: 'wrap' } },
+        {
+          legType: 'finalizeUnwrap',
+          inner: encodeCall('finalizeUnwrap', ['bytes32', 'uint64', 'bytes'], [requestId, amount, proof]),
+          paBuildParams: { type: 'finalizeUnwrap' },
+        },
+        {
+          legType: 'unwrap',
+          inner: encodeCall(
+            'unwrap',
+            ['address', 'address', 'bytes32', 'bytes'],
+            [baseAddress, baseAddress, encryptedAmount, proof]
+          ),
+          paBuildParams: { type: 'unwrap', unwrapParams },
+        },
+      ] as const;
+
+      legs.forEach(({ legType, inner, paBuildParams }) => {
+        it(`approves a ${legType} pending approval and verifies the rebuilt leg`, async () => {
+          const { pendingApproval, buildScope, paScope } = await setupLegApproval(legType, inner, paBuildParams);
+
+          const result = await pendingApproval.approve({ xprv: 'nonsense', walletPassphrase: 'pw' });
+
+          buildScope.isDone().should.be.true();
+          paScope.isDone().should.be.true();
+          result.state.should.equal('approved');
+        });
+      });
+
+      it('rejects the approval when the rebuilt wrap mints to an address other than the wallet base', async () => {
+        const tamperedWrap = encodeCall('wrap', ['address', 'uint256'], [otherAddress, amount]);
+        const { pendingApproval, buildScope, paScope } = await setupLegApproval('wrap', tamperedWrap, {
+          type: 'wrap',
+        });
+
+        await pendingApproval
+          .approve({ xprv: 'nonsense', walletPassphrase: 'pw' })
+          .should.be.rejectedWith(/mint recipient must be the wallet base address/);
+
+        buildScope.isDone().should.be.true();
+        paScope.isDone().should.be.false();
+      });
     });
   });
 });

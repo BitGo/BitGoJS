@@ -40,6 +40,15 @@ type ApprovePendingApprovalRequestBody = {
   halfSigned?: string | Omit<PreApproveResult, 'halfSigned'>;
 };
 
+// ERC-7984 shield/unshield intent types: calldata is built server-side from the intent, so a
+// pending approval's stored recipients are display-only for the approval UI, never build inputs.
+const ERC7984_INTENT_TX_TYPES: Record<string, true> = {
+  wrapApprove: true,
+  wrap: true,
+  unwrap: true,
+  finalizeUnwrap: true,
+};
+
 export class PendingApproval implements IPendingApproval {
   private readonly bitgo: BitGoBase;
   private readonly baseCoin: IBaseCoin;
@@ -303,6 +312,13 @@ export class PendingApproval implements IPendingApproval {
 
     const recipients = transactionRequest.recipients;
     let prebuildParams = _.extend({}, params, { recipients: recipients }, transactionRequest.buildParams);
+
+    // Stored recipients must not be forwarded for these intents — the prebuild guard rejects
+    // recipients for them, and the /tx/build PA-rebuild carve-out re-derives the real inputs
+    // server-side from the pendingApprovalId approve() injects.
+    if (ERC7984_INTENT_TX_TYPES[prebuildParams.type]) {
+      delete prebuildParams.recipients;
+    }
 
     if (!_.isUndefined(originalPrebuild.hopTransaction)) {
       prebuildParams.hop = true;
