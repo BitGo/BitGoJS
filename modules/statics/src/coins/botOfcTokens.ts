@@ -16,6 +16,20 @@ export const botOfcTokens = [
     'hteth'
   ),
   AccountCtors.tofcerc20(
+    'd7c2c0ee-3af7-411d-88a7-9a5e8170f250',
+    'ofchteth:WBTC',
+    'Wrapped BTC',
+    8,
+    'hteth:WBTC' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+  AccountCtors.tofcerc20(
     'abb40366-999b-4bdd-a222-7ba2edbd19d8',
     'ofchteth:wsteth',
     'Wrapped liquid staked Ether 2.0',
@@ -192,6 +206,34 @@ export const botOfcTokens = [
     undefined,
     undefined,
     undefined
+  ),
+  AccountCtors.tofcerc20(
+    '0cb1f209-9a1e-4db6-bac1-1297c11deca5',
+    'ofchteth:tgku',
+    'Hoodi Gokubu',
+    18,
+    'hteth:tgku' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+  AccountCtors.tofcerc20(
+    '2b1e7e23-4cd8-46af-86ba-02f90cbe91ee',
+    'ofchteth:stzamakms',
+    'Mock Zama Staked ZAMA',
+    20,
+    'hteth:stzamakms' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
   ),
   AccountCtors.tofcerc20(
     '93cdb013-f0e3-4b2a-be37-b41bc0b0d9e0',
