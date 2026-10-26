@@ -26,9 +26,11 @@ import {
   AbstractEthLikeNewCoins,
   Erc20Token,
   Erc721Token,
+  Eth,
   Hteth,
   Teth,
   TransactionBuilder,
+  VerifyEthTransactionOptions,
   TransferBuilder,
   TssVerifyEthAddressOptions,
   UnsignedBuilConsolidation,
@@ -62,8 +64,12 @@ describe('ETH:', function () {
   const userReqSig =
     '0x404db307f6147f0d8cd338c34c13906ef46a6faa7e0e119d5194ef05aec16e6f3d710f9b7901460f97e924066b62efd74443bd34402c6d40b49c203a559ff2c8';
 
-  const buildDefiTxHex = async (data: string, to: string = address1): Promise<string> => {
-    const txBuilder = getBuilder('hteth') as TransactionBuilder;
+  const buildDefiTxHex = async (
+    data: string,
+    to: string = address1,
+    coinName: 'eth' | 'hteth' = 'hteth'
+  ): Promise<string> => {
+    const txBuilder = getBuilder(coinName) as TransactionBuilder;
     txBuilder.type(TransactionType.ContractCall);
     txBuilder.fee({ fee: '10', gasLimit: '100000' });
     txBuilder.counter(1);
@@ -97,6 +103,7 @@ describe('ETH:', function () {
     Erc20Token.createTokenConstructors().forEach(({ name, coinConstructor }) => {
       bitgo.safeRegister(name, coinConstructor);
     });
+    bitgo.safeRegister('eth', Eth.createInstance);
     bitgo.safeRegister('teth', Teth.createInstance);
     bitgo.safeRegister('hteth', Hteth.createInstance);
     common.Environments[env].hsmXpub = bitgoXpub;
@@ -1110,10 +1117,23 @@ describe('ETH:', function () {
         result.should.equal(true);
       });
 
-      it('should verify approve wrapped in sendMultiSig without prebuild recipients', async function () {
+      it('should reject approve wrapped in sendMultiSig when the prebuild carries no recipient', async function () {
         const data = sendMultiSigCalldata(underlying, '0', approveCalldata(wrapper, amount));
-        const result = await verifyMultisigWrapApprove(data);
-        result.should.equal(true);
+        await expectDefiRejection(verifyMultisigWrapApprove(data), /exactly one recipient/);
+      });
+
+      it('should reject a prebuild recipient with missing data or a non-zero amount', async function () {
+        const data = sendMultiSigCalldata(underlying, '0', approveCalldata(wrapper, amount));
+        await expectDefiRejection(
+          verifyMultisigWrapApprove(data, { txPrebuildRecipients: [{ address: underlying, amount: '0' }] }),
+          /recipient data is missing/
+        );
+        await expectDefiRejection(
+          verifyMultisigWrapApprove(data, {
+            txPrebuildRecipients: [{ address: underlying, amount: '1', data: approveCalldata(wrapper, amount) }],
+          }),
+          /recipient amount does not match/
+        );
       });
 
       it('should reject a spender other than the wrapper inside sendMultiSig', async function () {
@@ -1180,6 +1200,409 @@ describe('ETH:', function () {
           }),
           /recipient data does not match the sendMultiSig calldata/
         );
+      });
+    });
+
+    describe('multisig ERC-7984 intent verification (wrap / unwrap / finalizeUnwrap)', function () {
+      const pair = coins.get('hteth:cusdt') as Erc7984Coin;
+      const wrapper = String(pair.contractAddress);
+      const amount = '1000000';
+      const walletContract = address2;
+      const baseAddress = address1;
+      const requestId = '0x' + 'ab'.repeat(32);
+      const encryptedAmount = '0x' + 'cd'.repeat(32);
+      const inputProof = '0xdeadbeef';
+      const decryptionProof = '0xbeefcafe';
+
+      const sendMultiSigCalldata = (toAddress: string, value: string, innerData: string): string => {
+        const types = ['address', 'uint', 'bytes', 'uint', 'uint', 'bytes'];
+        const methodId = EthereumAbi.methodID('sendMultiSig', types);
+        const encoded = EthereumAbi.rawEncode(types, [
+          toAddress,
+          new BN(value),
+          Buffer.from(innerData.slice(2), 'hex'),
+          1234,
+          1,
+          Buffer.alloc(0),
+        ]);
+        return '0x' + Buffer.concat([methodId, encoded]).toString('hex');
+      };
+
+      const intentCalldata = (signature: string, values: unknown[]): string => {
+        const types = signature.slice(signature.indexOf('(') + 1, -1).split(',');
+        const methodId = EthereumAbi.methodID(signature.split('(')[0], types);
+        return '0x' + Buffer.concat([methodId, EthereumAbi.rawEncode(types, values)]).toString('hex');
+      };
+
+      const verifyIntent = async (
+        type: 'wrap' | 'unwrap' | 'finalizeUnwrap',
+        innerData: string,
+        opts: {
+          to?: string;
+          value?: string;
+          coinName?: 'eth' | 'hteth';
+          wrapParams?: { tokenName: string; amount: string } | null;
+          unwrapParams?: { tokenName: string; amount: string } | null;
+          txPrebuildRecipients?: Array<Record<string, unknown>>;
+          omitRecipients?: boolean;
+        } = {}
+      ) => {
+        const coinName = opts.coinName ?? 'hteth';
+        const coin = bitgo.coin(coinName) as Hteth;
+        const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress } });
+        return coin.verifyTransaction({
+          txParams: {
+            type,
+            ...(opts.wrapParams !== undefined ? { wrapParams: opts.wrapParams } : {}),
+            ...(opts.unwrapParams !== undefined ? { unwrapParams: opts.unwrapParams } : {}),
+          } as unknown as VerifyEthTransactionOptions['txParams'],
+          txPrebuild: {
+            txHex: await buildDefiTxHex(
+              sendMultiSigCalldata(opts.to ?? wrapper, opts.value ?? '0', innerData),
+              walletContract,
+              coinName
+            ),
+            coin: coinName,
+            walletId: 'w',
+            // test fixture: by default the prebuild carries the single recipient the user key signs over,
+            // mirroring the sendMultiSig args (address, value, calldata)
+            ...(opts.omitRecipients
+              ? {}
+              : {
+                  recipients: opts.txPrebuildRecipients ?? [
+                    { address: opts.to ?? wrapper, amount: opts.value ?? '0', data: innerData },
+                  ],
+                }),
+          } as unknown as VerifyEthTransactionOptions['txPrebuild'],
+          wallet,
+          verification: {},
+        });
+      };
+
+      it('should verify a server-leg wrap rebuild (registered wrapper, no intent params)', async function () {
+        const result = await verifyIntent('wrap', intentCalldata('wrap(address,uint256)', [baseAddress, amount]), {
+          txPrebuildRecipients: [
+            { address: wrapper, amount: '0', data: intentCalldata('wrap(address,uint256)', [baseAddress, amount]) },
+          ],
+        });
+        result.should.equal(true);
+      });
+
+      it('should verify a wrap carrying matching wrapParams', async function () {
+        const result = await verifyIntent('wrap', intentCalldata('wrap(address,uint256)', [baseAddress, amount]), {
+          wrapParams: { tokenName: 'hteth:cusdt', amount },
+        });
+        result.should.equal(true);
+      });
+
+      it('should reject a wrap whose amount does not match wrapParams', async function () {
+        await expectDefiRejection(
+          verifyIntent('wrap', intentCalldata('wrap(address,uint256)', [baseAddress, amount]), {
+            wrapParams: { tokenName: 'hteth:cusdt', amount: '1000001' },
+          }),
+          /amount does not match/
+        );
+      });
+
+      it('should reject a wrap targeting a non-registered contract', async function () {
+        await expectDefiRejection(
+          verifyIntent('wrap', intentCalldata('wrap(address,uint256)', [baseAddress, amount]), { to: address2 }),
+          /must target a registered ERC-7984 wrapper/
+        );
+      });
+
+      it('should reject a wrap minting to an address other than the wallet base', async function () {
+        await expectDefiRejection(
+          verifyIntent('wrap', intentCalldata('wrap(address,uint256)', [address2, amount])),
+          /mint recipient must be the wallet base address/
+        );
+      });
+
+      it('should reject inner calldata that is not wrap', async function () {
+        await expectDefiRejection(
+          verifyIntent('wrap', intentCalldata('transfer(address,uint256)', [address2, amount])),
+          /wrap\(address,uint256\)/
+        );
+      });
+
+      it('should reject native value inside sendMultiSig', async function () {
+        await expectDefiRejection(
+          verifyIntent('wrap', intentCalldata('wrap(address,uint256)', [baseAddress, amount]), { value: '1' }),
+          /must not carry native value/
+        );
+      });
+
+      it('should reject a wrap that is not sendMultiSig-wrapped', async function () {
+        const coin = bitgo.coin('hteth') as Hteth;
+        const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress } });
+        await expectDefiRejection(
+          coin.verifyTransaction({
+            txParams: { type: 'wrap' },
+            txPrebuild: {
+              txHex: await buildDefiTxHex(intentCalldata('wrap(address,uint256)', [baseAddress, amount]), wrapper),
+              coin: 'hteth',
+              walletId: 'w',
+            } as unknown as VerifyEthTransactionOptions['txPrebuild'],
+            wallet,
+            verification: {},
+          }),
+          /sendMultiSig/
+        );
+      });
+
+      it('should verify a self-directed unwrap to the registered wrapper', async function () {
+        const result = await verifyIntent(
+          'unwrap',
+          intentCalldata('unwrap(address,address,bytes32,bytes)', [
+            baseAddress,
+            baseAddress,
+            Buffer.from(encryptedAmount.slice(2), 'hex'),
+            Buffer.from(inputProof.slice(2), 'hex'),
+          ]),
+          { unwrapParams: { tokenName: 'hteth:cusdt', amount } }
+        );
+        result.should.equal(true);
+      });
+
+      it('should reject an unwrap without unwrapParams', async function () {
+        await expectDefiRejection(
+          verifyIntent(
+            'unwrap',
+            intentCalldata('unwrap(address,address,bytes32,bytes)', [
+              baseAddress,
+              baseAddress,
+              Buffer.from(encryptedAmount.slice(2), 'hex'),
+              Buffer.from(inputProof.slice(2), 'hex'),
+            ])
+          ),
+          /requires unwrapParams/
+        );
+      });
+
+      it('should reject an unwrap targeting a contract other than the registered wrapper', async function () {
+        await expectDefiRejection(
+          verifyIntent(
+            'unwrap',
+            intentCalldata('unwrap(address,address,bytes32,bytes)', [
+              baseAddress,
+              baseAddress,
+              Buffer.from(encryptedAmount.slice(2), 'hex'),
+              Buffer.from(inputProof.slice(2), 'hex'),
+            ]),
+            { to: address2, unwrapParams: { tokenName: 'hteth:cusdt', amount } }
+          ),
+          /must target the registered wrapper/
+        );
+      });
+
+      it('should reject an unwrap naming an unregistered pair', async function () {
+        await expectDefiRejection(
+          verifyIntent(
+            'unwrap',
+            intentCalldata('unwrap(address,address,bytes32,bytes)', [
+              baseAddress,
+              baseAddress,
+              Buffer.from(encryptedAmount.slice(2), 'hex'),
+              Buffer.from(inputProof.slice(2), 'hex'),
+            ]),
+            { unwrapParams: { tokenName: 'hteth', amount } }
+          ),
+          /not a registered ERC-7984 shield pair/
+        );
+      });
+
+      it('should reject a non-self-directed unwrap', async function () {
+        await expectDefiRejection(
+          verifyIntent(
+            'unwrap',
+            intentCalldata('unwrap(address,address,bytes32,bytes)', [
+              baseAddress,
+              address2,
+              Buffer.from(encryptedAmount.slice(2), 'hex'),
+              Buffer.from(inputProof.slice(2), 'hex'),
+            ]),
+            { unwrapParams: { tokenName: 'hteth:cusdt', amount } }
+          ),
+          /self-directed/
+        );
+      });
+
+      it('should reject an unwrap with an empty encrypted amount', async function () {
+        await expectDefiRejection(
+          verifyIntent(
+            'unwrap',
+            intentCalldata('unwrap(address,address,bytes32,bytes)', [
+              baseAddress,
+              baseAddress,
+              Buffer.alloc(32),
+              Buffer.from(inputProof.slice(2), 'hex'),
+            ]),
+            { unwrapParams: { tokenName: 'hteth:cusdt', amount } }
+          ),
+          /encryptedAmount is missing or empty/
+        );
+      });
+
+      it('should verify a finalizeUnwrap to a registered wrapper', async function () {
+        const result = await verifyIntent(
+          'finalizeUnwrap',
+          intentCalldata('finalizeUnwrap(bytes32,uint64,bytes)', [
+            Buffer.from(requestId.slice(2), 'hex'),
+            amount,
+            Buffer.from(decryptionProof.slice(2), 'hex'),
+          ])
+        );
+        result.should.equal(true);
+      });
+
+      it('should reject a finalizeUnwrap targeting a non-registered contract', async function () {
+        await expectDefiRejection(
+          verifyIntent(
+            'finalizeUnwrap',
+            intentCalldata('finalizeUnwrap(bytes32,uint64,bytes)', [
+              Buffer.from(requestId.slice(2), 'hex'),
+              amount,
+              Buffer.from(decryptionProof.slice(2), 'hex'),
+            ]),
+            { to: address2 }
+          ),
+          /must target a registered ERC-7984 wrapper/
+        );
+      });
+
+      it('should reject a finalizeUnwrap with a zero cleartext amount', async function () {
+        await expectDefiRejection(
+          verifyIntent(
+            'finalizeUnwrap',
+            intentCalldata('finalizeUnwrap(bytes32,uint64,bytes)', [
+              Buffer.from(requestId.slice(2), 'hex'),
+              '0',
+              Buffer.from(decryptionProof.slice(2), 'hex'),
+            ])
+          ),
+          /positive integer within uint64/
+        );
+      });
+
+      it('should reject a finalizeUnwrap with an empty decryption proof', async function () {
+        await expectDefiRejection(
+          verifyIntent(
+            'finalizeUnwrap',
+            intentCalldata('finalizeUnwrap(bytes32,uint64,bytes)', [
+              Buffer.from(requestId.slice(2), 'hex'),
+              amount,
+              Buffer.alloc(0),
+            ])
+          ),
+          /decryptionProof is missing or empty/
+        );
+      });
+
+      it('should reject prebuild recipients that do not mirror the sendMultiSig args in txHex', async function () {
+        const inner = intentCalldata('wrap(address,uint256)', [baseAddress, amount]);
+        await expectDefiRejection(
+          verifyIntent('wrap', inner, { txPrebuildRecipients: [{ address: address2, amount: '0', data: inner }] }),
+          /recipient address does not match the sendMultiSig target/
+        );
+        await expectDefiRejection(
+          verifyIntent('wrap', inner, {
+            txPrebuildRecipients: [
+              {
+                address: wrapper,
+                amount: '0',
+                data: intentCalldata('wrap(address,uint256)', [baseAddress, '1000001']),
+              },
+            ],
+          }),
+          /recipient data does not match the sendMultiSig calldata/
+        );
+      });
+
+      it('should reject a prebuild with no recipient, several recipients, missing data or a non-zero amount', async function () {
+        const inner = intentCalldata('wrap(address,uint256)', [baseAddress, amount]);
+        await expectDefiRejection(verifyIntent('wrap', inner, { omitRecipients: true }), /exactly one recipient/);
+        await expectDefiRejection(
+          verifyIntent('wrap', inner, {
+            txPrebuildRecipients: [
+              { address: wrapper, amount: '0', data: inner },
+              { address: wrapper, amount: '0', data: inner },
+            ],
+          }),
+          /exactly one recipient/
+        );
+        await expectDefiRejection(
+          verifyIntent('wrap', inner, { txPrebuildRecipients: [{ address: wrapper, amount: '0' }] }),
+          /recipient data is missing/
+        );
+        await expectDefiRejection(
+          verifyIntent('wrap', inner, { txPrebuildRecipients: [{ address: wrapper, amount: '1', data: inner }] }),
+          /recipient amount does not match the sendMultiSig value/
+        );
+      });
+
+      describe('wrapper registry is scoped to the wallet network', function () {
+        const mainnetPair = coins.get('eth:cusdt') as Erc7984Coin;
+        const mainnetWrapper = String(mainnetPair.contractAddress);
+        const unwrapCalldata = intentCalldata('unwrap(address,address,bytes32,bytes)', [
+          baseAddress,
+          baseAddress,
+          Buffer.from(encryptedAmount.slice(2), 'hex'),
+          Buffer.from(inputProof.slice(2), 'hex'),
+        ]);
+        const finalizeCalldata = intentCalldata('finalizeUnwrap(bytes32,uint64,bytes)', [
+          Buffer.from(requestId.slice(2), 'hex'),
+          amount,
+          Buffer.from(decryptionProof.slice(2), 'hex'),
+        ]);
+        const wrapCalldata = intentCalldata('wrap(address,uint256)', [baseAddress, amount]);
+
+        it('should verify unwrap, finalizeUnwrap and wrap against a mainnet pair without underlyingErc20Address', async function () {
+          (mainnetPair.underlyingErc20Address === undefined).should.equal(true);
+          (
+            await verifyIntent('unwrap', unwrapCalldata, {
+              coinName: 'eth',
+              to: mainnetWrapper,
+              unwrapParams: { tokenName: 'eth:cusdt', amount },
+            })
+          ).should.equal(true);
+          (
+            await verifyIntent('finalizeUnwrap', finalizeCalldata, { coinName: 'eth', to: mainnetWrapper })
+          ).should.equal(true);
+          (await verifyIntent('wrap', wrapCalldata, { coinName: 'eth', to: mainnetWrapper })).should.equal(true);
+        });
+
+        it('should reject a testnet wrapper on a mainnet wallet for every intent type', async function () {
+          await expectDefiRejection(
+            verifyIntent('finalizeUnwrap', finalizeCalldata, { coinName: 'eth', to: wrapper }),
+            /must target a registered ERC-7984 wrapper/
+          );
+          await expectDefiRejection(
+            verifyIntent('wrap', wrapCalldata, { coinName: 'eth', to: wrapper }),
+            /must target a registered ERC-7984 wrapper/
+          );
+          await expectDefiRejection(
+            verifyIntent('unwrap', unwrapCalldata, {
+              coinName: 'eth',
+              to: wrapper,
+              unwrapParams: { tokenName: 'eth:cusdt', amount },
+            }),
+            /must target the registered wrapper/
+          );
+        });
+
+        it('should reject a mainnet wrapper on a testnet wallet and a cross-network pair name', async function () {
+          await expectDefiRejection(
+            verifyIntent('finalizeUnwrap', finalizeCalldata, { to: mainnetWrapper }),
+            /must target a registered ERC-7984 wrapper/
+          );
+          await expectDefiRejection(
+            verifyIntent('unwrap', unwrapCalldata, {
+              coinName: 'eth',
+              unwrapParams: { tokenName: 'hteth:cusdt', amount },
+            }),
+            /not a registered ERC-7984 shield pair/
+          );
+        });
       });
     });
 
@@ -1380,6 +1803,8 @@ describe('ETH:', function () {
             txHex: await buildDefiTxHex(sendMultiSigCalldata(underlying, approveCalldata(wrapper)), walletContract),
             coin: 'hteth',
             walletId: 'w',
+            // the user key signs over this recipient, so a real prebuild always carries it
+            recipients: [{ address: underlying, amount: '0', data: approveCalldata(wrapper) }],
           } as any,
           wallet,
           verification: {},
