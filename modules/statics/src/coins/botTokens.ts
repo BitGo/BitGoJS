@@ -7369,6 +7369,25 @@ export const botTokens = [
     undefined,
     Networks.test.canton
   ),
+  AccountCtors.tcantonToken(
+    'b5a283e0-2af6-49a9-959c-d67387f8dc60',
+    'tcanton:t912797tc1',
+    'trsyowner912797TC1',
+    10,
+    'https://utility-frontend-tw-demo.api-qa.tradeweb.com/api/token-standard/v0/registrars/',
+    'stg_trsyowner1::12201033b067c6120e4630b3095210bfba416047da2bf30847b16f458edcc9c43470:912797TC1',
+    'tcanton:t912797tc1' as unknown as UnderlyingAsset,
+    getTokenFeatures('canton', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-switzerland' as CoinFeature,
+      'custody-bitgo-sister-trust-one' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    Networks.test.canton
+  ),
   AccountCtors.erc20(
     '4161ed06-c331-4e21-8791-eaca5151e869',
     'eth:abtx',
