@@ -221,5 +221,32 @@ describe('decryptV1 (native, SJCL-free)', () => {
       const ct = await encrypt(password, plaintext, { encryptionVersion: 1 });
       await assert.rejects(() => decryptV1WithFallback('wrongPassword', ct, decryptV1, true));
     });
+
+    it('rejects a non-ccm mode before SJCL runs', async () => {
+      const envelope = JSON.parse(await encrypt(password, plaintext, { encryptionVersion: 1 }));
+      envelope.mode = 'ocb2';
+      await assert.rejects(
+        () => decryptV1WithFallback(password, JSON.stringify(envelope), decryptV1, true),
+        /unsupported mode/
+      );
+    });
+
+    it('still decrypts a legacy envelope without a v field', async () => {
+      const envelope = JSON.parse(await encrypt(password, plaintext, { encryptionVersion: 1 }));
+      delete envelope.v;
+      const result = await decryptV1WithFallback(password, JSON.stringify(envelope), decryptV1, true);
+      assert.strictEqual(result, plaintext);
+    });
+  });
+
+  describe('cipher mode screen (node runtime)', () => {
+    it('rejects a non-ccm mode instead of falling back to SJCL', async () => {
+      const envelope = JSON.parse(await encrypt(password, plaintext, { encryptionVersion: 1 }));
+      envelope.mode = 'ocb2';
+      await assert.rejects(
+        () => decryptV1WithFallback(password, JSON.stringify(envelope), decryptV1, false),
+        /unsupported mode/
+      );
+    });
   });
 });

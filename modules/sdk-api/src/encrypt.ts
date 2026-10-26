@@ -88,6 +88,23 @@ function isIterCapViolation(err: unknown): boolean {
 }
 
 /**
+ * SJCL reads the cipher mode from the envelope and also implements the weak OCB2
+ * mode. BitGo only ever wrote CCM, so any other explicit mode is refused before
+ * SJCL sees it. An absent mode is SJCL's default (CCM) and is allowed.
+ */
+function assertCcmMode(ciphertext: string): void {
+  let mode: unknown;
+  try {
+    mode = JSON.parse(ciphertext)?.mode;
+  } catch {
+    return; // not JSON: let the decoder report it
+  }
+  if (mode !== undefined && mode !== 'ccm') {
+    throw new Error('v1 envelope: unsupported mode, expected ccm');
+  }
+}
+
+/**
  * v1 decrypt with an SJCL safety net.
  *
  * Node: native `node:crypto` first, SJCL fallback. Design intent during
@@ -117,6 +134,7 @@ export async function decryptV1WithFallback(
   native: (pw: string, ct: string) => Promise<string> = decryptV1,
   isBrowser: boolean = isBrowserRuntime()
 ): Promise<string> {
+  assertCcmMode(ciphertext);
   if (isBrowser) {
     try {
       parseV1Envelope(ciphertext);
