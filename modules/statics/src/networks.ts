@@ -209,6 +209,13 @@ export interface StacksNetwork extends AccountNetwork {
   readonly chainId?: number;
   /** Transaction version byte. Omitted for the stock Stacks mainnet/testnet deployments. */
   readonly transactionVersion?: number;
+  /**
+   * Non-canonical staking contract pairs (name + address) this network accepts **in addition to**
+   * the canonical `stakingContractAddress`. Pair-scoped on purpose: a bare address would let a
+   * canonical name (e.g. `pox-4`) bind to a third-party deployer. Temporary test-contract
+   * allowance, self-expiring via `expiresAt`; remove together with the test contract.
+   */
+  readonly allowedStakingContracts?: ReadonlyArray<{ name: string; address: string; expiresAt?: string }>;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -1362,6 +1369,23 @@ class Stx extends Mainnet implements StacksNetwork {
   sendmanymemoContractAddress = 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE';
   stakingContractAddress = 'SP000000000000000000002Q6VF78';
   sbtcWithdrawalContractAddress = 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4';
+  // Temporary test-contract allowance: pair-scoped (name + address) and self-expiring, so a
+  // configured PoX-5 test deployment can be parsed without relaxing canonical validation for other
+  // names (pox-4 / send-many-memo) or past the expiry.
+  //
+  // The pinned pair admits every PoX-5 function `Pox5Builder` supports at this address (stake,
+  // unstake, update-bond-registration, ...), not only `register-for-bond` — the register-only
+  // restriction lives in wallet-platform, not here. Intentionally allowed for this test deployment.
+  //
+  // `expiresAt` is a full timestamp: `'2026-11-02'` parses as 00:00Z, so the allowance ends at the
+  // START of Nov 2, not after it.
+  //
+  // @obligation remove this entry (and its tests) together with the test contract — see the removal
+  //   ticket on SI-2089. The deployer `SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY` is the Stacks
+  //   Foundation's test deployment.
+  allowedStakingContracts = [
+    { name: 'pox-5', address: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY', expiresAt: '2026-11-02' },
+  ];
 }
 
 class StxTestnet extends Testnet implements StacksNetwork {

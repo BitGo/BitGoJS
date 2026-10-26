@@ -15,7 +15,7 @@ import {
 } from '@stacks/transactions';
 import { InvalidParameterValueError } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
-import { contractPrincipalCVFromString, isValidAddress, standardPrincipalCVFromString } from './utils';
+import { contractPrincipalCVFromString, isExpired, isValidAddress, standardPrincipalCVFromString } from './utils';
 import { ClarityValueJson } from './iface';
 import { Utils } from '.';
 import { CONTRACT_NAME_SENDMANY, VALID_POX5_CONTRACT_FUNCTION_NAMES, VALID_STAKING_CONTRACT_NAMES } from './constants';
@@ -61,6 +61,15 @@ export class ContractBuilder extends AbstractContractBuilder {
     return this;
   }
 
+  /**
+   * Caller-supplied pairs plus this network's active (non-expired) pairs. Network pairs are
+   * pair-scoped (name + address), so a canonical name never binds to a foreign address.
+   */
+  private getAllowedStakingContracts(): ReadonlyArray<{ name: string; address: string }> {
+    const networkPairs = (this._coinConfig.network as BitgoStacksNetwork).allowedStakingContracts ?? [];
+    return [...this._allowedStakingContracts, ...networkPairs.filter((pair) => !isExpired(pair.expiresAt))];
+  }
+
   /** True when the current (name, address) is a canonical pair or an explicitly allowlisted pair. */
   private isContractPairValid(): boolean {
     const isCanonicalName =
@@ -72,7 +81,7 @@ export class ContractBuilder extends AbstractContractBuilder {
     if (isCanonicalName && isCanonicalAddress) {
       return true;
     }
-    return this._allowedStakingContracts.some(
+    return this.getAllowedStakingContracts().some(
       (contract) => contract.name === this._contractName && contract.address === this._contractAddress
     );
   }
@@ -106,7 +115,7 @@ export class ContractBuilder extends AbstractContractBuilder {
       throw new InvalidParameterValueError('Invalid address');
     }
     const isCanonicalAddress = Utils.isValidContractAddress(address, this._coinConfig.network as BitgoStacksNetwork);
-    const isAllowedAddress = this._allowedStakingContracts.some((contract) => contract.address === address);
+    const isAllowedAddress = this.getAllowedStakingContracts().some((contract) => contract.address === address);
     if (!isCanonicalAddress && !isAllowedAddress) {
       throw new InvalidParameterValueError('Invalid contract address');
     }

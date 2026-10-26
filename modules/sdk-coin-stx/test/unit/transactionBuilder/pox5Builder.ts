@@ -4,6 +4,7 @@ import {
   ClarityValue,
   ContractCallPayload,
   createAddress,
+  createContractCallPayload,
   cvToString,
   cvToValue,
   deserializeCV,
@@ -11,7 +12,7 @@ import {
   PostConditionMode,
   PostConditionType,
 } from '@stacks/transactions';
-import { coins } from '@bitgo/statics';
+import { coins, BaseCoin as CoinConfig } from '@bitgo/statics';
 import should from 'should';
 
 import { BaseTransaction } from '@bitgo/sdk-core';
@@ -194,6 +195,47 @@ describe('Stacks: PoX-5 Builder', function () {
       }),
       false
     );
+  });
+
+  it('accepts a configured (non-expired) network pox-5 pair and rejects other names/expired (SI-2089)', () => {
+    const CONFIGURED_ADDRESS = 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY';
+    const payloadFor = (name: string): ContractCallPayload =>
+      createContractCallPayload(CONFIGURED_ADDRESS, name, 'register-for-bond', []);
+
+    // Injected non-expired config: the assertions below must not depend on the shipped pin in
+    // `networks.ts`, whose `expiresAt` would otherwise flip them to `false` once it passes.
+    const activeConfig = {
+      ...coins.get('stx'),
+      network: {
+        ...coins.get('stx').network,
+        allowedStakingContracts: [{ name: 'pox-5', address: CONFIGURED_ADDRESS, expiresAt: '2999-01-01' }],
+      },
+    } as unknown as Readonly<CoinConfig>;
+
+    // Canonical pox-5 address, canonical name — unchanged.
+    should.equal(
+      StxLib.Pox5Builder.isValidContractCall(
+        coins.get('stx'),
+        createContractCallPayload('SP000000000000000000002Q6VF78', 'pox-5', 'register-for-bond', [])
+      ),
+      true
+    );
+
+    // Configured pair: pox-5 at the pinned address is accepted.
+    should.equal(StxLib.Pox5Builder.isValidContractCall(activeConfig, payloadFor('pox-5')), true);
+    // Other canonical names at that address must NOT be accepted (reviewer regression).
+    should.equal(StxLib.Pox5Builder.isValidContractCall(activeConfig, payloadFor('pox-4')), false);
+    should.equal(StxLib.Pox5Builder.isValidContractCall(activeConfig, payloadFor('send-many-memo')), false);
+
+    // Expired pair is rejected.
+    const expiredConfig = {
+      ...coins.get('stx'),
+      network: {
+        ...coins.get('stx').network,
+        allowedStakingContracts: [{ name: 'pox-5', address: CONFIGURED_ADDRESS, expiresAt: '2020-01-01' }],
+      },
+    } as unknown as Readonly<CoinConfig>;
+    should.equal(StxLib.Pox5Builder.isValidContractCall(expiredConfig, payloadFor('pox-5')), false);
   });
 
   it('builds sBTC registration using response error', async () => {

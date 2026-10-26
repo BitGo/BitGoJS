@@ -18,6 +18,7 @@ import {
   uintCV,
 } from '@stacks/transactions';
 import BigNum from 'bn.js';
+import { coins, StacksNetwork } from '@bitgo/statics';
 import * as testData from './resources';
 import { StxLib } from '../../src';
 
@@ -120,6 +121,47 @@ describe('Stx util library', function () {
           ]),
         /Invalid public key/
       );
+    });
+  });
+
+  describe('isValidContractAddress', function () {
+    it('accepts only canonical contract addresses (address-only)', function () {
+      const mainnet = coins.get('stx').network as StacksNetwork;
+      Utils.isValidContractAddress(mainnet.stakingContractAddress, mainnet).should.be.true();
+      Utils.isValidContractAddress(mainnet.sendmanymemoContractAddress, mainnet).should.be.true();
+      Utils.isValidContractAddress(mainnet.sbtcWithdrawalContractAddress, mainnet).should.be.true();
+      // The network-configured test address is NOT accepted by the shared address check.
+      Utils.isValidContractAddress('SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY', mainnet).should.be.false();
+      Utils.isValidContractAddress('SP2TYC2AVC4GSB01F78H0XSVTH8WRGV95BXFG4BBR', mainnet).should.be.false();
+    });
+
+    it('ships the pinned mainnet pox-5 pair (name + address)', function () {
+      // Guards the SHIPPED statics entry — a typo in the pinned address would otherwise go unnoticed
+      // because the other tests inject their own pairs. Deliberately asserts only the name/address, so
+      // it does not depend on the `expiresAt` value or the clock.
+      const mainnet = coins.get('stx').network as StacksNetwork;
+      should.deepEqual(
+        (mainnet.allowedStakingContracts ?? []).map((contract) => ({
+          name: contract.name,
+          address: contract.address,
+        })),
+        [{ name: 'pox-5', address: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY' }]
+      );
+    });
+  });
+
+  describe('isExpired', function () {
+    it('treats an absent expiry as never expiring', function () {
+      Utils.isExpired(undefined).should.be.false();
+    });
+
+    it('detects past and future expiries', function () {
+      Utils.isExpired('2020-01-01').should.be.true();
+      Utils.isExpired('2999-01-01').should.be.false();
+    });
+
+    it('fails closed on an unparseable expiry', function () {
+      Utils.isExpired('not-a-date').should.be.true();
     });
   });
 

@@ -293,6 +293,24 @@ export function isValidContractAddress(addr: string, network: BitgoStacksNetwork
 }
 
 /**
+ * Whether a configured staking-contract allowance has expired.
+ *
+ * @param {string} [expiresAt] - ISO-8601 date (e.g. `2027-03-31`). Undefined ⇒ never expires.
+ * @returns {boolean} - true when the entry is in the past and must no longer be honoured; an
+ *   unparseable expiry fails closed (treated as expired)
+ */
+export function isExpired(expiresAt?: string): boolean {
+  if (!expiresAt) {
+    return false;
+  }
+  const expiry = Date.parse(expiresAt);
+  if (Number.isNaN(expiry)) {
+    return true;
+  }
+  return Date.now() > expiry;
+}
+
+/**
  * Check if the name is one of valid contract names
  *
  * @param {string} name - function name
