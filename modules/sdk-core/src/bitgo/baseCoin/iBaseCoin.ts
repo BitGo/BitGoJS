@@ -290,6 +290,8 @@ export interface TransactionParams {
   stakingRequestId?: string;
   /** ERC-7984 shield intent (`type: 'wrapApprove' | 'wrap'`): wrapper coin name and exact amount. */
   wrapParams?: { tokenName: string; amount: string };
+  /** External settlement executor party ID for Canton standing delegation intents. */
+  executorPartyId?: string;
 }
 
 export interface AddressVerificationData {

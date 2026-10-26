@@ -412,6 +412,8 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
   feeToken?: string;
   /** Canton-specific params for the cantonCommand intent. */
   cantonCommandParams?: CantonCommandParams;
+  /** External settlement executor party ID (cantonBroadridgeStandingDelegation intent). */
+  executorPartyId?: string;
   /** DeFi vault intent fields for defi-* and wrap-native / unwrap-native intents. */
   defiParams?: DefiIntentParams;
   /** ERC-7984 wrap / wrapApprove fields flattened onto the WP intent. */
@@ -530,6 +532,8 @@ export interface PopulatedIntent extends PopulatedIntentBase, DefiIntentFields {
   amount?: { value: string; symbol: string } | string;
   /** Canton-specific params serialized into the cantonCommand intent payload. */
   cantonCommandParams?: CantonCommandParams;
+  /** External settlement executor party ID (cantonBroadridgeStandingDelegation intent). */
+  executorPartyId?: string;
   /** Canton party ID of the end investor to onboard (cantonEndInvestorOnboardingOffer intent). */
   endInvestorPartyId?: string;
   /** Reason for rejecting the onboarding offer (cantonEndInvestorOnboardingReject intent). */

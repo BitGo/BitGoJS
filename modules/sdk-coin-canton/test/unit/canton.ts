@@ -11,6 +11,7 @@ import {
   CantonAllocationRejectPrepareResponse,
   CantonExerciseCommandPrepareResponse,
   CantonCreateCommandPrepareResponse,
+  CantonStandingDelegationPrepareResponse,
   CantonTokenPreApprovalPrepareResponse,
   CancelParty,
   OneStepEnablement,
@@ -422,6 +423,46 @@ describe('Canton verifyTransaction - AllocationReject:', function () {
       wallet: {} as any,
     });
     result.should.equal(true);
+  });
+});
+describe('Canton verifyTransaction - Broadridge standing delegation:', function () {
+  let bitgo: TestBitGoAPI;
+  let basecoin: Canton;
+  const executorPartyId = 'btgo-operator::1220eb693ade486ff8a112f999e6392fc0427bc14da42ee20e51998575a53efef0cd';
+
+  before(function () {
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
+    bitgo.safeRegister('canton', Canton.createInstance);
+    bitgo.safeRegister('tcanton', Tcanton.createInstance);
+    bitgo.initializeTestVars();
+    basecoin = bitgo.coin('tcanton') as Canton;
+  });
+
+  it('verifies the prepared standing delegation executor', async function () {
+    const txHex = buildRawTx('CantonCommand', CantonStandingDelegationPrepareResponse, 'standing-delegation-001');
+    const result = await basecoin.verifyTransaction({
+      txPrebuild: { txHex },
+      txParams: {
+        type: 'cantonBroadridgeStandingDelegation',
+        executorPartyId,
+      } as CantonTransactionParams,
+      wallet: {} as IWallet,
+    });
+    result.should.equal(true);
+  });
+
+  it('rejects a prepared standing delegation for another executor', async function () {
+    const txHex = buildRawTx('CantonCommand', CantonStandingDelegationPrepareResponse, 'standing-delegation-002');
+    await basecoin
+      .verifyTransaction({
+        txPrebuild: { txHex },
+        txParams: {
+          type: 'cantonBroadridgeStandingDelegation',
+          executorPartyId: 'other-executor::1220bbbb',
+        } as CantonTransactionParams,
+        wallet: {} as IWallet,
+      })
+      .should.be.rejectedWith(/executor mismatch/);
   });
 });
 

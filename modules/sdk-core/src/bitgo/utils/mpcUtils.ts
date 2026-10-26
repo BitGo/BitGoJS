@@ -167,6 +167,13 @@ export abstract class MpcUtils {
       assert(params.registrar, `'registrar' is required parameter for ${params.intentType} intent`);
       assert(params.clientOnboarder, `'clientOnboarder' is required parameter for ${params.intentType} intent`);
     }
+    if (params.intentType === 'cantonBroadridgeStandingDelegation') {
+      assert(
+        baseCoin.getFamily() === 'canton',
+        `'cantonBroadridgeStandingDelegation' intent is only supported for the canton coin family`
+      );
+      assert(params.executorPartyId, `'executorPartyId' is required parameter for ${params.intentType} intent`);
+    }
 
     if (
       ['transferOfferWithdrawn', 'allocationOfferWithdrawn'].includes(params.intentType) &&
@@ -222,6 +229,7 @@ export abstract class MpcUtils {
         'bridgeFunds',
         'cantonCommand',
         'cantonEndInvestorOnboardingOffer',
+        'cantonBroadridgeStandingDelegation',
         'cantonEndInvestorOnboardingAccept',
         'cantonEndInvestorOnboardingReject',
         'cantonParticipantOnboardingRequest',

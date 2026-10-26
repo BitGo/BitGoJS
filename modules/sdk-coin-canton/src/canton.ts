@@ -32,7 +32,7 @@ import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { TransactionBuilderFactory } from './lib';
 import { KeyPair as CantonKeyPair } from './lib/keyPair';
 import { BroadridgeCommandParams, CantonCommandKind, TxData } from './lib/iface';
-import { broadridgeDescriptorFromCommand } from './lib/broadridge';
+import { broadridgeDescriptorFromCommand, parseBroadridgeSettlementAuthorization } from './lib/broadridge';
 import { Transaction } from './lib/transaction/transaction';
 import utils from './lib/utils';
 
@@ -47,6 +47,7 @@ export interface ExplainTransactionOptions {
 export interface CantonTransactionParams extends TransactionParams {
   cantonCommandParams?: CantonCommandParams;
   broadridgeCommandParams?: BroadridgeCommandParams;
+  executorPartyId?: string;
 }
 
 export class Canton extends BaseCoin {
@@ -128,6 +129,13 @@ export class Canton extends BaseCoin {
     const broadridgeParams = (txParams as CantonTransactionParams).broadridgeCommandParams;
     if (broadridgeParams) {
       return this.verifyBroadridgeCommandTransaction(transaction, broadridgeParams);
+    }
+    if (txParams.type === 'cantonBroadridgeStandingDelegation') {
+      const executorPartyId = (txParams as CantonTransactionParams).executorPartyId;
+      if (!executorPartyId) {
+        throw new Error('cantonBroadridgeStandingDelegation verifyTransaction: missing executorPartyId');
+      }
+      return this.verifyBroadridgeStandingDelegationTransaction(transaction, executorPartyId);
     }
     switch (transaction.type) {
       case TransactionType.WalletInitialization:
@@ -243,6 +251,40 @@ export class Canton extends BaseCoin {
       }
     }
   }
+  private verifyBroadridgeStandingDelegationTransaction(
+    transaction: BaseTransaction,
+    executorPartyId: string
+  ): boolean {
+    const rawPrepared = (transaction as Transaction).prepareCommand?.preparedTransaction;
+    if (!rawPrepared) {
+      throw new Error('Broadridge standing delegation verifyTransaction: missing preparedTransaction protobuf');
+    }
+    const actual = utils.extractCantonCommandInfo(rawPrepared);
+    if (actual.kind !== 'CreateCommand' || actual.choice !== undefined) {
+      throw new Error(
+        'Broadridge standing delegation verifyTransaction: expected a StandingDelegationImpl_v1 CreateCommand'
+      );
+    }
+    const descriptor = broadridgeDescriptorFromCommand(actual);
+    if (
+      !descriptor ||
+      descriptor.standard !== 'CIP-56' ||
+      descriptor.entityName !== 'StandingDelegationImpl_v1' ||
+      descriptor.role !== 'client'
+    ) {
+      throw new Error('Broadridge standing delegation verifyTransaction: unsupported prepared command');
+    }
+    const parsed = parseBroadridgeSettlementAuthorization(actual);
+    if (parsed?.executor !== executorPartyId) {
+      throw new Error(
+        `Broadridge standing delegation executor mismatch: expected '${executorPartyId}', got '${
+          parsed?.executor ?? ''
+        }'`
+      );
+    }
+    return true;
+  }
+
   private verifyBroadridgeCommandTransaction(transaction: BaseTransaction, params: BroadridgeCommandParams): boolean {
     const rawPrepared = (transaction as Transaction).prepareCommand?.preparedTransaction;
     if (!rawPrepared) {
@@ -527,7 +569,10 @@ export class Canton extends BaseCoin {
   }
 
   /** @inheritDoc */
-  setCoinSpecificFieldsInIntent(intent: PopulatedIntent, params: PrebuildTransactionWithIntentOptions): void {
+  setCoinSpecificFieldsInIntent(
+    intent: PopulatedIntent,
+    params: PrebuildTransactionWithIntentOptions & { executorPartyId?: string }
+  ): void {
     if (params.txRequestId) {
       intent.txRequestId = params.txRequestId;
     }
@@ -539,6 +584,9 @@ export class Canton extends BaseCoin {
     }
     if (params.cantonCommandParams) {
       intent.cantonCommandParams = params.cantonCommandParams;
+    }
+    if (params.executorPartyId) {
+      (intent as PopulatedIntent & { executorPartyId?: string }).executorPartyId = params.executorPartyId;
     }
     if (params.endInvestorPartyId) {
       intent.endInvestorPartyId = params.endInvestorPartyId;
