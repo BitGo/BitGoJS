@@ -387,9 +387,14 @@ describe('Tokenized Equity CoinFeatures', function () {
   });
 });
 describe('ZAMA staking feature', function () {
-  it('eth:zama should not expose STAKING', function () {
+  it('eth:zama should expose correct staking metadata', function () {
     const coin = coins.get('eth:zama');
-    coin.features.includes(CoinFeature.STAKING).should.be.false();
+    coin.fullName.should.equal('Zama');
+    coin.decimalPlaces.should.equal(18);
+    coin.contractAddress.should.equal('0xa12cc123ba206d4031d1c7f6223d1c2ec249f4f3');
+    coin.network.name.should.equal(Networks.main.ethereum.name);
+    coin.features.should.containEql(CoinFeature.STAKING);
+    coin.features.should.containEql(CoinFeature.BULK_TRANSACTION);
   });
 
   it('hteth:zamamock should expose correct staking metadata', function () {
