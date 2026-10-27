@@ -841,7 +841,7 @@ describe('TSS Ecdsa Utils:', async function () {
 
     it('sends attestation only with the first signature share', async function () {
       await setupSignTxRequestNocks(false, userSignShare, aShare, dShare, enterpriseData);
-      sandbox.stub(tssUtils.baseCoin, 'verifyTransaction').resolves(true);
+      sandbox.stub(baseCoin, 'verifyTransaction').resolves(true);
 
       await tssUtils.signTxRequest({
         txRequest,
@@ -866,7 +866,7 @@ describe('TSS Ecdsa Utils:', async function () {
 
     it('omits attestation from every signature share when absent', async function () {
       await setupSignTxRequestNocks(false, userSignShare, aShare, dShare, enterpriseData);
-      sandbox.stub(tssUtils.baseCoin, 'verifyTransaction').resolves(true);
+      sandbox.stub(baseCoin, 'verifyTransaction').resolves(true);
 
       await tssUtils.signTxRequest({
         txRequest,
@@ -894,6 +894,7 @@ describe('TSS Ecdsa Utils:', async function () {
       authenticatorData: string;
     }) {
       await setupSignTxRequestNocks(true, userSignShare, aShare, dShare, enterpriseData);
+      let externalOShare: ECDSA.OShare | undefined;
       sinon.stub(baseCoin, 'verifyTransaction').resolves(true);
 
       return wallet.signTransaction({

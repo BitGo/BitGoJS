@@ -124,6 +124,7 @@ describe('WalletTxSignTSS codec tests', function () {
       assert.strictEqual(mockCoin.wallets.calledOnce, true);
       assert.strictEqual(walletsGetStub.calledOnceWith({ id: walletId }), true);
       assert.strictEqual(mockWallet.ensureCleanSigSharesAndSignTransaction.calledOnce, true);
+      sinon.assert.calledWithMatch(mockWallet.ensureCleanSigSharesAndSignTransaction, { attestation });
     });
 
     it('should successfully sign a half-signed TSS wallet transaction', async function () {

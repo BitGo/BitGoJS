@@ -68,7 +68,6 @@ describe('SendCoins V2 codec tests', function () {
       // Create mock wallet with send method
       const mockWallet = {
         send: sinon.stub().resolves(mockSendResponse),
-        _wallet: { multisigType: 'tss' },
       };
 
       // Stub the wallets().get() chain
@@ -109,6 +108,7 @@ describe('SendCoins V2 codec tests', function () {
       // Verify that the correct BitGoJS methods were called
       assert.strictEqual(walletsGetStub.calledOnce, true);
       assert.strictEqual(mockWallet.send.calledOnce, true);
+      sinon.assert.calledWithMatch(mockWallet.send, { attestation });
     });
 
     it('should successfully send with amount as string', async function () {

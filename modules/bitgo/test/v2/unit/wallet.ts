@@ -4439,6 +4439,89 @@ describe('V2 Wallet:', function () {
           body.intent.should.not.have.property('attestation');
         });
 
+        it('should omit attestation from signing after creating transfer txRequests', async function () {
+          const requestBodies: Record<string, unknown>[] = [];
+          const signRequests: Record<string, unknown>[] = [];
+          const recipientsByType = {
+            transfer: [{ amount: '2', address: adaAddress }],
+            transfertoken: [{ amount: '2', address: adaAddress, tokenName: 'tada:water' }],
+          };
+
+          sandbox
+            .stub(Keychains.prototype, 'getKeysForSigning')
+            .resolves([{ commonKeychain: 'test', id: '', pub: '', type: 'independent' }]);
+          sandbox.stub(tada, 'verifyTransaction').resolves(true);
+          sandbox.stub(BaseTssUtils.default.prototype, 'getTxRequest').resolves(txRequest);
+          sandbox.stub(tssAdaWallet, 'getUserPrv').resolves('secretKey');
+          sandbox.stub(TssUtils.prototype, 'signTxRequest').callsFake(async (params) => {
+            signRequests.push(params as unknown as Record<string, unknown>);
+            return txRequest;
+          });
+
+          for (const type of ['transfer', 'transfertoken'] as const) {
+            const recipients = recipientsByType[type];
+            const previewPrebuild = {
+              walletId: tssAdaWallet.id(),
+              wallet: tssAdaWallet,
+              txRequestId: 'preview-id',
+              txHex: 'preview-tx',
+              buildParams: { type, recipients, attestation, apiVersion: 'lite', preview: true },
+            };
+
+            for (const prebuildTx of [undefined, previewPrebuild]) {
+              nock(bgUrl)
+                .post(`/api/v2/wallet/${tssAdaWallet.id()}/txrequests`, (body) => {
+                  requestBodies.push(body as Record<string, unknown>);
+                  return true;
+                })
+                .reply(200, txRequest);
+
+              await tssAdaWallet.prebuildAndSignTransaction({
+                walletPassphrase: 'passphrase',
+                apiVersion: 'lite',
+                ...(!prebuildTx && { type, recipients, attestation }),
+                ...(prebuildTx && { prebuildTx }),
+              });
+            }
+          }
+
+          requestBodies.should.have.length(4);
+          requestBodies.forEach((body) => assert.deepStrictEqual(body.attestation, attestation));
+          assert.strictEqual(requestBodies[1].preview, false);
+          assert.strictEqual(requestBodies[3].preview, false);
+          signRequests.should.have.length(4);
+          signRequests.forEach((params) => params.should.not.have.property('attestation'));
+        });
+
+        it('should preserve attestation when signing a supplied prebuildTx', async function () {
+          const signRequests: Record<string, unknown>[] = [];
+          sandbox
+            .stub(Keychains.prototype, 'getKeysForSigning')
+            .resolves([{ commonKeychain: 'test', id: '', pub: '', type: 'independent' }]);
+          sandbox.stub(tada, 'verifyTransaction').resolves(true);
+          sandbox.stub(BaseTssUtils.default.prototype, 'getTxRequest').resolves(txRequest);
+          sandbox.stub(tssAdaWallet, 'getUserPrv').resolves('secretKey');
+          sandbox.stub(TssUtils.prototype, 'signTxRequest').callsFake(async (params) => {
+            signRequests.push(params as unknown as Record<string, unknown>);
+            return txRequest;
+          });
+
+          await tssAdaWallet.prebuildAndSignTransaction({
+            walletPassphrase: 'passphrase',
+            type: 'transfer',
+            attestation,
+            prebuildTx: {
+              walletId: tssAdaWallet.id(),
+              wallet: tssAdaWallet,
+              txRequestId: 'existing-id',
+              txHex: 'existing-tx',
+            },
+          });
+
+          signRequests.should.have.length(1);
+          assert.deepStrictEqual(signRequests[0].attestation, attestation);
+        });
+
         it('should omit videoApprovers and attestation when absent for transfers', async function () {
           for (const type of ['transfer', 'transfertoken'] as const) {
             const body = await captureTxRequestBody({
@@ -4453,6 +4536,25 @@ describe('V2 Wallet:', function () {
     });
 
     describe('Transaction signing', function () {
+      it('should sign transaction', async function () {
+        const signTxRequest = sandbox.stub(TssUtils.prototype, 'signTxRequest');
+        signTxRequest.resolves(txRequest);
+
+        const txPrebuild = {
+          walletId: tssSolWallet.id(),
+          wallet: tssSolWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+        };
+        const signedTransaction = await tssSolWallet.signTransaction({
+          reqId,
+          txPrebuild,
+          prv: 'secretKey',
+        });
+        signedTransaction.should.deepEqual(txRequest);
+        signTxRequest.should.have.been.calledOnce();
+      });
+
       it('should fail to sign transaction without txRequestId', async function () {
         const txPrebuild = {
           walletId: tssSolWallet.id(),

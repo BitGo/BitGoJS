@@ -121,6 +121,7 @@ describe('SendMany V2 codec tests', function () {
       // Verify that the correct BitGoJS methods were called
       assert.strictEqual(walletsGetStub.calledOnce, true);
       assert.strictEqual(mockWallet.sendMany.calledOnce, true);
+      sinon.assert.calledWithMatch(mockWallet.sendMany, { attestation });
     });
 
     it('should successfully send with fee parameters', async function () {
