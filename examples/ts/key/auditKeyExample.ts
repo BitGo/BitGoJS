@@ -1,6 +1,5 @@
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { Tltc } from '@bitgo/sdk-coin-ltc';
-import * as sjcl from '@bitgo/sjcl';
 require('dotenv').config({ path: '../../.env' });
 
 const bitgo = new BitGoAPI({
@@ -16,11 +15,11 @@ async function main() {
   const baseCoin = bitgo.coin(coin);
   const keyPair = baseCoin.generateKeyPair();
   const walletPassphrase = 'myStrongPassphrase';
-  const encryptedPrv = sjcl.encrypt(walletPassphrase, keyPair.prv);
+  const encryptedPrv = await bitgo.encrypt({ input: keyPair.prv, password: walletPassphrase });
 
   // 2. Call the function with valid arguments so that the function validates the created key
   try {
-    baseCoin.assertIsValidKey({
+    await baseCoin.assertIsValidKey({
       encryptedPrv,
       walletPassphrase,
       publicKey: keyPair.pub,
@@ -32,7 +31,7 @@ async function main() {
 
   // 3. Call the function with the incorrect passphrase, console log the captured error and explain it's the wrong password
   try {
-    baseCoin.assertIsValidKey({
+    await baseCoin.assertIsValidKey({
       encryptedPrv,
       walletPassphrase: 'wrongPassphrase',
       publicKey: keyPair.pub,
@@ -45,7 +44,7 @@ async function main() {
   // 4. Call the function with a modified encryptedPrv, console log the captured error and explain that the prv is wrong
   try {
     const tamperedEncryptedPrv = encryptedPrv.slice(0, -1) + (encryptedPrv.slice(-1) === 'a' ? 'b' : 'a');
-    baseCoin.assertIsValidKey({
+    await baseCoin.assertIsValidKey({
       encryptedPrv: tamperedEncryptedPrv,
       walletPassphrase,
       publicKey: keyPair.pub,
@@ -59,7 +58,7 @@ async function main() {
   try {
     // Generate a new key pair to get a different public key
     const anotherKeyPair = baseCoin.generateKeyPair();
-    baseCoin.assertIsValidKey({
+    await baseCoin.assertIsValidKey({
       encryptedPrv,
       walletPassphrase,
       publicKey: anotherKeyPair.pub, // mismatched public key
