@@ -179,6 +179,17 @@ export interface UTXOInfo {
   value: string;
 }
 
+export interface CantonMinLedgerTime {
+  time: { Empty: Record<string, never> } | { MinLedgerTimeAbs: { value: string } };
+}
+
+export interface CantonCustodialTiming {
+  minLedgerTime: { time: { MinLedgerTimeAbs: { value: string } } };
+  broadcastNotBefore: string;
+  broadcastTarget: string;
+  broadcastExpiresAt: string;
+}
+
 export interface CantonPrepareCommandResponse {
   preparedTransaction?: string;
   preparedTransactionHash: string;
@@ -186,6 +197,7 @@ export interface CantonPrepareCommandResponse {
   hashingDetails?: string | null;
   utxoInfo?: UTXOInfo[];
   isOneStepTransfer?: boolean;
+  custodialTiming?: CantonCustodialTiming;
 }
 
 export interface PreparedParty {
@@ -262,11 +274,7 @@ export interface TransactionBroadcastData {
   };
   submissionId: string;
   hashingSchemeVersion?: string;
-  minLedgerTime?: {
-    time: {
-      Empty: Record<string, never>;
-    };
-  };
+  minLedgerTime?: CantonMinLedgerTime;
 }
 
 export interface CantonOneStepEnablementRequest extends CantonPrepareCommandRequest {

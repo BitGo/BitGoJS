@@ -1,3 +1,4 @@
+import assert from 'assert';
 import 'should';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
@@ -78,6 +79,37 @@ describe('Canton coin:', function () {
     it('should return true', function () {
       basecoin.supportsMessageSigning().should.equal(true);
     });
+  });
+});
+
+describe('Canton custodial timing serialization:', function () {
+  it('serializes and round-trips absolute minLedgerTime metadata', function () {
+    const timing = {
+      minLedgerTime: {
+        time: { MinLedgerTimeAbs: { value: '2026-10-27T12:10:00.000Z' } },
+      },
+      broadcastNotBefore: '2026-10-27T12:09:00.000Z',
+      broadcastTarget: '2026-10-27T12:09:30.000Z',
+      broadcastExpiresAt: '2026-10-27T12:11:00.000Z',
+    };
+    const tx = new Transaction(coins.get('tcanton'));
+    tx.id = 'custodial-accept-command';
+    tx.transactionType = TransactionType.OneStepPreApproval;
+    tx.prepareCommand = {
+      ...OneStepPreApprovalPrepareResponse,
+      custodialTiming: timing,
+    };
+
+    const serialized = tx.toBroadcastFormat();
+    const payload = JSON.parse(Buffer.from(serialized, 'base64').toString('utf8'));
+    assert.deepStrictEqual(payload.minLedgerTime, timing.minLedgerTime);
+    assert.deepStrictEqual(payload.prepareCommandResponse.custodialTiming, timing);
+
+    const parsed = new Transaction(coins.get('tcanton'));
+    parsed.fromRawTransaction(serialized);
+    assert.deepStrictEqual(parsed.prepareCommand.custodialTiming, timing);
+    const roundTrip = JSON.parse(Buffer.from(parsed.toBroadcastFormat(), 'base64').toString('utf8'));
+    assert.deepStrictEqual(roundTrip.minLedgerTime, timing.minLedgerTime);
   });
 });
 
