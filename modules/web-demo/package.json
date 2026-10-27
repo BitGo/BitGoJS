@@ -64,7 +64,6 @@
     "@bitgo/sdk-hmac": "^1.9.2",
     "@bitgo/sdk-lib-mpc": "^11.6.0",
     "@bitgo/sdk-opensslbytes": "^2.1.0",
-    "@bitgo/sjcl": "^1.1.0",
     "@bitgo/statics": "^59.25.0",
     "bitgo": "^54.2.2",
     "lodash": "^4.18.0",

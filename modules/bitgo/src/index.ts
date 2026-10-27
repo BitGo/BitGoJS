@@ -18,7 +18,10 @@ export * from './bitgo';
 /** @deprecated */
 export { bitcoin } from '@bitgo/sdk-core';
 
-/** @deprecated */
+/**
+ * @deprecated SJCL is unmaintained and this export may be removed in a future major release.
+ * Use `bitgo.encrypt` / `bitgo.decrypt`, or native crypto, instead.
+ */
 export const sjcl = require('@bitgo/sjcl');
 
 export { Buffer } from 'buffer';

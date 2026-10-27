@@ -2,7 +2,7 @@ import { generateKeycard } from '@bitgo/key-card';
 import { KeyCurve, coins } from '@bitgo/statics';
 import { Keychain } from '@bitgo/sdk-core';
 import { DklsDkg, DklsTypes } from '@bitgo/sdk-lib-mpc';
-import * as sjcl from '@bitgo/sjcl';
+import { encrypt } from '@bitgo/sdk-api';
 
 function downloadKeycardImage(coinFamily: string): Promise<HTMLImageElement> {
   return new Promise<HTMLImageElement>((resolve, reject) => {
@@ -61,7 +61,7 @@ export async function downloadKeycardForDKLsTSS() {
   const commonKeychain = DklsTypes.getCommonKeychain(userKeyShare);
   const userCompressed = user.getReducedKeyShare();
   const backupCompressed = backup.getReducedKeyShare();
-  const encryptedUser = sjcl.encrypt(
+  const encryptedUser = await encrypt(
     't3stSicretly!',
     btoa(
       String.fromCharCode.apply(
@@ -70,7 +70,7 @@ export async function downloadKeycardForDKLsTSS() {
       ),
     ),
   );
-  const encryptedBackup = sjcl.encrypt(
+  const encryptedBackup = await encrypt(
     't3stSicretly!',
     btoa(
       String.fromCharCode.apply(
