@@ -346,6 +346,9 @@ function getErc20TokenConfig(coin: Erc20Coin): Erc20TokenConfig {
     case Networks.test.basechain.name:
       baseCoin = 'tbaseeth';
       break;
+    case Networks.main.basechain.name:
+      baseCoin = 'baseeth';
+      break;
     case Networks.test.flow.name:
       baseCoin = 'tflow';
       break;
