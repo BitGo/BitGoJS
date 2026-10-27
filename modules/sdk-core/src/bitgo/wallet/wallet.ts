@@ -2804,12 +2804,16 @@ export class Wallet implements IWallet {
       customSigningFunction: params.customSigningFunction,
     });
 
+    const previewPrebuildTx =
+      isPrebuildTransactionResult(params.prebuildTx) && params.prebuildTx.buildParams?.preview === true
+        ? params.prebuildTx
+        : undefined;
     let txPrebuildQuery: Promise<PrebuildTransactionResult | string>;
-    if (isPrebuildTransactionResult(params.prebuildTx) && params.prebuildTx.buildParams?.preview) {
+    if (previewPrebuildTx) {
       // If we prebuilt the txRequest with preview=true, then we should rebuild with preview=false to persist the request
       txPrebuildQuery = this.prebuildTransaction({
         ...params,
-        ...{ ...params.prebuildTx.buildParams, preview: false },
+        ...{ ...previewPrebuildTx.buildParams, preview: false },
       });
     } else {
       txPrebuildQuery = params.prebuildTx ? Promise.resolve(params.prebuildTx) : this.prebuildTransaction(params);
@@ -2817,6 +2821,12 @@ export class Wallet implements IWallet {
 
     // the prebuild can be overridden by providing an explicit tx
     const txPrebuild = (await txPrebuildQuery) as PrebuildTransactionResult;
+    const createdAttestedTransferTxRequest =
+      this._wallet.multisigType === 'tss' &&
+      !!txPrebuild.txRequestId &&
+      txPrebuild.buildParams?.attestation !== undefined &&
+      (!params.prebuildTx || previewPrebuildTx !== undefined) &&
+      (txPrebuild.buildParams?.type === 'transfer' || txPrebuild.buildParams?.type === 'transfertoken');
 
     try {
       await this.baseCoin.verifyTransaction({
@@ -2855,6 +2865,11 @@ export class Wallet implements IWallet {
       bitgoKeychain: keychains.length > 2 ? keychains[2] : null,
       reqId: params.reqId,
     };
+    if (createdAttestedTransferTxRequest) {
+      // Wallet Platform consumes the nonce when creating the request; round 1 re-capture would fail.
+      delete signingParams.attestation;
+    }
+
     if (this._wallet.multisigType === 'onchain') {
       signingParams.pubs = keychains.map((k) => {
         assert(k.pub);
