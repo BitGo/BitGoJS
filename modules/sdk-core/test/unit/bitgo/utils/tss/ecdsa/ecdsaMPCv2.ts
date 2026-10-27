@@ -19,6 +19,8 @@ import {
   EcdsaMPCv2Utils,
   EcdsaMPCv2KeyGenCallbacks,
   IBaseCoin,
+  IWallet,
+  RequestTracer,
   SignatureShareRecord,
   SignatureShareType,
   TxRequest,
@@ -1380,5 +1382,110 @@ describe('EcdsaMPCv2Utils.createKeychainsWithExternalSigner', function () {
       () => utils.createKeychainsWithExternalSigner({ enterprise, callbacks }),
       /Session ID mismatch after round 2/
     );
+  });
+});
+
+describe('EcdsaMPCv2Utils.signEcdsaMPCv2TssUsingExternalSigner attestation', () => {
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('should submit attestation only with the first external signer request', async () => {
+    const walletId = 'ecdsa-external-signer-wallet';
+    const signatureShare: SignatureShareRecord = {
+      from: SignatureShareType.USER,
+      to: SignatureShareType.BITGO,
+      share: JSON.stringify({ type: 'round1Input', data: {} }),
+    };
+    const txRequest: TxRequest = {
+      txRequestId: 'ecdsa-external-signer-txrequest',
+      walletId,
+      enterpriseId: 'enterprise-id',
+      apiVersion: 'full',
+      transactions: [
+        {
+          unsignedTx: { derivationPath: 'm/0', signableHex: 'deadbeef' },
+          signatureShares: [],
+        },
+      ],
+    } as unknown as TxRequest;
+    const roundResponse: TxRequest = {
+      ...txRequest,
+      transactions: [
+        {
+          unsignedTx: { serializedTxHex: 'deadbeef', derivationPath: 'm/0', signableHex: 'deadbeef' },
+          signatureShares: [signatureShare],
+          state: 'initialized',
+        },
+      ],
+    };
+    const finalTxRequest = txRequest;
+    const responses = [roundResponse, roundResponse, roundResponse, finalTxRequest];
+    const requestBodies: unknown[] = [];
+    let postIndex = 0;
+    const postStub = sinon.stub().callsFake(() => {
+      const response = responses[postIndex++];
+      if (!response) {
+        throw new Error('Unexpected POST request in external signer test');
+      }
+      return {
+        send: (body?: unknown) => {
+          if (body !== undefined) {
+            requestBodies.push(body);
+          }
+          return { result: sinon.stub().resolves(response) };
+        },
+      };
+    });
+    const mockBitgo = {
+      setRequestTracer: sinon.stub(),
+      url: sinon.stub().callsFake((path: string) => path),
+      post: postStub,
+    } as unknown as BitGoBase;
+    const mockCoin = { getMPCAlgorithm: sinon.stub().returns('ecdsa') } as unknown as IBaseCoin;
+    const mockWallet = {
+      id: sinon.stub().returns(walletId),
+      multisigTypeVersion: sinon.stub().returns('MPCv2'),
+    } as unknown as IWallet;
+    const utils = new EcdsaMPCv2Utils(mockBitgo, mockCoin, mockWallet);
+    Object.defineProperty(utils, 'pickBitgoPubGpgKeyForSigning', {
+      value: sinon.stub().resolves({ armor: () => 'bitgo-gpg-public-key' }),
+    });
+
+    const attestation = {
+      signature: 'webauthn-signature',
+      credentialId: 'credential-123',
+      clientDataJSON: 'client-data',
+      authenticatorData: 'authenticator-data',
+    };
+    const round1Generator = async () => ({
+      signatureShareRound1: signatureShare,
+      userGpgPubKey: 'user-gpg-public-key',
+      encryptedRound1Session: 'encrypted-round1-session',
+      encryptedUserGpgPrvKey: 'encrypted-user-gpg-private-key',
+    });
+    const round2Generator = async () => ({
+      signatureShareRound2: signatureShare,
+      encryptedRound2Session: 'encrypted-round2-session',
+    });
+    const round3Generator = async () => ({ signatureShareRound3: signatureShare });
+
+    await utils.signEcdsaMPCv2TssUsingExternalSigner(
+      { txRequest, reqId: new RequestTracer(), attestation },
+      round1Generator,
+      round2Generator,
+      round3Generator
+    );
+
+    assert.strictEqual(requestBodies.length, 3, 'all three /sign request bodies should be captured');
+    for (const [index, body] of requestBodies.entries()) {
+      assert.ok(body !== null && typeof body === 'object', `round ${index + 1} body should be an object`);
+      if (index === 0) {
+        assert.ok('attestation' in body, 'round 1 /sign body must include attestation');
+        assert.deepStrictEqual(body.attestation, attestation);
+      } else {
+        assert.ok(!('attestation' in body), `round ${index + 1} /sign body must omit attestation`);
+      }
+    }
   });
 });

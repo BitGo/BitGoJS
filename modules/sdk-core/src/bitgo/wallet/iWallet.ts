@@ -1,3 +1,4 @@
+import type { AttestationPayload } from './BuildParams';
 import { EncryptionVersion, IRequestTracer } from '../../api';
 import { CreateLightningInvoiceParams, LightningInvoiceResponse } from '../../lightning';
 import {
@@ -39,7 +40,6 @@ import {
   TxRequest,
 } from '../utils';
 import { SerializedNtilde } from '../../account-lib/mpc/tss/ecdsa/types';
-import { AttestationPayload } from './BuildParams';
 import { IAddressBook } from '../address-book';
 import { WalletUser, AddressQueryResult } from '@bitgo/public-types';
 import { SubmitTransactionResponse } from '../inscriptionBuilder';
@@ -219,7 +219,7 @@ export interface PrebuildTransactionOptions {
   idfUserId?: string;
   idfVersion?: number;
   comment?: string;
-  /** WebAuthn attestation for the withdrawal intent (WCN-539) — pass-through only. */
+  /** WebAuthn proof for a withdrawal; pass-through only. */
   attestation?: AttestationPayload;
   [index: string]: unknown;
   tokenName?: string;
@@ -419,6 +419,8 @@ export interface WalletSignBaseOptions {
 }
 
 export interface WalletSignTransactionOptions extends WalletSignBaseOptions {
+  /** Optional WebAuthn proof for the first TSS withdrawal-signing round; pass-through only. */
+  attestation?: AttestationPayload;
   txPrebuild?: TransactionPrebuild;
   customCommitmentGeneratingFunction?: CustomCommitmentGeneratingFunction;
   customRShareGeneratingFunction?: CustomRShareGeneratingFunction;
@@ -1001,7 +1003,7 @@ export interface SubmitTransactionOptions {
   };
   comment?: string;
   txRequestId?: string;
-  /** WebAuthn attestation for the withdrawal intent (WCN-539) — pass-through only. */
+  /** WebAuthn attestation for the withdrawal intent — pass-through only. */
   attestation?: AttestationPayload;
 }
 
@@ -1013,6 +1015,8 @@ export interface SendOptions {
   message?: string;
   walletPassphrase?: string;
   prv?: string;
+  /** Optional WebAuthn proof for a withdrawal; pass-through only. */
+  attestation?: AttestationPayload;
   minConfirms?: number;
   enforceMinConfirmsForChange?: boolean;
   custodianTransactionId?: string;

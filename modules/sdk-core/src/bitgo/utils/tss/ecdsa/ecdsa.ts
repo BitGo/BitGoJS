@@ -714,7 +714,8 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       step1SigningMaterial.privateShareProof,
       step1SigningMaterial.publicShare,
       step1SigningMaterial.userPublicGpgKey,
-      params.reqId
+      params.reqId,
+      requestType === RequestType.tx ? params.attestation : undefined
     )) as Omit<AShare, 'ntilde' | 'h1' | 'h2'>; // WP/HSM does not return the initial challenge
     const step2Return = await externalSignerMuDeltaShareGenerator({
       txRequest: txRequestObj,
@@ -865,7 +866,8 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       step1Return.privateShareProof,
       step1Return.publicShare,
       step1Return.userPublicGpgKey,
-      params.reqId
+      params.reqId,
+      requestType === RequestType.tx ? params.attestation : undefined
     )) as Omit<AShare, 'ntilde' | 'h1' | 'h2'>; // WP/HSM does not return the initial challenge
 
     const step2Return = await this.createTssEcdsaStep2SigningMaterial({

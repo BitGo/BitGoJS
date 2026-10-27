@@ -733,8 +733,18 @@ describe('TSS Utils:', async function () {
       version: 1,
       userId: 'userId',
     };
+    const attestation = {
+      signature: 'test-signature',
+      credentialId: 'test-credential',
+      clientDataJSON: 'test-client-data',
+      authenticatorData: 'test-authenticator-data',
+    };
+    let requestBodies: Record<string, unknown>[] = [];
 
     beforeEach(async function () {
+      requestBodies = [];
+      txRequest.signatureShares = [];
+      txRequest.state = 'pendingUserSignature';
       const userSignShare = validUserSignShare;
       const rShare = userSignShare.rShares[3];
       const signatureShare: SignatureShareRecord = {
@@ -747,6 +757,7 @@ describe('TSS Utils:', async function () {
         walletId: wallet.id(),
         txRequestId: txRequest.txRequestId,
         signatureShare,
+        requestBodies,
       });
 
       const signatureShare2: SignatureShareRecord = {
@@ -780,6 +791,70 @@ describe('TSS Utils:', async function () {
       signedTxRequest.unsignedTxs.should.deepEqual(txRequest.unsignedTxs);
 
       sandbox.verifyAndRestore();
+    });
+
+    it('sends attestation only with the first signature share', async function () {
+      await tssUtils.signTxRequest({
+        txRequest,
+        prv: JSON.stringify(validUserSigningMaterial),
+        reqId,
+        attestation,
+      });
+
+      requestBodies.should.have.length(2);
+      assert.deepStrictEqual(requestBodies[0].attestation, attestation);
+      requestBodies[1].should.not.have.property('attestation');
+    });
+
+    async function signWithExternalSigner(attestation?: {
+      signature: string;
+      credentialId: string;
+      clientDataJSON: string;
+      authenticatorData: string;
+    }) {
+      return tssUtils.signEddsaTssUsingExternalSigner(
+        txRequest,
+        async () => ({
+          userToBitgoCommitment: tssUtils.createUserToBitgoCommitmentShare('user-commitment'),
+          encryptedSignerShare: tssUtils.createUserToBitgoEncryptedSignerShare('encrypted-signer-share'),
+          encryptedUserToBitgoRShare: tssUtils.createUserToBitgoEncryptedSignerShare('encrypted-r-share'),
+        }),
+        async () => ({ rShare: validUserSignShare }),
+        async () => ({
+          i: 1,
+          y: 'user-y-share',
+          gamma: 'user-gamma-share',
+          R: 'user-R-share',
+        }),
+        reqId,
+        attestation
+      );
+    }
+
+    it('external signer sends attestation only with the first signature share', async function () {
+      await signWithExternalSigner(attestation);
+
+      requestBodies.should.have.length(2);
+      assert.deepStrictEqual(requestBodies[0].attestation, attestation);
+      requestBodies[1].should.not.have.property('attestation');
+    });
+
+    it('external signer omits attestation from every signature share when absent', async function () {
+      await signWithExternalSigner();
+
+      requestBodies.should.have.length(2);
+      requestBodies.forEach((body) => body.should.not.have.property('attestation'));
+    });
+
+    it('omits attestation from every signature share when absent', async function () {
+      await tssUtils.signTxRequest({
+        txRequest,
+        prv: JSON.stringify(validUserSigningMaterial),
+        reqId,
+      });
+
+      requestBodies.should.have.length(2);
+      requestBodies.forEach((body) => body.should.not.have.property('attestation'));
     });
 
     it('signTxRequest should succeed with txRequest id as input', async function () {

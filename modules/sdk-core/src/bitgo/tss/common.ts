@@ -2,6 +2,7 @@ import assert from 'assert';
 import openpgp from 'openpgp';
 
 import { MPCv2SigningState } from '@bitgo/public-types';
+import type { AttestationPayload } from '../wallet/BuildParams';
 import { BitGoBase } from '../bitgoBase';
 import { TxRequestChallengeResponse } from './types';
 import { MPCAlgorithm } from '../baseCoin';
@@ -82,6 +83,7 @@ export async function getTxRequest(
  * @param mpcAlgorithm
  * @param apiMode
  * @param {IRequestTracer} reqId - the request tracer request id
+ * @param attestation Optional withdrawal attestation; include only on the first signing request.
  * @returns {Promise<SignatureShareRecord>} - a Signature Share
  */
 export async function sendSignatureShare(
@@ -94,7 +96,8 @@ export async function sendSignatureShare(
   mpcAlgorithm: 'eddsa' | 'ecdsa' = 'eddsa',
   apiMode: 'full' | 'lite' = 'lite',
   userPublicGpgKey?: string,
-  reqId?: IRequestTracer
+  reqId?: IRequestTracer,
+  attestation?: AttestationPayload
 ): Promise<SignatureShareRecord> {
   let addendum = '';
   switch (requestType) {
@@ -112,14 +115,14 @@ export async function sendSignatureShare(
   const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/signatureshares';
   const reqTracer = reqId || new RequestTracer();
   bitgo.setRequestTracer(reqTracer);
-  // TODO(WCN-541): add optional attestation pass-through for MPC /signatureshares, first round
-  // only (deferred until multisig attestation, WCN-539, is verified end-to-end on staging).
+  // Attestation is only attached to first-round withdrawal shares.
   return bitgo
     .post(bitgo.url(urlPath, 2))
     .send({
       signatureShare,
       signerShare,
       userPublicGpgKey,
+      ...(attestation !== undefined && { attestation }),
     })
     .result();
 }
@@ -146,6 +149,7 @@ export async function sendSignatureShare(
  * @param signingType - Optional protocol selector for coins with more than one signing
  *   protocol ('redPallasRerand' for the RedPallas rerand rounds); only valid for
  *   MPCv2 + redpallas
+ * @param attestation Optional withdrawal attestation; include only on the first signing request.
  * @returns {Promise<TxRequest>} - the latest TxRequest, with BitGo's shares echoed back
  */
 export async function sendSignatureShareV2(
@@ -159,7 +163,8 @@ export async function sendSignatureShareV2(
   signerShare?: string,
   multisigTypeVersion?: 'MPCv2' | undefined,
   reqId?: IRequestTracer,
-  signingType?: 'redPallasRerand'
+  signingType?: 'redPallasRerand',
+  attestation?: AttestationPayload
 ): Promise<TxRequest> {
   if (signingType !== undefined && (multisigTypeVersion !== 'MPCv2' || mpcAlgorithm !== 'redpallas')) {
     throw new Error(`Invalid signingType ${signingType}: only supported for MPCv2 redpallas`);
@@ -181,6 +186,7 @@ export async function sendSignatureShareV2(
     signatureShares,
     signerShare,
     signerGpgPublicKey,
+    ...(attestation !== undefined && { attestation }),
   };
   const reqTracer = reqId || new RequestTracer();
   bitgo.setRequestTracer(reqTracer);

@@ -1,3 +1,4 @@
+import type { AttestationPayload } from '../../wallet/BuildParams';
 import { Ecdsa } from './../../../account-lib/mpc/tss';
 import {
   AShare,
@@ -215,7 +216,8 @@ export async function sendShareToBitgo(
   privateShareProof?: string,
   publicShare?: string,
   userPublicGpgKey?: string,
-  reqId?: IRequestTracer
+  reqId?: IRequestTracer,
+  attestation?: AttestationPayload
 ): Promise<SendShareToBitgoRT> {
   if (shareType !== SendShareType.SShare && share.i !== ShareKeyPosition.BITGO) {
     throw new Error('Invalid Share, is not from User to Bitgo');
@@ -241,7 +243,8 @@ export async function sendShareToBitgo(
         'ecdsa',
         'full',
         userPublicGpgKey,
-        reqId
+        reqId,
+        attestation
       );
       responseFromBitgo = await getBitgoToUserLatestShare(
         bitgo,

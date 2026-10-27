@@ -46,6 +46,13 @@ describe('SendCoins V2 codec tests', function () {
       txid: '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
     };
 
+    const attestation = {
+      signature: 'signature',
+      credentialId: 'credential-id',
+      clientDataJSON: 'client-data',
+      authenticatorData: 'authenticator-data',
+    };
+
     afterEach(function () {
       sinon.restore();
     });
@@ -55,12 +62,13 @@ describe('SendCoins V2 codec tests', function () {
         address: 'mzKTJw3XJNb7VfkFP77mzPJJz4Dkp4M1T6',
         amount: 1000000,
         walletPassphrase: 'test_passphrase_12345',
+        attestation,
       };
 
       // Create mock wallet with send method
       const mockWallet = {
         send: sinon.stub().resolves(mockSendResponse),
-        _wallet: { multisigType: 'onchain' },
+        _wallet: { multisigType: 'tss' },
       };
 
       // Stub the wallets().get() chain
@@ -814,6 +822,21 @@ describe('SendCoins V2 codec tests', function () {
         const decoded = assertDecode(t.type(SendCoinsRequestBody), validBody);
         assert.strictEqual(decoded.address, validBody.address);
         assert.strictEqual(decoded.amount, validBody.amount);
+      });
+
+      it('should preserve optional attestation in the request body schema', function () {
+        const attestation = {
+          signature: 'signature',
+          credentialId: 'credential-id',
+          clientDataJSON: 'client-data-json',
+          authenticatorData: 'authenticator-data',
+        };
+        const decoded = assertDecode(t.type(SendCoinsRequestBody), {
+          address: 'mzKTJw3XJNb7VfkFP77mzPJJz4Dkp4M1T6',
+          amount: '1000',
+          attestation,
+        });
+        assert.deepStrictEqual(decoded.attestation, attestation);
       });
 
       it('should validate body with amount as string', function () {

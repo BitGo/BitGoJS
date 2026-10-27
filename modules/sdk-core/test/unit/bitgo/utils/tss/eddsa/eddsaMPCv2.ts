@@ -2245,8 +2245,15 @@ describe('EddsaMPCv2Utils.signEddsaMPCv2TssUsingExternalSigner', () => {
   };
 
   // Returns a chain compatible with: bitgo.post(url).send(body).result()
-  const makePostChain = (response: TxRequest): BitGoRequest<TxRequest> =>
-    ({ send: () => ({ result: sinon.stub().resolves(response) }) } as unknown as BitGoRequest<TxRequest>);
+  const makePostChain = (response: TxRequest, requestBodies?: unknown[]): BitGoRequest<TxRequest> =>
+    ({
+      send: (body?: unknown) => {
+        if (requestBodies && body !== undefined) {
+          requestBodies.push(body);
+        }
+        return { result: sinon.stub().resolves(response) };
+      },
+    } as unknown as BitGoRequest<TxRequest>);
 
   // Returns a chain compatible with: bitgo.get(url).query(params).retry(n).result()
   const makeGetChain = (txRequests: TxRequest[]): BitGoRequest<{ txRequests: TxRequest[] }> =>
@@ -2292,6 +2299,55 @@ describe('EddsaMPCv2Utils.signEddsaMPCv2TssUsingExternalSigner', () => {
 
   afterEach(() => {
     sandbox.restore();
+  });
+
+  it('should submit attestation only with the first external signer request', async () => {
+    const finalTxRequest = { ...mockTxRequest, txRequestId };
+    const requestBodies: unknown[] = [];
+
+    // sendSignatureShareV2 runs for each signing round; sendTxRequest has no body.
+    (mockBitgo.post as sinon.SinonStub)
+      .onCall(0)
+      .returns(makePostChain(mockTxRequest, requestBodies))
+      .onCall(1)
+      .returns(makePostChain(mockTxRequestRound2, requestBodies))
+      .onCall(2)
+      .returns(makePostChain(mockTxRequestRound2, requestBodies))
+      .onCall(3)
+      .returns(makePostChain(finalTxRequest, requestBodies));
+
+    const attestation = {
+      signature: 'webauthn-signature',
+      credentialId: 'credential-123',
+      clientDataJSON: 'client-data',
+      authenticatorData: 'authenticator-data',
+    };
+    const round1Generator = sinon.stub().resolves({
+      signatureShareRound1: dummyShare,
+      userGpgPubKey: bitgoGpgKeyPair.publicKey,
+      encryptedRound1Session: 'r1',
+      encryptedUserGpgPrvKey: 'key',
+    });
+    const round2Generator = sinon.stub().resolves({ signatureShareRound2: dummyShare, encryptedRound2Session: 'r2' });
+    const round3Generator = sinon.stub().resolves({ signatureShareRound3: dummyShare });
+
+    await eddsaMPCv2Utils.signEddsaMPCv2TssUsingExternalSigner(
+      { txRequest: mockTxRequest, reqId: new RequestTracer(), attestation },
+      round1Generator as unknown as CustomEddsaMPCv2SigningRound1GeneratingFunction,
+      round2Generator as unknown as CustomEddsaMPCv2SigningRound2GeneratingFunction,
+      round3Generator as unknown as CustomEddsaMPCv2SigningRound3GeneratingFunction
+    );
+
+    assert.strictEqual(requestBodies.length, 3, 'all three /sign request bodies should be captured');
+    for (const [index, body] of requestBodies.entries()) {
+      assert.ok(body !== null && typeof body === 'object', `round ${index + 1} body should be an object`);
+      if (index === 0) {
+        assert.ok('attestation' in body, 'round 1 /sign body must include attestation');
+        assert.deepStrictEqual(body.attestation, attestation);
+      } else {
+        assert.ok(!('attestation' in body), `round ${index + 1} /sign body must omit attestation`);
+      }
+    }
   });
 
   it('should call all 3 generators and return the final tx request', async () => {

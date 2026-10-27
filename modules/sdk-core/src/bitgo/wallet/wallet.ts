@@ -4547,6 +4547,7 @@ export class Wallet implements IWallet {
             isTestTransaction: params.isTestTransaction,
             isWalletConnectTx: params.isWalletConnectTx as boolean | undefined,
             videoApprovers: params.videoApprovers,
+            ...(params.attestation !== undefined && { attestation: params.attestation }),
           },
           apiVersion,
           params.preview
@@ -4565,6 +4566,7 @@ export class Wallet implements IWallet {
             unspents: params.unspents,
             sequenceId: params.sequenceId,
             videoApprovers: params.videoApprovers,
+            ...(params.attestation !== undefined && { attestation: params.attestation }),
           },
           apiVersion,
           params.preview
@@ -5096,7 +5098,8 @@ export class Wallet implements IWallet {
         params.customCommitmentGeneratingFunction,
         params.customRShareGeneratingFunction,
         params.customGShareGeneratingFunction,
-        reqId
+        reqId,
+        params.attestation
       );
     } catch (e) {
       debug('failed to sign transaction %O', e);
@@ -5302,6 +5305,7 @@ export class Wallet implements IWallet {
         {
           txRequest: txRequestId,
           reqId: params.reqId || new RequestTracer(),
+          attestation: params.attestation,
         },
         RequestType.tx,
         params.customPaillierModulusGeneratingFunction,
@@ -5357,6 +5361,7 @@ export class Wallet implements IWallet {
         {
           txRequest: txRequestId,
           reqId: params.reqId || new RequestTracer(),
+          attestation: params.attestation,
         },
         params.customEddsaMPCv2SigningRound1GenerationFunction,
         params.customEddsaMPCv2SigningRound2GenerationFunction,
@@ -5404,6 +5409,7 @@ export class Wallet implements IWallet {
         {
           txRequest: txRequestId,
           reqId: params.reqId || new RequestTracer(),
+          attestation: params.attestation,
         },
         params.customMPCv2SigningRound1GenerationFunction,
         params.customMPCv2SigningRound2GenerationFunction,
@@ -5443,6 +5449,7 @@ export class Wallet implements IWallet {
         prv: params.prv,
         reqId: params.reqId || new RequestTracer(),
         apiVersion: params.apiVersion,
+        ...(params.attestation !== undefined && { attestation: params.attestation }),
       });
     } catch (e) {
       debug('failed to sign transaction %O', e);

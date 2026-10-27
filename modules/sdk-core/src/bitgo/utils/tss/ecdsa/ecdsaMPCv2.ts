@@ -1042,7 +1042,9 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       userGpgKey.publicKey,
       undefined,
       this.wallet.multisigTypeVersion(),
-      params.reqId
+      params.reqId,
+      undefined,
+      requestType === RequestType.tx && 'attestation' in params ? params.attestation : undefined
     );
 
     assert(latestTxRequest.transactions || latestTxRequest.messages, 'Invalid txRequest Object');
@@ -1276,7 +1278,9 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       userGpgPubKey,
       undefined,
       this.wallet.multisigTypeVersion(),
-      reqId
+      reqId,
+      undefined,
+      params.attestation
     );
 
     // round 2

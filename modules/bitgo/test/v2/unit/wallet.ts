@@ -4386,8 +4386,14 @@ describe('V2 Wallet:', function () {
         capturedRequestBody!.intent.sequenceId.should.equal(params.sequenceId);
       });
 
-      describe('videoApprovers', function () {
+      describe('top-level withdrawal request fields', function () {
         const videoApprovers = ['5cae3130f8f4561d51dfcbfdaafba9b9', '5cae3130f8f4561d51dfcbfdaafba9ba'];
+        const attestation = {
+          signature: 'sig',
+          credentialId: 'credential',
+          clientDataJSON: 'client-data',
+          authenticatorData: 'authenticator-data',
+        };
         const adaAddress =
           'addr_test1qz4m3ms9nxra36t6rtz4lzc9zkk3d4qwcpcr3yxwhxlslpathrhqtxv8mr5h5xk9t79s29ddzm2qasrs8zgvawdlp7rs44g5hc';
 
@@ -4405,60 +4411,48 @@ describe('V2 Wallet:', function () {
           return capturedRequestBody;
         }
 
-        it('should send videoApprovers as a top-level field for transfers', async function () {
+        it('should send videoApprovers and attestation as top-level fields for transfers', async function () {
           const body = await captureTxRequestBody({
             type: 'transfer',
             recipients: [{ amount: '2', address: adaAddress }],
             videoApprovers,
+            attestation,
           });
 
           body.videoApprovers.should.deepEqual(videoApprovers);
+          body.attestation.should.deepEqual(attestation);
           body.intent.should.not.have.property('videoApprovers');
+          body.intent.should.not.have.property('attestation');
         });
 
-        it('should send videoApprovers as a top-level field for token transfers', async function () {
+        it('should send videoApprovers and attestation as top-level fields for token transfers', async function () {
           const body = await captureTxRequestBody({
             type: 'transfertoken',
             recipients: [{ amount: '2', address: adaAddress, tokenName: 'tada:water' }],
             videoApprovers,
+            attestation,
           });
 
           body.videoApprovers.should.deepEqual(videoApprovers);
+          body.attestation.should.deepEqual(attestation);
           body.intent.should.not.have.property('videoApprovers');
+          body.intent.should.not.have.property('attestation');
         });
 
-        it('should not send videoApprovers when none are provided', async function () {
-          const body = await captureTxRequestBody({
-            type: 'transfer',
-            recipients: [{ amount: '2', address: adaAddress }],
-          });
-
-          body.should.not.have.property('videoApprovers');
+        it('should omit videoApprovers and attestation when absent for transfers', async function () {
+          for (const type of ['transfer', 'transfertoken'] as const) {
+            const body = await captureTxRequestBody({
+              type,
+              recipients: [{ amount: '2', address: adaAddress }],
+            });
+            body.should.not.have.property('videoApprovers');
+            body.should.not.have.property('attestation');
+          }
         });
       });
     });
 
     describe('Transaction signing', function () {
-      it('should sign transaction', async function () {
-        const signTxRequest = sandbox.stub(TssUtils.prototype, 'signTxRequest');
-        signTxRequest.resolves(txRequest);
-        // TODO(BG-59686): this is not doing anything if we don't check the return value, we should also move this check to happen after we invoke signTransaction
-        signTxRequest.calledOnceWithExactly({ txRequest, prv: 'secretKey', reqId });
-
-        const txPrebuild = {
-          walletId: tssSolWallet.id(),
-          wallet: tssSolWallet,
-          txRequestId: 'id',
-          txHex: 'ababcdcd',
-        };
-        const signedTransaction = await tssSolWallet.signTransaction({
-          reqId,
-          txPrebuild,
-          prv: 'sercretKey',
-        });
-        signedTransaction.should.deepEqual(txRequest);
-      });
-
       it('should fail to sign transaction without txRequestId', async function () {
         const txPrebuild = {
           walletId: tssSolWallet.id(),

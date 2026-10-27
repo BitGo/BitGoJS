@@ -50,6 +50,13 @@ describe('SendMany V2 codec tests', function () {
       txid: '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
     };
 
+    const attestation = {
+      signature: 'signature',
+      credentialId: 'credential-id',
+      clientDataJSON: 'client-data',
+      authenticatorData: 'authenticator-data',
+    };
+
     afterEach(function () {
       sinon.restore();
     });
@@ -67,12 +74,13 @@ describe('SendMany V2 codec tests', function () {
           },
         ],
         walletPassphrase: 'test_passphrase_12345',
+        attestation,
       };
 
       // Create mock wallet with sendMany method
       const mockWallet = {
         sendMany: sinon.stub().resolves(mockSendManyResponse),
-        _wallet: { multisigType: 'onchain' },
+        _wallet: { multisigType: 'tss' },
       };
 
       // Stub the wallets().get() chain
@@ -1121,6 +1129,20 @@ describe('SendMany V2 codec tests', function () {
         assert.strictEqual(decoded.recipients.length, 1);
         assert.strictEqual(decoded.recipients[0].address, validBody.recipients[0].address);
         assert.strictEqual(decoded.recipients[0].amount, validBody.recipients[0].amount);
+      });
+
+      it('should preserve optional attestation in the request body schema', function () {
+        const attestation = {
+          signature: 'signature',
+          credentialId: 'credential-id',
+          clientDataJSON: 'client-data-json',
+          authenticatorData: 'authenticator-data',
+        };
+        const decoded = assertDecode(t.type(SendManyRequestBody), {
+          recipients: [{ address: 'mzKTJw3XJNb7VfkFP77mzPJJz4Dkp4M1T6', amount: '1000' }],
+          attestation,
+        });
+        assert.deepStrictEqual(decoded.attestation, attestation);
       });
 
       it('should validate body with amount as string', function () {
