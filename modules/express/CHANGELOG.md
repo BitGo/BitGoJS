@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [17.6.3](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fexpress%4017.6.2...%40bitgo%2Fexpress%4017.6.3) (2026-10-27)
+
+### Bug Fixes
+
+* **express:** handle circular request bodies in error redaction ([9621bbd](https://github.com/BitGo/BitGoJS/commit/9621bbd63f3174873fd1c7077ca0d9b4dd033813))
+
+
 ## [17.6.2](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fexpress%4017.6.1...%40bitgo%2Fexpress%4017.6.2) (2026-10-22)
 
 **Note:** Version bump only for package @bitgo/express

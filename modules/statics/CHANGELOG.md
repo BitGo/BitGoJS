@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.26.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fstatics%4059.25.0...%40bitgo%2Fstatics%4059.26.0) (2026-10-27)
+
+### Bug Fixes
+
+* **statics:** correct canton token contract addresses ([574c492](https://github.com/BitGo/BitGoJS/commit/574c4923dc4ed75a6a80af361d65240342573073))
+* **statics:** restore tokens and features dropped in AMS regeneration ([fa5215a](https://github.com/BitGo/BitGoJS/commit/fa5215a3d2e36240d19bada9563d86a6ee529e3b))
+* **statics:** restore tokens and features dropped in AMS regeneration ([a7cbb02](https://github.com/BitGo/BitGoJS/commit/a7cbb0283f38ba6d81c39a3ebb76d689898d930f))
+
+### Features
+
+* add new tokens from AMS API ([47853f0](https://github.com/BitGo/BitGoJS/commit/47853f06937bfd684bd7eeef4e6c9f368501f04c))
+* add new tokens from AMS API ([f7577a7](https://github.com/BitGo/BitGoJS/commit/f7577a711480525f524652de373846444acec0b2))
+* add new tokens from AMS API ([77ba613](https://github.com/BitGo/BitGoJS/commit/77ba613da6603f6b9255663290132372930929dc))
+* add new tokens from AMS API ([4f2bedf](https://github.com/BitGo/BitGoJS/commit/4f2bedf120b63f3600ed09731e841188f779a2c2))
+* add new tokens from AMS API ([61f8b78](https://github.com/BitGo/BitGoJS/commit/61f8b78c872ef68ff06efb2ffd8300e5e8eb27cc))
+* **sdk-coin-stx:** accept a configured PoX-5 staking contract pair ([95df8aa](https://github.com/BitGo/BitGoJS/commit/95df8aa13a7354322edbc02ac2a7ed57f4589113))
+
+
 # [59.25.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fstatics%4059.24.0...%40bitgo%2Fstatics%4059.25.0) (2026-10-22)
 
 ### Bug Fixes

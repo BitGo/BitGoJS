@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.38.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-canton%401.37.0...%40bitgo%2Fsdk-coin-canton%401.38.0) (2026-10-27)
+
+### Features
+
+* **sdk-coin-canton:** serialize custodial ledger-time metadata in ([f79c672](https://github.com/BitGo/BitGoJS/commit/f79c67264ad77cb73d8a630e19de32ada5748c1d))
+* **sdk-coin-canton:** support Broadridge standing delegation intent ([e00a001](https://github.com/BitGo/BitGoJS/commit/e00a001260ddd918ac45f626b72909aae2abd713))
+
+
 # [1.37.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-canton%401.36.1...%40bitgo%2Fsdk-coin-canton%401.37.0) (2026-10-22)
 
 ### Features

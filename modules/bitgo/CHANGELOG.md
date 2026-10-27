@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [54.2.3](https://github.com/BitGo/BitGoJS/compare/bitgo%4054.2.2...bitgo%4054.2.3) (2026-10-27)
+
+### Bug Fixes
+
+* **deps:** remediate zod memory exhaustion advisory ([9c6f033](https://github.com/BitGo/BitGoJS/commit/9c6f03361f6165b3c8fefab4f1e8845c57f532aa))
+* **sdk-core:** allow ERC-7984 PA rebuild without recipients (CHALO-1957) ([d41e6e8](https://github.com/BitGo/BitGoJS/commit/d41e6e824df04d50be1f7f2aadcf597478ecb834))
+
+
 ## [54.2.2](https://github.com/BitGo/BitGoJS/compare/bitgo%4054.2.1...bitgo%4054.2.2) (2026-10-22)
 
 **Note:** Version bump only for package bitgo
