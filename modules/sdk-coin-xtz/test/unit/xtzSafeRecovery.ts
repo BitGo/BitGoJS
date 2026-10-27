@@ -12,6 +12,7 @@ import {
 } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
+import { coins } from '@bitgo/statics';
 import { Txtz, XtzLib } from '../../src';
 import { chainheadData, packDataToSign } from '../fixtures';
 
@@ -101,9 +102,9 @@ describe('Safe XTZ recovery end-to-end', function () {
   }
 
   // TZKT-normalized generic multisig storage: `{ stored_counter, threshold, keys: ["sppk...", ...] }`.
-  function ownerStorage(keys: string[]) {
+  function ownerStorage(keys: string[], storedCounter = '0') {
     return {
-      stored_counter: '0',
+      stored_counter: storedCounter,
       threshold: keys.length.toString(),
       keys,
     };
@@ -136,12 +137,33 @@ describe('Safe XTZ recovery end-to-end', function () {
     });
   }
 
-  function stubContractStorage(keys: string[]) {
-    nock(baseUrl).get(`/v1/contracts/${walletContractAddress}/storage`).reply(200, ownerStorage(keys));
+  function stubContractStorage(keys: string[], storedCounter = '0') {
+    nock(baseUrl).get(`/v1/contracts/${walletContractAddress}/storage`).reply(200, ownerStorage(keys, storedCounter));
   }
 
   function pendingStorageCount(): number {
     return nock.pendingMocks().filter((m) => m.includes('/storage')).length;
+  }
+
+  // Decode a signed/unsigned recovered transaction back into its parsed JSON so we can assert
+  // on the multisig contract operation (owner signatures, contract counter, manager counter).
+  async function decodeTx(txHex: string): Promise<any> {
+    const builder = new XtzLib.TransactionBuilder(coins.get('txtz') as any);
+    builder.from(txHex);
+    const decoded = await builder.build();
+    return decoded.toJson();
+  }
+
+  function findMultisigOp(txJson: any): any {
+    return txJson.contents.find(
+      (c: any) => c.kind === 'transaction' && c.parameters && c.destination === walletContractAddress
+    );
+  }
+
+  // Contract signature indexes present in the %sigs list (Some entries), in ascending order.
+  function contractSignatureIndexes(multisigOp: any): number[] {
+    const sigs = multisigOp.parameters.value.args[1] as any[];
+    return sigs.map((s: any, i: number) => (s.prim === 'Some' ? i : -1)).filter((i: number) => i >= 0);
   }
 
   it('recovers a Safe XTZ wallet in signed mode after verifying all three owners', async function () {
@@ -159,7 +181,9 @@ describe('Safe XTZ recovery end-to-end', function () {
 
     stubCoreExplorer();
     stubFeeAccount(safe.feeAddress);
-    stubContractStorage([safe.userPub, safe.bitgoPub, safe.backupPub]);
+    // Contract stored counter (7) deliberately differs from the fee-account nonce (101) so the
+    // recovery must keep them separate for the contract to accept the transfer.
+    stubContractStorage([safe.userPub, safe.bitgoPub, safe.backupPub], '7');
 
     const recovery: any = await basecoin.recover({
       userKey: keyParams.userKey,
@@ -175,6 +199,16 @@ describe('Safe XTZ recovery end-to-end', function () {
     recovery.tx.should.be.a.String();
     // The owner check ran and consumed the storage mock: the positive gate is pinned.
     pendingStorageCount().should.equal(0);
+
+    // The signed Safe transaction must be chain-executable: 2-of-2 owner signatures over the
+    // contract payload at their on-chain indexes, the contract's stored_counter in the payload,
+    // and the fee-account nonce as the source (manager) counter.
+    const decoded = await decodeTx(recovery.tx);
+    const multisigOp = findMultisigOp(decoded);
+    should.exist(multisigOp);
+    multisigOp.counter.should.equal('101'); // manager counter = fee account counter + 1
+    multisigOp.parameters.value.args[0].args[0].int.should.equal('7'); // contract stored_counter
+    contractSignatureIndexes(multisigOp).should.deepEqual([0, 2]); // user at 0, backup at 2
   });
 
   it('recovers a Safe XTZ wallet in unsigned mode (xpubs, no bitgo.decrypt) after verifying owners', async function () {
@@ -205,9 +239,17 @@ describe('Safe XTZ recovery end-to-end', function () {
     recovery.txHex.should.be.a.String();
     recovery.source.should.equal(walletContractAddress);
     pendingStorageCount().should.equal(0);
+    // Contract counter (stored_counter) stays separate from the manager counter (fee nonce).
+    recovery.sourceCounter.should.equal('101');
+    recovery.transferCounters.should.deepEqual(['0']);
+    const decodedUnsigned = await decodeTx(recovery.txHex);
+    const multisigOpUnsigned = findMultisigOp(decodedUnsigned);
+    multisigOpUnsigned.counter.should.equal('101');
+    multisigOpUnsigned.parameters.value.args[0].args[0].int.should.equal('0');
+    contractSignatureIndexes(multisigOpUnsigned).should.deepEqual([]);
   });
 
-  it('signed mode accepts raw xprv user and backup keys without bitgo.decrypt', async function () {
+  it('raw xprv user and backup keys work in signed mode without a passphrase', async function () {
     const safe = await deriveSafe();
     const derived = await deriveSafeWalletKeys({
       coin: 'txtz',
@@ -228,7 +270,6 @@ describe('Safe XTZ recovery end-to-end', function () {
       userKey: derived.keys.user.prv,
       backupKey: derived.keys.backup.prv,
       bitgoKey: derived.keys.bitgo.pub,
-      walletPassphrase: 'unused-passphrase',
       walletContractAddress,
       recoveryDestination,
     });
@@ -237,9 +278,12 @@ describe('Safe XTZ recovery end-to-end', function () {
     recovery.tx.should.be.a.String();
     Sinon.assert.notCalled(decryptSpy);
     pendingStorageCount().should.equal(0);
+    // Raw keys still produce the 2-of-2 contract signatures Safe recovery requires.
+    const decodedRaw = await decodeTx(recovery.tx);
+    contractSignatureIndexes(findMultisigOp(decodedRaw)).should.deepEqual([0, 2]);
   });
 
-  it('signed Safe mode accepts an xpub user key without trying to decrypt it', async function () {
+  it('signed Safe mode requires a private user key and never tries to decrypt an xpub user key', async function () {
     const safe = await deriveSafe();
     const derived = await deriveSafeWalletKeys({
       coin: 'txtz',
@@ -263,20 +307,25 @@ describe('Safe XTZ recovery end-to-end', function () {
     stubContractStorage([safe.userPub, safe.bitgoPub, safe.backupPub]);
 
     const decryptSpy = sandbox.spy(bitgo, 'decrypt');
-    const recovery: any = await basecoin.recover({
-      userKey: derived.keys.user.pub,
-      backupKey: keyParams.backupKey,
-      bitgoKey: keyParams.bitgoKey,
-      walletPassphrase: keyParams.walletPassphrase,
-      walletContractAddress,
-      recoveryDestination,
-    });
-
-    should.exist(recovery);
-    recovery.tx.should.be.a.String();
-    // The encrypted backup envelope is decrypted exactly once; the xpub user key is never decrypted.
-    decryptSpy.callCount.should.equal(1);
-    pendingStorageCount().should.equal(0);
+    let caughtError: unknown;
+    try {
+      await basecoin.recover({
+        userKey: derived.keys.user.pub,
+        backupKey: keyParams.backupKey,
+        bitgoKey: keyParams.bitgoKey,
+        walletPassphrase: keyParams.walletPassphrase,
+        walletContractAddress,
+        recoveryDestination,
+      });
+    } catch (e) {
+      caughtError = e;
+    }
+    (caughtError as Error).message.should.match(/private user key is required for a signed Safe recovery/);
+    // The xpub user key is never routed into bitgo.decrypt; only the encrypted backup envelope would be.
+    decryptSpy
+      .getCalls()
+      .filter((c) => (c.args[0]?.input as string)?.startsWith('xpub'))
+      .should.have.length(0);
   });
 
   it('reports a missing userKey as a validation error, not a TypeError', async function () {

@@ -540,20 +540,28 @@ export function getOwnersPublicKeys(operation: OriginationOp): string[] {
  */
 const MAX_CONTRACT_OWNERS = 100;
 
+export interface ContractStorage {
+  ownerKeys: string[];
+  storedCounter: string;
+}
+
 /**
- * Extract the owner public key list from the TZKT normalized storage returned by
+ * Extract the owner list and stored counter from the TZKT normalized storage returned by
  * `/v1/contracts/{address}/storage`. TZKT returns storage keyed by its Michelson field
  * annotations, so the generic multisig storage type
  * `pair (nat %stored_counter) (pair (nat %threshold) (list %keys key))` yields a flat
  * `{ stored_counter, threshold, keys: ["sppk…", …] }` object whose `keys` array holds base58
- * public key strings. Returns undefined for any shape that does not match, so the caller
- * fails closed instead of guessing.
+ * public key strings and `stored_counter` the contract's next counter. Returns undefined for
+ * any shape that does not match, so the caller fails closed instead of guessing.
  *
  * @param storage the normalized storage JSON from TZKT
- * @returns the owner public keys, or undefined if the shape is unexpected
+ * @returns the owner public keys and stored counter, or undefined if the shape is unexpected
  */
-export function extractContractOwnerKeys(storage: unknown): string[] | undefined {
-  if (!storage || typeof storage !== 'object' || Array.isArray(storage) || !('keys' in storage)) {
+export function extractContractStorage(storage: unknown): ContractStorage | undefined {
+  if (!storage || typeof storage !== 'object' || Array.isArray(storage)) {
+    return undefined;
+  }
+  if (!('keys' in storage) || !('stored_counter' in storage)) {
     return undefined;
   }
   const keys = storage.keys;
@@ -567,7 +575,11 @@ export function extractContractOwnerKeys(storage: unknown): string[] | undefined
     }
     ownerKeys.push(key);
   }
-  return ownerKeys;
+  const storedCounter = storage.stored_counter;
+  if (typeof storedCounter !== 'string' || !/^\d+$/.test(storedCounter)) {
+    return undefined;
+  }
+  return { ownerKeys, storedCounter };
 }
 
 /**

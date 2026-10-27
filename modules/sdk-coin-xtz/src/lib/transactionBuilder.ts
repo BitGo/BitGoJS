@@ -139,6 +139,25 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     return this.transaction;
   }
 
+  /**
+   * Register a key pair to sign the multisig contract payload at a given owner index.
+   * Unlike sign(), this registers contract signers directly and does not route by source
+   * address, so the backup key (which is also the fee payer / transaction source) can emit a
+   * contract signature. Used by Safe recovery, where the 2-of-3 contract requires owner
+   * signatures indexed per the on-chain storage keys.
+   *
+   * @param {KeyPair} keyPair - the owner key pair to sign with
+   * @param {number} index - the owner index in the contract storage keys list
+   */
+  addContractSigner(keyPair: KeyPair, index: number): void {
+    if (index >= DEFAULT_M) {
+      throw new BuildTransactionError(
+        'Custom index cannot be greater than the wallet total number of signers (owners)'
+      );
+    }
+    this._multisigSignerKeyPairs.push({ key: keyPair, index });
+  }
+
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     // If the from() method was called, use the serialized transaction as a base

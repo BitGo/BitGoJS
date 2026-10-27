@@ -27,7 +27,7 @@ import { bip32 } from '@bitgo/secp256k1';
 import { CoinFamily, coins, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import { Interface, KeyPair, TransactionBuilder, Utils } from './lib';
-import { extractContractOwnerKeys } from './lib/multisigUtils';
+import { extractContractStorage, type ContractStorage } from './lib/multisigUtils';
 import { RecoverOptions } from './lib/iface';
 import {
   generateDataToSign,
@@ -265,11 +265,17 @@ export class Xtz extends BaseCoin {
       throw new Error('missing backupKey');
     }
 
-    if (
-      !isUnsignedSweep &&
-      params.walletPassphrase === undefined &&
-      !params.userKey.replace(/\s/g, '').startsWith('xpub')
-    ) {
+    // A passphrase is only required for keys that need decryption. Raw xprv/hex/spsk private keys
+    // and xpub public keys are used as-is; only v1/v2 encrypted envelopes need the passphrase.
+    const requiresPassphrase = (key: string): boolean => {
+      const cleaned = key.replace(/\s/g, '');
+      return (
+        !cleaned.startsWith('xpub') &&
+        !(isValidXprv(cleaned) || isValidPrv(cleaned) || Utils.isValidKey(cleaned, Utils.hashTypes.spsk))
+      );
+    };
+    const keysToResolve = [params.userKey, params.backupKey].filter((key): key is string => key !== undefined);
+    if (!isUnsignedSweep && params.walletPassphrase === undefined && keysToResolve.some(requiresPassphrase)) {
       throw new Error('missing wallet passphrase');
     }
 
@@ -317,16 +323,18 @@ export class Xtz extends BaseCoin {
 
   /**
    * Fails closed with RecoveryKeyMismatchError when any of the user, backup, or bitgo keys is not
-   * an owner of the wallet contract (KT1). Runs before the fee-account balance check or any signing
-   * step so Safe per-address scanning can distinguish "these keys do not control this address" from
-   * "nothing to recover". Safe recovery only: legacy callers (no bitgoKey) bypass by design.
+   * an owner of the wallet contract (KT1), then returns the contract storage (owner order and
+   * stored counter) the caller needs to build a chain-valid contract transfer. Runs before the
+   * fee-account balance check or any signing step so Safe per-address scanning can distinguish
+   * "these keys do not control this address" from "nothing to recover". Safe recovery only:
+   * legacy callers (no bitgoKey) bypass by design.
    *
    * @param {string} walletContractAddress the KT1 wallet contract to verify against
    * @param {KeyPair} userKeyPair resolved user key pair
    * @param {KeyPair} backupKeyPair resolved backup key pair
    * @param {string} bitgoKey the BitGo xpub from the Safe key params
    * @param {string} apiKey optional explorer API key
-   * @returns {Promise<void>}
+   * @returns {Promise<ContractStorage>} the owner keys (in on-chain order) and stored counter
    */
   private async assertRecoveryKeysAreContractOwners(
     walletContractAddress: string,
@@ -334,7 +342,7 @@ export class Xtz extends BaseCoin {
     backupKeyPair: KeyPair,
     bitgoKey: string,
     apiKey?: string
-  ): Promise<void> {
+  ): Promise<ContractStorage> {
     let storage;
     try {
       storage = await this.recoveryBlockchainExplorerQuery(
@@ -347,8 +355,8 @@ export class Xtz extends BaseCoin {
       throw new RecoveryProviderError(`unable to fetch contract storage for ${walletContractAddress}`);
     }
 
-    const ownerKeys = extractContractOwnerKeys(storage);
-    if (!ownerKeys) {
+    const contractStorage = extractContractStorage(storage);
+    if (!contractStorage) {
       throw new RecoveryProviderError(`unable to parse contract storage for ${walletContractAddress}`);
     }
 
@@ -359,12 +367,13 @@ export class Xtz extends BaseCoin {
     ] as const;
     for (const { name, keyPair } of ownerKeyPairs) {
       const pub = keyPair.getKeys().pub;
-      if (!ownerKeys.includes(pub)) {
+      if (!contractStorage.ownerKeys.includes(pub)) {
         throw new RecoveryKeyMismatchError(
           `${name} key ${pub} is missing from the wallet contract owners of ${walletContractAddress}`
         );
       }
     }
+    return contractStorage;
   }
 
   /**
@@ -529,15 +538,20 @@ export class Xtz extends BaseCoin {
     // Safe recovery (slot-1): the derived keys must be owners of the wallet contract. Gated on
     // bitgoKey, which buildSafeRecoverKeyParams always emits and legacy calls never pass, so
     // legacy recovery makes no additional network calls and stays byte-for-byte unchanged.
+    let safeUserKeyPair: KeyPair | undefined;
+    let safeContractStorage: ContractStorage | undefined;
     if (params.bitgoKey !== undefined) {
       // The user key may be an xpub/sppk in unsigned Safe params, or a public key passed directly
       // in signed mode; only resolve/decrypt private formats (xprv/hex/spsk/envelope).
-      const userKeyPair = Utils.isValidPublicKey(userKey)
+      safeUserKeyPair = Utils.isValidPublicKey(userKey)
         ? new KeyPair({ pub: userKey })
         : await this.resolveKeyPair(userKey, params.walletPassphrase, false, 'user');
-      await this.assertRecoveryKeysAreContractOwners(
+      if (!isUnsignedSweep && !safeUserKeyPair.getKeys().prv) {
+        throw new Error('user key is a public key; a private user key is required for a signed Safe recovery');
+      }
+      safeContractStorage = await this.assertRecoveryKeysAreContractOwners(
         params.walletContractAddress,
-        userKeyPair,
+        safeUserKeyPair,
         keyPair,
         params.bitgoKey,
         params.apiKey
@@ -613,9 +627,14 @@ export class Xtz extends BaseCoin {
 
     txBuilder.counter(backupKeyNonce.toString());
 
+    // Safe recovery builds the contract payload with the contract's actual stored counter, so the
+    // transfer is accepted on-chain. Legacy recovery keeps the fee-account nonce in the payload
+    // exactly as before.
+    const contractCounter = safeContractStorage ? safeContractStorage.storedCounter : backupKeyNonce.toString();
+
     const packedDataToSign = await this.packDataToSign(
       params.walletContractAddress,
-      backupKeyNonce.toString(),
+      contractCounter,
       params.recoveryDestination,
       txAmount?.toString()
     );
@@ -624,7 +643,7 @@ export class Xtz extends BaseCoin {
       .transfer(txAmount?.toString())
       .from(params.walletContractAddress)
       .to(params.recoveryDestination)
-      .counter(backupKeyNonce.toString())
+      .counter(contractCounter)
       .fee(TRANSACTION_FEE.TRANSFER.toString())
       .storageLimit(TRANSACTION_STORAGE_LIMIT.TRANSFER.toString())
       .gasLimit(gasLimit.toString())
@@ -641,8 +660,23 @@ export class Xtz extends BaseCoin {
         dataToSign: packedDataToSign,
         feeInfo,
         sourceCounter: backupKeyNonce.toString(),
-        transferCounters: [backupKeyNonce.toString()],
+        transferCounters: safeContractStorage ? [contractCounter] : [backupKeyNonce.toString()],
       };
+    }
+
+    if (safeContractStorage && safeUserKeyPair) {
+      // Place the user and backup contract signatures at their on-chain owner indexes so the
+      // 2-of-3 contract accepts the transfer. The backup key additionally signs the outer
+      // operation as the fee-payer source below.
+      const userPub = safeUserKeyPair.getKeys().pub;
+      const backupPub = keyPair.getKeys().pub;
+      const userIndex = safeContractStorage.ownerKeys.indexOf(userPub);
+      const backupIndex = safeContractStorage.ownerKeys.indexOf(backupPub);
+      if (userIndex < 0 || backupIndex < 0) {
+        throw new RecoveryKeyMismatchError(`recovery keys are not owners of ${params.walletContractAddress}`);
+      }
+      txBuilder.addContractSigner(safeUserKeyPair, userIndex);
+      txBuilder.addContractSigner(keyPair, backupIndex);
     }
 
     txBuilder.sign({ key: backupSigningKey });
