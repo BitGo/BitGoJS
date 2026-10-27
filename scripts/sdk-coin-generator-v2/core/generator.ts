@@ -218,6 +218,7 @@ export class Generator {
       author: 'BitGo SDK Team <sdkteam@bitgo.com>',
       license: 'MIT',
       engines: {
+        // Keep in sync with README.md "Node.js Version Support Policy"; Node.js 22 is deprecated but remains in range until the removal major release.
         node: '>=22',
       },
       repository: {

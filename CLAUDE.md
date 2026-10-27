@@ -142,4 +142,4 @@ This will generate the necessary boilerplate for a new coin implementation.
 
 ## Node.js Version Support
 
-BitGoJS supports Node.js versions 22 and later, including Node.js 26, with NPM >=3.10.10.
+BitGoJS supports Node.js versions 22 and later, including Node.js 26, with NPM >=3.10.10. Node.js 22 is deprecated and will be removed from engines.node in the first major release on or after its 2027-04-30 end-of-life; see README.md "Node.js Version Support Policy".

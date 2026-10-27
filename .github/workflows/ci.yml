@@ -63,6 +63,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # 22.x is deprecated but still supported: it stays required until the
+        # breaking-change release that drops it (first major on/after 2027-04-30).
+        # See README.md "Node.js Version Support Policy".
         node-version: [22.x, 24.x, 26.x]
         experimental: [false]
         include:

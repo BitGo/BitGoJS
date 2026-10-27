@@ -1,7 +1,7 @@
 # Requirements
 
 - yarn version 1 (classic)
-- Node.js version 22 or later
+- Node.js version 22 or later (Node.js 22 is deprecated and support ends with the first major release on or after 2027-04-30; Node.js 24 or 26 recommended)
 
 # Installing
 
@@ -185,6 +185,8 @@ Engines should be set to the following:
   }
 }
 ```
+
+Node.js 22 is deprecated; keep `>=22` until the removal release described in the [Node.js Version Support Policy](README.md#nodejs-version-support-policy), then change every package to `>=24` in a single breaking-change commit.
 
 ### `tsconfig.json`
 
