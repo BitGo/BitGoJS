@@ -700,6 +700,7 @@ export const STARKNET_FEATURES = [
   CoinFeature.TSS_COLD,
   CoinFeature.MPCV2,
   CoinFeature.SHA256_WITH_ECDSA_TSS,
+  CoinFeature.BULK_TRANSACTION,
   CoinFeature.REBUILD_ON_CUSTODY_SIGNING,
 ];
 

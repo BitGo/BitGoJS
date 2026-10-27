@@ -101,6 +101,7 @@ export interface TxData {
   amount?: string;
   fee?: string;
   nonce: string;
+  recipients?: Array<{ recipient: string; amount: string; tokenContract: string }>;
   type: BitGoTransactionType;
 }
 
