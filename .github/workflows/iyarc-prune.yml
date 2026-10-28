@@ -24,6 +24,7 @@ jobs:
       AWS_REGION: us-west-2
     steps:
       - name: Checkout repository
+        id: checkout
         uses: actions/checkout@v6
         with:
           ref: master
@@ -36,6 +37,21 @@ jobs:
 
       - name: Enable Corepack (yarn 1.22.22)
         run: corepack enable
+
+      - name: Install release audit scanner
+        env:
+          OSV_SCANNER_SHA256: bc98e15319ed0d515e3f9235287ba53cdc5535d576d24fd573978ecfe9ab92dc
+        run: |
+          set -euo pipefail
+          SCANNER_DIR="$RUNNER_TEMP/osv-scanner"
+          mkdir -p "$SCANNER_DIR"
+          curl --fail --silent --show-error --location --retry 3 \
+            https://github.com/google/osv-scanner/releases/download/v2.3.8/osv-scanner_linux_amd64 \
+            --output "$SCANNER_DIR/osv-scanner"
+          printf '%s  %s\n' "$OSV_SCANNER_SHA256" "$SCANNER_DIR/osv-scanner" | sha256sum --check --strict
+          chmod +x "$SCANNER_DIR/osv-scanner"
+          "$SCANNER_DIR/osv-scanner" --version
+          echo "$SCANNER_DIR" >> "$GITHUB_PATH"
 
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v6
@@ -159,11 +175,15 @@ jobs:
       - name: Check changes are ready for a pull request
         id: changes
         env:
+          BASE_SHA: ${{ steps.checkout.outputs.commit }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           IYARC_PRUNE_PR_BODY: ${{ runner.temp }}/iyarc-prune-pr.md
         run: |
           set -euo pipefail
-          CHANGED_FILES="$(git diff --name-only HEAD)"
+          if [ "$(git rev-parse HEAD)" != "$BASE_SHA" ]; then
+            echo "::error::Agent changed HEAD; validated edits must remain uncommitted"; exit 1
+          fi
+          CHANGED_FILES="$(git diff --name-only "$BASE_SHA"; git ls-files --others --exclude-standard)"
           if [ -z "$CHANGED_FILES" ]; then
             echo "No dependency changes to publish." >> "$GITHUB_STEP_SUMMARY"
             exit 0
@@ -174,7 +194,7 @@ jobs:
               *) echo "::error::Unexpected changed file: $path"; exit 1 ;;
             esac
           done <<< "$CHANGED_FILES"
-          if git diff --quiet HEAD -- osv-scanner.toml; then
+          if git diff --quiet "$BASE_SHA" -- osv-scanner.toml; then
             echo "::error::Dependency changes exist without an osv-scanner.toml change"; exit 1
           fi
           if [ ! -s "$IYARC_PRUNE_PR_BODY" ]; then
@@ -186,8 +206,11 @@ jobs:
             echo "An open prune pull request already exists: $OPEN_PRS" >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
+          LABELS="$(gh label list --repo "$GITHUB_REPOSITORY" --limit 1000 --json name)"
           for label in automated dependencies security; do
-            gh label create "$label" --repo "$GITHUB_REPOSITORY" --force
+            if ! jq -e --arg name "$label" 'any(.[]; (.name | ascii_downcase) == $name)' <<< "$LABELS" >/dev/null; then
+              gh label create "$label" --repo "$GITHUB_REPOSITORY"
+            fi
           done
           echo "ready=true" >> "$GITHUB_OUTPUT"
 
@@ -224,3 +247,4 @@ jobs:
             echo "::error::Validated dependency changes did not produce a pull request"; exit 1
           fi
           echo "Pull request: $PR_URL" >> "$GITHUB_STEP_SUMMARY"
+          echo '> **Action required:** Check the pull request for an **Approve workflows to run** banner. A maintainer must approve pending workflow runs and verify required checks pass before merging.' >> "$GITHUB_STEP_SUMMARY"

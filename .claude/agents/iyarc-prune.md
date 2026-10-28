@@ -24,7 +24,8 @@ over an unsafe or unverified bump.
 
 - This is a Lerna + Yarn (v1, `1.22.22`) workspaces monorepo with ~116 packages
   under `modules/`. Node and Yarn are already provisioned in this runner.
-- The release audit uses `osv-scanner` v2.3.8 and writes JSON results:
+- The workflow installs `osv-scanner` v2.3.8, matching the release audit.
+  It writes JSON results:
   ```
   osv-scanner --config=osv-scanner.toml --format=json --output-file="$RUNNER_TEMP/osv-results.json" ./
   ```
@@ -124,7 +125,10 @@ order:
 4. If ANY step fails — no compatible fix, audit still flags the advisory,
    check-deps fails, build breaks, or tests fail — revert that dependency's
    changes and restore its exclusion in `osv-scanner.toml`. Never open a PR with
-   a red feedback loop. The full test suite still runs in PR CI as a backstop.
+   a red feedback loop. The workflow publishes with GitHub's repository-scoped
+   workflow token (`GITHUB_TOKEN`). A maintainer may need to approve workflow
+   runs before continuous integration (CI) starts on the resulting pull request.
+   Do not assume those checks ran; they must pass before merging.
 
 ## Commit and pull request (only after validated exclusion removals)
 
@@ -151,6 +155,8 @@ Do not create a branch, commit, push, or open a pull request yourself.
   - The pasted scanner, severity-gate, and `yarn check-deps` output showing
     they now pass.
   - Build/test results for the affected module(s).
+  - A prominent note asking a maintainer to approve pending workflow runs and
+    verify required checks pass before merging.
   - A "Still blocked" section listing every exclusion that could NOT be removed
     and the reason (no upstream fix / incompatible parent pin).
 
@@ -159,7 +165,7 @@ Do not create a branch, commit, push, or open a pull request yourself.
 - If nothing is safely prunable this run, open no PR and report "no exclusions
   prunable this run" in the job summary, including the "Still blocked" breakdown
   so the result is auditable.
-- Only ever modify `osv-scanner.toml`, dependency manifests (`package.json`), and
-  `yarn.lock` in the repository. The report at `IYARC_PRUNE_PR_BODY` and temporary
-  validation output belong outside the repository. Do not modify product/source
-  code.
+- Only ever modify `osv-scanner.toml`, the root and `modules/*/package.json`
+  dependency manifests, and `yarn.lock` in the repository. The report at
+  `IYARC_PRUNE_PR_BODY` and temporary validation output belong outside the
+  repository. Do not modify product/source code.
