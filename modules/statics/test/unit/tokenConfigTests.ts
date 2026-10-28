@@ -21,7 +21,8 @@ import {
   BaseTokenConfig,
   BaseContractAddressConfig,
 } from '../../src/tokenConfig';
-import { EthLikeERC20Token } from '../../src/account';
+import { Erc20Coin, EthLikeERC20Token } from '../../src/account';
+import { botTokens } from '../../src/coins/botTokens';
 import { allCoinsAndTokens } from '../../src/allCoinsAndTokens';
 import { NetworkType } from '../../src/networks';
 
@@ -808,5 +809,34 @@ describe('getFormattedTokensByNetwork EVM family coverage (drift guard)', () => 
     formattedTokens.testnet.zksyncera.tokens.forEach((token) => {
       token.coin.should.equal('tzksyncera');
     });
+  });
+
+  it('should instantiate all SUPPORTS_ERC20 tokens in botTokens as EthLikeERC20Token and place them in their family bucket', () => {
+    const supportsErc20Families = new Set(
+      allCoinsAndTokens
+        .filter((coin) => !coin.isToken && coin.features.includes(CoinFeature.SUPPORTS_ERC20))
+        .map((coin) => coin.family)
+    );
+
+    for (const token of botTokens) {
+      if (supportsErc20Families.has(token.family)) {
+        (token instanceof EthLikeERC20Token).should.eql(
+          true,
+          `Expected ${token.name} (${token.family}) in botTokens to be EthLikeERC20Token, got ${token.constructor.name}`
+        );
+        (token instanceof Erc20Coin).should.eql(false);
+      }
+    }
+
+    const formattedTokens = getFormattedTokens();
+    formattedTokens.bitcoin.okbxlayer.tokens.some((t) => t.type === 'okbxlayer:xdog').should.eql(true);
+    formattedTokens.bitcoin.baseeth.tokens.some((t) => t.type === 'baseeth:zaru').should.eql(true);
+    formattedTokens.testnet.baseeth.tokens.some((t) => t.type === 'tbaseeth:haven').should.eql(true);
+    formattedTokens.testnet.baseeth.tokens.some((t) => t.type === 'tbaseeth:icbx').should.eql(true);
+    formattedTokens.testnet.flow.tokens.some((t) => t.type === 'tflow:icbx').should.eql(true);
+
+    formattedTokens.bitcoin.eth.tokens.some((t) => t.type === 'okbxlayer:xdog').should.eql(false);
+    formattedTokens.bitcoin.eth.tokens.some((t) => t.type === 'baseeth:zaru').should.eql(false);
+    formattedTokens.testnet.eth.tokens.some((t) => t.type === 'tbaseeth:haven').should.eql(false);
   });
 });
