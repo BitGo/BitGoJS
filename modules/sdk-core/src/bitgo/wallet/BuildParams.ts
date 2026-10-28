@@ -4,6 +4,15 @@ import * as t from 'io-ts';
 import { unifiedAddressPreference } from '@bitgo/public-types';
 import { getCodecProperties } from '../utils/codecProps';
 
+// ERC-7984 intent tx types (ETH family): calldata is derived server-side from the intent, so
+// callers never supply recipients - an empty array is the server-derived build shape.
+export const ERC7984_INTENT_TX_TYPES: Record<string, true> = {
+  wrapApprove: true,
+  wrap: true,
+  unwrap: true,
+  finalizeUnwrap: true,
+};
+
 export const Bip322Message = t.type({
   message: t.string,
   address: t.string,

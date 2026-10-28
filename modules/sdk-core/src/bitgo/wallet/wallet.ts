@@ -58,7 +58,7 @@ import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
 import EddsaUtils, { EddsaMPCv2Utils } from '../utils/tss/eddsa';
 import { RedpallasMPCv2Utils } from '../utils/tss/redpallas';
 import { getTxRequestApiVersion, validateTxRequestApiVersion } from '../utils/txRequest';
-import { buildParamKeys, BuildParams } from './BuildParams';
+import { buildParamKeys, BuildParams, ERC7984_INTENT_TX_TYPES } from './BuildParams';
 import {
   fetchRootKeychainForSafeChild,
   isSafeChildPublicOnlyKeychain,
@@ -2262,6 +2262,12 @@ export class Wallet implements IWallet {
     }
     const extraParams = await this.baseCoin.getExtraPrebuildParams(Object.assign(params, { wallet: this }));
     Object.assign(whitelistedParams, extraParams);
+    // ERC-7984 intent builds derive recipients server-side; /tx/build requires the key (empty
+    // array). Default on the outgoing body only - the caller's params flow into
+    // prebuildAndSignTransaction, where a truthy recipients trips the prebuildTx check.
+    if (params.type !== undefined && ERC7984_INTENT_TX_TYPES[params.type] === true) {
+      whitelistedParams.recipients = whitelistedParams.recipients ?? [];
+    }
     const queryParams = {
       offlineVerification: params.offlineVerification ? true : undefined,
     };
@@ -2780,8 +2786,12 @@ export class Wallet implements IWallet {
       throw error;
     }
 
+    // ERC-7984 intent types derive recipients server-side, so an empty array is a valid
+    // server-derived shape here (mirroring acceleration) - only populated lists are rejected.
+    const isErc7984IntentType = params.type !== undefined && ERC7984_INTENT_TX_TYPES[params.type] === true;
     if (
       params.recipients &&
+      !(isErc7984IntentType && params.recipients.length === 0) &&
       (params.type === 'fillNonce' ||
         params.type === 'acceleration' ||
         params.type === 'wrapApprove' ||

@@ -654,21 +654,28 @@ describe('V2 Wallet:', function () {
 
     it('should send wrapParams to /tx/build when prebuilding wrapApprove on an onchain multi-sig wallet', async function () {
       const wrapParams = { tokenName: 'hteth:cusdt', amount: '1000000' };
+      const callerParams: { type: string; wrapParams: { tokenName: string; amount: string }; recipients?: unknown } = {
+        type: 'wrapApprove',
+        wrapParams,
+      };
       const buildNock = nock(bgUrl)
         .post(`/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/tx/build`, (body) => {
           body.type.should.equal('wrapApprove');
           body.wrapParams.should.deepEqual(wrapParams);
-          should.not.exist(body.recipients);
+          body.recipients.should.deepEqual([]);
           return true;
         })
         .reply(200, { txHex: '0xfaketxhex', feeInfo: { fee: '1000' } });
 
       try {
-        await ethWallet.prebuildTransaction({ type: 'wrapApprove', wrapParams });
+        await ethWallet.prebuildTransaction(callerParams);
       } catch (e) {
         // post-processing of the fake prebuild may fail; the contract under test is the request body
       }
       buildNock.isDone().should.be.true();
+      // the caller's params must stay untouched: they flow into prebuildAndSignTransaction
+      // (prebuildTx + sign flows), where a truthy recipients trips the prebuildTx check
+      should.not.exist(callerParams.recipients);
     });
 
     it('should send unwrapParams to /tx/build when prebuilding unwrap on an onchain multi-sig wallet', async function () {
@@ -677,7 +684,7 @@ describe('V2 Wallet:', function () {
         .post(`/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/tx/build`, (body) => {
           body.type.should.equal('unwrap');
           body.unwrapParams.should.deepEqual(unwrapParams);
-          should.not.exist(body.recipients);
+          body.recipients.should.deepEqual([]);
           return true;
         })
         .reply(200, { txHex: '0xfaketxhex', feeInfo: { fee: '1000' } });
@@ -686,6 +693,40 @@ describe('V2 Wallet:', function () {
         await ethWallet.prebuildTransaction({ type: 'unwrap', unwrapParams });
       } catch (e) {
         // post-processing of the fake prebuild may fail; the contract under test is the request body
+      }
+      buildNock.isDone().should.be.true();
+    });
+
+    it('should send empty recipients to /tx/build when prebuilding wrap (request-shape contract)', async function () {
+      const buildNock = nock(bgUrl)
+        .post(`/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/tx/build`, (body) => {
+          body.type.should.equal('wrap');
+          body.recipients.should.deepEqual([]);
+          return true;
+        })
+        .reply(200, { txHex: '0xfaketxhex', feeInfo: { fee: '1000' } });
+
+      try {
+        await ethWallet.prebuildTransaction({ type: 'wrap' });
+      } catch (e) {
+        // the server rejects direct wrap builds; the contract under test is the request body
+      }
+      buildNock.isDone().should.be.true();
+    });
+
+    it('should send empty recipients to /tx/build when prebuilding finalizeUnwrap (request-shape contract)', async function () {
+      const buildNock = nock(bgUrl)
+        .post(`/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/tx/build`, (body) => {
+          body.type.should.equal('finalizeUnwrap');
+          body.recipients.should.deepEqual([]);
+          return true;
+        })
+        .reply(200, { txHex: '0xfaketxhex', feeInfo: { fee: '1000' } });
+
+      try {
+        await ethWallet.prebuildTransaction({ type: 'finalizeUnwrap' });
+      } catch (e) {
+        // the server rejects direct finalizeUnwrap builds; the contract under test is the request body
       }
       buildNock.isDone().should.be.true();
     });
@@ -722,6 +763,37 @@ describe('V2 Wallet:', function () {
 
       should.exist(caught);
       caught!.message.should.equal('cannot provide recipients for transaction type wrapApprove');
+      caught!.code!.should.equal('recipients_not_allowed_for_fillnonce_and_acceleration_tx_type');
+    });
+
+    it('allows an empty recipients array when prebuilding wrapApprove (server-derived shape)', async function () {
+      const nockKeychain = nock(bgUrl).get(`/api/v2/${ethWallet.coin()}/key/${ethWallet.keyIds()[0]}`).reply(200, {
+        id: '598f606cd8fc24710d2ebad89dce86c2',
+        pub: 'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
+        ethAddress: '0x26a163ba9739529720c0914c583865dec0d37278',
+        source: 'user',
+        encryptedPrv:
+          '{"iv":"15FsbDVI1zG9OggD8YX+Hg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"hHbNH3Sz/aU=","ct":"WoNVKz7afiRxXI2w/YkzMdMyoQg/B15u1Q8aQgi96jJZ9wk6TIaSEc6bXFH3AHzD9MdJCWJQUpRhoQc/rgytcn69scPTjKeeyVMElGCxZdFVS/psQcNE+lue3//2Zlxj+6t1NkvYO+8yAezSMRBK5OdftXEjNQI="}',
+        coinSpecific: {},
+      });
+
+      // the guard must let the empty-array shape through; the failure below is the passphrase check
+      await ethWallet
+        .prebuildAndSignTransaction({ type: 'wrapApprove', recipients: [], walletPassphrase: 'wrongPassphrase' })
+        .should.be.rejectedWith('unable to decrypt keychain with the given wallet passphrase');
+      nockKeychain.isDone().should.be.true();
+    });
+
+    it('still rejects an empty recipients array for fillNonce (guard regression)', async function () {
+      let caught: (Error & { code?: string }) | undefined;
+      try {
+        await ethWallet.prebuildAndSignTransaction({ type: 'fillNonce', recipients: [] });
+      } catch (e) {
+        caught = e;
+      }
+
+      should.exist(caught);
+      caught!.message.should.equal('cannot provide recipients for transaction type fillNonce');
       caught!.code!.should.equal('recipients_not_allowed_for_fillnonce_and_acceleration_tx_type');
     });
   });
