@@ -3876,7 +3876,7 @@ export const botOfcTokens = [
   AccountCtors.ofcsolToken(
     '34ae0520-dc67-4430-aab0-38146bb14eb9',
     'ofcsol:ousd',
-    'ofcOpenUSD',
+    'OpenUSD',
     6,
     'sol:ousd' as unknown as UnderlyingAsset,
     undefined,
