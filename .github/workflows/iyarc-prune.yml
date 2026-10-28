@@ -23,9 +23,19 @@ jobs:
     env:
       AWS_REGION: us-west-2
     steps:
+      - name: Require master workflow ref
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_REF" != 'refs/heads/master' ]; then
+            echo '::error::Run iyarc-prune from master. The AWS role trusts the workflow ref, not the checkout ref. Merge workflow changes before dispatching them.'
+            exit 1
+          fi
+
       - name: Checkout repository
+        id: checkout
         uses: actions/checkout@v6
         with:
+          ref: ${{ github.sha }}
           fetch-depth: 0
 
       - name: Setup Node
@@ -35,6 +45,21 @@ jobs:
 
       - name: Enable Corepack (yarn 1.22.22)
         run: corepack enable
+
+      - name: Install release audit scanner
+        env:
+          OSV_SCANNER_SHA256: bc98e15319ed0d515e3f9235287ba53cdc5535d576d24fd573978ecfe9ab92dc
+        run: |
+          set -euo pipefail
+          SCANNER_DIR="$RUNNER_TEMP/osv-scanner"
+          mkdir -p "$SCANNER_DIR"
+          curl --fail --silent --show-error --location --retry 3 \
+            https://github.com/google/osv-scanner/releases/download/v2.3.8/osv-scanner_linux_amd64 \
+            --output "$SCANNER_DIR/osv-scanner"
+          printf '%s  %s\n' "$OSV_SCANNER_SHA256" "$SCANNER_DIR/osv-scanner" | sha256sum --check --strict
+          chmod +x "$SCANNER_DIR/osv-scanner"
+          "$SCANNER_DIR/osv-scanner" --version
+          echo "$SCANNER_DIR" >> "$GITHUB_PATH"
 
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v6
@@ -73,12 +98,11 @@ jobs:
         uses: anthropics/claude-code-action@8d70a0dd265122bd65b8e09d3d959e65373ae2a1 # v1.0.260
         with:
           prompt: ${{ steps.agent.outputs.content }}
-          use_commit_signing: 'true'
-          branch_prefix: 'osv-scanner-prune/'
-          claude_args: --allowed-tools 'Edit,MultiEdit,Write,Read,Glob,Grep,LS,Bash,mcp__github_file_ops__commit_files,mcp__github_file_ops__delete_files'
+          claude_args: --allowed-tools 'Edit,MultiEdit,Write,Read,Glob,Grep,LS,Bash'
           use_bedrock: 'true'
           github_token: ${{ secrets.GITHUB_TOKEN }}
         env:
+          IYARC_PRUNE_PR_BODY: ${{ runner.temp }}/iyarc-prune-pr.md
           ANTHROPIC_MODEL: arn:aws:bedrock:us-west-2:168000258654:inference-profile/global.anthropic.claude-sonnet-5-5
           # Bedrock: replaying a tool-call turn requires a leading thinking block; disable to avoid 400.
           MAX_THINKING_TOKENS: '0'
@@ -92,7 +116,7 @@ jobs:
       # including the Still blocked breakdown so the result is auditable"), so
       # render the agent's own report there instead of leaving it log-only.
       - name: Write agent report to job summary
-        if: always()
+        if: always() && steps.claude.outcome != 'skipped'
         env:
           EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
         run: |
@@ -137,8 +161,8 @@ jobs:
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Surface Claude error and fail on is_error
-        if: always()
+      - name: Require successful Claude completion
+        if: always() && steps.claude.outcome != 'skipped'
         env:
           EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
         run: |
@@ -152,6 +176,90 @@ jobs:
           echo "=== assistant text turns (no tool output) ==="
           echo "$EVENTS" | jq -r '.[] | select(.type=="assistant") | .message.content[]? | select(.type=="text") | .text'
           RES="$(echo "$EVENTS" | jq -c 'map(select(.type=="result"))[-1] // empty')"
-          if [ "$(echo "$RES" | jq -r '.is_error // false')" = "true" ]; then
-            echo "::error::Claude returned is_error=true"; exit 1
+          if ! echo "$RES" | jq -e '.is_error == false and .subtype == "success"' >/dev/null; then
+            echo "::error::Claude did not produce a successful result"; exit 1
           fi
+
+      - name: Check changes are ready for a pull request
+        id: changes
+        env:
+          BASE_SHA: ${{ steps.checkout.outputs.commit }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IYARC_PRUNE_PR_BODY: ${{ runner.temp }}/iyarc-prune-pr.md
+        run: |
+          set -euo pipefail
+          if [ "$(git rev-parse HEAD)" != "$BASE_SHA" ]; then
+            echo "::error::Agent changed HEAD; validated edits must remain uncommitted"; exit 1
+          fi
+          CHANGED_FILES="$(git diff --name-only "$BASE_SHA"; git diff --cached --name-only "$BASE_SHA"; git ls-files --others --exclude-standard)"
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No dependency changes to publish." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          while IFS= read -r path; do
+            case "$path" in
+              osv-scanner.toml|package.json|yarn.lock) continue ;;
+            esac
+            if [[ ! "$path" =~ ^modules/[^/]+/package\.json$ ]]; then
+              echo "::error::Unexpected changed file: $path"; exit 1
+            fi
+          done <<< "$CHANGED_FILES"
+          if git diff --quiet "$BASE_SHA" -- osv-scanner.toml; then
+            echo "::error::Dependency changes exist without an osv-scanner.toml change"; exit 1
+          fi
+          if [ ! -s "$IYARC_PRUNE_PR_BODY" ]; then
+            echo "::error::Changes exist but the agent did not produce a validated pull request report"; exit 1
+          fi
+          OPEN_PRS="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 1000 \
+            --json number,headRefName --jq '.[] | select(.headRefName | startswith("osv-scanner-prune/"))')"
+          if [ -n "$OPEN_PRS" ]; then
+            echo "An open prune pull request already exists: $OPEN_PRS" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          LABELS="$(gh label list --repo "$GITHUB_REPOSITORY" --limit 1000 --json name)"
+          for label in automated dependencies security; do
+            if ! jq -e --arg name "$label" 'any(.[]; (.name | ascii_downcase) == $name)' <<< "$LABELS" >/dev/null; then
+              gh label create "$label" --repo "$GITHUB_REPOSITORY"
+            fi
+          done
+          # Detached HEAD makes the publisher rebase onto newer master. Keep its
+          # local base refs at the validated commit and discard index-only state.
+          git reset --mixed "$BASE_SHA"
+          git checkout -B master "$BASE_SHA"
+          git update-ref refs/remotes/origin/master "$BASE_SHA"
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+
+      - name: Create signed dependency pull request
+        if: steps.changes.outputs.ready == 'true'
+        id: pull-request
+        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          sign-commits: true
+          branch: osv-scanner-prune/${{ github.run_id }}
+          base: master
+          add-paths: |
+            osv-scanner.toml
+            package.json
+            yarn.lock
+            :(glob)modules/*/package.json
+          commit-message: |
+            chore(deps): prune resolved vulnerability exclusions
+
+            Ticket: HSM-429
+          title: 'chore(deps): prune resolved vulnerability exclusions'
+          body-path: ${{ runner.temp }}/iyarc-prune-pr.md
+          labels: automated,dependencies,security
+          assignees: gokulhost
+          draft: false
+
+      - name: Report pull request
+        if: steps.changes.outputs.ready == 'true'
+        env:
+          PR_URL: ${{ steps.pull-request.outputs.pull-request-url }}
+        run: |
+          if [ -z "$PR_URL" ]; then
+            echo "::error::Validated dependency changes did not produce a pull request"; exit 1
+          fi
+          echo "Pull request: $PR_URL" >> "$GITHUB_STEP_SUMMARY"
+          echo '> **Action required:** Check the pull request for an **Approve workflows to run** banner. A maintainer must approve pending workflow runs and verify required checks pass before merging.' >> "$GITHUB_STEP_SUMMARY"
