@@ -26,6 +26,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
+          ref: master
           fetch-depth: 0
 
       - name: Setup Node
@@ -73,12 +74,11 @@ jobs:
         uses: anthropics/claude-code-action@8d70a0dd265122bd65b8e09d3d959e65373ae2a1 # v1.0.260
         with:
           prompt: ${{ steps.agent.outputs.content }}
-          use_commit_signing: 'true'
-          branch_prefix: 'osv-scanner-prune/'
-          claude_args: --allowed-tools 'Edit,MultiEdit,Write,Read,Glob,Grep,LS,Bash,mcp__github_file_ops__commit_files,mcp__github_file_ops__delete_files'
+          claude_args: --allowed-tools 'Edit,MultiEdit,Write,Read,Glob,Grep,LS,Bash'
           use_bedrock: 'true'
           github_token: ${{ secrets.GITHUB_TOKEN }}
         env:
+          IYARC_PRUNE_PR_BODY: ${{ runner.temp }}/iyarc-prune-pr.md
           ANTHROPIC_MODEL: arn:aws:bedrock:us-west-2:168000258654:inference-profile/global.anthropic.claude-sonnet-5-5
           # Bedrock: replaying a tool-call turn requires a leading thinking block; disable to avoid 400.
           MAX_THINKING_TOKENS: '0'
@@ -137,7 +137,7 @@ jobs:
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Surface Claude error and fail on is_error
+      - name: Require successful Claude completion
         if: always()
         env:
           EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
@@ -152,6 +152,75 @@ jobs:
           echo "=== assistant text turns (no tool output) ==="
           echo "$EVENTS" | jq -r '.[] | select(.type=="assistant") | .message.content[]? | select(.type=="text") | .text'
           RES="$(echo "$EVENTS" | jq -c 'map(select(.type=="result"))[-1] // empty')"
-          if [ "$(echo "$RES" | jq -r '.is_error // false')" = "true" ]; then
-            echo "::error::Claude returned is_error=true"; exit 1
+          if ! echo "$RES" | jq -e '.is_error == false and .subtype == "success"' >/dev/null; then
+            echo "::error::Claude did not produce a successful result"; exit 1
           fi
+
+      - name: Check changes are ready for a pull request
+        id: changes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IYARC_PRUNE_PR_BODY: ${{ runner.temp }}/iyarc-prune-pr.md
+        run: |
+          set -euo pipefail
+          CHANGED_FILES="$(git diff --name-only HEAD)"
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No dependency changes to publish." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          while IFS= read -r path; do
+            case "$path" in
+              osv-scanner.toml|package.json|yarn.lock|modules/*/package.json) ;;
+              *) echo "::error::Unexpected changed file: $path"; exit 1 ;;
+            esac
+          done <<< "$CHANGED_FILES"
+          if git diff --quiet HEAD -- osv-scanner.toml; then
+            echo "::error::Dependency changes exist without an osv-scanner.toml change"; exit 1
+          fi
+          if [ ! -s "$IYARC_PRUNE_PR_BODY" ]; then
+            echo "::error::Changes exist but the agent did not produce a validated pull request report"; exit 1
+          fi
+          OPEN_PRS="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 1000 \
+            --json number,headRefName --jq '.[] | select(.headRefName | startswith("osv-scanner-prune/"))')"
+          if [ -n "$OPEN_PRS" ]; then
+            echo "An open prune pull request already exists: $OPEN_PRS" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          for label in automated dependencies security; do
+            gh label create "$label" --repo "$GITHUB_REPOSITORY" --force
+          done
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+
+      - name: Create signed dependency pull request
+        if: steps.changes.outputs.ready == 'true'
+        id: pull-request
+        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          sign-commits: true
+          branch: osv-scanner-prune/${{ github.run_id }}
+          base: master
+          add-paths: |
+            osv-scanner.toml
+            package.json
+            yarn.lock
+            modules/*/package.json
+          commit-message: |
+            chore(deps): prune resolved vulnerability exclusions
+
+            Ticket: HSM-429
+          title: 'chore(deps): prune resolved vulnerability exclusions'
+          body-path: ${{ runner.temp }}/iyarc-prune-pr.md
+          labels: automated,dependencies,security
+          assignees: gokulhost
+          draft: false
+
+      - name: Report pull request
+        if: steps.changes.outputs.ready == 'true'
+        env:
+          PR_URL: ${{ steps.pull-request.outputs.pull-request-url }}
+        run: |
+          if [ -z "$PR_URL" ]; then
+            echo "::error::Validated dependency changes did not produce a pull request"; exit 1
+          fi
+          echo "Pull request: $PR_URL" >> "$GITHUB_STEP_SUMMARY"
