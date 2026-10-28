@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.1.5](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-api%403.1.4...%40bitgo%2Fsdk-api%403.1.5) (2026-10-27)
+
+### Bug Fixes
+
+* **sdk-api:** throw from getECDHKeychain when the user has none (Refs: WCN-3735) ([41375d2](https://github.com/BitGo/BitGoJS/commit/41375d2c2ecbb7349463a22d0f73c4fcc644500d))
+* **sdk-core:** validate password for UMKR share acceptance ([12675b8](https://github.com/BitGo/BitGoJS/commit/12675b80e45dc52dada05ad9c9e6489e10d4c430))
+
+
 ## [3.1.4](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-api%403.1.3...%40bitgo%2Fsdk-api%403.1.4) (2026-10-22)
 
 **Note:** Version bump only for package @bitgo/sdk-api

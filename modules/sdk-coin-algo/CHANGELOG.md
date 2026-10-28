@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.4.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-algo%403.3.0...%40bitgo%2Fsdk-coin-algo%403.4.0) (2026-10-27)
+
+### Features
+
+* enable Safe recovery for HBAR ([14a7142](https://github.com/BitGo/BitGoJS/commit/14a7142182dce66fb9900301d18ae4e482feac6b))
+
+
 # [3.3.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-algo%403.2.1...%40bitgo%2Fsdk-coin-algo%403.3.0) (2026-10-22)
 
 ### Features

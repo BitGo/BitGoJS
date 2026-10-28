@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.1.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-stx%405.0.2...%40bitgo%2Fsdk-coin-stx%405.1.0) (2026-10-27)
+
+### Features
+
+* **sdk-coin-stx:** accept a configured PoX-5 staking contract pair ([95df8aa](https://github.com/BitGo/BitGoJS/commit/95df8aa13a7354322edbc02ac2a7ed57f4589113))
+* **sdk-coin-stx:** allow a caller-supplied staking contract ([0c7950c](https://github.com/BitGo/BitGoJS/commit/0c7950cb442c016a95dff877f95dd5fc37d808fa))
+
+
 ## [5.0.2](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-stx%405.0.1...%40bitgo%2Fsdk-coin-stx%405.0.2) (2026-10-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-stx
