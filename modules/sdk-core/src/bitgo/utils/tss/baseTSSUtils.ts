@@ -276,13 +276,17 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    * @param {string | TxRequest} txRequest - transaction request with unsigned transaction
    * @param {CustomRShareGeneratingFunction} externalSignerRShareGenerator a function that creates R shares in the EdDSA TSS flow
    * @param {CustomGShareGeneratingFunction} externalSignerGShareGenerator a function that creates G shares in the EdDSA TSS flow
+   * @param reqId - optional request tracer
+   * @param attestation - optional withdrawal proof, attached only to the first R-share request
    * @returns {Promise<TxRequest>} - a signed tx request
    */
   signEddsaTssUsingExternalSigner(
     txRequest: string | TxRequest,
     externalSignerCommitmentGenerator: CustomCommitmentGeneratingFunction,
     externalSignerRShareGenerator: CustomRShareGeneratingFunction,
-    externalSignerGShareGenerator: CustomGShareGeneratingFunction
+    externalSignerGShareGenerator: CustomGShareGeneratingFunction,
+    reqId?: IRequestTracer,
+    attestation?: TSSParams['attestation']
   ): Promise<TxRequest> {
     throw new Error('Method not implemented.');
   }
@@ -423,6 +427,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
       apiVersion: apiVersion,
       preview,
       videoApprovers: params.videoApprovers,
+      ...(params.attestation !== undefined && { attestation: params.attestation }),
     };
 
     const reqTracer = params.reqId || new RequestTracer();
@@ -528,6 +533,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    * Calls Bitgo API to create tx request.
    *
    * @private
+   * Message and typed-data txrequests do not carry withdrawal-intent attestation.
    */
   private async createTxRequestBase(
     intentOptions: PopulatedIntentForTypedDataSigning | PopulatedIntentForMessageSigning,
@@ -535,8 +541,6 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     preview?: boolean,
     reqId?: IRequestTracer
   ): Promise<TxRequest> {
-    // TODO(WCN-541): add optional attestation pass-through for MPC /txrequests (deferred until
-    // multisig attestation, WCN-539, is verified end-to-end on staging).
     const whitelistedParams = {
       intent: {
         ...intentOptions,

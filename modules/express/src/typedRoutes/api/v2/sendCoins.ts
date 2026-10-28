@@ -1,5 +1,6 @@
 import * as t from 'io-ts';
 import { httpRoute, httpRequest, optional, type HttpRoute } from '@api-ts/io-ts-http';
+import { AttestationPayload } from '@bitgo/public-types';
 import { BitgoExpressError } from '../../schemas/error';
 import { SendManyResponse, EIP1559Params, MemoParams, TokenEnablement } from './sendmany';
 
@@ -59,6 +60,9 @@ export const SendCoinsRequestBody = {
 
   /** Token name, defined in the BitGoJS Statics package. */
   tokenName: optional(t.string),
+
+  /** WebAuthn proof for the transaction intent (pass-through only) */
+  attestation: optional(AttestationPayload),
 
   // All SendManyOptions fields are also supported via the SendOptions index signature
   // Including these commonly used fields explicitly for better documentation:

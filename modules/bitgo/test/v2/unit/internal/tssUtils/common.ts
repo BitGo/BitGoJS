@@ -21,16 +21,27 @@ export async function nockSendSignatureShare(
     tssType?: 'eddsa' | 'ecdsa';
     requestType?: RequestType;
     apiMode?: 'lite' | 'full';
+    requestBodies?: Record<string, unknown>[];
   },
   status = 200
 ): Promise<nock.Scope> {
   params.requestType = params.requestType || RequestType.tx;
   params.apiMode = params.apiMode || 'lite';
   const transactions = getRoute(params.tssType, params.requestType, params.apiMode);
-  return nock('https://bitgo.fakeurl')
-    .persist(true)
-    .post(`/api/v2/wallet/${params.walletId}/txrequests/${params.txRequestId + transactions}/signatureshares`)
-    .reply(status, status === 200 ? (params.signatureShare as nock.Body) : ({ error: 'some error' } as nock.Body));
+  const scope = nock('https://bitgo.fakeurl');
+  if (!params.requestBodies) {
+    scope.persist(true);
+  }
+  const signatureShareRequest = scope.post(
+    `/api/v2/wallet/${params.walletId}/txrequests/${params.txRequestId + transactions}/signatureshares`
+  );
+  if (params.requestBodies) {
+    signatureShareRequest.times(params.tssType === 'ecdsa' ? 3 : 2);
+  }
+  return signatureShareRequest.reply(status, (_uri, body) => {
+    params.requestBodies?.push(body as Record<string, unknown>);
+    return status === 200 ? (params.signatureShare as nock.Body) : ({ error: 'some error' } as nock.Body);
+  });
 }
 
 export async function nockSendSignatureShareWithResponse(
@@ -40,13 +51,17 @@ export async function nockSendSignatureShareWithResponse(
     signatureShare: unknown;
     response: unknown;
     tssType?: 'eddsa' | 'ecdsa';
+    requestBodies?: Record<string, unknown>[];
   },
   status = 200
 ): Promise<nock.Scope> {
   const transactions = getRoute(params.tssType);
   return nock('https://bitgo.fakeurl')
     .post(`/api/v2/wallet/${params.walletId}/txrequests/${params.txRequestId + transactions}/signatureshares`)
-    .reply(status, status === 200 ? (params.response as Body) : ({ error: 'some error' } as nock.Body));
+    .reply(status, (_uri, body) => {
+      params.requestBodies?.push(body as Record<string, unknown>);
+      return status === 200 ? (params.response as Body) : ({ error: 'some error' } as nock.Body);
+    });
 }
 
 export async function nockDeleteSignatureShare(

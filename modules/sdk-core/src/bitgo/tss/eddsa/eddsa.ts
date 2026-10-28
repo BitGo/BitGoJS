@@ -1,3 +1,4 @@
+import type { AttestationPayload } from '../../wallet/BuildParams';
 import assert from 'assert';
 import openpgp from 'openpgp';
 import sodium from 'libsodium-wrappers-sumo';
@@ -207,7 +208,8 @@ export async function offerUserToBitgoRShare(
   encryptedSignerShare: string,
   apiMode: 'full' | 'lite' = 'lite',
   reqId?: IRequestTracer,
-  requestType: RequestType = RequestType.tx
+  requestType: RequestType = RequestType.tx,
+  attestation?: AttestationPayload
 ): Promise<void> {
   const rShare: RShare = userSignShare.rShares[ShareKeyPosition.BITGO];
   if (_.isNil(rShare)) {
@@ -232,7 +234,8 @@ export async function offerUserToBitgoRShare(
     'eddsa',
     apiMode,
     undefined,
-    reqId
+    reqId,
+    attestation
   );
 }
 

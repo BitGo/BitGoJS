@@ -30,6 +30,13 @@ describe('WalletTxSignTSS codec tests', function () {
         '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
     };
 
+    const attestation = {
+      signature: 'signature',
+      credentialId: 'credential-id',
+      clientDataJSON: 'client-data',
+      authenticatorData: 'authenticator-data',
+    };
+
     afterEach(function () {
       sinon.restore();
     });
@@ -74,6 +81,7 @@ describe('WalletTxSignTSS codec tests', function () {
         },
         walletPassphrase: 'test_passphrase_12345',
         apiVersion: 'lite' as const,
+        attestation,
       };
 
       // Create mock wallet with ensureCleanSigSharesAndSignTransaction method
@@ -116,6 +124,7 @@ describe('WalletTxSignTSS codec tests', function () {
       assert.strictEqual(mockCoin.wallets.calledOnce, true);
       assert.strictEqual(walletsGetStub.calledOnceWith({ id: walletId }), true);
       assert.strictEqual(mockWallet.ensureCleanSigSharesAndSignTransaction.calledOnce, true);
+      sinon.assert.calledWithMatch(mockWallet.ensureCleanSigSharesAndSignTransaction, { attestation });
     });
 
     it('should successfully sign a half-signed TSS wallet transaction', async function () {
@@ -1166,6 +1175,17 @@ describe('WalletTxSignTSS codec tests', function () {
       assert.strictEqual(decoded.allowNonSegwitSigningWithoutPrevTx, validBody.allowNonSegwitSigningWithoutPrevTx);
       assert.strictEqual(decoded.isEvmBasedCrossChainRecovery, validBody.isEvmBasedCrossChainRecovery);
       assert.strictEqual(decoded.derivationSeed, validBody.derivationSeed);
+    });
+
+    it('should preserve optional attestation in the request body schema', function () {
+      const attestation = {
+        signature: 'signature',
+        credentialId: 'credential-id',
+        clientDataJSON: 'client-data-json',
+        authenticatorData: 'authenticator-data',
+      };
+      const decoded = assertDecode(t.partial(WalletTxSignTSSBody), { attestation });
+      assert.deepStrictEqual(decoded.attestation, attestation);
     });
 
     it('should validate empty body', function () {

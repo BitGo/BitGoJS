@@ -658,7 +658,8 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     externalSignerCommitmentGenerator: CustomCommitmentGeneratingFunction,
     externalSignerRShareGenerator: CustomRShareGeneratingFunction,
     externalSignerGShareGenerator: CustomGShareGeneratingFunction,
-    reqId?: IRequestTracer
+    reqId?: IRequestTracer,
+    attestation?: TSSParamsWithPrv['attestation']
   ): Promise<TxRequest> {
     let txRequestResolved: TxRequest;
     let txRequestId: string;
@@ -698,7 +699,9 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       rShare,
       encryptedSignerShare.share,
       apiVersion,
-      reqId
+      reqId,
+      RequestType.tx,
+      attestation
     );
     const bitgoToUserRShare = await getBitgoToUserRShare(this.bitgo, this.wallet.id(), txRequestId, reqId);
     const gSignShareTransactionParams = {
@@ -818,7 +821,8 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       userToBitgoEncryptedSignerShare,
       apiVersion,
       params.reqId,
-      requestType
+      requestType,
+      requestType === RequestType.tx ? params.attestation : undefined
     );
 
     const bitgoToUserRShare = await getBitgoToUserRShare(
