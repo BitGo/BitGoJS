@@ -8,7 +8,7 @@ import {
   IEncryptionSession,
   IRequestTracer,
 } from '../api';
-import { IBaseCoin } from './baseCoin';
+import { IBaseCoin, TssVerificationWarningHandler } from './baseCoin';
 import { CoinConstructor } from './coinFactory';
 import { EnvironmentName } from './environments';
 import { EcdhDerivedKeypair, GetSigningKeyApi } from './keychain';
@@ -61,4 +61,14 @@ export interface BitGoBase {
   setRequestTracer(reqTracer: IRequestTracer): void;
   url(path: string, version?: number): string;
   register(name: string, coin: CoinConstructor): void;
+  /**
+   * Client-side opt-in: fail-closed TSS verification warnings become hard failures.
+   * Set only from local `BitGoAPI` options — never read from server data.
+   */
+  readonly strictTssVerification?: boolean;
+  /**
+   * Optional sink for fail-closed TSS verification warnings (decoded vs expected
+   * transaction fields). Set only from local `BitGoAPI` options.
+   */
+  readonly onVerificationWarning?: TssVerificationWarningHandler;
 }

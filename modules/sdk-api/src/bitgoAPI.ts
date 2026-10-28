@@ -24,6 +24,7 @@ import {
   IRequestTracer,
   makeRandomKey,
   sanitizeLegacyPath,
+  TssVerificationWarningHandler,
 } from '@bitgo/sdk-core';
 import * as sdkHmac from '@bitgo/sdk-hmac';
 import { DefaultHmacAuthStrategy, type IHmacAuthStrategy } from '@bitgo/sdk-hmac';
@@ -271,10 +272,16 @@ export class BitGoAPI implements BitGoBase {
   private _requestIdPrefix?: string;
   private getAdditionalHeadersCb?: AdditionalHeadersCallback;
   protected _hmacAuthStrategy: IHmacAuthStrategy;
+  /** @inheritDoc */
+  public readonly strictTssVerification: boolean;
+  /** @inheritDoc */
+  public readonly onVerificationWarning?: TssVerificationWarningHandler;
 
   constructor(params: BitGoAPIOptions = {}) {
     this.getAdditionalHeadersCb = params.getAdditionalHeadersCb;
     this._requestIdPrefix = params.requestIdPrefix;
+    this.strictTssVerification = params.strictTssVerification ?? false;
+    this.onVerificationWarning = params.onVerificationWarning;
     this.cookiesPropagationEnabled = false;
     if (
       !common.validateParams(

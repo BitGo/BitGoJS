@@ -315,6 +315,35 @@ export interface VerificationOptions {
   consolidationToBaseAddress?: boolean;
 }
 
+/**
+ * Decoded vs expected transaction fields reported by fail-closed TSS verification.
+ * Undefined fields were not applicable to the violated rule.
+ */
+export interface TssVerificationMismatch {
+  to?: string;
+  value?: string;
+  data?: string;
+}
+
+/**
+ * A non-fatal TSS verification finding: the transaction bytes about to be signed do not
+ * match the user intent. Reported through `console.warn` and an optional
+ * `onVerificationWarning` callback; becomes a hard failure when the client opts into
+ * `strictTssVerification`.
+ */
+export interface TssVerificationWarning {
+  /** Canonical verifier intent type the handler ran under (e.g. 'transfer'). */
+  intentType: string;
+  /** Human-readable description of the violated rule. */
+  reason: string;
+  /** Values derived from the user intent (txParams or the stored tx request intent). */
+  expected: TssVerificationMismatch;
+  /** Values decoded from the transaction bytes that are about to be signed. */
+  decoded: TssVerificationMismatch;
+}
+
+export type TssVerificationWarningHandler = (warning: TssVerificationWarning) => void;
+
 export interface VerifyTransactionOptions {
   txPrebuild: TransactionPrebuild;
   txParams: TransactionParams;
@@ -322,6 +351,14 @@ export interface VerifyTransactionOptions {
   verification?: VerificationOptions;
   reqId?: IRequestTracer;
   walletType?: 'onchain' | 'tss';
+  /**
+   * The persisted TxRequest intent (`PopulatedIntent`), set by the TSS signing path when
+   * verifying a pending-approval transaction. Verifiers use it as the source of truth for
+   * the intended `to` / `value` / `data` and for intent fields with no txParams equivalent
+   * (`tokenName`, `nonce`, `txid`, `consolidateId`, DeFi amounts). Never server-controlled
+   * beyond the tx request itself, which is the object the user approved.
+   */
+  intent?: PopulatedIntent;
 }
 
 export interface SupplementGenerateWalletOptions {
