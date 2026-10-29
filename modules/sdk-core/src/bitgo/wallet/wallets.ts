@@ -39,6 +39,8 @@ import {
   IWallets,
   LightningWalletWithKeychains,
   ListWalletOptions,
+  ReshareWalletOptions,
+  ReshareWalletResult,
   UpdateShareOptions,
   WalletShares,
   WalletWithKeychains,
@@ -1110,12 +1112,16 @@ export class Wallets implements IWallets {
    * Re-share wallet with existing spenders of the wallet
    * @param walletId
    * @param userPassword
+   * @param encryptionVersion
+   * @param opts - recipient selection options
+   * @returns successful user IDs and individual share failures
    */
   async reshareWalletWithSpenders(
     walletId: string,
     userPassword: string,
-    encryptionVersion?: EncryptionVersion
-  ): Promise<void> {
+    encryptionVersion?: EncryptionVersion,
+    opts?: ReshareWalletOptions
+  ): Promise<ReshareWalletResult> {
     const wallet = await this.get({ id: walletId });
     if (!wallet?._wallet?.enterprise) {
       throw new Error('Enterprise not found for the wallet');
@@ -1129,16 +1135,17 @@ export class Wallets implements IWallets {
       [...enterpriseUsersResponse?.adminUsers, ...enterpriseUsersResponse?.nonAdminUsers].map((obj) => [obj.id, obj])
     );
 
-    if (!wallet._wallet.users) {
-      return;
-    }
-
-    const spenders = wallet._wallet.users.filter(
-      (user) => user.permissions.includes('spend') && !user.permissions.includes('admin') && usersMap.has(user.user)
+    const result: ReshareWalletResult = { shared: [], failed: [] };
+    const spenders = (wallet._wallet.users ?? []).filter(
+      (user) =>
+        user.permissions.includes('spend') &&
+        (opts?.includeAdmins || !user.permissions.includes('admin')) &&
+        (!opts?.onlyNeedsRecovery || user.needsRecovery === true) &&
+        usersMap.has(user.user)
     );
 
     if (spenders.length === 0) {
-      return;
+      return result;
     }
 
     // Decrypt the wallet keychain once and thread the plaintext into each shareWallet call.
@@ -1152,27 +1159,30 @@ export class Wallets implements IWallets {
       if (!(e instanceof MissingEncryptedKeychainError)) {
         throw e;
       }
-      // Cold wallet: no encrypted keychain to decrypt. Fall through and let shareWallet handle
-      // it per-recipient (which will also throw MissingEncryptedKeychainError but at a point
-      // where the caller expects it).
     }
 
     // Sequential loop to bound concurrent Argon2id WASM instances on the per-recipient ECDH
     // encrypt side (each recipient's secret is unique so Promise.all could OOM at scale).
     for (const user of spenders) {
-      const userObject = usersMap.get(user.user);
-      assert(userObject, `User ${user.user} not found in enterprise users map`);
-      const shareOptions: ShareWalletOptions = {
-        permissions: user.permissions.join(','),
-        walletPassphrase: userPassword,
-        email: userObject.email.email,
-        reshare: true,
-        skipKeychain: false,
-        encryptionVersion,
-        decryptedKeychain,
-      };
-      await wallet.shareWallet(shareOptions);
+      try {
+        const userObject = usersMap.get(user.user);
+        assert(userObject, `User ${user.user} not found in enterprise users map`);
+        const shareOptions: ShareWalletOptions = {
+          permissions: user.permissions.join(','),
+          walletPassphrase: userPassword,
+          email: userObject.email.email,
+          reshare: true,
+          skipKeychain: false,
+          encryptionVersion,
+          decryptedKeychain,
+        };
+        await wallet.shareWallet(shareOptions);
+        result.shared.push(user.user);
+      } catch (e) {
+        result.failed.push({ userId: user.user, error: e instanceof Error ? e.message : String(e) });
+      }
     }
+    return result;
   }
 
   /**

@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### Unreleased
+
+* Add recipient filters and per-user results to `reshareWalletWithSpenders`. Setup and key decryption errors still reject the call.
+
 # [40.3.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4040.2.0...%40bitgo%2Fsdk-core%4040.3.0) (2026-10-27)
 
 ### Bug Fixes
