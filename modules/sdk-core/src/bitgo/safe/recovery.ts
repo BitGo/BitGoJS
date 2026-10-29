@@ -22,6 +22,8 @@ import {
   encodeAlgoKey,
   encodeHbarPublicKeyDer,
   encodeHbarPrivateKeyDer,
+  encodeEd25519StrKeyPublicKey,
+  encodeEd25519StrKeySecretSeed,
   type SafeKeycardRootEntry,
 } from '@bitgo/sdk-lib-safes';
 import {
@@ -52,13 +54,15 @@ export type Secp256k1MultisigChildKeys = {
   bitgo: { pub: string };
 };
 
-export type EcdsaMpcChildKeys = {
+export type MpcChildKeys = {
   commonKeychain: string;
   user: string;
   backup: string;
 };
 
-export type EddsaMpcChildKeys = EcdsaMpcChildKeys;
+export type EcdsaMpcChildKeys = MpcChildKeys;
+
+export type EddsaMpcChildKeys = MpcChildKeys;
 
 /**
  * A hardened (SLIP-0010) ed25519 child. The `kind` discriminator prevents a raw seed from being
@@ -98,17 +102,18 @@ export type SecpSafeRecoverKeyParams = {
 };
 
 /**
- * Slot-3 (ecdsaMpc) safe recovery key params. A discriminated union on `mode`, so the invalid
- * combos are not representable: signed mode always carries the re-encrypted child reduced shares
- * and the ephemeral passphrase; unsigned mode carries only the child common keychain.
+ * Safe recovery key params for the MPC slots (`ecdsaMpc`, `eddsaMpc`). A discriminated union on
+ * `mode`, so the invalid combos are not representable: signed mode always carries the re-encrypted
+ * child reduced shares and the ephemeral passphrase; unsigned mode carries only the child common
+ * keychain.
  *
  * `broadcast: false` is always set so Safe recovery never auto-broadcasts: WRW's coin-agnostic
  * engine spreads these params into `coin.recover()`, and ICP is the one coin whose `recover()`
  * would otherwise submit the sweep to the network.
  */
-export type EcdsaMpcSafeRecoverKeyParams =
+type MpcSafeRecoverKeyParams<Slot extends 'ecdsaMpc' | 'eddsaMpc'> =
   | {
-      slot: 'ecdsaMpc';
+      slot: Slot;
       mode: 'signed';
       userKey: string;
       backupKey: string;
@@ -118,12 +123,15 @@ export type EcdsaMpcSafeRecoverKeyParams =
       broadcast: false;
     }
   | {
-      slot: 'ecdsaMpc';
+      slot: Slot;
       mode: 'unsigned';
       bitgoKey: string;
       isTss: true;
       broadcast: false;
     };
+
+export type EcdsaMpcSafeRecoverKeyParams = MpcSafeRecoverKeyParams<'ecdsaMpc'>;
+export type EddsaMpcSafeRecoverKeyParams = MpcSafeRecoverKeyParams<'eddsaMpc'>;
 
 /**
  * Slot-2 (ed25519Multisig) safe recovery key params. A discriminated union on `mode`, so the invalid
@@ -134,7 +142,8 @@ export type EcdsaMpcSafeRecoverKeyParams =
  * three child pubs — derivable here, but `recover()` still requires it as input. Note this is
  * *derived*, not independently verified against a known wallet address; callers with a recorded
  * address should cross-check it themselves. For HBAR this field is omitted so the caller's
- * network-assigned account ID is preserved when the key params are spread into a recovery request.
+ * network-assigned account ID is neither overwritten nor re-derived; the same goes for XLM, whose
+ * base address is network-assigned too. For both, the caller must pass `rootAddress` to `recover()`.
  */
 export type Ed25519SafeRecoverKeyParams =
   | {
@@ -164,7 +173,8 @@ export type Ed25519SafeRecoverKeyParams =
 export type SafeRecoverKeyParams =
   | SecpSafeRecoverKeyParams
   | Ed25519SafeRecoverKeyParams
-  | EcdsaMpcSafeRecoverKeyParams;
+  | EcdsaMpcSafeRecoverKeyParams
+  | EddsaMpcSafeRecoverKeyParams;
 
 export type DecryptedSafeRoots = {
   secp256k1Multisig: OnchainSafeRoot;
@@ -326,16 +336,23 @@ export async function deriveSafeWalletKeys(params: {
   throw new Error(`deriveSafeWalletKeys: slot '${params.slot}' is not supported yet`);
 }
 
+const ED25519_32_BYTE_HEX = /^[0-9a-f]{64}$/i;
+
 /**
  * Per-coin encoders for the `ed25519Multisig` slot: each slot-2 coin re-encodes the same 32-byte
  * children into its own address/seed string formats. A coin absent from the registry is not yet
- * supported for slot-2 recovery (xlm is a future arm).
+ * supported for slot-2 recovery.
  */
 const ALGO_ENCODERS = {
   encodePub: encodeAlgoKey,
   encodeSeed: encodeAlgoKey,
   deriveRootAddress: (userPub: Buffer, backupPub: Buffer, bitgoPub: Buffer) =>
     algoMultisigAddress(1, 2, [userPub, backupPub, bitgoPub]),
+};
+
+const XLM_ENCODERS = {
+  encodePub: encodeEd25519StrKeyPublicKey,
+  encodeSeed: encodeEd25519StrKeySecretSeed,
 };
 
 const ED25519_MULTISIG_COIN_ENCODERS: Record<
@@ -351,6 +368,8 @@ const ED25519_MULTISIG_COIN_ENCODERS: Record<
   talgo: ALGO_ENCODERS,
   hbar: { encodePub: encodeHbarPublicKeyDer, encodeSeed: encodeHbarPrivateKeyDer },
   thbar: { encodePub: encodeHbarPublicKeyDer, encodeSeed: encodeHbarPrivateKeyDer },
+  xlm: XLM_ENCODERS,
+  txlm: XLM_ENCODERS,
 };
 
 /**
@@ -371,11 +390,10 @@ export type SafeRecoverKeyParamsRequest = {
 
 /**
  * Builds the key fields `coin.recover()` expects from derived Safe child keys.
- * Supports `secp256k1Multisig` (slot 1), `ed25519Multisig` (slot 2), and `ecdsaMpc` (slot 3);
- * `eddsaMpc` fails closed. Signed mode re-encrypts the child secrets under a fresh ephemeral
+ * Supports all four slots. Signed mode re-encrypts the child secrets under a fresh ephemeral
  * passphrase (v1/SJCL); unsigned mode returns pubs / the child common keychain. Where supported,
  * `rootAddress` is derived from the child keys, not independently verified; otherwise it is
- * omitted so the caller can supply it. `ecdsaMpc` params always carry `broadcast: false` so Safe
+ * omitted so the caller can supply it. MPC-slot params always carry `broadcast: false` so Safe
  * recovery never auto-broadcasts.
  */
 export async function buildSafeRecoverKeyParams(
@@ -387,79 +405,95 @@ export async function buildSafeRecoverKeyParams(
 export async function buildSafeRecoverKeyParams(
   params: Extract<SafeRecoverKeyParamsRequest, { slot: 'ecdsaMpc' }>
 ): Promise<EcdsaMpcSafeRecoverKeyParams>;
+export async function buildSafeRecoverKeyParams(
+  params: Extract<SafeRecoverKeyParamsRequest, { slot: 'eddsaMpc' }>
+): Promise<EddsaMpcSafeRecoverKeyParams>;
 export async function buildSafeRecoverKeyParams(params: SafeRecoverKeyParamsRequest): Promise<SafeRecoverKeyParams>;
 export async function buildSafeRecoverKeyParams(params: SafeRecoverKeyParamsRequest): Promise<SafeRecoverKeyParams> {
   const { bitgo, mode } = params;
+
+  // Untyped (JS) callers can pass values the types forbid; fail closed rather than fall through.
+  if (mode !== 'signed' && mode !== 'unsigned') {
+    throw new Error(`buildSafeRecoverKeyParams: unknown mode '${mode}'`);
+  }
 
   if (params.slot === 'ed25519Multisig') {
     return buildEd25519MultisigRecoverKeyParams(bitgo, params.coin, params.keys, mode);
   }
 
   if (params.slot === 'ecdsaMpc') {
-    const keys = params.keys;
-
-    if (mode === 'unsigned') {
-      return {
-        slot: 'ecdsaMpc',
-        mode: 'unsigned',
-        bitgoKey: keys.commonKeychain,
-        isTss: true,
-        broadcast: false,
-      };
-    }
-
-    const walletPassphrase = randomBytes(32).toString('hex');
-    const [userKey, backupKey] = await Promise.all([
-      bitgo.encrypt({ input: keys.user, password: walletPassphrase, encryptionVersion: 1 }),
-      bitgo.encrypt({ input: keys.backup, password: walletPassphrase, encryptionVersion: 1 }),
-    ]);
-
-    return {
-      slot: 'ecdsaMpc',
-      mode: 'signed',
-      userKey,
-      backupKey,
-      bitgoKey: keys.commonKeychain,
-      walletPassphrase,
-      isTss: true,
-      broadcast: false,
-    };
+    return buildMpcRecoverKeyParams(bitgo, 'ecdsaMpc', params.keys, mode);
   }
 
-  if (params.slot === 'secp256k1Multisig') {
-    const keys = params.keys;
+  if (params.slot === 'eddsaMpc') {
+    return buildMpcRecoverKeyParams(bitgo, 'eddsaMpc', params.keys, mode);
+  }
 
-    if (mode === 'unsigned') {
-      return {
-        slot: 'secp256k1Multisig',
-        userKey: keys.user.pub,
-        backupKey: keys.backup.pub,
-        bitgoKey: keys.bitgo.pub,
-      };
-    }
+  // Every other typed slot returned above. The runtime guard keeps an unknown slot from falling
+  // into slot-1 handling; the narrowing makes a slot added without a branch a compile error below.
+  const slot: string = params.slot;
+  if (slot !== 'secp256k1Multisig') {
+    throw new Error(`buildSafeRecoverKeyParams: slot '${slot}' is not supported yet`);
+  }
 
-    const userPrv = bip32.fromBase58(keys.user.prv);
-    const backupPrv = bip32.fromBase58(keys.backup.prv);
-    if (!userPrv.privateKey || !backupPrv.privateKey) {
-      throw new Error('buildSafeRecoverKeyParams: keys.user.prv and keys.backup.prv must be private xprvs');
-    }
+  const keys = params.keys;
 
-    const walletPassphrase = randomBytes(32).toString('hex');
-    const [userKey, backupKey] = await Promise.all([
-      bitgo.encrypt({ input: keys.user.prv, password: walletPassphrase, encryptionVersion: 1 }),
-      bitgo.encrypt({ input: keys.backup.prv, password: walletPassphrase, encryptionVersion: 1 }),
-    ]);
-
+  if (mode === 'unsigned') {
     return {
       slot: 'secp256k1Multisig',
-      userKey,
-      backupKey,
+      userKey: keys.user.pub,
+      backupKey: keys.backup.pub,
       bitgoKey: keys.bitgo.pub,
-      walletPassphrase,
     };
   }
 
-  throw new Error(`buildSafeRecoverKeyParams: slot '${params.slot}' is not supported yet`);
+  const userPrv = bip32.fromBase58(keys.user.prv);
+  const backupPrv = bip32.fromBase58(keys.backup.prv);
+  if (!userPrv.privateKey || !backupPrv.privateKey) {
+    throw new Error('buildSafeRecoverKeyParams: keys.user.prv and keys.backup.prv must be private xprvs');
+  }
+
+  const walletPassphrase = randomBytes(32).toString('hex');
+  const [userKey, backupKey] = await Promise.all([
+    bitgo.encrypt({ input: keys.user.prv, password: walletPassphrase, encryptionVersion: 1 }),
+    bitgo.encrypt({ input: keys.backup.prv, password: walletPassphrase, encryptionVersion: 1 }),
+  ]);
+
+  return {
+    slot: 'secp256k1Multisig',
+    userKey,
+    backupKey,
+    bitgoKey: keys.bitgo.pub,
+    walletPassphrase,
+  };
+}
+
+async function buildMpcRecoverKeyParams<Slot extends 'ecdsaMpc' | 'eddsaMpc'>(
+  bitgo: BitGoBase,
+  slot: Slot,
+  keys: MpcChildKeys,
+  mode: 'signed' | 'unsigned'
+): Promise<MpcSafeRecoverKeyParams<Slot>> {
+  if (mode === 'unsigned') {
+    return { slot, mode, bitgoKey: keys.commonKeychain, isTss: true, broadcast: false };
+  }
+
+  const walletPassphrase = randomBytes(32).toString('hex');
+  const [userKey, backupKey] = await Promise.all([
+    bitgo.encrypt({ input: keys.user, password: walletPassphrase, encryptionVersion: 1 }),
+    bitgo.encrypt({ input: keys.backup, password: walletPassphrase, encryptionVersion: 1 }),
+  ]);
+
+  return {
+    slot,
+    mode,
+    userKey,
+    backupKey,
+    bitgoKey: keys.commonKeychain,
+    walletPassphrase,
+    isTss: true,
+    broadcast: false,
+  };
 }
 
 async function buildEd25519MultisigRecoverKeyParams(
@@ -476,7 +510,7 @@ async function buildEd25519MultisigRecoverKeyParams(
   for (const pub of [keys.user.pub, keys.backup.pub, keys.bitgo.pub]) {
     // strict hex, not length-only: Buffer.from(pub, 'hex') truncates at the first bad pair, so a
     // length check alone would accept trailing garbage
-    if (!/^[0-9a-f]{64}$/i.test(pub)) {
+    if (!ED25519_32_BYTE_HEX.test(pub)) {
       throw new Error('buildSafeRecoverKeyParams: ed25519 child public keys must be 32 bytes');
     }
   }
@@ -505,6 +539,11 @@ async function buildEd25519MultisigRecoverKeyParams(
   // The user child is a hardened SLIP-0010 seed, so it re-encrypts exactly like slot 1. The backup
   // child is a seedless soft extended key: it cannot be re-encrypted as a seed, so it becomes a lazy
   // external signer over the tx bytes (WCN-2895's extended-key signer, invoked by the coin).
+  // strict hex: Buffer.from(seed, 'hex') truncates at the first bad pair, which would silently
+  // encode a wrong private key
+  if (!ED25519_32_BYTE_HEX.test(keys.user.seed)) {
+    throw new Error('buildSafeRecoverKeyParams: ed25519 user seed must be 32 bytes');
+  }
   const walletPassphrase = randomBytes(32).toString('hex');
   const userKey = await bitgo.encrypt({
     input: encoders.encodeSeed(Buffer.from(keys.user.seed, 'hex')),
