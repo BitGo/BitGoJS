@@ -2460,9 +2460,11 @@ export class Wallet implements IWallet {
     }
 
     if (this.multisigType() === 'tss') {
+      const prv = await this.getUserPrv(presign as GetUserPrvOptions);
+      this.upgradeUserKeyEncryption(presign as GetUserPrvOptions);
       return this.signTransactionTss({
         ...presign,
-        prv: await this.getUserPrv(presign as GetUserPrvOptions),
+        prv,
         apiVersion,
       });
     }
@@ -2502,6 +2504,9 @@ export class Wallet implements IWallet {
     if (this.baseCoin.getFamily() === 'ofc') {
       const userKeySigningRequired = this.toTradingAccount().userKeySigningRequired;
       const prv = userKeySigningRequired ? await this.getUserPrv(presign as GetUserPrvOptions) : undefined;
+      if (userKeySigningRequired) {
+        this.upgradeUserKeyEncryption(presign as GetUserPrvOptions);
+      }
       return this.baseCoin.signTransaction({
         ...signTransactionParams,
         prv,
@@ -2509,11 +2514,37 @@ export class Wallet implements IWallet {
       });
     }
 
+    const prv = await this.getUserPrv(presign as GetUserPrvOptions);
+    this.upgradeUserKeyEncryption(presign as GetUserPrvOptions);
     return this.baseCoin.signTransaction({
       ...signTransactionParams,
-      prv: await this.getUserPrv(presign as GetUserPrvOptions),
+      prv,
       wallet: this,
     });
+  }
+
+  /**
+   * Fire-and-forget upgrade of the user keychain's v1 `encryptedPrv` to v2, for signing paths
+   * that just resolved the prv from `walletPassphrase` via `getUserPrv(params)`.
+   *
+   * Does nothing when the caller supplied `prv`, when there is no passphrase, when the keychain has
+   * no `encryptedPrv`, or for safe child keychains (their prv comes from the root key). The upgrade
+   * is never awaited and can never affect the signing result.
+   *
+   * @param params - the same options that were passed to `getUserPrv`
+   */
+  private upgradeUserKeyEncryption(params: GetUserPrvOptions): void {
+    const keychain = params.keychain || params.key;
+    const walletPassphrase = params.walletPassphrase;
+    if (
+      params.prv ||
+      !keychain?.encryptedPrv ||
+      !_.isString(walletPassphrase) ||
+      isSafeChildPublicOnlyKeychain(this.safeId(), keychain)
+    ) {
+      return;
+    }
+    void this.baseCoin.keychains().upgradeEncryption({ keychain, passphrase: walletPassphrase });
   }
 
   /**
@@ -2542,11 +2573,13 @@ export class Wallet implements IWallet {
       keychain: keychains[0],
     };
     assert(keychains[0].commonKeychain, 'Unable to find commonKeychain in keychains');
+    const prv = await this.getUserPrv(userPrvOptions);
+    this.upgradeUserKeyEncryption(userPrvOptions);
     const presign = {
       ...params,
       walletData: this._wallet,
       tssUtils: this.tssUtils,
-      prv: await this.getUserPrv(userPrvOptions),
+      prv,
       keychain: keychains[0],
       backupKeychain: keychains.length > 1 ? keychains[1] : null,
       bitgoKeychain: keychains.length > 2 ? keychains[2] : null,
@@ -2586,11 +2619,13 @@ export class Wallet implements IWallet {
       keychain: keychains[0],
     };
     assert(keychains[0].commonKeychain, 'Unable to find commonKeychain in keychains');
+    const prv = await this.getUserPrv(userPrvOptions);
+    this.upgradeUserKeyEncryption(userPrvOptions);
     const presign = {
       ...params,
       walletData: this._wallet,
       tssUtils: this.tssUtils,
-      prv: await this.getUserPrv(userPrvOptions),
+      prv,
       keychain: keychains[0],
       backupKeychain: keychains.length > 1 ? keychains[1] : null,
       bitgoKeychain: keychains.length > 2 ? keychains[2] : null,

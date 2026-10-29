@@ -170,6 +170,19 @@ export interface UpdateSingleKeychainPasswordOptions {
 }
 
 /**
+ * Parameters for Keychains.upgradeEncryption
+ * @property {Keychain} keychain - the keychain as read from BitGo; its `encryptedPrv` is the envelope to upgrade.
+ *   Only `id`, `encryptedPrv`, `pub` and `coinSpecific` are read.
+ * @property {string} passphrase - the passphrase that decrypts `keychain.encryptedPrv`
+ * @property {IRequestTracer} reqId - optional reqId
+ */
+export interface UpgradeKeychainEncryptionOptions {
+  keychain: Pick<Keychain, 'id' | 'encryptedPrv' | 'pub' | 'coinSpecific'>;
+  passphrase: string;
+  reqId?: IRequestTracer;
+}
+
+/**
  * Parameters for the rotateKeychain method for ofc multi-user-key
  * @property {string} id - the public id of the keychain
  * @property {string} password - the user password use to encrypt/decrypt the private key
@@ -333,6 +346,7 @@ export interface IKeychains {
   updateSingleKeychainPassword(params?: UpdateSingleKeychainPasswordOptions): Promise<Keychain>;
   getEncryptionVersion(ciphertext: string): EncryptionVersion;
   reencryptAsV2(encryptedPrv: string, passphrase: string): Promise<string>;
+  upgradeEncryption(params: UpgradeKeychainEncryptionOptions): Promise<void>;
   create(params?: { seed?: Buffer; isRootKey?: boolean }): KeyPair;
   add(params?: AddKeychainOptions): Promise<Keychain>;
   createBitGo(params?: CreateBitGoOptions): Promise<Keychain>;

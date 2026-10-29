@@ -263,12 +263,20 @@ export class PendingApproval implements IPendingApproval {
       await this.wallet.baseCoin.keychains().getKeysForSigning({ wallet: this.wallet, reqId })
     )[0];
 
-    const decryptedPrv = isSafeChildPublicOnlyKeychain(this.wallet.safeId(), childUserKeychain)
+    const isSafeChild = isSafeChildPublicOnlyKeychain(this.wallet.safeId(), childUserKeychain);
+    const decryptedPrv = isSafeChild
       ? await this.wallet.getUserPrv({
           keychain: childUserKeychain,
           walletPassphrase,
         })
       : await this.wallet.getPrv({ walletPassphrase });
+    if (!isSafeChild && childUserKeychain?.encryptedPrv) {
+      // getPrv decrypted the first keychain with an encryptedPrv, which is this same user keychain.
+      // Fire-and-forget; never awaited and never affects signing.
+      void this.wallet.baseCoin
+        .keychains()
+        .upgradeEncryption({ keychain: childUserKeychain, passphrase: walletPassphrase });
+    }
     const txRequest = await this.tssUtils!.recreateTxRequest(txRequestId, decryptedPrv, reqId);
     if (txRequest.apiVersion === 'lite') {
       if (!txRequest.unsignedTxs || txRequest.unsignedTxs.length === 0) {

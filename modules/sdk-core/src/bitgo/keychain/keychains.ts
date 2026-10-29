@@ -29,9 +29,12 @@ import {
   RotateKeychainOptions,
   UpdatePasswordOptions,
   UpdateSingleKeychainPasswordOptions,
+  UpgradeKeychainEncryptionOptions,
 } from './iKeychains';
 import { BitGoKeyFromOvcShares, BitGoToOvcJSON, OvcToBitGoJSON } from './ovcJsonCodec';
 import { EncryptionVersion, IEncryptionSession } from '../../api';
+
+const debug = require('debug')('bitgo:v2:keychains');
 
 /** Server-side transaction budget for one bulk key update: each write is sub-KB, so hundreds of
  * envelopes fit in one Mongo transaction. Only batches past this size are chunked, at the cost
@@ -41,6 +44,8 @@ const BULK_KEY_UPDATE_BATCH_SIZE = 500;
 export class Keychains implements IKeychains {
   private readonly bitgo: BitGoBase;
   private readonly baseCoin: IBaseCoin;
+  /** Keychain ids with an upgradeEncryption call in flight on this instance. */
+  private readonly upgradesInFlight = new Set<string>();
 
   constructor(bitgo: BitGoBase, baseCoin: IBaseCoin) {
     this.bitgo = bitgo;
@@ -394,6 +399,72 @@ export class Keychains implements IKeychains {
   async reencryptAsV2(encryptedPrv: string, passphrase: string): Promise<string> {
     const prv = await this.bitgo.decrypt({ input: encryptedPrv, password: passphrase });
     return this.bitgo.encrypt({ input: prv, password: passphrase, encryptionVersion: 2 });
+  }
+
+  /**
+   * Silently upgrade a user keychain's password-encrypted `encryptedPrv` from v1 (SJCL) to v2
+   * (Argon2id + AES-256-GCM) with the same passphrase, and persist it to BitGo.
+   *
+   * Contract: never throws and never rejects. Callers fire-and-forget (`void`); signing must not
+   * wait on or fail because of this call.
+   *
+   * No-op unless `keychain.id` and `keychain.encryptedPrv` are strings, `encryptedPrv` is a v1
+   * envelope, and no upgrade for the same keychain id is already in flight on this instance.
+   *
+   * The new envelope is decrypted again and compared to the original prv before anything is
+   * written. The write is a compare-and-swap: the server replaces the envelope only if
+   * the stored one still equals `keychain.encryptedPrv`, and answers 409 otherwise, so a concurrent
+   * password change is never rolled back. All failures (409, 401, 400, network, validation
+   * mismatch) are logged with `debug` and swallowed. The passed `keychain` is not mutated.
+   *
+   * @param params.keychain - the keychain as read from BitGo
+   * @param params.passphrase - the passphrase that decrypts `keychain.encryptedPrv`
+   * @param params.reqId - optional request tracer
+   */
+  async upgradeEncryption(params: UpgradeKeychainEncryptionOptions): Promise<void> {
+    const { keychain, passphrase, reqId } = params ?? ({} as UpgradeKeychainEncryptionOptions);
+    const keyId = keychain?.id;
+    const oldEncryptedPrv = keychain?.encryptedPrv;
+    if (!_.isString(keyId) || !_.isString(oldEncryptedPrv) || !_.isString(passphrase)) {
+      return;
+    }
+    try {
+      if (this.getEncryptionVersion(oldEncryptedPrv) !== 1) {
+        return;
+      }
+    } catch (e) {
+      return;
+    }
+    if (this.upgradesInFlight.has(keyId)) {
+      return;
+    }
+    this.upgradesInFlight.add(keyId);
+    try {
+      const prv = await this.bitgo.decrypt({ input: oldEncryptedPrv, password: passphrase });
+      const newEncryptedPrv = await this.bitgo.encrypt({ input: prv, password: passphrase, encryptionVersion: 2 });
+      const roundTrip = await this.bitgo.decrypt({ input: newEncryptedPrv, password: passphrase });
+      if (roundTrip !== prv) {
+        debug('upgradeEncryption: v2 round-trip mismatch for key %s, not writing', keyId);
+        return;
+      }
+      if (reqId) {
+        this.bitgo.setRequestTracer(reqId);
+      }
+      await this.bitgo
+        .put(this.baseCoin.url('/key/' + encodeURIComponent(keyId)))
+        .send({
+          encryptedPrv: newEncryptedPrv,
+          existingEncryptedPrv: oldEncryptedPrv,
+          encryptionUpgrade: true,
+          ...(Keychains.isMultiUserKey(keychain) && keychain.pub ? { pub: keychain.pub } : {}),
+        })
+        .result();
+      debug('upgradeEncryption: upgraded key %s to v2', keyId);
+    } catch (e) {
+      debug('upgradeEncryption: failed for key %s: %s', keyId, e instanceof Error ? e.message : String(e));
+    } finally {
+      this.upgradesInFlight.delete(keyId);
+    }
   }
 
   /**
@@ -842,7 +913,7 @@ export class Keychains implements IKeychains {
    * Static helper method to determine if a keychain is a ofc multi-user-key
    * @param keychain
    */
-  static isMultiUserKey(keychain: Keychain): boolean {
+  static isMultiUserKey(keychain: Pick<Keychain, 'coinSpecific'>): boolean {
     return (keychain.coinSpecific?.ofc?.['features'] ?? []).includes('multi-user-key');
   }
 }

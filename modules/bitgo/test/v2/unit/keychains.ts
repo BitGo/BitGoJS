@@ -1467,4 +1467,164 @@ describe('V2 Keychains', function () {
       await keychains.reencryptAsV2(encrypted, 'wrongPass').should.be.rejected();
     });
   });
+
+  describe('upgradeEncryption', function () {
+    const prv = 'xprvUpgradeTestKey';
+    const passphrase = 'upgradePass';
+    const keyId = 'upgradeKeyId';
+    let sandbox: sinon.SinonSandbox;
+    let encryptedV1: string;
+    type UpgradeBody = {
+      encryptedPrv: string;
+      existingEncryptedPrv: string;
+      encryptionUpgrade: boolean;
+      pub?: string;
+    };
+
+    before(async function () {
+      encryptedV1 = await bitgo.encrypt({ input: prv, password: passphrase, encryptionVersion: 1 });
+    });
+
+    beforeEach(function () {
+      sandbox = sinon.createSandbox();
+    });
+
+    afterEach(function () {
+      sandbox.restore();
+      nock.cleanAll();
+    });
+
+    function v1Keychain(overrides: Partial<Keychain> = {}): Keychain {
+      return { id: keyId, pub: 'xpubUpgrade', encryptedPrv: encryptedV1, type: 'independent', ...overrides };
+    }
+
+    function mockPut(status = 200, times = 1) {
+      const bodies: UpgradeBody[] = [];
+      const scope = nock(bgUrl)
+        .put(`/api/v2/tltc/key/${keyId}`)
+        .times(times)
+        .reply((uri, body) => {
+          bodies.push(body as UpgradeBody);
+          return [status, status === 200 ? { id: keyId } : { error: 'failed' }];
+        });
+      return { scope, bodies };
+    }
+
+    it('writes a v2 envelope of the same prv with the compare-and-swap fields for a v1 keychain', async function () {
+      const keychain = v1Keychain();
+      const { scope, bodies } = mockPut();
+
+      await keychains.upgradeEncryption({ keychain, passphrase });
+
+      scope.isDone().should.be.true();
+      bodies.should.have.length(1);
+      const body = bodies[0];
+      body.encryptionUpgrade.should.equal(true);
+      body.existingEncryptedPrv.should.equal(encryptedV1);
+      body.should.not.have.property('pub');
+      JSON.parse(body.encryptedPrv).v.should.equal(2);
+      (await bitgo.decrypt({ input: body.encryptedPrv, password: passphrase })).should.equal(prv);
+      should(keychain.encryptedPrv).equal(encryptedV1);
+    });
+
+    it('does not write for a v2 keychain', async function () {
+      const encryptedV2 = await bitgo.encrypt({ input: prv, password: passphrase, encryptionVersion: 2 });
+      const { scope } = mockPut();
+
+      await keychains.upgradeEncryption({ keychain: v1Keychain({ encryptedPrv: encryptedV2 }), passphrase });
+
+      scope.isDone().should.be.false();
+    });
+
+    it('does not write for an unparseable envelope', async function () {
+      const { scope } = mockPut();
+
+      await keychains.upgradeEncryption({ keychain: v1Keychain({ encryptedPrv: 'not json' }), passphrase });
+
+      scope.isDone().should.be.false();
+    });
+
+    it('does not write when the keychain has no id', async function () {
+      const { scope } = mockPut();
+
+      await keychains.upgradeEncryption({ keychain: v1Keychain({ id: undefined as unknown as string }), passphrase });
+
+      scope.isDone().should.be.false();
+    });
+
+    it('resolves without writing when the passphrase is wrong', async function () {
+      const { scope } = mockPut();
+
+      await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase: 'wrongPass' });
+
+      scope.isDone().should.be.false();
+    });
+
+    it('resolves when the server rejects the compare-and-swap with 409', async function () {
+      const { scope } = mockPut(409);
+
+      await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
+
+      scope.isDone().should.be.true();
+    });
+
+    it('resolves when the server fails with 500', async function () {
+      const { scope } = mockPut(500);
+
+      await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
+
+      scope.isDone().should.be.true();
+    });
+
+    it('does not write when the v2 envelope does not decrypt back to the same prv', async function () {
+      const decrypt = sandbox.stub(bitgo, 'decrypt').callThrough();
+      decrypt.onSecondCall().resolves('other');
+      const { scope } = mockPut();
+
+      await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
+
+      decrypt.callCount.should.equal(2);
+      scope.isDone().should.be.false();
+    });
+
+    it('sends one write for concurrent upgrades of the same key', async function () {
+      const { bodies } = mockPut(200, 2);
+
+      await Promise.all([
+        keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase }),
+        keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase }),
+      ]);
+
+      bodies.should.have.length(1);
+    });
+
+    it('allows a new upgrade of the same key after the previous one settled', async function () {
+      const { bodies } = mockPut(409, 2);
+
+      await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
+      await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
+
+      bodies.should.have.length(2);
+    });
+
+    it('includes pub for an OFC multi-user key', async function () {
+      const ofcKeychains = bitgo.coin('ofc').keychains();
+      const bodies: UpgradeBody[] = [];
+      const scope = nock(bgUrl)
+        .put(`/api/v2/ofc/key/${keyId}`)
+        .reply((uri, body) => {
+          bodies.push(body as UpgradeBody);
+          return [200, { id: keyId }];
+        });
+
+      await ofcKeychains.upgradeEncryption({
+        keychain: v1Keychain({ coinSpecific: { ofc: { features: ['multi-user-key'] } } }),
+        passphrase,
+      });
+
+      scope.isDone().should.be.true();
+      should(bodies[0].pub).equal('xpubUpgrade');
+      bodies[0].encryptionUpgrade.should.equal(true);
+    });
+  });
 });

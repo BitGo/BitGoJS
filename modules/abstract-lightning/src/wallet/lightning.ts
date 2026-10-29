@@ -267,6 +267,7 @@ export class LightningWallet implements ILightningWallet {
       t.exact(LightningPaymentRequest).encode(params),
       await this.wallet.bitgo.decrypt({ password: params.passphrase, input: userAuthKeyEncryptedPrv })
     );
+    void this.wallet.baseCoin.keychains().upgradeEncryption({ keychain: userAuthKey, passphrase: params.passphrase });
 
     const paymentIntent: { intent: LightningPaymentIntent } = {
       intent: {
@@ -392,6 +393,7 @@ export class LightningWallet implements ILightningWallet {
       transactionRequestCreate.transactions[0].unsignedTx.serializedTxHex,
       await this.wallet.bitgo.decrypt({ password: params.passphrase, input: userAuthKeyEncryptedPrv })
     );
+    void this.wallet.baseCoin.keychains().upgradeEncryption({ keychain: userAuthKey, passphrase: params.passphrase });
 
     const transactionRequestWithSignature = (await this.wallet.bitgo
       .put(

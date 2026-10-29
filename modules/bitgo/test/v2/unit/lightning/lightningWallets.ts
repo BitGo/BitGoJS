@@ -1,7 +1,8 @@
 import * as assert from 'assert';
 import { TestBitGo } from '@bitgo/sdk-test';
 import nock = require('nock');
-import { BaseCoin, PendingApprovalData, State, Type } from '@bitgo/sdk-core';
+import * as sinon from 'sinon';
+import { BaseCoin, Keychains, PendingApprovalData, State, Type } from '@bitgo/sdk-core';
 import {
   CreateInvoiceBody,
   getLightningWallet,
@@ -67,6 +68,37 @@ describe('Lightning wallets', function () {
     nock.cleanAll();
     nock.pendingMocks().length.should.equal(0);
   });
+
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  type UpgradeBody = { encryptedPrv: string; existingEncryptedPrv: string; encryptionUpgrade: boolean };
+  type UpgradeNock = { scope: nock.Scope; bodies: UpgradeBody[] };
+
+  /** Nock the fire-and-forget v1 to v2 upgrade PUT of the user auth key and capture its body. */
+  function nockUserAuthKeyUpgrade(): UpgradeNock {
+    const bodies: UpgradeBody[] = [];
+    const scope = nock(bgUrl)
+      .put('/api/v2/' + coinName + '/key/def')
+      .reply((uri, body) => {
+        bodies.push(body as UpgradeBody);
+        return [200, userAuthKey];
+      });
+    return { scope, bodies };
+  }
+
+  async function assertUserAuthKeyUpgraded(upgrade: sinon.SinonSpy, upgradeNock: UpgradeNock, passphrase: string) {
+    assert.strictEqual(upgrade.callCount, 1);
+    assert.strictEqual(upgrade.firstCall.args[0].keychain.id, userAuthKey.id);
+    assert.strictEqual(upgrade.firstCall.args[0].passphrase, passphrase);
+    await upgrade.firstCall.returnValue;
+    assert.ok(upgradeNock.scope.isDone());
+    const body = upgradeNock.bodies[0];
+    assert.strictEqual(body.encryptionUpgrade, true);
+    assert.strictEqual(body.existingEncryptedPrv, userAuthKey.encryptedPrv);
+    assert.strictEqual(JSON.parse(body.encryptedPrv).v, 2);
+  }
 
   describe('Generate lightning wallet', function () {
     it('should validate parameters', async function () {
@@ -420,6 +452,8 @@ describe('Lightning wallets', function () {
       const nodeAuthKeyNock = nock(bgUrl)
         .get('/api/v2/' + coinName + '/key/ghi')
         .reply(200, nodeAuthKey);
+      const upgrade = sinon.spy(Keychains.prototype, 'upgradeEncryption');
+      const upgradeNock = nockUserAuthKeyUpgrade();
 
       const response = await wallet.payInvoice(params);
       assert.strictEqual(response.txRequestId, 'txReq123');
@@ -451,6 +485,7 @@ describe('Lightning wallets', function () {
       createTransferNock.done();
       userAuthKeyNock.done();
       nodeAuthKeyNock.done();
+      await assertUserAuthKeyUpgraded(upgrade, upgradeNock, params.passphrase);
     });
 
     it('should handle pending approval when paying invoice', async function () {
@@ -970,6 +1005,8 @@ describe('Lightning wallets', function () {
       const nodeAuthKeyNock = nock(bgUrl)
         .get('/api/v2/' + coinName + '/key/ghi')
         .reply(200, nodeAuthKey);
+      const upgrade = sinon.spy(Keychains.prototype, 'upgradeEncryption');
+      const upgradeNock = nockUserAuthKeyUpgrade();
 
       const response = await wallet.withdrawOnchain(params);
       assert.strictEqual(response.txRequestId, 'txReq123');
@@ -984,6 +1021,7 @@ describe('Lightning wallets', function () {
       storeSignatureNock.done();
       createTransferNock.done();
       sendTxRequestNock.done();
+      await assertUserAuthKeyUpgraded(upgrade, upgradeNock, params.passphrase);
     });
 
     it('should handle pending approval when withdrawing onchain', async function () {
