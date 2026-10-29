@@ -1,6 +1,24 @@
 import * as t from 'io-ts';
-import { httpRoute, httpRequest } from '@api-ts/io-ts-http';
+import { httpRoute, httpRequest, optional } from '@api-ts/io-ts-http';
 import { BitgoExpressError } from '../../schemas/error';
+
+/**
+ * A caller-supplied multisig backup root (bring your own key). The backup private key never reaches
+ * BitGo Express.
+ */
+export const SafeMultisigRootKeyOptions = t.type({
+  /** Slot ①: the backup root xpub. Slot ④: an ed25519 StrKey, or a 103-character derivable public key */
+  backupXpub: t.string,
+});
+
+/**
+ * Caller-supplied backup roots, keyed by multisig slot. Only `secp256k1Multisig` and `ed25519Multisig`
+ * are accepted; any other slot is rejected before a ceremony runs.
+ */
+export const SafeMultisigRoots = t.partial({
+  secp256k1Multisig: SafeMultisigRootKeyOptions,
+  ed25519Multisig: SafeMultisigRootKeyOptions,
+});
 
 /**
  * Path parameters for one-shot Safe generation.
@@ -20,6 +38,12 @@ export const GenerateSafeBody = {
   label: t.string,
   /** Passphrase used to encrypt locally generated root user/backup keys and to run MPC ceremonies */
   passphrase: t.string,
+  /**
+   * Bring-your-own backup key per multisig slot. A listed slot gets this backup root public key instead
+   * of a locally generated backup key; the SDK never sees its private key. Declared to BitGo at
+   * initialize, so it also needs the external backup root feature enabled for the enterprise.
+   */
+  multisigRoots: optional(SafeMultisigRoots),
 } as const;
 
 /**

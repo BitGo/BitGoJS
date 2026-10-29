@@ -14,6 +14,7 @@ import {
   deriveSafeChildEd25519Hardened,
   deriveSafeChildTriplet,
   Ed25519ChainCodeEntryCodec,
+  ExternalBackupEntryCodec,
   getSafeBip44CoinType,
   parseSafeBip44Path,
   parseSafeKeycardBox,
@@ -22,9 +23,11 @@ import {
   encodeAlgoKey,
   encodeHbarPublicKeyDer,
   encodeHbarPrivateKeyDer,
+  type ExternalBackupRoot,
   type SafeKeycardRootEntry,
 } from '@bitgo/sdk-lib-safes';
 import {
+  assertValidExternalEd25519Signer,
   signEd25519Extended,
   softDeriveChildPubEd25519AtPath,
   softDeriveChildPrvEd25519AtPath,
@@ -39,16 +42,33 @@ import { parseSafeMpcKeyEnvelopes } from '../utils/tss/keyShareEnvelope';
 export type DecryptedMpcSafeRoot = { signing: Buffer; vrf: Buffer };
 
 export type OnchainSafeRoot = { user: string; backup: string; bitgo: string };
+/**
+ * `backup` is the decrypted xprv for a local backup root, or {@link ExternalBackupRoot} (public key
+ * only) when the backup root is external: caller-supplied (BYOK) or provider-held.
+ */
+export type OnchainSafeRootWithExternal = { user: string; backup: string | ExternalBackupRoot; bitgo: string };
 export type MpcSafeRoot = { user: DecryptedMpcSafeRoot; backup: DecryptedMpcSafeRoot; bitgo: string };
 export type Ed25519MultisigSafeRoot = {
   user: string;
   backup: { prv: string; chainCode: string };
   bitgo: string;
 };
+export type Ed25519MultisigSafeRootWithExternal = {
+  user: string;
+  backup: { prv: string; chainCode: string } | ExternalBackupRoot;
+  bitgo: string;
+};
 
 export type Secp256k1MultisigChildKeys = {
   user: { prv: string; pub: string };
   backup: { prv: string; pub: string };
+  bitgo: { pub: string };
+};
+
+/** `backup.prv` is absent for an external backup root unless `externalBackupRootPrv` was supplied. */
+export type Secp256k1ExternalBackupChildKeys = {
+  user: { prv: string; pub: string };
+  backup: { prv?: string; pub: string };
   bitgo: { pub: string };
 };
 
@@ -76,10 +96,23 @@ export type SafeEd25519SeedKey = {
  */
 export type SafeEd25519ExtendedKey = { readonly kind: 'extended' } & Ed25519ExtendedKeyParts<string>; // hex
 
+/**
+ * An external ed25519 backup child: only the soft-derived public key is known. The private key
+ * stays with its holder, who signs through an {@link ExternalEd25519Signer}.
+ */
+export type SafeEd25519ExternalKey = { readonly kind: 'external'; readonly pub: string }; // hex
+
 /** The three ed25519 co-signer children. BitGo is pub-only: its private key stays in the HSM. */
 export type Ed25519MultisigChildKeys = {
   user: SafeEd25519SeedKey;
   backup: SafeEd25519ExtendedKey;
+  bitgo: { readonly pub: string };
+};
+
+/** As {@link Ed25519MultisigChildKeys}, for a safe whose backup root may be external. */
+export type Ed25519ExternalBackupChildKeys = {
+  user: SafeEd25519SeedKey;
+  backup: SafeEd25519ExtendedKey | SafeEd25519ExternalKey;
   bitgo: { readonly pub: string };
 };
 
@@ -88,6 +121,15 @@ export type DerivedSafeWalletKeys =
   | { slot: 'ecdsaMpc'; path: string; keys: EcdsaMpcChildKeys }
   | { slot: 'eddsaMpc'; path: string; keys: EddsaMpcChildKeys }
   | { slot: 'ed25519Multisig'; path: string; keys: Ed25519MultisigChildKeys };
+
+/**
+ * Derived keys for a safe whose backup root may be external. Slots other than the two multisig
+ * ones are unchanged.
+ */
+export type DerivedSafeWalletKeysWithExternal =
+  | Exclude<DerivedSafeWalletKeys, { slot: 'secp256k1Multisig' | 'ed25519Multisig' }>
+  | { slot: 'secp256k1Multisig'; path: string; keys: Secp256k1ExternalBackupChildKeys }
+  | { slot: 'ed25519Multisig'; path: string; keys: Ed25519ExternalBackupChildKeys };
 
 export type SecpSafeRecoverKeyParams = {
   slot: 'secp256k1Multisig';
@@ -173,13 +215,24 @@ export type DecryptedSafeRoots = {
   eddsaMpc: MpcSafeRoot;
 };
 
+/**
+ * The decrypted roots of a safe keycard whose backup roots may be external (public key only).
+ * Assignable from {@link DecryptedSafeRoots}.
+ */
+export type DecryptedSafeRootsWithExternal = {
+  secp256k1Multisig: OnchainSafeRootWithExternal;
+  ed25519Multisig: Ed25519MultisigSafeRootWithExternal;
+  ecdsaMpc: MpcSafeRoot;
+  eddsaMpc: MpcSafeRoot;
+};
+
 export async function decryptSafeKeycard(params: {
   bitgo: BitGoBase;
   userKeyBox: string;
   backupKeyBox: string;
   bitgoKeyBox: string;
   password: string;
-}): Promise<DecryptedSafeRoots> {
+}): Promise<DecryptedSafeRootsWithExternal> {
   const { bitgo, userKeyBox, backupKeyBox, bitgoKeyBox, password } = params;
 
   const userRoots = parseSafeKeycardBox(userKeyBox);
@@ -209,10 +262,31 @@ export async function decryptSafeKeycard(params: {
     if (Ed25519ChainCodeEntryCodec.is(entry)) {
       throw new Error('unexpected ed25519 chain-code entry where a bare string was required');
     }
+    if (typeof entry !== 'string') {
+      throw new Error('unexpected external backup entry where a bare string was required');
+    }
     return entry;
   };
 
-  const decryptEd25519Backup = async (entry: SafeKeycardRootEntry): Promise<{ prv: string; chainCode: string }> => {
+  // An external backup entry carries only the root public key: nothing to decrypt, and no password
+  // is needed to read it. Only box B's multisig slots may carry one.
+  const toExternalBackupRoot = (entry: SafeKeycardRootEntry): ExternalBackupRoot | undefined => {
+    if (!ExternalBackupEntryCodec.is(entry)) {
+      return undefined;
+    }
+    return { external: true, pub: entry.pub, ...(entry.provider === undefined ? {} : { provider: entry.provider }) };
+  };
+
+  const decryptSecp256k1Backup = async (entry: SafeKeycardRootEntry): Promise<string | ExternalBackupRoot> =>
+    toExternalBackupRoot(entry) ?? (await decryptRoot(requireBareString(entry)));
+
+  const decryptEd25519Backup = async (
+    entry: SafeKeycardRootEntry
+  ): Promise<{ prv: string; chainCode: string } | ExternalBackupRoot> => {
+    const external = toExternalBackupRoot(entry);
+    if (external) {
+      return external;
+    }
     if (!Ed25519ChainCodeEntryCodec.is(entry)) {
       throw new Error('ed25519 backup root must carry a chain code');
     }
@@ -222,7 +296,7 @@ export async function decryptSafeKeycard(params: {
   return {
     secp256k1Multisig: {
       user: await decryptRoot(requireBareString(userRoots.secp256k1Multisig)),
-      backup: await decryptRoot(requireBareString(backupRoots.secp256k1Multisig)),
+      backup: await decryptSecp256k1Backup(backupRoots.secp256k1Multisig),
       bitgo: requireBareString(bitgoRoots.secp256k1Multisig),
     },
     ed25519Multisig: {
@@ -246,13 +320,33 @@ export async function decryptSafeKeycard(params: {
 /**
  * Derives a Safe wallet's child keys at the BIP44 path for a given slot and account.
  * Supports all four slots: `secp256k1Multisig`, `ed25519Multisig`, `ecdsaMpc`, and `eddsaMpc`.
+ *
+ * With an external backup root the backup child is derived from the public key alone (relative soft
+ * derivation, so a non-master root works). For `secp256k1Multisig`, `externalBackupRootPrv` — the
+ * caller's own backup xprv — adds the backup child private key (needed for signed recovery) and is
+ * checked against the external root pub. For `ed25519Multisig` the holder signs through an
+ * `ExternalEd25519Signer` at recovery instead (see `buildSafeRecoverKeyParams`).
  */
 export async function deriveSafeWalletKeys(params: {
   coin: string;
   slot: RootKeyType;
   account: number;
   roots: DecryptedSafeRoots;
-}): Promise<DerivedSafeWalletKeys> {
+}): Promise<DerivedSafeWalletKeys>;
+export async function deriveSafeWalletKeys(params: {
+  coin: string;
+  slot: RootKeyType;
+  account: number;
+  roots: DecryptedSafeRootsWithExternal;
+  externalBackupRootPrv?: string;
+}): Promise<DerivedSafeWalletKeysWithExternal>;
+export async function deriveSafeWalletKeys(params: {
+  coin: string;
+  slot: RootKeyType;
+  account: number;
+  roots: DecryptedSafeRootsWithExternal;
+  externalBackupRootPrv?: string;
+}): Promise<DerivedSafeWalletKeysWithExternal> {
   if (!Number.isInteger(params.account) || params.account < 0 || params.account > MAX_BIP32_INDEX) {
     throw new Error(`deriveSafeWalletKeys: invalid account '${params.account}'`);
   }
@@ -261,8 +355,29 @@ export async function deriveSafeWalletKeys(params: {
   const path = buildSafeBip44Path(getSafeBip44CoinType(params.coin), params.slot, account);
   const { coinType, slotOrdinal } = parseSafeBip44Path(path);
 
+  if (params.externalBackupRootPrv !== undefined && params.slot !== 'secp256k1Multisig') {
+    throw new Error(`deriveSafeWalletKeys: externalBackupRootPrv only applies to the secp256k1Multisig slot`);
+  }
+
   if (params.slot === 'secp256k1Multisig') {
-    return { slot: 'secp256k1Multisig', path, keys: deriveSafeChildTriplet(roots.secp256k1Multisig, path) };
+    const root = roots.secp256k1Multisig;
+    if (typeof root.backup === 'string') {
+      if (params.externalBackupRootPrv !== undefined) {
+        throw new Error(
+          'deriveSafeWalletKeys: externalBackupRootPrv was given but the safe backup root is not external'
+        );
+      }
+      return {
+        slot: 'secp256k1Multisig',
+        path,
+        keys: deriveSafeChildTriplet({ user: root.user, backup: root.backup, bitgo: root.bitgo }, path),
+      };
+    }
+    return {
+      slot: 'secp256k1Multisig',
+      path,
+      keys: deriveSafeChildTriplet(root, path, { externalBackupRootPrv: params.externalBackupRootPrv }),
+    };
   }
 
   if (params.slot === 'ecdsaMpc') {
@@ -300,18 +415,38 @@ export async function deriveSafeWalletKeys(params: {
     const cosignerPath = toSoftTwinPath(path);
 
     const user = deriveSafeChildEd25519Hardened(root.user, path);
+    const bitgo = await softDeriveChildPubEd25519AtPath(root.bitgo, cosignerPath);
+    const userKey: SafeEd25519SeedKey = {
+      kind: 'seed',
+      seed: user.prv,
+      pub: decodeEd25519StrKeyPublicKey(user.pub).toString('hex'),
+    };
+
+    // External backup root: only its derivable composite pub is known, so derive the child pub alone.
+    if ('external' in root.backup) {
+      const backupPub = await softDeriveChildPubEd25519AtPath(root.backup.pub, cosignerPath);
+      return {
+        slot: 'ed25519Multisig',
+        path,
+        keys: {
+          user: userKey,
+          backup: { kind: 'external', pub: backupPub.toString('hex') },
+          bitgo: { pub: bitgo.toString('hex') },
+        },
+      };
+    }
+
     const backup = await softDeriveChildPrvEd25519AtPath({
       seedStrKey: root.backup.prv,
       chainCode: root.backup.chainCode,
       path: cosignerPath,
     });
-    const bitgo = await softDeriveChildPubEd25519AtPath(root.bitgo, cosignerPath);
 
     return {
       slot: 'ed25519Multisig',
       path,
       keys: {
-        user: { kind: 'seed', seed: user.prv, pub: decodeEd25519StrKeyPublicKey(user.pub).toString('hex') },
+        user: userKey,
         backup: {
           kind: 'extended',
           kL: backup.kL.toString('hex'),
@@ -363,8 +498,16 @@ export type SafeRecoverKeyParamsRequest = {
   coin: string;
   mode: 'signed' | 'unsigned';
 } & (
-  | { slot: 'secp256k1Multisig'; keys: Secp256k1MultisigChildKeys }
-  | { slot: 'ed25519Multisig'; keys: Ed25519MultisigChildKeys }
+  | { slot: 'secp256k1Multisig'; keys: Secp256k1ExternalBackupChildKeys }
+  | {
+      slot: 'ed25519Multisig';
+      keys: Ed25519ExternalBackupChildKeys;
+      /**
+       * Required for signed recovery when the backup root is external: the holder's own signer for
+       * the soft-derived backup child. Its `publicKey` must equal `keys.backup.pub`.
+       */
+      externalBackupSigner?: ExternalEd25519Signer;
+    }
   | { slot: 'ecdsaMpc'; keys: EcdsaMpcChildKeys }
   | { slot: 'eddsaMpc'; keys: EddsaMpcChildKeys }
 );
@@ -392,7 +535,7 @@ export async function buildSafeRecoverKeyParams(params: SafeRecoverKeyParamsRequ
   const { bitgo, mode } = params;
 
   if (params.slot === 'ed25519Multisig') {
-    return buildEd25519MultisigRecoverKeyParams(bitgo, params.coin, params.keys, mode);
+    return buildEd25519MultisigRecoverKeyParams(bitgo, params.coin, params.keys, mode, params.externalBackupSigner);
   }
 
   if (params.slot === 'ecdsaMpc') {
@@ -438,8 +581,15 @@ export async function buildSafeRecoverKeyParams(params: SafeRecoverKeyParamsRequ
       };
     }
 
+    if (keys.backup.prv === undefined) {
+      throw new Error(
+        'buildSafeRecoverKeyParams: signed recovery of an external backup root needs the backup private key; ' +
+          'pass externalBackupRootPrv to deriveSafeWalletKeys'
+      );
+    }
+    const backupPrvKey = keys.backup.prv;
     const userPrv = bip32.fromBase58(keys.user.prv);
-    const backupPrv = bip32.fromBase58(keys.backup.prv);
+    const backupPrv = bip32.fromBase58(backupPrvKey);
     if (!userPrv.privateKey || !backupPrv.privateKey) {
       throw new Error('buildSafeRecoverKeyParams: keys.user.prv and keys.backup.prv must be private xprvs');
     }
@@ -447,7 +597,7 @@ export async function buildSafeRecoverKeyParams(params: SafeRecoverKeyParamsRequ
     const walletPassphrase = randomBytes(32).toString('hex');
     const [userKey, backupKey] = await Promise.all([
       bitgo.encrypt({ input: keys.user.prv, password: walletPassphrase, encryptionVersion: 1 }),
-      bitgo.encrypt({ input: keys.backup.prv, password: walletPassphrase, encryptionVersion: 1 }),
+      bitgo.encrypt({ input: backupPrvKey, password: walletPassphrase, encryptionVersion: 1 }),
     ]);
 
     return {
@@ -465,8 +615,9 @@ export async function buildSafeRecoverKeyParams(params: SafeRecoverKeyParamsRequ
 async function buildEd25519MultisigRecoverKeyParams(
   bitgo: BitGoBase,
   coin: string,
-  keys: Ed25519MultisigChildKeys,
-  mode: 'signed' | 'unsigned'
+  keys: Ed25519ExternalBackupChildKeys,
+  mode: 'signed' | 'unsigned',
+  externalBackupSigner?: ExternalEd25519Signer
 ): Promise<Ed25519SafeRecoverKeyParams> {
   const encoders = ED25519_MULTISIG_COIN_ENCODERS[coin];
   if (!encoders) {
@@ -512,6 +663,32 @@ async function buildEd25519MultisigRecoverKeyParams(
     encryptionVersion: 1,
   });
 
+  // An external backup child has no key material here: the holder's own signer must cover it.
+  if (keys.backup.kind === 'external') {
+    if (externalBackupSigner === undefined) {
+      throw new Error(
+        'buildSafeRecoverKeyParams: signed recovery of an external ed25519 backup root needs externalBackupSigner'
+      );
+    }
+    assertValidExternalEd25519Signer(externalBackupSigner);
+    if (externalBackupSigner.publicKey.toLowerCase() !== keys.backup.pub.toLowerCase()) {
+      throw new Error('buildSafeRecoverKeyParams: externalBackupSigner.publicKey does not match the backup child pub');
+    }
+    return {
+      slot: 'ed25519Multisig',
+      mode: 'signed',
+      userKey,
+      bitgoKey: encoders.encodePub(bitgoPub),
+      walletPassphrase,
+      ...rootAddressParams,
+      externalBackupSigner,
+    };
+  }
+  if (externalBackupSigner !== undefined) {
+    throw new Error('buildSafeRecoverKeyParams: externalBackupSigner only applies to an external backup root');
+  }
+  const backupKey = keys.backup;
+
   return {
     slot: 'ed25519Multisig',
     mode: 'signed',
@@ -520,13 +697,13 @@ async function buildEd25519MultisigRecoverKeyParams(
     walletPassphrase,
     ...rootAddressParams,
     externalBackupSigner: {
-      publicKey: keys.backup.pub,
+      publicKey: backupKey.pub,
       sign: async (message) => ({
         signature: (
           await signEd25519Extended(
             Buffer.from(message),
-            Buffer.from(keys.backup.kL, 'hex'),
-            Buffer.from(keys.backup.kR, 'hex')
+            Buffer.from(backupKey.kL, 'hex'),
+            Buffer.from(backupKey.kR, 'hex')
           )
         ).toString('hex'),
       }),

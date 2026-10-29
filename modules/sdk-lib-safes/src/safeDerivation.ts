@@ -17,6 +17,7 @@ import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
 import { coins, MAX_BIP32_INDEX, SAFE_ROOT_SLOT_ORDINALS } from '@bitgo/statics';
 import type { RootKeyType } from '@bitgo/public-types';
 import { Ed25519KeyDeriver } from './ed25519KeyDeriver';
+import type { ExternalBackupRoot } from './keycardCodec';
 import { decodeEd25519StrKeySecretSeed, encodeEd25519StrKeyPublicKey } from './ed25519Pub';
 
 const HARDENED_BIP44_PATH = /^m\/44'\/(\d+)'\/(\d+)'\/(\d+)'$/;
@@ -237,18 +238,55 @@ export interface SafeSecp256k1ChildTriplet {
 }
 
 /**
+ * Triplet for a safe whose backup root is external: the backup child is pub-only unless the caller
+ * supplied the root xprv from their own storage.
+ */
+export interface SafeSecp256k1ExternalBackupChildTriplet {
+  user: { prv: string; pub: string };
+  backup: { prv?: string; pub: string };
+  bitgo: { pub: string };
+}
+
+/**
+ * Derives a soft path one level at a time. Unlike `derivePath('m/…')`, which throws "Expected master,
+ * got child" on any key that is not depth 0, this works on a root exported at any depth (an HSM or
+ * hardware-wallet account xpub).
+ */
+export function deriveSoftPathRelative(node: BIP32Interface, path: DerivedFromParentWithSoftPath): BIP32Interface {
+  assertBip32Path(path, { hardened: false });
+  return path
+    .split('/')
+    .slice(1)
+    .reduce((current, segment) => current.derive(Number(segment)), node);
+}
+
+/**
  * Derives the slot-① (secp256k1Multisig) child triplet from the keycard roots: the user child at
  * the hardened `path`, the backup and BitGo children at its soft twin.
+ *
+ * A backup root that is an {@link ExternalBackupRoot} is a public key only. Its child is derived
+ * relatively (it is usually not a master key), and is pub-only unless `externalBackupRootPrv` — the
+ * caller's own backup xprv — is supplied, in which case the derived private child must match it.
+ * Local roots keep the strict master-key derivation.
  */
 export function deriveSafeChildTriplet(
   roots: { user: string; backup: string; bitgo: string },
   path: DerivedFromParentWithHardenedPath
-): SafeSecp256k1ChildTriplet {
+): SafeSecp256k1ChildTriplet;
+export function deriveSafeChildTriplet(
+  roots: { user: string; backup: string | ExternalBackupRoot; bitgo: string },
+  path: DerivedFromParentWithHardenedPath,
+  opts?: { externalBackupRootPrv?: string }
+): SafeSecp256k1ExternalBackupChildTriplet;
+export function deriveSafeChildTriplet(
+  roots: { user: string; backup: string | ExternalBackupRoot; bitgo: string },
+  path: DerivedFromParentWithHardenedPath,
+  opts: { externalBackupRootPrv?: string } = {}
+): SafeSecp256k1ExternalBackupChildTriplet {
   assertHardenedPath(path);
   const userRoot = bip32.fromBase58(roots.user);
-  const backupRoot = bip32.fromBase58(roots.backup);
   const bitgoRoot = bip32.fromBase58(roots.bitgo);
-  if (userRoot.isNeutered() || backupRoot.isNeutered()) {
+  if (userRoot.isNeutered()) {
     throw new Error('deriveSafeChildTriplet: user and backup roots must be private (xprv)');
   }
   if (!bitgoRoot.isNeutered()) {
@@ -256,10 +294,33 @@ export function deriveSafeChildTriplet(
   }
   const softPath = toSoftTwinPath(path);
   const user = userRoot.derivePath(path);
-  const backup = backupRoot.derivePath(softPath);
-  return {
-    user: { prv: user.toBase58(), pub: user.neutered().toBase58() },
-    backup: { prv: backup.toBase58(), pub: backup.neutered().toBase58() },
-    bitgo: { pub: bitgoRoot.derivePath(softPath).toBase58() },
-  };
+  const bitgo = { pub: bitgoRoot.derivePath(softPath).toBase58() };
+  const userChild = { prv: user.toBase58(), pub: user.neutered().toBase58() };
+
+  if (typeof roots.backup === 'string') {
+    const backupRoot = bip32.fromBase58(roots.backup);
+    if (backupRoot.isNeutered()) {
+      throw new Error('deriveSafeChildTriplet: user and backup roots must be private (xprv)');
+    }
+    const backup = backupRoot.derivePath(softPath);
+    return { user: userChild, backup: { prv: backup.toBase58(), pub: backup.neutered().toBase58() }, bitgo };
+  }
+
+  const externalRoot = bip32.fromBase58(roots.backup.pub);
+  if (!externalRoot.isNeutered()) {
+    throw new Error('deriveSafeChildTriplet: external backup root must be public (xpub)');
+  }
+  const backupPub = deriveSoftPathRelative(externalRoot, softPath).toBase58();
+  if (opts.externalBackupRootPrv === undefined) {
+    return { user: userChild, backup: { pub: backupPub }, bitgo };
+  }
+  const prvRoot = bip32.fromBase58(opts.externalBackupRootPrv);
+  if (prvRoot.isNeutered()) {
+    throw new Error('deriveSafeChildTriplet: externalBackupRootPrv must be private (xprv)');
+  }
+  const backupPrvChild = deriveSoftPathRelative(prvRoot, softPath);
+  if (backupPrvChild.neutered().toBase58() !== backupPub) {
+    throw new Error('deriveSafeChildTriplet: externalBackupRootPrv does not match the external backup root pub');
+  }
+  return { user: userChild, backup: { prv: backupPrvChild.toBase58(), pub: backupPub }, bitgo };
 }

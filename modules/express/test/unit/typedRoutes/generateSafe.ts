@@ -67,6 +67,48 @@ describe('Generate Safe Typed Routes Tests', function () {
       generateSafeStub.firstCall.args[0].should.deepEqual({ label, passphrase });
     });
 
+    it('should forward multisigRoots (bring-your-own backup key) to the SDK', async function () {
+      const label = 'Test Safe';
+      const passphrase = 'mySecurePassphrase123';
+      const multisigRoots = {
+        secp256k1Multisig: { backupXpub: 'xpub-backup' },
+        ed25519Multisig: { backupXpub: 'GA5WUJ54Z23KILLCUOUNAKTPBVZWKMQVO4O6EQ5GHLAERIMLLHNCSKYH' },
+      };
+      const generateSafeStub = sinon
+        .stub(Safes.prototype, 'generateSafe')
+        .resolves(stubSafe({ toJSON: () => mockSafeJson(label) }));
+
+      const res = await agent
+        .post(`/api/v2/enterprise/${ENTERPRISE_ID}/safes/generate`)
+        .send({ label, passphrase, multisigRoots });
+
+      res.status.should.equal(200);
+      generateSafeStub.should.have.been.calledOnce();
+      generateSafeStub.firstCall.args[0].should.deepEqual({ label, passphrase, multisigRoots });
+    });
+
+    it('should return 400 when a multisigRoots backupXpub is not a string', async function () {
+      const res = await agent.post(`/api/v2/enterprise/${ENTERPRISE_ID}/safes/generate`).send({
+        label: 'Test Safe',
+        passphrase: 'password',
+        multisigRoots: { secp256k1Multisig: { backupXpub: 12345 } },
+      });
+
+      res.status.should.equal(400);
+      res.body.should.have.property('error');
+    });
+
+    it('should return 400 when multisigRoots omits backupXpub', async function () {
+      const res = await agent.post(`/api/v2/enterprise/${ENTERPRISE_ID}/safes/generate`).send({
+        label: 'Test Safe',
+        passphrase: 'password',
+        multisigRoots: { ed25519Multisig: {} },
+      });
+
+      res.status.should.equal(400);
+      res.body.should.have.property('error');
+    });
+
     it('should return 400 when label is missing', async function () {
       const res = await agent.post(`/api/v2/enterprise/${ENTERPRISE_ID}/safes/generate`).send({
         passphrase: 'password',
@@ -244,6 +286,36 @@ describe('Generate Safe Typed Routes Tests', function () {
         throw new Error('expected enabledRootSlots');
       }
       enabledRootSlots.should.deepEqual(['secp256k1Multisig']);
+    });
+
+    it('should forward multisigRoots and the declared externalBackupSlots to the SDK', async function () {
+      const multisigRoots = { secp256k1Multisig: { backupXpub: 'xpub-backup' } };
+      const createSafeKeysStub = sinon
+        .stub(Safes.prototype, 'createSafeKeys')
+        .resolves({ rootKeys: { hot: { secp256k1Multisig: ['user-1', 'backup-1', 'bitgo-1'] } } });
+
+      const res = await agent.post(`/api/v2/enterprise/${ENTERPRISE_ID}/safes/${SAFE_ID}/keys/generate`).send({
+        passphrase: 'password',
+        enabledRootSlots: ['secp256k1Multisig'],
+        multisigRoots,
+        externalBackupSlots: ['secp256k1Multisig'],
+      });
+
+      res.status.should.equal(200);
+      createSafeKeysStub.should.have.been.calledOnce();
+      createSafeKeysStub.firstCall.args[0].should.have.property('multisigRoots', multisigRoots);
+      createSafeKeysStub.firstCall.args[0].should.have.property('externalBackupSlots');
+      createSafeKeysStub.firstCall.args[0].externalBackupSlots?.should.deepEqual(['secp256k1Multisig']);
+    });
+
+    it('should return 400 when externalBackupSlots contains an MPC slot', async function () {
+      const res = await agent.post(`/api/v2/enterprise/${ENTERPRISE_ID}/safes/${SAFE_ID}/keys/generate`).send({
+        passphrase: 'password',
+        externalBackupSlots: ['ecdsaMpc'],
+      });
+
+      res.status.should.equal(400);
+      res.body.should.have.property('error');
     });
 
     it('should return 400 when passphrase is missing', async function () {
