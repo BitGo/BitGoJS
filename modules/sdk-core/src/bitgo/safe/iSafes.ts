@@ -4,7 +4,7 @@
  * @experimental The safe client surface is experimental and may change (including breaking
  * changes) before the public release.
  */
-import type { InitializeSafeResponse } from '@bitgo/public-types';
+import type { InitializeSafeResponse, MultisigRootKeyType } from '@bitgo/public-types';
 import { FinalizeSafeOptions, InitializeSafeOptions } from './iSafe';
 import { Safe } from './safe';
 
@@ -20,18 +20,42 @@ import { Safe } from './safe';
 export interface CreateSafeOptions {
   label: string;
   passphrase: string; // encrypts the locally-generated multisig user/backup prvs; shared with the MPC ceremonies
+  /**
+   * Bring-your-own backup key (BYOK), per multisig slot. A slot listed here gets a caller-supplied
+   * backup root public key instead of a locally generated one; the SDK never sees its private key.
+   * Only the multisig slots are accepted; MPC slots are rejected.
+   */
+  multisigRoots?: SafeMultisigRootKeys;
 }
+
+/**
+ * Options for a caller-supplied multisig backup root.
+ * @experimental
+ */
+export interface SafeMultisigRootKeyOptions {
+  /** Slot ①: the backup root xpub. Slot ④: an ed25519 StrKey, or a 103-character derivable pub. */
+  backupXpub: string;
+}
+
+/**
+ * Caller-supplied backup roots, keyed by multisig slot.
+ * @experimental
+ */
+export type SafeMultisigRootKeys = Partial<Record<MultisigRootKeyType, SafeMultisigRootKeyOptions>>;
 
 /**
  * Handle returned by `initializeSafe`, threaded into the key ceremonies and finalize.
  *
  * `enabledRootSlots` is the server-decided (Flipt, evaluated once at initialize) set of root-key
- * slots to generate; absent (older WP) falls back to all 4 slots.
+ * slots to generate; absent (older WP) falls back to all 4 slots. `externalBackupSlots` is the
+ * server's record of which multisig backup roots the caller supplies; absent means none.
  * @experimental
  */
 export interface SafeCreationHandle {
   safeId: string;
   enabledRootSlots?: InitializeSafeResponse['enabledRootSlots'];
+  /** The slots the server recorded as having an external backup root (echoed by initialize). */
+  externalBackupSlots?: InitializeSafeResponse['externalBackupSlots'];
 }
 
 /**

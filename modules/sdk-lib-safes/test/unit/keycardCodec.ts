@@ -38,5 +38,34 @@ describe('keycardCodec', function () {
       const mixed = { ...fullBox, ed25519Multisig: entry };
       parseSafeKeycardBox(JSON.stringify(mixed)).ed25519Multisig.should.deepEqual(entry);
     });
+
+    describe('external backup entry', function () {
+      const external = { kind: 'external', pub: 'xpub-external-backup' };
+
+      it('accepts an external entry for a multisig slot', function () {
+        const box = { ...fullBox, secp256k1Multisig: external };
+        parseSafeKeycardBox(JSON.stringify(box)).secp256k1Multisig.should.deepEqual(external);
+      });
+
+      it('keeps the provider when the entry carries one', function () {
+        const withProvider = { ...external, provider: 'dai' };
+        const box = { ...fullBox, ed25519Multisig: withProvider };
+        parseSafeKeycardBox(JSON.stringify(box)).ed25519Multisig.should.deepEqual(withProvider);
+      });
+
+      it('still decodes a keycard generated before external entries existed', function () {
+        parseSafeKeycardBox(JSON.stringify(fullBox)).should.deepEqual(fullBox);
+      });
+
+      it('rejects an external entry without a pub', function () {
+        const box = { ...fullBox, secp256k1Multisig: { kind: 'external' } };
+        (() => parseSafeKeycardBox(JSON.stringify(box))).should.throw(/secp256k1Multisig/);
+      });
+
+      it('rejects an entry with an unknown kind', function () {
+        const box = { ...fullBox, secp256k1Multisig: { kind: 'other', pub: 'xpub' } };
+        (() => parseSafeKeycardBox(JSON.stringify(box))).should.throw(/secp256k1Multisig/);
+      });
+    });
   });
 });

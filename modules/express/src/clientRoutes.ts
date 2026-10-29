@@ -724,6 +724,7 @@ export async function handleV2GenerateSafe(
   const safe = await safes.generateSafe({
     label: req.decoded.label,
     passphrase: req.decoded.passphrase,
+    ...(req.decoded.multisigRoots === undefined ? {} : { multisigRoots: req.decoded.multisigRoots }),
   });
   return safe.toJSON();
 }
@@ -755,6 +756,8 @@ export async function handleV2GenerateSafeKeys(req: ExpressApiRouteRequest<'expr
     passphrase: req.decoded.passphrase,
     safeId: req.decoded.safeId,
     enabledRootSlots: req.decoded.enabledRootSlots,
+    multisigRoots: req.decoded.multisigRoots,
+    externalBackupSlots: req.decoded.externalBackupSlots,
   });
 }
 

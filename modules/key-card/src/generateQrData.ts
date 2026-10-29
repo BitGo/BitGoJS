@@ -229,8 +229,15 @@ function selectRootPrivateKey(keychain: Keychain, slot: SafeRootKeyType, role: '
 // Box B carries the backup's ed25519 chain code alongside the encrypted seed for slot ④ only —
 // the chain code is independent randomness and cannot be recomputed from the seed, unlike the
 // slot-① xprv whose chain code rides inside the ciphertext. Every other slot (and boxes A/C
-// everywhere) stays a bare string.
-function selectBackupRootEntry(keychain: Keychain, slot: SafeRootKeyType): SafeKeycardRootEntry {
+// everywhere) stays a bare string. A slot declared external carries the root public key instead.
+function selectBackupRootEntry(keychain: Keychain, slot: SafeRootKeyType, external: boolean): SafeKeycardRootEntry {
+  if (external) {
+    // The caller (BYOK) holds the backup private key, so the card carries only the root public key.
+    // For slot ④ the pub is already the derivable composite, so the chain code survives.
+    assert.ok(keychain.pub, `Safe external backup root ${slot} is missing a public key`);
+    assert.ok(!keychain.encryptedPrv, `Safe external backup root ${slot} must not carry an encrypted private key`);
+    return { kind: 'external', pub: keychain.pub };
+  }
   const prv = selectRootPrivateKey(keychain, slot, 'backup');
   if (slot !== 'ed25519Multisig') {
     return prv;
@@ -273,6 +280,7 @@ function buildSafeBoxData(
  */
 export async function generateSafeQrData(params: GenerateSafeQrDataParams): Promise<QrData> {
   const { roots } = params;
+  const externalBackupSlots = new Set<SafeRootKeyType>(params.externalBackupSlots ?? []);
   const qrData: QrData = {
     user: {
       title: 'A: User Key',
@@ -281,8 +289,14 @@ export async function generateSafeQrData(params: GenerateSafeQrDataParams): Prom
     },
     backup: {
       title: 'B: Backup Key',
-      description: 'Your 4 root backup keys, encrypted with your safe password.',
-      data: buildSafeBoxData(roots, (root, slot) => selectBackupRootEntry(root.backupKeychain, slot)),
+      description:
+        externalBackupSlots.size === 0
+          ? 'Your 4 root backup keys, encrypted with your safe password.'
+          : 'Your 4 root backup keys, encrypted with your safe password. Slots marked external carry only the ' +
+            'public key of a backup key you supplied; its private key is not on this card and you must keep it safe.',
+      data: buildSafeBoxData(roots, (root, slot) =>
+        selectBackupRootEntry(root.backupKeychain, slot, externalBackupSlots.has(slot))
+      ),
     },
     bitgo: {
       title: 'C: BitGo Key',

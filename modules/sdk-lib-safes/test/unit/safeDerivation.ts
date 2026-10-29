@@ -6,6 +6,7 @@ import {
   deriveSafeChildEd25519Hardened,
   deriveSafeChildHardenedFromXprv,
   deriveSafeChildTriplet,
+  deriveSoftPathRelative,
   DerivedFromParentWithHardenedPath,
   DerivedFromParentWithSoftPath,
   getSafeBip44CoinType,
@@ -223,6 +224,78 @@ describe('safeDerivation', function () {
         /must be private/
       );
       (() => deriveSafeChildTriplet({ ...roots, bitgo: bitgoRoot.toBase58() }, path)).should.throw(/must be public/);
+    });
+  });
+
+  describe('deriveSoftPathRelative', function () {
+    it('matches derivePath on a master key', function () {
+      const master = bip32.fromSeed(Buffer.alloc(16, 3));
+      const softPath = toSoftTwinPath(buildSafeBip44Path(0, 'secp256k1Multisig', 5));
+      deriveSoftPathRelative(master, softPath).toBase58().should.equal(master.derivePath(softPath).toBase58());
+    });
+  });
+
+  describe('deriveSafeChildTriplet with an external backup root', function () {
+    const userRoot = bip32.fromSeed(Buffer.from(BIP32_VECTOR_1_SEED, 'hex'));
+    const bitgoRoot = bip32.fromSeed(Buffer.alloc(16, 2));
+    // An HSM or hardware wallet exports an account-level key, never a master: depth 3 here.
+    const externalPrvRoot = bip32.fromSeed(Buffer.alloc(16, 9)).derivePath("m/44'/0'/0'");
+    const externalPubRoot = externalPrvRoot.neutered();
+    const path = buildSafeBip44Path(0, 'secp256k1Multisig', 3);
+    const softPath = toSoftTwinPath(path);
+    const externalRoots = {
+      user: userRoot.toBase58(),
+      backup: { external: true as const, pub: externalPubRoot.toBase58() },
+      bitgo: bitgoRoot.neutered().toBase58(),
+    };
+    // level-by-level derivation, which is what a non-master key requires
+    const expectedChild = externalPubRoot.derive(44).derive(0).derive(1).derive(3);
+
+    it('has a depth-3 root that derivePath rejects, so the relative derive is required', function () {
+      externalPubRoot.depth.should.equal(3);
+      (() => externalPubRoot.derivePath(softPath)).should.throw(/Expected master/);
+    });
+
+    it('derives the backup child pub relatively from a depth-3 xpub', function () {
+      const triplet = deriveSafeChildTriplet(externalRoots, path);
+      triplet.backup.pub.should.equal(expectedChild.toBase58());
+      (triplet.backup.prv === undefined).should.be.true();
+      triplet.bitgo.pub.should.equal(bitgoRoot.neutered().derivePath(softPath).toBase58());
+      triplet.user.pub.should.equal(deriveSafeChildHardenedFromXprv(externalRoots.user, path).pub);
+    });
+
+    it('adds the backup child prv from externalBackupRootPrv', function () {
+      const triplet = deriveSafeChildTriplet(externalRoots, path, {
+        externalBackupRootPrv: externalPrvRoot.toBase58(),
+      });
+      triplet.backup.pub.should.equal(expectedChild.toBase58());
+      bip32
+        .fromBase58(triplet.backup.prv as string)
+        .neutered()
+        .toBase58()
+        .should.equal(triplet.backup.pub);
+    });
+
+    it('rejects an externalBackupRootPrv that does not match the external root pub', function () {
+      const other = bip32.fromSeed(Buffer.alloc(16, 8)).derivePath("m/44'/0'/0'");
+      (() => deriveSafeChildTriplet(externalRoots, path, { externalBackupRootPrv: other.toBase58() })).should.throw(
+        /does not match the external backup root pub/
+      );
+    });
+
+    it('rejects an externalBackupRootPrv that is not private', function () {
+      (() =>
+        deriveSafeChildTriplet(externalRoots, path, {
+          externalBackupRootPrv: externalPubRoot.toBase58(),
+        })).should.throw(/must be private/);
+    });
+
+    it('rejects an external backup root that is private', function () {
+      (() =>
+        deriveSafeChildTriplet(
+          { ...externalRoots, backup: { external: true, pub: externalPrvRoot.toBase58() } },
+          path
+        )).should.throw(/external backup root must be public/);
     });
   });
 });

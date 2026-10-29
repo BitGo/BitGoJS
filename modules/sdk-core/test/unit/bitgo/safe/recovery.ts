@@ -9,15 +9,18 @@ import { buildSafeMpcKeyEnvelopes } from '../../../../src/bitgo/utils/tss/keySha
 import { IncorrectPasswordError } from '../../../../src/bitgo/errors';
 import {
   DecryptedSafeRoots,
+  DecryptedSafeRootsWithExternal,
   buildSafeRecoverKeyParams,
   decryptSafeKeycard,
   deriveSafeWalletKeys,
 } from '../../../../src/bitgo/safe/recovery';
 import {
   algoMultisigAddress,
+  decodeEd25519StrKeySecretSeed,
   encodeAlgoKey,
   encodeDerivableEd25519Pub,
   encodeEd25519ChainCode,
+  signEd25519Extended,
   softDeriveChildPubEd25519AtPath,
 } from '../../../../src';
 import { BitGoBase } from '../../../../src/bitgo/bitgoBase';
@@ -118,8 +121,9 @@ describe('decryptSafeKeycard', () => {
     result.secp256k1Multisig.bitgo.should.equal('xpub-secp-bitgo');
 
     result.ed25519Multisig.user.should.equal('S-user-seed');
-    result.ed25519Multisig.backup.prv.should.equal('S-backup-seed');
-    result.ed25519Multisig.backup.chainCode.should.equal('C'.repeat(52));
+    const ed25519Backup = result.ed25519Multisig.backup as { prv: string; chainCode: string };
+    ed25519Backup.prv.should.equal('S-backup-seed');
+    ed25519Backup.chainCode.should.equal('C'.repeat(52));
     result.ed25519Multisig.bitgo.should.equal('pub-ed25519-bitgo');
 
     result.ecdsaMpc.user.signing.toString('hex').should.equal(Buffer.from('user-reduced').toString('hex'));
@@ -186,8 +190,9 @@ describe('decryptSafeKeycard', () => {
       password: PASSWORD,
     });
 
-    result.ed25519Multisig.backup.prv.should.equal('S-backup-seed');
-    result.ed25519Multisig.backup.chainCode.should.equal('A'.repeat(52));
+    const ed25519Backup = result.ed25519Multisig.backup as { prv: string; chainCode: string };
+    ed25519Backup.prv.should.equal('S-backup-seed');
+    ed25519Backup.chainCode.should.equal('A'.repeat(52));
   });
 
   it('rejects an ed25519 chain-code entry in a non-backup slot (fail closed)', async () => {
@@ -813,5 +818,383 @@ describe('Safe ecdsaMpc derive → sign (gate)', function () {
     // deriveUnhardened(childCK, 'm/0'); it throws on mismatch, so a returned string is proof.
     signatureString.should.be.a.String();
     signatureString.should.match(/^\d+:[0-9a-f]+:[0-9a-f]+:[0-9a-f]+$/);
+  });
+});
+
+describe('external backup roots (BYOK)', () => {
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  const userRoot = bip32.fromSeed(Buffer.from('000102030405060708090a0b0c0d0e0f', 'hex'));
+  const bitgoRoot = bip32.fromSeed(Buffer.alloc(32, 0x2f)).neutered();
+  // An HSM or hardware wallet exports an account-level key, never a master: depth 3 here.
+  const externalPrvRoot = bip32.fromSeed(Buffer.alloc(32, 0x09)).derivePath("m/44'/0'/0'");
+  const externalPubRoot = externalPrvRoot.neutered();
+
+  describe('decryptSafeKeycard', () => {
+    const userBox = box({
+      secp256k1Multisig: 'enc-user-secp',
+      ed25519Multisig: 'enc-user-ed25519',
+      ecdsaMpc: 'enc-user-ecdsa',
+      eddsaMpc: 'enc-user-eddsa',
+    });
+    const bitgoBox = box({
+      secp256k1Multisig: 'xpub-secp-bitgo',
+      ed25519Multisig: 'pub-ed25519-bitgo',
+      ecdsaMpc: 'common-ecdsa-bitgo',
+      eddsaMpc: 'common-eddsa-bitgo',
+    });
+    const mpc = buildSafeMpcKeyEnvelopes(Buffer.from('signing'), Buffer.from('reduced'), Buffer.from('vrf'));
+    const decryptEntries = {
+      'enc-user-secp': 'xprv-user',
+      'enc-user-ed25519': 'S-user-seed',
+      'enc-user-ecdsa': mpc.reducedEnvelope.toString('base64'),
+      'enc-user-eddsa': mpc.reducedEnvelope.toString('base64'),
+      'enc-backup-ecdsa': mpc.reducedEnvelope.toString('base64'),
+      'enc-backup-eddsa': mpc.reducedEnvelope.toString('base64'),
+    };
+
+    // box() is typed to the local entries only; an external box is plain JSON on the wire.
+    const externalBackupBox = JSON.stringify({
+      secp256k1Multisig: { kind: 'external', pub: 'xpub-external' },
+      ed25519Multisig: { kind: 'external', pub: 'COMPOSITE', provider: 'dai' },
+      ecdsaMpc: 'enc-backup-ecdsa',
+      eddsaMpc: 'enc-backup-eddsa',
+    });
+
+    it('returns external backup roots without trying to decrypt them', async () => {
+      const bitgo = makeMockBitGo(makeDecryptMap(decryptEntries));
+
+      const result = await decryptSafeKeycard({
+        bitgo,
+        userKeyBox: userBox,
+        backupKeyBox: externalBackupBox,
+        bitgoKeyBox: bitgoBox,
+        password: PASSWORD,
+      });
+
+      result.secp256k1Multisig.user.should.equal('xprv-user');
+      result.secp256k1Multisig.backup.should.deepEqual({ external: true, pub: 'xpub-external' });
+      result.ed25519Multisig.backup.should.deepEqual({ external: true, pub: 'COMPOSITE', provider: 'dai' });
+      const decrypted = (bitgo.decrypt as sinon.SinonStub).getCalls().map((call) => call.args[0].input);
+      decrypted.should.not.containEql('xpub-external');
+      decrypted.should.not.containEql('COMPOSITE');
+    });
+
+    it('rejects an external entry in the user box, where a bare string is required', async () => {
+      const bitgo = makeMockBitGo(makeDecryptMap(decryptEntries));
+      const externalUserBox = JSON.stringify({
+        secp256k1Multisig: { kind: 'external', pub: 'xpub-external' },
+        ed25519Multisig: 'enc-user-ed25519',
+        ecdsaMpc: 'enc-user-ecdsa',
+        eddsaMpc: 'enc-user-eddsa',
+      });
+
+      await decryptSafeKeycard({
+        bitgo,
+        userKeyBox: externalUserBox,
+        backupKeyBox: externalBackupBox,
+        bitgoKeyBox: bitgoBox,
+        password: PASSWORD,
+      }).should.be.rejectedWith(/unexpected external backup entry where a bare string was required/);
+    });
+  });
+
+  describe('deriveSafeWalletKeys secp256k1Multisig', () => {
+    const roots: DecryptedSafeRootsWithExternal = {
+      ...makeRoots({
+        user: userRoot.toBase58(),
+        backup: 'unused',
+        bitgo: bitgoRoot.toBase58(),
+      }),
+      secp256k1Multisig: {
+        user: userRoot.toBase58(),
+        backup: { external: true, pub: externalPubRoot.toBase58() },
+        bitgo: bitgoRoot.toBase58(),
+      },
+    };
+    // account 0 on btc: m/44'/0'/1'/0' for the user, m/44/0/1/0 for the co-signers
+    const expectedBackupChild = externalPubRoot.derive(44).derive(0).derive(1).derive(0);
+
+    it('derives the backup child pub level by level from a non-master xpub', async () => {
+      const result = await deriveSafeWalletKeys({ coin: 'btc', slot: 'secp256k1Multisig', account: 0, roots });
+      if (result.slot !== 'secp256k1Multisig') {
+        throw new Error('expected secp256k1Multisig slot');
+      }
+
+      externalPubRoot.depth.should.equal(3);
+      result.keys.backup.pub.should.equal(expectedBackupChild.toBase58());
+      (result.keys.backup.prv === undefined).should.be.true();
+    });
+
+    it('adds the backup child prv when the caller supplies their backup root xprv', async () => {
+      const result = await deriveSafeWalletKeys({
+        coin: 'btc',
+        slot: 'secp256k1Multisig',
+        account: 0,
+        roots,
+        externalBackupRootPrv: externalPrvRoot.toBase58(),
+      });
+      if (result.slot !== 'secp256k1Multisig') {
+        throw new Error('expected secp256k1Multisig slot');
+      }
+
+      result.keys.backup.pub.should.equal(expectedBackupChild.toBase58());
+      bip32
+        .fromBase58(result.keys.backup.prv as string)
+        .neutered()
+        .toBase58()
+        .should.equal(result.keys.backup.pub);
+    });
+
+    it('rejects a backup root xprv that does not belong to the external root', async () => {
+      await deriveSafeWalletKeys({
+        coin: 'btc',
+        slot: 'secp256k1Multisig',
+        account: 0,
+        roots,
+        externalBackupRootPrv: bip32.fromSeed(Buffer.alloc(32, 0x08)).derivePath("m/44'/0'/0'").toBase58(),
+      }).should.be.rejectedWith(/does not match the external backup root pub/);
+    });
+
+    it('rejects externalBackupRootPrv when the backup root is local', async () => {
+      const localRoots = makeRoots({
+        user: userRoot.toBase58(),
+        backup: bip32.fromSeed(Buffer.alloc(32, 0x07)).toBase58(),
+        bitgo: bitgoRoot.toBase58(),
+      });
+      await deriveSafeWalletKeys({
+        coin: 'btc',
+        slot: 'secp256k1Multisig',
+        account: 0,
+        roots: localRoots,
+        externalBackupRootPrv: externalPrvRoot.toBase58(),
+      }).should.be.rejectedWith(/backup root is not external/);
+    });
+
+    it('rejects externalBackupRootPrv for any other slot', async () => {
+      await deriveSafeWalletKeys({
+        coin: 'algo',
+        slot: 'ed25519Multisig',
+        account: 0,
+        roots,
+        externalBackupRootPrv: externalPrvRoot.toBase58(),
+      }).should.be.rejectedWith(/only applies to the secp256k1Multisig slot/);
+    });
+  });
+
+  describe('buildSafeRecoverKeyParams secp256k1Multisig', () => {
+    const roots: DecryptedSafeRootsWithExternal = {
+      ...makeRoots({ user: 'x', backup: 'y', bitgo: 'z' }),
+      secp256k1Multisig: {
+        user: userRoot.toBase58(),
+        backup: { external: true, pub: externalPubRoot.toBase58() },
+        bitgo: bitgoRoot.toBase58(),
+      },
+    };
+
+    async function derive(externalBackupRootPrv?: string) {
+      const derived = await deriveSafeWalletKeys({
+        coin: 'btc',
+        slot: 'secp256k1Multisig',
+        account: 0,
+        roots,
+        externalBackupRootPrv,
+      });
+      if (derived.slot !== 'secp256k1Multisig') {
+        throw new Error('expected secp256k1Multisig slot');
+      }
+      return derived;
+    }
+
+    it('unsigned mode needs no backup private key', async () => {
+      const derived = await derive();
+      const bitgo = { encrypt: sinon.stub() } as unknown as BitGoBase;
+
+      const result = await buildSafeRecoverKeyParams({
+        bitgo,
+        coin: 'btc',
+        slot: 'secp256k1Multisig',
+        keys: derived.keys,
+        mode: 'unsigned',
+      });
+
+      result.should.deepEqual({
+        slot: 'secp256k1Multisig',
+        userKey: derived.keys.user.pub,
+        backupKey: derived.keys.backup.pub,
+        bitgoKey: derived.keys.bitgo.pub,
+      });
+      (bitgo.encrypt as sinon.SinonStub).callCount.should.equal(0);
+    });
+
+    it('signed mode re-encrypts the supplied external backup child prv', async () => {
+      const derived = await derive(externalPrvRoot.toBase58());
+      const encrypt = sinon.stub().callsFake(async ({ input }) => `enc(${input})`);
+      const bitgo = { encrypt } as unknown as BitGoBase;
+
+      const result = await buildSafeRecoverKeyParams({
+        bitgo,
+        coin: 'btc',
+        slot: 'secp256k1Multisig',
+        keys: derived.keys,
+        mode: 'signed',
+      });
+      if (result.slot !== 'secp256k1Multisig') {
+        throw new Error('expected secp256k1Multisig params');
+      }
+
+      result.backupKey.should.equal(`enc(${derived.keys.backup.prv})`);
+      result.userKey.should.equal(`enc(${derived.keys.user.prv})`);
+    });
+
+    it('signed mode without the backup root xprv fails closed', async () => {
+      const derived = await derive();
+      const bitgo = { encrypt: sinon.stub() } as unknown as BitGoBase;
+
+      await buildSafeRecoverKeyParams({
+        bitgo,
+        coin: 'btc',
+        slot: 'secp256k1Multisig',
+        keys: derived.keys,
+        mode: 'signed',
+      }).should.be.rejectedWith(/needs the backup private key.*externalBackupRootPrv/);
+    });
+  });
+
+  describe('ed25519Multisig', () => {
+    const STRKEY_SEED = 'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI';
+    const backupChainCode = Buffer.alloc(32, 0xab);
+    // The BYOK holder's root pub is the ed25519 public key of its seed; the chain code rides on the keycard.
+    const backupComposite = encodeDerivableEd25519Pub(
+      Buffer.from(ed25519.getPublicKey(decodeEd25519StrKeySecretSeed(STRKEY_SEED))),
+      backupChainCode
+    );
+    const bitgoComposite = encodeDerivableEd25519Pub(
+      Buffer.from(ed25519.getPublicKey(Buffer.alloc(32, 0x22))),
+      Buffer.alloc(32, 0xcd)
+    );
+    const localRoots: DecryptedSafeRootsWithExternal = {
+      ...makeRoots({ user: 'x', backup: 'y', bitgo: 'z' }),
+      ed25519Multisig: {
+        user: STRKEY_SEED,
+        backup: { prv: STRKEY_SEED, chainCode: encodeEd25519ChainCode(backupChainCode) },
+        bitgo: bitgoComposite,
+      },
+    };
+    const externalRoots: DecryptedSafeRootsWithExternal = {
+      ...localRoots,
+      ed25519Multisig: {
+        user: STRKEY_SEED,
+        backup: { external: true, pub: backupComposite },
+        bitgo: bitgoComposite,
+      },
+    };
+
+    async function derive(roots: DecryptedSafeRootsWithExternal) {
+      const derived = await deriveSafeWalletKeys({ coin: 'algo', slot: 'ed25519Multisig', account: 0, roots });
+      if (derived.slot !== 'ed25519Multisig') {
+        throw new Error('expected ed25519Multisig slot');
+      }
+      return derived;
+    }
+
+    it('derives the external backup child pub, equal to the local derivation of the same root', async () => {
+      const local = await derive(localRoots);
+      const external = await derive(externalRoots);
+
+      external.keys.backup.kind.should.equal('external');
+      external.keys.backup.pub.should.equal(local.keys.backup.pub);
+      external.keys.backup.pub.should.equal(
+        (await softDeriveChildPubEd25519AtPath(backupComposite, 'm/44/283/2/0')).toString('hex')
+      );
+      external.keys.user.pub.should.equal(local.keys.user.pub);
+      external.keys.bitgo.pub.should.equal(local.keys.bitgo.pub);
+    });
+
+    it('unsigned mode returns the encoded backup child without a signer', async () => {
+      const external = await derive(externalRoots);
+      const bitgo = { encrypt: sinon.stub() } as unknown as BitGoBase;
+
+      const result = await buildSafeRecoverKeyParams({
+        bitgo,
+        coin: 'algo',
+        slot: 'ed25519Multisig',
+        keys: external.keys,
+        mode: 'unsigned',
+      });
+      if (result.slot !== 'ed25519Multisig' || result.mode !== 'unsigned') {
+        throw new Error('expected unsigned ed25519Multisig params');
+      }
+
+      result.backupKey.should.equal(encodeAlgoKey(Buffer.from(external.keys.backup.pub, 'hex')));
+    });
+
+    it('signed mode uses the holder-supplied signer for the external backup child', async () => {
+      const local = await derive(localRoots);
+      const external = await derive(externalRoots);
+      if (local.keys.backup.kind !== 'extended') {
+        throw new Error('expected an extended backup child');
+      }
+      const { kL, kR } = local.keys.backup;
+      // The holder's own signer, standing in for an HSM that supports BIP32-Ed25519 soft derivation.
+      const holderSigner = {
+        publicKey: external.keys.backup.pub,
+        sign: async (message: Uint8Array) => ({
+          signature: (
+            await signEd25519Extended(Buffer.from(message), Buffer.from(kL, 'hex'), Buffer.from(kR, 'hex'))
+          ).toString('hex'),
+        }),
+      };
+      const bitgo = { encrypt: sinon.stub().resolves('enc') } as unknown as BitGoBase;
+
+      const result = await buildSafeRecoverKeyParams({
+        bitgo,
+        coin: 'algo',
+        slot: 'ed25519Multisig',
+        keys: external.keys,
+        mode: 'signed',
+        externalBackupSigner: holderSigner,
+      });
+      if (result.slot !== 'ed25519Multisig' || result.mode !== 'signed') {
+        throw new Error('expected signed ed25519Multisig params');
+      }
+
+      result.externalBackupSigner.should.equal(holderSigner);
+    });
+
+    it('signed mode fails closed without a signer, with a mismatched signer, or with a signer on a local root', async () => {
+      const local = await derive(localRoots);
+      const external = await derive(externalRoots);
+      const bitgo = { encrypt: sinon.stub().resolves('enc') } as unknown as BitGoBase;
+      const signer = (publicKey: string) => ({ publicKey, sign: async () => ({ signature: '00'.repeat(64) }) });
+
+      await buildSafeRecoverKeyParams({
+        bitgo,
+        coin: 'algo',
+        slot: 'ed25519Multisig',
+        keys: external.keys,
+        mode: 'signed',
+      }).should.be.rejectedWith(/needs externalBackupSigner/);
+
+      await buildSafeRecoverKeyParams({
+        bitgo,
+        coin: 'algo',
+        slot: 'ed25519Multisig',
+        keys: external.keys,
+        mode: 'signed',
+        externalBackupSigner: signer('11'.repeat(32)),
+      }).should.be.rejectedWith(/does not match the backup child pub/);
+
+      await buildSafeRecoverKeyParams({
+        bitgo,
+        coin: 'algo',
+        slot: 'ed25519Multisig',
+        keys: local.keys,
+        mode: 'signed',
+        externalBackupSigner: signer(local.keys.backup.pub),
+      }).should.be.rejectedWith(/only applies to an external backup root/);
+    });
   });
 });

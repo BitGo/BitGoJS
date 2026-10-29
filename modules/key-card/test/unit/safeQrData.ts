@@ -127,24 +127,87 @@ describe('generateSafeQrData', function () {
     for (const slot of SAFE_ROOT_ORDER) {
       (await decrypt(passphrase, userBox[slot] as string)).should.equal(plaintexts[slot].user);
       const backupEntry = backupBox[slot];
-      const backupPrv = typeof backupEntry === 'string' ? backupEntry : backupEntry.prv;
+      const backupPrv = typeof backupEntry === 'string' ? backupEntry : (backupEntry as { prv: string }).prv;
       (await decrypt(passphrase, backupPrv)).should.equal(plaintexts[slot].backup);
       bitgoBox[slot].should.equal(bitgoPubs[slot]);
     }
 
     // Box B's slot-④ entry carries the chain code next to the seed (only slot ④ is an object).
-    const ed25519Backup = backupBox.ed25519Multisig;
+    const ed25519Backup = backupBox.ed25519Multisig as { prv: string; chainCode: string };
     assert.ok(typeof ed25519Backup === 'object');
-    if (typeof ed25519Backup === 'object') {
-      ed25519Backup.chainCode.should.match(/^[A-Z2-7]{52}$/);
-      // The seed is byte-identical to the un-widened encrypted value (chain code NOT appended).
-      ed25519Backup.prv.should.equal(roots.ed25519Multisig.backupKeychain.encryptedPrv);
-    }
+    ed25519Backup.chainCode.should.match(/^[A-Z2-7]{52}$/);
+    // The seed is byte-identical to the un-widened encrypted value (chain code NOT appended).
+    ed25519Backup.prv.should.equal(roots.ed25519Multisig.backupKeychain.encryptedPrv);
 
     // The other three box-B slots stay bare strings.
     backupBox.secp256k1Multisig.should.be.a.String();
     backupBox.ecdsaMpc.should.be.a.String();
     backupBox.eddsaMpc.should.be.a.String();
+  });
+
+  describe('external backup slots', function () {
+    // A BYOK backup keychain is pub-only: the caller holds the private key.
+    function makeExternal(roots: Record<SafeRootKeyType, KeychainsTriplet>, slot: SafeRootKeyType, pub: string) {
+      roots[slot].backupKeychain = makeKeychain({ type: 'independent', pub });
+    }
+
+    it('emits an external entry for a declared slot instead of an encrypted backup prv', async function () {
+      const { roots, plaintexts } = await buildRoots();
+      makeExternal(roots, 'secp256k1Multisig', 'xpub-external-backup');
+      const qrData = await generateSafeQrData({
+        coin: coins.get('btc'),
+        roots,
+        externalBackupSlots: ['secp256k1Multisig'],
+      });
+      assert.ok(qrData.backup);
+
+      const backupBox = parseSafeKeycardBox(reassemble(qrData.backup.data));
+      backupBox.secp256k1Multisig.should.deepEqual({ kind: 'external', pub: 'xpub-external-backup' });
+      // The other slots stay local: encrypted prv, and the slot-④ chain-code object.
+      (await decrypt(passphrase, backupBox.ecdsaMpc as string)).should.equal(plaintexts.ecdsaMpc.backup);
+      (backupBox.ed25519Multisig as { chainCode: string }).chainCode.should.match(/^[A-Z2-7]{52}$/);
+      qrData.backup.description.should.match(/external/);
+    });
+
+    it('keeps the slot-④ derivable composite pub, chain code included', async function () {
+      const { roots } = await buildRoots();
+      const composite = roots.ed25519Multisig.backupKeychain.pub as string;
+      makeExternal(roots, 'ed25519Multisig', composite);
+      const qrData = await generateSafeQrData({
+        coin: coins.get('btc'),
+        roots,
+        externalBackupSlots: ['ed25519Multisig'],
+      });
+      assert.ok(qrData.backup);
+
+      parseSafeKeycardBox(qrData.backup.data).ed25519Multisig.should.deepEqual({ kind: 'external', pub: composite });
+    });
+
+    it('leaves boxes A and C unchanged and the backup description plain without external slots', async function () {
+      const { roots } = await buildRoots();
+      const qrData = await generateSafeQrData({ coin: coins.get('btc'), roots, externalBackupSlots: [] });
+      assert.ok(qrData.backup);
+      qrData.backup.description.should.not.match(/external/);
+    });
+
+    it('rejects a declared external slot whose backup keychain still carries an encrypted prv', async function () {
+      const { roots } = await buildRoots();
+      await generateSafeQrData({
+        coin: coins.get('btc'),
+        roots,
+        externalBackupSlots: ['secp256k1Multisig'],
+      }).should.be.rejectedWith(/must not carry an encrypted private key/);
+    });
+
+    it('rejects a declared external slot whose backup keychain has no pub', async function () {
+      const { roots } = await buildRoots();
+      roots.secp256k1Multisig.backupKeychain = makeKeychain({ type: 'independent', pub: undefined });
+      await generateSafeQrData({
+        coin: coins.get('btc'),
+        roots,
+        externalBackupSlots: ['secp256k1Multisig'],
+      }).should.be.rejectedWith(/missing a public key/);
+    });
   });
 
   it('preserves the versioned VRF envelope in the MPC root card blob', async function () {
