@@ -3777,7 +3777,9 @@ describe('V2 Wallets:', function () {
         });
 
         // Mock reshareWalletWithSpenders (called for keychainOverrideRequired cases)
-        const reshareStub = sinon.stub(Wallets.prototype, 'reshareWalletWithSpenders').resolves();
+        const reshareStub = sinon
+          .stub(Wallets.prototype, 'reshareWalletWithSpenders')
+          .resolves({ shared: [], failed: [] });
 
         const result = await wallets.bulkUpdateWalletShare({
           shares: [{ walletShareId: 'share1', status: 'accept' }],
@@ -3846,7 +3848,9 @@ describe('V2 Wallets:', function () {
         });
 
         // Mock reshareWalletWithSpenders
-        const reshareStub = sinon.stub(Wallets.prototype, 'reshareWalletWithSpenders').resolves();
+        const reshareStub = sinon
+          .stub(Wallets.prototype, 'reshareWalletWithSpenders')
+          .resolves({ shared: [], failed: [] });
 
         const result = await ofcWallets.bulkUpdateWalletShare({
           shares: [{ walletShareId: 'share1', status: 'accept' }],
@@ -4384,7 +4388,7 @@ describe('V2 Wallets:', function () {
             rejectedWalletShares: [],
             walletShareUpdateErrors: [],
           });
-          sinon.stub(Wallets.prototype, 'reshareWalletWithSpenders').resolves();
+          sinon.stub(Wallets.prototype, 'reshareWalletWithSpenders').resolves({ shared: [], failed: [] });
 
           await ofcWallets.bulkUpdateWalletShare({
             shares: [{ walletShareId: shareId, status: 'accept' }],
@@ -4435,6 +4439,88 @@ describe('V2 Wallets:', function () {
 
         return { walletObj, users };
       }
+
+      function stubRecoveryRecipients() {
+        const users = [
+          { user: 'spender-recovery', permissions: ['view', 'spend'], needsRecovery: true },
+          { user: 'spender-ready', permissions: ['view', 'spend'], needsRecovery: false },
+          { user: 'spender-unspecified', permissions: ['view', 'spend'] },
+          { user: 'admin-recovery', permissions: ['admin', 'view', 'spend'], needsRecovery: true },
+          { user: 'admin-viewer', permissions: ['admin', 'view'], needsRecovery: true },
+          { user: 'missing-enterprise-user', permissions: ['spend'], needsRecovery: true },
+        ];
+        sinon.stub(Wallets.prototype, 'get').resolves(
+          new Wallet(bitgo, bitgo.coin('tsol'), {
+            id: 'recovery-wallet',
+            coin: 'tsol',
+            enterprise: 'recovery-enterprise',
+            users,
+            keys: ['userKeyId', 'backupKeyId', 'bitgoKeyId'],
+          })
+        );
+        nock(bgUrl)
+          .get('/api/v1/enterprise/recovery-enterprise/user')
+          .reply(200, {
+            adminUsers: users.slice(3, 5).map((u) => ({ id: u.user, email: { email: `${u.user}@example.com` } })),
+            nonAdminUsers: users.slice(0, 3).map((u) => ({ id: u.user, email: { email: `${u.user}@example.com` } })),
+          });
+        sinon.stub(Wallet.prototype, 'getDecryptedKeychainForSharing').resolves({ prv: 'p', pub: 'q' });
+        return sinon.stub(Wallet.prototype, 'shareWallet').resolves({ shared: true });
+      }
+
+      it('defaults to non-admin spenders regardless of recovery status', async function () {
+        stubRecoveryRecipients();
+        const result = await wallets.reshareWalletWithSpenders('recovery-wallet', 'pw');
+        assert.deepStrictEqual(result, {
+          shared: ['spender-recovery', 'spender-ready', 'spender-unspecified'],
+          failed: [],
+        });
+      });
+
+      it('includes admin spenders when requested', async function () {
+        stubRecoveryRecipients();
+        const result = await wallets.reshareWalletWithSpenders('recovery-wallet', 'pw', undefined, {
+          includeAdmins: true,
+        });
+        assert.deepStrictEqual(result.shared, [
+          'spender-recovery',
+          'spender-ready',
+          'spender-unspecified',
+          'admin-recovery',
+        ]);
+        assert.deepStrictEqual(result.failed, []);
+      });
+
+      it('filters for recovery without including admins by default', async function () {
+        stubRecoveryRecipients();
+        const result = await wallets.reshareWalletWithSpenders('recovery-wallet', 'pw', undefined, {
+          onlyNeedsRecovery: true,
+        });
+        assert.deepStrictEqual(result, { shared: ['spender-recovery'], failed: [] });
+      });
+
+      it('filters for users needing recovery, including admins only when requested', async function () {
+        stubRecoveryRecipients();
+        const result = await wallets.reshareWalletWithSpenders('recovery-wallet', 'pw', undefined, {
+          includeAdmins: true,
+          onlyNeedsRecovery: true,
+        });
+        assert.deepStrictEqual(result, { shared: ['spender-recovery', 'admin-recovery'], failed: [] });
+      });
+
+      it('collects recipient errors and continues sharing', async function () {
+        const share = stubRecoveryRecipients();
+        share.onFirstCall().rejects(new Error('active share already exists'));
+        share.onSecondCall().callsFake(() => Promise.reject('pending share already exists'));
+        const result = await wallets.reshareWalletWithSpenders('recovery-wallet', 'pw');
+        assert.deepStrictEqual(result, {
+          shared: ['spender-unspecified'],
+          failed: [
+            { userId: 'spender-recovery', error: 'active share already exists' },
+            { userId: 'spender-ready', error: 'pending share already exists' },
+          ],
+        });
+      });
 
       it('decrypts the wallet keychain once and threads it into every shareWallet call', async function () {
         const walletId = 'reshare-wallet-1';
@@ -4511,7 +4597,8 @@ describe('V2 Wallets:', function () {
         const decryptStub = sinon.stub(Wallet.prototype, 'getDecryptedKeychainForSharing');
         const shareWalletStub = sinon.stub(Wallet.prototype, 'shareWallet');
 
-        await wallets.reshareWalletWithSpenders(walletId, 'pw');
+        const result = await wallets.reshareWalletWithSpenders(walletId, 'pw');
+        assert.deepStrictEqual(result, { shared: [], failed: [] });
 
         // No decrypt burned, no shares attempted
         decryptStub.called.should.equal(false);

@@ -484,7 +484,23 @@ export interface BulkAcceptShareResponse {
   acceptedWalletShares: AcceptShareResponse[];
 }
 
+export interface ReshareWalletOptions {
+  includeAdmins?: boolean;
+  onlyNeedsRecovery?: boolean;
+}
+
+export interface ReshareWalletResult {
+  shared: string[];
+  failed: { userId: string; error: string }[];
+}
+
 export interface IWallets {
+  reshareWalletWithSpenders(
+    walletId: string,
+    userPassword: string,
+    encryptionVersion?: EncryptionVersion,
+    opts?: ReshareWalletOptions
+  ): Promise<ReshareWalletResult>;
   get(params?: GetWalletOptions): Promise<Wallet>;
   list(params?: ListWalletOptions): Promise<{ wallets: IWallet[] }>;
   add(params?: AddWalletOptions): Promise<any>;
