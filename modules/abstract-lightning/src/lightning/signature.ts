@@ -2,6 +2,14 @@ import * as utxolib from '@bitgo/utxo-lib';
 import * as sdkcore from '@bitgo/sdk-core';
 import { canonicalizeObject, Signable } from './signableJson';
 
+function parseLightningKey(key: string, network: utxolib.Network): utxolib.BIP32Interface {
+  // Lightning auth keys use Bitcoin BIP32 versions on both networks.
+  if (key.startsWith('xpub') || key.startsWith('xprv')) {
+    return utxolib.bip32.fromBase58(key, utxolib.networks.bitcoin);
+  }
+  return utxolib.bip32.fromBase58(key, network);
+}
+
 /**
  * Verifies a signature for a given message.
  *
@@ -18,7 +26,7 @@ export function verifyMessageSignature(
   network: utxolib.Network = utxolib.networks.bitcoin
 ): boolean {
   const messageString = JSON.stringify(canonicalizeObject(message));
-  const pubKey = utxolib.bip32.fromBase58(pub, network).publicKey;
+  const pubKey = parseLightningKey(pub, network).publicKey;
   const signatureBuffer = Buffer.from(signature, 'hex');
   return sdkcore.verifyMessage(messageString, pubKey, signatureBuffer, network);
 }
@@ -37,6 +45,6 @@ export function createMessageSignature(
   network: utxolib.Network = utxolib.networks.bitcoin
 ): string {
   const requestString = JSON.stringify(canonicalizeObject(message));
-  const prvKey = utxolib.bip32.fromBase58(xprv, network);
+  const prvKey = parseLightningKey(xprv, network);
   return sdkcore.signMessage(requestString, prvKey, network).toString('hex');
 }
