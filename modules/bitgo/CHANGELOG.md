@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [54.3.0](https://github.com/BitGo/BitGoJS/compare/bitgo%4054.2.3...bitgo%4054.3.0) (2026-10-29)
+
+### Bug Fixes
+
+* **sdk-core:** send empty recipients for ERC-7984 builds (CHALO-1957) ([816eb19](https://github.com/BitGo/BitGoJS/commit/816eb19a78b6fd22539c874c07241b7873e01963))
+
+### Features
+
+* **root:** support Node.js 26 ([ecde928](https://github.com/BitGo/BitGoJS/commit/ecde928a2e567452bba4dbbb27152e69ac838b2a))
+* **sdk-core:** pass attestation through MPC signing ([73150fc](https://github.com/BitGo/BitGoJS/commit/73150fcfb9d5e4ab06c452b68550dbfbc25a85a7))
+
+
 ## [54.2.3](https://github.com/BitGo/BitGoJS/compare/bitgo%4054.2.2...bitgo%4054.2.3) (2026-10-27)
 
 ### Bug Fixes

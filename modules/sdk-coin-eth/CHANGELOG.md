@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [26.7.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-eth%4026.6.1...%40bitgo%2Fsdk-coin-eth%4026.7.0) (2026-10-29)
+
+### Features
+
+* **statics:** wire mainnet ERC-7984 wrapper-underlying metadata for Zama tokens (CHALO-2007) ([61e3815](https://github.com/BitGo/BitGoJS/commit/61e38156355f94d1fc08afa50afee98a873a3770))
+
+
 ## [26.6.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-eth%4026.6.0...%40bitgo%2Fsdk-coin-eth%4026.6.1) (2026-10-27)
 
 ### Bug Fixes
