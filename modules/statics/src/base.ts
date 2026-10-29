@@ -2013,6 +2013,7 @@ export enum UnderlyingAsset {
   'sepeth:wtgxx' = 'sepeth:wtgxx',
   'sepeth:real1' = 'sepeth:real1',
   'sepeth:jpyc' = 'sepeth:jpyc',
+  'sepeth:teuroc' = 'sepeth:teuroc',
   // Robinhood Chain testnet ERC-20 tokens
   'thoodeth:amzn' = 'thoodeth:amzn',
   'thoodeth:tsla' = 'thoodeth:tsla',
@@ -4357,6 +4358,7 @@ export enum UnderlyingAsset {
   'xrp:eurcv' = 'xrp:eurcv',
   'xrp:aau' = 'xrp:aau',
   'xrp:fiuaxrp' = 'xrp:fiuaxrp',
+  'xrp:zaru' = 'xrp:zaru',
   // XRP MPT mainnet tokens
   'xrp:kld' = 'xrp:kld',
   'xrp:key' = 'xrp:key',
@@ -4772,6 +4774,7 @@ export enum UnderlyingAsset {
   'arcusdc:eurc' = 'arcusdc:eurc',
   'arcusdc:usyc' = 'arcusdc:usyc',
   'arcusdc:usdau' = 'arcusdc:usdau', // CECHO-2426
+  'arcusdc:zaru' = 'arcusdc:zaru',
 
   // Scroll mainnet tokens
   'scrolleth:scr' = 'scrolleth:scr',

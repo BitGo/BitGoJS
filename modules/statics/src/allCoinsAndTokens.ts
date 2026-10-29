@@ -5374,6 +5374,15 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['arcusdc:usdau'],
     Networks.main.arcusdc
   ),
+  erc20Token(
+    '152f7e3f-53ac-4a59-b948-3bc1932c9443',
+    'arcusdc:zaru',
+    'ZAR Universal',
+    18,
+    '0xe205b4e7ac03e3f7b2060c3edf2171aa7126c0d5',
+    UnderlyingAsset['arcusdc:zaru'],
+    Networks.main.arcusdc
+  ),
 
   // Scroll mainnet tokens
   erc20Token(
@@ -8443,6 +8452,17 @@ export const allCoinsAndTokens = [
     'rGm7WCVp9gb4jZHWTEtGUr4dd74z2XuWhE::5553444300000000000000000000000000000000',
     'circle.com',
     UnderlyingAsset['xrp:usdc']
+  ),
+  xrpToken(
+    '232d2dee-399b-42b8-978c-aab3bb989b8f',
+    'xrp:zaru',
+    'ZAR Universal',
+    15,
+    'rwu15x3fKT6M8vADi6vrrR5nUXimkhagQf',
+    '5A41525500000000000000000000000000000000',
+    'rwu15x3fKT6M8vADi6vrrR5nUXimkhagQf::5A41525500000000000000000000000000000000',
+    'zaru.network',
+    UnderlyingAsset['xrp:zaru']
   ),
   xrpToken(
     '5067c3e5-51f2-4209-a842-d4450436245a',
