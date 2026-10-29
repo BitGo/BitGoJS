@@ -15,7 +15,7 @@ import {
   UnifiedRecipientPreference,
 } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
-import { Keychain, KeychainWithEncryptedPrv } from '../keychain';
+import { KeyEncryptionUpgradeResult, Keychain, KeychainWithEncryptedPrv } from '../keychain';
 import { IPendingApproval, PendingApprovalData } from '../pendingApproval';
 import { IDefiVault } from '../defi';
 import { IGoStakingWallet, IStakingWallet } from '../staking';
@@ -405,6 +405,12 @@ export interface CustomSigningFunction {
     derivationSeed?: string;
     signingStep?: 'signerNonce' | 'signerSignature' | 'cosignerNonce';
   }): Promise<SignedTransaction>;
+}
+
+export interface UpgradeUserKeyEncryptionOptions {
+  /** The wallet passphrase that decrypts the user key. */
+  walletPassphrase: string;
+  reqId?: IRequestTracer;
 }
 
 export interface WalletSignBaseOptions {
@@ -1391,6 +1397,7 @@ export interface IWallet {
   toAddressBook(): IAddressBook;
   downloadKeycard(params?: DownloadKeycardOptions): Promise<void>;
   upgradeEncryption(params: UpgradeEncryptionOptions): Promise<UpgradeEncryptionResult | undefined>;
+  upgradeUserKeyEncryption(params: UpgradeUserKeyEncryptionOptions): Promise<KeyEncryptionUpgradeResult>;
   buildAccountConsolidations(params?: BuildConsolidationTransactionOptions): Promise<PrebuildTransactionResult[]>;
   sendAccountConsolidation(params?: PrebuildAndSignTransactionOptions): Promise<any>;
   sendAccountConsolidations(params?: BuildConsolidationTransactionOptions): Promise<any>;

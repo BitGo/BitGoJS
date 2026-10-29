@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 import * as common from '../../common';
 import { IBaseCoin, KeychainsTriplet, KeyPair } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
-import { IncorrectPasswordError, SafeMpcCeremonyUnsupportedError } from '../errors';
+import { ApiResponseError, IncorrectPasswordError, SafeMpcCeremonyUnsupportedError } from '../errors';
 import {
   decodeEd25519StrKeyPublicKey,
   encodeDerivableEd25519Pub,
@@ -29,6 +29,7 @@ import {
   RotateKeychainOptions,
   UpdatePasswordOptions,
   UpdateSingleKeychainPasswordOptions,
+  KeyEncryptionUpgradeResult,
   UpgradeKeychainEncryptionOptions,
 } from './iKeychains';
 import { BitGoKeyFromOvcShares, BitGoToOvcJSON, OvcToBitGoJSON } from './ovcJsonCodec';
@@ -402,54 +403,51 @@ export class Keychains implements IKeychains {
   }
 
   /**
-   * Silently upgrade a user keychain's password-encrypted `encryptedPrv` from v1 (SJCL) to v2
-   * (Argon2id + AES-256-GCM) with the same passphrase, and persist it to BitGo.
-   *
-   * Contract: never throws and never rejects. Callers fire-and-forget (`void`); signing must not
-   * wait on or fail because of this call.
-   *
-   * No-op unless `keychain.id` and `keychain.encryptedPrv` are strings, `encryptedPrv` is a v1
-   * envelope, and no upgrade for the same keychain id is already in flight on this instance.
-   *
-   * The new envelope is decrypted again and compared to the original prv before anything is
-   * written. The write is a compare-and-swap: the server replaces the envelope only if
-   * the stored one still equals `keychain.encryptedPrv`, and answers 409 otherwise, so a concurrent
-   * password change is never rolled back. All failures (409, 401, 400, network, validation
-   * mismatch) are logged with `debug` and swallowed. The passed `keychain` is not mutated.
+   * Upgrades the stored encryption of this key to the latest format, using the same passphrase.
+   * Never throws; returns what happened, so it can be shown to the user or ignored.
    *
    * @param params.keychain - the keychain as read from BitGo
-   * @param params.passphrase - the passphrase that decrypts `keychain.encryptedPrv`
+   * @param params.passphrase - the passphrase that decrypts the key
    * @param params.reqId - optional request tracer
+   * @returns the outcome of the upgrade
    */
-  async upgradeEncryption(params: UpgradeKeychainEncryptionOptions): Promise<void> {
+  async upgradeEncryption(params: UpgradeKeychainEncryptionOptions): Promise<KeyEncryptionUpgradeResult> {
     const { keychain, passphrase, reqId } = params ?? ({} as UpgradeKeychainEncryptionOptions);
     const keyId = keychain?.id;
     const oldEncryptedPrv = keychain?.encryptedPrv;
-    if (!_.isString(keyId) || !_.isString(oldEncryptedPrv) || !_.isString(passphrase)) {
-      return;
+    if (!_.isString(keyId) || !_.isString(passphrase)) {
+      return { status: 'failed', reason: 'error' };
     }
+    if (!_.isString(oldEncryptedPrv)) {
+      return { status: 'skipped', reason: 'noPrivateKey' };
+    }
+    let encryptionVersion: EncryptionVersion;
     try {
-      if (this.getEncryptionVersion(oldEncryptedPrv) !== 1) {
-        return;
-      }
+      encryptionVersion = this.getEncryptionVersion(oldEncryptedPrv);
     } catch (e) {
-      return;
+      return { status: 'failed', reason: 'error' };
+    }
+    if (encryptionVersion !== 1) {
+      return { status: 'skipped', reason: 'alreadyUpgraded' };
     }
     if (this.upgradesInFlight.has(keyId)) {
-      return;
+      return { status: 'skipped', reason: 'inProgress' };
     }
     this.upgradesInFlight.add(keyId);
     try {
       const prv = await this.bitgo.decrypt({ input: oldEncryptedPrv, password: passphrase });
       const newEncryptedPrv = await this.bitgo.encrypt({ input: prv, password: passphrase, encryptionVersion: 2 });
+      // Decrypt the new envelope again and compare before anything is written.
       const roundTrip = await this.bitgo.decrypt({ input: newEncryptedPrv, password: passphrase });
       if (roundTrip !== prv) {
         debug('upgradeEncryption: v2 round-trip mismatch for key %s, not writing', keyId);
-        return;
+        return { status: 'failed', reason: 'verificationFailed' };
       }
       if (reqId) {
         this.bitgo.setRequestTracer(reqId);
       }
+      // The server replaces the stored envelope only if it still equals the one read here (409 otherwise),
+      // so a concurrent password change is never rolled back.
       await this.bitgo
         .put(this.baseCoin.url('/key/' + encodeURIComponent(keyId)))
         .send({
@@ -460,8 +458,17 @@ export class Keychains implements IKeychains {
         })
         .result();
       debug('upgradeEncryption: upgraded key %s to v2', keyId);
+      return { status: 'upgraded' };
     } catch (e) {
       debug('upgradeEncryption: failed for key %s: %s', keyId, e instanceof Error ? e.message : String(e));
+      const status = (e as Partial<Pick<ApiResponseError, 'status'>>)?.status;
+      if (status === 409) {
+        return { status: 'skipped', reason: 'keyChanged' };
+      }
+      if (status === 503) {
+        return { status: 'failed', reason: 'unavailable' };
+      }
+      return { status: 'failed', reason: 'error' };
     } finally {
       this.upgradesInFlight.delete(keyId);
     }

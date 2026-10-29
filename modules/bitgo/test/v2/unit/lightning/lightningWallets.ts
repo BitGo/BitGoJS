@@ -639,6 +639,59 @@ describe('Lightning wallets', function () {
     });
   });
 
+  describe('upgradeUserAuthKeyEncryption', function () {
+    const passphrase = 'password123';
+    let wallet: LightningWallet;
+    beforeEach(function () {
+      wallet = getLightningWallet(
+        new Wallet(bitgo, basecoin, {
+          id: 'walletId',
+          coin: 'tlnbtc',
+          subType: 'lightningCustody',
+          coinSpecific: { keys: ['def', 'ghi'] },
+        })
+      ) as LightningWallet;
+    });
+
+    afterEach(function () {
+      nock.cleanAll();
+    });
+
+    it('upgrades the user auth key and returns the result', async function () {
+      const userAuthKeyNock = nock(bgUrl)
+        .get('/api/v2/' + coinName + '/key/def')
+        .reply(200, userAuthKey);
+      const nodeAuthKeyNock = nock(bgUrl)
+        .get('/api/v2/' + coinName + '/key/ghi')
+        .reply(200, nodeAuthKey);
+      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ status: 'upgraded' });
+
+      const result = await wallet.upgradeUserAuthKeyEncryption({ passphrase });
+
+      assert.deepStrictEqual(result, { status: 'upgraded' });
+      sinon.assert.calledOnce(upgrade);
+      assert.strictEqual(upgrade.firstCall.args[0].passphrase, passphrase);
+      userAuthKeyNock.done();
+      nodeAuthKeyNock.done();
+    });
+
+    it('reports an error when the auth keychains cannot be fetched', async function () {
+      const userAuthKeyNock = nock(bgUrl)
+        .get('/api/v2/' + coinName + '/key/def')
+        .reply(500, { error: 'internal error' });
+      nock(bgUrl)
+        .get('/api/v2/' + coinName + '/key/ghi')
+        .reply(200, nodeAuthKey);
+      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption');
+
+      const result = await wallet.upgradeUserAuthKeyEncryption({ passphrase });
+
+      assert.deepStrictEqual(result, { status: 'failed', reason: 'error' });
+      sinon.assert.notCalled(upgrade);
+      userAuthKeyNock.done();
+    });
+  });
+
   describe('Get lightning key(s)', function () {
     const walletData = {
       id: 'fakeid',

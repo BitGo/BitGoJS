@@ -4,6 +4,11 @@ import { getCodecPair } from '../shared';
 
 // codec for lightning wallet and keychain related apis
 
+export type UpgradeUserAuthKeyEncryptionParams = {
+  /** The wallet passphrase that decrypts the user auth key. */
+  passphrase: string;
+};
+
 export const KeyPurpose = t.union([t.literal('userAuth'), t.literal('nodeAuth')], 'KeyPurpose');
 
 export type KeyPurpose = t.TypeOf<typeof KeyPurpose>;

@@ -34,7 +34,13 @@ import {
 import { SubmitTransactionResponse } from '../inscriptionBuilder';
 import { drawKeycard } from '../internal';
 import * as internal from '../internal/internal';
-import { decryptKeychainPrivateKey, Keychain, KeychainWithEncryptedPrv, KeyIndices } from '../keychain';
+import {
+  decryptKeychainPrivateKey,
+  Keychain,
+  KeychainWithEncryptedPrv,
+  KeyEncryptionUpgradeResult,
+  KeyIndices,
+} from '../keychain';
 import { CreateLightningInvoiceParams, LightningInvoiceResponse } from '../../lightning';
 import { getLightningAuthKey } from '../lightning/lightningWalletUtil';
 import { IPendingApproval, PendingApproval, PendingApprovals } from '../pendingApproval';
@@ -137,6 +143,7 @@ import {
   UpdateWalletOptions,
   UpgradeEncryptionOptions,
   UpgradeEncryptionResult,
+  UpgradeUserKeyEncryptionOptions,
   VerifyKeyOptions,
   VerifyKeyResult,
   WalletCoinSpecific,
@@ -2461,7 +2468,7 @@ export class Wallet implements IWallet {
 
     if (this.multisigType() === 'tss') {
       const prv = await this.getUserPrv(presign as GetUserPrvOptions);
-      this.upgradeUserKeyEncryption(presign as GetUserPrvOptions);
+      this.startUserKeyEncryptionUpgrade(presign as GetUserPrvOptions);
       return this.signTransactionTss({
         ...presign,
         prv,
@@ -2505,7 +2512,7 @@ export class Wallet implements IWallet {
       const userKeySigningRequired = this.toTradingAccount().userKeySigningRequired;
       const prv = userKeySigningRequired ? await this.getUserPrv(presign as GetUserPrvOptions) : undefined;
       if (userKeySigningRequired) {
-        this.upgradeUserKeyEncryption(presign as GetUserPrvOptions);
+        this.startUserKeyEncryptionUpgrade(presign as GetUserPrvOptions);
       }
       return this.baseCoin.signTransaction({
         ...signTransactionParams,
@@ -2515,12 +2522,32 @@ export class Wallet implements IWallet {
     }
 
     const prv = await this.getUserPrv(presign as GetUserPrvOptions);
-    this.upgradeUserKeyEncryption(presign as GetUserPrvOptions);
+    this.startUserKeyEncryptionUpgrade(presign as GetUserPrvOptions);
     return this.baseCoin.signTransaction({
       ...signTransactionParams,
       prv,
       wallet: this,
     });
+  }
+
+  /**
+   * Upgrade the stored encryption of this wallet's user key to the latest format, using the wallet
+   * passphrase. Use it after a signing call to run the upgrade and show the outcome, for example in
+   * a UI. It applies regardless of the `upgradeEncryptionOnSign` setting, never throws, and never
+   * affects signing.
+   *
+   * @param params.walletPassphrase - the wallet passphrase that decrypts the user key
+   * @param params.reqId - optional request tracer
+   */
+  async upgradeUserKeyEncryption(params: UpgradeUserKeyEncryptionOptions): Promise<KeyEncryptionUpgradeResult> {
+    const { walletPassphrase, reqId } = params;
+    let keychain: Keychain;
+    try {
+      keychain = await this.baseCoin.keychains().get({ id: this.keyIds()[KeyIndices.USER], reqId });
+    } catch (e) {
+      return { status: 'failed', reason: 'error' };
+    }
+    return this.baseCoin.keychains().upgradeEncryption({ keychain, passphrase: walletPassphrase, reqId });
   }
 
   /**
@@ -2533,7 +2560,7 @@ export class Wallet implements IWallet {
    *
    * @param params - the same options that were passed to `getUserPrv`
    */
-  private upgradeUserKeyEncryption(params: GetUserPrvOptions): void {
+  private startUserKeyEncryptionUpgrade(params: GetUserPrvOptions): void {
     const keychain = params.keychain || params.key;
     const walletPassphrase = params.walletPassphrase;
     if (
@@ -2574,7 +2601,7 @@ export class Wallet implements IWallet {
     };
     assert(keychains[0].commonKeychain, 'Unable to find commonKeychain in keychains');
     const prv = await this.getUserPrv(userPrvOptions);
-    this.upgradeUserKeyEncryption(userPrvOptions);
+    this.startUserKeyEncryptionUpgrade(userPrvOptions);
     const presign = {
       ...params,
       walletData: this._wallet,
@@ -2620,7 +2647,7 @@ export class Wallet implements IWallet {
     };
     assert(keychains[0].commonKeychain, 'Unable to find commonKeychain in keychains');
     const prv = await this.getUserPrv(userPrvOptions);
-    this.upgradeUserKeyEncryption(userPrvOptions);
+    this.startUserKeyEncryptionUpgrade(userPrvOptions);
     const presign = {
       ...params,
       walletData: this._wallet,

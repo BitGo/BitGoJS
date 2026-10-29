@@ -8,6 +8,7 @@ import {
   commonTssMethods,
   TxRequestState,
   decodeOrElse,
+  KeyEncryptionUpgradeResult,
 } from '@bitgo/sdk-core';
 import * as t from 'io-ts';
 import {
@@ -35,6 +36,7 @@ import {
   ListPaymentsResponse,
   LndCreateWithdrawResponse,
   WatchOnly,
+  UpgradeUserAuthKeyEncryptionParams,
 } from '../codecs';
 import { LightningPaymentIntent, LightningPaymentRequest } from '@bitgo/public-types';
 
@@ -162,6 +164,14 @@ export interface ILightningWallet {
   payInvoice(params: SubmitPaymentParams): Promise<PayInvoiceResponse>;
 
   /**
+   * Upgrade the stored encryption of the user auth key to the latest format, using the wallet
+   * passphrase. Use it after a payment or withdrawal to run the upgrade and show the outcome. It
+   * applies regardless of the `upgradeEncryptionOnSign` setting and never throws.
+   * @param params.passphrase - the wallet passphrase that decrypts the user auth key
+   */
+  upgradeUserAuthKeyEncryption(params: UpgradeUserAuthKeyEncryptionParams): Promise<KeyEncryptionUpgradeResult>;
+
+  /**
    * On chain withdrawal
    * @param {LightningOnchainWithdrawParams} params - Withdraw parameters
    * @param {LightningOnchainRecipient[]} params.recipients - The recipients to pay
@@ -252,6 +262,16 @@ export class LightningWallet implements ILightningWallet {
     return sdkcore.decodeOrElse(returnCodec.name, returnCodec, createInvoiceResponse, (error) => {
       throw new Error(`Invalid list invoices response ${error}`);
     });
+  }
+
+  async upgradeUserAuthKeyEncryption(params: UpgradeUserAuthKeyEncryptionParams): Promise<KeyEncryptionUpgradeResult> {
+    let userAuthKey: LightningAuthKeychain;
+    try {
+      ({ userAuthKey } = await getLightningAuthKeychains(this.wallet));
+    } catch (e) {
+      return { status: 'failed', reason: 'error' };
+    }
+    return this.wallet.baseCoin.keychains().upgradeEncryption({ keychain: userAuthKey, passphrase: params.passphrase });
   }
 
   async payInvoice(params: SubmitPaymentParams): Promise<PayInvoiceResponse> {

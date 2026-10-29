@@ -1514,8 +1514,9 @@ describe('V2 Keychains', function () {
       const keychain = v1Keychain();
       const { scope, bodies } = mockPut();
 
-      await keychains.upgradeEncryption({ keychain, passphrase });
+      const result = await keychains.upgradeEncryption({ keychain, passphrase });
 
+      result.should.deepEqual({ status: 'upgraded' });
       scope.isDone().should.be.true();
       bodies.should.have.length(1);
       const body = bodies[0];
@@ -1531,49 +1532,82 @@ describe('V2 Keychains', function () {
       const encryptedV2 = await bitgo.encrypt({ input: prv, password: passphrase, encryptionVersion: 2 });
       const { scope } = mockPut();
 
-      await keychains.upgradeEncryption({ keychain: v1Keychain({ encryptedPrv: encryptedV2 }), passphrase });
+      const result = await keychains.upgradeEncryption({
+        keychain: v1Keychain({ encryptedPrv: encryptedV2 }),
+        passphrase,
+      });
 
+      result.should.deepEqual({ status: 'skipped', reason: 'alreadyUpgraded' });
       scope.isDone().should.be.false();
     });
 
     it('does not write for an unparseable envelope', async function () {
       const { scope } = mockPut();
 
-      await keychains.upgradeEncryption({ keychain: v1Keychain({ encryptedPrv: 'not json' }), passphrase });
+      const result = await keychains.upgradeEncryption({
+        keychain: v1Keychain({ encryptedPrv: 'not json' }),
+        passphrase,
+      });
 
+      result.should.deepEqual({ status: 'failed', reason: 'error' });
       scope.isDone().should.be.false();
     });
 
     it('does not write when the keychain has no id', async function () {
       const { scope } = mockPut();
 
-      await keychains.upgradeEncryption({ keychain: v1Keychain({ id: undefined as unknown as string }), passphrase });
+      const result = await keychains.upgradeEncryption({
+        keychain: v1Keychain({ id: undefined as unknown as string }),
+        passphrase,
+      });
 
+      result.should.deepEqual({ status: 'failed', reason: 'error' });
       scope.isDone().should.be.false();
     });
 
     it('resolves without writing when the passphrase is wrong', async function () {
       const { scope } = mockPut();
 
-      await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase: 'wrongPass' });
+      const result = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase: 'wrongPass' });
 
+      result.should.deepEqual({ status: 'failed', reason: 'error' });
       scope.isDone().should.be.false();
     });
 
     it('resolves when the server rejects the compare-and-swap with 409', async function () {
       const { scope } = mockPut(409);
 
-      await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
+      const result = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
 
       scope.isDone().should.be.true();
+      result.should.deepEqual({ status: 'skipped', reason: 'keyChanged' });
     });
 
     it('resolves when the server fails with 500', async function () {
       const { scope } = mockPut(500);
 
-      await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
+      const result = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
 
       scope.isDone().should.be.true();
+      result.should.deepEqual({ status: 'failed', reason: 'error' });
+    });
+
+    it('reports unavailable when the server rejects the upgrade with 503', async function () {
+      const { scope } = mockPut(503);
+
+      const result = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
+
+      scope.isDone().should.be.true();
+      result.should.deepEqual({ status: 'failed', reason: 'unavailable' });
+    });
+
+    it('reports an error when the request fails at the network level', async function () {
+      const scope = nock(bgUrl).put(`/api/v2/tltc/key/${keyId}`).replyWithError('socket hang up');
+
+      const result = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
+
+      scope.isDone().should.be.true();
+      result.should.deepEqual({ status: 'failed', reason: 'error' });
     });
 
     it('does not write when the v2 envelope does not decrypt back to the same prv', async function () {
@@ -1581,21 +1615,23 @@ describe('V2 Keychains', function () {
       decrypt.onSecondCall().resolves('other');
       const { scope } = mockPut();
 
-      await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
+      const result = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
 
       decrypt.callCount.should.equal(2);
+      result.should.deepEqual({ status: 'failed', reason: 'verificationFailed' });
       scope.isDone().should.be.false();
     });
 
     it('sends one write for concurrent upgrades of the same key', async function () {
       const { bodies } = mockPut(200, 2);
 
-      await Promise.all([
+      const results = await Promise.all([
         keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase }),
         keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase }),
       ]);
 
       bodies.should.have.length(1);
+      results.should.containDeep([{ status: 'upgraded' }, { status: 'skipped', reason: 'inProgress' }]);
     });
 
     it('allows a new upgrade of the same key after the previous one settled', async function () {

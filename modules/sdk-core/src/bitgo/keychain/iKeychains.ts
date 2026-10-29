@@ -183,6 +183,21 @@ export interface UpgradeKeychainEncryptionOptions {
 }
 
 /**
+ * Outcome of upgrading the stored encryption of a key.
+ * - `upgraded`: the key now uses the latest format.
+ * - `skipped`: no upgrade was attempted or needed. `alreadyUpgraded`: the key already uses the latest format.
+ *   `inProgress`: an upgrade of the same key is already running. `keyChanged`: the key was changed
+ *   elsewhere since it was read. `noPrivateKey`: there is no stored private key to upgrade.
+ * - `failed`: the key was left unchanged and can be upgraded on a later attempt.
+ *   `verificationFailed`: the re-encrypted key did not check out, so it was not saved.
+ *   `unavailable`: BitGo is not accepting upgrades right now. `error`: any other failure.
+ */
+export type KeyEncryptionUpgradeResult =
+  | { status: 'upgraded' }
+  | { status: 'skipped'; reason: 'alreadyUpgraded' | 'inProgress' | 'keyChanged' | 'noPrivateKey' }
+  | { status: 'failed'; reason: 'verificationFailed' | 'unavailable' | 'error' };
+
+/**
  * Parameters for the rotateKeychain method for ofc multi-user-key
  * @property {string} id - the public id of the keychain
  * @property {string} password - the user password use to encrypt/decrypt the private key
@@ -346,7 +361,11 @@ export interface IKeychains {
   updateSingleKeychainPassword(params?: UpdateSingleKeychainPasswordOptions): Promise<Keychain>;
   getEncryptionVersion(ciphertext: string): EncryptionVersion;
   reencryptAsV2(encryptedPrv: string, passphrase: string): Promise<string>;
-  upgradeEncryption(params: UpgradeKeychainEncryptionOptions): Promise<void>;
+  /**
+   * Upgrades the stored encryption of this key to the latest format, using the same passphrase.
+   * Never throws; returns what happened.
+   */
+  upgradeEncryption(params: UpgradeKeychainEncryptionOptions): Promise<KeyEncryptionUpgradeResult>;
   create(params?: { seed?: Buffer; isRootKey?: boolean }): KeyPair;
   add(params?: AddKeychainOptions): Promise<Keychain>;
   createBitGo(params?: CreateBitGoOptions): Promise<Keychain>;
