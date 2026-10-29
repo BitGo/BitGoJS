@@ -3966,6 +3966,11 @@ export enum UnderlyingAsset {
   // MegaEth testnet tokens
   'tmegaeth:tmt' = 'tmegaeth:tmt',
 
+  // Plume mainnet tokens
+  'plume:flttx' = 'plume:flttx',
+  'plume:wtgxx' = 'plume:wtgxx',
+  'plume:wtsix' = 'plume:wtsix',
+
   // Plume testnet tokens
   'tplume:usdc' = 'tplume:usdc',
 
@@ -4357,6 +4362,7 @@ export enum UnderlyingAsset {
   'xrp:eurcv' = 'xrp:eurcv',
   'xrp:aau' = 'xrp:aau',
   'xrp:fiuaxrp' = 'xrp:fiuaxrp',
+  'xrp:zaru' = 'xrp:zaru',
   // XRP MPT mainnet tokens
   'xrp:kld' = 'xrp:kld',
   'xrp:key' = 'xrp:key',
@@ -4772,6 +4778,7 @@ export enum UnderlyingAsset {
   'arcusdc:eurc' = 'arcusdc:eurc',
   'arcusdc:usyc' = 'arcusdc:usyc',
   'arcusdc:usdau' = 'arcusdc:usdau', // CECHO-2426
+  'arcusdc:zaru' = 'arcusdc:zaru',
 
   // Scroll mainnet tokens
   'scrolleth:scr' = 'scrolleth:scr',

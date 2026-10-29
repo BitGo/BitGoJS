@@ -2538,6 +2538,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
     ]
   ),
   account(
@@ -2576,6 +2577,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
     ]
   ),
   account(
@@ -5374,6 +5376,15 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['arcusdc:usdau'],
     Networks.main.arcusdc
   ),
+  erc20Token(
+    '152f7e3f-53ac-4a59-b948-3bc1932c9443',
+    'arcusdc:zaru',
+    'ZAR Universal',
+    18,
+    '0xe205b4e7ac03e3f7b2060c3edf2171aa7126c0d5',
+    UnderlyingAsset['arcusdc:zaru'],
+    Networks.main.arcusdc
+  ),
 
   // Scroll mainnet tokens
   erc20Token(
@@ -5784,6 +5795,38 @@ export const allCoinsAndTokens = [
     '0x055fd4bbad96a076c15187b60fe7ea07ea789b94',
     UnderlyingAsset['tmorpheth:stgusd1'],
     Networks.test.morpheth
+  ),
+
+  // Plume mainnet tokens
+  erc20Token(
+    '49cdbef2-ac4c-41da-be11-180fefbd3c5f',
+    'plume:flttx',
+    'WisdomTree Floating Rate Treasury Digital Fund',
+    18,
+    '0x3a446721a8818c8dde3eb9bfa5bb3cd9e8532109',
+    UnderlyingAsset['plume:flttx'],
+    Networks.main.plume,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    'c39909c2-575a-46a4-8119-6ab3b7a2ac3d',
+    'plume:wtgxx',
+    'WisdomTree Government Money Market Digital Fund',
+    18,
+    '0xcf7a8813bd3bdaf70a9f46d310ce1ee8d80a4f5a',
+    UnderlyingAsset['plume:wtgxx'],
+    Networks.main.plume,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '0e4f2f7b-36ad-4896-85ce-2931ae8fb491',
+    'plume:wtsix',
+    'WisdomTree Short-Duration Income Digital Fund',
+    18,
+    '0xdb6c0e250383bce1659df87621d8a85fcb2e91e1',
+    UnderlyingAsset['plume:wtsix'],
+    Networks.main.plume,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
 
   // Plume testnet tokens
@@ -8443,6 +8486,17 @@ export const allCoinsAndTokens = [
     'rGm7WCVp9gb4jZHWTEtGUr4dd74z2XuWhE::5553444300000000000000000000000000000000',
     'circle.com',
     UnderlyingAsset['xrp:usdc']
+  ),
+  xrpToken(
+    '232d2dee-399b-42b8-978c-aab3bb989b8f',
+    'xrp:zaru',
+    'ZAR Universal',
+    15,
+    'rwu15x3fKT6M8vADi6vrrR5nUXimkhagQf',
+    '5A41525500000000000000000000000000000000',
+    'rwu15x3fKT6M8vADi6vrrR5nUXimkhagQf::5A41525500000000000000000000000000000000',
+    'zaru.network',
+    UnderlyingAsset['xrp:zaru']
   ),
   xrpToken(
     '5067c3e5-51f2-4209-a842-d4450436245a',
