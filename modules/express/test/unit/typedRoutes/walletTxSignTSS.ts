@@ -25,9 +25,26 @@ describe('WalletTxSignTSS codec tests', function () {
     const coin = 'tbtc';
     const walletId = '68c02f96aa757d9212bd1a536f123456';
 
+    function assertErrorResponse(
+      result: { status: number; body: { error?: unknown; message?: unknown } },
+      status: number,
+      message: string
+    ) {
+      assert.strictEqual(result.status, status);
+      assert.strictEqual(result.body.error, message);
+      assert.strictEqual(result.body.message, message);
+    }
+
     const mockFullySignedResponse = {
       txHex:
         '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+    };
+
+    const attestation = {
+      signature: 'signature',
+      credentialId: 'credential-id',
+      clientDataJSON: 'client-data',
+      authenticatorData: 'authenticator-data',
     };
 
     afterEach(function () {
@@ -74,6 +91,7 @@ describe('WalletTxSignTSS codec tests', function () {
         },
         walletPassphrase: 'test_passphrase_12345',
         apiVersion: 'lite' as const,
+        attestation,
       };
 
       // Create mock wallet with ensureCleanSigSharesAndSignTransaction method
@@ -116,6 +134,7 @@ describe('WalletTxSignTSS codec tests', function () {
       assert.strictEqual(mockCoin.wallets.calledOnce, true);
       assert.strictEqual(walletsGetStub.calledOnceWith({ id: walletId }), true);
       assert.strictEqual(mockWallet.ensureCleanSigSharesAndSignTransaction.calledOnce, true);
+      sinon.assert.calledWithMatch(mockWallet.ensureCleanSigSharesAndSignTransaction, { attestation });
     });
 
     it('should successfully sign a half-signed TSS wallet transaction', async function () {
@@ -617,12 +636,10 @@ describe('WalletTxSignTSS codec tests', function () {
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
-        // Verify error response
-        assert.strictEqual(result.status, 500);
-        result.body.should.have.property('error');
+        assertErrorResponse(result, 500, 'Wallet not found');
       });
 
-      it('should handle signTransaction failure', async function () {
+      it('should handle wallet signing failure', async function () {
         const requestBody = {
           txPrebuild: {
             txHex:
@@ -633,9 +650,8 @@ describe('WalletTxSignTSS codec tests', function () {
           apiVersion: 'lite' as const,
         };
 
-        // Create mock wallet where signTransaction fails
         const mockWallet = {
-          signTransaction: sinon.stub().rejects(new Error('Invalid passphrase')),
+          ensureCleanSigSharesAndSignTransaction: sinon.stub().rejects(new Error('Invalid passphrase')),
         };
 
         const walletsGetStub = sinon.stub().resolves(mockWallet);
@@ -657,9 +673,8 @@ describe('WalletTxSignTSS codec tests', function () {
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
-        // Verify error response
-        assert.strictEqual(result.status, 500);
-        result.body.should.have.property('error');
+        assertErrorResponse(result, 500, 'Invalid passphrase');
+        assert.strictEqual(mockWallet.ensureCleanSigSharesAndSignTransaction.calledOnce, true);
       });
 
       it('should handle invalid coin error', async function () {
@@ -684,24 +699,27 @@ describe('WalletTxSignTSS codec tests', function () {
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
-        // Verify error response
-        assert.strictEqual(result.status, 500);
-        result.body.should.have.property('error');
+        assertErrorResponse(result, 500, `Coin ${invalidCoin} is not supported`);
       });
     });
 
     describe('Invalid Request Body', function () {
-      it('should reject request with empty body', async function () {
-        // Make the request with empty body
+      it('should return the wallet signing error for an empty body', async function () {
+        const mockWallet = {
+          ensureCleanSigSharesAndSignTransaction: sinon.stub().rejects(new Error('Missing transaction data')),
+        };
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockCoin = { wallets: sinon.stub().returns({ get: walletsGetStub }) };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
         const result = await agent
           .post(`/api/v2/${coin}/wallet/${walletId}/signtxtss`)
           .set('Authorization', 'Bearer test_access_token_12345')
           .set('Content-Type', 'application/json')
           .send({});
 
-        // io-ts validation should fail
-        // Note: Depending on your route config, this might be 400 or 500
-        assert.ok(result.status >= 400);
+        assertErrorResponse(result, 500, 'Missing transaction data');
+        assert.strictEqual(mockWallet.ensureCleanSigSharesAndSignTransaction.calledOnce, true);
       });
 
       it('should reject request with invalid txPrebuild type', async function () {
@@ -718,8 +736,8 @@ describe('WalletTxSignTSS codec tests', function () {
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
-        // Should fail validation
-        assert.ok(result.status >= 400);
+        assert.strictEqual(result.status, 400);
+        assert.match(result.body.error, /txPrebuild/);
       });
 
       it('should handle request with invalid apiVersion', async function () {
@@ -740,8 +758,8 @@ describe('WalletTxSignTSS codec tests', function () {
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
-        // Should fail validation
-        assert.ok(result.status >= 400);
+        assert.strictEqual(result.status, 400);
+        assert.match(result.body.error, /apiVersion/);
       });
 
       it('should handle request with malformed JSON', async function () {
@@ -752,8 +770,7 @@ describe('WalletTxSignTSS codec tests', function () {
           .set('Content-Type', 'application/json')
           .send('{ invalid json ]');
 
-        // Should fail parsing
-        assert.ok(result.status >= 400);
+        assert.strictEqual(result.status, 400);
       });
     });
 
@@ -766,7 +783,7 @@ describe('WalletTxSignTSS codec tests', function () {
         };
 
         const mockWallet = {
-          signTransaction: sinon.stub().rejects(new Error('Missing transaction data')),
+          ensureCleanSigSharesAndSignTransaction: sinon.stub().rejects(new Error('Missing transaction data')),
         };
 
         const walletsGetStub = sinon.stub().resolves(mockWallet);
@@ -780,8 +797,8 @@ describe('WalletTxSignTSS codec tests', function () {
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
-        // Should handle empty txPrebuild gracefully
-        assert.ok(result.status >= 400);
+        assertErrorResponse(result, 500, 'Missing transaction data');
+        assert.strictEqual(mockWallet.ensureCleanSigSharesAndSignTransaction.calledOnce, true);
       });
 
       it('should handle very long wallet ID', async function () {
@@ -807,8 +824,7 @@ describe('WalletTxSignTSS codec tests', function () {
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
-        // Should handle gracefully
-        assert.ok(result.status >= 400);
+        assertErrorResponse(result, 500, 'Invalid wallet ID');
       });
 
       it('should handle wallet ID with special characters', async function () {
@@ -833,8 +849,7 @@ describe('WalletTxSignTSS codec tests', function () {
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
-        // Should handle special characters safely
-        assert.ok(result.status >= 400);
+        assertErrorResponse(result, 500, 'Invalid wallet ID');
       });
 
       it('should handle txRequestId in both txPrebuild and body', async function () {
@@ -851,7 +866,7 @@ describe('WalletTxSignTSS codec tests', function () {
         };
 
         const mockWallet = {
-          signTransaction: sinon.stub().resolves(mockFullySignedResponse),
+          ensureCleanSigSharesAndSignTransaction: sinon.stub().resolves(mockFullySignedResponse),
         };
 
         const walletsGetStub = sinon.stub().resolves(mockWallet);
@@ -865,8 +880,12 @@ describe('WalletTxSignTSS codec tests', function () {
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
-        // Should handle gracefully (accept or reject consistently)
-        assert.ok(result.status === 200 || result.status >= 400);
+        assert.strictEqual(result.status, 200);
+        assert.deepStrictEqual(result.body, mockFullySignedResponse);
+        assert.strictEqual(mockWallet.ensureCleanSigSharesAndSignTransaction.calledOnce, true);
+        const signingParams = mockWallet.ensureCleanSigSharesAndSignTransaction.firstCall.args[0];
+        assert.strictEqual(signingParams.txRequestId, requestBody.txRequestId);
+        assert.strictEqual(signingParams.txPrebuild.txRequestId, requestBody.txPrebuild.txRequestId);
       });
 
       it('should handle missing walletPassphrase (edge case for TSS)', async function () {
@@ -881,7 +900,7 @@ describe('WalletTxSignTSS codec tests', function () {
         };
 
         const mockWallet = {
-          signTransaction: sinon.stub().rejects(new Error('Wallet passphrase required')),
+          ensureCleanSigSharesAndSignTransaction: sinon.stub().rejects(new Error('Wallet passphrase required')),
         };
 
         const walletsGetStub = sinon.stub().resolves(mockWallet);
@@ -895,8 +914,8 @@ describe('WalletTxSignTSS codec tests', function () {
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
-        // Should fail if passphrase is required
-        assert.ok(result.status >= 400);
+        assertErrorResponse(result, 500, 'Wallet passphrase required');
+        assert.strictEqual(mockWallet.ensureCleanSigSharesAndSignTransaction.calledOnce, true);
       });
     });
 
@@ -916,7 +935,7 @@ describe('WalletTxSignTSS codec tests', function () {
         const invalidResponse = {};
 
         const mockWallet = {
-          signTransaction: sinon.stub().resolves(invalidResponse),
+          ensureCleanSigSharesAndSignTransaction: sinon.stub().resolves(invalidResponse),
         };
 
         const walletsGetStub = sinon.stub().resolves(mockWallet);
@@ -930,16 +949,11 @@ describe('WalletTxSignTSS codec tests', function () {
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
-        // Even if SDK returns 200, response should fail codec validation
-        // This depends on where validation happens
-        assert.ok(result.status === 200 || result.status >= 400);
-
-        // If status is 200 but response is invalid, codec validation should catch it
-        if (result.status === 200) {
-          assert.throws(() => {
-            assertDecode(FullySignedTransactionResponse, result.body);
-          });
-        }
+        assert.strictEqual(result.status, 200);
+        assert.strictEqual(mockWallet.ensureCleanSigSharesAndSignTransaction.calledOnce, true);
+        assert.throws(() => {
+          assertDecode(FullySignedTransactionResponse, result.body);
+        });
       });
 
       it('should reject response with wrong type in txHex field', async function () {
@@ -959,7 +973,7 @@ describe('WalletTxSignTSS codec tests', function () {
         };
 
         const mockWallet = {
-          signTransaction: sinon.stub().resolves(invalidResponse),
+          ensureCleanSigSharesAndSignTransaction: sinon.stub().resolves(invalidResponse),
         };
 
         const walletsGetStub = sinon.stub().resolves(mockWallet);
@@ -973,12 +987,11 @@ describe('WalletTxSignTSS codec tests', function () {
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
-        // Response codec validation should catch type mismatch
-        if (result.status === 200) {
-          assert.throws(() => {
-            assertDecode(FullySignedTransactionResponse, result.body);
-          });
-        }
+        assert.strictEqual(result.status, 200);
+        assert.strictEqual(mockWallet.ensureCleanSigSharesAndSignTransaction.calledOnce, true);
+        assert.throws(() => {
+          assertDecode(FullySignedTransactionResponse, result.body);
+        });
       });
     });
   });
@@ -1166,6 +1179,17 @@ describe('WalletTxSignTSS codec tests', function () {
       assert.strictEqual(decoded.allowNonSegwitSigningWithoutPrevTx, validBody.allowNonSegwitSigningWithoutPrevTx);
       assert.strictEqual(decoded.isEvmBasedCrossChainRecovery, validBody.isEvmBasedCrossChainRecovery);
       assert.strictEqual(decoded.derivationSeed, validBody.derivationSeed);
+    });
+
+    it('should preserve optional attestation in the request body schema', function () {
+      const attestation = {
+        signature: 'signature',
+        credentialId: 'credential-id',
+        clientDataJSON: 'client-data-json',
+        authenticatorData: 'authenticator-data',
+      };
+      const decoded = assertDecode(t.partial(WalletTxSignTSSBody), { attestation });
+      assert.deepStrictEqual(decoded.attestation, attestation);
     });
 
     it('should validate empty body', function () {

@@ -65,7 +65,6 @@
     "smol-toml": "1.7.1",
     "**/cliui/strip-ansi": "6.0.1",
     "**/cliui/string-width": "4.2.3",
-    "**/yargs/cliui/string-width": "4.2.3",
     "qs": "6.16.0",
     "**/lodash": ">=4.18.1",
     "**/lerna/**/glob": "11.1.0",
@@ -292,8 +291,8 @@
   ],
   "scripts": {
     "postinstall": "test -n \"$NOYARNPOSTINSTALL\" || lerna run build --stream",
-    "lint": "lerna run lint --stream",
-    "lint-changed": "lerna run lint --since origin/${GITHUB_REPO_BRANCH:-master}..HEAD --stream",
+    "lint": "lerna run lint --stream --concurrency 2",
+    "lint-changed": "lerna run lint --since origin/${GITHUB_REPO_BRANCH:-master}..HEAD --stream --concurrency 2",
     "unit-test-changed": "lerna run unit-test --since $(git merge-base HEAD~ origin/${GITHUB_REPO_BRANCH:-master}) --private --stream",
     "browser-tests": "lerna run --scope bitgo compile-test && lerna run --scope bitgo browser-test && lerna run --scope @bitgo/web-demo test",
     "gen-coverage-changed": "lerna run gen-coverage --since origin/${GITHUB_REPO_BRANCH:-master}..HEAD --stream --parallel",
@@ -306,8 +305,8 @@
     "artifacts": "lerna run upload-artifacts --stream --parallel",
     "upload-docs": "lerna run upload-docs --stream --parallel",
     "gen-docs": "lerna run gen-docs --stream --parallel",
-    "check-fmt-changed": "lerna run check-fmt --since origin/${GITHUB_REPO_BRANCH:-master}..HEAD --stream --parallel",
-    "check-fmt": "lerna run check-fmt --stream --parallel",
+    "check-fmt-changed": "lerna run check-fmt --since origin/${GITHUB_REPO_BRANCH:-master}..HEAD --stream --concurrency 8",
+    "check-fmt": "lerna run check-fmt --stream --concurrency 8",
     "check-commits": "yarn commitlint --from=origin/${GITHUB_REPO_BRANCH:-master} -V",
     "check-deps": "tsx ./scripts/check-package-dependencies.ts",
     "check-versions": "node ./check-package-versions.js",
@@ -323,6 +322,7 @@
     "prepare-commit-msg": "node ./scripts/prepare-commit-msg.js",
     "test:prepare-release": "mocha --require tsx ./scripts/tests/prepareRelease/prepare-release-main.test.ts",
     "test:shrinkwrap": "mocha --require tsx ./scripts/tests/generate-bitgo-shrinkwrap.test.ts",
+    "test:verify-release": "mocha --require tsx ./scripts/tests/verify-release.test.ts",
     "test:scripts": "mocha './scripts/tests/**/*.test.js'"
   },
   "dependencies": {

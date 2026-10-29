@@ -17,7 +17,7 @@ permissions:
   pull-requests: read
 
 env:
-  SOCKET_SECURITY_MODE: monitor  # Options: monitor (non-blocking) or block (fails on vulnerabilities)
+  SOCKET_SECURITY_MODE: monitor # Options: monitor (non-blocking) or block (fails on vulnerabilities)
 
 jobs:
   # Detect which file groups changed so downstream jobs can skip when irrelevant.
@@ -36,6 +36,7 @@ jobs:
         with:
           filters: |
             source:
+              - '.github/workflows/ci.yml'
               - 'modules/**'
               - 'package.json'
               - 'yarn.lock'
@@ -62,30 +63,37 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [22.x, 24.x]
+        node-version: [22.x, 24.x, 26.x]
         experimental: [false]
         include:
-          # Node's Current release line — not yet an LTS. Failures here are
-          # surfaced via PR comment but do not block merge (see all-checks).
-          - node-version: 26.x
+          - node-version: 27-nightly
             experimental: true
 
     steps:
-      - uses: socketdev/action@937f824ec476dfd164d4a4d9995751427b0be143 # v1.3.0
+      - id: socket-firewall
+        continue-on-error: ${{ matrix.experimental }}
+        uses: socketdev/action@937f824ec476dfd164d4a4d9995751427b0be143 # v1.3.0
         with:
           mode: firewall-free
 
-      - uses: actions/checkout@v6
+      - id: checkout
+        continue-on-error: ${{ matrix.experimental }}
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
 
       - name: Setup node:${{ matrix.node-version }}
+        id: setup-node
+        continue-on-error: ${{ matrix.experimental }}
+        timeout-minutes: 15
         uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
 
       - name: Build Info
+        id: build-info
+        continue-on-error: ${{ matrix.experimental }}
         run: |
           echo "node $(node --version)"
           echo "npm $(npm --version)"
@@ -95,12 +103,15 @@ jobs:
           echo "head ref $GITHUB_HEAD_REF"
 
       - name: Fetch Base Ref
+        id: fetch-base-ref
+        continue-on-error: ${{ matrix.experimental }}
         run: |
           git fetch origin ${GITHUB_BASE_REF:-master}
 
       - name: restore lerna dependencies
         id: lerna-cache
-        uses: actions/cache@v5
+        continue-on-error: ${{ matrix.experimental }}
+        uses: actions/cache/restore@v5
         with:
           path: |
             node_modules
@@ -108,13 +119,32 @@ jobs:
           key: ${{ runner.os }}-node${{matrix.node-version}}-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json') }}-${{ hashFiles('**/package.json') }}
 
       - name: Install Packages
+        id: install-packages
         if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
+        continue-on-error: ${{ matrix.experimental }}
+        timeout-minutes: 60
         run: sfw yarn install --with-frozen-lockfile --ignore-scripts
 
+      - name: save lerna dependencies
+        id: save-lerna-cache
+        if: steps.lerna-cache.outputs.cache-hit != 'true' && steps.install-packages.outcome == 'success'
+        continue-on-error: ${{ matrix.experimental }}
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            node_modules
+            modules/*/node_modules
+          key: ${{ steps.lerna-cache.outputs.cache-primary-key }}
+
       - name: Check In-Repo Package Versions
+        id: check-versions
+        continue-on-error: ${{ matrix.experimental }}
         run: yarn run check-versions
 
       - name: build packages
+        id: build-packages
+        continue-on-error: ${{ matrix.experimental }}
+        timeout-minutes: 60
         env:
           # Workaround for https://github.com/nodejs/node/issues/51555
           DISABLE_V8_COMPILE_CACHE: '1'
@@ -123,18 +153,36 @@ jobs:
       - name: Unit Test
         id: unit-test
         continue-on-error: ${{ matrix.experimental }}
+        timeout-minutes: 60
         run: yarn run unit-test-changed
         env:
           BITGOJS_TEST_PASSWORD: ${{ secrets.BITGOJS_TEST_PASSWORD }}
 
-      - name: Comment on Node Current failure
-        if: matrix.experimental && steps.unit-test.outcome == 'failure' && github.event_name == 'pull_request'
+      - name: Comment on experimental Node.js failure
+        if: >-
+          always() &&
+          matrix.experimental &&
+          github.event_name == 'pull_request' &&
+          (
+            steps.socket-firewall.outcome == 'failure' ||
+            steps.checkout.outcome == 'failure' ||
+            steps.setup-node.outcome == 'failure' ||
+            steps.build-info.outcome == 'failure' ||
+            steps.fetch-base-ref.outcome == 'failure' ||
+            steps.lerna-cache.outcome == 'failure' ||
+            steps.install-packages.outcome == 'failure' ||
+            steps.save-lerna-cache.outcome == 'failure' ||
+            steps.check-versions.outcome == 'failure' ||
+            steps.build-packages.outcome == 'failure' ||
+            steps.unit-test.outcome == 'failure'
+          )
+        continue-on-error: true
         uses: actions/github-script@v7
         with:
           script: |
             const marker = '<!-- node-current-ci-failure -->';
-            const body = `${marker}\n⚠️ Unit tests are failing on Node ${{ matrix.node-version }} (Current release line, non-blocking). ` +
-              `This is not an LTS version yet, so it does not block merge, but it signals an incompatibility to fix before Node ${{ matrix.node-version }} becomes LTS.\n\n` +
+            const body = `${marker}\n⚠️ Compatibility checks are failing on Node.js ${{ matrix.node-version }} (experimental, non-blocking). ` +
+              `This does not block merge, but it signals an incompatibility to fix before this release becomes supported.\n\n` +
               `[View run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
 
             const { data: comments } = await github.rest.issues.listComments({
@@ -142,7 +190,7 @@ jobs:
               repo: context.repo.repo,
               issue_number: context.payload.pull_request.number,
             });
-            const existing = comments.find((c) => c.body.includes(marker));
+            const existing = comments.find((comment) => comment.body.includes(marker));
 
             if (existing) {
               await github.rest.issues.updateComment({
@@ -160,8 +208,23 @@ jobs:
               });
             }
 
-      - name: Resolve Node Current failure comment
-        if: matrix.experimental && steps.unit-test.outcome == 'success' && github.event_name == 'pull_request'
+      - name: Resolve experimental Node.js failure comment
+        if: >-
+          always() &&
+          matrix.experimental &&
+          github.event_name == 'pull_request' &&
+          steps.socket-firewall.outcome != 'failure' &&
+          steps.checkout.outcome != 'failure' &&
+          steps.setup-node.outcome != 'failure' &&
+          steps.build-info.outcome != 'failure' &&
+          steps.fetch-base-ref.outcome != 'failure' &&
+          steps.lerna-cache.outcome != 'failure' &&
+          steps.install-packages.outcome != 'failure' &&
+          steps.save-lerna-cache.outcome != 'failure' &&
+          steps.check-versions.outcome != 'failure' &&
+          steps.build-packages.outcome != 'failure' &&
+          steps.unit-test.outcome == 'success'
+        continue-on-error: true
         uses: actions/github-script@v7
         with:
           script: |
@@ -171,13 +234,13 @@ jobs:
               repo: context.repo.repo,
               issue_number: context.payload.pull_request.number,
             });
-            const existing = comments.find((c) => c.body.includes(marker));
+            const existing = comments.find((comment) => comment.body.includes(marker));
             if (existing) {
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 comment_id: existing.id,
-                body: `${marker}\n✅ Unit tests now pass on Node ${{ matrix.node-version }} (Current release line).`,
+                body: `${marker}\n✅ Unit tests now pass on Node.js ${{ matrix.node-version }} (experimental).`,
               });
             }
 

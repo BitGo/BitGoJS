@@ -3,6 +3,7 @@ import { EncryptionVersion, IEncryptionSession, IRequestTracer } from '../../../
 import { type ITransactionRecipient, KeychainsTriplet, ParsedTransaction, TransactionParams } from '../../baseCoin';
 import { ApiKeyShare, Keychain, WebauthnKeyEncryptionInfo } from '../../keychain';
 import { ApiVersion, Memo, WalletType, type PrebuildTransactionFeeInfo } from '../../wallet';
+import type { AttestationPayload } from '../../wallet/BuildParams';
 import { EDDSA, GShare, Signature, SignShare } from '../../../account-lib/mpc/tss';
 import { Signature as EcdsaSignature } from '../../../account-lib/mpc/tss/ecdsa/types';
 import { KeyShare } from './ecdsa';
@@ -362,6 +363,8 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
    * enterprise's approved Video ID users.
    */
   videoApprovers?: string[];
+  /** Optional pass-through WebAuthn proof sent at the top level of a withdrawal txrequest. */
+  attestation?: AttestationPayload;
   /**
    * MIST to redeem from the sender's address balance (SIP-58 / SUI address balances).
    * When set, the PTB includes tx.withdrawal() + redeem_funds() before the transfer.
@@ -733,6 +736,7 @@ export type TSSParams = {
   reqId: IRequestTracer;
   apiVersion?: ApiVersion;
   txParams?: TransactionParams;
+  attestation?: AttestationPayload;
 };
 
 export type TSSParamsForMessage = TSSParams & {
@@ -767,6 +771,7 @@ export type TssSignTxExplicitRecipientParams = {
   apiVersion?: ApiVersion;
   recipientSource: typeof TssTxRecipientSource.Explicit;
   txParams: TransactionParamsWithMandatoryRecipients;
+  attestation?: AttestationPayload;
 };
 
 export type TssSignTxResolvedRecipientParams = {
@@ -775,6 +780,7 @@ export type TssSignTxResolvedRecipientParams = {
   apiVersion?: ApiVersion;
   recipientSource?: typeof TssTxRecipientSource.Resolved;
   txParams?: TransactionParams;
+  attestation?: AttestationPayload;
 };
 
 /**
@@ -962,7 +968,9 @@ export interface ITssUtils<KeyShare = EDDSA.KeyShare> {
     txRequest: string | TxRequest,
     externalSignerCommitmentGenerator: CustomCommitmentGeneratingFunction,
     externalSignerRShareGenerator: CustomRShareGeneratingFunction,
-    externalSignerGShareGenerator: CustomGShareGeneratingFunction
+    externalSignerGShareGenerator: CustomGShareGeneratingFunction,
+    reqId?: IRequestTracer,
+    attestation?: TSSParams['attestation']
   ): Promise<TxRequest>;
   signEcdsaTssUsingExternalSigner(
     params: TSSParams | TSSParamsForMessage,

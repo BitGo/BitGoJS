@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.26.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-icp%401.25.3...%40bitgo%2Fsdk-coin-icp%401.26.0) (2026-10-27)
+
+### Features
+
+* enable Safe recovery for ICP (offline mode) ([5f267cc](https://github.com/BitGo/BitGoJS/commit/5f267cc37af69cee5fa7027a1d51ec11df28e6ca))
+
+
 ## [1.25.3](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-icp%401.25.2...%40bitgo%2Fsdk-coin-icp%401.25.3) (2026-10-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-icp

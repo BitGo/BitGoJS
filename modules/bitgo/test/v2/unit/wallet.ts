@@ -654,21 +654,28 @@ describe('V2 Wallet:', function () {
 
     it('should send wrapParams to /tx/build when prebuilding wrapApprove on an onchain multi-sig wallet', async function () {
       const wrapParams = { tokenName: 'hteth:cusdt', amount: '1000000' };
+      const callerParams: { type: string; wrapParams: { tokenName: string; amount: string }; recipients?: unknown } = {
+        type: 'wrapApprove',
+        wrapParams,
+      };
       const buildNock = nock(bgUrl)
         .post(`/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/tx/build`, (body) => {
           body.type.should.equal('wrapApprove');
           body.wrapParams.should.deepEqual(wrapParams);
-          should.not.exist(body.recipients);
+          body.recipients.should.deepEqual([]);
           return true;
         })
         .reply(200, { txHex: '0xfaketxhex', feeInfo: { fee: '1000' } });
 
       try {
-        await ethWallet.prebuildTransaction({ type: 'wrapApprove', wrapParams });
+        await ethWallet.prebuildTransaction(callerParams);
       } catch (e) {
         // post-processing of the fake prebuild may fail; the contract under test is the request body
       }
       buildNock.isDone().should.be.true();
+      // the caller's params must stay untouched: they flow into prebuildAndSignTransaction
+      // (prebuildTx + sign flows), where a truthy recipients trips the prebuildTx check
+      should.not.exist(callerParams.recipients);
     });
 
     it('should send unwrapParams to /tx/build when prebuilding unwrap on an onchain multi-sig wallet', async function () {
@@ -677,7 +684,7 @@ describe('V2 Wallet:', function () {
         .post(`/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/tx/build`, (body) => {
           body.type.should.equal('unwrap');
           body.unwrapParams.should.deepEqual(unwrapParams);
-          should.not.exist(body.recipients);
+          body.recipients.should.deepEqual([]);
           return true;
         })
         .reply(200, { txHex: '0xfaketxhex', feeInfo: { fee: '1000' } });
@@ -686,6 +693,40 @@ describe('V2 Wallet:', function () {
         await ethWallet.prebuildTransaction({ type: 'unwrap', unwrapParams });
       } catch (e) {
         // post-processing of the fake prebuild may fail; the contract under test is the request body
+      }
+      buildNock.isDone().should.be.true();
+    });
+
+    it('should send empty recipients to /tx/build when prebuilding wrap (request-shape contract)', async function () {
+      const buildNock = nock(bgUrl)
+        .post(`/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/tx/build`, (body) => {
+          body.type.should.equal('wrap');
+          body.recipients.should.deepEqual([]);
+          return true;
+        })
+        .reply(200, { txHex: '0xfaketxhex', feeInfo: { fee: '1000' } });
+
+      try {
+        await ethWallet.prebuildTransaction({ type: 'wrap' });
+      } catch (e) {
+        // the server rejects direct wrap builds; the contract under test is the request body
+      }
+      buildNock.isDone().should.be.true();
+    });
+
+    it('should send empty recipients to /tx/build when prebuilding finalizeUnwrap (request-shape contract)', async function () {
+      const buildNock = nock(bgUrl)
+        .post(`/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/tx/build`, (body) => {
+          body.type.should.equal('finalizeUnwrap');
+          body.recipients.should.deepEqual([]);
+          return true;
+        })
+        .reply(200, { txHex: '0xfaketxhex', feeInfo: { fee: '1000' } });
+
+      try {
+        await ethWallet.prebuildTransaction({ type: 'finalizeUnwrap' });
+      } catch (e) {
+        // the server rejects direct finalizeUnwrap builds; the contract under test is the request body
       }
       buildNock.isDone().should.be.true();
     });
@@ -722,6 +763,37 @@ describe('V2 Wallet:', function () {
 
       should.exist(caught);
       caught!.message.should.equal('cannot provide recipients for transaction type wrapApprove');
+      caught!.code!.should.equal('recipients_not_allowed_for_fillnonce_and_acceleration_tx_type');
+    });
+
+    it('allows an empty recipients array when prebuilding wrapApprove (server-derived shape)', async function () {
+      const nockKeychain = nock(bgUrl).get(`/api/v2/${ethWallet.coin()}/key/${ethWallet.keyIds()[0]}`).reply(200, {
+        id: '598f606cd8fc24710d2ebad89dce86c2',
+        pub: 'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
+        ethAddress: '0x26a163ba9739529720c0914c583865dec0d37278',
+        source: 'user',
+        encryptedPrv:
+          '{"iv":"15FsbDVI1zG9OggD8YX+Hg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"hHbNH3Sz/aU=","ct":"WoNVKz7afiRxXI2w/YkzMdMyoQg/B15u1Q8aQgi96jJZ9wk6TIaSEc6bXFH3AHzD9MdJCWJQUpRhoQc/rgytcn69scPTjKeeyVMElGCxZdFVS/psQcNE+lue3//2Zlxj+6t1NkvYO+8yAezSMRBK5OdftXEjNQI="}',
+        coinSpecific: {},
+      });
+
+      // the guard must let the empty-array shape through; the failure below is the passphrase check
+      await ethWallet
+        .prebuildAndSignTransaction({ type: 'wrapApprove', recipients: [], walletPassphrase: 'wrongPassphrase' })
+        .should.be.rejectedWith('unable to decrypt keychain with the given wallet passphrase');
+      nockKeychain.isDone().should.be.true();
+    });
+
+    it('still rejects an empty recipients array for fillNonce (guard regression)', async function () {
+      let caught: (Error & { code?: string }) | undefined;
+      try {
+        await ethWallet.prebuildAndSignTransaction({ type: 'fillNonce', recipients: [] });
+      } catch (e) {
+        caught = e;
+      }
+
+      should.exist(caught);
+      caught!.message.should.equal('cannot provide recipients for transaction type fillNonce');
       caught!.code!.should.equal('recipients_not_allowed_for_fillnonce_and_acceleration_tx_type');
     });
   });
@@ -4386,8 +4458,14 @@ describe('V2 Wallet:', function () {
         capturedRequestBody!.intent.sequenceId.should.equal(params.sequenceId);
       });
 
-      describe('videoApprovers', function () {
+      describe('top-level withdrawal request fields', function () {
         const videoApprovers = ['5cae3130f8f4561d51dfcbfdaafba9b9', '5cae3130f8f4561d51dfcbfdaafba9ba'];
+        const attestation = {
+          signature: 'sig',
+          credentialId: 'credential',
+          clientDataJSON: 'client-data',
+          authenticatorData: 'authenticator-data',
+        };
         const adaAddress =
           'addr_test1qz4m3ms9nxra36t6rtz4lzc9zkk3d4qwcpcr3yxwhxlslpathrhqtxv8mr5h5xk9t79s29ddzm2qasrs8zgvawdlp7rs44g5hc';
 
@@ -4405,35 +4483,126 @@ describe('V2 Wallet:', function () {
           return capturedRequestBody;
         }
 
-        it('should send videoApprovers as a top-level field for transfers', async function () {
+        it('should send videoApprovers and attestation as top-level fields for transfers', async function () {
           const body = await captureTxRequestBody({
             type: 'transfer',
             recipients: [{ amount: '2', address: adaAddress }],
             videoApprovers,
+            attestation,
           });
 
           body.videoApprovers.should.deepEqual(videoApprovers);
+          body.attestation.should.deepEqual(attestation);
           body.intent.should.not.have.property('videoApprovers');
+          body.intent.should.not.have.property('attestation');
         });
 
-        it('should send videoApprovers as a top-level field for token transfers', async function () {
+        it('should send videoApprovers and attestation as top-level fields for token transfers', async function () {
           const body = await captureTxRequestBody({
             type: 'transfertoken',
             recipients: [{ amount: '2', address: adaAddress, tokenName: 'tada:water' }],
             videoApprovers,
+            attestation,
           });
 
           body.videoApprovers.should.deepEqual(videoApprovers);
+          body.attestation.should.deepEqual(attestation);
           body.intent.should.not.have.property('videoApprovers');
+          body.intent.should.not.have.property('attestation');
         });
 
-        it('should not send videoApprovers when none are provided', async function () {
-          const body = await captureTxRequestBody({
-            type: 'transfer',
-            recipients: [{ amount: '2', address: adaAddress }],
+        it('should omit attestation from signing after creating transfer txRequests', async function () {
+          const requestBodies: Record<string, unknown>[] = [];
+          const signRequests: Record<string, unknown>[] = [];
+          const recipientsByType = {
+            transfer: [{ amount: '2', address: adaAddress }],
+            transfertoken: [{ amount: '2', address: adaAddress, tokenName: 'tada:water' }],
+          };
+
+          sandbox
+            .stub(Keychains.prototype, 'getKeysForSigning')
+            .resolves([{ commonKeychain: 'test', id: '', pub: '', type: 'independent' }]);
+          sandbox.stub(tada, 'verifyTransaction').resolves(true);
+          sandbox.stub(BaseTssUtils.default.prototype, 'getTxRequest').resolves(txRequest);
+          sandbox.stub(tssAdaWallet, 'getUserPrv').resolves('secretKey');
+          sandbox.stub(TssUtils.prototype, 'signTxRequest').callsFake(async (params) => {
+            signRequests.push(params as unknown as Record<string, unknown>);
+            return txRequest;
           });
 
-          body.should.not.have.property('videoApprovers');
+          for (const type of ['transfer', 'transfertoken'] as const) {
+            const recipients = recipientsByType[type];
+            const previewPrebuild = {
+              walletId: tssAdaWallet.id(),
+              wallet: tssAdaWallet,
+              txRequestId: 'preview-id',
+              txHex: 'preview-tx',
+              buildParams: { type, recipients, attestation, apiVersion: 'lite', preview: true },
+            };
+
+            for (const prebuildTx of [undefined, previewPrebuild]) {
+              nock(bgUrl)
+                .post(`/api/v2/wallet/${tssAdaWallet.id()}/txrequests`, (body) => {
+                  requestBodies.push(body as Record<string, unknown>);
+                  return true;
+                })
+                .reply(200, txRequest);
+
+              await tssAdaWallet.prebuildAndSignTransaction({
+                walletPassphrase: 'passphrase',
+                apiVersion: 'lite',
+                ...(!prebuildTx && { type, recipients, attestation }),
+                ...(prebuildTx && { prebuildTx }),
+              });
+            }
+          }
+
+          requestBodies.should.have.length(4);
+          requestBodies.forEach((body) => assert.deepStrictEqual(body.attestation, attestation));
+          assert.strictEqual(requestBodies[1].preview, false);
+          assert.strictEqual(requestBodies[3].preview, false);
+          signRequests.should.have.length(4);
+          signRequests.forEach((params) => params.should.not.have.property('attestation'));
+        });
+
+        it('should preserve attestation when signing a supplied prebuildTx', async function () {
+          const signRequests: Record<string, unknown>[] = [];
+          sandbox
+            .stub(Keychains.prototype, 'getKeysForSigning')
+            .resolves([{ commonKeychain: 'test', id: '', pub: '', type: 'independent' }]);
+          sandbox.stub(tada, 'verifyTransaction').resolves(true);
+          sandbox.stub(BaseTssUtils.default.prototype, 'getTxRequest').resolves(txRequest);
+          sandbox.stub(tssAdaWallet, 'getUserPrv').resolves('secretKey');
+          sandbox.stub(TssUtils.prototype, 'signTxRequest').callsFake(async (params) => {
+            signRequests.push(params as unknown as Record<string, unknown>);
+            return txRequest;
+          });
+
+          await tssAdaWallet.prebuildAndSignTransaction({
+            walletPassphrase: 'passphrase',
+            type: 'transfer',
+            attestation,
+            prebuildTx: {
+              walletId: tssAdaWallet.id(),
+              wallet: tssAdaWallet,
+              txRequestId: 'existing-id',
+              txHex: 'existing-tx',
+            },
+          });
+
+          signRequests.should.have.length(1);
+          assert.deepStrictEqual(signRequests[0].attestation, attestation);
+        });
+
+        it('should omit videoApprovers and attestation when absent for transfers', async function () {
+          for (const type of ['transfer', 'transfertoken'] as const) {
+            const body = await captureTxRequestBody({
+              type,
+              recipients: [{ amount: '2', address: adaAddress }],
+            });
+            body.should.not.have.property('videoApprovers');
+            body.should.not.have.property('attestation');
+          }
         });
       });
     });
@@ -4442,8 +4611,6 @@ describe('V2 Wallet:', function () {
       it('should sign transaction', async function () {
         const signTxRequest = sandbox.stub(TssUtils.prototype, 'signTxRequest');
         signTxRequest.resolves(txRequest);
-        // TODO(BG-59686): this is not doing anything if we don't check the return value, we should also move this check to happen after we invoke signTransaction
-        signTxRequest.calledOnceWithExactly({ txRequest, prv: 'secretKey', reqId });
 
         const txPrebuild = {
           walletId: tssSolWallet.id(),
@@ -4454,9 +4621,10 @@ describe('V2 Wallet:', function () {
         const signedTransaction = await tssSolWallet.signTransaction({
           reqId,
           txPrebuild,
-          prv: 'sercretKey',
+          prv: 'secretKey',
         });
         signedTransaction.should.deepEqual(txRequest);
+        signTxRequest.should.have.been.calledOnce();
       });
 
       it('should fail to sign transaction without txRequestId', async function () {

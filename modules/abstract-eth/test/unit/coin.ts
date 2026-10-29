@@ -478,6 +478,245 @@ export function runTransactionVerificationTests(coinName: string, bitgo: TestBit
         .verifyTransaction({ txParams, txPrebuild, wallet, verification })
         .should.be.rejectedWith('coin in txPrebuild did not match that in txParams supplied by client');
     });
+
+    // CHALO-2010: the ERC-7984 PA-rebuild path — the approve leg captured from staging
+    // (the sendMultiSig envelope: approve(spender=0x2debbe04 wrapper, amount=0xf4240) on the
+    // pair's underlying 0x51a63b56). The PA-rebuild carries no caller wrapParams — the pair is
+    // resolved from the tx's own calldata.
+    const erc7984WrapApproveTxHex =
+      '0xf901ed01843b9aca0083030d40943b58684525564b38a381e46a731703ed03f3212280b901c43912521500000000000000000000000051a63b5621d78de54d2f4d098a23a5a69e76f30b000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000006adf0240000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000001400000000000000000000000000000000000000000000000000000000000000044095ea7b30000000000000000000000002debbe0487ef921df4457f9e36ed05be2df1ac7500000000000000000000000000000000000000000000000000000000000f4240000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000041000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000831117838080';
+    const erc7984Prebuild = {
+      coin: coinTest,
+      txHex: erc7984WrapApproveTxHex,
+      recipients: [
+        {
+          address: '0x51a63b5621d78de54d2f4d098a23a5a69e76f30b',
+          amount: '0',
+          data: '0x095ea7b30000000000000000000000002debbe0487ef921df4457f9e36ed05be2df1ac7500000000000000000000000000000000000000000000000000000000000f4240',
+        },
+      ],
+    };
+
+    it('verifies the ERC-7984 wrapApprove PA-rebuild without caller wrapParams', async () => {
+      const wallet = new Wallet(bitgo, basecoin, {});
+
+      const txParams = {
+        pendingApprovalId: '6ae3233a7d9bc0b7b3f187a165996e15',
+        type: 'wrapApprove',
+        recipients: [],
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      const verification = {};
+
+      const isTransactionVerified = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild: erc7984Prebuild,
+        wallet,
+        verification,
+      });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('fails closed when the PA-rebuild spender is not a registered ERC-7984 wrapper', async () => {
+      const wallet = new Wallet(bitgo, basecoin, {});
+
+      const txParams = {
+        pendingApprovalId: '6ae3233a7d9bc0b7b3f187a165996e15',
+        type: 'wrapApprove',
+        recipients: [],
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      const tamperedTxHex = erc7984WrapApproveTxHex.replace(
+        '2debbe0487ef921df4457f9e36ed05be2df1ac75',
+        'deadbeefdeadbeefdeadbeefdeadbeefdeadbeef'
+      );
+      const txPrebuild = { ...erc7984Prebuild, txHex: tamperedTxHex };
+
+      const verification = {};
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, wallet, verification })
+        .should.be.rejectedWith('wrapApprove transaction spender is not a registered ERC-7984 wrapper');
+    });
+
+    it('still demands wrapParams for the direct-sign wrapApprove path (no PA-rebuild)', async () => {
+      const wallet = new Wallet(bitgo, basecoin, {});
+
+      const txParams = {
+        type: 'wrapApprove',
+        recipients: [],
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      const verification = {};
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild: erc7984Prebuild, wallet, verification })
+        .should.be.rejectedWith('wrapApprove transaction requires wrapParams with tokenName and amount');
+    });
+
+    it('still cross-checks the approve amount against wrapParams on the direct-sign path', async () => {
+      const wallet = new Wallet(bitgo, basecoin, {});
+
+      const txParams = {
+        type: 'wrapApprove',
+        wrapParams: { tokenName: 'hteth:cusdt', amount: '999' },
+        recipients: [],
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      const verification = {};
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild: erc7984Prebuild, wallet, verification })
+        .should.be.rejectedWith('wrapApprove transaction amount does not match the requested amount');
+    });
+
+    it('cross-checks wrapParams against the tx even when a pendingApprovalId is present', async () => {
+      const wallet = new Wallet(bitgo, basecoin, {});
+
+      const txParams = {
+        pendingApprovalId: '6ae3233a7d9bc0b7b3f187a165996e15',
+        type: 'wrapApprove',
+        wrapParams: { tokenName: 'hteth:cusdt', amount: '1000000' },
+        recipients: [],
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      const verification = {};
+
+      const isTransactionVerified = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild: erc7984Prebuild,
+        wallet,
+        verification,
+      });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('rejects a mismatched wrapParams tokenName even when a pendingApprovalId is present', async () => {
+      const wallet = new Wallet(bitgo, basecoin, {});
+
+      const txParams = {
+        pendingApprovalId: '6ae3233a7d9bc0b7b3f187a165996e15',
+        type: 'wrapApprove',
+        wrapParams: { tokenName: 'hteth:notreal', amount: '1000000' },
+        recipients: [],
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      const verification = {};
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild: erc7984Prebuild, wallet, verification })
+        .should.be.rejectedWith("wrapApprove: 'hteth:notreal' is not a registered ERC-7984 shield pair");
+    });
+
+    it('rejects a zero approve amount on the PA-rebuild path', async () => {
+      const wallet = new Wallet(bitgo, basecoin, {});
+
+      const txParams = {
+        pendingApprovalId: '6ae3233a7d9bc0b7b3f187a165996e15',
+        type: 'wrapApprove',
+        recipients: [],
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      const amountWord = '00000000000000000000000000000000000000000000000000000000000f4240';
+      const zeroAmountTxHex = erc7984WrapApproveTxHex.replace(amountWord, '0'.repeat(64));
+      const txPrebuild = { ...erc7984Prebuild, txHex: zeroAmountTxHex };
+
+      const verification = {};
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, wallet, verification })
+        .should.be.rejectedWith(
+          'wrapApprove transaction amount must be a positive integer and not the unlimited allowance'
+        );
+    });
+
+    it('rejects the unlimited (MAX_UINT256) approve amount on the PA-rebuild path', async () => {
+      const wallet = new Wallet(bitgo, basecoin, {});
+
+      const txParams = {
+        pendingApprovalId: '6ae3233a7d9bc0b7b3f187a165996e15',
+        type: 'wrapApprove',
+        recipients: [],
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      const amountWord = '00000000000000000000000000000000000000000000000000000000000f4240';
+      const unlimitedAmountTxHex = erc7984WrapApproveTxHex.replace(amountWord, 'f'.repeat(64));
+      const txPrebuild = { ...erc7984Prebuild, txHex: unlimitedAmountTxHex };
+
+      const verification = {};
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, wallet, verification })
+        .should.be.rejectedWith(
+          'wrapApprove transaction amount must be a positive integer and not the unlimited allowance'
+        );
+    });
+
+    it('rejects non-zero native value inside sendMultiSig on the PA-rebuild path', async () => {
+      const wallet = new Wallet(bitgo, basecoin, {});
+
+      const txParams = {
+        pendingApprovalId: '6ae3233a7d9bc0b7b3f187a165996e15',
+        type: 'wrapApprove',
+        recipients: [],
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      const innerToWord = '00000000000000000000000051a63b5621d78de54d2f4d098a23a5a69e76f30b';
+      const tamperedTxHex = erc7984WrapApproveTxHex.replace(
+        innerToWord + '0'.repeat(64),
+        innerToWord + '0'.repeat(63) + '1'
+      );
+      const txPrebuild = { ...erc7984Prebuild, txHex: tamperedTxHex };
+
+      const verification = {};
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, wallet, verification })
+        .should.be.rejectedWith('wrapApprove transaction must not carry native value inside sendMultiSig');
+    });
+
+    it('rejects a sendMultiSig target that is not the pair underlying on the PA-rebuild path', async () => {
+      const wallet = new Wallet(bitgo, basecoin, {});
+
+      const txParams = {
+        pendingApprovalId: '6ae3233a7d9bc0b7b3f187a165996e15',
+        type: 'wrapApprove',
+        recipients: [],
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      const innerToWord = '00000000000000000000000051a63b5621d78de54d2f4d098a23a5a69e76f30b';
+      const tamperedTxHex = erc7984WrapApproveTxHex.replace(
+        innerToWord,
+        '000000000000000000000000deadbeefdeadbeefdeadbeefdeadbeefdeadbeef'
+      );
+      const txPrebuild = { ...erc7984Prebuild, txHex: tamperedTxHex };
+
+      const verification = {};
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, wallet, verification })
+        .should.be.rejectedWith('wrapApprove transaction must target the underlying ERC-20 of the wrapper');
+    });
   });
 }
 

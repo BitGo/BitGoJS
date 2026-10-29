@@ -9,8 +9,8 @@ import { UnderlyingAsset } from '../base';
  * decryption via the Zama Gateway before they can be displayed.
  *
  * Wrapper↔underlying metadata (`underlyingErc20Address`, `rate`, `requiresApprovalReset`)
- * is wired on Hoodi test pairs only for now so mainnet served configs stay unchanged.
- * Allowlisting is owned by AMS.
+ * is wired for every registered shield pair (Hoodi test pairs and all mainnet pairs;
+ * mainnet values verified on-chain, CHALO-2007). Allowlisting is owned by AMS.
  *
  * Testnet tokens (hteth:*) are deployed on Hoodi using Zama's cleartext FHE stack.
  *   Hoodi ACL: 0x6D3FAf6f86e1fF9F3B0831Dda920AbA1cBd5bd68  (Networks.test.hoodi.zamaAclContractAddress)
@@ -24,7 +24,15 @@ export const erc7984Tokens = [
     'Confidential Zama',
     6,
     '0x80cb147fd86dc6dee3eee7e4cee33d1397d98071', // https://etherscan.io/token/0x80CB147Fd86dC6dEe3Eee7e4Cee33d1397d98071
-    UnderlyingAsset['eth:czama']
+    UnderlyingAsset['eth:czama'],
+    undefined, // features: default ERC7984_TOKEN_FEATURES
+    undefined, // prefix
+    undefined, // suffix
+    undefined, // network: Ethereum mainnet
+    undefined, // primaryKeyCurve: secp256k1
+    '0xa12cc123ba206d4031d1c7f6223d1c2ec249f4f3', // underlying()=ZAMA 18dp
+    '1000000000000', // rate() on-chain: 18dp → 6dp
+    false // standard ERC-20 approve
   ),
   erc7984(
     'c9d5d51b-15b7-4d93-b079-9af313160e66',
@@ -32,7 +40,15 @@ export const erc7984Tokens = [
     'Zama Confidential XAUT',
     6,
     '0x73cc9af9d6befdb3c3faf8a5e8c05cb95fdaeef1', // https://etherscan.io/token/0x73cc9aF9d6BEFdb3c3fAf8a5E8c05Cb95FdaEEf1
-    UnderlyingAsset['eth:cxaut']
+    UnderlyingAsset['eth:cxaut'],
+    undefined, // features: default ERC7984_TOKEN_FEATURES
+    undefined, // prefix
+    undefined, // suffix
+    undefined, // network: Ethereum mainnet
+    undefined, // primaryKeyCurve: secp256k1
+    '0x68749665ff8d2d112fa859aa293f07a622782f38', // underlying()=XAUt (Tether Gold) 6dp
+    '1', // rate() on-chain
+    false // standard ERC-20 approve
   ),
   erc7984(
     '0d1b01c8-ee4a-4ca4-a1af-2ab3132d91ee',
@@ -40,7 +56,15 @@ export const erc7984Tokens = [
     'Zama Confidential TGBP',
     6,
     '0xa873750ccbafd5ec7dd13bfd5237d7129832edd9', // https://etherscan.io/token/0xa873750ccBafD5ec7Dd13bfD5237d7129832eDD9
-    UnderlyingAsset['eth:ctgbp']
+    UnderlyingAsset['eth:ctgbp'],
+    undefined, // features: default ERC7984_TOKEN_FEATURES
+    undefined, // prefix
+    undefined, // suffix
+    undefined, // network: Ethereum mainnet
+    undefined, // primaryKeyCurve: secp256k1
+    '0x27f6c8289550fce67f6b50bed1f519966afe5287', // underlying()=tGBP 18dp
+    '1000000000000', // rate() on-chain: 18dp → 6dp
+    false // standard ERC-20 approve
   ),
   erc7984(
     '2fbf960e-9747-4d38-b93b-28029e78b5d4',
@@ -48,7 +72,15 @@ export const erc7984Tokens = [
     'Zama Confidential WETH',
     6,
     '0xda9396b82634ea99243ce51258b6a5ae512d4893', // https://etherscan.io/token/0xda9396b82634Ea99243cE51258B6A5Ae512D4893
-    UnderlyingAsset['eth:cweth']
+    UnderlyingAsset['eth:cweth'],
+    undefined, // features: default ERC7984_TOKEN_FEATURES
+    undefined, // prefix
+    undefined, // suffix
+    undefined, // network: Ethereum mainnet
+    undefined, // primaryKeyCurve: secp256k1
+    '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', // underlying()=WETH 18dp
+    '1000000000000', // rate() on-chain: 18dp → 6dp
+    false // standard ERC-20 approve
   ),
   erc7984(
     'f47ac10b-58cc-4372-a567-0e02b2c3d480',
@@ -56,7 +88,15 @@ export const erc7984Tokens = [
     'Zama USDT',
     6,
     '0xae0207c757aa2b4019ad96edd0092ddc63ef0c50', // https://etherscan.io/token/0xAe0207C757Aa2B4019Ad96edD0092ddc63EF0c50
-    UnderlyingAsset['eth:cusdt']
+    UnderlyingAsset['eth:cusdt'],
+    undefined, // features: default ERC7984_TOKEN_FEATURES
+    undefined, // prefix
+    undefined, // suffix
+    undefined, // network: Ethereum mainnet
+    undefined, // primaryKeyCurve: secp256k1
+    '0xdac17f958d2ee523a2206206994597c13d831ec7', // underlying()=USDT 6dp
+    '1', // rate() on-chain
+    true // USDT-style approve(0) reset required
   ),
   erc7984(
     'fb41ba70-858c-48e6-a513-9da1ea030853',
@@ -64,7 +104,15 @@ export const erc7984Tokens = [
     'Zama USDC',
     6,
     '0xe978f22157048e5db8e5d07971376e86671672b2', // https://etherscan.io/token/0xe978f22157048e5db8e5d07971376e86671672b2
-    UnderlyingAsset['eth:cusdc']
+    UnderlyingAsset['eth:cusdc'],
+    undefined, // features: default ERC7984_TOKEN_FEATURES
+    undefined, // prefix
+    undefined, // suffix
+    undefined, // network: Ethereum mainnet
+    undefined, // primaryKeyCurve: secp256k1
+    '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', // underlying()=USDC 6dp
+    '1', // rate() on-chain
+    false // standard ERC-20 approve
   ),
 
   // Testnet tokens (hteth / Hoodi) — Zama cleartext FHE stack (chain ID 560048)

@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [40.3.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4040.2.0...%40bitgo%2Fsdk-core%4040.3.0) (2026-10-27)
+
+### Bug Fixes
+
+* **sdk-core:** allow ERC-7984 PA rebuild without recipients (CHALO-1957) ([d41e6e8](https://github.com/BitGo/BitGoJS/commit/d41e6e824df04d50be1f7f2aadcf597478ecb834))
+* **sdk-core:** skip ECDH keychain lookup in bulkAcceptShare when unneeded (Refs: WCN-3735) ([ee93bae](https://github.com/BitGo/BitGoJS/commit/ee93bae9d1ff77591430963961f0acfcb5c4a263))
+* **sdk-core:** validate password for UMKR share acceptance ([12675b8](https://github.com/BitGo/BitGoJS/commit/12675b80e45dc52dada05ad9c9e6489e10d4c430))
+
+### Features
+
+* enable Safe recovery for HBAR ([14a7142](https://github.com/BitGo/BitGoJS/commit/14a7142182dce66fb9900301d18ae4e482feac6b))
+* enable Safe recovery for ICP (offline mode) ([5f267cc](https://github.com/BitGo/BitGoJS/commit/5f267cc37af69cee5fa7027a1d51ec11df28e6ca))
+* migrate recover to ExternalEd25519Signer ([6d13114](https://github.com/BitGo/BitGoJS/commit/6d13114a845c3b7d4fb463bdf8f82ef1e182fcb8))
+* **sdk-coin-canton:** support Broadridge standing delegation intent ([e00a001](https://github.com/BitGo/BitGoJS/commit/e00a001260ddd918ac45f626b72909aae2abd713))
+
+
 # [40.2.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4040.1.0...%40bitgo%2Fsdk-core%4040.2.0) (2026-10-22)
 
 ### Features

@@ -58,7 +58,7 @@ import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
 import EddsaUtils, { EddsaMPCv2Utils } from '../utils/tss/eddsa';
 import { RedpallasMPCv2Utils } from '../utils/tss/redpallas';
 import { getTxRequestApiVersion, validateTxRequestApiVersion } from '../utils/txRequest';
-import { buildParamKeys, BuildParams } from './BuildParams';
+import { buildParamKeys, BuildParams, ERC7984_INTENT_TX_TYPES } from './BuildParams';
 import {
   fetchRootKeychainForSafeChild,
   isSafeChildPublicOnlyKeychain,
@@ -2262,6 +2262,12 @@ export class Wallet implements IWallet {
     }
     const extraParams = await this.baseCoin.getExtraPrebuildParams(Object.assign(params, { wallet: this }));
     Object.assign(whitelistedParams, extraParams);
+    // ERC-7984 intent builds derive recipients server-side; /tx/build requires the key (empty
+    // array). Default on the outgoing body only - the caller's params flow into
+    // prebuildAndSignTransaction, where a truthy recipients trips the prebuildTx check.
+    if (params.type !== undefined && ERC7984_INTENT_TX_TYPES[params.type] === true) {
+      whitelistedParams.recipients = whitelistedParams.recipients ?? [];
+    }
     const queryParams = {
       offlineVerification: params.offlineVerification ? true : undefined,
     };
@@ -2780,8 +2786,12 @@ export class Wallet implements IWallet {
       throw error;
     }
 
+    // ERC-7984 intent types derive recipients server-side, so an empty array is a valid
+    // server-derived shape here (mirroring acceleration) - only populated lists are rejected.
+    const isErc7984IntentType = params.type !== undefined && ERC7984_INTENT_TX_TYPES[params.type] === true;
     if (
       params.recipients &&
+      !(isErc7984IntentType && params.recipients.length === 0) &&
       (params.type === 'fillNonce' ||
         params.type === 'acceleration' ||
         params.type === 'wrapApprove' ||
@@ -2804,12 +2814,16 @@ export class Wallet implements IWallet {
       customSigningFunction: params.customSigningFunction,
     });
 
+    const previewPrebuildTx =
+      isPrebuildTransactionResult(params.prebuildTx) && params.prebuildTx.buildParams?.preview === true
+        ? params.prebuildTx
+        : undefined;
     let txPrebuildQuery: Promise<PrebuildTransactionResult | string>;
-    if (isPrebuildTransactionResult(params.prebuildTx) && params.prebuildTx.buildParams?.preview) {
+    if (previewPrebuildTx) {
       // If we prebuilt the txRequest with preview=true, then we should rebuild with preview=false to persist the request
       txPrebuildQuery = this.prebuildTransaction({
         ...params,
-        ...{ ...params.prebuildTx.buildParams, preview: false },
+        ...{ ...previewPrebuildTx.buildParams, preview: false },
       });
     } else {
       txPrebuildQuery = params.prebuildTx ? Promise.resolve(params.prebuildTx) : this.prebuildTransaction(params);
@@ -2817,6 +2831,12 @@ export class Wallet implements IWallet {
 
     // the prebuild can be overridden by providing an explicit tx
     const txPrebuild = (await txPrebuildQuery) as PrebuildTransactionResult;
+    const createdAttestedTransferTxRequest =
+      this._wallet.multisigType === 'tss' &&
+      !!txPrebuild.txRequestId &&
+      txPrebuild.buildParams?.attestation !== undefined &&
+      (!params.prebuildTx || previewPrebuildTx !== undefined) &&
+      (txPrebuild.buildParams?.type === 'transfer' || txPrebuild.buildParams?.type === 'transfertoken');
 
     try {
       await this.baseCoin.verifyTransaction({
@@ -2855,6 +2875,11 @@ export class Wallet implements IWallet {
       bitgoKeychain: keychains.length > 2 ? keychains[2] : null,
       reqId: params.reqId,
     };
+    if (createdAttestedTransferTxRequest) {
+      // Wallet Platform consumes the nonce when creating the request; round 1 re-capture would fail.
+      delete signingParams.attestation;
+    }
+
     if (this._wallet.multisigType === 'onchain') {
       signingParams.pubs = keychains.map((k) => {
         assert(k.pub);
@@ -4547,6 +4572,7 @@ export class Wallet implements IWallet {
             isTestTransaction: params.isTestTransaction,
             isWalletConnectTx: params.isWalletConnectTx as boolean | undefined,
             videoApprovers: params.videoApprovers,
+            ...(params.attestation !== undefined && { attestation: params.attestation }),
           },
           apiVersion,
           params.preview
@@ -4565,6 +4591,7 @@ export class Wallet implements IWallet {
             unspents: params.unspents,
             sequenceId: params.sequenceId,
             videoApprovers: params.videoApprovers,
+            ...(params.attestation !== undefined && { attestation: params.attestation }),
           },
           apiVersion,
           params.preview
@@ -5096,7 +5123,8 @@ export class Wallet implements IWallet {
         params.customCommitmentGeneratingFunction,
         params.customRShareGeneratingFunction,
         params.customGShareGeneratingFunction,
-        reqId
+        reqId,
+        params.attestation
       );
     } catch (e) {
       debug('failed to sign transaction %O', e);
@@ -5302,6 +5330,7 @@ export class Wallet implements IWallet {
         {
           txRequest: txRequestId,
           reqId: params.reqId || new RequestTracer(),
+          attestation: params.attestation,
         },
         RequestType.tx,
         params.customPaillierModulusGeneratingFunction,
@@ -5357,6 +5386,7 @@ export class Wallet implements IWallet {
         {
           txRequest: txRequestId,
           reqId: params.reqId || new RequestTracer(),
+          attestation: params.attestation,
         },
         params.customEddsaMPCv2SigningRound1GenerationFunction,
         params.customEddsaMPCv2SigningRound2GenerationFunction,
@@ -5404,6 +5434,7 @@ export class Wallet implements IWallet {
         {
           txRequest: txRequestId,
           reqId: params.reqId || new RequestTracer(),
+          attestation: params.attestation,
         },
         params.customMPCv2SigningRound1GenerationFunction,
         params.customMPCv2SigningRound2GenerationFunction,
@@ -5443,6 +5474,7 @@ export class Wallet implements IWallet {
         prv: params.prv,
         reqId: params.reqId || new RequestTracer(),
         apiVersion: params.apiVersion,
+        ...(params.attestation !== undefined && { attestation: params.attestation }),
       });
     } catch (e) {
       debug('failed to sign transaction %O', e);

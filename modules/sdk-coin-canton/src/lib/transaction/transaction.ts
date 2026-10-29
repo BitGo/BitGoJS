@@ -157,7 +157,7 @@ export class Transaction extends BaseTransaction {
       },
       submissionId: this.id,
       hashingSchemeVersion: HASHING_SCHEME_VERSION,
-      minLedgerTime: {
+      minLedgerTime: this._prepareCommand.custodialTiming?.minLedgerTime ?? {
         time: {
           Empty: {},
         },

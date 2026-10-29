@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.1.5](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-xtz%403.1.4...%40bitgo%2Fsdk-coin-xtz%403.1.5) (2026-10-27)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-xtz
+
+
+
+
+
 ## [3.1.4](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-xtz%403.1.3...%40bitgo%2Fsdk-coin-xtz%403.1.4) (2026-10-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xtz

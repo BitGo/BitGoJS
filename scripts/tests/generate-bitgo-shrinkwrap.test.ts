@@ -156,7 +156,7 @@ describe('generate-bitgo-shrinkwrap workspace sibling availability', function ()
         assert.match(error.message, /still unavailable from npm after 4 checks over 1\.5 min/);
         assert.match(error.message, /@bitgo-beta\/sdk-core@1\.2\.3-beta\.4/);
         assert.match(error.message, /@bitgo-beta\/account-lib@2\.3\.4-beta\.5/);
-        assert.match(error.message, /recovery mode/);
+        assert.match(error.message, /automatically retries publishing this package with the shrinkwrap/);
         return true;
       }
     );

@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.47](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-kaspa%401.3.46...%40bitgo%2Fsdk-coin-kaspa%401.3.47) (2026-10-27)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-kaspa
+
+
+
+
+
 ## [1.3.46](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-kaspa%401.3.45...%40bitgo%2Fsdk-coin-kaspa%401.3.46) (2026-10-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-kaspa

@@ -1,7 +1,7 @@
 {
   "name": "@bitgo/utxo-bin",
   "description": "Command-line utility for BitGo UTXO transactions",
-  "version": "3.28.0",
+  "version": "3.28.1",
   "files": [
     "dist/**/*"
   ],
@@ -19,6 +19,9 @@
     "fmt": "prettier --write '{bin,src,test}/**/*.{ts,js}'",
     "precommit": "yarn lint-staged"
   },
+  "engines": {
+    "node": ">=22"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/BitGo/BitGoJS.git",
@@ -27,7 +30,7 @@
   "bin": "./dist/bin/index.js",
   "dependencies": {
     "@bitgo/blockapis": "^1.13.12",
-    "@bitgo/statics": "^59.25.0",
+    "@bitgo/statics": "^59.26.0",
     "@bitgo/unspents": "^0.51.11",
     "@bitgo/utxo-core": "^1.42.0",
     "@bitgo/utxo-lib": "^11.25.0",

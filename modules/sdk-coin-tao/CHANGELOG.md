@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.18.8](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-tao%401.18.7...%40bitgo%2Fsdk-coin-tao%401.18.8) (2026-10-27)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-tao
+
+
+
+
+
 ## [1.18.7](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-tao%401.18.6...%40bitgo%2Fsdk-coin-tao%401.18.7) (2026-10-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-tao

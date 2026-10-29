@@ -1,6 +1,10 @@
 import * as t from 'io-ts';
 import { httpRoute, httpRequest, optional, type HttpRoute } from '@api-ts/io-ts-http';
-import { TransactionRequest as TxRequestResponse, TransactionRequestApiVersion } from '@bitgo/public-types';
+import {
+  AttestationPayload,
+  TransactionRequest as TxRequestResponse,
+  TransactionRequestApiVersion,
+} from '@bitgo/public-types';
 import { BitgoExpressError } from '../../schemas/error';
 import { Recipient } from './coinSignTx';
 
@@ -84,6 +88,8 @@ export const WalletTxSignTSSBody = {
   isEvmBasedCrossChainRecovery: optional(t.boolean),
   /** Derivation seed for key derivation */
   derivationSeed: optional(t.string),
+  /** WebAuthn proof for the transaction intent (pass-through only) */
+  attestation: optional(AttestationPayload),
 } as const;
 
 /**

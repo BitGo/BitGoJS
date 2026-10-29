@@ -481,7 +481,7 @@ describe('Pending Approvals:', () => {
     }
 
     (['wrap', 'finalizeUnwrap'] as const).forEach((legType) => {
-      it(`strips stored recipients when approving a ${legType} intent pending approval`, async () => {
+      it(`sends empty recipients when approving a ${legType} intent pending approval`, async () => {
         const { pendingApproval, htethCoin, paData } = makeEthIntentPendingApproval(legType);
 
         const prebuildAndSignStub = sandbox
@@ -502,7 +502,7 @@ describe('Pending Approvals:', () => {
         paScope.isDone().should.be.true();
         prebuildAndSignStub.calledOnce.should.be.true();
         const prebuildParamsArg = prebuildAndSignStub.getCall(0).args[0]!;
-        should.not.exist(prebuildParamsArg.recipients);
+        prebuildParamsArg.recipients!.should.deepEqual([]);
         prebuildParamsArg.type!.should.equal(legType);
         (prebuildParamsArg.pendingApprovalId as string).should.equal(`pa-${legType}`);
       });
@@ -633,7 +633,7 @@ describe('Pending Approvals:', () => {
           .post(`/api/v2/hteth/wallet/${walletId}/tx/build`, (body) => {
             body.type.should.equal(legType);
             body.pendingApprovalId.should.equal(paId);
-            should.not.exist(body.recipients);
+            body.recipients.should.deepEqual([]);
             should.not.exist(body.wrapParams);
             if (legType === 'unwrap') {
               body.unwrapParams.should.deepEqual(unwrapParams);

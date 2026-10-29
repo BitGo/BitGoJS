@@ -28,7 +28,9 @@ import {
   Keychain,
   RequestTracer,
   SignatureShareRecord,
+  ShareKeyPosition,
   SignatureShareType,
+  TssTxRecipientSource,
   TxRequest,
   Wallet,
 } from '@bitgo/sdk-core';
@@ -597,8 +599,16 @@ describe('TSS Ecdsa Utils:', async function () {
       userId: 'userId',
     };
     let aShare, dShare, wShare, oShare, userSignShare, bitgoChallenges, enterpriseChallenges;
+    const attestation = {
+      signature: 'test-signature',
+      credentialId: 'test-credential',
+      clientDataJSON: 'test-client-data',
+      authenticatorData: 'test-authenticator-data',
+    };
+    let requestBodies: Record<string, unknown>[] = [];
 
     beforeEach(async () => {
+      requestBodies = [];
       // Initializing user and bitgo for creating shares for nocks
       const userSigningKey = MPC.keyCombine(userKeyShare.pShare, [bitgoKeyShare.nShares[1], backupKeyShare.nShares[1]]);
       const bitgoSigningKey = MPC.keyCombine(bitgoKeyShare.pShare, [
@@ -681,6 +691,7 @@ describe('TSS Ecdsa Utils:', async function () {
         signatureShare: signatureShareOneFromUser,
         response: signatureShareOneFromBitgo,
         tssType: 'ecdsa',
+        requestBodies,
       });
       /**  END STEP ONE */
 
@@ -725,6 +736,7 @@ describe('TSS Ecdsa Utils:', async function () {
         signatureShare: signatureShareTwoFromUser,
         response: signatureShareTwoFromBitgo,
         tssType: 'ecdsa',
+        requestBodies,
       });
       /**  END STEP TWO */
 
@@ -779,6 +791,7 @@ describe('TSS Ecdsa Utils:', async function () {
         signatureShare: signatureShareThreeFromUser,
         response: signatureShareThreeFromBitgo,
         tssType: 'ecdsa',
+        requestBodies,
       });
       /* END STEP THREE */
       const signature = MPC.constructSignature([userSShare, getBitGoSShare]);
@@ -824,6 +837,121 @@ describe('TSS Ecdsa Utils:', async function () {
       signedTxRequest.unsignedTxs.should.deepEqual(txRequest.unsignedTxs);
       const userGpgActual = sendShareSpy.getCalls()[0].args[10] as string;
       userGpgActual.should.startWith('-----BEGIN PGP PUBLIC KEY BLOCK-----');
+    });
+
+    it('sends attestation only with the first signature share', async function () {
+      await setupSignTxRequestNocks(false, userSignShare, aShare, dShare, enterpriseData);
+      sandbox.stub(baseCoin, 'verifyTransaction').resolves(true);
+
+      await tssUtils.signTxRequest({
+        txRequest,
+        prv: JSON.stringify({
+          pShare: userKeyShare.pShare,
+          bitgoNShare: bitgoKeyShare.nShares[1],
+          backupNShare: backupKeyShare.nShares[1],
+        }),
+        reqId,
+        recipientSource: TssTxRecipientSource.Explicit,
+        txParams: {
+          type: 'transfer',
+          recipients: [{ address: '0xa1cfb9d51c0af191ff21c5f0f01723e056f7dc12', amount: '1788849860263936' }],
+        },
+        attestation,
+      });
+
+      requestBodies.should.have.length(3);
+      assert.deepStrictEqual(requestBodies[0].attestation, attestation);
+      requestBodies.slice(1).forEach((body) => body.should.not.have.property('attestation'));
+    });
+
+    it('omits attestation from every signature share when absent', async function () {
+      await setupSignTxRequestNocks(false, userSignShare, aShare, dShare, enterpriseData);
+      sandbox.stub(baseCoin, 'verifyTransaction').resolves(true);
+
+      await tssUtils.signTxRequest({
+        txRequest,
+        prv: JSON.stringify({
+          pShare: userKeyShare.pShare,
+          bitgoNShare: bitgoKeyShare.nShares[1],
+          backupNShare: backupKeyShare.nShares[1],
+        }),
+        reqId,
+        recipientSource: TssTxRecipientSource.Explicit,
+        txParams: {
+          type: 'transfer',
+          recipients: [{ address: '0xa1cfb9d51c0af191ff21c5f0f01723e056f7dc12', amount: '1788849860263936' }],
+        },
+      });
+
+      requestBodies.should.have.length(3);
+      requestBodies.forEach((body) => body.should.not.have.property('attestation'));
+    });
+
+    async function signWithExternalSigner(attestation?: {
+      signature: string;
+      credentialId: string;
+      clientDataJSON: string;
+      authenticatorData: string;
+    }) {
+      await setupSignTxRequestNocks(true, userSignShare, aShare, dShare, enterpriseData);
+      let externalOShare: ECDSA.OShare | undefined;
+      sinon.stub(baseCoin, 'verifyTransaction').resolves(true);
+
+      return wallet.signTransaction({
+        txRequestId,
+        ...(attestation ? { attestation } : {}),
+        customPaillierModulusGeneratingFunction: async () => ({ userPaillierModulus: 'test-paillier-modulus' }),
+        customKShareGeneratingFunction: async () => ({
+          kShare: userSignShare.kShare,
+          wShare: userSignShare.wShare,
+          privateShareProof: 'test-private-share-proof',
+          vssProof: 'test-vss-proof',
+          userPublicGpgKey: userGpgKey.publicKey,
+          publicShare: 'test-public-share',
+          encryptedSignerOffsetShare: 'test-encrypted-offset-share',
+        }),
+        customMuDeltaShareGeneratingFunction: async () => {
+          const userGammaAndMuShares = await ECDSAMethods.createUserGammaAndMuShare(userSignShare.wShare, aShare);
+          const userOShareAndDShares = MPC.signCombine({
+            gShare: userGammaAndMuShares.gShare as ECDSA.GShare,
+            signIndex: { i: 1, j: 3 },
+          });
+          const userOShare = userOShareAndDShares.oShare as ECDSA.OShare;
+          externalOShare = userOShare;
+          return {
+            muDShare: {
+              muShare: userGammaAndMuShares.muShare!,
+              dShare: userOShareAndDShares.dShare as ECDSA.DShare,
+              i: ShareKeyPosition.BITGO,
+            },
+            oShare: userOShare,
+          };
+        },
+        customSShareGeneratingFunction: async ({ dShareFromBitgo }) => {
+          assert.ok(externalOShare);
+          return MPC.sign(
+            Buffer.from(txRequest.unsignedTxs[0].signableHex, 'hex'),
+            externalOShare,
+            dShareFromBitgo,
+            createKeccakHash('keccak256') as Hash
+          );
+        },
+      });
+    }
+
+    it('external signer sends attestation only with the first signature share', async function () {
+      await signWithExternalSigner(attestation);
+
+      requestBodies.should.have.length(3);
+      assert.deepStrictEqual(requestBodies[0].attestation, attestation);
+      requestBodies.slice(1).forEach((body) => body.should.not.have.property('attestation'));
+    });
+
+    it('external signer omits attestation from every signature share when absent', async function () {
+      await signWithExternalSigner();
+
+      requestBodies.should.have.length(3);
+      requestBodies.forEach((body) => body.should.not.have.property('attestation'));
     });
 
     it('signTxRequest should succeed with txRequest id as input', async function () {

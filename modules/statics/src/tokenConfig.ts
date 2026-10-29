@@ -71,7 +71,7 @@ export type EosTokenConfig = BaseContractAddressConfig & {
 };
 export type Erc20TokenConfig = BaseContractAddressConfig;
 export type Erc7984TokenConfig = BaseContractAddressConfig & {
-  /** Present for Hoodi test pairs; omitted on mainnet until shield/unshield ships there. */
+  /** Wrapper↔underlying shield metadata; set for every registered shield pair (mainnet and Hoodi). */
   underlyingErc20Address?: string;
   rate?: string;
   requiresApprovalReset?: boolean;
@@ -342,15 +342,6 @@ function getErc20TokenConfig(coin: Erc20Coin): Erc20TokenConfig {
       break;
     case Networks.test.sepolia.name:
       baseCoin = 'sepeth';
-      break;
-    case Networks.test.basechain.name:
-      baseCoin = 'tbaseeth';
-      break;
-    case Networks.test.flow.name:
-      baseCoin = 'tflow';
-      break;
-    case Networks.main.okbxlayer.name:
-      baseCoin = 'okbxlayer';
       break;
     default:
       throw new Error(`Erc20 token ${coin.name} has an unsupported network`);

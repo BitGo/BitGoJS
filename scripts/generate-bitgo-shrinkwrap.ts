@@ -251,8 +251,8 @@ export async function ensureWorkspaceSiblingVersionsAvailable(
         `Workspace sibling versions are still unavailable from npm after ${checks} checks over ${formatDuration(
           elapsedMs
         )}: ` +
-          `${missingPackages.join(', ')}. This is likely npm registry propagation delay; ` +
-          'retry the release in recovery mode after these versions become visible.'
+          `${missingPackages.join(', ')}. This is likely npm registry propagation delay; the release ` +
+          'pipeline automatically retries publishing this package with the shrinkwrap once these versions become visible.'
       );
     }
 

@@ -1,7 +1,7 @@
 import * as t from 'io-ts';
 import { DateFromISOString } from 'io-ts-types';
 import { httpRoute, httpRequest, optional, type HttpRoute } from '@api-ts/io-ts-http';
-import { TransactionRequest as TxRequestResponse } from '@bitgo/public-types';
+import { AttestationPayload, TransactionRequest as TxRequestResponse } from '@bitgo/public-types';
 import { BitgoExpressError } from '../../schemas/error';
 
 /**
@@ -144,6 +144,9 @@ export const SendManyRequestBody = {
 
   /** The un-encrypted user private key in string form. If the key is a JSON object it must be stringified. Required if `walletPassphrase` is not available or encrypted private key is not stored by BitGo. */
   prv: optional(t.string),
+
+  /** WebAuthn proof for the transaction intent (pass-through only) */
+  attestation: optional(AttestationPayload),
 
   /**
    * (BTC only) The number of blocks required to confirm a transaction. You can use `numBlocks` to estimate the fee

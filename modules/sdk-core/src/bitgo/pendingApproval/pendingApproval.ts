@@ -18,7 +18,7 @@ import {
 import { RequestTracer, RequestType } from '../utils';
 import { IWallet } from '../wallet';
 import { isSafeChildPublicOnlyKeychain } from '../wallet/safeKeychain';
-import { BuildParams } from '../wallet/BuildParams';
+import { BuildParams, ERC7984_INTENT_TX_TYPES } from '../wallet/BuildParams';
 import { IRequestTracer } from '../../api';
 import BaseTssUtils from '../utils/tss/baseTSSUtils';
 import EddsaUtils, { EddsaMPCv2Utils } from '../utils/tss/eddsa';
@@ -38,15 +38,6 @@ type ApprovePendingApprovalRequestBody = {
   otp: string | undefined;
   attestation?: AttestationPayload;
   halfSigned?: string | Omit<PreApproveResult, 'halfSigned'>;
-};
-
-// ERC-7984 shield/unshield intent types: calldata is built server-side from the intent, so a
-// pending approval's stored recipients are display-only for the approval UI, never build inputs.
-const ERC7984_INTENT_TX_TYPES: Record<string, true> = {
-  wrapApprove: true,
-  wrap: true,
-  unwrap: true,
-  finalizeUnwrap: true,
 };
 
 export class PendingApproval implements IPendingApproval {
@@ -313,11 +304,12 @@ export class PendingApproval implements IPendingApproval {
     const recipients = transactionRequest.recipients;
     let prebuildParams = _.extend({}, params, { recipients: recipients }, transactionRequest.buildParams);
 
-    // Stored recipients must not be forwarded for these intents — the prebuild guard rejects
-    // recipients for them, and the /tx/build PA-rebuild carve-out re-derives the real inputs
-    // server-side from the pendingApprovalId approve() injects.
-    if (ERC7984_INTENT_TX_TYPES[prebuildParams.type]) {
-      delete prebuildParams.recipients;
+    // The stored recipients merged above are display-only for the approval UI. For the ERC-7984
+    // intent types the real recipients are derived server-side, so the rebuild forwards an empty
+    // array (the server-derived /tx/build shape, as with acceleration). Other PA types forward
+    // their stored recipients unchanged.
+    if (ERC7984_INTENT_TX_TYPES[prebuildParams.type] === true) {
+      prebuildParams.recipients = [];
     }
 
     if (!_.isUndefined(originalPrebuild.hopTransaction)) {
