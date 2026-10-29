@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.8.2](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-lib-safes%401.8.1...%40bitgo%2Fsdk-lib-safes%401.8.2) (2026-10-29)
+
+**Note:** Version bump only for package @bitgo/sdk-lib-safes
+
+
+
+
+
 ## [1.8.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-lib-safes%401.8.0...%40bitgo%2Fsdk-lib-safes%401.8.1) (2026-10-27)
 
 **Note:** Version bump only for package @bitgo/sdk-lib-safes

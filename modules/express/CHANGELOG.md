@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [17.7.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fexpress%4017.6.3...%40bitgo%2Fexpress%4017.7.0) (2026-10-29)
+
+### Bug Fixes
+
+* **express:** validate typed route error paths ([1429a83](https://github.com/BitGo/BitGoJS/commit/1429a8370b2584723629bcedaf465d55f793747f))
+
+### Features
+
+* **sdk-core:** pass attestation through MPC signing ([73150fc](https://github.com/BitGo/BitGoJS/commit/73150fcfb9d5e4ab06c452b68550dbfbc25a85a7))
+
+
 ## [17.6.3](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fexpress%4017.6.2...%40bitgo%2Fexpress%4017.6.3) (2026-10-27)
 
 ### Bug Fixes

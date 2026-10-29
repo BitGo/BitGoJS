@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.2.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-xtz%403.1.5...%40bitgo%2Fsdk-coin-xtz%403.2.0) (2026-10-29)
+
+### Features
+
+* make Safe XTZ recovery chain-executable ([913afec](https://github.com/BitGo/BitGoJS/commit/913afec4a799bd4ba4c87d0e307f533dcd099d11))
+* **sdk-coin-xtz:** enable Safe wallet recovery ([8d11d42](https://github.com/BitGo/BitGoJS/commit/8d11d422f6d83a6ddd5f478ec100af0de4dfa916))
+
+
 ## [3.1.5](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-xtz%403.1.4...%40bitgo%2Fsdk-coin-xtz%403.1.5) (2026-10-27)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xtz

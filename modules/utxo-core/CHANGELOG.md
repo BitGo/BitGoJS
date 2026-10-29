@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.42.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Futxo-core%401.42.0...%40bitgo%2Futxo-core%401.42.1) (2026-10-29)
+
+**Note:** Version bump only for package @bitgo/utxo-core
+
+
+
+
+
 # [1.42.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Futxo-core%401.41.6...%40bitgo%2Futxo-core%401.42.0) (2026-10-22)
 
 ### Features

@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [13.6.2](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fabstract-utxo%4013.6.1...%40bitgo%2Fabstract-utxo%4013.6.2) (2026-10-29)
+
+### Bug Fixes
+
+* **abstract-utxo:** check the descriptor policy spend rules when a descriptor wallet signs ([7f61847](https://github.com/BitGo/BitGoJS/commit/7f61847fcc8ac089bd635d50f3853a242f4a62df))
+
+
 ## [13.6.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fabstract-utxo%4013.6.0...%40bitgo%2Fabstract-utxo%4013.6.1) (2026-10-27)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

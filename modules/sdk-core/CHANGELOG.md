@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [40.4.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4040.3.0...%40bitgo%2Fsdk-core%4040.4.0) (2026-10-29)
+
+### Bug Fixes
+
+* **sdk-core:** send empty recipients for ERC-7984 builds (CHALO-1957) ([816eb19](https://github.com/BitGo/BitGoJS/commit/816eb19a78b6fd22539c874c07241b7873e01963))
+* **sdk-core:** skip round-one attestation after txrequest creation ([906f4bb](https://github.com/BitGo/BitGoJS/commit/906f4bb82a045234f1f4f6bea117ba8bc8496461))
+
+### Features
+
+* **sdk-core:** pass attestation through MPC signing ([73150fc](https://github.com/BitGo/BitGoJS/commit/73150fcfb9d5e4ab06c452b68550dbfbc25a85a7))
+
+
 # [40.3.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4040.2.0...%40bitgo%2Fsdk-core%4040.3.0) (2026-10-27)
 
 ### Bug Fixes

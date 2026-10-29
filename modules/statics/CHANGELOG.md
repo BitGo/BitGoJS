@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.27.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fstatics%4059.26.0...%40bitgo%2Fstatics%4059.27.0) (2026-10-29)
+
+### Bug Fixes
+
+* **statics:** updated go account naming for openusd ([69c24d9](https://github.com/BitGo/BitGoJS/commit/69c24d9442e90853dc613c45c6e5cdb8e0edf45e))
+* **statics:** use erc20Token for non-ETH EVM entries in botTokens ([d0c97bd](https://github.com/BitGo/BitGoJS/commit/d0c97bdd6d8bce3ffe70215028b7919ce0e2fbb7))
+
+### Features
+
+* add new tokens from AMS API ([a44bd4d](https://github.com/BitGo/BitGoJS/commit/a44bd4dff97c3bef2229d681d0efb2d928446ffe))
+* add new tokens from AMS API ([26f5e02](https://github.com/BitGo/BitGoJS/commit/26f5e02660ddb5c20a2beb268f02be8993837720))
+* **statics:** enable staking feature for mainnet eth:zama ([86e6567](https://github.com/BitGo/BitGoJS/commit/86e65676452428c98913baf6f16ed07339e71217))
+* **statics:** wire mainnet ERC-7984 wrapper-underlying metadata for Zama tokens (CHALO-2007) ([61e3815](https://github.com/BitGo/BitGoJS/commit/61e38156355f94d1fc08afa50afee98a873a3770))
+
+
 # [59.26.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fstatics%4059.25.0...%40bitgo%2Fstatics%4059.26.0) (2026-10-27)
 
 ### Bug Fixes
