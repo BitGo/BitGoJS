@@ -43,7 +43,6 @@
     "@bitgo/abstract-eth": "^25.5.3",
     "@bitgo/sdk-core": "^40.3.0",
     "@bitgo/secp256k1": "^1.11.1",
-    "@bitgo/sjcl": "^1.1.0",
     "@bitgo/statics": "^59.26.0",
     "@ethereumjs/common": "^2.6.5",
     "bignumber.js": "^9.1.2",
@@ -54,6 +53,7 @@
   "devDependencies": {
     "@bitgo/sdk-api": "^3.1.5",
     "@bitgo/sdk-test": "^9.1.90",
+    "@bitgo/sjcl": "^1.1.0",
     "secp256k1": "5.0.1"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
