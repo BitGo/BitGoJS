@@ -1981,5 +1981,240 @@ describe('XLM:', function () {
       // 10 big units clawed back => 10 * 1e7 = 100000000 base units in the explanation.
       clawbackOperation.amount.should.equal('100000000');
     });
+
+    it('should report the asset code and issuer of a clawback so the amount can be labelled without parsing the coin name', async () => {
+      const txBase64 = buildTxBase64([
+        stellar.Operation.clawback({ from: trustorAddress, asset: bstAsset, amount: '1' }),
+      ]);
+      const explanation = await basecoin.explainTransaction({ txBase64 });
+      const clawbackOperation = explanation.operations[0];
+      clawbackOperation.assetCode.should.equal('BST');
+      clawbackOperation.assetIssuer.should.equal(issuerAddress);
+    });
+
+    it('should leave authorized undefined when a setTrustLineFlags op does not touch the authorized flag', async () => {
+      const txBase64 = buildTxBase64([
+        stellar.Operation.setTrustLineFlags({
+          trustor: trustorAddress,
+          asset: bstAsset,
+          flags: { authorizedToMaintainLiabilities: true },
+        }),
+      ]);
+      const explanation = await basecoin.explainTransaction({ txBase64 });
+      const authorizeTrustlineOperation = explanation.operations[0];
+      authorizeTrustlineOperation.type.should.equal('authorizeTrustline');
+      // Consumers must be able to tell "not changed" (undefined) apart from a revoke (false).
+      should.not.exist(authorizeTrustlineOperation.authorized);
+    });
+
+    it('should report authorized false for a revoke', async () => {
+      const txBase64 = buildTxBase64([
+        stellar.Operation.setTrustLineFlags({
+          trustor: trustorAddress,
+          asset: bstAsset,
+          flags: { authorized: false },
+        }),
+      ]);
+      const explanation = await basecoin.explainTransaction({ txBase64 });
+      explanation.operations[0].authorized.should.equal(false);
+    });
+
+    it('should report all three trustline flags so a deauthorization through any of them is visible', async () => {
+      const txBase64 = buildTxBase64([
+        stellar.Operation.setTrustLineFlags({
+          trustor: trustorAddress,
+          asset: bstAsset,
+          flags: { authorized: false, authorizedToMaintainLiabilities: true, clawbackEnabled: false },
+        }),
+        stellar.Operation.setTrustLineFlags({
+          trustor: trustorAddress,
+          asset: bstAsset,
+          flags: { authorizedToMaintainLiabilities: false },
+        }),
+      ]);
+      const explanation = await basecoin.explainTransaction({ txBase64 });
+      // A downgrade to maintain-liabilities is not a full revoke, and clearing maintain-liabilities can
+      // deauthorize a trustline while `authorized` stays undefined.
+      const [downgrade, clearMaintainLiabilities] = explanation.operations;
+      downgrade.authorized.should.equal(false);
+      downgrade.authorizedToMaintainLiabilities.should.equal(true);
+      downgrade.clawbackEnabled.should.equal(false);
+      should.not.exist(clearMaintainLiabilities.authorized);
+      clearMaintainLiabilities.authorizedToMaintainLiabilities.should.equal(false);
+      should.not.exist(clearMaintainLiabilities.clawbackEnabled);
+    });
+
+    describe('setOptions fields beyond flags and lowThreshold', () => {
+      const inflationDestination = 'GAFVCOWZWSJEAFOKBEBO2B4QITJ2YXN6YIYG6BUURQINVDVW4OPS3OL6';
+
+      it('should report every setOptions field the transaction sets', async () => {
+        const txBase64 = buildTxBase64([
+          stellar.Operation.setOptions({
+            masterWeight: 0,
+            lowThreshold: 2,
+            medThreshold: 3,
+            highThreshold: 4,
+            homeDomain: 'example.com',
+            inflationDest: inflationDestination,
+          }),
+        ]);
+        const explanation = await basecoin.explainTransaction({ txBase64 });
+        const accountConfigOperation = explanation.operations[0];
+        accountConfigOperation.type.should.equal('accountConfig');
+        // masterWeight 0 is a real value (it disables the master key) and must not be dropped as falsy.
+        accountConfigOperation.masterWeight.should.equal(0);
+        accountConfigOperation.lowThreshold.should.equal(2);
+        accountConfigOperation.medThreshold.should.equal(3);
+        accountConfigOperation.highThreshold.should.equal(4);
+        accountConfigOperation.homeDomain.should.equal('example.com');
+        accountConfigOperation.inflationDest.should.equal(inflationDestination);
+      });
+
+      it('should leave unset setOptions fields undefined', async () => {
+        const txBase64 = buildTxBase64([stellar.Operation.setOptions({ setFlags: stellar.AuthRequiredFlag })]);
+        const explanation = await basecoin.explainTransaction({ txBase64 });
+        const accountConfigOperation = explanation.operations[0];
+        accountConfigOperation.setFlags.should.equal(stellar.AuthRequiredFlag);
+        should.not.exist(accountConfigOperation.masterWeight);
+        should.not.exist(accountConfigOperation.medThreshold);
+        should.not.exist(accountConfigOperation.highThreshold);
+        should.not.exist(accountConfigOperation.homeDomain);
+        should.not.exist(accountConfigOperation.inflationDest);
+      });
+
+      describe('signer', () => {
+        const signerAddress = 'GBTL47RTFR5EKMZSXWOQU735WBK7LRPPDIDK3JTNTCZZ7NUBBRDTVSK2';
+
+        it('should report a signer-only setOptions so it does not read as an empty accountConfig', async () => {
+          const txBase64 = buildTxBase64([
+            stellar.Operation.setOptions({ signer: { ed25519PublicKey: signerAddress, weight: 3 } }),
+          ]);
+          const explanation = await basecoin.explainTransaction({ txBase64 });
+          explanation.operations[0].type.should.equal('accountConfig');
+          explanation.operations[0].signer.should.deepEqual({
+            type: 'ed25519PublicKey',
+            key: signerAddress,
+            weight: 3,
+          });
+        });
+
+        it('should report a signer removal as weight 0', async () => {
+          const txBase64 = buildTxBase64([
+            stellar.Operation.setOptions({ signer: { ed25519PublicKey: signerAddress, weight: 0 } }),
+          ]);
+          const explanation = await basecoin.explainTransaction({ txBase64 });
+          // weight 0 is the removal encoding and must not be dropped as falsy.
+          explanation.operations[0].signer.weight.should.equal(0);
+        });
+
+        it('should hex-encode hash and pre-auth transaction signers', async () => {
+          const hashSignerBytes = Buffer.alloc(32, 7);
+          const preAuthSignerBytes = Buffer.alloc(32, 9);
+          const txBase64 = buildTxBase64([
+            stellar.Operation.setOptions({ signer: { sha256Hash: hashSignerBytes, weight: 1 } }),
+            stellar.Operation.setOptions({ signer: { preAuthTx: preAuthSignerBytes, weight: 2 } }),
+          ]);
+          const explanation = await basecoin.explainTransaction({ txBase64 });
+          explanation.operations[0].signer.should.deepEqual({
+            type: 'sha256Hash',
+            key: hashSignerBytes.toString('hex'),
+            weight: 1,
+          });
+          explanation.operations[1].signer.should.deepEqual({
+            type: 'preAuthTx',
+            key: preAuthSignerBytes.toString('hex'),
+            weight: 2,
+          });
+        });
+
+        it('should leave signer undefined when the setOptions does not carry one', async () => {
+          const txBase64 = buildTxBase64([stellar.Operation.setOptions({ masterWeight: 0 })]);
+          const explanation = await basecoin.explainTransaction({ txBase64 });
+          should.not.exist(explanation.operations[0].signer);
+        });
+      });
+    });
+
+    it('should include an unsupported entry for an operation type explain does not model', async () => {
+      const txBase64 = buildTxBase64([
+        stellar.Operation.clawback({ from: trustorAddress, asset: bstAsset, amount: '1' }),
+        stellar.Operation.bumpSequence({ bumpTo: '100' }),
+      ]);
+      const explanation = await basecoin.explainTransaction({ txBase64 });
+      // A signed operation must never be missing from the explanation, or a reviewer cannot see it.
+      explanation.operations.length.should.equal(2);
+      explanation.operations[0].type.should.equal('clawback');
+      explanation.operations[1].type.should.equal('unsupported');
+      explanation.operations[1].operationType.should.equal('bumpSequence');
+    });
+
+    it('should not add unsupported entries for payment and trustline operations explain already models', async () => {
+      const txBase64 = buildTxBase64([
+        stellar.Operation.payment({ destination: trustorAddress, asset: stellar.Asset.native(), amount: '1' }),
+        stellar.Operation.changeTrust({ asset: bstAsset, limit: '1000' }),
+      ]);
+      const explanation = await basecoin.explainTransaction({ txBase64 });
+      // payment is reported through outputs, changeTrust through operations; neither is "unsupported".
+      explanation.outputs.length.should.equal(1);
+      explanation.operations.map((operation) => operation.type).should.deepEqual(['changeTrust']);
+    });
+
+    it('should report outputs and exactly one unsupported entry, in order, for a payment mixed with an unmodelled op', async () => {
+      const txBase64 = buildTxBase64([
+        stellar.Operation.payment({ destination: trustorAddress, asset: stellar.Asset.native(), amount: '1' }),
+        stellar.Operation.bumpSequence({ bumpTo: '100' }),
+        stellar.Operation.clawback({ from: trustorAddress, asset: bstAsset, amount: '1' }),
+      ]);
+      const explanation = await basecoin.explainTransaction({ txBase64 });
+      explanation.outputs.length.should.equal(1);
+      // Operations keep transaction order, so a reviewer can line them up with the signed transaction.
+      explanation.operations.map((operation) => operation.type).should.deepEqual(['unsupported', 'clawback']);
+      explanation.operations[0].operationType.should.equal('bumpSequence');
+    });
+
+    describe('operation source', () => {
+      const otherSourceAddress = 'GAFVCOWZWSJEAFOKBEBO2B4QITJ2YXN6YIYG6BUURQINVDVW4OPS3OL6';
+
+      it('should report an operation-level source on every operation kind that names one', async () => {
+        const txBase64 = buildTxBase64([
+          stellar.Operation.setOptions({ source: otherSourceAddress, masterWeight: 0 }),
+          stellar.Operation.setTrustLineFlags({
+            source: otherSourceAddress,
+            trustor: trustorAddress,
+            asset: bstAsset,
+            flags: { authorized: true },
+          }),
+          stellar.Operation.clawback({
+            source: otherSourceAddress,
+            from: trustorAddress,
+            asset: bstAsset,
+            amount: '1',
+          }),
+          stellar.Operation.changeTrust({ source: otherSourceAddress, asset: bstAsset, limit: '1000' }),
+          stellar.Operation.bumpSequence({ source: otherSourceAddress, bumpTo: '100' }),
+          stellar.Operation.payment({
+            source: otherSourceAddress,
+            destination: trustorAddress,
+            asset: stellar.Asset.native(),
+            amount: '1',
+          }),
+        ]);
+        const explanation = await basecoin.explainTransaction({ txBase64 });
+        // An op that runs against another account would otherwise read as if it applied to the tx source.
+        explanation.operations.length.should.equal(5);
+        explanation.operations.forEach((operation) => operation.source.should.equal(otherSourceAddress));
+        explanation.outputs[0].source.should.equal(otherSourceAddress);
+      });
+
+      it('should leave source undefined when an operation does not name one', async () => {
+        const txBase64 = buildTxBase64([
+          stellar.Operation.setOptions({ masterWeight: 0 }),
+          stellar.Operation.payment({ destination: trustorAddress, asset: stellar.Asset.native(), amount: '1' }),
+        ]);
+        const explanation = await basecoin.explainTransaction({ txBase64 });
+        should.not.exist(explanation.operations[0].source);
+        should.not.exist(explanation.outputs[0].source);
+      });
+    });
   });
 });
