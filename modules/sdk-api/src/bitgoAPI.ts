@@ -265,6 +265,7 @@ export class BitGoAPI implements BitGoBase {
   protected readonly _env: EnvironmentName;
   protected readonly _authVersion: Exclude<BitGoAPIOptions['authVersion'], undefined> = 2;
   protected _hmacVerification = true;
+  protected readonly _upgradeEncryptionOnSign: boolean;
   protected readonly _proxy?: string;
   protected _user?: User;
   protected _extensionKey?: ECPairInterface;
@@ -444,6 +445,7 @@ export class BitGoAPI implements BitGoBase {
     // turned off by setting to false. can also be overridden individually in the
     // functions that use it.
     this._validate = params.validate === undefined ? true : params.validate;
+    this._upgradeEncryptionOnSign = params.upgradeEncryptionOnSign ?? false;
 
     if (!params.hmacVerification && params.hmacVerification !== undefined) {
       if ((env == 'prod' || env == 'adminProd') && common.Environments[env].hmacVerificationEnforced) {
@@ -555,6 +557,14 @@ export class BitGoAPI implements BitGoBase {
    */
   getEnv(): EnvironmentName {
     return this._env;
+  }
+
+  /**
+   * Whether signing with your wallet passphrase upgrades the stored encryption of your user key
+   * to the latest format when the call does not set `upgradeEncryption`.
+   */
+  isUpgradeEncryptionOnSignEnabled(): boolean {
+    return this._upgradeEncryptionOnSign;
   }
 
   /**
