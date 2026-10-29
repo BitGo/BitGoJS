@@ -1556,8 +1556,10 @@ describe('ETH:', function () {
         ]);
         const wrapCalldata = intentCalldata('wrap(address,uint256)', [baseAddress, amount]);
 
-        it('should verify unwrap, finalizeUnwrap and wrap against a mainnet pair without underlyingErc20Address', async function () {
-          (mainnetPair.underlyingErc20Address === undefined).should.equal(true);
+        it('should verify unwrap, finalizeUnwrap and wrap against a registered mainnet pair', async function () {
+          // CHALO-2007 wired wrapper↔underlying metadata for every mainnet pair; eth:cusdt's
+          // underlying is real mainnet USDT.
+          mainnetPair.underlyingErc20Address!.should.equal('0xdac17f958d2ee523a2206206994597c13d831ec7');
           (
             await verifyIntent('unwrap', unwrapCalldata, {
               coinName: 'eth',
