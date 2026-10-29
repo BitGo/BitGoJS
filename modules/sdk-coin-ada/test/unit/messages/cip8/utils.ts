@@ -113,5 +113,25 @@ describe('CIP8 Utils', function () {
       should.equal(reconstructedObjects.manualCoseSign1Hex, originalObjects.manualCoseSign1Hex);
       should.equal(reconstructedObjects.manualCoseKeyHex, originalObjects.manualCoseKeyHex);
     });
+
+    it('should round-trip a payload larger than the cbor encoder chunk size', async function () {
+      // A truncated encoding (only the first chunk) or a payload dropped by the encoder would
+      // either fail to decode or come back different, so the round-trip pins the encoding down.
+      const message = 'a'.repeat(64 * 1024);
+      const { protectedHeaderCborBytes, payloadBytes } = createCSLSigStructure(addressCborBytes, message);
+
+      const originalObjects = constructCSLCoseObjects(
+        protectedHeaderCborBytes,
+        payloadBytes,
+        cip8TestResources.createTestSignature(message),
+        cip8TestResources.createTestPublicKey()
+      );
+
+      const buffer = coseObjectsOutputToBuffer(originalObjects);
+      const reconstructedObjects = await bufferToCoseObjectsOutput(buffer);
+
+      should.equal(reconstructedObjects.manualCoseSign1Hex, originalObjects.manualCoseSign1Hex);
+      should.equal(reconstructedObjects.manualCoseKeyHex, originalObjects.manualCoseKeyHex);
+    });
   });
 });
