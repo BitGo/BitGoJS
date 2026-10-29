@@ -23,11 +23,19 @@ jobs:
     env:
       AWS_REGION: us-west-2
     steps:
+      - name: Require master workflow ref
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_REF" != 'refs/heads/master' ]; then
+            echo '::error::Run iyarc-prune from master. The AWS role trusts the workflow ref, not the checkout ref. Merge workflow changes before dispatching them.'
+            exit 1
+          fi
+
       - name: Checkout repository
         id: checkout
         uses: actions/checkout@v6
         with:
-          ref: master
+          ref: ${{ github.sha }}
           fetch-depth: 0
 
       - name: Setup Node
@@ -108,7 +116,7 @@ jobs:
       # including the Still blocked breakdown so the result is auditable"), so
       # render the agent's own report there instead of leaving it log-only.
       - name: Write agent report to job summary
-        if: always()
+        if: always() && steps.claude.outcome != 'skipped'
         env:
           EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
         run: |
@@ -154,7 +162,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Require successful Claude completion
-        if: always()
+        if: always() && steps.claude.outcome != 'skipped'
         env:
           EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
         run: |
