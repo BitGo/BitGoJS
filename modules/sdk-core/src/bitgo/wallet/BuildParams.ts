@@ -158,6 +158,8 @@ export const BuildParams = t.exact(
       validToBlock: t.unknown,
       messageKey: t.unknown,
       stakingParams: t.unknown,
+      // PoX-5 (UTXO) unstaking, e.g. { pox5: { branch: 'early-exit', principalPreimage } }
+      unstakingParams: t.unknown,
       stakingOptions: t.unknown,
       unstakingOptions: t.unknown,
       eip1559: t.unknown,
