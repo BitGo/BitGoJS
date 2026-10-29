@@ -398,7 +398,11 @@ interface EthTransactionParams extends TransactionParams {
   wrapParams?: { tokenName: string; amount: string };
   /** ERC-7984 unshield intent (`type: 'unwrap'`): wrapper coin name and plaintext amount. */
   unwrapParams?: { tokenName: string; amount: string };
+  /** Set on server-leg pending-approval rebuilds, which carry no caller wrapParams/unwrapParams. */
+  pendingApprovalId?: string;
 }
+
+const MAX_UINT256 = 2n ** 256n - 1n;
 
 export interface VerifyEthTransactionOptions extends VerifyTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -4021,24 +4025,19 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     if (!txPrebuild?.txHex) {
       throw new Error('missing txHex in txPrebuild');
     }
-    if (!wrapParams?.tokenName || !wrapParams.amount) {
+    // CHALO-2010: the PA-rebuild path — the server derived the tx from the pending approval's own
+    // intent data (the PA carries only the type and the pendingApprovalId; the intent's wrapParams
+    // live in the journey). Strictness follows the presence of caller wrapParams, never the
+    // pendingApprovalId alone: when wrapParams carries the intent, tokenName and amount are always
+    // cross-checked. Only when wrapParams is absent AND a pendingApprovalId is present (the rebuild;
+    // pendingApprovalId is caller-supplied txParams, so it grants no more than the bounded checks)
+    // is the pair resolved from the tx's own calldata and the allowance bounded instead.
+    const requested =
+      wrapParams?.tokenName && wrapParams.amount
+        ? { tokenName: wrapParams.tokenName, amount: wrapParams.amount }
+        : undefined;
+    if (!requested && (wrapParams?.tokenName || wrapParams?.amount || !txParams.pendingApprovalId)) {
       return throwRecipientMismatch('wrapApprove transaction requires wrapParams with tokenName and amount', []);
-    }
-
-    let wrapper: Erc7984Coin;
-    let underlyingErc20Address: string;
-    try {
-      const staticsCoin = coins.get(wrapParams.tokenName);
-      if (!(staticsCoin instanceof Erc7984Coin) || !staticsCoin.underlyingErc20Address) {
-        throw new Error('not an ERC-7984 pair');
-      }
-      wrapper = staticsCoin;
-      underlyingErc20Address = staticsCoin.underlyingErc20Address.toLowerCase();
-    } catch {
-      return throwRecipientMismatch(
-        `wrapApprove: '${wrapParams.tokenName}' is not a registered ERC-7984 shield pair`,
-        []
-      );
     }
 
     const txBuilder = this.getTransactionBuilder();
@@ -4071,13 +4070,6 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     const mismatch = (message: string, address = innerTo, amount = innerAmount): Promise<never> =>
       throwRecipientMismatch(message, [{ address: address || '', amount: amount || '' }]);
 
-    if (innerTo.toLowerCase() !== underlyingErc20Address) {
-      await mismatch('wrapApprove transaction must target the underlying ERC-20 of the wrapper');
-    }
-    if (innerAmount !== '0') {
-      await mismatch('wrapApprove transaction must not carry native value inside sendMultiSig');
-    }
-
     let approve: { spender: string; amount: string };
     try {
       approve = decodeApproveCalldata(innerData || '');
@@ -4086,11 +4078,61 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
         `wrapApprove transaction must use ERC-20 approve(address,uint256) calldata — ${(e as Error).message}`
       );
     }
+
+    let wrapper: Erc7984Coin;
+    let underlyingErc20Address: string;
+    if (!requested) {
+      // CHALO-2010: no caller wrapParams — resolve the pair by the approve's spender (the reverse
+      // lookup over the registered ERC-7984 pairs on this network).
+      const network = this.getNetwork();
+      if (!network) {
+        throw new Error('missing network for ERC-7984 intent verification');
+      }
+      const { byTokenName } = getErc7984WrappersForNetwork(network);
+      const tokenName = [...byTokenName.entries()].find(([, addr]) => addr === approve.spender.toLowerCase())?.[0];
+      const staticsCoin = tokenName ? coins.get(tokenName) : undefined;
+      if (!(staticsCoin instanceof Erc7984Coin) || !staticsCoin.underlyingErc20Address) {
+        return await mismatch('wrapApprove transaction spender is not a registered ERC-7984 wrapper', approve.spender);
+      }
+      wrapper = staticsCoin;
+      underlyingErc20Address = staticsCoin.underlyingErc20Address.toLowerCase();
+    } else {
+      try {
+        const staticsCoin = coins.get(requested.tokenName);
+        if (!(staticsCoin instanceof Erc7984Coin) || !staticsCoin.underlyingErc20Address) {
+          throw new Error('not an ERC-7984 pair');
+        }
+        wrapper = staticsCoin;
+        underlyingErc20Address = staticsCoin.underlyingErc20Address.toLowerCase();
+      } catch {
+        return throwRecipientMismatch(
+          `wrapApprove: '${requested.tokenName}' is not a registered ERC-7984 shield pair`,
+          []
+        );
+      }
+    }
+
+    if (innerTo.toLowerCase() !== underlyingErc20Address) {
+      await mismatch('wrapApprove transaction must target the underlying ERC-20 of the wrapper');
+    }
+    if (innerAmount !== '0') {
+      await mismatch('wrapApprove transaction must not carry native value inside sendMultiSig');
+    }
+
     if (approve.spender.toLowerCase() !== wrapper.contractAddress.toLowerCase()) {
       await mismatch('wrapApprove transaction spender does not match the wrapper contract', approve.spender);
     }
-    if (approve.amount !== wrapParams.amount) {
-      await mismatch('wrapApprove transaction amount does not match the requested amount', innerTo, approve.amount);
+    if (requested) {
+      if (approve.amount !== requested.amount) {
+        await mismatch('wrapApprove transaction amount does not match the requested amount', innerTo, approve.amount);
+      }
+    } else if (!/^\d+$/.test(approve.amount) || BigInt(approve.amount) <= 0n || BigInt(approve.amount) >= MAX_UINT256) {
+      // no caller intent to compare against: still bound the allowance (positive, not unlimited)
+      await mismatch(
+        'wrapApprove transaction amount must be a positive integer and not the unlimited allowance',
+        innerTo,
+        approve.amount
+      );
     }
 
     await this.assertPrebuildRecipientMirrorsSendMultiSig(
