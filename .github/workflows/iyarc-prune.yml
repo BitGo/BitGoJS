@@ -20,12 +20,25 @@ jobs:
   prune:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
     env:
       AWS_REGION: us-west-2
     steps:
+      - name: Require master workflow ref
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_REF" != 'refs/heads/master' ]; then
+            echo '::error::Run iyarc-prune from master. The AWS role trusts the workflow ref, not the checkout ref. Merge workflow changes before dispatching them.'
+            exit 1
+          fi
+
       - name: Checkout repository
+        id: checkout
         uses: actions/checkout@v6
         with:
+          ref: ${{ github.sha }}
           fetch-depth: 0
 
       - name: Setup Node
@@ -36,6 +49,11 @@ jobs:
       - name: Enable Corepack (yarn 1.22.22)
         run: corepack enable
 
+      - name: Install release audit scanner
+        env:
+          OSV_SCANNER_SHA256: bc98e15319ed0d515e3f9235287ba53cdc5535d576d24fd573978ecfe9ab92dc
+        run: node scripts/iyarc-prune.js install-scanner
+
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v6
         with:
@@ -44,41 +62,22 @@ jobs:
 
       - name: Assume Bedrock inference role
         id: inference-role
-        run: |
-          CREDS="$(aws sts assume-role \
-            --role-arn arn:aws:iam::168000258654:role/BedrockInferenceRole \
-            --role-session-name iyarc-prune-session \
-            --query 'Credentials' \
-            --output json)"
-
-          AWS_ACCESS_KEY_ID="$(echo "$CREDS" | jq -r '.AccessKeyId')"
-          AWS_SECRET_ACCESS_KEY="$(echo "$CREDS" | jq -r '.SecretAccessKey')"
-          AWS_SESSION_TOKEN="$(echo "$CREDS" | jq -r '.SessionToken')"
-
-          echo "::add-mask::$AWS_SECRET_ACCESS_KEY"
-          echo "::add-mask::$AWS_SESSION_TOKEN"
-          { echo "aws-access-key-id=$AWS_ACCESS_KEY_ID"; echo "aws-secret-access-key=$AWS_SECRET_ACCESS_KEY"; echo "aws-session-token=$AWS_SESSION_TOKEN"; } >> "$GITHUB_OUTPUT"
+        run: node scripts/iyarc-prune.js assume-inference-role
 
       - name: Load iyarc-prune agent instructions
         id: agent
-        run: |
-          {
-            echo "content<<IYARC_PRUNE_EOF"
-            sed '1,/^---$/d' .claude/agents/iyarc-prune.md
-            echo "IYARC_PRUNE_EOF"
-          } >> "$GITHUB_OUTPUT"
+        run: node scripts/iyarc-prune.js load-instructions
 
       - name: Run Claude Code (Bedrock)
         id: claude
         uses: anthropics/claude-code-action@8d70a0dd265122bd65b8e09d3d959e65373ae2a1 # v1.0.260
         with:
           prompt: ${{ steps.agent.outputs.content }}
-          use_commit_signing: 'true'
-          branch_prefix: 'osv-scanner-prune/'
-          claude_args: --allowed-tools 'Edit,MultiEdit,Write,Read,Glob,Grep,LS,Bash,mcp__github_file_ops__commit_files,mcp__github_file_ops__delete_files'
+          claude_args: --allowed-tools 'Edit,MultiEdit,Write,Read,Glob,Grep,LS,Bash'
           use_bedrock: 'true'
           github_token: ${{ secrets.GITHUB_TOKEN }}
         env:
+          IYARC_PRUNE_PR_BODY: ${{ runner.temp }}/iyarc-prune-pr.md
           ANTHROPIC_MODEL: arn:aws:bedrock:us-west-2:168000258654:inference-profile/global.anthropic.claude-sonnet-5-5
           # Bedrock: replaying a tool-call turn requires a leading thinking block; disable to avoid 400.
           MAX_THINKING_TOKENS: '0'
@@ -88,70 +87,56 @@ jobs:
           AWS_SESSION_TOKEN: ${{ steps.inference-role.outputs.aws-session-token }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # The agent prompt promises a job summary ("report ... in the job summary,
-      # including the Still blocked breakdown so the result is auditable"), so
-      # render the agent's own report there instead of leaving it log-only.
+      # Agent edits must not change the code that validates or publishes them.
       - name: Write agent report to job summary
-        if: always()
+        if: always() && steps.claude.outcome != 'skipped'
         env:
+          BASE_SHA: ${{ steps.checkout.outputs.commit }}
           EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
-        run: |
-          # Deliberately NOT `set -e`: this step is reporting only and must never
-          # be the reason the job goes red. Failures degrade to a note instead.
-          set -uo pipefail
-          EVENTS=''
-          if [ -n "${EXECUTION_FILE:-}" ] && [ -f "$EXECUTION_FILE" ]; then
-            EVENTS="$(jq -c 'if type=="array" then . else [.] end' "$EXECUTION_FILE" 2>/dev/null)"
-          fi
-          REPORT=''
-          META=''
-          if [ -n "$EVENTS" ]; then
-            REPORT="$(printf '%s' "$EVENTS" | jq -r '.[] | select(.type=="assistant") | .message.content[]? | select(.type=="text") | .text' 2>/dev/null)"
-            # Allowlist, not del(.result): the execution-file schema is upstream and
-            # may grow fields we have not audited, so name what we publish.
-            META="$(printf '%s' "$EVENTS" | jq -S 'map(select(.type=="result"))[-1] // empty
-              | {is_error, subtype, terminal_reason, stop_reason, num_turns,
-                 duration_ms, total_cost_usd, session_id,
-                 output_tokens: .usage.output_tokens}
-              | with_entries(select(.value != null))' 2>/dev/null)"
-          fi
-          {
-            echo "## osv-scanner-prune report"
-            echo
-            if [ -z "$EVENTS" ]; then
-              echo "> No readable Claude execution file was produced — see the agent step logs."
-            elif [ -n "$REPORT" ]; then
-              echo "$REPORT"
-            else
-              echo "> The agent produced no text output — see the agent step logs."
-            fi
-            if [ -n "$META" ]; then
-              echo
-              echo "<details><summary>Run metadata</summary>"
-              echo
-              echo '```json'
-              echo "$META"
-              echo '```'
-              echo
-              echo "</details>"
-            fi
-          } >> "$GITHUB_STEP_SUMMARY"
+        run: git show "$BASE_SHA:scripts/iyarc-prune.js" | node - write-agent-summary
 
-      - name: Surface Claude error and fail on is_error
-        if: always()
+      - name: Require successful Claude completion
+        if: always() && steps.claude.outcome != 'skipped'
         env:
+          BASE_SHA: ${{ steps.checkout.outputs.commit }}
           EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
-        run: |
-          set -euo pipefail
-          if [ -z "${EXECUTION_FILE:-}" ] || [ ! -f "$EXECUTION_FILE" ]; then
-            echo "::error::no Claude execution file produced"; exit 1
-          fi
-          EVENTS="$(jq -c 'if type=="array" then . else [.] end' "$EXECUTION_FILE")"
-          echo "=== result event (metadata only) ==="
-          echo "$EVENTS" | jq -c 'map(select(.type=="result"))[-1] // empty | del(.result)'
-          echo "=== assistant text turns (no tool output) ==="
-          echo "$EVENTS" | jq -r '.[] | select(.type=="assistant") | .message.content[]? | select(.type=="text") | .text'
-          RES="$(echo "$EVENTS" | jq -c 'map(select(.type=="result"))[-1] // empty')"
-          if [ "$(echo "$RES" | jq -r '.is_error // false')" = "true" ]; then
-            echo "::error::Claude returned is_error=true"; exit 1
-          fi
+        run: git show "$BASE_SHA:scripts/iyarc-prune.js" | node - require-successful-completion
+
+      - name: Check changes are ready for a pull request
+        id: changes
+        env:
+          BASE_SHA: ${{ steps.checkout.outputs.commit }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IYARC_PRUNE_PR_BODY: ${{ runner.temp }}/iyarc-prune-pr.md
+        run: git show "$BASE_SHA:scripts/iyarc-prune.js" | node - prepare-pull-request
+
+      - name: Create signed dependency pull request
+        if: steps.changes.outputs.ready == 'true'
+        id: pull-request
+        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          sign-commits: true
+          branch: osv-scanner-prune/${{ github.run_id }}
+          base: master
+          add-paths: |
+            osv-scanner.toml
+            package.json
+            yarn.lock
+            :(glob)modules/*/package.json
+          commit-message: |
+            chore(deps): prune resolved vulnerability exclusions
+
+            Ticket: HSM-429
+          title: 'chore(deps): prune resolved vulnerability exclusions'
+          body-path: ${{ runner.temp }}/iyarc-prune-pr.md
+          labels: automated,dependencies,security
+          assignees: gokulhost
+          draft: false
+
+      - name: Report pull request
+        if: steps.changes.outputs.ready == 'true'
+        env:
+          BASE_SHA: ${{ steps.checkout.outputs.commit }}
+          PR_URL: ${{ steps.pull-request.outputs.pull-request-url }}
+        run: git show "$BASE_SHA:scripts/iyarc-prune.js" | node - report-pull-request

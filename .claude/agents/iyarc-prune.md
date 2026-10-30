@@ -22,14 +22,31 @@ over an unsafe or unverified bump.
 
 ## Environment notes
 
+- For a manual run of [the workflow](../../.github/workflows/iyarc-prune.yml#L29-L42),
+  select `master` in **Use workflow from**. The AWS login uses the
+  [workflow's branch identity](https://docs.github.com/en/actions/reference/security/oidc#filtering-for-a-specific-branch),
+  not the checkout ref. Merge workflow changes before a live run; local agent
+  invocations are unaffected.
 - This is a Lerna + Yarn (v1, `1.22.22`) workspaces monorepo with ~116 packages
   under `modules/`. Node and Yarn are already provisioned in this runner.
-- The release audit gate is:
+- Workflow operations live in the dependency-free
+  [JavaScript helper](../../scripts/iyarc-prune.js), not inline shell programs.
+  Run their [regression tests](../../scripts/tests/iyarc-prune.test.js) with
+  `yarn test:scripts`; the tests use isolated temporary Git repositories.
+- The workflow installs `osv-scanner` v2.3.8, matching the release audit.
+  It writes JSON results:
   ```
-  osv-scanner --config=osv-scanner.toml --severity=HIGH --severity=CRITICAL ./
+  osv-scanner --config=osv-scanner.toml --format=json --output-file="$RUNNER_TEMP/osv-results.json" ./
   ```
-  This is the EXACT command the release pipeline runs, so it is your source of
-  truth for "fixed".
+  For a local run, substitute a temporary directory for `$RUNNER_TEMP`.
+  The scanner has no `--severity` flag. Exit code 1 means findings, not
+  necessarily a failed release gate. Evaluate the JSON using the shell step in
+  `.github/actions/osv-severity-gate/action.yml`, with `SCAN_OUTCOME=success`
+  for exit code 0 or `SCAN_OUTCOME=failure` for exit code 1, `RESULTS_FILE` set
+  to that output path, and `CVSS_THRESHOLD=7.0`. CVSS (Common Vulnerability
+  Scoring System) scores of 7.0 or above block release. Exit codes above 1
+  are scanner errors and MUST fail validation. Read the current release steps
+  in `.github/workflows/npmjs-release.yml` before running the audit.
 - IMPORTANT: nearly every entry in `osv-scanner.toml` is a TRANSITIVE dependency
   (e.g. tar, minimatch, ws, form-data, protobufjs, tmp, sjcl, sanitize-html,
   esbuild), pinned in the root `package.json` `resolutions` block — NOT a direct
@@ -52,7 +69,7 @@ behind, still exists.
 
 Run this check and decide on the parsed state, never on "a PR row exists":
 
-    gh pr list --state open --json number,state,headRefName --jq '.[] | select(.headRefName | startswith("osv-scanner-prune/"))'
+    gh pr list --state open --limit 1000 --json number,state,headRefName --jq '.[] | select(.headRefName | startswith("osv-scanner-prune/"))'
 
 - Non-empty output: an open prune PR exists — stop and report — do not open a
   second. Name the open PR number(s) and head branch(es) in the report.
@@ -65,6 +82,7 @@ from merged prune PRs linger until deleted and must not trigger this early exit.
 ## Read context first
 
 Before changing anything, read:
+
 1. `osv-scanner.toml` — the full ignore list and every justification comment.
 2. The root `package.json` `resolutions` block.
 3. `scripts/upgrade-workspace-dependency.ts` (the `yarn upgrade-dep` tool).
@@ -103,8 +121,9 @@ For each `[[IgnoredVulns]]` entry in `osv-scanner.toml`:
 
 After each attempted fix, run the SAME gates the release pipeline runs, in this
 order:
-1. `osv-scanner --config=osv-scanner.toml --severity=HIGH --severity=CRITICAL ./`
-   It MUST pass with the exclusion removed. Capture the output.
+
+1. Run the pinned scanner and severity gate described above. The gate MUST
+   pass with the exclusion removed. Capture the scanner and gate output.
 2. `yarn check-deps`. It MUST pass — a `resolutions` change can break
    cross-workspace version consistency. This is both a release-job step (it runs
    immediately after audit in the release workflow) and a PR-CI gate, so a
@@ -115,58 +134,55 @@ order:
 4. If ANY step fails — no compatible fix, audit still flags the advisory,
    check-deps fails, build breaks, or tests fail — revert that dependency's
    changes and restore its exclusion in `osv-scanner.toml`. Never open a PR with
-   a red feedback loop. The full test suite still runs in PR CI as a backstop.
+   a red feedback loop. The workflow publishes with GitHub's repository-scoped
+   workflow token (`GITHUB_TOKEN`). A maintainer may need to approve workflow
+   runs before continuous integration (CI) starts on the resulting pull request.
+   Do not assume those checks ran; they must pass before merging.
 
-## Commit and pull request (only if at least one exclusion was removed with a
-fully green feedback loop)
+## Commit and pull request (only after validated exclusion removals)
 
-How you finish depends on where you are running:
+The workflow owns branch creation, signed commits, and pull request creation.
+Do not create a branch, commit, push, or open a pull request yourself.
 
-- **If running in CI** (a `osv-scanner-prune/*` branch exists and the
-  `mcp__github_file_ops__commit_files` tool is available): commit and open the PR
-  as described below.
-- **If a developer is running you locally:** make the edits, run the full
-  feedback loop, print the summary table and the "Still blocked" section, and
-  STOP. Do not commit or open a PR — let the developer review and commit.
-
-CI commit/PR rules:
-
-- Commit message: conventional (commitlint extends `@commitlint/config-conventional`;
-  `deps` and `root` are valid scopes), e.g.:
-  `chore(deps): bump <pkg> to <version>, drop <GHSA> from osv-scanner.toml`.
-  commitlint enforces `references-empty: never`, so the message MUST carry an
-  issue reference: include `Ticket: HSM-429` in the footer.
-- SIGNED COMMIT (important — `master` requires signed commits): this workflow
-  runs with commit signing enabled. Make your commit using the
-  `mcp__github_file_ops__commit_files` tool — NOT `git commit`/`git push` —
-  passing every changed path (`osv-scanner.toml`, `package.json`, `yarn.lock`).
-  That tool commits through GitHub's API, so the commit is Verified (signed).
-  Commits made with raw `git` will be UNSIGNED and cannot be merged.
-  - FALLBACK: if the signing tool fails, commit with `git` anyway and add this
-    line to the PR body: "⚠️ Commits are unsigned — a maintainer must re-sign
-    before merge."
-- The workflow creates the working branch automatically (prefix `osv-scanner-prune/`);
-  commit your changes to it, then open a single NON-draft PR against `master`
-  with `gh pr create`.
-- Labels: ensure `automated`, `dependencies`, and `security` exist (create any
-  missing one with `gh label create <name> --force`), then apply all three.
-- Assign the PR to `gokulhost` so it does not get lost:
-  `gh pr edit <number> --add-assignee gokulhost`. CODEOWNERS reviewers are
-  assigned automatically and separately.
-- PR body must contain:
+- **When `IYARC_PRUNE_PR_BODY` is set:** you are running under the publication
+  workflow, even when the checked-out branch is `master`. Leave the validated
+  edits uncommitted and write the pull request body to the absolute path in
+  `IYARC_PRUNE_PR_BODY`. Create this file ONLY after at least one exclusion has
+  been removed and the entire feedback loop has passed. If an open prune pull
+  request exists or nothing can be safely removed, do not create this file.
+  If validation fails, revert the failed changes before finishing.
+- **When `IYARC_PRUNE_PR_BODY` is unset:** this is a local run. Make the edits,
+  run the feedback loop, print the summary table and the "Still blocked"
+  section, and stop so the developer can review and commit.
+- The workflow creates a signed commit with the `Ticket: HSM-429` footer and
+  a non-draft pull request against `master`, using an `osv-scanner-prune/*`
+  branch. It applies `automated`, `dependencies`, and `security` labels and
+  assigns `gokulhost`.
+- The [publication checks](../../scripts/iyarc-prune.js#L145-L219)
+  inspect both working-tree and staged paths, then clear the Git staging area
+  before committing the validated working-tree contents. The published commit
+  keeps the original checkout as its parent; it is not rebased onto newer
+  `master` changes. Required pull request checks must validate the merge.
+  After the agent runs, the workflow reads its helper from the original
+  checkout commit so edits to the working copy cannot change those checks.
+- The pull request body must contain:
   - A table of each removed exclusion: GHSA id, package, old -> new version, the
     advisory it resolves.
-  - The pasted `osv-scanner --config=osv-scanner.toml --severity=HIGH --severity=CRITICAL ./`
-    and `yarn check-deps` output showing they now pass.
+  - The pasted scanner, severity-gate, and `yarn check-deps` output showing
+    they now pass.
   - Build/test results for the affected module(s).
+  - A prominent note asking a maintainer to approve pending workflow runs and
+    verify required checks pass before merging.
   - A "Still blocked" section listing every exclusion that could NOT be removed
     and the reason (no upstream fix / incompatible parent pin).
-  - Only if you hit the signing fallback above: the unsigned-commits note.
 
 ## Output rules
 
 - If nothing is safely prunable this run, open no PR and report "no exclusions
   prunable this run" in the job summary, including the "Still blocked" breakdown
   so the result is auditable.
-- Only ever modify `osv-scanner.toml`, dependency manifests (`package.json`), and
-  `yarn.lock`. Do not modify product/source code.
+- Only ever modify `osv-scanner.toml`, `package.json`, `yarn.lock`, and direct
+  workspace manifests at `modules/<workspace>/package.json` in the repository.
+  Nested test/example manifests are not allowed. The report at
+  `IYARC_PRUNE_PR_BODY` and temporary validation output belong outside the
+  repository. Do not modify product/source code.
