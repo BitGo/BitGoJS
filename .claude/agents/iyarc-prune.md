@@ -154,6 +154,11 @@ Do not create a branch, commit, push, or open a pull request yourself.
   a non-draft pull request against `master`, using an `osv-scanner-prune/*`
   branch. It applies `automated`, `dependencies`, and `security` labels and
   assigns `gokulhost`.
+- The [publication checks](../../.github/workflows/iyarc-prune.yml#L183-L230)
+  inspect both working-tree and staged paths, then clear the Git staging area
+  before committing the validated working-tree contents. The published commit
+  keeps the original checkout as its parent; it is not rebased onto newer
+  `master` changes. Required pull request checks must validate the merge.
 - The pull request body must contain:
   - A table of each removed exclusion: GHSA id, package, old -> new version, the
     advisory it resolves.
@@ -170,7 +175,8 @@ Do not create a branch, commit, push, or open a pull request yourself.
 - If nothing is safely prunable this run, open no PR and report "no exclusions
   prunable this run" in the job summary, including the "Still blocked" breakdown
   so the result is auditable.
-- Only ever modify `osv-scanner.toml`, the root and `modules/*/package.json`
-  dependency manifests, and `yarn.lock` in the repository. The report at
+- Only ever modify `osv-scanner.toml`, `package.json`, `yarn.lock`, and direct
+  workspace manifests at `modules/<workspace>/package.json` in the repository.
+  Nested test/example manifests are not allowed. The report at
   `IYARC_PRUNE_PR_BODY` and temporary validation output belong outside the
   repository. Do not modify product/source code.

@@ -191,16 +191,18 @@ jobs:
           if [ "$(git rev-parse HEAD)" != "$BASE_SHA" ]; then
             echo "::error::Agent changed HEAD; validated edits must remain uncommitted"; exit 1
           fi
-          CHANGED_FILES="$(git diff --name-only "$BASE_SHA"; git ls-files --others --exclude-standard)"
+          CHANGED_FILES="$(git diff --name-only "$BASE_SHA"; git diff --cached --name-only "$BASE_SHA"; git ls-files --others --exclude-standard)"
           if [ -z "$CHANGED_FILES" ]; then
             echo "No dependency changes to publish." >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
           while IFS= read -r path; do
             case "$path" in
-              osv-scanner.toml|package.json|yarn.lock|modules/*/package.json) ;;
-              *) echo "::error::Unexpected changed file: $path"; exit 1 ;;
+              osv-scanner.toml|package.json|yarn.lock) continue ;;
             esac
+            if [[ ! "$path" =~ ^modules/[^/]+/package\.json$ ]]; then
+              echo "::error::Unexpected changed file: $path"; exit 1
+            fi
           done <<< "$CHANGED_FILES"
           if git diff --quiet "$BASE_SHA" -- osv-scanner.toml; then
             echo "::error::Dependency changes exist without an osv-scanner.toml change"; exit 1
@@ -220,6 +222,11 @@ jobs:
               gh label create "$label" --repo "$GITHUB_REPOSITORY"
             fi
           done
+          # Detached HEAD makes the publisher rebase onto newer master. Keep its
+          # local base refs at the validated commit and discard index-only state.
+          git reset --mixed "$BASE_SHA"
+          git checkout -B master "$BASE_SHA"
+          git update-ref refs/remotes/origin/master "$BASE_SHA"
           echo "ready=true" >> "$GITHUB_OUTPUT"
 
       - name: Create signed dependency pull request
@@ -235,7 +242,7 @@ jobs:
             osv-scanner.toml
             package.json
             yarn.lock
-            modules/*/package.json
+            :(glob)modules/*/package.json
           commit-message: |
             chore(deps): prune resolved vulnerability exclusions
 
