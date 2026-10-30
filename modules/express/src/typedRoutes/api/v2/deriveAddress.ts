@@ -52,11 +52,15 @@ export const DeriveAddressBody = {
   /**
    * Coin-specific derivation inputs. For EVM legacy forwarder wallets:
    * `forwarderVersion` (1/2/4) selects the forwarder factory, and `feeAddress` is required for v4.
+   * For UTXO multisig wallets: `derivationPrefix` (address.coinSpecific.derivationPrefix) selects the BIP44-style
+   * per-wallet scheme (`44/<coinType>/<h1>/<h2>`); absent means the legacy scheme. The prefix is never used
+   * as given: it must equal the canonical prefix recomputed from the keychains, otherwise the request fails.
    */
   coinSpecific: optional(
     t.partial({
       forwarderVersion: t.number,
       feeAddress: t.string,
+      derivationPrefix: t.string,
     })
   ),
   /**
