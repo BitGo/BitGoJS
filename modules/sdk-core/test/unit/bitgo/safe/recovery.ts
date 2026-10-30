@@ -504,15 +504,34 @@ describe('buildSafeRecoverKeyParams', () => {
     encrypt.callCount.should.equal(0);
   });
 
-  it('rejects unsupported slots', async () => {
-    const bitgo = { encrypt: sinon.stub() } as unknown as BitGoBase;
-    await buildSafeRecoverKeyParams({
-      bitgo,
-      coin: 'btc',
-      slot: 'eddsaMpc',
-      keys: { commonKeychain: 'ck', user: 'u', backup: 'b' },
-      mode: 'signed',
-    }).should.be.rejectedWith(/not supported yet/);
+  // WRW passes these requests over IPC, so the real untyped input is parsed JSON (`any`), which
+  // type-checks without a suppression directive or cast.
+  function untypedRequest(bitgo: BitGoBase, fields: Record<string, unknown>) {
+    return { bitgo, coin: 'btc', ...JSON.parse(JSON.stringify(fields)) };
+  }
+
+  it('rejects unknown slots in both modes instead of falling through to slot 1', async () => {
+    const encrypt = sinon.stub();
+    const bitgo = { encrypt } as unknown as BitGoBase;
+    for (const mode of ['signed', 'unsigned']) {
+      await buildSafeRecoverKeyParams(
+        untypedRequest(bitgo, {
+          slot: 'futureSlot',
+          keys: { commonKeychain: 'ck', user: 'u', backup: 'b' },
+          mode,
+        })
+      ).should.be.rejectedWith(/slot 'futureSlot' is not supported yet/);
+    }
+    encrypt.callCount.should.equal(0);
+  });
+
+  it('rejects an unknown mode instead of defaulting to the encrypting path', async () => {
+    const encrypt = sinon.stub();
+    const bitgo = { encrypt } as unknown as BitGoBase;
+    await buildSafeRecoverKeyParams(
+      untypedRequest(bitgo, { slot: 'secp256k1Multisig', keys, mode: 'sign' })
+    ).should.be.rejectedWith(/unknown mode 'sign'/);
+    encrypt.callCount.should.equal(0);
   });
 
   describe('ed25519Multisig', () => {
@@ -677,15 +696,58 @@ describe('buildSafeRecoverKeyParams', () => {
       }
     }
 
-    it('rejects slot-2 coins that have no registry entry yet', async () => {
+    // Golden vectors generated with stellar-sdk StrKey over the same bytes as `edKeys`.
+    for (const coin of ['xlm', 'txlm']) {
+      for (const mode of ['signed', 'unsigned'] as const) {
+        it(`${coin} ${mode} mode encodes Stellar strkeys without overwriting the caller's rootAddress`, async function () {
+          const encrypt = sinon.stub().callsFake(async ({ input }) => `enc(${input})`);
+          const bitgo = { encrypt } as unknown as BitGoBase;
+
+          const result = await buildSafeRecoverKeyParams({
+            bitgo,
+            coin,
+            slot: 'ed25519Multisig',
+            keys: edKeys,
+            mode,
+          });
+
+          assert(!('rootAddress' in result));
+          const rootAddress = 'GBIEJQUARJ33DIZU4AIRDOKYPSVK66Z3O5XU7OOI7LUOAJWTPI4OA4JI';
+          assert.strictEqual({ rootAddress, ...result }.rootAddress, rootAddress);
+          result.bitgoKey.should.equal('GBQWCYLBMFQWCYLBMFQWCYLBMFQWCYLBMFQWCYLBMFQWCYLBMFQWDRY7');
+
+          if (result.mode === 'unsigned') {
+            result.userKey.should.equal('GAQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQSCIJBEEQSCB5Q');
+            result.backupKey.should.equal('GBIVCUKRKFIVCUKRKFIVCUKRKFIVCUKRKFIVCUKRKFIVCUKRKFIVDV3D');
+            result.should.not.have.property('walletPassphrase');
+            result.should.not.have.property('externalBackupSigner');
+            sinon.assert.notCalled(encrypt);
+          } else {
+            const encodedSeed = 'SAIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRCEIRDBNT';
+            result.userKey.should.equal(`enc(${encodedSeed})`);
+            result.should.not.have.property('backupKey');
+            result.externalBackupSigner.publicKey.should.equal(edKeys.backup.pub);
+            result.walletPassphrase.should.match(/^[0-9a-f]{64}$/);
+            sinon.assert.calledOnce(encrypt);
+            sinon.assert.calledWithExactly(encrypt, {
+              input: encodedSeed,
+              password: result.walletPassphrase,
+              encryptionVersion: 1,
+            });
+          }
+        });
+      }
+    }
+
+    it('rejects slot-2 coins that have no registry entry yet', async function () {
       const bitgo = { encrypt: sinon.stub() } as unknown as BitGoBase;
       await buildSafeRecoverKeyParams({
         bitgo,
-        coin: 'xlm',
+        coin: 'sol',
         slot: 'ed25519Multisig',
         keys: edKeys,
         mode: 'signed',
-      }).should.be.rejectedWith(/coin 'xlm' ed25519Multisig is not supported yet/);
+      }).should.be.rejectedWith(/coin 'sol' ed25519Multisig is not supported yet/);
     });
 
     it('rejects ed25519 children with malformed public keys', async () => {
@@ -698,68 +760,75 @@ describe('buildSafeRecoverKeyParams', () => {
         mode: 'unsigned',
       }).should.be.rejectedWith(/ed25519 child public keys must be 32 bytes/);
     });
-  });
 
-  describe('ecdsaMpc', () => {
-    const mpcKeys = { commonKeychain: 'ck', user: 'user-child-share', backup: 'backup-child-share' };
-
-    it('signed mode re-encrypts the child reduced shares under a single ephemeral passphrase', async () => {
-      const passphrases: string[] = [];
-      const encrypt = sinon.stub().callsFake(async ({ input, password, encryptionVersion }) => {
-        passphrases.push(password);
-        encryptionVersion.should.equal(1);
-        return `enc(${input})`;
-      });
+    it('rejects a malformed user seed in signed mode before encrypting anything', async () => {
+      const encrypt = sinon.stub();
       const bitgo = { encrypt } as unknown as BitGoBase;
-
-      const result = await buildSafeRecoverKeyParams({
-        bitgo,
-        coin: 'icp',
-        slot: 'ecdsaMpc',
-        keys: mpcKeys,
-        mode: 'signed',
-      });
-
-      if (result.slot !== 'ecdsaMpc' || result.mode !== 'signed') {
-        throw new Error('expected signed ecdsaMpc key params');
+      for (const seed of ['11'.repeat(31) + 'zz', '11'.repeat(31), '11'.repeat(33)]) {
+        await buildSafeRecoverKeyParams({
+          bitgo,
+          coin: 'algo',
+          slot: 'ed25519Multisig',
+          keys: { ...edKeys, user: { ...edKeys.user, seed } },
+          mode: 'signed',
+        }).should.be.rejectedWith(/ed25519 user seed must be 32 bytes/);
       }
-      result.userKey.should.equal('enc(user-child-share)');
-      result.backupKey.should.equal('enc(backup-child-share)');
-      result.bitgoKey.should.equal('ck');
-      result.isTss.should.equal(true);
-      result.broadcast.should.equal(false);
-      result.walletPassphrase.should.be.a.String();
-      passphrases.should.have.length(2);
-      passphrases[0].should.equal(passphrases[1]);
-      passphrases[0].should.equal(result.walletPassphrase);
-      encrypt.callCount.should.equal(2);
-    });
-
-    it('unsigned mode returns the child common keychain and never encrypts', async () => {
-      const encrypt = sinon.stub().callsFake(async () => {
-        throw new Error('encrypt should not be called');
-      });
-      const bitgo = { encrypt } as unknown as BitGoBase;
-
-      const result = await buildSafeRecoverKeyParams({
-        bitgo,
-        coin: 'icp',
-        slot: 'ecdsaMpc',
-        keys: mpcKeys,
-        mode: 'unsigned',
-      });
-
-      result.slot.should.equal('ecdsaMpc');
-      result.mode.should.equal('unsigned');
-      result.bitgoKey.should.equal('ck');
-      result.isTss.should.equal(true);
-      result.broadcast.should.equal(false);
-      result.should.not.have.property('userKey');
-      result.should.not.have.property('backupKey');
-      result.should.not.have.property('walletPassphrase');
       encrypt.callCount.should.equal(0);
     });
   });
+
+  for (const { slot, coin } of [
+    { slot: 'ecdsaMpc', coin: 'icp' },
+    { slot: 'eddsaMpc', coin: 'sol' },
+  ] as const) {
+    describe(slot, function () {
+      const mpcKeys = { commonKeychain: 'ck', user: 'user-child-share', backup: 'backup-child-share' };
+
+      it('signed mode re-encrypts the child reduced shares under a single ephemeral passphrase', async function () {
+        const passphrases: string[] = [];
+        const encrypt = sinon.stub().callsFake(async ({ input, password, encryptionVersion }) => {
+          passphrases.push(password);
+          encryptionVersion.should.equal(1);
+          return `enc(${input})`;
+        });
+        const bitgo = { encrypt } as unknown as BitGoBase;
+
+        const result = await buildSafeRecoverKeyParams({ bitgo, coin, slot, keys: mpcKeys, mode: 'signed' });
+
+        assert('isTss' in result && result.mode === 'signed');
+        result.slot.should.equal(slot);
+        result.userKey.should.equal('enc(user-child-share)');
+        result.backupKey.should.equal('enc(backup-child-share)');
+        result.bitgoKey.should.equal('ck');
+        result.isTss.should.equal(true);
+        result.broadcast.should.equal(false);
+        result.walletPassphrase.should.be.a.String();
+        passphrases.should.have.length(2);
+        passphrases[0].should.equal(passphrases[1]);
+        passphrases[0].should.equal(result.walletPassphrase);
+        encrypt.callCount.should.equal(2);
+      });
+
+      it('unsigned mode returns the child common keychain and never encrypts', async function () {
+        const encrypt = sinon.stub().callsFake(async () => {
+          throw new Error('encrypt should not be called');
+        });
+        const bitgo = { encrypt } as unknown as BitGoBase;
+
+        const result = await buildSafeRecoverKeyParams({ bitgo, coin, slot, keys: mpcKeys, mode: 'unsigned' });
+
+        assert('isTss' in result && result.mode === 'unsigned');
+        result.slot.should.equal(slot);
+        result.bitgoKey.should.equal('ck');
+        result.isTss.should.equal(true);
+        result.broadcast.should.equal(false);
+        result.should.not.have.property('userKey');
+        result.should.not.have.property('backupKey');
+        result.should.not.have.property('walletPassphrase');
+        encrypt.callCount.should.equal(0);
+      });
+    });
+  }
 });
 
 describe('Safe ecdsaMpc derive → sign (gate)', function () {
