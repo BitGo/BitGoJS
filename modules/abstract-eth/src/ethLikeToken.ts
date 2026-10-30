@@ -213,11 +213,17 @@ export class EthLikeToken extends AbstractEthLikeNewCoins {
       throw new Error('invalid recoveryDestination');
     }
 
-    const isUnsignedSweep = params.isUnsignedSweep ?? getIsUnsignedSweep(params);
+    // Classify from the RAW keys, as before the type change: stripping whitespace first would
+    // flip the result for a key pasted with a leading newline.
+    const rawUserKey = params.userKey ?? '';
+    const rawBackupKey = params.backupKey ?? '';
+    const isUnsignedSweep =
+      params.isUnsignedSweep ??
+      getIsUnsignedSweep({ userKey: rawUserKey, backupKey: rawBackupKey, isTss: params.isTss });
 
     // Clean up whitespace from entered values
-    let userKey = params.userKey.replace(/\s/g, '');
-    const backupKey = params.backupKey.replace(/\s/g, '');
+    let userKey = rawUserKey.replace(/\s/g, '');
+    const backupKey = rawBackupKey.replace(/\s/g, '');
 
     const gasLimit = new optionalDeps.ethUtil.BN(this.setGasLimit(params.gasLimit));
     const gasPrice = params.eip1559

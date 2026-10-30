@@ -149,6 +149,13 @@ const backupAddressBalanceResponse = { jsonrpc: '2.0', id: 1, result: '0x9c450d5
 
 const addressTokenBalanceResponse = { jsonrpc: '2.0', id: 1, result: '0x14d1120d7b160000' };
 
+/** abi-encoded `true` — the wallet contract reports the queried address as a signer */
+const isSignerResponse = {
+  jsonrpc: '2.0',
+  id: 1,
+  result: '0x0000000000000000000000000000000000000000000000000000000000000001',
+};
+
 const sequenceIdResponse1 = {
   jsonrpc: '2.0',
   id: 1,
@@ -166,6 +173,7 @@ export const endpointResponses = {
   addressNonceResponse2,
   backupAddressBalanceResponse,
   addressTokenBalanceResponse,
+  isSignerResponse,
   sequenceIdResponse1,
   sequenceIdResponse2,
 };

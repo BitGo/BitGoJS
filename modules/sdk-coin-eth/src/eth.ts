@@ -205,16 +205,17 @@ export class Eth extends AbstractEthLikeNewCoins {
     }
 
     this.validateRecoveryParams(params);
-    const isKrsRecovery = getIsKrsRecovery(params);
-    const isUnsignedSweep = params.isUnsignedSweep ?? getIsUnsignedSweep(params);
+
+    // Clean up whitespace from entered values
+    let userKey = (params.userKey ?? '').replace(/\s/g, '');
+    const backupKey = (params.backupKey ?? '').replace(/\s/g, '');
+
+    const isKrsRecovery = getIsKrsRecovery({ userKey, backupKey });
+    const isUnsignedSweep = params.isUnsignedSweep ?? getIsUnsignedSweep({ userKey, backupKey, isTss: params.isTss });
 
     if (isKrsRecovery) {
       checkKrsProvider(this, params.krsProvider, { checkCoinFamilySupport: false });
     }
-
-    // Clean up whitespace from entered values
-    let userKey = params.userKey.replace(/\s/g, '');
-    const backupKey = params.backupKey.replace(/\s/g, '');
 
     // Set new eth tx fees (using default config values from platform)
 

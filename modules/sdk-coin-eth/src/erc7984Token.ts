@@ -950,15 +950,21 @@ export class Erc7984Token extends Eth {
       throw new Error('invalid recoveryDestination');
     }
 
-    const isKrsRecovery = getIsKrsRecovery(params);
-    const isUnsignedSweep = params.isUnsignedSweep ?? getIsUnsignedSweep(params);
+    // Classify from the RAW keys, as before the type change: stripping whitespace first would
+    // flip the result for a key pasted with a leading newline.
+    const rawUserKey = params.userKey ?? '';
+    const rawBackupKey = params.backupKey ?? '';
+    const isKrsRecovery = getIsKrsRecovery({ userKey: rawUserKey, backupKey: rawBackupKey });
+    const isUnsignedSweep =
+      params.isUnsignedSweep ??
+      getIsUnsignedSweep({ userKey: rawUserKey, backupKey: rawBackupKey, isTss: params.isTss });
+
+    let userKey = rawUserKey.replace(/\s/g, '');
+    const backupKey = rawBackupKey.replace(/\s/g, '');
 
     if (isKrsRecovery) {
       checkKrsProvider(this, params.krsProvider, { checkCoinFamilySupport: false });
     }
-
-    let userKey = params.userKey.replace(/\s/g, '');
-    const backupKey = params.backupKey.replace(/\s/g, '');
 
     const gasPrice = params.eip1559
       ? new optionalDeps.ethUtil.BN(params.eip1559.maxFeePerGas)

@@ -152,16 +152,22 @@ export class Erc20Token extends Eth {
       throw new Error('invalid recoveryDestination');
     }
 
-    const isKrsRecovery = getIsKrsRecovery(params);
-    const isUnsignedSweep = params.isUnsignedSweep ?? getIsUnsignedSweep(params);
+    // Classify from the RAW keys, as before the type change: stripping whitespace first would
+    // flip the result for a key pasted with a leading newline.
+    const rawUserKey = params.userKey ?? '';
+    const rawBackupKey = params.backupKey ?? '';
+    const isKrsRecovery = getIsKrsRecovery({ userKey: rawUserKey, backupKey: rawBackupKey });
+    const isUnsignedSweep =
+      params.isUnsignedSweep ??
+      getIsUnsignedSweep({ userKey: rawUserKey, backupKey: rawBackupKey, isTss: params.isTss });
+
+    // Clean up whitespace from entered values
+    let userKey = rawUserKey.replace(/\s/g, '');
+    const backupKey = rawBackupKey.replace(/\s/g, '');
 
     if (isKrsRecovery) {
       checkKrsProvider(this, params.krsProvider, { checkCoinFamilySupport: false });
     }
-
-    // Clean up whitespace from entered values
-    let userKey = params.userKey.replace(/\s/g, '');
-    const backupKey = params.backupKey.replace(/\s/g, '');
 
     // Set new eth tx fees (default to using platform values if none are provided)
     const gasPrice = params.eip1559

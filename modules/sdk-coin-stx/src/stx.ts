@@ -11,6 +11,7 @@ import {
   MethodNotImplementedError,
   MultisigType,
   multisigTypes,
+  RecoveryKeyMismatchError,
   SignedTransaction,
   RecoveryProviderError,
   TransactionParams,
@@ -801,6 +802,21 @@ export class Stx extends BaseCoin {
     const isUnsignedSweep = getIsUnsignedSweep(params);
     const keys = await getBip32Keys(this.bitgo, params, { requireBitGoXpub: true });
     const rootAddressDetails = getAddressDetails(params.rootAddress);
+    const pubs = [
+      publicKeyToHex(keys[0].publicKey),
+      publicKeyToHex(keys[1].publicKey),
+      publicKeyToHex(keys[2].publicKey),
+    ];
+
+    // Fail closed before touching the node: wrong keys must never reach a balance or nonce query.
+    const addressVersion = StxLib.Utils.getAddressVersion(rootAddressDetails.address);
+    const derivedAddress = StxLib.Utils.getSTXAddressFromPubKeys(pubs, addressVersion).address;
+    if (!StxLib.Utils.isSameBaseAddress(rootAddressDetails.address, derivedAddress)) {
+      throw new RecoveryKeyMismatchError(
+        `derived wallet address ${derivedAddress} does not match the given root address ${rootAddressDetails.address}`
+      );
+    }
+
     const [accountBalanceData, accountNonceData] = await Promise.all([
       this.getNativeStxBalanceFromNode({ address: rootAddressDetails.address }),
       this.getAccountNonceFromNode({ address: rootAddressDetails.address }),
@@ -809,11 +825,6 @@ export class Stx extends BaseCoin {
     if (!balance || isNaN(balance)) {
       throw new ErrorNoInputToRecover('could not find any balance to recover for ' + params.rootAddress);
     }
-    const pubs = [
-      publicKeyToHex(keys[0].publicKey),
-      publicKeyToHex(keys[1].publicKey),
-      publicKeyToHex(keys[2].publicKey),
-    ];
 
     const destinationAddressDetails = getAddressDetails(params.recoveryDestination);
     const nonce =
