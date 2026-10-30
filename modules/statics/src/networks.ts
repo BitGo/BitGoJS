@@ -1101,14 +1101,14 @@ class TiaTestnet extends Testnet implements AccountNetwork {
 class Hash extends Mainnet implements AccountNetwork {
   name = 'Provenance';
   family = CoinFamily.HASH;
-  explorerUrl = 'https://explorer.provenance.io/tx/';
+  explorerUrl = 'https://zonescan.io/provenance/transactions/';
   addressPrefix = 'pb';
 }
 
 class HashTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Provenance';
   family = CoinFamily.HASH;
-  explorerUrl = 'https://explorer.test.provenance.io/tx/';
+  explorerUrl = 'https://zonescan.io/provenancetestnet/transactions/';
   addressPrefix = 'tp';
 }
 
