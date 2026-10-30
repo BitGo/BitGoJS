@@ -4,6 +4,7 @@
 import * as _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
 import type { AttestationPayload } from '@bitgo/public-types';
+import { MESSAGE_SIGNING_INTENT_TYPES } from './iPendingApproval';
 import { IBaseCoin } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import {
@@ -172,7 +173,10 @@ export class PendingApproval implements IPendingApproval {
   }
 
   /**
-   * Sets this PendingApproval to an approved state
+   * Sets this PendingApproval to an approved state.
+   * For transaction approvals on TSS wallets, this also attempts to recreate
+   * and sign the transaction. For message-sign approvals, signing is deferred:
+   * the message must be signed separately via signAndSendMessageTxRequest.
    */
   async approve(params: ApproveOptions = {}): Promise<any> {
     params.previewPendingTxs = true;
@@ -489,10 +493,21 @@ export class PendingApproval implements IPendingApproval {
               reqId
             );
           } else if (this.canRecreateTransaction(params) && this.baseCoin.supportsTss()) {
+            if (this.isMessageSigningRequest()) {
+              return;
+            }
             await this.recreateAndSignTSSTransaction(params, reqId);
           }
         }
     }
+  }
+
+  /**
+   * True when the approval's intent is a message-sign intent.
+   */
+  private isMessageSigningRequest(): boolean {
+    const intentType = this.info()?.transactionRequestFull?.intent?.intentType;
+    return Boolean(intentType && MESSAGE_SIGNING_INTENT_TYPES.has(intentType));
   }
 
   /**

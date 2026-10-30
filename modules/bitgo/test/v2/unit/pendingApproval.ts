@@ -706,4 +706,54 @@ describe('Pending Approvals:', () => {
       });
     });
   });
+
+  describe('message-sign approvals (transactionRequestFull)', () => {
+    const buildMessageSignPendingApprovalData = (intentType: string): PendingApprovalData => ({
+      id: 'pa-msg',
+      info: {
+        type: Type.TRANSACTION_REQUEST_FULL,
+        transactionRequestFull: {
+          txRequestId: 'txreq-msg-1',
+          intent: { intentType },
+        },
+      } as PendingApprovalInfo,
+      state: State.PENDING,
+      creator: 'test',
+      txRequestId: 'txreq-msg-1',
+    });
+
+    ['signMessage', 'signTypedStructuredData'].forEach((intentType) => {
+      it(`should approve without the post-approve auto-sign for a ${intentType} approval`, async () => {
+        const ethBaseCoin = bitgo.coin('teth');
+        const paData = buildMessageSignPendingApprovalData(intentType);
+        const pendingApproval = new PendingApproval(bitgo, ethBaseCoin, paData, wallet);
+
+        const paScope = nock(bgUrl)
+          .put(`/api/v2/teth/pendingapprovals/pa-msg`, { state: 'approved', otp: undefined })
+          .reply(200, { ...paData, state: 'approved' });
+        const recreateTransactionTssStub = sandbox.stub(PendingApproval.prototype, 'recreateAndSignTSSTransaction');
+
+        await pendingApproval.approve({ walletPassphrase: 'pass' });
+
+        recreateTransactionTssStub.notCalled.should.be.true();
+        paScope.isDone().should.be.true();
+      });
+    });
+
+    it('should keep the post-approve auto-sign for transaction approvals', async () => {
+      const ethBaseCoin = bitgo.coin('teth');
+      const paData = buildMessageSignPendingApprovalData('payment');
+      const pendingApproval = new PendingApproval(bitgo, ethBaseCoin, paData, wallet);
+
+      const paScope = nock(bgUrl)
+        .put(`/api/v2/teth/pendingapprovals/pa-msg`, { state: 'approved', otp: undefined })
+        .reply(200, { ...paData, state: 'approved' });
+      const recreateTransactionTssStub = sandbox.stub(PendingApproval.prototype, 'recreateAndSignTSSTransaction');
+
+      await pendingApproval.approve({ walletPassphrase: 'pass' });
+
+      recreateTransactionTssStub.calledOnce.should.be.true();
+      paScope.isDone().should.be.true();
+    });
+  });
 });
