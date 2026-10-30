@@ -5855,4 +5855,32 @@ export const botOfcTokens = [
     undefined,
     'avaxc'
   ),
+  AccountCtors.ofcBscToken(
+    '5e31ef1e-f454-4fc5-85c9-bfc282abe905',
+    'ofcbsc:buildon',
+    'BUILDon',
+    18,
+    'bsc:buildon' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'bsc'
+  ),
+  AccountCtors.ofcerc20(
+    '7ab5bb08-d950-4bcb-bab3-9bfaa45dfa4d',
+    'ofceth:btw',
+    'Bitway Token',
+    18,
+    'eth:btw' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
 ];

@@ -15657,4 +15657,40 @@ export const botTokens = [
     undefined,
     Networks.main.avalancheC
   ),
+  AccountCtors.bscToken(
+    '83eeed77-1fe2-4100-afcb-aa88bc1ca67f',
+    'bsc:buildon',
+    'BUILDon',
+    18,
+    '0x6bdcce4a559076e37755a78ce0c06214e59e4444',
+    'bsc:buildon' as unknown as UnderlyingAsset,
+    getTokenFeatures('bsc', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-switzerland' as CoinFeature,
+      'custody-bitgo-sister-trust-one' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    Networks.main.bsc
+  ),
+  AccountCtors.erc20(
+    '269123c6-8020-4b4c-ae45-87f897c16ffa',
+    'eth:btw',
+    'Bitway Token',
+    18,
+    '0x3a63de3572c69a1307ff08394f3ee7702c16d25d',
+    'eth:btw' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-switzerland' as CoinFeature,
+      'custody-bitgo-sister-trust-one' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    undefined
+  ),
 ];
