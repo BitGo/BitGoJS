@@ -22,13 +22,17 @@ over an unsafe or unverified bump.
 
 ## Environment notes
 
-- For a manual run of [the workflow](../../.github/workflows/iyarc-prune.yml#L26-L38),
+- For a manual run of [the workflow](../../.github/workflows/iyarc-prune.yml#L29-L42),
   select `master` in **Use workflow from**. The AWS login uses the
   [workflow's branch identity](https://docs.github.com/en/actions/reference/security/oidc#filtering-for-a-specific-branch),
   not the checkout ref. Merge workflow changes before a live run; local agent
   invocations are unaffected.
 - This is a Lerna + Yarn (v1, `1.22.22`) workspaces monorepo with ~116 packages
   under `modules/`. Node and Yarn are already provisioned in this runner.
+- Workflow operations live in the dependency-free
+  [JavaScript helper](../../scripts/iyarc-prune.js), not inline shell programs.
+  Run their [regression tests](../../scripts/tests/iyarc-prune.test.js) with
+  `yarn test:scripts`; the tests use isolated temporary Git repositories.
 - The workflow installs `osv-scanner` v2.3.8, matching the release audit.
   It writes JSON results:
   ```
@@ -154,11 +158,13 @@ Do not create a branch, commit, push, or open a pull request yourself.
   a non-draft pull request against `master`, using an `osv-scanner-prune/*`
   branch. It applies `automated`, `dependencies`, and `security` labels and
   assigns `gokulhost`.
-- The [publication checks](../../.github/workflows/iyarc-prune.yml#L183-L230)
+- The [publication checks](../../scripts/iyarc-prune.js#L145-L219)
   inspect both working-tree and staged paths, then clear the Git staging area
   before committing the validated working-tree contents. The published commit
   keeps the original checkout as its parent; it is not rebased onto newer
   `master` changes. Required pull request checks must validate the merge.
+  After the agent runs, the workflow reads its helper from the original
+  checkout commit so edits to the working copy cannot change those checks.
 - The pull request body must contain:
   - A table of each removed exclusion: GHSA id, package, old -> new version, the
     advisory it resolves.

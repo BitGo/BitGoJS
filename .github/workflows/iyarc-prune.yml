@@ -20,6 +20,9 @@ jobs:
   prune:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
     env:
       AWS_REGION: us-west-2
     steps:
@@ -49,17 +52,7 @@ jobs:
       - name: Install release audit scanner
         env:
           OSV_SCANNER_SHA256: bc98e15319ed0d515e3f9235287ba53cdc5535d576d24fd573978ecfe9ab92dc
-        run: |
-          set -euo pipefail
-          SCANNER_DIR="$RUNNER_TEMP/osv-scanner"
-          mkdir -p "$SCANNER_DIR"
-          curl --fail --silent --show-error --location --retry 3 \
-            https://github.com/google/osv-scanner/releases/download/v2.3.8/osv-scanner_linux_amd64 \
-            --output "$SCANNER_DIR/osv-scanner"
-          printf '%s  %s\n' "$OSV_SCANNER_SHA256" "$SCANNER_DIR/osv-scanner" | sha256sum --check --strict
-          chmod +x "$SCANNER_DIR/osv-scanner"
-          "$SCANNER_DIR/osv-scanner" --version
-          echo "$SCANNER_DIR" >> "$GITHUB_PATH"
+        run: node scripts/iyarc-prune.js install-scanner
 
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v6
@@ -69,29 +62,11 @@ jobs:
 
       - name: Assume Bedrock inference role
         id: inference-role
-        run: |
-          CREDS="$(aws sts assume-role \
-            --role-arn arn:aws:iam::168000258654:role/BedrockInferenceRole \
-            --role-session-name iyarc-prune-session \
-            --query 'Credentials' \
-            --output json)"
-
-          AWS_ACCESS_KEY_ID="$(echo "$CREDS" | jq -r '.AccessKeyId')"
-          AWS_SECRET_ACCESS_KEY="$(echo "$CREDS" | jq -r '.SecretAccessKey')"
-          AWS_SESSION_TOKEN="$(echo "$CREDS" | jq -r '.SessionToken')"
-
-          echo "::add-mask::$AWS_SECRET_ACCESS_KEY"
-          echo "::add-mask::$AWS_SESSION_TOKEN"
-          { echo "aws-access-key-id=$AWS_ACCESS_KEY_ID"; echo "aws-secret-access-key=$AWS_SECRET_ACCESS_KEY"; echo "aws-session-token=$AWS_SESSION_TOKEN"; } >> "$GITHUB_OUTPUT"
+        run: node scripts/iyarc-prune.js assume-inference-role
 
       - name: Load iyarc-prune agent instructions
         id: agent
-        run: |
-          {
-            echo "content<<IYARC_PRUNE_EOF"
-            sed '1,/^---$/d' .claude/agents/iyarc-prune.md
-            echo "IYARC_PRUNE_EOF"
-          } >> "$GITHUB_OUTPUT"
+        run: node scripts/iyarc-prune.js load-instructions
 
       - name: Run Claude Code (Bedrock)
         id: claude
@@ -112,73 +87,20 @@ jobs:
           AWS_SESSION_TOKEN: ${{ steps.inference-role.outputs.aws-session-token }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # The agent prompt promises a job summary ("report ... in the job summary,
-      # including the Still blocked breakdown so the result is auditable"), so
-      # render the agent's own report there instead of leaving it log-only.
+      # Agent edits must not change the code that validates or publishes them.
       - name: Write agent report to job summary
         if: always() && steps.claude.outcome != 'skipped'
         env:
+          BASE_SHA: ${{ steps.checkout.outputs.commit }}
           EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
-        run: |
-          # Deliberately NOT `set -e`: this step is reporting only and must never
-          # be the reason the job goes red. Failures degrade to a note instead.
-          set -uo pipefail
-          EVENTS=''
-          if [ -n "${EXECUTION_FILE:-}" ] && [ -f "$EXECUTION_FILE" ]; then
-            EVENTS="$(jq -c 'if type=="array" then . else [.] end' "$EXECUTION_FILE" 2>/dev/null)"
-          fi
-          REPORT=''
-          META=''
-          if [ -n "$EVENTS" ]; then
-            REPORT="$(printf '%s' "$EVENTS" | jq -r '.[] | select(.type=="assistant") | .message.content[]? | select(.type=="text") | .text' 2>/dev/null)"
-            # Allowlist, not del(.result): the execution-file schema is upstream and
-            # may grow fields we have not audited, so name what we publish.
-            META="$(printf '%s' "$EVENTS" | jq -S 'map(select(.type=="result"))[-1] // empty
-              | {is_error, subtype, terminal_reason, stop_reason, num_turns,
-                 duration_ms, total_cost_usd, session_id,
-                 output_tokens: .usage.output_tokens}
-              | with_entries(select(.value != null))' 2>/dev/null)"
-          fi
-          {
-            echo "## osv-scanner-prune report"
-            echo
-            if [ -z "$EVENTS" ]; then
-              echo "> No readable Claude execution file was produced — see the agent step logs."
-            elif [ -n "$REPORT" ]; then
-              echo "$REPORT"
-            else
-              echo "> The agent produced no text output — see the agent step logs."
-            fi
-            if [ -n "$META" ]; then
-              echo
-              echo "<details><summary>Run metadata</summary>"
-              echo
-              echo '```json'
-              echo "$META"
-              echo '```'
-              echo
-              echo "</details>"
-            fi
-          } >> "$GITHUB_STEP_SUMMARY"
+        run: git show "$BASE_SHA:scripts/iyarc-prune.js" | node - write-agent-summary
 
       - name: Require successful Claude completion
         if: always() && steps.claude.outcome != 'skipped'
         env:
+          BASE_SHA: ${{ steps.checkout.outputs.commit }}
           EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
-        run: |
-          set -euo pipefail
-          if [ -z "${EXECUTION_FILE:-}" ] || [ ! -f "$EXECUTION_FILE" ]; then
-            echo "::error::no Claude execution file produced"; exit 1
-          fi
-          EVENTS="$(jq -c 'if type=="array" then . else [.] end' "$EXECUTION_FILE")"
-          echo "=== result event (metadata only) ==="
-          echo "$EVENTS" | jq -c 'map(select(.type=="result"))[-1] // empty | del(.result)'
-          echo "=== assistant text turns (no tool output) ==="
-          echo "$EVENTS" | jq -r '.[] | select(.type=="assistant") | .message.content[]? | select(.type=="text") | .text'
-          RES="$(echo "$EVENTS" | jq -c 'map(select(.type=="result"))[-1] // empty')"
-          if ! echo "$RES" | jq -e '.is_error == false and .subtype == "success"' >/dev/null; then
-            echo "::error::Claude did not produce a successful result"; exit 1
-          fi
+        run: git show "$BASE_SHA:scripts/iyarc-prune.js" | node - require-successful-completion
 
       - name: Check changes are ready for a pull request
         id: changes
@@ -186,48 +108,7 @@ jobs:
           BASE_SHA: ${{ steps.checkout.outputs.commit }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           IYARC_PRUNE_PR_BODY: ${{ runner.temp }}/iyarc-prune-pr.md
-        run: |
-          set -euo pipefail
-          if [ "$(git rev-parse HEAD)" != "$BASE_SHA" ]; then
-            echo "::error::Agent changed HEAD; validated edits must remain uncommitted"; exit 1
-          fi
-          CHANGED_FILES="$(git diff --name-only "$BASE_SHA"; git diff --cached --name-only "$BASE_SHA"; git ls-files --others --exclude-standard)"
-          if [ -z "$CHANGED_FILES" ]; then
-            echo "No dependency changes to publish." >> "$GITHUB_STEP_SUMMARY"
-            exit 0
-          fi
-          while IFS= read -r path; do
-            case "$path" in
-              osv-scanner.toml|package.json|yarn.lock) continue ;;
-            esac
-            if [[ ! "$path" =~ ^modules/[^/]+/package\.json$ ]]; then
-              echo "::error::Unexpected changed file: $path"; exit 1
-            fi
-          done <<< "$CHANGED_FILES"
-          if git diff --quiet "$BASE_SHA" -- osv-scanner.toml; then
-            echo "::error::Dependency changes exist without an osv-scanner.toml change"; exit 1
-          fi
-          if [ ! -s "$IYARC_PRUNE_PR_BODY" ]; then
-            echo "::error::Changes exist but the agent did not produce a validated pull request report"; exit 1
-          fi
-          OPEN_PRS="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 1000 \
-            --json number,headRefName --jq '.[] | select(.headRefName | startswith("osv-scanner-prune/"))')"
-          if [ -n "$OPEN_PRS" ]; then
-            echo "An open prune pull request already exists: $OPEN_PRS" >> "$GITHUB_STEP_SUMMARY"
-            exit 0
-          fi
-          LABELS="$(gh label list --repo "$GITHUB_REPOSITORY" --limit 1000 --json name)"
-          for label in automated dependencies security; do
-            if ! jq -e --arg name "$label" 'any(.[]; (.name | ascii_downcase) == $name)' <<< "$LABELS" >/dev/null; then
-              gh label create "$label" --repo "$GITHUB_REPOSITORY"
-            fi
-          done
-          # Detached HEAD makes the publisher rebase onto newer master. Keep its
-          # local base refs at the validated commit and discard index-only state.
-          git reset --mixed "$BASE_SHA"
-          git checkout -B master "$BASE_SHA"
-          git update-ref refs/remotes/origin/master "$BASE_SHA"
-          echo "ready=true" >> "$GITHUB_OUTPUT"
+        run: git show "$BASE_SHA:scripts/iyarc-prune.js" | node - prepare-pull-request
 
       - name: Create signed dependency pull request
         if: steps.changes.outputs.ready == 'true'
@@ -256,10 +137,6 @@ jobs:
       - name: Report pull request
         if: steps.changes.outputs.ready == 'true'
         env:
+          BASE_SHA: ${{ steps.checkout.outputs.commit }}
           PR_URL: ${{ steps.pull-request.outputs.pull-request-url }}
-        run: |
-          if [ -z "$PR_URL" ]; then
-            echo "::error::Validated dependency changes did not produce a pull request"; exit 1
-          fi
-          echo "Pull request: $PR_URL" >> "$GITHUB_STEP_SUMMARY"
-          echo '> **Action required:** Check the pull request for an **Approve workflows to run** banner. A maintainer must approve pending workflow runs and verify required checks pass before merging.' >> "$GITHUB_STEP_SUMMARY"
+        run: git show "$BASE_SHA:scripts/iyarc-prune.js" | node - report-pull-request
