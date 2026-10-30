@@ -125,7 +125,7 @@ For users who are unable to run BitGo Express as a Docker container, we recommen
 
 ### Prerequisites
 
-Use Node.js 22 or later. The required continuous integration checks cover Node.js 22, 24, and 26. We recommend using `nvm`, the [Node Version Manager](https://github.com/creationix/nvm/blob/master/README.markdown#installation), for setting your Node.js version. BitGo Express is part of the monorepo, so use `yarn` for local setup.
+Use Node.js 22 or later. The required continuous integration checks cover Node.js 22, 24, and 26. Node.js 22 is deprecated and support will be removed in the first major release on or after 2027-04-30. We recommend using `nvm`, the [Node Version Manager](https://github.com/creationix/nvm/blob/master/README.markdown#installation), for setting your Node.js version. BitGo Express is part of the monorepo, so use `yarn` for local setup.
 
 ### Cloning the repository and installing dependencies
 

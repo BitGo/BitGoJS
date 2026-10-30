@@ -15,7 +15,7 @@ If you have questions or comments about this API, email support@bitgo.com.
 
 # Installation
 
-Ensure you're running Node.js version 22 or later, including Node.js 26, and NPM version 10.
+Ensure you're running Node.js version 22 or later, including Node.js 26, and NPM version 10. Node.js 22 is deprecated and support will be removed in the first major release on or after 2027-04-30; use Node.js 24 or 26.
 For setting your Node version, we recommend using `nvm` - the [Node Version Manager](https://github.com/creationix/nvm/blob/master/README.markdown#installation).
 
 `npm install --save bitgo`
