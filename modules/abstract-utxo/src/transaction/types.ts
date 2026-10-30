@@ -21,6 +21,11 @@ export interface FixedScriptWalletOutput<TAmount = string | number> extends Base
   needsCustomChangeKeySignatureVerification?: boolean;
   chain: number;
   index: number;
+  /**
+   * Derivation prefix (all path components except `chain/index`) recorded in the PSBT for this output. Absent for
+   * the legacy `0/0` prefix. Unvalidated: consumers must check it against the canonical prefix of the wallet keys.
+   */
+  derivationPrefix?: string;
 }
 
 export type Output<TAmount = string | number> = BaseOutput<TAmount> | FixedScriptWalletOutput<TAmount>;

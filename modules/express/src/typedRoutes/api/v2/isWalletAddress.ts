@@ -55,6 +55,8 @@ export const IsWalletAddressBody = {
    * BaseAddress: 0
    */
   index: optional(t.union([t.number, t.string])),
+  /** Derivation chain code of the address (address.chain); required to verify UTXO multisig addresses */
+  chain: optional(t.number),
   /** Coin-specific address data */
   coinSpecific: optional(
     t.partial({
@@ -73,6 +75,13 @@ export const IsWalletAddressBody = {
 
       /** Base address (wallet.coinSpecific.baseAddress) */
       baseAddress: t.string,
+
+      /**
+       * UTXO multisig wallets: derivation prefix of the address (address.coinSpecific.derivationPrefix,
+       * `44/<coinType>/<h1>/<h2>`). Absent means the legacy scheme. The prefix must equal the canonical
+       * prefix recomputed from the keychains and the coin's BIP44 coin type; any other value fails verification.
+       */
+      derivationPrefix: t.string,
     })
   ),
   /** Implied forwarder version */

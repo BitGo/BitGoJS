@@ -12,6 +12,7 @@ import 'should';
 import 'should-http';
 import 'should-sinon';
 import * as sinon from 'sinon';
+import { BaseCoin } from '@bitgo/sdk-core';
 import { BitGo } from 'bitgo';
 import { setupAgent } from '../../lib/testutil';
 
@@ -106,6 +107,28 @@ describe('DeriveAddress codec tests', function () {
       assert.strictEqual(decoded.baseAddress, validBody.baseAddress);
       assert.strictEqual(decoded.coinSpecific?.forwarderVersion, 4);
       assert.strictEqual(decoded.coinSpecific?.feeAddress, validBody.coinSpecific.feeAddress);
+    });
+
+    it('should validate a UTXO body with coinSpecific.derivationPrefix', function () {
+      const validBody = {
+        keychains: [{ pub: 'xpub1...' }, { pub: 'xpub2...' }, { pub: 'xpub3...' }],
+        index: 3,
+        chain: 0,
+        coinSpecific: { derivationPrefix: '44/0/1528449227/506574854' },
+      };
+
+      const decoded = assertDecode(t.type(DeriveAddressBody), validBody);
+      assert.strictEqual(decoded.coinSpecific?.derivationPrefix, '44/0/1528449227/506574854');
+    });
+
+    it('should reject a non-string coinSpecific.derivationPrefix', function () {
+      assert.throws(() => {
+        assertDecode(t.type(DeriveAddressBody), {
+          keychains: [{ pub: 'xpub1...' }],
+          index: 3,
+          coinSpecific: { derivationPrefix: 44 },
+        });
+      });
     });
 
     it('should reject body with missing index', function () {
@@ -216,6 +239,29 @@ describe('DeriveAddress codec tests', function () {
       const callArgs = deriveAddressStub.firstCall.args[0];
       assert.strictEqual(callArgs.index, 42);
       assert.strictEqual(callArgs.chain, 20);
+    });
+
+    it('should pass coinSpecific.derivationPrefix through to coin.deriveAddress', async function () {
+      const derivationPrefix = '44/0/1528449227/506574854';
+      const requestBody = {
+        keychains: [{ pub: 'xpub1...' }, { pub: 'xpub2...' }, { pub: 'xpub3...' }],
+        chain: 20,
+        index: 7,
+        coinSpecific: { derivationPrefix },
+      };
+
+      const deriveAddressStub = sinon.stub().resolves({ address: 'bc1qbip44address', chain: 20, index: 7 });
+      sinon.stub(BitGo.prototype, 'coin').returns({ deriveAddress: deriveAddressStub } as unknown as BaseCoin);
+
+      const result = await agent
+        .post('/api/v2/btc/address/derive')
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+      sinon.assert.calledOnce(deriveAddressStub);
+      assert.strictEqual(deriveAddressStub.firstCall.args[0].coinSpecific.derivationPrefix, derivationPrefix);
     });
 
     it('should derive a TSS/MPC address and pass derivedFromParentWithSeed through', async function () {

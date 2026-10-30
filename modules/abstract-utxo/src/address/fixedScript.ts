@@ -16,11 +16,14 @@ import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import { toWasmUtxoCoinName, UtxoCoinName, WasmUtxoCoinName } from '../names';
 
+import { assertCanonicalDerivationPrefix } from './derivationPrefix';
+
 type ScriptType2Of3 = fixedScriptWallet.OutputScriptType;
 type ChainCode = fixedScriptWallet.ChainCode;
 
 export interface FixedScriptAddressCoinSpecific {
   outputScript?: string;
+  derivationPrefix?: string;
 }
 
 export interface GenerateAddressOptions {
@@ -33,6 +36,13 @@ export interface GenerateAddressOptions {
 interface GenerateFixedScriptAddressOptions extends GenerateAddressOptions {
   format?: CreateAddressFormat;
   keychains: { pub: string }[];
+  /**
+   * Absent = legacy scheme (`0/0`). Present = the bip44 prefix `44/<coinType>/<h1>/<h2>`, which must equal the
+   * canonical prefix recomputed from `keychains` and `bip44CoinType`.
+   */
+  derivationPrefix?: string;
+  /** BIP44 coin type of the coin (`coin.getConfig().bip44CoinType`); required when `derivationPrefix` is present. */
+  bip44CoinType?: number;
 }
 
 function supportsAddressType(coinName: UtxoCoinName | WasmUtxoCoinName, addressType: ScriptType2Of3): boolean {
@@ -68,7 +78,9 @@ export function generateAddressWithChainAndIndex(
  * @param params.index       {number}   Derivation index
  * @param params.segwit      {boolean}  Deprecated
  * @param params.bech32      {boolean}  Deprecated
- * @returns {string} The generated address
+ * @param params.derivationPrefix {string} Absent = legacy `0/0` scheme. Present = must equal the canonical bip44
+ *                                         prefix recomputed from `keychains` and `bip44CoinType`, else this throws
+ * @param params.bip44CoinType {number} Coin's BIP44 coin type; required when `derivationPrefix` is present
  */
 export function generateAddress(
   coinName: UtxoCoinName | WasmUtxoCoinName,
@@ -79,8 +91,14 @@ export function generateAddress(
     derivationIndex = params.index as number;
   }
 
-  const { keychains, chain, segwit = false, bech32 = false } = params as GenerateFixedScriptAddressOptions;
-
+  const {
+    keychains,
+    chain,
+    segwit = false,
+    bech32 = false,
+    derivationPrefix,
+    bip44CoinType,
+  } = params as GenerateFixedScriptAddressOptions;
   if (_.isNumber(chain) && _.isInteger(chain) && !fixedScriptWallet.ChainCode.is(chain)) {
     throw new InvalidAddressDerivationPropertyError(`address validation failure: unrecognised chain code (${chain})`);
   }
@@ -131,13 +149,15 @@ export function generateAddress(
     throw new Error('keychains must be a triple');
   }
 
-  return generateAddressWithChainAndIndex(
-    coinName,
-    keychains.map((k) => k.pub) as Triple<string>,
-    derivationChain,
-    derivationIndex,
-    params.format
-  );
+  const keys = keychains.map((k) => k.pub) as Triple<string>;
+  let walletKeys: fixedScriptWallet.WalletKeysArg = keys;
+  if (derivationPrefix !== undefined) {
+    // never derive under a prefix that was merely supplied: it must be the canonical one for these keys
+    const canonicalPrefix = assertCanonicalDerivationPrefix(keys, derivationPrefix, bip44CoinType);
+    walletKeys = { triple: keys, derivationPrefixes: [canonicalPrefix, canonicalPrefix, canonicalPrefix] };
+  }
+
+  return generateAddressWithChainAndIndex(coinName, walletKeys, derivationChain, derivationIndex, params.format);
 }
 
 type Keychain = {
@@ -152,12 +172,18 @@ export function assertFixedScriptWalletAddress(
     keychains,
     format,
     address,
+    derivationPrefix,
+    bip44CoinType,
   }: {
     chain: number | undefined;
     index: number;
     keychains: Keychain[];
     format: CreateAddressFormat;
     address: string;
+    /** Absent = legacy scheme. Present = must be the canonical bip44 prefix of `keychains`. */
+    derivationPrefix?: string;
+    /** BIP44 coin type of the coin; required when `derivationPrefix` is present. */
+    bip44CoinType?: number;
   }
 ): void {
   if ((_.isUndefined(chain) && _.isUndefined(index)) || !(_.isFinite(chain) && _.isFinite(index))) {
@@ -175,6 +201,8 @@ export function assertFixedScriptWalletAddress(
     keychains,
     chain,
     index,
+    derivationPrefix,
+    bip44CoinType,
   });
 
   if (expectedAddress !== address) {
