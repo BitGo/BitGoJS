@@ -119,6 +119,7 @@ describe('Config:', () => {
       BITGO_DISABLE_SSL: 'envdisableSSL',
       BITGO_DISABLE_PROXY: 'envdisableProxy',
       BITGO_DISABLE_ENV_CHECK: 'envdisableEnvCheck',
+      BITGO_DISABLE_PIN_CERTS: 'true',
       BITGO_TIMEOUT: 'envtimeout',
       BITGO_CUSTOM_ROOT_URI: 'envcustomRootUri',
       BITGO_CUSTOM_BITCOIN_NETWORK: 'envcustomBitcoinNetwork',
@@ -145,6 +146,7 @@ describe('Config:', () => {
             disablessl: 'argdisableSSL',
             disableproxy: 'argdisableProxy',
             disableenvcheck: 'argdisableEnvCheck',
+            disablepincerts: 'argdisablePinCerts',
             timeout: 'argtimeout',
             customrooturi: 'argcustomRootUri',
             custombitcoinnetwork: 'argcustomBitcoinNetwork',
@@ -174,6 +176,7 @@ describe('Config:', () => {
       disableSSL: 'argdisableSSL',
       disableProxy: 'argdisableProxy',
       disableEnvCheck: 'argdisableEnvCheck',
+      disablePinCerts: 'argdisablePinCerts',
       timeout: 'argtimeout',
       customRootUri: 'https://argcustomRootUri',
       customBitcoinNetwork: 'argcustomBitcoinNetwork',
@@ -278,6 +281,32 @@ describe('Config:', () => {
     should.not.exist(parsed.disablessl);
     should.not.exist(parsed.disableenvcheck);
     should.not.exist(parsed.disableproxy);
+    should.not.exist(parsed.disablepincerts);
     argvStub.restore();
+  });
+
+  it('should handle BITGO_DISABLE_PIN_CERTS boolean values and --disablepincerts CLI flag', () => {
+    for (const [raw, expected] of [
+      ['true', true],
+      ['1', true],
+      ['false', false],
+      ['0', false],
+      ['no', false],
+    ] as const) {
+      const envStub = sinon.stub(process, 'env').value({ BITGO_DISABLE_PIN_CERTS: raw });
+      const { config: proxyConfig } = proxyquire('../../src/config', {
+        './args': { args: () => ({}) },
+      });
+      proxyConfig().disablePinCerts.should.equal(expected);
+      envStub.restore();
+    }
+
+    const argvStub = sinon.stub(process, 'argv').value([process.argv[0], process.argv[1], '--disablepincerts']);
+    try {
+      const parsed = args.args();
+      parsed.disablepincerts.should.equal(true);
+    } finally {
+      argvStub.restore();
+    }
   });
 });
