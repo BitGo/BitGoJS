@@ -7,7 +7,7 @@ module.exports = (E) => {
   return {
     '.': {
       JsonFromStringifiedJson: () => E.right({ type: 'string' }),
-      Optional: (args) => E.right({ ...args[0], nullable: true }),
+      Optional: (_, innerSchema) => E.right({ type: 'union', schemas: [innerSchema, { type: 'undefined' }] }),
     },
     'io-ts-types': {
       Json: () => E.right({ type: 'object', properties: {}, required: [] }),
