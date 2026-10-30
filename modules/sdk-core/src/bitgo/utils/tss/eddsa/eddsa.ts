@@ -546,11 +546,16 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       throw new Error('Invalid user key - missing backupYShare');
     }
 
-    assert(txRequestResolved.transactions || txRequestResolved.unsignedTxs, 'Unable to find transactions in txRequest');
+    assert(
+      (txRequestResolved.transactions && txRequestResolved.transactions.length > 0) ||
+        (txRequestResolved.unsignedTxs && txRequestResolved.unsignedTxs.length > 0),
+      'Unable to find transactions in txRequest'
+    );
     const unsignedTx =
       txRequestResolved.apiVersion === 'full'
         ? txRequestResolved.transactions![0].unsignedTx
         : txRequestResolved.unsignedTxs[0];
+    assert(unsignedTx, 'Missing unsignedTx in txRequest');
 
     const signingKey = MPC.keyDerive(
       userSigningMaterial.uShare,
@@ -634,11 +639,16 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       throw new Error('Invalid user key - missing backupYShare');
     }
 
-    assert(txRequestResolved.transactions || txRequestResolved.unsignedTxs, 'Unable to find transactions in txRequest');
+    assert(
+      (txRequestResolved.transactions && txRequestResolved.transactions.length > 0) ||
+        (txRequestResolved.unsignedTxs && txRequestResolved.unsignedTxs.length > 0),
+      'Unable to find transactions in txRequest'
+    );
     const unsignedTx =
       txRequestResolved.apiVersion === 'full'
         ? txRequestResolved.transactions![0].unsignedTx
         : txRequestResolved.unsignedTxs[0];
+    assert(unsignedTx, 'Missing unsignedTx in txRequest');
 
     const signablePayload = Buffer.from(unsignedTx.signableHex, 'hex');
 
@@ -765,11 +775,13 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     let unsignedTx: UnsignedTransactionTss;
     if (requestType === RequestType.tx) {
       assert(
-        txRequestResolved.transactions || txRequestResolved.unsignedTxs,
+        (txRequestResolved.transactions && txRequestResolved.transactions.length > 0) ||
+          (txRequestResolved.unsignedTxs && txRequestResolved.unsignedTxs.length > 0),
         'Unable to find transactions in txRequest'
       );
       unsignedTx =
         apiVersion === 'full' ? txRequestResolved.transactions![0].unsignedTx : txRequestResolved.unsignedTxs[0];
+      assert(unsignedTx, 'Missing unsignedTx in txRequest');
     } else if (requestType === RequestType.message) {
       assert(txRequestResolved.messages?.length, 'Unable to find messages in txRequest for message signing');
       const message = txRequestResolved.messages[0];

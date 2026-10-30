@@ -962,9 +962,14 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     }
 
     if (requestType === RequestType.tx) {
-      assert(txRequest.transactions || txRequest.unsignedTxs, 'Unable to find transactions in txRequest');
+      assert(
+        (txRequest.transactions && txRequest.transactions.length > 0) ||
+          (txRequest.unsignedTxs && txRequest.unsignedTxs.length > 0),
+        'Unable to find transactions in txRequest'
+      );
       const unsignedTx =
         txRequest.apiVersion === 'full' ? txRequest.transactions![0].unsignedTx : txRequest.unsignedTxs[0];
+      assert(unsignedTx, 'Missing unsignedTx in txRequest');
 
       if (
         'recipientSource' in params &&

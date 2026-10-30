@@ -48,7 +48,23 @@ export interface PendingApprovalInfo {
     };
     sourceWallet?: string;
   };
+  /**
+   * Present on transactionRequestFull pending approvals. intent.intentType is
+   * MESSAGE_SIGNING_INTENT_TYPES for message-sign approvals, which have no
+   * unsigned transaction.
+   */
+  transactionRequestFull?: {
+    txRequestId?: string;
+    intent?: {
+      intentType?: string;
+      [index: string]: unknown;
+    };
+    [index: string]: unknown;
+  };
 }
+
+/** Intent types whose txRequest carries a message to sign rather than a transaction. */
+export const MESSAGE_SIGNING_INTENT_TYPES: ReadonlySet<string> = new Set(['signMessage', 'signTypedStructuredData']);
 
 export interface PendingApprovalData {
   id: string;

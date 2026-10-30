@@ -590,11 +590,13 @@ export class EcdsaUtils extends BaseEcdsaUtils {
 
     if (requestType === RequestType.tx) {
       assert(
-        txRequest.transactions || (txRequest as TxRequest).unsignedTxs,
+        (txRequest.transactions && txRequest.transactions.length > 0) ||
+          (txRequest.unsignedTxs && txRequest.unsignedTxs.length > 0),
         'Unable to find transactions in txRequest'
       );
       const unsignedTx =
         txRequest.apiVersion === 'full' ? txRequest.transactions![0].unsignedTx : txRequest.unsignedTxs[0];
+      assert(unsignedTx, 'Missing unsignedTx in txRequest');
       derivationPath = unsignedTx.derivationPath;
     } else if (requestType === RequestType.message) {
       // TODO BG-67299 Message signing with derivation path
@@ -641,9 +643,14 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     const txRequest: TxRequest = tssParams.txRequest;
     let signablePayload;
     if (requestType === RequestType.tx) {
-      assert(txRequest.transactions || txRequest.unsignedTxs, 'Unable to find transactions in txRequest');
+      assert(
+        (txRequest.transactions && txRequest.transactions.length > 0) ||
+          (txRequest.unsignedTxs && txRequest.unsignedTxs.length > 0),
+        'Unable to find transactions in txRequest'
+      );
       const unsignedTx =
         txRequest.apiVersion === 'full' ? txRequest.transactions![0].unsignedTx : txRequest.unsignedTxs[0];
+      assert(unsignedTx, 'Missing unsignedTx in txRequest');
       signablePayload = Buffer.from(unsignedTx.signableHex, 'hex');
     } else if (requestType === RequestType.message) {
       signablePayload = (params.tssParams as TSSParamsForMessage).bufferToSign;
@@ -799,9 +806,14 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     let derivationPath = '';
 
     if (requestType === RequestType.tx) {
-      assert(txRequest.transactions || txRequest.unsignedTxs, 'Unable to find transactions in txRequest');
+      assert(
+        (txRequest.transactions && txRequest.transactions.length > 0) ||
+          (txRequest.unsignedTxs && txRequest.unsignedTxs.length > 0),
+        'Unable to find transactions in txRequest'
+      );
       const unsignedTx =
         txRequest.apiVersion === 'full' ? txRequest.transactions![0].unsignedTx : txRequest.unsignedTxs[0];
+      assert(unsignedTx, 'Missing unsignedTx in txRequest');
 
       if (
         'recipientSource' in params &&

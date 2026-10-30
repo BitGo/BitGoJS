@@ -1489,3 +1489,32 @@ describe('EcdsaMPCv2Utils.signEcdsaMPCv2TssUsingExternalSigner attestation', () 
     }
   });
 });
+
+describe('EcdsaMPCv2Utils.signTxRequest assert', () => {
+  it('should throw a clear error when transactions is empty', async () => {
+    const mockBg = {} as BitGoBase;
+    mockBg.getEnv = sinon.stub().returns('test');
+    mockBg.setRequestTracer = sinon.stub();
+    const mockCoin = {} as IBaseCoin;
+    mockCoin.getHashFunction = sinon.stub().callsFake(() => createKeccakHash('keccak256') as Hash);
+
+    const utils = new EcdsaMPCv2Utils(mockBg, mockCoin);
+    sinon.stub(utils as any, 'pickBitgoPubGpgKeyForSigning').resolves(bitgoGpgKey.public);
+
+    const emptyTxRequest = {
+      txRequestId: 'assert-test',
+      apiVersion: 'full',
+      transactions: [],
+      messages: [],
+    } as unknown as TxRequest;
+
+    await assert.rejects(
+      utils.signTxRequest({
+        txRequest: emptyTxRequest,
+        prv: 'fake-prv',
+        reqId: { inc: sinon.stub(), toString: sinon.stub().returns('test-req') } as any,
+      } as any),
+      /Unable to find transactions in txRequest/
+    );
+  });
+});
