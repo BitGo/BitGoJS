@@ -1142,7 +1142,7 @@ export interface WalletData {
   tokens?: Record<string, any>[];
   nfts?: { [contractAddressOrToken: string]: NftBalance };
   unsupportedNfts?: { [contractAddress: string]: NftBalance };
-  users?: WalletUser[];
+  users?: (WalletUser & { needsRecovery?: boolean })[];
   evmKeyRingReferenceWalletId?: string;
   isParent?: boolean;
   enabledChildChains?: string[];
