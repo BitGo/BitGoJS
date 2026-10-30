@@ -15,6 +15,7 @@ import {
   EthereumNetwork,
 } from '@bitgo/statics';
 import {
+  classifyRecoveryKeys,
   BaseCoin,
   BaseTransaction,
   BitGoBase,
@@ -22,7 +23,6 @@ import {
   ErrorNoInputToRecover,
   FeeEstimateOptions,
   FullySignedTransaction,
-  getIsUnsignedSweep,
   InvalidAddressError,
   IWallet,
   KeyPair,
@@ -659,16 +659,9 @@ export class AvaxC extends AbstractEthLikeNewCoins {
       throw new Error('invalid recoveryDestination');
     }
 
-    // Classify from the RAW keys, as before the type change: stripping whitespace first would
-    // flip the result for a key pasted with a leading newline.
-    const rawUserKey = params.userKey ?? '';
-    const rawBackupKey = params.backupKey ?? '';
-    // TODO (BG-56531): add support for krs
-    const isUnsignedSweep = getIsUnsignedSweep({ userKey: rawUserKey, backupKey: rawBackupKey, isTss: params.isTss });
-
-    // Clean up whitespace from entered values
-    let userKey = rawUserKey.replace(/\s/g, '');
-    const backupKey = rawBackupKey.replace(/\s/g, '');
+    const recoveryKeys = classifyRecoveryKeys({ ...params, isUnsignedSweep: undefined });
+    const { backupKey, isUnsignedSweep } = recoveryKeys;
+    let userKey = recoveryKeys.userKey;
 
     // Set new tx fees (using default config values from platform)
     const gasLimit = new optionalDeps.ethUtil.BN(this.setGasLimit(params.gasLimit));
@@ -711,7 +704,12 @@ export class AvaxC extends AbstractEthLikeNewCoins {
       }
       backupKeyAddress = keyPair.getAddress();
     }
-    await this.assertRecoveryKeysAreWalletSigners(userKey, backupKeyAddress, params.walletContractAddress);
+    await this.assertRecoveryKeysAreWalletSigners(
+      userKey,
+      backupKeyAddress,
+      params.walletContractAddress,
+      params.apiKey
+    );
 
     const backupKeyNonce = await this.getAddressNonce(backupKeyAddress);
 

@@ -2,14 +2,13 @@
  * @prettier
  */
 import {
+  classifyRecoveryKeys,
   BitGoBase,
   CoinConstructor,
   ErrorNoInputToRecover,
   RecoveryProviderError,
   Util,
   checkKrsProvider,
-  getIsKrsRecovery,
-  getIsUnsignedSweep,
   MPCAlgorithm,
   NamedCoinConstructor,
 } from '@bitgo/sdk-core';
@@ -152,18 +151,9 @@ export class Erc20Token extends Eth {
       throw new Error('invalid recoveryDestination');
     }
 
-    // Classify from the RAW keys, as before the type change: stripping whitespace first would
-    // flip the result for a key pasted with a leading newline.
-    const rawUserKey = params.userKey ?? '';
-    const rawBackupKey = params.backupKey ?? '';
-    const isKrsRecovery = getIsKrsRecovery({ userKey: rawUserKey, backupKey: rawBackupKey });
-    const isUnsignedSweep =
-      params.isUnsignedSweep ??
-      getIsUnsignedSweep({ userKey: rawUserKey, backupKey: rawBackupKey, isTss: params.isTss });
-
-    // Clean up whitespace from entered values
-    let userKey = rawUserKey.replace(/\s/g, '');
-    const backupKey = rawBackupKey.replace(/\s/g, '');
+    const recoveryKeys = classifyRecoveryKeys(params);
+    const { backupKey, isKrsRecovery, isUnsignedSweep } = recoveryKeys;
+    let userKey = recoveryKeys.userKey;
 
     if (isKrsRecovery) {
       checkKrsProvider(this, params.krsProvider, { checkCoinFamilySupport: false });

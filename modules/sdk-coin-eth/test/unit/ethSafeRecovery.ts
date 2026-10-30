@@ -305,6 +305,24 @@ describe('Safe EVM TSS recovery end-to-end', function () {
     pendingBalanceMocks().should.have.length(2);
   });
 
+  it('rejects an unsigned sweep with no key material at all', async function () {
+    // Also pins that validateUnsignedSweepTSSParams is awaited: before that fix this threw
+    // inside an un-awaited promise, so the caller saw a downstream BigInt error instead and
+    // the real rejection surfaced as an unhandled rejection.
+    await basecoin
+      .recover({
+        userKey: '',
+        backupKey: '',
+        isTss: true,
+        walletContractAddress,
+        recoveryDestination,
+        gasLimit: 200000,
+        eip1559: { maxFeePerGas: 20000000000, maxPriorityFeePerGas: 10000000000 },
+        replayProtectionOptions: { chain: '560048', hardfork: 'london' },
+      })
+      .should.be.rejectedWith('missing commonKeyChain');
+  });
+
   it('surfaces an explorer failure rather than reporting an empty wallet', async function () {
     const keyParams = await unsignedKeyParams(safeKeys);
     nock(baseUrl)

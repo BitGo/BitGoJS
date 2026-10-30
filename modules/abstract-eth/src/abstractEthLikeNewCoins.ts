@@ -2,6 +2,7 @@
  * @prettier
  */
 import {
+  classifyRecoveryKeys,
   AddressCoinSpecific,
   BitGoBase,
   BuildNftTransferDataOptions,
@@ -1515,6 +1516,9 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       }
     }
 
+    // NOTE: deliberately keyed on params.userKey only, not getTssCommonKeychain. Resolving the
+    // TSS fallback chain here would scan an extra derived address whenever a caller supplies
+    // backupKey without userKey, changing which addresses a consolidation sweeps.
     if (params.userKey) {
       try {
         const derivedAddress = this.deriveAddressFromPublicKey(params.userKey, index);
@@ -1554,22 +1558,25 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     const consolidatedTransactions: any[] = [];
     let lastScanIndex = startIdx;
 
+    // An unsigned TSS sweep builds from the m/0 address derived from the common keychain and
+    // never reads walletContractAddress, so the forwarder address was never the address being
+    // swept here. Pass the address actually swept, which is what the key mismatch check compares.
+    // Loop-invariant, and only for the unsigned shape: in the signed shape userKey/backupKey hold
+    // encrypted key shares, and deriving from that ciphertext would throw before the loop starts.
+    const isTssUnsignedSweep = params.isTss === true && classifyRecoveryKeys(params).isUnsignedSweep;
+    const tssCommonKeychain = isTssUnsignedSweep ? this.getTssCommonKeychain(params) : '';
+    const tssBaseAddress = tssCommonKeychain ? this.deriveAddressFromPublicKey(tssCommonKeychain, 0) : undefined;
+
     for (let i = startIdx; i < endIdx; i++) {
       const consolidationAddress = this.getConsolidationAddress(params, i);
       for (const address of consolidationAddress) {
-        // A TSS recovery sweeps the m/0 address derived from the common keychain and never reads
-        // walletContractAddress, so the forwarder address was never the address being swept here.
-        // Pass the address actually swept, which is also what the key mismatch check compares.
-        const recoverWalletContractAddress = params.isTss
-          ? this.deriveAddressFromPublicKey(this.getTssCommonKeychain(params), 0)
-          : address;
         const recoverParams = {
           apiKey: params.apiKey,
           backupKey: params.backupKey || '',
           gasLimit: params.gasLimit,
           recoveryDestination: params.recoveryDestination || '',
           userKey: params.userKey || '',
-          walletContractAddress: recoverWalletContractAddress,
+          walletContractAddress: tssBaseAddress ?? address,
           derivationSeed: '',
           isTss: params.isTss,
           eip1559: {
@@ -1635,18 +1642,9 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     }
 
     this.validateRecoveryParams(params);
-    // validateRecoveryParams guarantees both keys are present outside of unsigned TSS sweeps,
-    // which never reach this non-TSS path. Classify from the RAW keys, as before the type change:
-    // stripping whitespace first would flip the result for a key pasted with a leading newline.
-    const rawUserKey = params.userKey ?? '';
-    const rawBackupKey = params.backupKey ?? '';
-    const isUnsignedSweep =
-      params.isUnsignedSweep ??
-      getIsUnsignedSweep({ userKey: rawUserKey, backupKey: rawBackupKey, isTss: params.isTss });
-
-    // Clean up whitespace from entered values
-    let userKey = rawUserKey.replace(/\s/g, '');
-    const backupKey = rawBackupKey.replace(/\s/g, '');
+    const recoveryKeys = classifyRecoveryKeys(params);
+    const { backupKey, isUnsignedSweep } = recoveryKeys;
+    let userKey = recoveryKeys.userKey;
     const gasLimit = new optionalDeps.ethUtil.BN(this.setGasLimit(params.gasLimit));
     const gasPrice = params.eip1559
       ? new optionalDeps.ethUtil.BN(params.eip1559.maxFeePerGas)
