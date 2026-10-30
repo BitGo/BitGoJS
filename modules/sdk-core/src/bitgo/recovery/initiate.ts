@@ -101,6 +101,33 @@ export function getIsUnsignedSweep({
   return backupKey.startsWith('xpub') && userKey.startsWith('xpub');
 }
 
+/**
+ * Resolves the key-derived facts every EVM-like `recover()` needs, in one place.
+ *
+ * The two classifications must run against the RAW keys: stripping whitespace first flips the
+ * result for a key pasted with a leading newline, which would silently reroute a KRS or signed
+ * recovery into an unsigned sweep. The stripped keys are what callers should actually use, so
+ * both are returned together and the pairing cannot drift apart again.
+ *
+ * @param params - the recovery options, whose keys may be absent on an unsigned TSS sweep
+ * @returns whitespace-stripped keys alongside the sweep/KRS classification
+ */
+export function classifyRecoveryKeys(params: {
+  userKey?: string;
+  backupKey?: string;
+  isTss?: boolean;
+  isUnsignedSweep?: boolean;
+}): { userKey: string; backupKey: string; isKrsRecovery: boolean; isUnsignedSweep: boolean } {
+  const userKey = params.userKey ?? '';
+  const backupKey = params.backupKey ?? '';
+  return {
+    userKey: userKey.replace(/\s/g, ''),
+    backupKey: backupKey.replace(/\s/g, ''),
+    isKrsRecovery: getIsKrsRecovery({ userKey, backupKey }),
+    isUnsignedSweep: params.isUnsignedSweep ?? getIsUnsignedSweep({ userKey, backupKey, isTss: params.isTss }),
+  };
+}
+
 function parseKeyAsXprv(key: string, source: string): BIP32Interface {
   try {
     return bip32.fromBase58(key);

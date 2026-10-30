@@ -340,6 +340,8 @@ describe('Islm', function () {
     const commonKeyChain =
       '03924e763697f4388577cf234a57b1675ff5048f3adddec23959d85862f55cc97f6a06c263e' +
       'a42166875f0f13acb828c724bd9d67d06c440dff6e308326e9833ab';
+    // the m/0 address of commonKeyChain — the wallet these keys actually control
+    const rootAddress = 'haqq1he0rn7pkqwgdg3xjff8u3afcqcwamshdtrtpav';
 
     beforeEach(function () {
       sandBox.stub(Islm.prototype, 'getAccountDetails' as keyof Islm).resolves(['0', '0']);
@@ -357,7 +359,7 @@ describe('Islm', function () {
         .resolves({ status: 200, body: { block: { header: { chain_id: 'test-chain' } } } });
       await basecoin
         .recover({
-          rootAddress: recoveryDestination,
+          rootAddress,
           bitgoKey: commonKeyChain,
           recoveryDestination,
         })
@@ -368,7 +370,7 @@ describe('Islm', function () {
       sandBox.stub(Islm.prototype, 'getChainIdFromNode' as keyof Islm).resolves({ status: 500, body: {} });
       await basecoin
         .recover({
-          rootAddress: recoveryDestination,
+          rootAddress,
           bitgoKey: commonKeyChain,
           recoveryDestination,
         })

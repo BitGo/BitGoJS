@@ -15,11 +15,8 @@ import { BaseCoin as StaticsBaseCoin, CoinFeature, coins, CoinFamily } from '@bi
 import {
   AbstractEthLikeNewCoins,
   ERC721TransferBuilder,
-  OfflineVaultTxInfo,
-  RecoverOptions,
   recoveryBlockchainExplorerQuery,
   TransactionBuilder as EthLikeTransactionBuilder,
-  UnsignedSweepTxMPCv2,
   VerifyEthTransactionOptions,
 } from '@bitgo/abstract-eth';
 import { TransactionBuilder } from './lib';
@@ -52,13 +49,6 @@ export class EvmCoin extends AbstractEthLikeNewCoins {
   /** @inheritDoc */
   getMPCAlgorithm(): MPCAlgorithm {
     return 'ecdsa';
-  }
-
-  protected async buildUnsignedSweepTxnTSS(params: RecoverOptions): Promise<OfflineVaultTxInfo | UnsignedSweepTxMPCv2> {
-    if (this.staticsCoin?.features.includes(CoinFeature.MPCV2)) {
-      return this.buildUnsignedSweepTxnMPCv2(params);
-    }
-    return super.buildUnsignedSweepTxnTSS(params);
   }
 
   /**
