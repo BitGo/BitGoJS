@@ -587,9 +587,14 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     assert(bitgoGpgPubKey, 'Missing BitGo GPG key for MPCv2');
 
     if (requestType === RequestType.tx) {
-      assert(txRequest.transactions || txRequest.unsignedTxs, 'Unable to find transactions in txRequest');
+      assert(
+        (txRequest.transactions && txRequest.transactions.length > 0) ||
+          (txRequest.unsignedTxs && txRequest.unsignedTxs.length > 0),
+        'Unable to find transactions in txRequest'
+      );
       const unsignedTx =
         txRequest.apiVersion === 'full' ? txRequest.transactions![0].unsignedTx : txRequest.unsignedTxs![0];
+      assert(unsignedTx, 'Missing unsignedTx in txRequest');
       txOrMessageToSign = unsignedTx.signableHex;
       assert(txOrMessageToSign, 'Missing signableHex in unsignedTx');
       derivationPath = unsignedTx.derivationPath;
