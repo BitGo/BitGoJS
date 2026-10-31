@@ -1844,9 +1844,10 @@ describe('V2 Wallets:', function () {
         walletInfoNock.done();
         acceptShareNock.done();
         enterpriseUserNock.done();
-        should.equal(walletShareStub.calledOnce, true);
+        // a failure for one spender no longer aborts the others: both are attempted and the failures are returned
+        should.equal(walletShareStub.calledTwice, true);
         should.equal(walletShareStub.calledWith(shareParamsOne), true);
-        should.equal(walletShareStub.calledWith(shareParamsTwo), false);
+        should.equal(walletShareStub.calledWith(shareParamsTwo), true);
       });
 
       it('when we get a correct resposne from accept share method and reshare wallet with spenders', async function () {
@@ -3777,7 +3778,9 @@ describe('V2 Wallets:', function () {
         });
 
         // Mock reshareWalletWithSpenders (called for keychainOverrideRequired cases)
-        const reshareStub = sinon.stub(Wallets.prototype, 'reshareWalletWithSpenders').resolves();
+        const reshareStub = sinon
+          .stub(Wallets.prototype, 'reshareWalletWithSpenders')
+          .resolves({ shared: [], failed: [] });
 
         const result = await wallets.bulkUpdateWalletShare({
           shares: [{ walletShareId: 'share1', status: 'accept' }],
@@ -3846,7 +3849,9 @@ describe('V2 Wallets:', function () {
         });
 
         // Mock reshareWalletWithSpenders
-        const reshareStub = sinon.stub(Wallets.prototype, 'reshareWalletWithSpenders').resolves();
+        const reshareStub = sinon
+          .stub(Wallets.prototype, 'reshareWalletWithSpenders')
+          .resolves({ shared: [], failed: [] });
 
         const result = await ofcWallets.bulkUpdateWalletShare({
           shares: [{ walletShareId: 'share1', status: 'accept' }],
@@ -4384,7 +4389,7 @@ describe('V2 Wallets:', function () {
             rejectedWalletShares: [],
             walletShareUpdateErrors: [],
           });
-          sinon.stub(Wallets.prototype, 'reshareWalletWithSpenders').resolves();
+          sinon.stub(Wallets.prototype, 'reshareWalletWithSpenders').resolves({ shared: [], failed: [] });
 
           await ofcWallets.bulkUpdateWalletShare({
             shares: [{ walletShareId: shareId, status: 'accept' }],
@@ -4538,6 +4543,110 @@ describe('V2 Wallets:', function () {
           const shareArg = shareWalletStub.getCall(i).args[0]!;
           assert.strictEqual(shareArg.decryptedKeychain, undefined);
         }
+      });
+
+      describe('recipient selection and results', function () {
+        // spender-recovery, spender-ready and spender-unspecified are plain spenders. admin-recovery is an admin who
+        // can spend. admin-viewer is an admin who cannot spend. missing-enterprise-user can spend but is not an
+        // enterprise user, so there is no email to share with.
+        function stubRecoveryRecipients() {
+          const users = [
+            { user: 'spender-recovery', permissions: ['view', 'spend'], needsRecovery: true },
+            { user: 'spender-ready', permissions: ['view', 'spend'], needsRecovery: false },
+            { user: 'spender-unspecified', permissions: ['view', 'spend'] },
+            { user: 'admin-recovery', permissions: ['admin', 'view', 'spend'], needsRecovery: true },
+            { user: 'admin-viewer', permissions: ['admin', 'view'], needsRecovery: true },
+            { user: 'missing-enterprise-user', permissions: ['view', 'spend'], needsRecovery: true },
+          ];
+          sinon.stub(Wallets.prototype, 'get').resolves(
+            new Wallet(bitgo, bitgo.coin('tsol'), {
+              id: 'recovery-wallet',
+              coin: 'tsol',
+              enterprise: 'recovery-enterprise',
+              users,
+              keys: ['userKeyId', 'backupKeyId', 'bitgoKeyId'],
+            })
+          );
+          nock(bgUrl)
+            .get('/api/v1/enterprise/recovery-enterprise/user')
+            .reply(200, {
+              adminUsers: users
+                .filter((u) => u.user.startsWith('admin'))
+                .map((u) => ({ id: u.user, email: { email: `${u.user}@example.com` } })),
+              nonAdminUsers: users
+                .filter((u) => u.user.startsWith('spender'))
+                .map((u) => ({ id: u.user, email: { email: `${u.user}@example.com` } })),
+            });
+          sinon.stub(Wallet.prototype, 'getDecryptedKeychainForSharing').resolves({ prv: 'p', pub: 'q' });
+          return sinon.stub(Wallet.prototype, 'shareWallet').resolves({ shared: true });
+        }
+
+        const notEnterpriseUser = {
+          userId: 'missing-enterprise-user',
+          error: 'User is not a member of the wallet enterprise',
+        };
+
+        it('defaults to non-admin spenders regardless of recovery status', async function () {
+          stubRecoveryRecipients();
+          const result = await wallets.reshareWalletWithSpenders('recovery-wallet', 'pw');
+          assert.deepStrictEqual(result, {
+            shared: ['spender-recovery', 'spender-ready', 'spender-unspecified'],
+            failed: [notEnterpriseUser],
+          });
+        });
+
+        it('includes admins who can spend when includeAdmins is set', async function () {
+          stubRecoveryRecipients();
+          const result = await wallets.reshareWalletWithSpenders('recovery-wallet', 'pw', undefined, {
+            includeAdmins: true,
+          });
+          assert.deepStrictEqual(result, {
+            shared: ['spender-recovery', 'spender-ready', 'spender-unspecified', 'admin-recovery'],
+            failed: [notEnterpriseUser],
+          });
+        });
+
+        it('only reshares to users who need recovery, without admins by default', async function () {
+          stubRecoveryRecipients();
+          const result = await wallets.reshareWalletWithSpenders('recovery-wallet', 'pw', undefined, {
+            onlyNeedsRecovery: true,
+          });
+          assert.deepStrictEqual(result, { shared: ['spender-recovery'], failed: [notEnterpriseUser] });
+        });
+
+        it('combines includeAdmins and onlyNeedsRecovery', async function () {
+          stubRecoveryRecipients();
+          const result = await wallets.reshareWalletWithSpenders('recovery-wallet', 'pw', undefined, {
+            includeAdmins: true,
+            onlyNeedsRecovery: true,
+          });
+          assert.deepStrictEqual(result, {
+            shared: ['spender-recovery', 'admin-recovery'],
+            failed: [notEnterpriseUser],
+          });
+        });
+
+        it('reports recipient failures and keeps sharing with the others', async function () {
+          const share = stubRecoveryRecipients();
+          share.onFirstCall().rejects(new Error('active share already exists'));
+          share.onSecondCall().callsFake(() => Promise.reject('pending share already exists'));
+          const result = await wallets.reshareWalletWithSpenders('recovery-wallet', 'pw');
+          assert.deepStrictEqual(result, {
+            shared: ['spender-unspecified'],
+            failed: [
+              notEnterpriseUser,
+              { userId: 'spender-recovery', error: 'active share already exists' },
+              { userId: 'spender-ready', error: 'pending share already exists' },
+            ],
+          });
+          share.callCount.should.equal(3);
+        });
+
+        it('still rejects when the wallet key cannot be decrypted', async function () {
+          stubRecoveryRecipients();
+          (Wallet.prototype.getDecryptedKeychainForSharing as sinon.SinonStub).rejects(new Error('bad passphrase'));
+          await assert.rejects(() => wallets.reshareWalletWithSpenders('recovery-wallet', 'pw'), /bad passphrase/);
+        });
       });
     });
   });

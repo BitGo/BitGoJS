@@ -50,6 +50,9 @@
     "io-ts-types": "^0.5.16",
     "macaroon": "^3.0.4"
   },
+  "devDependencies": {
+    "@bitgo/sdk-api": "^3.1.6"
+  },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
   "files": [
     "dist"
