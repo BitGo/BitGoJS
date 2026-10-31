@@ -29,18 +29,6 @@ export const botTokens = [
     Networks.test.hoodi
   ),
   AccountCtors.terc20(
-    '1f8f6be2-e97e-4f41-836d-c4420b8cc77b',
-    'hteth:WBTC',
-    'Wrapped BTC',
-    8,
-    '0xa56a332d34b2db33ebc41dc0194afd28cb20d19b',
-    'hteth:WBTC' as unknown as UnderlyingAsset,
-    getTokenFeatures('eth'),
-    undefined,
-    undefined,
-    Networks.test.hoodi
-  ),
-  AccountCtors.terc20(
     'f917c7b9-bfdf-4ef0-88bb-0db70ef253a9',
     'hteth:wsteth',
     'Wrapped liquid staked Ether 2.0',
@@ -223,38 +211,6 @@ export const botTokens = [
     undefined,
     undefined,
     Networks.test.sol
-  ),
-  AccountCtors.terc20(
-    '0e5cb41c-7ec4-4b30-90e7-33d23547ad67',
-    'hteth:tgku',
-    'Hoodi Gokubu',
-    18,
-    '0xa3e27ba64c528b2440266e6ded824becb6dcfae8',
-    'hteth:tgku' as unknown as UnderlyingAsset,
-    getTokenFeatures('eth', [
-      'custody-bitgo-new-york' as CoinFeature,
-      'custody-bitgo-germany' as CoinFeature,
-      'custody-bitgo-korea' as CoinFeature,
-    ]),
-    undefined,
-    undefined,
-    Networks.test.hoodi
-  ),
-  AccountCtors.terc20(
-    '723429e7-6e11-4b0c-8785-95ae0d8c89c1',
-    'hteth:stzamakms',
-    'Mock Zama Staked ZAMA',
-    20,
-    '0xbfb717a712ac94204ae9e7049332641f3332c82f',
-    'hteth:stzamakms' as unknown as UnderlyingAsset,
-    getTokenFeatures('eth', [
-      'custody-bitgo-new-york' as CoinFeature,
-      'custody-bitgo-germany' as CoinFeature,
-      'custody-bitgo-korea' as CoinFeature,
-    ]),
-    undefined,
-    undefined,
-    Networks.test.hoodi
   ),
   AccountCtors.terc20(
     '62c5d357-b508-4748-9a07-878d3414b472',
@@ -448,7 +404,6 @@ export const botTokens = [
       'custody-bitgo-switzerland' as CoinFeature,
       'custody-bitgo-sister-trust-one' as CoinFeature,
       'custody-bitgo-korea' as CoinFeature,
-      CoinFeature.STAKING,
     ]),
     undefined,
     undefined,
