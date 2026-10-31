@@ -12,7 +12,7 @@ import {
   Wallet,
 } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { Txlm, getStellarKeys } from '../../src';
+import { StellarToken, Txlm, getStellarKeys, register } from '../../src';
 import { KeyPair } from '../../src/lib/keyPair';
 
 import * as assert from 'assert';
@@ -1980,6 +1980,56 @@ describe('XLM:', function () {
       clawbackOperation.from.should.equal(trustorAddress);
       // 10 big units clawed back => 10 * 1e7 = 100000000 base units in the explanation.
       clawbackOperation.amount.should.equal('100000000');
+    });
+  });
+
+  describe('StellarToken:', () => {
+    const usdm1Issuer = 'GDM5QWWXCMDTQMZAKMYTCI52LA7FWBHAZMU5NJLMIFHDJISJRP2ZWPKC';
+
+    it('should register every Stellar token in statics, including alphanumeric asset codes', () => {
+      const tokenSdk = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+      register(tokenSdk);
+
+      for (const { name } of StellarToken.createTokenConstructors()) {
+        tokenSdk.coin(name).type.should.equal(name);
+      }
+    });
+
+    it('should accept an asset code containing digits', () => {
+      const usdm1 = new StellarToken(bitgo, {
+        coin: 'xlm',
+        network: 'Mainnet',
+        name: 'USDM1',
+        type: `xlm:USDM1-${usdm1Issuer}`,
+        decimalPlaces: 7,
+      });
+
+      usdm1.code.should.equal('USDM1');
+      usdm1.issuer.should.equal(usdm1Issuer);
+    });
+
+    it('should reject an asset code with a non-alphanumeric character', () => {
+      (() => {
+        new StellarToken(bitgo, {
+          coin: 'xlm',
+          network: 'Mainnet',
+          name: 'Invalid',
+          type: `xlm:USD!1-${usdm1Issuer}`,
+          decimalPlaces: 7,
+        });
+      }).should.throw(/invalid token:/);
+    });
+
+    it('should reject an asset code longer than 12 characters', () => {
+      (() => {
+        new StellarToken(bitgo, {
+          coin: 'xlm',
+          network: 'Mainnet',
+          name: 'Invalid',
+          type: `xlm:TOOLONGASSETCODE-${usdm1Issuer}`,
+          decimalPlaces: 7,
+        });
+      }).should.throw(/invalid token:/);
     });
   });
 });
