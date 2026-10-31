@@ -10,7 +10,11 @@ import { StellarTokenConfig, tokens } from '@bitgo/statics';
 export { StellarTokenConfig };
 
 export class StellarToken extends Xlm {
-  static readonly tokenPattern: RegExp = /[A-Z]{1,12}-G[A-Z0-9]{55}/;
+  // Stellar asset codes are alphanumeric (a-z, A-Z, 0-9) and 1-12 characters long — see
+  // stellar-core `isAsciiAlphaNumeric`/`isAssetValid` and the `AssetCode4`/`AssetCode12`
+  // XDR definitions. Lowercase is legal and already in use (e.g. xlm:gBENJI-...), so the
+  // code class must not be uppercase-only. Anchored so the whole token is validated.
+  static readonly tokenPattern: RegExp = /^[a-zA-Z0-9]{1,12}-G[A-Z0-9]{55}$/;
   public readonly tokenConfig: StellarTokenConfig;
   private readonly _code: string;
   private readonly _issuer: string;
