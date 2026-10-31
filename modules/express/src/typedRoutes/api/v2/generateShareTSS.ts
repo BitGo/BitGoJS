@@ -192,7 +192,7 @@ export const GenerateShareTSSBody = {
       txParams: Json,
     })
   ),
-  /** Encrypted user-to-BitGo R share for EDDSA signing protocol */
+  /** Encrypted user-to-BitGo R share for EDDSA signing protocol (from the commitment phase for R, from the R phase for G) */
   encryptedUserToBitgoRShare: optional(
     t.partial({
       /** Source participant identifier */
@@ -216,16 +216,7 @@ export const GenerateShareTSSBody = {
       share: t.string,
     })
   ),
-  /** User's R share sent to BitGo containing cryptographic commitments for EDDSA G share generation */
-  userToBitgoRShare: optional(
-    t.partial({
-      /** Participant index in the signing protocol */
-      i: t.number,
-      /** Mapping of participant indices to their R share structures (commitment, u, v, r, R values) */
-      rShares: t.record(t.string, RShareStructure),
-    })
-  ),
-  /** BitGo's commitment share sent to user for EDDSA G share generation */
+  /** BitGo's commitment share sent to user for EDDSA R and G share generation */
   bitgoToUserCommitment: optional(
     t.partial({
       /** Source participant identifier */
@@ -432,6 +423,8 @@ export const EddsaCommitmentShareResponse = t.type({
 export const EddsaRShareResponse = t.type({
   /** R share containing participant index and share commitments */
   rShare: SignShare,
+  /** Encrypted R share bound to the BitGo commitment, required for G share generation */
+  encryptedUserToBitgoRShare: EncryptedSignerShareRecord,
 });
 
 /** EDDSA G share generation response with final signature share components */

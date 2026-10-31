@@ -10,6 +10,7 @@ This may be preferable for users who would like to apply their signature to thei
 To set up BitGo Express with an external signer, a url to the external signer instance of BitGo Express must be provided using the `externalSignerUrl` configuration option.
 The corresponding external signer instance of BitGo Express must have `signerMode` set, and `signerFileSystemPath` set to the path of a json containing the private key.
 Note that if BitGo Express encounters an `ECONNREFUSED` error when requesting the external signer for a signature, it will retry the request for up to 15 seconds.
+The external signer instance and the BitGo Express instance calling it should run the same BitGo Express version.
 
 ### Encrypted private key format
 
