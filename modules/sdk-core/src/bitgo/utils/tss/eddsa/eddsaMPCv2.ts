@@ -36,6 +36,7 @@ import {
 } from '../../../tss/eddsa/eddsaMPCv2';
 import { getInitializedMpcInstance } from '../../../tss/eddsa/eddsa';
 import { generateGPGKeyPair } from '../../opengpgUtils';
+import { assertSafeLegacyV1Envelope } from '../../legacyV1Envelope';
 import { MPCv2PartiesEnum } from '../ecdsa/typesMPCv2';
 import {
   CustomEddsaMPCv2SigningRound1GeneratingFunction,
@@ -1386,6 +1387,15 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
 }
 
 /**
+ * v1-only decrypt used when no `bitgo` instance is available. Hostile envelopes are refused
+ * before SJCL runs.
+ */
+function decryptLegacyV1(walletPassphrase: string | undefined, ciphertext: string): string {
+  assertSafeLegacyV1Envelope(ciphertext);
+  return sjcl.decrypt(walletPassphrase, ciphertext);
+}
+
+/**
  * Detect whether an encrypted keycard contains MPCv1 signing material.
  *
  * Decrypts the keycard and checks for the JSON shape produced by the MPCv1 TSS
@@ -1421,7 +1431,7 @@ export async function isEddsaMpcV1SigningMaterial(
 ): Promise<boolean> {
   const decrypted = bitgo
     ? await bitgo.decrypt({ input: encryptedKeyShare, password: walletPassphrase })
-    : sjcl.decrypt(walletPassphrase, encryptedKeyShare);
+    : decryptLegacyV1(walletPassphrase, encryptedKeyShare);
   return parseEddsaMpcV1Material(decrypted) !== null;
 }
 
@@ -1450,7 +1460,7 @@ export async function getEddsaMpcV2RecoveryKeySharesFromReducedKey(
   ): Promise<{ reduced: MPSTypes.EddsaReducedKeyShare; vrfKeyShare?: Buffer }> => {
     const decrypted = bitgo
       ? await bitgo.decrypt({ input: encryptedKey, password: walletPassphrase })
-      : sjcl.decrypt(walletPassphrase, encryptedKey);
+      : decryptLegacyV1(walletPassphrase, encryptedKey);
     const parsed = parseMpcV2KeyShareEnvelope(decrypted);
     let reduced: MPSTypes.EddsaReducedKeyShare;
     try {
@@ -1570,7 +1580,7 @@ export async function getEddsaSigningMaterial(
   try {
     decrypted = bitgo
       ? await bitgo.decrypt({ input: normalized, password: walletPassphrase })
-      : sjcl.decrypt(walletPassphrase, normalized);
+      : decryptLegacyV1(walletPassphrase, normalized);
   } catch (e) {
     throw new Error(`Error decrypting user keychain: ${e instanceof Error ? e.message : String(e)}`);
   }

@@ -1,4 +1,4 @@
-import { base64String, boundedInt, decodeWithCodec } from '@bitgo/sdk-core';
+import { base64String, boundedInt, decodeWithCodec, LEGACY_V1_MAX_ITER } from '@bitgo/sdk-core';
 import { createDecipheriv, pbkdf2 } from 'crypto';
 import * as t from 'io-ts';
 import { promisify } from 'util';
@@ -8,7 +8,7 @@ import { promisify } from 'util';
  * v1 envelopes use 10,000; this cap is 10x that. Envelope validation enforces
  * it up front before any KDF work runs.
  */
-export const V1_MAX_ITER = 100_000;
+export const V1_MAX_ITER = LEGACY_V1_MAX_ITER;
 
 /**
  * io-ts codec for a v1 (SJCL) envelope.

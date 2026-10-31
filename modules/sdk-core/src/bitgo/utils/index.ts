@@ -13,5 +13,6 @@ export * from './notEmpty';
 export * from './wallet';
 export * from './messageTypes';
 export * from './siws';
+export * from './legacyV1Envelope';
 
 export { openpgpUtils };
