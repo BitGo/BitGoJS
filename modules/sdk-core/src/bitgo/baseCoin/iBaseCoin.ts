@@ -534,6 +534,12 @@ export interface AddressCoinSpecific {
   /** Fee address for v4 EVM forwarders (used when deriving/verifying v4 forwarder addresses). */
   feeAddress?: string;
   /**
+   * UTXO fixed-script wallets: relative, non-hardened derivation prefix shared by all three root keys
+   * (`44/<coinType>/<h1>/<h2>`). Absent means the legacy scheme (the wallet's existing `0/0` key path).
+   * Verifiers MUST recompute the canonical prefix from the wallet keys and reject any other value.
+   */
+  derivationPrefix?: string;
+  /**
    * Zcash shielded (Orchard/Ironwood) receiver data reported by wallet-platform. Present
    * only for shielded addresses; see `assertShieldedWalletAddress`.
    */

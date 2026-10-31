@@ -253,11 +253,17 @@ export async function parseOutput({
       // derivation information we have. Otherwise, if the address is external, which is the only remaining case, we
       // can just return the current output as is without contacting the server.
       if (isWalletOutput(currentOutput)) {
+        // The prefix comes from the derivation path recorded in the PSBT (absent = legacy `0/0`). It is never trusted:
+        // isWalletAddress only accepts it if it equals the canonical prefix recomputed from the wallet keys, so a
+        // bip44 change output is recognised as internal and a forged prefix is classified as external.
         const res = await coin.isWalletAddress({
           keychains: keychainArray,
           address: currentAddress,
           chain: currentOutput.chain,
           index: currentOutput.index,
+          ...(currentOutput.derivationPrefix === undefined
+            ? {}
+            : { coinSpecific: { derivationPrefix: currentOutput.derivationPrefix } }),
         });
         if (!res) {
           throw new UnexpectedAddressError();

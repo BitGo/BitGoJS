@@ -4,6 +4,7 @@ import { Triple } from '@bitgo/sdk-core';
 import type { FixedScriptWalletOutput, Output, BitGoPsbt } from '../types';
 import type { Bip322Message } from '../../abstractUtxoCoin';
 import { AddressCodec } from '../recipient';
+import { getDerivationPrefixFromPath } from '../../address/derivationPrefix';
 
 import type { TransactionExplanationWasm } from './explainTransaction';
 function scriptToAddress(script: Uint8Array): string {
@@ -22,12 +23,15 @@ function isParsedExternalOutput(output: ParsedWalletOutput | ParsedExternalOutpu
 }
 
 function toChangeOutputBigInt(output: ParsedWalletOutput): FixedScriptWalletOutput<bigint> {
+  // `derivationPath` is the full path recorded in the PSBT; everything but chain/index is the prefix (absent = legacy)
+  const derivationPrefix = getDerivationPrefixFromPath(output.derivationPath);
   return {
     address: output.address ?? scriptToAddress(output.script),
     amount: output.value,
     chain: output.scriptId.chain,
     index: output.scriptId.index,
     external: false,
+    ...(derivationPrefix === undefined ? {} : { derivationPrefix }),
   };
 }
 

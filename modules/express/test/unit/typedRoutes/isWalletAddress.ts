@@ -12,6 +12,7 @@ import 'should';
 import 'should-http';
 import 'should-sinon';
 import * as sinon from 'sinon';
+import { BaseCoin } from '@bitgo/sdk-core';
 import { BitGo } from 'bitgo';
 import { setupAgent } from '../../lib/testutil';
 
@@ -292,6 +293,28 @@ describe('IsWalletAddress codec tests', function () {
       assert.strictEqual(decodedString.index, '7');
     });
 
+    it('should accept chain and coinSpecific.derivationPrefix for UTXO addresses', function () {
+      const decoded = assertDecode(t.type(IsWalletAddressBody), {
+        address: 'bc1qbip44address',
+        keychains: [{ pub: 'xpub1...' }, { pub: 'xpub2...' }, { pub: 'xpub3...' }],
+        chain: 20,
+        index: 7,
+        coinSpecific: { derivationPrefix: '44/0/1528449227/506574854' },
+      });
+      assert.strictEqual(decoded.chain, 20);
+      assert.strictEqual(decoded.coinSpecific?.derivationPrefix, '44/0/1528449227/506574854');
+    });
+
+    it('should reject a non-numeric chain', function () {
+      assert.throws(() => {
+        assertDecode(t.type(IsWalletAddressBody), {
+          address: 'bc1qbip44address',
+          keychains: [{ pub: 'xpub1...' }],
+          chain: '20',
+        });
+      });
+    });
+
     it('should reject body with invalid derivedFromParentWithSeed type', function () {
       const invalidBody = {
         address: '0x6069a4baf2360bf67a6d02a7fc43d8f3910016ae',
@@ -408,6 +431,39 @@ describe('IsWalletAddress codec tests', function () {
         assert.strictEqual(result.body, true);
 
         sinon.assert.calledOnce(isWalletAddressStub);
+      });
+
+      it('should pass chain and coinSpecific.derivationPrefix through for a UTXO address', async function () {
+        const derivationPrefix = '44/0/1528449227/506574854';
+        const requestBody = {
+          address: 'bc1qbip44address',
+          keychains: [{ pub: 'xpub1...' }, { pub: 'xpub2...' }, { pub: 'xpub3...' }],
+          chain: 20,
+          index: 7,
+          coinSpecific: { derivationPrefix },
+        };
+
+        const isWalletAddressStub = sinon.stub().resolves(true);
+        const mockCoin = {
+          wallets: sinon
+            .stub()
+            .returns({ get: sinon.stub().resolves({ baseCoin: { isWalletAddress: isWalletAddressStub } }) }),
+        };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as unknown as BaseCoin);
+
+        const result = await agent
+          .post('/api/v2/btc/wallet/test-wallet-id/iswalletaddress')
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.strictEqual(result.status, 200);
+        assert.strictEqual(result.body, true);
+        sinon.assert.calledOnce(isWalletAddressStub);
+        const callArgs = isWalletAddressStub.firstCall.args[0];
+        assert.strictEqual(callArgs.chain, 20);
+        assert.strictEqual(callArgs.index, 7);
+        assert.strictEqual(callArgs.coinSpecific.derivationPrefix, derivationPrefix);
       });
 
       it('should verify forwarder address for wallet version 2', async function () {
