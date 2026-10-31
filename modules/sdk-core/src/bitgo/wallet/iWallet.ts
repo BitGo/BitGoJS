@@ -242,6 +242,10 @@ export interface PrebuildTransactionOptions {
   apiVersion?: ApiVersion;
   stakingParams?: unknown;
   /**
+   * PoX-5 unstaking parameters, e.g. `{ pox5: { branch: 'early-exit', principalPreimage } }`.
+   */
+  unstakingParams?: unknown;
+  /**
    * If set to false, sweep all funds including the required minimums for address(es). E.g. Polkadot (DOT) requires 1 DOT minimum.
    */
   keepAlive?: boolean;

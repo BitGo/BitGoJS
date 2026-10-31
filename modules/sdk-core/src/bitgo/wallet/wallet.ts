@@ -160,6 +160,11 @@ type ManageUnspents = 'consolidate' | 'fanout';
 
 const whitelistedSendParams = TxSendBody.type.types.flatMap((t) => Object.keys(t.props));
 
+// TxSendBody in @bitgo/public-types does not declare unstakingParams yet, so /tx/initiate would
+// drop it. Extend locally until the codec has it.
+const TxInitiateBody = t.intersection([TxSendBody, t.partial({ unstakingParams: t.unknown })]);
+const whitelistedInitiateParams = [...whitelistedSendParams, 'unstakingParams'];
+
 export enum ManageUnspentsOptions {
   BUILD_ONLY,
   BUILD_SIGN_SEND,
@@ -5782,17 +5787,17 @@ export class Wallet implements IWallet {
     ).result();
   }
 
-  private initiateTransaction(params: TxSendBody, reqId?: IRequestTracer) {
+  private initiateTransaction(params: t.TypeOf<typeof TxInitiateBody>, reqId?: IRequestTracer) {
     // extract the whitelisted params from the top level, in case
     // other invalid params are present that would fail encoding
     // and fall back to the body params
-    const whitelistedParams = this.baseCoin.preprocessBuildParams(_.pick(params, whitelistedSendParams));
+    const whitelistedParams = this.baseCoin.preprocessBuildParams(_.pick(params, whitelistedInitiateParams));
     const reqTracer = reqId || new RequestTracer();
     this.bitgo.setRequestTracer(reqTracer);
     return postWithCodec(
       this.bitgo,
       this.baseCoin.url('/wallet/' + this.id() + '/tx/initiate'),
-      TxSendBody,
+      TxInitiateBody,
       whitelistedParams
     ).result();
   }
