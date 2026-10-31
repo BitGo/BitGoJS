@@ -11,6 +11,8 @@ import { writeFile } from 'fs';
 import { logger } from '@bitgo/logger';
 import { BitGo, EnvironmentName } from 'bitgo';
 import 'dotenv/config';
+import { DefaultConfig, EnvConfig } from './config';
+import { getBitGoTlsPolicy } from './tlsPolicy';
 
 type Output = {
   [key: string]: string;
@@ -37,7 +39,10 @@ const esWalletIDs = process.env.BITGO_EXTERNAL_SIGNER_WALLET_IDS; // example: "{
 const esWalletWithPrv = process.env.BITGO_EXTERNAL_SIGNER_WALLET_IDS_WITH_PRV; // example: "[{"walletId":"xxx","encryptedPrv":"xxx"}]"
 
 // TODO: set env to 'test' or 'prod'
-const bg = new BitGo({ env: (process.env.BITGO_EXTERNAL_SIGNER_ENV as EnvironmentName) ?? 'test' });
+const bg = new BitGo({
+  env: (process.env.BITGO_EXTERNAL_SIGNER_ENV as EnvironmentName) ?? 'test',
+  tlsPolicy: getBitGoTlsPolicy({ ...DefaultConfig, ...EnvConfig() }),
+});
 
 // TODO: set your access token here
 const accessToken = esAccessToken || '';

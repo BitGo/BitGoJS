@@ -21,7 +21,7 @@
   },
   "scripts": {
     "test": "yarn unit-test",
-    "unit-test": "yarn nyc -- mocha",
+    "unit-test": "yarn test:data && yarn nyc -- mocha",
     "integration-test": "yarn nyc -- mocha \"test/integration/**/*.ts\"",
     "clean": "rm -rf dist/*",
     "prepare": "yarn build",
@@ -34,7 +34,9 @@
     "build-docker": "cd ../../ && yarn update-dockerfile && ./scripts/build-docker-express.sh",
     "check-fmt": "yarn prettier --check '{src,test}/**/*.{ts,js,json}'",
     "unprettied": "grep -R -L --include '*.ts' --include '*.js' --include '*.json' '@prettier' src test",
-    "fmt": "yarn prettier --write '{src,test}/**/*.{ts,js,json}'"
+    "fmt": "yarn prettier --write '{src,test}/**/*.{ts,js,json}'",
+    "test:data": "bash ../../scripts/verify-bitgo-policy-data.sh",
+    "test:data:live": "bash ../../scripts/verify-bitgo-policy-data.sh --live"
   },
   "dependencies": {
     "@api-ts/io-ts-http": "^3.2.1",

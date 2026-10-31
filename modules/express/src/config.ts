@@ -19,6 +19,14 @@ function readEnvVar(name, ...deprecatedAliases): string | undefined {
   }
 }
 
+function readBooleanEnvVar(name: string, ...deprecatedAliases: string[]): boolean | undefined {
+  const val = readEnvVar(name, ...deprecatedAliases);
+  if (val === undefined) {
+    return undefined;
+  }
+  return !['false', '0', 'no', 'off'].includes(val.trim().toLowerCase());
+}
+
 export interface Config {
   port: number;
   bind: string;
@@ -33,6 +41,7 @@ export interface Config {
   disableSSL: boolean;
   disableProxy: boolean;
   disableEnvCheck: boolean;
+  disablePinCerts: boolean;
   timeout: number;
   customRootUri?: string;
   customBitcoinNetwork?: V1Network;
@@ -59,6 +68,7 @@ export const ArgConfig = (args): Partial<Config> => ({
   disableSSL: args.disablessl,
   disableProxy: args.disableproxy,
   disableEnvCheck: args.disableenvcheck,
+  disablePinCerts: args.disablepincerts,
   timeout: args.timeout,
   customRootUri: args.customrooturi,
   customBitcoinNetwork: args.custombitcoinnetwork,
@@ -85,6 +95,7 @@ export const EnvConfig = (): Partial<Config> => ({
   disableSSL: readEnvVar('BITGO_DISABLE_SSL', 'BITGO_DISABLESSL', 'DISABLESSL', 'DISABLE_SSL') ? true : undefined,
   disableProxy: readEnvVar('BITGO_DISABLE_PROXY', 'DISABLE_PROXY') ? true : undefined,
   disableEnvCheck: readEnvVar('BITGO_DISABLE_ENV_CHECK', 'DISABLE_ENV_CHECK') ? true : undefined,
+  disablePinCerts: readBooleanEnvVar('BITGO_DISABLE_PIN_CERTS'),
   timeout: Number(readEnvVar('BITGO_TIMEOUT')),
   customRootUri: readEnvVar('BITGO_CUSTOM_ROOT_URI'),
   customBitcoinNetwork: readEnvVar('BITGO_CUSTOM_BITCOIN_NETWORK') as V1Network,
@@ -108,6 +119,7 @@ export const DefaultConfig: Config = {
   // BG-9584: temporarily disable env check while we give users time to react to change in runtime behavior
   // This will require a major version bump, since this is a breaking change to default behavior.
   disableEnvCheck: true,
+  disablePinCerts: false,
   timeout: 305 * 1000,
   authVersion: 2,
 };
@@ -171,6 +183,7 @@ function mergeConfigs(...configs: Partial<Config>[]): Config {
     disableSSL,
     disableProxy: get('disableProxy'),
     disableEnvCheck: get('disableEnvCheck'),
+    disablePinCerts: get('disablePinCerts'),
     timeout: get('timeout'),
     customRootUri: customRootUri || undefined,
     customBitcoinNetwork: get('customBitcoinNetwork'),
