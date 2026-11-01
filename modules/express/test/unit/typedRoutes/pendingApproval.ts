@@ -321,6 +321,13 @@ describe('PendingApproval codec tests', function () {
       enterprise: 'enterprise123',
     };
 
+    const mockCanceledResponse = {
+      id: 'approval123',
+      state: 'canceled',
+      wallet: 'wallet123',
+      enterprise: 'enterprise123',
+    };
+
     afterEach(function () {
       sinon.restore();
     });
@@ -385,6 +392,32 @@ describe('PendingApproval codec tests', function () {
       assert.strictEqual(result.body.state, 'rejected');
       assert.strictEqual(result.body.wallet, mockRejectedResponse.wallet);
       assert.strictEqual(result.body.enterprise, mockRejectedResponse.enterprise);
+    });
+
+    it('should successfully cancel pending approval', async function () {
+      const approvalId = '123456789abcdef';
+      const requestBody = { state: 'canceled' };
+      const cancel = sinon.stub().resolves(mockCanceledResponse);
+
+      const mockPendingApprovalObject = {
+        approve: sinon.stub().resolves(mockApprovedResponse),
+        reject: sinon.stub().resolves(mockRejectedResponse),
+        cancel,
+      };
+
+      sinon.stub(BitGo.prototype, 'pendingApprovals').returns({
+        get: sinon.stub().resolves(mockPendingApprovalObject),
+      } as any);
+
+      const result = await agent
+        .put(`/api/v1/pendingapprovals/${approvalId}/express`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+      assert.strictEqual(result.body.state, 'canceled');
+      sinon.assert.calledOnce(cancel);
     });
 
     it('should successfully approve with otp', async function () {
