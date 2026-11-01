@@ -142,6 +142,18 @@ describe('Wallet - OFC', function () {
         result.should.deepEqual({ txid: 'test-txid', status: 'signed' });
       });
     });
+
+    describe('send', function () {
+      it('should send to a Go Account wallet ID without an address', async function () {
+        const sendManyStub = sinon.stub(wallet, 'sendMany').resolves({ txid: 'test-txid' });
+
+        await wallet.send({ walletId: 'destination-wallet-id', amount: '100' });
+
+        sendManyStub.calledOnce.should.be.true();
+        const callArgs = sendManyStub.firstCall.args[0]!;
+        callArgs.recipients!.should.deepEqual([{ walletId: 'destination-wallet-id', amount: '100' }]);
+      });
+    });
   });
 
   describe('with userKeySigningRequired: false (remote signing via BitGo key)', function () {
