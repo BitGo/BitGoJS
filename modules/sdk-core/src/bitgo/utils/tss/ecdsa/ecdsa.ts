@@ -837,6 +837,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
           wallet: this.wallet,
           walletType: this.wallet.multisigType(),
           intent: txRequest.intent as PopulatedIntent,
+          callerTxParams: params.txParams,
         });
       } else {
         await this.baseCoin.verifyTransaction({
@@ -845,6 +846,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
           wallet: this.wallet,
           walletType: this.wallet.multisigType(),
           intent: txRequest.intent as PopulatedIntent,
+          callerTxParams: params.txParams,
         });
       }
       signablePayload = Buffer.from(unsignedTx.signableHex, 'hex');

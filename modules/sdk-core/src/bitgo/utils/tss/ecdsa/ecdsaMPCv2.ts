@@ -996,6 +996,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
           wallet: this.wallet,
           walletType: this.wallet.multisigType(),
           intent: txRequest.intent as PopulatedIntent,
+          callerTxParams: params.txParams,
         });
         if (shouldVerifyWithSerializedTxHex(this.baseCoin) && isCoinWithSignableConsistency(this.baseCoin)) {
           this.baseCoin.assertSignableConsistency(unsignedTx.serializedTxHex, unsignedTx.signableHex);
@@ -1007,6 +1008,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
           wallet: this.wallet,
           walletType: this.wallet.multisigType(),
           intent: txRequest.intent as PopulatedIntent,
+          callerTxParams: params.txParams,
         });
       }
       txOrMessageToSign = unsignedTx.signableHex;

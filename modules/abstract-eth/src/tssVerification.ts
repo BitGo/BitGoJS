@@ -71,6 +71,8 @@ const UNSUPPORTED_EVM_INTENT_TYPES = new Set<EvmTssIntentType>(['contractCall', 
 const INTENT_TYPE_ALIASES: Record<string, string> = {
   payment: 'transfer',
   'transfer-token': 'transferToken',
+  // `Wallet.prebuildTransactionTxRequests` switches on the lowercase spelling for token sends.
+  transfertoken: 'transferToken',
   'token-approval': 'tokenApproval',
   'fill-nonce': 'fillNonce',
   'bridge-funds': 'bridgeFunds',
@@ -110,8 +112,14 @@ export interface EvmTssIntentContext {
   /** Canonical verifier intent type (after {@link canonicalizeEvmTssIntentType}). */
   intentType: string;
   recipients: EvmTssExpectedRecipient[];
-  /** Token name from the stored intent or txParams (token sends / tokenApproval). */
+  /** Token name declared by the caller (or, on the pending-approval path, the stored intent). */
   tokenName?: string;
+  /**
+   * Contract of the token the coin instance itself represents (e.g. `bitgo.coin('eth:usdc')`),
+   * undefined for base coins. Locally selected: it is the asset of any payment that declares no
+   * token of its own.
+   */
+  coinTokenContractAddress?: string;
   /** Wallet base address (`wallet.coinSpecific().baseAddress`). */
   baseAddress?: string;
   /** Network batcher contract from statics (`network.batcherContractAddress`). */
@@ -201,55 +209,168 @@ export function resolveTokenContractAddress(tokenName?: string): string | undefi
 }
 
 /**
- * Build the handler context from the caller txParams and the optional stored tx request
- * intent. Recipient precedence mirrors `resolveEffectiveTxParams`: explicit txParams
- * recipients win, intent recipients fill in, and intent-only token fields are merged.
+ * Contract of the token that `chain` itself represents (`bitgo.coin('eth:usdc')` is the USDC
+ * contract). Undefined for base coins and for native coins that merely expose an ERC-20
+ * interface (`isToken: false`). The coin instance is chosen locally, so it is a trusted source
+ * of asset identity for payments that name no token of their own.
+ */
+export function resolveCoinTokenContractAddress(chain?: string): string | undefined {
+  if (!chain) {
+    return undefined;
+  }
+  try {
+    const coin = coins.get(chain);
+    return coin instanceof ContractAddressDefinedToken && coin.isToken ? coin.contractAddress.toString() : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** The asset a payment moves, resolved only from locally declared identity. */
+type PaymentAsset = { kind: 'native' } | { kind: 'token'; contract: string } | { kind: 'unresolved'; reason: string };
+
+const EVM_ADDRESS = /^0x[0-9a-fA-F]{40}$/;
+
+/**
+ * Resolve the asset a payment is declared to move. Identity comes from the recipient's own
+ * `tokenAddress` / `tokenName`, the top-level `tokenName`, and the coin instance, and nothing
+ * else: the context never carries server-supplied token metadata when the caller declared its
+ * own intent. No declared identity at all means native. Identity that cannot be resolved to a
+ * contract, or that names two different contracts, is `unresolved`: the intended asset is
+ * unknown, so no calldata shape can be accepted for it.
+ */
+function resolveAsset(
+  ctx: EvmTssIntentContext,
+  declared: { tokenName?: string; tokenContractAddress?: string }
+): PaymentAsset {
+  const sources: { label: string; contract: string | undefined; native?: boolean }[] = [];
+  if (declared.tokenContractAddress !== undefined) {
+    sources.push({
+      label: `tokenAddress '${declared.tokenContractAddress}'`,
+      contract: EVM_ADDRESS.test(declared.tokenContractAddress) ? declared.tokenContractAddress : undefined,
+    });
+  }
+  for (const name of [declared.tokenName, ctx.tokenName]) {
+    if (!name) {
+      continue;
+    }
+    let staticsCoin;
+    try {
+      staticsCoin = coins.get(name);
+    } catch {
+      staticsCoin = undefined;
+    }
+    if (staticsCoin && !(staticsCoin instanceof ContractAddressDefinedToken && staticsCoin.isToken)) {
+      // The name of a native coin (`hteth`, or a native coin that merely exposes an ERC-20
+      // interface such as `celo`): the same identity as declaring no token at all.
+      sources.push({ label: `coin '${name}'`, contract: undefined, native: true });
+    } else {
+      sources.push({ label: `token '${name}'`, contract: resolveTokenContractAddress(name) });
+    }
+  }
+  if (ctx.coinTokenContractAddress) {
+    sources.push({ label: 'the coin token', contract: ctx.coinTokenContractAddress });
+  }
+  const tokenSources = sources.filter((source) => !source.native);
+  if (tokenSources.length === 0) {
+    return { kind: 'native' };
+  }
+  const missing = tokenSources.find((source) => source.contract === undefined);
+  if (missing) {
+    return {
+      kind: 'unresolved',
+      reason: `${missing.label} cannot be resolved to a token contract: the intended asset cannot be verified`,
+    };
+  }
+  const nativeSource = sources.find((source) => source.native);
+  if (nativeSource) {
+    return {
+      kind: 'unresolved',
+      reason: `${nativeSource.label} and ${tokenSources[0].label} name different assets: the intended asset is ambiguous`,
+    };
+  }
+  const [first, ...rest] = tokenSources as { label: string; contract: string }[];
+  const conflict = rest.find((source) => normalizeAddress(source.contract) !== normalizeAddress(first.contract));
+  if (conflict) {
+    return {
+      kind: 'unresolved',
+      reason: `${first.label} and ${conflict.label} name different token contracts: the intended asset is ambiguous`,
+    };
+  }
+  return { kind: 'token', contract: first.contract };
+}
+
+type CallerDeclarableParams = { type?: string; tokenName?: string; recipients?: ITransactionRecipient[] };
+
+/** True when the caller named a transaction type or recipients, i.e. declared its own intent. */
+export function callerDeclaresIntent(callerParams?: CallerDeclarableParams): boolean {
+  return !!(callerParams?.type || callerParams?.recipients?.length);
+}
+
+/**
+ * Decide which source speaks for the user intent. Exactly one does:
+ *
+ * - The caller declared a type or recipients: the caller's own params. The stored intent is
+ *   dropped entirely: it must not select the handler, add calldata, name the asset, or supply
+ *   consolidation / DeFi fields.
+ * - The caller declared nothing (signing a stored tx request, e.g. pending approval): the stored
+ *   intent, which `resolveEffectiveTxParams` has already folded into `txParams`.
+ *
+ * `txParams` alone cannot answer this: with a stored `intent` present, `type` and `recipients`
+ * have already been back-filled into it from server data. `callerTxParams` is the untouched
+ * caller input (`undefined` when the caller supplied none). Without a stored intent `txParams`
+ * is the caller input.
+ */
+export function selectDeclaredIntent<T extends CallerDeclarableParams>(params: {
+  txParams: T;
+  callerTxParams?: T;
+  intent?: PopulatedIntent;
+}): { callerParams?: T; storedIntent?: PopulatedIntent } {
+  // `callerTxParams` is authoritative whenever the signing path supplies it. Without it, a
+  // stored `intent` means the caller supplied nothing (pending approval), and without an intent
+  // `txParams` is the caller input (direct `verifyTransaction` callers).
+  const callerParams = params.callerTxParams ?? (params.intent ? undefined : params.txParams);
+  const storedIntent = params.intent && !callerDeclaresIntent(callerParams) ? params.intent : undefined;
+  return { callerParams, storedIntent };
+}
+
+/**
+ * Build the handler context from the source chosen by {@link selectDeclaredIntent}: the stored
+ * intent (via the effective `txParams`) when `storedIntent` is set, otherwise the caller's own
+ * params. Absent local `data` stays absent and local token identity is never replaced.
  */
 export function buildEvmTssIntentContext(params: {
   intentType: string;
-  txParams: { tokenName?: string; recipients?: ITransactionRecipient[] };
-  intent?: PopulatedIntent;
+  /** Effective params: back-filled from the stored intent when `storedIntent` is set. */
+  txParams: CallerDeclarableParams;
+  /** The caller's own declared params. */
+  callerParams?: CallerDeclarableParams;
+  /** Set only when the caller declared nothing and the stored intent speaks for the user. */
+  storedIntent?: PopulatedIntent;
+  coinTokenContractAddress?: string;
   baseAddress?: string;
   batcherAddress?: string;
 }): EvmTssIntentContext {
-  const { intent, txParams } = params;
-  const intentRecipients: EvmTssExpectedRecipient[] | undefined = intent?.recipients?.map((recipient) => ({
-    address: recipient.address.address,
-    amount: String(recipient.amount.value),
-    ...(recipient.data !== undefined && { data: recipient.data }),
-    ...(recipient.tokenData?.tokenName !== undefined && { tokenName: recipient.tokenData.tokenName }),
-    ...(recipient.tokenData?.tokenContractAddress !== undefined && {
-      tokenContractAddress: recipient.tokenData.tokenContractAddress,
-    }),
-  }));
-  const paramsRecipients: EvmTssExpectedRecipient[] | undefined = txParams.recipients?.map((recipient) => ({
-    address: recipient.address,
-    amount: String(recipient.amount),
-    ...(recipient.data !== undefined && { data: recipient.data }),
-    ...(recipient.tokenName !== undefined && { tokenName: recipient.tokenName }),
-    ...(recipient.tokenAddress !== undefined && { tokenContractAddress: recipient.tokenAddress }),
-  }));
+  const { storedIntent } = params;
+  const source = storedIntent ? params.txParams : params.callerParams;
 
-  const primary = paramsRecipients?.length ? paramsRecipients : intentRecipients ?? [];
-  const secondary = paramsRecipients?.length ? intentRecipients ?? [] : [];
-  const recipients = primary.map((recipient, i) => {
-    const extra = secondary[i];
-    if (!extra) {
-      return recipient;
-    }
+  const recipients: EvmTssExpectedRecipient[] = (source?.recipients ?? []).map((recipient, i) => {
+    const tokenContractAddress =
+      recipient.tokenAddress ?? storedIntent?.recipients?.[i]?.tokenData?.tokenContractAddress;
     return {
-      ...recipient,
-      ...(recipient.data === undefined && extra.data !== undefined && { data: extra.data }),
-      ...(recipient.tokenName === undefined && extra.tokenName !== undefined && { tokenName: extra.tokenName }),
-      ...(recipient.tokenContractAddress === undefined &&
-        extra.tokenContractAddress !== undefined && { tokenContractAddress: extra.tokenContractAddress }),
+      address: recipient.address,
+      amount: String(recipient.amount),
+      ...(recipient.data !== undefined && { data: recipient.data }),
+      ...(recipient.tokenName !== undefined && { tokenName: recipient.tokenName }),
+      ...(tokenContractAddress !== undefined && { tokenContractAddress }),
     };
   });
 
   return {
     intentType: params.intentType,
     recipients,
-    tokenName: intent?.tokenName ?? txParams.tokenName,
+    tokenName: source?.tokenName ?? storedIntent?.tokenName,
+    coinTokenContractAddress: params.coinTokenContractAddress,
     baseAddress: params.baseAddress,
     batcherAddress: params.batcherAddress,
   };
@@ -274,12 +395,6 @@ export function mapDefiParamsFromIntent(intent: PopulatedIntent): DefiIntentPara
     amount: String(amount),
     ...(intent.operationId !== undefined && { operationId: intent.operationId }),
   };
-}
-
-function tokenContractForRecipient(ctx: EvmTssIntentContext, recipient: EvmTssExpectedRecipient): string | undefined {
-  return (
-    recipient.tokenContractAddress ?? resolveTokenContractAddress(recipient.tokenName ?? ctx.tokenName) ?? undefined
-  );
 }
 
 /**
@@ -322,17 +437,6 @@ function verifyNativeSend(
   const warnings: TssVerificationWarning[] = [];
   const expected = { to: recipient.address, value: recipient.amount, data: '0x' };
   const decoded = { to: tx.to, value: tx.value, data: tx.data };
-  if (recipient.tokenName || recipient.tokenContractAddress) {
-    warnings.push(
-      violation(
-        ctx,
-        'token recipient cannot be verified against a native transfer: intent declares a token',
-        expected,
-        decoded
-      )
-    );
-    return warnings;
-  }
   if (normalizeAddress(tx.to) !== normalizeAddress(recipient.address)) {
     warnings.push(violation(ctx, 'destination address does not match with the recipient address', expected, decoded));
   }
@@ -353,23 +457,21 @@ function verifyNativeSend(
 function verifyTokenTransfer(
   ctx: EvmTssIntentContext,
   tx: DecodedEvmTx,
-  recipient: EvmTssExpectedRecipient
+  recipient: EvmTssExpectedRecipient,
+  tokenContract: string
 ): TssVerificationWarning[] {
   const warnings: TssVerificationWarning[] = [];
   const data = normalizeCalldata(tx.data);
   const selector = data.slice(0, 10);
   const decoded = { to: tx.to, value: tx.value, data: tx.data };
-  const expected = { to: recipient.tokenContractAddress, value: '0', data: recipient.data };
+  const expected = { to: tokenContract, value: '0', data: recipient.data };
 
   if (!valuesEqual(tx.value, '0')) {
     warnings.push(violation(ctx, 'token transfer must not carry native value', expected, decoded));
   }
 
-  const tokenContract = tokenContractForRecipient(ctx, recipient);
-  if (tokenContract && normalizeAddress(tx.to) !== normalizeAddress(tokenContract)) {
-    warnings.push(
-      violation(ctx, 'transaction to is not the intent token contract', { ...expected, to: tokenContract }, decoded)
-    );
+  if (normalizeAddress(tx.to) !== normalizeAddress(tokenContract)) {
+    warnings.push(violation(ctx, 'transaction to is not the intent token contract', expected, decoded));
   }
 
   if (selector === erc20TransferMethodId) {
@@ -480,6 +582,31 @@ function verifyBatch(ctx: EvmTssIntentContext, tx: DecodedEvmTx): TssVerificatio
       violation(ctx, 'batch transaction to does not match the network batcher contract', expected, decoded)
     );
   }
+  const assets = ctx.recipients.map((recipient) => resolveAsset(ctx, recipient));
+  const unresolvedAsset = assets.find((asset) => asset.kind === 'unresolved');
+  if (unresolvedAsset?.kind === 'unresolved') {
+    warnings.push(violation(ctx, `batch payment: ${unresolvedAsset.reason}`, expected, decoded));
+    return warnings;
+  }
+  const batchAsset = assets[0];
+  const mixedAssets = assets.some(
+    (asset) =>
+      asset.kind !== batchAsset.kind ||
+      (asset.kind === 'token' &&
+        batchAsset.kind === 'token' &&
+        normalizeAddress(asset.contract) !== normalizeAddress(batchAsset.contract))
+  );
+  if (mixedAssets) {
+    warnings.push(
+      violation(
+        ctx,
+        'batch payment recipients declare more than one asset: cannot verify one batch call',
+        expected,
+        decoded
+      )
+    );
+    return warnings;
+  }
 
   const compareRecipients = (
     recipients: { address: string; amount: string }[],
@@ -517,6 +644,17 @@ function verifyBatch(ctx: EvmTssIntentContext, tx: DecodedEvmTx): TssVerificatio
   };
 
   if (selector === batchMethodId) {
+    if (batchAsset.kind !== 'native') {
+      warnings.push(
+        violation(
+          ctx,
+          'token batch payment must use batchTransferFrom(address,address[],uint256[]), not native batch(address[],uint256[])',
+          expected,
+          decoded
+        )
+      );
+      return warnings;
+    }
     let batch: BatchTransferData;
     try {
       batch = decodeBatchTransferData(tx.data);
@@ -533,6 +671,17 @@ function verifyBatch(ctx: EvmTssIntentContext, tx: DecodedEvmTx): TssVerificatio
   }
 
   if (selector === batchTransferFromMethodId) {
+    if (batchAsset.kind !== 'token') {
+      warnings.push(
+        violation(
+          ctx,
+          'native batch payment must use batch(address[],uint256[]), not batchTransferFrom(address,address[],uint256[])',
+          expected,
+          decoded
+        )
+      );
+      return warnings;
+    }
     let batch: BatchTransferFromData;
     try {
       batch = decodeBatchTransferFromData(tx.data);
@@ -542,15 +691,12 @@ function verifyBatch(ctx: EvmTssIntentContext, tx: DecodedEvmTx): TssVerificatio
       );
       return warnings;
     }
-    const tokenContract = resolveTokenContractAddress(
-      ctx.recipients.find((r) => r.tokenName)?.tokenName ?? ctx.tokenName
-    );
-    if (tokenContract && normalizeAddress(batch.tokenContractAddress) !== normalizeAddress(tokenContract)) {
+    if (normalizeAddress(batch.tokenContractAddress) !== normalizeAddress(batchAsset.contract)) {
       warnings.push(
         violation(
           ctx,
           'batchTransferFrom token contract does not match the intent token contract',
-          { ...expected, to: tokenContract },
+          { ...expected, to: batchAsset.contract },
           { ...decoded, to: batch.tokenContractAddress }
         )
       );
@@ -590,25 +736,54 @@ function verifyPayment(ctx: EvmTssIntentContext, tx: DecodedEvmTx): TssVerificat
   if (recipient.data !== undefined) {
     return verifyExactCall(ctx, tx, recipient);
   }
-  if (isEmptyCalldata(tx.data)) {
-    return verifyNativeSend(ctx, tx, recipient);
+  const asset = resolveAsset(ctx, recipient);
+  if (asset.kind === 'unresolved') {
+    return [violation(ctx, `payment ${asset.reason}`, { to: recipient.address, value: recipient.amount }, decoded)];
   }
   const selector = normalizeCalldata(tx.data).slice(0, 10);
-  if (selector === erc20TransferMethodId) {
-    return verifyTokenTransfer(ctx, tx, recipient);
-  }
-  if (selector === confidentialTransferNoProofMethodId || selector === confidentialTransferWithProofMethodId) {
-    return verifyTokenTransfer(ctx, tx, recipient);
-  }
-  if (selector === batchMethodId || selector === batchTransferFromMethodId) {
-    return [
-      violation(
-        ctx,
-        'batch calldata cannot be verified against a single declared recipient',
-        { to: recipient.address, value: recipient.amount },
-        decoded
-      ),
-    ];
+  const isTokenShape =
+    selector === erc20TransferMethodId ||
+    selector === confidentialTransferNoProofMethodId ||
+    selector === confidentialTransferWithProofMethodId;
+  const isBatchShape = selector === batchMethodId || selector === batchTransferFromMethodId;
+  if (asset.kind === 'native') {
+    if (isEmptyCalldata(tx.data)) {
+      return verifyNativeSend(ctx, tx, recipient);
+    }
+    if (isTokenShape || isBatchShape) {
+      return [
+        violation(
+          ctx,
+          'payment intent declares a native asset but the transaction carries token or batch calldata',
+          { to: recipient.address, value: recipient.amount, data: '0x' },
+          decoded
+        ),
+      ];
+    }
+  } else {
+    if (isEmptyCalldata(tx.data)) {
+      return [
+        violation(
+          ctx,
+          'token payment intent but the transaction is a native send: expected ERC-20 transfer calldata',
+          { to: asset.contract, value: '0', data: undefined },
+          decoded
+        ),
+      ];
+    }
+    if (isTokenShape) {
+      return verifyTokenTransfer(ctx, tx, recipient, asset.contract);
+    }
+    if (isBatchShape) {
+      return [
+        violation(
+          ctx,
+          'batch calldata cannot be verified against a single declared recipient',
+          { to: recipient.address, value: recipient.amount },
+          decoded
+        ),
+      ];
+    }
   }
   // R5 — anything else (e.g. `approve(attacker, MAX)` disguised as a payment) is a violation.
   return [
@@ -622,7 +797,7 @@ function verifyPayment(ctx: EvmTssIntentContext, tx: DecodedEvmTx): TssVerificat
   ];
 }
 
-/** `transferToken` handler — same shape set as R3, exactly one token recipient. */
+/** `transferToken` handler — same shape set as R3, exactly one recipient, which must move a token. */
 function verifyTransferToken(ctx: EvmTssIntentContext, tx: DecodedEvmTx): TssVerificationWarning[] {
   const decoded = { to: tx.to, value: tx.value, data: tx.data };
   if (ctx.recipients.length !== 1) {
@@ -636,17 +811,33 @@ function verifyTransferToken(ctx: EvmTssIntentContext, tx: DecodedEvmTx): TssVer
     ];
   }
   const recipient = ctx.recipients[0];
-  if (isEmptyCalldata(tx.data)) {
+  const asset = resolveAsset(ctx, recipient);
+  if (asset.kind === 'unresolved') {
+    return [
+      violation(ctx, `transferToken ${asset.reason}`, { to: recipient.address, value: recipient.amount }, decoded),
+    ];
+  }
+  if (asset.kind === 'native') {
     return [
       violation(
         ctx,
-        'transferToken transaction must use ERC-20 transfer(address,uint256) calldata; expected token calldata, got an empty data payload',
+        'transferToken intent names no token: the intended asset cannot be verified',
         { to: recipient.address, value: recipient.amount },
         decoded
       ),
     ];
   }
-  return verifyTokenTransfer(ctx, tx, recipient);
+  if (isEmptyCalldata(tx.data)) {
+    return [
+      violation(
+        ctx,
+        'transferToken transaction must use ERC-20 transfer(address,uint256) calldata; expected token calldata, got an empty data payload',
+        { to: asset.contract, value: '0' },
+        decoded
+      ),
+    ];
+  }
+  return verifyTokenTransfer(ctx, tx, recipient, asset.contract);
 }
 
 /**
@@ -657,7 +848,8 @@ function verifyTransferToken(ctx: EvmTssIntentContext, tx: DecodedEvmTx): TssVer
 function verifyTokenApproval(ctx: EvmTssIntentContext, tx: DecodedEvmTx): TssVerificationWarning[] {
   const warnings: TssVerificationWarning[] = [];
   const decoded = { to: tx.to, value: tx.value, data: tx.data };
-  const tokenContract = resolveTokenContractAddress(ctx.tokenName);
+  const asset = resolveAsset(ctx, {});
+  const tokenContract = asset.kind === 'token' ? asset.contract : undefined;
   const expected = { to: tokenContract, value: '0', data: undefined };
 
   if (!valuesEqual(tx.value, '0')) {
@@ -667,9 +859,11 @@ function verifyTokenApproval(ctx: EvmTssIntentContext, tx: DecodedEvmTx): TssVer
     warnings.push(
       violation(
         ctx,
-        `tokenApproval intent names no token contract that can be resolved from statics ('${
-          ctx.tokenName ?? ''
-        }'); transaction to cannot be verified`,
+        asset.kind === 'unresolved'
+          ? `tokenApproval ${asset.reason}`
+          : `tokenApproval intent names no token contract that can be resolved from statics ('${
+              ctx.tokenName ?? ''
+            }'); transaction to cannot be verified`,
         expected,
         decoded
       )

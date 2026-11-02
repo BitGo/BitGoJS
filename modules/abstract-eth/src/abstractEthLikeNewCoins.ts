@@ -59,11 +59,14 @@ import {
 import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import {
   buildEvmTssIntentContext,
+  callerDeclaresIntent,
   canonicalizeEvmTssIntentType,
   DecodedEvmTx,
   evaluateEvmTssIntent,
   isUnsupportedEvmTssIntentType,
   mapDefiParamsFromIntent,
+  resolveCoinTokenContractAddress,
+  selectDeclaredIntent,
 } from './tssVerification';
 import { bip32 } from '@bitgo/secp256k1';
 import {
@@ -3580,6 +3583,15 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
   async verifyTssTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
     const ethNetwork = this.getNetwork();
     const { txParams, txPrebuild, wallet, intent } = params;
+    // Exactly one source speaks for the user intent: the caller's own params when it declared a
+    // type or recipients, otherwise the stored tx request intent (pending approval). The other
+    // source is dropped, so server data never selects the handler or fills in what the caller
+    // left out. See selectDeclaredIntent.
+    const { callerParams, storedIntent } = selectDeclaredIntent({
+      txParams,
+      callerTxParams: params.callerTxParams,
+      intent,
+    });
 
     // Helper to throw TxIntentMismatchRecipientError with recipient details
     const throwRecipientMismatch = async (message: string, mismatchedRecipients: Recipient[]): Promise<never> => {
@@ -3599,7 +3611,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       !(
         txParams.prebuildTx?.consolidateId ||
         txPrebuild?.consolidateId ||
-        intent?.consolidateId ||
+        storedIntent?.consolidateId ||
         txParams.stakingRequestId ||
         txParams.prebuildTx?.stakingRequestId ||
         (txParams.type && NO_RECIPIENT_TX_TYPES.has(txParams.type))
@@ -3615,13 +3627,21 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       throw new Error('tx cannot be both a batch and hop transaction');
     }
 
-    // Canonical verifier intent type. Caller-supplied txParams.type wins; on the
-    // pending-approval path resolveEffectiveTxParams stores the raw intent type in
-    // txParams.type, so the stored spelling (payment, defi-approve, …) is normalized here.
-    const explicitType =
-      canonicalizeEvmTssIntentType(txParams.type) || canonicalizeEvmTssIntentType(intent?.intentType);
-    const consolidateId =
-      txParams.prebuildTx?.consolidateId || txPrebuild?.consolidateId || intent?.consolidateId || undefined;
+    // Canonical verifier intent type, derived only from the source that speaks for the user.
+    // The caller's own `type` wins and is never defaulted from the stored intent: on a direct
+    // send `txParams.type` is the caller's alone, and a caller that declared recipients without a
+    // type is making a payment. Only when the caller declared nothing does the stored intent
+    // type apply: resolveEffectiveTxParams has already put the raw stored spelling (payment,
+    // defi-approve, …) in txParams.type, which is normalized here.
+    const explicitType = storedIntent
+      ? canonicalizeEvmTssIntentType(txParams.type) || canonicalizeEvmTssIntentType(storedIntent.intentType)
+      : canonicalizeEvmTssIntentType(callerParams?.type);
+    // A consolidation id on the prebuild or the stored intent is server data. It marks the tx as a
+    // consolidation only when the caller declared nothing of its own; it can never reroute a
+    // caller-declared payment to the consolidate handler.
+    const consolidateId = callerDeclaresIntent(callerParams)
+      ? undefined
+      : txParams.prebuildTx?.consolidateId || txPrebuild?.consolidateId || storedIntent?.consolidateId || undefined;
     const isConsolidation =
       !!params.verification?.consolidationToBaseAddress || explicitType === 'consolidate' || !!consolidateId;
     const canonicalType = explicitType || (isConsolidation ? 'consolidate' : 'transfer');
@@ -3706,7 +3726,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       }
 
       const baseAddress = wallet.coinSpecific()?.baseAddress;
-      const defiParams = txParams.defiParams ?? (intent ? mapDefiParamsFromIntent(intent) : undefined);
+      const defiParams = txParams.defiParams ?? (storedIntent ? mapDefiParamsFromIntent(storedIntent) : undefined);
       if (!baseAddress || !defiParams) {
         await throwRecipientMismatch('DeFi transaction is missing required intent parameters', []);
         return false;
@@ -3846,7 +3866,9 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     const ctx = buildEvmTssIntentContext({
       intentType: canonicalType,
       txParams,
-      intent,
+      callerParams,
+      storedIntent,
+      coinTokenContractAddress: resolveCoinTokenContractAddress(this.getChain()),
       baseAddress: typeof baseAddress === 'string' ? baseAddress : undefined,
       batcherAddress: ethNetwork?.batcherContractAddress,
     });

@@ -359,6 +359,18 @@ export interface VerifyTransactionOptions {
    * beyond the tx request itself, which is the object the user approved.
    */
   intent?: PopulatedIntent;
+  /**
+   * The `txParams` the caller of the signing API supplied, before `resolveEffectiveTxParams`
+   * back-filled `type` and `recipients` from the stored tx request intent. `undefined` when the
+   * caller supplied none (pending-approval signing of a stored tx request).
+   *
+   * `txParams` cannot answer "did the caller declare this?": the stored intent has already been
+   * merged into it. Verifiers that accept a stored `intent` use this to keep the caller's
+   * declared intent and the stored intent apart: a caller that declared `type` or `recipients`
+   * is the only source of truth, and the stored intent must not select the handler, add
+   * calldata, or name the asset.
+   */
+  callerTxParams?: TransactionParams;
 }
 
 export interface SupplementGenerateWalletOptions {
