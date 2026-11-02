@@ -15,13 +15,14 @@ import {
   EthereumNetwork,
 } from '@bitgo/statics';
 import {
+  classifyRecoveryKeys,
   BaseCoin,
   BaseTransaction,
   BitGoBase,
   common,
+  ErrorNoInputToRecover,
   FeeEstimateOptions,
   FullySignedTransaction,
-  getIsUnsignedSweep,
   InvalidAddressError,
   IWallet,
   KeyPair,
@@ -426,6 +427,35 @@ export class AvaxC extends AbstractEthLikeNewCoins {
   }
 
   /**
+   * Queries the wallet contract (via avax.network) for whether an address is one of its signers.
+   * Overridden because avax.network speaks JSON-RPC 2.0 rather than the Etherscan REST API the
+   * base class queries.
+   * @param {string} walletContractAddress - address of the wallet contract
+   * @param {string} signerAddress - address to test for membership
+   * @returns {Promise<boolean>} true if the address is a signer on the wallet contract
+   */
+  async queryIsWalletSigner(walletContractAddress: string, signerAddress: string, apiKey?: string): Promise<boolean> {
+    const signerData = optionalDeps.ethUtil.addHexPrefix(
+      this.getMethodCallData('isSigner', ['address'], [signerAddress]).toString('hex')
+    );
+    const result = await this.recoveryBlockchainExplorerQuery(
+      {
+        jsonrpc: '2.0',
+        method: 'eth_call',
+        params: [{ to: walletContractAddress, data: signerData }, 'latest'],
+        id: 1,
+      },
+      apiKey
+    );
+    if (!result || !result.result || optionalDeps.ethUtil.stripHexPrefix(result.result).length === 0) {
+      throw new RecoveryProviderError(
+        `Could not read the signer set of wallet contract ${walletContractAddress} from avax.network, got: ${result?.result}`
+      );
+    }
+    return optionalDeps.ethAbi.rawDecode(['bool'], optionalDeps.ethUtil.toBuffer(result.result))[0] === true;
+  }
+
+  /**
    * Queries the contract (via avax.network) for the next sequence ID
    * @param {string} address - address of the contract
    * @returns {Promise<number>} sequence ID
@@ -629,12 +659,9 @@ export class AvaxC extends AbstractEthLikeNewCoins {
       throw new Error('invalid recoveryDestination');
     }
 
-    // TODO (BG-56531): add support for krs
-    const isUnsignedSweep = getIsUnsignedSweep(params);
-
-    // Clean up whitespace from entered values
-    let userKey = params.userKey.replace(/\s/g, '');
-    const backupKey = params.backupKey.replace(/\s/g, '');
+    const recoveryKeys = classifyRecoveryKeys({ ...params, isUnsignedSweep: undefined });
+    const { backupKey, isUnsignedSweep } = recoveryKeys;
+    let userKey = recoveryKeys.userKey;
 
     // Set new tx fees (using default config values from platform)
     const gasLimit = new optionalDeps.ethUtil.BN(this.setGasLimit(params.gasLimit));
@@ -677,6 +704,13 @@ export class AvaxC extends AbstractEthLikeNewCoins {
       }
       backupKeyAddress = keyPair.getAddress();
     }
+    await this.assertRecoveryKeysAreWalletSigners(
+      userKey,
+      backupKeyAddress,
+      params.walletContractAddress,
+      params.apiKey
+    );
+
     const backupKeyNonce = await this.getAddressNonce(backupKeyAddress);
 
     // get balance of backupKey to ensure funds are available to pay fees
@@ -701,6 +735,12 @@ export class AvaxC extends AbstractEthLikeNewCoins {
     } else {
       // get balance of wallet and deduct fees to get transaction amount
       txAmount = await this.queryAddressBalance(params.walletContractAddress);
+    }
+
+    if (txAmount.lten(0)) {
+      throw new ErrorNoInputToRecover(
+        'There is no balance of this coin or token to recover in this wallet: ' + params.walletContractAddress
+      );
     }
 
     // build recipients object

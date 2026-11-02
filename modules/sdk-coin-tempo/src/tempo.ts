@@ -481,8 +481,8 @@ export class Tempo extends AbstractEthLikeNewCoins {
     params: RecoverOptions
   ): Promise<RecoveryInfo | OfflineVaultTxInfo | UnsignedSweepTxMPCv2> {
     this.validateRecoveryParams(params);
-    const userKey = params.userKey.replace(/\s/g, '');
-    const backupKey = params.backupKey.replace(/\s/g, '');
+    const userKey = (params.userKey ?? '').replace(/\s/g, '');
+    const backupKey = (params.backupKey ?? '').replace(/\s/g, '');
 
     if (getIsUnsignedSweep({ userKey, backupKey, isTss: params.isTss })) {
       return this.buildUnsignedSweepTxnTSS(params);
@@ -500,6 +500,7 @@ export class Tempo extends AbstractEthLikeNewCoins {
     const derivedCommonKeyChain = MPC.deriveUnhardened(commonKeyChain, 'm/0');
     const backupKeyPair = new KeyPair({ pub: derivedCommonKeyChain.slice(0, 66) });
     const baseAddress = backupKeyPair.getAddress();
+    this.assertTssBaseAddressMatchesWallet(baseAddress, params);
 
     const { tx: unsignedTx } = await this.buildTempoSweepTx(baseAddress, params);
     const serializedHex = await unsignedTx.serialize();
@@ -527,12 +528,20 @@ export class Tempo extends AbstractEthLikeNewCoins {
    * Called by recoverTSS when plain public key shares are provided.
    */
   protected async buildUnsignedSweepTxnTSS(params: RecoverOptions): Promise<OfflineVaultTxInfo | UnsignedSweepTxMPCv2> {
-    const backupKey = params.backupKey.replace(/\s/g, '');
+    const backupKey = this.getTssCommonKeychain(params);
+    if (!backupKey) {
+      throw new Error('missing commonKeyChain');
+    }
     const derivationPath = params.derivationSeed ? getDerivationPath(params.derivationSeed) : 'm/0';
     const MPC = new Ecdsa();
     const derivedCommonKeyChain = MPC.deriveUnhardened(backupKey, derivationPath);
     const backupKeyPair = new KeyPair({ pub: derivedCommonKeyChain.slice(0, 66) });
     const baseAddress = backupKeyPair.getAddress();
+    // Fail closed on a wrong keychain, as the base class does. A derivationSeed sweeps a
+    // pseudorandom child the caller cannot predict, so there is nothing to compare against.
+    if (!params.derivationSeed) {
+      this.assertTssBaseAddressMatchesWallet(baseAddress, params);
+    }
 
     const { tx, nonce, sweepAmount, gasMarginUnits } = await this.buildTempoSweepTx(baseAddress, params);
     const serializedHex = await tx.serialize();

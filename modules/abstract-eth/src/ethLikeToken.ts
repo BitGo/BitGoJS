@@ -7,12 +7,12 @@ import { bip32 } from '@bitgo/secp256k1';
 import { BigNumber } from 'bignumber.js';
 
 import {
+  classifyRecoveryKeys,
   BitGoBase,
   CoinConstructor,
   NamedCoinConstructor,
   ErrorNoInputToRecover,
   RecoveryProviderError,
-  getIsUnsignedSweep,
   Util,
 } from '@bitgo/sdk-core';
 import {
@@ -213,11 +213,9 @@ export class EthLikeToken extends AbstractEthLikeNewCoins {
       throw new Error('invalid recoveryDestination');
     }
 
-    const isUnsignedSweep = params.isUnsignedSweep ?? getIsUnsignedSweep(params);
-
-    // Clean up whitespace from entered values
-    let userKey = params.userKey.replace(/\s/g, '');
-    const backupKey = params.backupKey.replace(/\s/g, '');
+    const recoveryKeys = classifyRecoveryKeys(params);
+    const { backupKey, isUnsignedSweep } = recoveryKeys;
+    let userKey = recoveryKeys.userKey;
 
     const gasLimit = new optionalDeps.ethUtil.BN(this.setGasLimit(params.gasLimit));
     const gasPrice = params.eip1559

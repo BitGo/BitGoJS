@@ -78,6 +78,9 @@ export const HOT_WALLET_KEY_CARD_INFO = {
   BITGO_PUB_KEY:
     'xpub661MyMwAqRbcGeFRie579ey3NRwkdJ2zhEhCK3zhMMXYU3daWoMFFLQrVYmB5EqxPtaSCnEK9YYpb7FKoqkojD3BNtdmtFTYCwb7KywHpKF',
   WALLET_PASSPHRASE: '#Bondiola1234',
+  /** neutered BACKUP_KEY — derives the same root address but holds no private key */
+  BACKUP_PUB_KEY:
+    'xpub661MyMwAqRbcFpgyWjqWYK5bQLBY7Pf78wyzhsWWdKcXyYXDxpArLPQxLyUkvh3XAQ1FLJKHCrfHXjwbzGxk83pofKfzuzdjjYWEH1FoZhi',
 };
 
 export const COLD_WALLET_PUBLIC_KEY_INFO = {

@@ -2,6 +2,7 @@
  * @prettier
  */
 import {
+  classifyRecoveryKeys,
   AddressCoinSpecific,
   BitGoBase,
   BuildNftTransferDataOptions,
@@ -284,8 +285,12 @@ export type NonTSSRecoverOptions = {
 export type TSSRecoverOptions = RecoverOptionsWithBytes | NonTSSRecoverOptions;
 
 export type RecoverOptions = {
-  userKey: string;
-  backupKey: string;
+  /** [encrypted] xprv, xpub or TSS key share. Omitted by unsigned TSS sweeps which pass `bitgoKey` instead. */
+  userKey?: string;
+  /** [encrypted] xprv, xpub or TSS key share. Omitted by unsigned TSS sweeps which pass `bitgoKey` instead. */
+  backupKey?: string;
+  /** TSS common keychain, the only key an unsigned Safe sweep supplies */
+  bitgoKey?: string;
   walletPassphrase?: string;
   walletContractAddress: string; // use this as walletBaseAddress for TSS
   recoveryDestination: string;
@@ -1343,21 +1348,26 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
    * @returns {void}
    */
   validateRecoveryParams(params: RecoverOptions): void {
-    if (params.userKey === undefined) {
-      throw new Error('missing userKey');
-    }
+    // Unsigned TSS sweeps (Safe recovery) supply the common keychain as `bitgoKey` alone
+    const isBitgoKeyOnlyTss = params.isTss === true && !params.userKey && !params.backupKey && !!params.bitgoKey;
 
-    if (params.backupKey === undefined) {
-      throw new Error('missing backupKey');
-    }
+    if (!isBitgoKeyOnlyTss) {
+      if (params.userKey === undefined) {
+        throw new Error('missing userKey');
+      }
 
-    if (
-      !params.isUnsignedSweep &&
-      params.walletPassphrase === undefined &&
-      !params.userKey.startsWith('xpub') &&
-      !params.isTss
-    ) {
-      throw new Error('missing wallet passphrase');
+      if (params.backupKey === undefined) {
+        throw new Error('missing backupKey');
+      }
+
+      if (
+        !params.isUnsignedSweep &&
+        params.walletPassphrase === undefined &&
+        !params.userKey.startsWith('xpub') &&
+        !params.isTss
+      ) {
+        throw new Error('missing wallet passphrase');
+      }
     }
 
     if (params.walletContractAddress === undefined || !this.isValidAddress(params.walletContractAddress)) {
@@ -1506,6 +1516,9 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       }
     }
 
+    // NOTE: deliberately keyed on params.userKey only, not getTssCommonKeychain. Resolving the
+    // TSS fallback chain here would scan an extra derived address whenever a caller supplies
+    // backupKey without userKey, changing which addresses a consolidation sweeps.
     if (params.userKey) {
       try {
         const derivedAddress = this.deriveAddressFromPublicKey(params.userKey, index);
@@ -1545,6 +1558,15 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     const consolidatedTransactions: any[] = [];
     let lastScanIndex = startIdx;
 
+    // An unsigned TSS sweep builds from the m/0 address derived from the common keychain and
+    // never reads walletContractAddress, so the forwarder address was never the address being
+    // swept here. Pass the address actually swept, which is what the key mismatch check compares.
+    // Loop-invariant, and only for the unsigned shape: in the signed shape userKey/backupKey hold
+    // encrypted key shares, and deriving from that ciphertext would throw before the loop starts.
+    const isTssUnsignedSweep = params.isTss === true && classifyRecoveryKeys(params).isUnsignedSweep;
+    const tssCommonKeychain = isTssUnsignedSweep ? this.getTssCommonKeychain(params) : '';
+    const tssBaseAddress = tssCommonKeychain ? this.deriveAddressFromPublicKey(tssCommonKeychain, 0) : undefined;
+
     for (let i = startIdx; i < endIdx; i++) {
       const consolidationAddress = this.getConsolidationAddress(params, i);
       for (const address of consolidationAddress) {
@@ -1554,7 +1576,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
           gasLimit: params.gasLimit,
           recoveryDestination: params.recoveryDestination || '',
           userKey: params.userKey || '',
-          walletContractAddress: address,
+          walletContractAddress: tssBaseAddress ?? address,
           derivationSeed: '',
           isTss: params.isTss,
           eip1559: {
@@ -1565,7 +1587,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
             chain: params.replayProtectionOptions?.chain || 0,
             hardfork: params.replayProtectionOptions?.hardfork || 'london',
           },
-          bitgoKey: '',
+          bitgoKey: params.bitgoKey || '',
           ignoreAddressTypes: [],
         };
         let recoveryTransaction;
@@ -1620,11 +1642,9 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     }
 
     this.validateRecoveryParams(params);
-    const isUnsignedSweep = params.isUnsignedSweep ?? getIsUnsignedSweep(params);
-
-    // Clean up whitespace from entered values
-    let userKey = params.userKey.replace(/\s/g, '');
-    const backupKey = params.backupKey.replace(/\s/g, '');
+    const recoveryKeys = classifyRecoveryKeys(params);
+    const { backupKey, isUnsignedSweep } = recoveryKeys;
+    let userKey = recoveryKeys.userKey;
     const gasLimit = new optionalDeps.ethUtil.BN(this.setGasLimit(params.gasLimit));
     const gasPrice = params.eip1559
       ? new optionalDeps.ethUtil.BN(params.eip1559.maxFeePerGas)
@@ -1898,7 +1918,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     this.validateEvmBasedRecoveryParams(params);
 
     // Clean up whitespace from entered values
-    const userKey = params.userKey.replace(/\s/g, '');
+    const userKey = (params.userKey ?? '').replace(/\s/g, '');
     const bitgoFeeAddress = params.bitgoFeeAddress?.replace(/\s/g, '').toLowerCase() as string;
     const bitgoDestinationAddress = params.bitgoDestinationAddress?.replace(/\s/g, '').toLowerCase() as string;
     const recoveryDestination = params.recoveryDestination?.replace(/\s/g, '').toLowerCase() as string;
@@ -2396,8 +2416,8 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
   ): Promise<RecoveryInfo | OfflineVaultTxInfo | UnsignedSweepTxMPCv2> {
     this.validateRecoveryParams(params);
     // Clean up whitespace from entered values
-    const userPublicOrPrivateKeyShare = params.userKey.replace(/\s/g, '');
-    const backupPrivateOrPublicKeyShare = params.backupKey.replace(/\s/g, '');
+    const userPublicOrPrivateKeyShare = (params.userKey ?? '').replace(/\s/g, '');
+    const backupPrivateOrPublicKeyShare = (params.backupKey ?? '').replace(/\s/g, '');
 
     if (
       getIsUnsignedSweep({
@@ -2421,11 +2441,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       const derivedCommonKeyChain = MPC.deriveUnhardened(commonKeyChain, 'm/0');
       const backupKeyPair = new KeyPairLib({ pub: derivedCommonKeyChain.slice(0, 66) });
       const baseAddress = backupKeyPair.getAddress();
-      if (baseAddress.toLowerCase() !== params.walletContractAddress.toLowerCase()) {
-        throw new RecoveryKeyMismatchError(
-          `derived wallet base address ${baseAddress} does not match the given wallet contract address ${params.walletContractAddress}`
-        );
-      }
+      this.assertTssBaseAddressMatchesWallet(baseAddress, params);
       const unsignedTx = (await this.buildTssRecoveryTxn(baseAddress, gasPrice, gasLimit, params)).tx;
       const messageHash = unsignedTx.getMessageToSign(true);
       const signature = await ECDSAUtils.signRecoveryMpcV2(messageHash, userKeyShare, backupKeyShare, commonKeyChain);
@@ -2447,20 +2463,56 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     return { gasLimit, gasPrice };
   }
 
+  /**
+   * Resolves the TSS common keychain for a recovery. Legacy callers put it in `backupKey` (and
+   * `userKey`); Safe unsigned sweeps supply it as `bitgoKey` alone.
+   * @param {RecoverOptions} params
+   * @returns {string} the common keychain, stripped of whitespace
+   */
+  protected getTssCommonKeychain(params: { userKey?: string; backupKey?: string; bitgoKey?: string }): string {
+    return (params.backupKey || params.userKey || params.bitgoKey || '').replace(/\s/g, '');
+  }
+
+  /**
+   * Fails closed when the address derived from the TSS common keychain is not the wallet being
+   * recovered, before any balance or fee query is made.
+   * @param {string} baseAddress - address derived from the common keychain
+   * @param {RecoverOptions} params
+   */
+  protected assertTssBaseAddressMatchesWallet(baseAddress: string, params: RecoverOptions): void {
+    // This guard is the check itself: without an address to compare against there is nothing
+    // stopping a wrong keychain, so refuse rather than skip.
+    if (!params.walletContractAddress) {
+      throw new Error('invalid walletContractAddress');
+    }
+    if (baseAddress.toLowerCase() !== params.walletContractAddress.toLowerCase()) {
+      throw new RecoveryKeyMismatchError(
+        `derived wallet base address ${baseAddress} does not match the given wallet contract address ${params.walletContractAddress}`
+      );
+    }
+  }
+
   protected async buildUnsignedSweepTxnTSS(params: RecoverOptions): Promise<OfflineVaultTxInfo | UnsignedSweepTxMPCv2> {
-    const userPublicOrPrivateKeyShare = params.userKey.replace(/\s/g, '');
-    const backupPrivateOrPublicKeyShare = params.backupKey.replace(/\s/g, '');
+    // MPCv2 coins derive the base address from the common keychain. Not every MPCv2 coin overrides
+    // this method, so dispatch on the coin feature here rather than relying on each subclass.
+    if (this.staticsCoin?.features.includes(CoinFeature.MPCV2)) {
+      return this.buildUnsignedSweepTxnMPCv2(params);
+    }
+
+    const commonKeyChain = this.getTssCommonKeychain(params);
+    const userPublicOrPrivateKeyShare = (params.userKey ?? '').replace(/\s/g, '') || commonKeyChain;
 
     const { gasLimit, gasPrice } = await this.getGasValues(params);
 
-    const backupKeyPair = new KeyPairLib({ pub: backupPrivateOrPublicKeyShare });
+    const backupKeyPair = new KeyPairLib({ pub: commonKeyChain });
     const baseAddress = backupKeyPair.getAddress();
+    this.assertTssBaseAddressMatchesWallet(baseAddress, params);
     const { txInfo, tx, nonce } = await this.buildTssRecoveryTxn(baseAddress, gasPrice, gasLimit, params);
     return this.formatForOfflineVaultTSS(
       txInfo,
       tx,
       userPublicOrPrivateKeyShare,
-      backupPrivateOrPublicKeyShare,
+      commonKeyChain,
       gasPrice,
       gasLimit,
       nonce,
@@ -2473,13 +2525,20 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     const { gasLimit, gasPrice } = await this.getGasValues(params);
 
     const recoverParams = params as RecoverOptions;
-    this.validateUnsignedSweepTSSParams(recoverParams);
+    await this.validateUnsignedSweepTSSParams(recoverParams);
 
+    const commonKeyChain = this.getTssCommonKeychain(recoverParams);
     const derivationPath = recoverParams.derivationSeed ? getDerivationPath(recoverParams.derivationSeed) : 'm/0';
     const MPC = new Ecdsa();
-    const derivedCommonKeyChain = MPC.deriveUnhardened(recoverParams.backupKey as string, derivationPath);
+    const derivedCommonKeyChain = MPC.deriveUnhardened(commonKeyChain, derivationPath);
     const backupKeyPair = new KeyPairLib({ pub: derivedCommonKeyChain.slice(0, 66) });
     const baseAddress = backupKeyPair.getAddress();
+    // Only the m/0 base address is one the caller can know in advance and pass as
+    // walletContractAddress. A derivationSeed deliberately sweeps a pseudorandom child
+    // (m/999999/x/y), so there is nothing meaningful to compare it against.
+    if (!recoverParams.derivationSeed) {
+      this.assertTssBaseAddressMatchesWallet(baseAddress, params);
+    }
     const { txInfo, tx, nonce } = await this.buildTssRecoveryTxn(baseAddress, gasPrice, gasLimit, params);
     return this.buildTxRequestForOfflineVaultMPCv2(
       txInfo,
@@ -2490,7 +2549,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       gasLimit,
       params.eip1559,
       params.replayProtectionOptions,
-      recoverParams.backupKey as string
+      commonKeyChain
     );
   }
 
@@ -2562,7 +2621,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
    * @returns {void}
    */
   private async validateUnsignedSweepTSSParams(params: RecoverOptions): Promise<void> {
-    if (_.isUndefined(params.backupKey) && params.backupKey === '') {
+    if (this.getTssCommonKeychain(params) === '') {
       throw new Error('missing commonKeyChain');
     }
     if (!_.isUndefined(params.derivationSeed) && typeof params.derivationSeed !== 'string') {

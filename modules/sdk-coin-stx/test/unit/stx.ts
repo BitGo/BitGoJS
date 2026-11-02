@@ -761,11 +761,12 @@ describe('STX:', function () {
         .reply(200, testData.FEE_ESTIMATION_RESPONSE);
 
       const recoveryOptions: RecoveryOptions = {
-        backupKey: testData.COLD_WALLET_PUBLIC_KEY_INFO.BACKUP_KEY,
-        userKey: resources.xprv1,
+        backupKey: testData.HOT_WALLET_KEY_CARD_INFO.BACKUP_PUB_KEY,
+        userKey: testData.HOT_WALLET_KEY_CARD_INFO.USER_KEY,
         rootAddress: rootAddress,
         recoveryDestination: testData.DESTINATION_ADDRESS_WRW,
         bitgoKey: testData.HOT_WALLET_KEY_CARD_INFO.BITGO_PUB_KEY,
+        walletPassphrase: testData.HOT_WALLET_KEY_CARD_INFO.WALLET_PASSPHRASE,
       };
       await basecoin.recover(recoveryOptions).should.be.rejectedWith('backupKey is not a private key');
     });

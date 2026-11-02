@@ -3509,7 +3509,7 @@ describe('ETH:', function () {
           recoveryDestination: params.recoveryDestination, // Destination Address
           gasLimit: 200000, // Gas Limit
           eip1559: { maxFeePerGas: 20000000000, maxPriorityFeePerGas: 10000000000 }, // Max Fee Per Gas and Max Priority Fee Per Gas
-          walletContractAddress: params.walletContractAddress,
+          walletContractAddress: params.address, // base address derived at m/0 from the common keychain
           isTss: true,
           replayProtectionOptions: {
             chain: '42',

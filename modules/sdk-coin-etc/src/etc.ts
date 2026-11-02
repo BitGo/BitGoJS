@@ -12,11 +12,11 @@ import {
   SignTransactionOptions,
 } from '@bitgo/abstract-eth';
 import {
+  classifyRecoveryKeys,
   BaseCoin,
   BitGoBase,
   ErrorNoInputToRecover,
   common,
-  getIsUnsignedSweep,
   Util,
   Recipient,
   RecoveryProviderError,
@@ -79,11 +79,10 @@ export class Etc extends AbstractEthLikeCoin {
    */
   async recover(params: RecoverOptions): Promise<RecoveryInfo | OfflineVaultTxInfo> {
     this.validateRecoveryParams(params);
-    const isUnsignedSweep = getIsUnsignedSweep(params);
 
-    // Clean up whitespace from entered values
-    let userKey = params.userKey.replace(/\s/g, '');
-    const backupKey = params.backupKey.replace(/\s/g, '');
+    const recoveryKeys = classifyRecoveryKeys({ ...params, isUnsignedSweep: undefined });
+    const { backupKey, isUnsignedSweep } = recoveryKeys;
+    let userKey = recoveryKeys.userKey;
     const gasLimit = new optionalDeps.ethUtil.BN(this.setGasLimit(params.gasLimit));
     const gasPrice = params.eip1559
       ? new optionalDeps.ethUtil.BN(params.eip1559.maxFeePerGas)

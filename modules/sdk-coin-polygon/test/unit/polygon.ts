@@ -1283,7 +1283,7 @@ describe('Polygon', function () {
         recoveryDestination: params.recoveryDestination,
         gasLimit: 200000,
         eip1559: { maxFeePerGas: 20000000000, maxPriorityFeePerGas: 10000000000 },
-        walletContractAddress: params.walletContractAddress,
+        walletContractAddress: params.address, // base address derived at m/0 from the common keychain
         isTss: true,
         replayProtectionOptions: {
           chain: '137',

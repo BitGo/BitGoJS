@@ -9,4 +9,6 @@ export const groupProposalMsgTypeUrl = '/cosmos.group.v1.MsgSubmitProposal';
 export const groupVoteMsgTypeUrl = '/cosmos.group.v1.MsgVote';
 export const UNAVAILABLE_TEXT = 'UNAVAILABLE';
 export const ROOT_PATH = 'm/0';
+/** length in hex characters of a compressed secp256k1 public key */
+export const COMPRESSED_PUBLIC_KEY_LENGTH = 66;
 export const sendMsgType = '/types.MsgSend'; // thorchain uses this custom message type

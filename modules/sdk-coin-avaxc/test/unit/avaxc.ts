@@ -1074,9 +1074,23 @@ describe('Avalanche C-Chain', function () {
     // contract address for 'tavaxc:link'
     const tokenContractAddress = '0x0b9d5d9136855f6fec3c0993fee6e9ce8a297846';
     const sequenceIdData = '0xa0b7967b';
+    const isSignerSelector = optionalDeps.ethUtil.addHexPrefix(
+      optionalDeps.ethAbi.methodID('isSigner', ['address']).toString('hex')
+    );
     const sandBox = sinon.createSandbox();
     beforeEach(function () {
       const callBack = sandBox.stub(AvaxC.prototype, 'recoveryBlockchainExplorerQuery' as keyof AvaxC);
+      // every recovery first checks that the user and backup keys are signers on the wallet contract
+      callBack
+        .withArgs(
+          sinon.match(
+            (query) =>
+              query?.method === 'eth_call' &&
+              typeof query?.params?.[0]?.data === 'string' &&
+              query.params[0].data.startsWith(isSignerSelector)
+          )
+        )
+        .resolves(endpointResponses.isSignerResponse);
       callBack
         .withArgs({
           jsonrpc: '2.0',
@@ -1116,7 +1130,7 @@ describe('Avalanche C-Chain', function () {
           params: ['0xe0b1fe098050f2745b450de419b5cafc7e826699', 'latest'],
           id: 1,
         })
-        .resolves({ jsonrpc: '2.0', id: 1, result: '0x0' });
+        .resolves({ jsonrpc: '2.0', id: 1, result: '0x9c450d592ee800' });
       callBack
         .withArgs({
           jsonrpc: '2.0',

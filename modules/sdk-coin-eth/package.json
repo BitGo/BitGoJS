@@ -56,7 +56,9 @@
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^3.1.6",
+    "@bitgo/sdk-lib-mpc": "^11.6.0",
     "@bitgo/sdk-test": "^9.1.91",
+    "@ethereumjs/common": "^2.6.5",
     "bn.js": "^5.2.1",
     "tweetnacl": "^1.0.3"
   },

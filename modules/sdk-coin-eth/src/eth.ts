@@ -5,14 +5,13 @@ import { bip32 } from '@bitgo/secp256k1';
 import _ from 'lodash';
 import request from 'superagent';
 import {
+  classifyRecoveryKeys,
   BaseCoin,
   BitGoBase,
   checkKrsProvider,
   common,
   ErrorNoInputToRecover,
   FullySignedTransaction,
-  getIsKrsRecovery,
-  getIsUnsignedSweep,
   HalfSignedTransaction,
   MPCAlgorithm,
   MultisigType,
@@ -205,16 +204,14 @@ export class Eth extends AbstractEthLikeNewCoins {
     }
 
     this.validateRecoveryParams(params);
-    const isKrsRecovery = getIsKrsRecovery(params);
-    const isUnsignedSweep = params.isUnsignedSweep ?? getIsUnsignedSweep(params);
+
+    const recoveryKeys = classifyRecoveryKeys(params);
+    const { backupKey, isKrsRecovery, isUnsignedSweep } = recoveryKeys;
+    let userKey = recoveryKeys.userKey;
 
     if (isKrsRecovery) {
       checkKrsProvider(this, params.krsProvider, { checkCoinFamilySupport: false });
     }
-
-    // Clean up whitespace from entered values
-    let userKey = params.userKey.replace(/\s/g, '');
-    const backupKey = params.backupKey.replace(/\s/g, '');
 
     // Set new eth tx fees (using default config values from platform)
 
