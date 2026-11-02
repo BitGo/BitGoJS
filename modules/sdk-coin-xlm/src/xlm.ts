@@ -127,25 +127,70 @@ interface TransactionMemo {
   type?: string;
 }
 
+/**
+ * A signer added, re-weighted or (weight 0) removed by a setOptions operation.
+ * ed25519PublicKey and ed25519SignedPayload keys are strkeys; sha256Hash and preAuthTx keys are hex.
+ */
+interface TransactionSigner {
+  type: 'ed25519PublicKey' | 'sha256Hash' | 'preAuthTx' | 'ed25519SignedPayload';
+  key: string;
+  weight?: number;
+}
+
 interface TransactionOperation {
+  // 'unsupported' marks an operation explain does not model, so it is never silently absent from the result
   type: string;
   coin: string;
+  // set only when the operation names its own source account, i.e. it runs against an account other than the tx source
+  source?: string;
   limit?: string;
   asset?: stellar.Asset;
-  // accountConfig (setOptions) operation fields
+  // unsupported operation field: the stellar operation type that was not modelled
+  operationType?: string;
+  // accountConfig (setOptions) operation fields; each is undefined when the operation does not set it
   setFlags?: number;
   clearFlags?: number;
+  masterWeight?: number;
   lowThreshold?: number;
+  medThreshold?: number;
+  highThreshold?: number;
+  homeDomain?: string;
+  inflationDest?: string;
+  signer?: TransactionSigner;
   // authorizeTrustline (setTrustLineFlags) operation fields
   trustor?: string;
+  // Each trustline flag is true when the operation sets it, false when it clears it, and undefined when the
+  // operation does not touch it. undefined is therefore never a revoke, and an operation can deauthorize a
+  // trustline through authorizedToMaintainLiabilities or authorized, so consumers must read all three flags.
   authorized?: boolean;
+  authorizedToMaintainLiabilities?: boolean;
+  clawbackEnabled?: boolean;
   // clawback operation fields
   from?: string;
   amount?: string;
+  // clawback asset, so consumers need not parse the coin name to label the amount
+  assetCode?: string;
+  assetIssuer?: string;
+}
+
+function describeSigner(signer: stellar.Signer): TransactionSigner {
+  const weight = signer.weight === undefined ? undefined : Number(signer.weight);
+  if ('ed25519PublicKey' in signer) {
+    return { type: 'ed25519PublicKey', key: signer.ed25519PublicKey, weight };
+  }
+  if ('sha256Hash' in signer) {
+    return { type: 'sha256Hash', key: signer.sha256Hash.toString('hex'), weight };
+  }
+  if ('preAuthTx' in signer) {
+    return { type: 'preAuthTx', key: signer.preAuthTx.toString('hex'), weight };
+  }
+  return { type: 'ed25519SignedPayload', key: signer.ed25519SignedPayload, weight };
 }
 
 interface TransactionOutput extends BaseTransactionOutput {
   coin: string;
+  // set only when the operation names its own source account, i.e. it runs against an account other than the tx source
+  source?: string;
 }
 
 interface TransactionExplanation extends BaseTransactionExplanation {
@@ -1052,6 +1097,7 @@ export class Xlm extends BaseCoin {
           ),
           address: op.destination + memoId,
           coin,
+          source: op.source,
         };
 
         if (!_.isUndefined(spendAmounts[coin])) {
@@ -1072,6 +1118,7 @@ export class Xlm extends BaseCoin {
         operations.push({
           type: op.type,
           coin: this.getTokenNameFromStellarAsset(asset),
+          source: op.source,
           asset,
           limit: this.bigUnitsToBaseUnits(op.limit),
         });
@@ -1080,26 +1127,41 @@ export class Xlm extends BaseCoin {
         operations.push({
           type: 'accountConfig',
           coin: this.getChain(),
+          source: op.source,
           setFlags: setOptionsOp.setFlags,
           clearFlags: setOptionsOp.clearFlags,
+          masterWeight: setOptionsOp.masterWeight,
           lowThreshold: setOptionsOp.lowThreshold,
+          medThreshold: setOptionsOp.medThreshold,
+          highThreshold: setOptionsOp.highThreshold,
+          homeDomain: setOptionsOp.homeDomain,
+          inflationDest: setOptionsOp.inflationDest,
+          signer: setOptionsOp.signer ? describeSigner(setOptionsOp.signer) : undefined,
         });
       } else if (op.type === 'setTrustLineFlags') {
         const setTrustLineFlagsOp = op as stellar.Operation.SetTrustLineFlags;
         operations.push({
           type: 'authorizeTrustline',
           coin: this.getTokenNameFromStellarAsset(setTrustLineFlagsOp.asset),
+          source: op.source,
           trustor: setTrustLineFlagsOp.trustor,
           authorized: setTrustLineFlagsOp.flags?.authorized,
+          authorizedToMaintainLiabilities: setTrustLineFlagsOp.flags?.authorizedToMaintainLiabilities,
+          clawbackEnabled: setTrustLineFlagsOp.flags?.clawbackEnabled,
         });
       } else if (op.type === 'clawback') {
         const clawbackOp = op as stellar.Operation.Clawback;
         operations.push({
           type: 'clawback',
           coin: this.getTokenNameFromStellarAsset(clawbackOp.asset),
+          source: op.source,
           from: clawbackOp.from,
           amount: this.bigUnitsToBaseUnits(clawbackOp.amount),
+          assetCode: clawbackOp.asset.code,
+          assetIssuer: clawbackOp.asset.issuer,
         });
+      } else {
+        operations.push({ type: 'unsupported', coin: this.getChain(), operationType: op.type, source: op.source });
       }
     });
 
