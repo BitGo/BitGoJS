@@ -4643,6 +4643,13 @@ describe('V2 Wallet:', function () {
       });
     });
 
+    const exampleAttestation = {
+      signature: 'sig',
+      credentialId: 'cred',
+      clientDataJSON: 'cdj',
+      authenticatorData: 'ad',
+    };
+
     describe('getUserKeyAndSignTssTransaction', function () {
       ['eddsa', 'ecdsa'].forEach((keyCurve: string) => {
         describe(keyCurve, () => {
@@ -4681,6 +4688,29 @@ describe('V2 Wallet:', function () {
 
             getKeysStub.calledOnce.should.be.true();
             signTransactionStub.calledOnce.should.be.true();
+            signTransactionStub.firstCall.args[0].should.not.have.property('attestation');
+          });
+
+          it('should forward the attestation to signTransaction', async function () {
+            getKeysStub.resolves([
+              {
+                commonKeychain: 'test',
+                id: '',
+                pub: '',
+                type: 'tss',
+                encryptedPrv:
+                  '{"iv":"15FsbDVI1zG9OggD8YX+Hg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"hHbNH3Sz/aU=","ct":"WoNVKz7afiRxXI2w/YkzMdMyoQg/B15u1Q8aQgi96jJZ9wk6TIaSEc6bXFH3AHzD9MdJCWJQUpRhoQc/rgytcn69scPTjKeeyVMElGCxZdFVS/psQcNE+lue3//2Zlxj+6t1NkvYO+8yAezSMRBK5OdftXEjNQI="}',
+              },
+            ]);
+
+            await wallet.getUserKeyAndSignTssTransaction({
+              walletPassphrase: TestBitGo.V2.TEST_ETH_WALLET_PASSPHRASE as string,
+              txRequestId: 'id',
+              attestation: exampleAttestation,
+            });
+
+            signTransactionStub.calledOnce.should.be.true();
+            signTransactionStub.firstCall.args[0].should.have.property('attestation', exampleAttestation);
           });
 
           it('should throw if the keychain doesnt have the encryptedKey', async function () {
@@ -4769,6 +4799,49 @@ describe('V2 Wallet:', function () {
         sandbox.assert.calledOnce(deleteSignatureSharesSpy);
         sandbox.assert.calledOnce(getUserKeyAndSignTssTxSpy);
         signedTx.should.deepEqual(exampleSignedTx);
+      });
+
+      it('should forward the attestation to first-round signing only, not the lite submit', async function () {
+        const deleteSignatureSharesSpy = sandbox.stub(TssUtils.prototype, 'deleteSignatureShares');
+        const getUserKeyAndSignTssTxSpy = sandbox.stub(tssSolWallet, 'getUserKeyAndSignTssTransaction');
+        getUserKeyAndSignTssTxSpy.resolves(exampleSignedTx);
+        const submitTxSpy = sandbox.stub(tssSolWallet, 'submitTransaction');
+        submitTxSpy.resolves(exampleSignedTx);
+
+        await tssSolWallet.signAndSendTxRequest({
+          walletPassphrase: 'passphrase',
+          txRequestId: 'id',
+          isTxRequestFull: false,
+          attestation: exampleAttestation,
+        });
+
+        sandbox.assert.callOrder(deleteSignatureSharesSpy, getUserKeyAndSignTssTxSpy, submitTxSpy);
+        sandbox.assert.calledOnce(getUserKeyAndSignTssTxSpy);
+        sandbox.assert.calledWithExactly(getUserKeyAndSignTssTxSpy, {
+          walletPassphrase: 'passphrase',
+          txRequestId: 'id',
+          attestation: exampleAttestation,
+        });
+        sandbox.assert.calledOnce(submitTxSpy);
+        sandbox.assert.calledWithExactly(submitTxSpy, { txRequestId: 'id' });
+      });
+
+      it('should not send an attestation key when none is provided', async function () {
+        sandbox.stub(TssUtils.prototype, 'deleteSignatureShares');
+        const getUserKeyAndSignTssTxSpy = sandbox.stub(tssSolWallet, 'getUserKeyAndSignTssTransaction');
+        getUserKeyAndSignTssTxSpy.resolves(exampleSignedTx);
+
+        await tssSolWallet.signAndSendTxRequest({
+          walletPassphrase: 'passphrase',
+          txRequestId: 'id',
+          isTxRequestFull: true,
+        });
+
+        sandbox.assert.calledOnce(getUserKeyAndSignTssTxSpy);
+        sandbox.assert.calledWithExactly(getUserKeyAndSignTssTxSpy, {
+          walletPassphrase: 'passphrase',
+          txRequestId: 'id',
+        });
       });
     });
 
