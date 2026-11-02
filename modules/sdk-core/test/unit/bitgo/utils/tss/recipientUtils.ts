@@ -169,6 +169,44 @@ describe('recipientUtils', function () {
       });
     });
 
+    describe('tx-level memo propagation', function () {
+      it('derives memo from the intent when txParams is undefined (pendingApproval re-sign path)', function () {
+        const txRequest = makeTxRequest({
+          intent: {
+            intentType: 'payment',
+            recipients: [{ address: { address: 'cosmos1abc' }, amount: { value: '100', symbol: 'atom' } }],
+            memo: '153',
+          } as PopulatedIntent,
+        });
+        const result = resolveEffectiveTxParams(txRequest, undefined);
+        assert.deepStrictEqual(result.memo, { value: '153', type: 'text' });
+      });
+      it('does not overwrite memo supplied by the caller', function () {
+        const txRequest = makeTxRequest({
+          intent: {
+            intentType: 'payment',
+            recipients: [{ address: { address: 'cosmos1abc' }, amount: { value: '100', symbol: 'atom' } }],
+            memo: '153',
+          } as PopulatedIntent,
+        });
+        const result = resolveEffectiveTxParams(txRequest, { memo: { value: '999', type: 'id' } });
+        assert.deepStrictEqual(result.memo, { value: '999', type: 'id' });
+      });
+
+      it('does not derive memo when the intent has none or an empty one', function () {
+        const recipient = { address: { address: 'cosmos1abc' }, amount: { value: '100', symbol: 'atom' } };
+        const noMemo = makeTxRequest({
+          intent: { intentType: 'payment', recipients: [recipient] } as PopulatedIntent,
+        });
+        assert.strictEqual(resolveEffectiveTxParams(noMemo, undefined).memo, undefined);
+
+        const emptyMemo = makeTxRequest({
+          intent: { intentType: 'payment', recipients: [recipient], memo: '' } as PopulatedIntent,
+        });
+        assert.strictEqual(resolveEffectiveTxParams(emptyMemo, undefined).memo, undefined);
+      });
+    });
+
     it('does not throw for exempt types', function () {
       for (const txType of [
         'acceleration',

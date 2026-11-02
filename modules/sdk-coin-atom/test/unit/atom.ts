@@ -3,7 +3,7 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import { TestBitGo, TestBitGoAPI, mockSerializedChallengeWithProofs } from '@bitgo/sdk-test';
 import { coins } from '@bitgo/statics';
-import { ErrorNoInputToRecover } from '@bitgo/sdk-core';
+import { ErrorNoInputToRecover, InvalidAddressError, resolveEffectiveTxParams } from '@bitgo/sdk-core';
 import BigNumber from 'bignumber.js';
 import sinon from 'sinon';
 import { Atom, Tatom } from '../../src';
@@ -196,6 +196,186 @@ describe('ATOM', function () {
       isTransactionVerified.should.equal(true);
     });
 
+    it('should succeed to verify transaction with a memo-suffixed recipient address', async function () {
+      const txPrebuild = { txHex: TEST_TX_WITH_MEMO.signedTxBase64, txInfo: {} };
+      const txParams = {
+        recipients: [
+          {
+            address: `${TEST_TX_WITH_MEMO.to}?memoId=${TEST_TX_WITH_MEMO.memo}`,
+            amount: TEST_TX_WITH_MEMO.sendAmount,
+          },
+        ],
+      };
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification: {} });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should fail to verify transaction when the recipient memoId does not match the tx memo', async function () {
+      const txPrebuild = { txHex: TEST_TX_WITH_MEMO.signedTxBase64, txInfo: {} };
+      const txParams = {
+        recipients: [{ address: `${TEST_TX_WITH_MEMO.to}?memoId=999999`, amount: TEST_TX_WITH_MEMO.sendAmount }],
+      };
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, verification: {} })
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should fail to verify transaction when no memo is declared but the tx carries one', async function () {
+      // A memo the user never approved is a prebuild-integrity failure. Intent-based re-signs
+      // that carry the memo only in the persisted intent get it restored into txParams.memo by
+      // resolveEffectiveTxParams (sdk-core recipientUtils), so legitimate flows still declare it.
+      const txPrebuild = { txHex: TEST_TX_WITH_MEMO.signedTxBase64, txInfo: {} };
+      const txParams = {
+        recipients: [{ address: TEST_TX_WITH_MEMO.to, amount: TEST_TX_WITH_MEMO.sendAmount }],
+      };
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, verification: {} })
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should succeed to verify a memo transaction re-signed from a persisted intent (pendingApproval re-sign path)', async function () {
+      // Composes the two halves of the fix exactly as the TSS signing path does: the retail UI
+      // sends a plain recipient address plus a tx-level memo, populateIntent persists them as
+      // intent.recipients (bare address) and intent.memo, and resolveEffectiveTxParams restores
+      // both into the effective txParams used for verification.
+      const txPrebuild = { txHex: TEST_TX_WITH_MEMO.signedTxBase64, txInfo: {} };
+      const txRequest = {
+        intent: {
+          intentType: 'payment',
+          recipients: [
+            {
+              address: { address: TEST_TX_WITH_MEMO.to },
+              amount: { value: TEST_TX_WITH_MEMO.sendAmount, symbol: 'tatom' },
+            },
+          ],
+          memo: TEST_TX_WITH_MEMO.memo,
+        },
+      };
+      const effectiveTxParams = resolveEffectiveTxParams(
+        txRequest as Parameters<typeof resolveEffectiveTxParams>[0],
+        undefined
+      );
+      const isTransactionVerified = await basecoin.verifyTransaction({
+        txParams: effectiveTxParams,
+        txPrebuild,
+        verification: {},
+      });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should fail to verify a memo transaction re-signed with a mismatched intent memo', async function () {
+      // The propagated intent memo is user intent, so it is checked strictly, not blindly accepted.
+      const txPrebuild = { txHex: TEST_TX_WITH_MEMO.signedTxBase64, txInfo: {} };
+      const txRequest = {
+        intent: {
+          intentType: 'payment',
+          recipients: [
+            {
+              address: { address: TEST_TX_WITH_MEMO.to },
+              amount: { value: TEST_TX_WITH_MEMO.sendAmount, symbol: 'tatom' },
+            },
+          ],
+          memo: '999999',
+        },
+      };
+      const effectiveTxParams = resolveEffectiveTxParams(
+        txRequest as Parameters<typeof resolveEffectiveTxParams>[0],
+        undefined
+      );
+      await basecoin
+        .verifyTransaction({ txParams: effectiveTxParams, txPrebuild, verification: {} })
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should fail to verify transaction with a malformed memo suffix in the recipient address', async function () {
+      // getAddressDetails rejects query strings other than ?memoId= — a malformed destination
+      // must fail loudly rather than fall through to a bare-address comparison.
+      const txPrebuild = { txHex: TEST_TX_WITH_MEMO.signedTxBase64, txInfo: {} };
+      const txParams = {
+        recipients: [{ address: `${TEST_TX_WITH_MEMO.to}?foo=bar`, amount: TEST_TX_WITH_MEMO.sendAmount }],
+      };
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, verification: {} })
+        .should.be.rejectedWith(InvalidAddressError);
+    });
+
+    it('should succeed to verify transaction when the memo is provided as a tx-level param', async function () {
+      const txPrebuild = { txHex: TEST_TX_WITH_MEMO.signedTxBase64, txInfo: {} };
+      const txParams = {
+        recipients: [{ address: TEST_TX_WITH_MEMO.to, amount: TEST_TX_WITH_MEMO.sendAmount }],
+        memo: { value: TEST_TX_WITH_MEMO.memo, type: 'text' },
+      };
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification: {} });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should succeed to verify transaction when the memo is provided on the recipient', async function () {
+      const txPrebuild = { txHex: TEST_TX_WITH_MEMO.signedTxBase64, txInfo: {} };
+      const txParams = {
+        recipients: [
+          {
+            address: TEST_TX_WITH_MEMO.to,
+            amount: TEST_TX_WITH_MEMO.sendAmount,
+            memo: TEST_TX_WITH_MEMO.memo,
+          },
+        ],
+      };
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification: {} });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should fail to verify transaction when the tx-level memo does not match the tx memo', async function () {
+      const txPrebuild = { txHex: TEST_TX_WITH_MEMO.signedTxBase64, txInfo: {} };
+      const txParams = {
+        recipients: [{ address: TEST_TX_WITH_MEMO.to, amount: TEST_TX_WITH_MEMO.sendAmount }],
+        memo: { value: '999999', type: 'text' },
+      };
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, verification: {} })
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should succeed to verify transaction when the tx-level memo is empty and the tx has no memo', async function () {
+      const txPrebuild = { txHex: TEST_SEND_TX.signedTxBase64, txInfo: {} };
+      const txParams = {
+        recipients: [{ address: TEST_SEND_TX.recipient, amount: TEST_SEND_TX.sendAmount }],
+        memo: { value: '', type: 'text' },
+      };
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification: {} });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should succeed to verify transaction when memo sources agree with the tx memo', async function () {
+      const txPrebuild = { txHex: TEST_TX_WITH_MEMO.signedTxBase64, txInfo: {} };
+      const txParams = {
+        recipients: [
+          {
+            address: `${TEST_TX_WITH_MEMO.to}?memoId=${TEST_TX_WITH_MEMO.memo}`,
+            amount: TEST_TX_WITH_MEMO.sendAmount,
+            memo: TEST_TX_WITH_MEMO.memo,
+          },
+        ],
+        memo: { value: TEST_TX_WITH_MEMO.memo, type: 'text' },
+      };
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification: {} });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should fail to verify transaction when memo sources conflict', async function () {
+      const txPrebuild = { txHex: TEST_TX_WITH_MEMO.signedTxBase64, txInfo: {} };
+      const txParams = {
+        recipients: [
+          {
+            address: `${TEST_TX_WITH_MEMO.to}?memoId=${TEST_TX_WITH_MEMO.memo}`,
+            amount: TEST_TX_WITH_MEMO.sendAmount,
+          },
+        ],
+        memo: { value: '999999', type: 'text' },
+      };
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, verification: {} })
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
     it('should fail to verify transaction with invalid param', async function () {
       const txPrebuild = {};
       const txParams = { recipients: undefined };

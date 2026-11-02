@@ -189,6 +189,15 @@ export function resolveEffectiveTxParams(
     effectiveTxParams.wrapParams = { tokenName: intent.tokenName, amount: intent.amount };
   }
 
+  // Propagate the persisted tx-level memo from the intent. Signing paths that carry no txParams
+  // (pendingApproval.approve() -> recreateTxRequest() -> signTxRequest()) would otherwise reach
+  // the coin verifier with a memo-less txParams while the prebuilt transaction carries the memo
+  // approved at send time — e.g. the retail UI sends a plain cosmos recipient address plus a
+  // tx-level memo param, and populateIntent persists it as intent.memo (mpcUtils.ts).
+  if (!effectiveTxParams.memo && typeof intent?.memo === 'string' && intent.memo !== '') {
+    effectiveTxParams.memo = { value: intent.memo, type: 'text' };
+  }
+
   // All staking intents (BSC delegate/undelegate, CELO stake/unstake, etc.) carry
   // stakingRequestId as a required field on BaseStakeIntent (@bitgo/public-types).
   // Use its presence as a generic staking signal — no need to enumerate every intentType.
