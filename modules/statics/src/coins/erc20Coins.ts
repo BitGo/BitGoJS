@@ -15243,6 +15243,18 @@ export const erc20Coins = [
     undefined,
     Networks.test.sepolia
   ),
+  terc20(
+    '6597b778-8bd0-4679-9e8e-a2a1c6ac1d43',
+    'sepeth:teuroc',
+    'Sepolia Testnet Teuroc',
+    6,
+    '0x08210f9170f89ab7658f0b5e3ff39b0e03c594d4',
+    UnderlyingAsset['sepeth:teuroc'],
+    ACCOUNT_COIN_DEFAULT_FEATURES,
+    undefined,
+    undefined,
+    Networks.test.sepolia
+  ),
 
   // ERC-7984 underlying plain ERC-20 tokens (Zama fhEVM - Hoodi)
   terc20(

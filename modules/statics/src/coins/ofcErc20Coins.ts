@@ -4620,6 +4620,20 @@ export const ofcErc20Coins = [
     true,
     'arcusdc'
   ),
+  ofcerc20(
+    '9d454df4-e90d-4690-b223-0554a4cc2e02',
+    'ofcarcusdc:zaru',
+    'ZAR Universal',
+    18,
+    UnderlyingAsset['arcusdc:zaru'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'arcusdc'
+  ),
 
   // Scroll mainnet OFC tokens
   ofcerc20(
@@ -5198,6 +5212,20 @@ export const tOfcErc20Coins = [
     'JPY Coin',
     18,
     UnderlyingAsset['sepeth:jpyc'],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'sepeth'
+  ),
+  tofcerc20(
+    'f4c7d0a9-8e21-4b63-9c55-2d1e6f7a3b84',
+    'ofcsepeth:teuroc',
+    'Sepolia Testnet Teuroc',
+    6,
+    UnderlyingAsset['sepeth:teuroc'],
     undefined,
     undefined,
     undefined,
