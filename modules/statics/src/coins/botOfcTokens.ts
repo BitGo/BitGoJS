@@ -531,6 +531,18 @@ export const botOfcTokens = [
     undefined,
     'tbaseeth'
   ),
+  AccountCtors.tofcsolToken(
+    'd0f1f369-a307-4f16-80bc-9f8b1da4f614',
+    'ofctsol:001nbrkdf1',
+    'ofcDigital National Bank Notes No 1',
+    0,
+    'tsol:001nbrkdf1' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
   AccountCtors.ofcerc20(
     '26f46d44-700d-4e32-8845-fb181e6d8027',
     'ofceth:gusdcq',
@@ -6142,5 +6154,67 @@ export const botOfcTokens = [
     undefined,
     undefined,
     'baseeth'
+  ),
+  AccountCtors.ofcBscToken(
+    '865801e2-f91f-4b50-9572-cd4842d54527',
+    'ofcbsc:agt',
+    'Alaya Governance Token',
+    18,
+    'bsc:agt' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'bsc'
+  ),
+  AccountCtors.ofcsolToken(
+    '104bb175-1866-4e80-b463-11daca564733',
+    'ofcsol:ddc',
+    'ofcDDC Enterprise Limited Class A Ordinary Shares',
+    6,
+    'sol:ddc' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.ofcsolToken(
+    'f33c27f8-f0b4-4c83-a2a6-056947070894',
+    'ofcsol:stqn',
+    'ofcStrategic Acquisitions Inc Common Stock',
+    6,
+    'sol:stqn' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.ofcsolToken(
+    '751d5e7d-22ac-47c6-8f14-07db99b07ff7',
+    'ofcsol:001nbrkdf1',
+    'ofcDigital National Bank Notes No 1',
+    0,
+    'sol:001nbrkdf1' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  ),
+  AccountCtors.ofcsolToken(
+    '92004193-6e26-4a3e-aebe-911ed86c2f4a',
+    'ofcsol:usyc',
+    'ofcCircle USYC',
+    6,
+    'sol:usyc' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
   ),
 ];
