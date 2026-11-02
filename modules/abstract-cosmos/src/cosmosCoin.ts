@@ -15,6 +15,7 @@ import {
   multisigTypes,
   ParsedTransaction,
   ParseTransactionOptions,
+  RecoveryKeyMismatchError,
   RecoveryProviderError,
   SignedTransaction,
   SigningError,
@@ -48,7 +49,7 @@ import {
   TransactionBuildParams,
   BalanceResult,
 } from './lib';
-import { ROOT_PATH } from './lib/constants';
+import { COMPRESSED_PUBLIC_KEY_LENGTH, ROOT_PATH } from './lib/constants';
 import utils from './lib/utils';
 import { auditEcdsaPrivateKey } from '@bitgo/sdk-lib-mpc';
 
@@ -212,21 +213,44 @@ export class CosmosCoin<CustomMessage = never> extends BaseCoin {
   }> {
     const MPC = new Ecdsa();
 
+    let publicKey: string;
+    let keyShares: KeyShares | undefined;
+
     if (isUnsignedSweep) {
-      return {
-        senderAddress: params.rootAddress as string,
-        publicKey: MPC.deriveUnhardened(params.bitgoKey || '', ROOT_PATH).slice(0, 66),
-      };
+      const bitgoKey = (params.bitgoKey || '').replace(/\s/g, '');
+      if (!bitgoKey) {
+        throw new Error('missing bitgoKey');
+      }
+      publicKey = this.derivePublicKey(MPC, bitgoKey);
+    } else {
+      keyShares = await this.getKeyShares(params);
+      publicKey = this.derivePublicKey(MPC, keyShares.commonKeyChain);
     }
 
-    const keyShares = await this.getKeyShares(params);
-    const publicKey = MPC.deriveUnhardened(keyShares.commonKeyChain, ROOT_PATH).slice(0, 66);
+    const senderAddress = this.getAddressFromPublicKey(publicKey);
+    if (params.rootAddress && !this.isSameBaseAddress(senderAddress, params.rootAddress)) {
+      throw new RecoveryKeyMismatchError(
+        `derived address ${senderAddress} does not match rootAddress ${params.rootAddress}`
+      );
+    }
 
-    return {
-      senderAddress: this.getAddressFromPublicKey(publicKey),
-      publicKey,
-      keyShares,
-    };
+    return { senderAddress, publicKey, keyShares };
+  }
+
+  /**
+   * Compares two cosmos addresses ignoring an optional `?memoId=` suffix and bech32 casing,
+   * both of which `isValidAddress` accepts on a rootAddress.
+   */
+  private isSameBaseAddress(a: string, b: string): boolean {
+    const base = (address: string) => address.split('?memoId=')[0].toLowerCase();
+    return base(a) === base(b);
+  }
+
+  /**
+   * Derives the compressed public key of the wallet's root address from a common keychain
+   */
+  private derivePublicKey(MPC: Ecdsa, commonKeyChain: string): string {
+    return MPC.deriveUnhardened(commonKeyChain, ROOT_PATH).slice(0, COMPRESSED_PUBLIC_KEY_LENGTH);
   }
 
   /**

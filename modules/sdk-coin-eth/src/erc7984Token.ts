@@ -2,11 +2,10 @@
  * @prettier
  */
 import {
+  classifyRecoveryKeys,
   BitGoBase,
   CoinConstructor,
   checkKrsProvider,
-  getIsKrsRecovery,
-  getIsUnsignedSweep,
   MPCAlgorithm,
   NamedCoinConstructor,
   RecoveryProviderError,
@@ -950,15 +949,13 @@ export class Erc7984Token extends Eth {
       throw new Error('invalid recoveryDestination');
     }
 
-    const isKrsRecovery = getIsKrsRecovery(params);
-    const isUnsignedSweep = params.isUnsignedSweep ?? getIsUnsignedSweep(params);
+    const recoveryKeys = classifyRecoveryKeys(params);
+    const { backupKey, isKrsRecovery, isUnsignedSweep } = recoveryKeys;
+    let userKey = recoveryKeys.userKey;
 
     if (isKrsRecovery) {
       checkKrsProvider(this, params.krsProvider, { checkCoinFamilySupport: false });
     }
-
-    let userKey = params.userKey.replace(/\s/g, '');
-    const backupKey = params.backupKey.replace(/\s/g, '');
 
     const gasPrice = params.eip1559
       ? new optionalDeps.ethUtil.BN(params.eip1559.maxFeePerGas)

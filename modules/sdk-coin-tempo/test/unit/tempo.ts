@@ -2,7 +2,7 @@ import sinon from 'sinon';
 import should from 'should';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase, RecoveryKeyMismatchError } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 import { Tempo } from '../../src/tempo';
 const PATH_USD_ADDRESS = '0x20c0000000000000000000000000000000000000';
@@ -12,6 +12,9 @@ const TEST_BACKUP_KEY =
   '0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798' +
   '0000000000000000000000000000000000000000000000000000000000000001';
 const TEST_RECOVERY_DESTINATION = '0x80151ebf635e6ec8a5455258f617be6cda1fbd7e';
+// the m/0 address TEST_BACKUP_KEY derives; recover() always supplies this, so these direct
+// calls to the protected builder must too
+const TEST_WALLET_BASE_ADDRESS = '0x19332ae0650de6a555f096057603fdc0c821c1f0';
 
 describe('Tempo Recovery', function () {
   let bitgo: TestBitGoAPI;
@@ -140,6 +143,7 @@ describe('Tempo Recovery', function () {
       const result = (await (basecoin as any).buildUnsignedSweepTxnTSS({
         backupKey: TEST_BACKUP_KEY,
         recoveryDestination: TEST_RECOVERY_DESTINATION,
+        walletContractAddress: TEST_WALLET_BASE_ADDRESS,
         tokenContractAddress: PATH_USD_ADDRESS,
         gasLimit: 1_000_000,
         eip1559: { maxFeePerGas: 20_000_000_000, maxPriorityFeePerGas: 10_000_000_000 },
@@ -155,6 +159,7 @@ describe('Tempo Recovery', function () {
       const result = (await (basecoin as any).buildUnsignedSweepTxnTSS({
         backupKey: TEST_BACKUP_KEY,
         recoveryDestination: TEST_RECOVERY_DESTINATION,
+        walletContractAddress: TEST_WALLET_BASE_ADDRESS,
         tokenContractAddress: PATH_USD_ADDRESS,
         gasLimit: 500_000,
         eip1559: { maxFeePerGas: 20_000_000_000, maxPriorityFeePerGas: 10_000_000_000 },
@@ -169,6 +174,7 @@ describe('Tempo Recovery', function () {
         .buildUnsignedSweepTxnTSS({
           backupKey: TEST_BACKUP_KEY,
           recoveryDestination: TEST_RECOVERY_DESTINATION,
+          walletContractAddress: TEST_WALLET_BASE_ADDRESS,
           tokenContractAddress: PATH_USD_ADDRESS,
           gasLimit: 1_000_000,
           eip1559: { maxFeePerGas: 20_000_000_000, maxPriorityFeePerGas: 10_000_000_000 },
@@ -182,6 +188,7 @@ describe('Tempo Recovery', function () {
       const result = (await (basecoin as any).buildUnsignedSweepTxnTSS({
         backupKey: TEST_BACKUP_KEY,
         recoveryDestination: TEST_RECOVERY_DESTINATION,
+        walletContractAddress: TEST_WALLET_BASE_ADDRESS,
         tokenContractAddress: otherToken,
         gasLimit: 1_000_000,
         eip1559: { maxFeePerGas: 20_000_000_000, maxPriorityFeePerGas: 10_000_000_000 },
@@ -195,6 +202,7 @@ describe('Tempo Recovery', function () {
       const result = (await (basecoin as any).buildUnsignedSweepTxnTSS({
         backupKey: TEST_BACKUP_KEY,
         recoveryDestination: TEST_RECOVERY_DESTINATION,
+        walletContractAddress: TEST_WALLET_BASE_ADDRESS,
         tokenContractAddress: PATH_USD_ADDRESS,
         gasLimit: 1_000_000,
         eip1559: { maxFeePerGas: 20_000_000_000, maxPriorityFeePerGas: 10_000_000_000 },
@@ -204,6 +212,29 @@ describe('Tempo Recovery', function () {
       tx.unsignedTx.coinSpecific.commonKeyChain.should.equal(TEST_BACKUP_KEY);
       tx.signatureShares.should.deepEqual([]);
       tx.nonce.should.equal(0);
+    });
+
+    it('fails closed with RecoveryKeyMismatchError when the keychain is for another wallet', async function () {
+      stubBalanceAndNonce('1000000');
+      await (basecoin as any)
+        .buildUnsignedSweepTxnTSS({
+          backupKey: TEST_BACKUP_KEY,
+          recoveryDestination: TEST_RECOVERY_DESTINATION,
+          walletContractAddress: '0xe740412ab65efdbdbe2a5e4c6e01d7bbc54a38a9',
+          tokenContractAddress: PATH_USD_ADDRESS,
+          gasLimit: 1_000_000,
+          eip1559: { maxFeePerGas: 20_000_000_000, maxPriorityFeePerGas: 10_000_000_000 },
+        })
+        .should.be.rejectedWith(RecoveryKeyMismatchError);
+    });
+
+    it('rejects a sweep with no key material rather than deriving from an empty keychain', async function () {
+      await (basecoin as any)
+        .buildUnsignedSweepTxnTSS({
+          recoveryDestination: TEST_RECOVERY_DESTINATION,
+          walletContractAddress: TEST_WALLET_BASE_ADDRESS,
+        })
+        .should.be.rejectedWith('missing commonKeyChain');
     });
   });
 
@@ -217,6 +248,7 @@ describe('Tempo Recovery', function () {
         backupKey: TEST_BACKUP_KEY,
         isTss: true,
         recoveryDestination: TEST_RECOVERY_DESTINATION,
+        walletContractAddress: TEST_WALLET_BASE_ADDRESS,
       });
 
       buildStub.calledOnce.should.equal(true);
