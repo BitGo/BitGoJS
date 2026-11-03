@@ -234,6 +234,38 @@ function deriveTokenIssuanceEcdhSecret(ecdhXprv: string, derivationPath: string,
   ).toString('hex');
 }
 
+type PasswordUpdatePayload = {
+  keychains: Record<string, string>;
+  v2_keychains: Record<string, string>;
+  version: number;
+  oldPassword: string;
+  password: string;
+};
+
+function serializedMapLength(keychains: Record<string, string>): number {
+  return Object.entries(keychains).reduce(
+    (length, [id, value], index) =>
+      length + (index > 0 ? 1 : 0) + JSON.stringify(id).length + 1 + JSON.stringify(value).length,
+    2
+  );
+}
+
+function passwordUpdatePayloadSizeKB(updatePasswordParams: PasswordUpdatePayload): number {
+  const emptyPayloadLength = JSON.stringify({
+    ...updatePasswordParams,
+    keychains: {},
+    v2_keychains: {},
+  }).length;
+  // Replace the two "{}" map placeholders with their serialized entries.
+  const payloadLength =
+    emptyPayloadLength -
+    4 +
+    serializedMapLength(updatePasswordParams.keychains) +
+    serializedMapLength(updatePasswordParams.v2_keychains);
+
+  return Math.ceil(payloadLength / 1024);
+}
+
 export class BitGoAPI implements BitGoBase {
   // v1 types
   protected _keychains: any;
@@ -2156,9 +2188,8 @@ export class BitGoAPI implements BitGoBase {
         password: hmacNewPassword,
       };
 
-      // Calculate payload size in KB
-      const payloadSizeBytes = JSON.stringify(updatePasswordParams).length;
-      const payloadSizeKB = Math.ceil(payloadSizeBytes / 1024);
+      // Calculate payload size in KB without serializing both keychain maps together.
+      const payloadSizeKB = passwordUpdatePayloadSizeKB(updatePasswordParams);
 
       // Check if batching flow is enabled
       let useBatchingFlow = false;
