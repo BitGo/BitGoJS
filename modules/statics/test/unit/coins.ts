@@ -1454,6 +1454,95 @@ describe('TSS Verify Use Serialized Tx Hex Feature', () => {
   });
 });
 
+describe('Supports Memo Feature', () => {
+  it('should have SUPPORTS_MEMO for the memo base coins', () => {
+    const memoCoins = [
+      'xlm',
+      'txlm',
+      'xrp',
+      'txrp',
+      'cspr',
+      'tcspr',
+      'ton',
+      'tton',
+      'icp',
+      'ticp',
+      'canton',
+      'tcanton',
+      'polyx',
+      'tpolyx',
+      'hbar',
+      'thbar',
+      'atom',
+      'tatom',
+      'osmo',
+      'tosmo',
+      'tia',
+      'ttia',
+      'sei',
+      'tsei',
+      'zeta',
+      'tzeta',
+      'coreum',
+      'tcoreum',
+      'injective',
+      'tinjective',
+      'bld',
+      'tbld',
+      'hash',
+      'thash',
+      'baby',
+      'tbaby',
+      'dot',
+      'tdot',
+      'sol',
+      'tsol',
+      'stx',
+      'tstx',
+      'eos',
+      'teos',
+      'bera',
+      'tbera',
+      'islm',
+      'tislm',
+      'thorchain:rune',
+      'tthorchain:rune',
+      'cronos',
+      'tcronos',
+      'asi',
+      'tasi',
+      'initia',
+      'tinitia',
+      'dydxcosmos',
+      'tdydxcosmos',
+      'kavacosmos',
+      'tkavacosmos',
+      'mantra',
+      'tmantra',
+    ];
+    memoCoins.forEach((coinName) => {
+      const coin = coins.get(coinName);
+      coin.features.includes(CoinFeature.SUPPORTS_MEMO).should.eql(true);
+    });
+  });
+
+  it('should have SUPPORTS_MEMO on every non-token cosmos-like coin', () => {
+    coins.forEach((coin) => {
+      if (!coin.isToken && coin.features.includes(CoinFeature.COSMOS_LIKE_COINS)) {
+        coin.features.includes(CoinFeature.SUPPORTS_MEMO).should.eql(true);
+      }
+    });
+  });
+
+  it('should not have SUPPORTS_MEMO on non-memo coins', () => {
+    const nonMemoCoins = ['btc', 'tbtc', 'eth', 'hteth', 'algo', 'tempo'];
+    nonMemoCoins.forEach((coinName) => {
+      const coin = coins.get(coinName);
+      coin.features.includes(CoinFeature.SUPPORTS_MEMO).should.eql(false);
+    });
+  });
+});
+
 describe('Custody Bulk Withdrawal Features', () => {
   it('should have CUSTODY_BULK_TRANSACTION feature for appropriate coins', () => {
     const custodyBulkWithdrawalCoins = [
