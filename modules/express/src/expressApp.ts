@@ -28,6 +28,7 @@ import {
 
 import { Environments } from 'bitgo';
 import * as clientRoutes from './clientRoutes';
+import { getBitGoTlsPolicy } from './tlsPolicy';
 
 /**
  * Set up the logging middleware provided by morgan
@@ -267,6 +268,9 @@ function checkPreconditions(config: Config) {
   if (lightningSignerFileSystemPath !== undefined) {
     checkJsonFilePath(lightningSignerFileSystemPath);
   }
+
+  // Fail fast on TLS policy misconfiguration before the server listens.
+  getBitGoTlsPolicy(config);
 }
 
 export function setupRoutes(app: express.Application, config: Config): void {

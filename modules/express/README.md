@@ -198,6 +198,26 @@ BitGo Express currently supports the following proxy protocols:
 - SOCKSv5
 - PAC
 
+### Domain-scoped CA trust for BitGo connections
+
+By default, BitGo Express restricts outbound HTTPS connections to official BitGo domains (`*.bitgo.com`, `*.bitgo-test.com`, `*.bitgo-staging.com`, `*.bitgo-dev.com`, and their apex domains) to a bundled set of root certificate authorities (`modules/express/bitgo-ca.pem`: Google Trust Services, Amazon Trust Services, DigiCert, Let's Encrypt/ISRG, and Sectigo). Every other outbound destination (external signer, block explorers, webhooks, KMS) continues to use the Node.js / system trust store.
+
+This is **enabled by default** to shrink the blast radius of a compromise of any unrelated CA in the global trust store without requiring manual certificate-pin maintenance across routine BitGo certificate renewals or CA migrations.
+
+- To opt out, pass `--disablepincerts` or set `BITGO_DISABLE_PIN_CERTS=true`.
+- When `BITGO_USE_PROXY` is set, Express logs a startup warning and skips the bundled CA policy because the proxy agent owns the TLS connection.
+- If your network uses a **transparent TLS-inspecting firewall/proxy** (no `BITGO_USE_PROXY`) whose CA you trust via `NODE_EXTRA_CA_CERTS`: note that the policy agent replaces the trust store for BitGo domains, so `NODE_EXTRA_CA_CERTS` is **ignored** for them. Express logs a startup warning in this case; either pass `--disablepincerts` / `BITGO_DISABLE_PIN_CERTS=true`, or the connections fail with `unable to get local issuer certificate` / `SELF_SIGNED_CERT_IN_CHAIN`. This is a behavior change from prior releases (BitGo domains previously trusted `NODE_EXTRA_CA_CERTS`).
+- Redirects are validated on each hop for covered BitGo hostnames: redirects to other covered `https://` BitGo hosts are followed, while redirects to uncovered hosts or plain `http://` are refused.
+- At startup, Express warns if any root CA in `bitgo-ca.pem` expires within 30 days.
+- The bundle is **not** self-updating. Regenerate it from the current Node.js root store (e.g. when BitGo switches CA providers or a root nears expiry) and re-verify against live endpoints:
+  ```bash
+  bash scripts/verify-bitgo-policy-data.sh --regenerate   # rebuilds modules/express/bitgo-ca.pem
+  cd modules/express && yarn test:data:live               # offline checks + live handshakes to all BitGo endpoints
+  ```
+  If BitGo ever moves `*.bitgo.com` to a CA provider outside the bundled roots, update `bitgo-ca.pem` **before** the cutover (deployed customers run older images).
+
+> The underlying policy helper (`createBitGoTlsPolicy` in `@bitgo/sdk-api`) is Node-only: it relies on the Node `crypto` and `tls` modules and refuses to build in a browser bundle.
+
 ### External Signing Mode
 
 BitGo Express can be run in an external signing mode, where the signing of transactions is performed in a separate instance of BitGo Express that has access to the private keys.
@@ -241,6 +261,7 @@ BitGo Express is able to take configuration options from either command line arg
 | N/A             | --lightningSignerFileSystemPath | `BITGO_LIGHTNING_SIGNER_FILE_SYSTEM_PATH` | N/A           | Local path specifying how to contact the lightning signer node.                                                                                                                                                                                                                                                                                      |
 | N/A             | --keepalivetimeout              | `BITGO_KEEP_ALIVE_TIMEOUT`                | N/A           | BitGo Express server KeepAliveTimeout node.                                                                                                                                                                                                                                                                                                          |
 | N/A             | --headerstimeout                | `BITGO_HEADERS_TIMEOUT`                   | N/A           | BitGo Express server HeadersTimeout node.                                                                                                                                                                                                                                                                                                            |
+| N/A             | --disablepincerts               | `BITGO_DISABLE_PIN_CERTS`                 | false         | Disable the default domain-scoped CA bundle restriction for BitGo hostnames. See [Domain-scoped CA trust for BitGo connections](#domain-scoped-ca-trust-for-bitgo-connections).                                                                                                                                                                     |
 
 \[0]: BitGo will also check the additional environment variables for some options for backwards compatibility, but these environment variables should be considered deprecated:
 

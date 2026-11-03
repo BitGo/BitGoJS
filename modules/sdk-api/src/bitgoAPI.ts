@@ -30,7 +30,7 @@ import { DefaultHmacAuthStrategy, type IHmacAuthStrategy } from '@bitgo/sdk-hmac
 import * as utxolib from '@bitgo/utxo-lib';
 import { bip32, ECPairInterface } from '@bitgo/utxo-lib';
 import * as bitcoinMessage from 'bitcoinjs-message';
-import { type Agent } from 'http';
+import { type Agent, type ClientRequest } from 'http';
 import debugLib from 'debug';
 import * as _ from 'lodash';
 import * as secp256k1 from 'secp256k1';
@@ -90,9 +90,20 @@ import {
   VerifyShardsOptions,
   WebhookOptions,
 } from './types';
+import { type BitGoTlsPolicy } from './tlsPolicy';
 import shamir = require('secrets.js-grempe');
 import pjson = require('../package.json');
 const debug = debugLib('bitgo:api');
+
+/**
+ * Agent used for a refused TLS-policy redirect hop: it destroys the request instead of opening a socket.
+ * superagent deletes the previous hop's ClientRequest before emitting 'redirect' and builds the next one in
+ * end() even after abort(), so without this the refused target would still be dialed. It has no `protocol`,
+ * so Node's agent/protocol check passes for both http: and https: targets.
+ */
+const refuseConnectionAgent = {
+  addRequest: (clientReq: ClientRequest) => clientReq.destroy(),
+} as unknown as Agent;
 
 const Blockchain = require('./v1/blockchain');
 const Keychains = require('./v1/keychains');
@@ -268,6 +279,7 @@ export class BitGoAPI implements BitGoBase {
   protected _validate: boolean;
   public readonly cookiesPropagationEnabled: boolean;
   private _customProxyAgent?: Agent;
+  private _tlsPolicy?: BitGoTlsPolicy;
   private _requestIdPrefix?: string;
   private getAdditionalHeadersCb?: AdditionalHeadersCallback;
   protected _hmacAuthStrategy: IHmacAuthStrategy;
@@ -445,7 +457,11 @@ export class BitGoAPI implements BitGoBase {
       throw new Error('should not use https proxy while in browser');
     }
 
+    if (params.tlsPolicy && params.customProxyAgent) {
+      throw new Error('tlsPolicy cannot be combined with customProxyAgent');
+    }
     this._customProxyAgent = params.customProxyAgent;
+    this._tlsPolicy = params.tlsPolicy;
     this._hmacAuthStrategy = params.hmacAuthStrategy ?? new DefaultHmacAuthStrategy();
 
     // Only fetch constants from constructor if clientConstants was not provided
@@ -487,6 +503,42 @@ export class BitGoAPI implements BitGoBase {
     let req: superagent.SuperAgentRequest = superagent[method](url);
     if (this.cookiesPropagationEnabled) {
       req = req.withCredentials();
+    }
+    if (this._tlsPolicy) {
+      const tlsPolicy = this._tlsPolicy;
+      let inCoveredChain = tlsPolicy.appliesTo(url);
+      if (inCoveredChain) {
+        req.agent(tlsPolicy.agent).ca(tlsPolicy.ca as string[]);
+      }
+      // superagent fires the 'redirect' event after updating req.url but BEFORE sending the follow-up hop,
+      // so every hop is evaluated against the policy regardless of whether the initial URL was covered:
+      // - While outside the policy, default trust is retained; entering a covered https host switches the
+      //   hop onto the restricted agent + CA bundle (and marks the chain as covered).
+      // - A redirect to a covered plaintext http target (from any origin) or a redirect leaving a covered
+      //   chain to an uncovered host is refused: refuseConnectionAgent and a refuse-allhttp2 protocol
+      //   override ensure the follow-up hop never opens a socket, and abort() makes superagent's _end()
+      //   bail — the surfaced error is superagent's 'Aborted', whose `url` field is the refused target.
+      req.on('redirect', () => {
+        let covered = false;
+        let refused = false;
+        try {
+          covered = tlsPolicy.appliesTo(req.url);
+        } catch {
+          // appliesTo throws for http:// (or non-https) on covered hosts — always refuse.
+          refused = true;
+        }
+        if (!refused && inCoveredChain && !covered) {
+          refused = true;
+        }
+        if (refused) {
+          (req as unknown as { _enableHttp2?: boolean })._enableHttp2 = false;
+          req.agent(refuseConnectionAgent);
+          req.abort();
+        } else if (covered) {
+          inCoveredChain = true;
+          req.agent(tlsPolicy.agent).ca(tlsPolicy.ca as string[]);
+        }
+      });
     }
     return req;
   }
@@ -764,8 +816,8 @@ export class BitGoAPI implements BitGoBase {
     }
 
     // client constants call cannot be authenticated using the normal HMAC validation
-    // scheme, so we need to use a raw superagent instance to do this request.
-    // Proxy settings must still be respected however
+    // scheme. Proxy settings (and the TLS policy) must still be respected, so the
+    // request goes through the same getAgentRequest funnel as every other call.
     const resultPromise = this.getAgentRequest('get', this.url('/client/constants'));
     resultPromise.set('BitGo-SDK-Version', this._version);
     if (this._customProxyAgent) {

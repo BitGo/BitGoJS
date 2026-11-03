@@ -4,5 +4,6 @@ export * from './decryptV1';
 export * from './encrypt';
 export * from './encryptionSession';
 export * from './encryptV2';
+export * from './tlsPolicy';
 export * from './util';
 export * from './types';

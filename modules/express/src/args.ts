@@ -84,6 +84,12 @@ parser.addArgument(['--disableenvcheck'], {
   help: 'disable checking for proper NODE_ENV when running in prod environment',
 });
 
+parser.addArgument(['--disablepincerts'], {
+  action: 'storeConst',
+  constant: true,
+  help: 'disable the default domain-scoped CA bundle restriction for BitGo hostnames',
+});
+
 parser.addArgument(['-t', '--timeout'], {
   help: 'Proxy server timeout in milliseconds',
 });
