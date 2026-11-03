@@ -396,6 +396,11 @@ describe('Pending Approvals:', () => {
         apiVersion: 'lite',
         unsignedTxs: [{ signableHex: 'randomhex', serializedTxHex: 'randomhex2', derivationPath: 'm/0' }],
       } as unknown as TxRequest;
+      let upgradeOnSignSetting: sinon.SinonStub;
+
+      beforeEach(() => {
+        upgradeOnSignSetting = sandbox.stub(bitgo, 'isUpgradeEncryptionOnSignEnabled').returns(true);
+      });
 
       it('triggers the upgrade for the user keychain after getPrv, without waiting for it', async () => {
         pendingApprovalData['txRequestId'] = 'requestTxIdTest';
@@ -427,6 +432,58 @@ describe('Pending Approvals:', () => {
         await pendingApproval
           .recreateAndSignTSSTransaction({ walletPassphrase }, new RequestTracer())
           .should.be.rejectedWith('error decrypting wallet private key');
+        sinon.assert.notCalled(upgrade);
+      });
+
+      const setupGatingTest = () => {
+        pendingApprovalData['txRequestId'] = 'requestTxIdTest';
+        const pendingApproval = new PendingApproval(bitgo, coin, pendingApprovalData, wallet);
+        sandbox.stub(Keychains.prototype, 'getKeysForSigning').resolves([userKeychain]);
+        sandbox.stub(Wallet.prototype, 'getPrv').resolves('decryptedPrv');
+        const upgrade = sandbox.stub(Keychains.prototype, 'upgradeEncryption').resolves();
+        sandbox.stub(TssUtils.prototype, 'recreateTxRequest').resolves(txRequest);
+        return { pendingApproval, upgrade };
+      };
+
+      it('does not upgrade with the default setting', async () => {
+        upgradeOnSignSetting.restore();
+        const { pendingApproval, upgrade } = setupGatingTest();
+
+        await pendingApproval.recreateAndSignTSSTransaction({ walletPassphrase }, new RequestTracer());
+
+        sinon.assert.notCalled(upgrade);
+      });
+
+      it('does not upgrade when upgradeEncryptionOnSign is off', async () => {
+        upgradeOnSignSetting.returns(false);
+        const { pendingApproval, upgrade } = setupGatingTest();
+
+        await pendingApproval.recreateAndSignTSSTransaction({ walletPassphrase }, new RequestTracer());
+
+        sinon.assert.notCalled(upgrade);
+      });
+
+      it('upgrades when upgradeEncryptionOnSign is off and the call passes upgradeEncryption: true', async () => {
+        upgradeOnSignSetting.returns(false);
+        const { pendingApproval, upgrade } = setupGatingTest();
+
+        await pendingApproval.recreateAndSignTSSTransaction(
+          { walletPassphrase, upgradeEncryption: true },
+          new RequestTracer()
+        );
+
+        sinon.assert.calledOnce(upgrade);
+        sinon.assert.calledWithExactly(upgrade, { keychain: userKeychain, passphrase: walletPassphrase });
+      });
+
+      it('does not upgrade when the call passes upgradeEncryption: false', async () => {
+        const { pendingApproval, upgrade } = setupGatingTest();
+
+        await pendingApproval.recreateAndSignTSSTransaction(
+          { walletPassphrase, upgradeEncryption: false },
+          new RequestTracer()
+        );
+
         sinon.assert.notCalled(upgrade);
       });
     });

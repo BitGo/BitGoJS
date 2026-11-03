@@ -422,6 +422,11 @@ export interface WalletSignBaseOptions {
   isLastSignature?: boolean;
   customSigningFunction?: CustomSigningFunction;
   bulk?: boolean;
+  /**
+   * Upgrade the stored encryption of your user key to the latest format after signing with your
+   * wallet passphrase. Defaults to the `upgradeEncryptionOnSign` setting.
+   */
+  upgradeEncryption?: boolean;
 }
 
 export interface WalletSignTransactionOptions extends WalletSignBaseOptions {

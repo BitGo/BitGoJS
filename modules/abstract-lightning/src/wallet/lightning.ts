@@ -9,6 +9,7 @@ import {
   TxRequestState,
   decodeOrElse,
   KeyEncryptionUpgradeResult,
+  shouldUpgradeEncryption,
 } from '@bitgo/sdk-core';
 import * as t from 'io-ts';
 import {
@@ -287,7 +288,9 @@ export class LightningWallet implements ILightningWallet {
       t.exact(LightningPaymentRequest).encode(params),
       await this.wallet.bitgo.decrypt({ password: params.passphrase, input: userAuthKeyEncryptedPrv })
     );
-    void this.wallet.baseCoin.keychains().upgradeEncryption({ keychain: userAuthKey, passphrase: params.passphrase });
+    if (shouldUpgradeEncryption(this.wallet.bitgo, params.upgradeEncryption)) {
+      void this.wallet.baseCoin.keychains().upgradeEncryption({ keychain: userAuthKey, passphrase: params.passphrase });
+    }
 
     const paymentIntent: { intent: LightningPaymentIntent } = {
       intent: {
@@ -413,7 +416,9 @@ export class LightningWallet implements ILightningWallet {
       transactionRequestCreate.transactions[0].unsignedTx.serializedTxHex,
       await this.wallet.bitgo.decrypt({ password: params.passphrase, input: userAuthKeyEncryptedPrv })
     );
-    void this.wallet.baseCoin.keychains().upgradeEncryption({ keychain: userAuthKey, passphrase: params.passphrase });
+    if (shouldUpgradeEncryption(this.wallet.bitgo, params.upgradeEncryption)) {
+      void this.wallet.baseCoin.keychains().upgradeEncryption({ keychain: userAuthKey, passphrase: params.passphrase });
+    }
 
     const transactionRequestWithSignature = (await this.wallet.bitgo
       .put(

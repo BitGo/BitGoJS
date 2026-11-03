@@ -35,6 +35,11 @@ export interface ApproveOptions {
   xprv?: string;
   previewPendingTxs?: boolean;
   pendingApprovalId?: string;
+  /**
+   * Upgrade the stored encryption of your user key to the latest format after signing with your
+   * wallet passphrase. Defaults to the `upgradeEncryptionOnSign` setting.
+   */
+  upgradeEncryption?: boolean;
 }
 
 export interface PendingApprovalInfo {

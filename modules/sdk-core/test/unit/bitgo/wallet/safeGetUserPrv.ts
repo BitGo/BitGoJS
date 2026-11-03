@@ -611,7 +611,7 @@ describe('WCN-1200 recreateAndSignTSSTransaction safe path', function () {
       transactions: [],
     });
     const pendingApproval = new PendingApproval(
-      {} as any,
+      { isUpgradeEncryptionOnSignEnabled: () => false } as any,
       wallet.baseCoin,
       {
         id: 'pa0',

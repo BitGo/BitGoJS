@@ -1528,6 +1528,17 @@ describe('V2 Keychains', function () {
       should(keychain.encryptedPrv).equal(encryptedV1);
     });
 
+    it('still writes when upgradeEncryptionOnSign is off, since only signing hooks are gated', async function () {
+      sandbox.stub(bitgo, 'isUpgradeEncryptionOnSignEnabled').returns(false);
+      const { scope, bodies } = mockPut();
+
+      const result = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
+
+      result.should.deepEqual({ status: 'upgraded' });
+      scope.isDone().should.be.true();
+      bodies.should.have.length(1);
+    });
+
     it('does not write for a v2 keychain', async function () {
       const encryptedV2 = await bitgo.encrypt({ input: prv, password: passphrase, encryptionVersion: 2 });
       const { scope } = mockPut();

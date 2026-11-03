@@ -40,6 +40,7 @@ import {
   KeychainWithEncryptedPrv,
   KeyEncryptionUpgradeResult,
   KeyIndices,
+  shouldUpgradeEncryption,
 } from '../keychain';
 import { CreateLightningInvoiceParams, LightningInvoiceResponse } from '../../lightning';
 import { getLightningAuthKey } from '../lightning/lightningWalletUtil';
@@ -2468,7 +2469,7 @@ export class Wallet implements IWallet {
 
     if (this.multisigType() === 'tss') {
       const prv = await this.getUserPrv(presign as GetUserPrvOptions);
-      this.startUserKeyEncryptionUpgrade(presign as GetUserPrvOptions);
+      this.startUserKeyEncryptionUpgrade(presign as GetUserPrvOptions, params.upgradeEncryption);
       return this.signTransactionTss({
         ...presign,
         prv,
@@ -2512,7 +2513,7 @@ export class Wallet implements IWallet {
       const userKeySigningRequired = this.toTradingAccount().userKeySigningRequired;
       const prv = userKeySigningRequired ? await this.getUserPrv(presign as GetUserPrvOptions) : undefined;
       if (userKeySigningRequired) {
-        this.startUserKeyEncryptionUpgrade(presign as GetUserPrvOptions);
+        this.startUserKeyEncryptionUpgrade(presign as GetUserPrvOptions, params.upgradeEncryption);
       }
       return this.baseCoin.signTransaction({
         ...signTransactionParams,
@@ -2522,7 +2523,7 @@ export class Wallet implements IWallet {
     }
 
     const prv = await this.getUserPrv(presign as GetUserPrvOptions);
-    this.startUserKeyEncryptionUpgrade(presign as GetUserPrvOptions);
+    this.startUserKeyEncryptionUpgrade(presign as GetUserPrvOptions, params.upgradeEncryption);
     return this.baseCoin.signTransaction({
       ...signTransactionParams,
       prv,
@@ -2554,20 +2555,23 @@ export class Wallet implements IWallet {
    * Fire-and-forget upgrade of the user keychain's v1 `encryptedPrv` to v2, for signing paths
    * that just resolved the prv from `walletPassphrase` via `getUserPrv(params)`.
    *
-   * Does nothing when the caller supplied `prv`, when there is no passphrase, when the keychain has
-   * no `encryptedPrv`, or for safe child keychains (their prv comes from the root key). The upgrade
-   * is never awaited and can never affect the signing result.
+   * Does nothing when the upgrade is not enabled for this call (per-call `upgradeEncryption`, else
+   * the `upgradeEncryptionOnSign` setting), when the caller supplied `prv`, when there is no
+   * passphrase, when the keychain has no `encryptedPrv`, or for safe child keychains (their prv
+   * comes from the root key). The upgrade is never awaited and can never affect the signing result.
    *
    * @param params - the same options that were passed to `getUserPrv`
+   * @param upgradeEncryption - the signing call's `upgradeEncryption` option
    */
-  private startUserKeyEncryptionUpgrade(params: GetUserPrvOptions): void {
+  private startUserKeyEncryptionUpgrade(params: GetUserPrvOptions, upgradeEncryption?: boolean): void {
     const keychain = params.keychain || params.key;
     const walletPassphrase = params.walletPassphrase;
     if (
       params.prv ||
       !keychain?.encryptedPrv ||
       !_.isString(walletPassphrase) ||
-      isSafeChildPublicOnlyKeychain(this.safeId(), keychain)
+      isSafeChildPublicOnlyKeychain(this.safeId(), keychain) ||
+      !shouldUpgradeEncryption(this.bitgo, upgradeEncryption)
     ) {
       return;
     }
@@ -2601,7 +2605,7 @@ export class Wallet implements IWallet {
     };
     assert(keychains[0].commonKeychain, 'Unable to find commonKeychain in keychains');
     const prv = await this.getUserPrv(userPrvOptions);
-    this.startUserKeyEncryptionUpgrade(userPrvOptions);
+    this.startUserKeyEncryptionUpgrade(userPrvOptions, params.upgradeEncryption);
     const presign = {
       ...params,
       walletData: this._wallet,
@@ -2647,7 +2651,7 @@ export class Wallet implements IWallet {
     };
     assert(keychains[0].commonKeychain, 'Unable to find commonKeychain in keychains');
     const prv = await this.getUserPrv(userPrvOptions);
-    this.startUserKeyEncryptionUpgrade(userPrvOptions);
+    this.startUserKeyEncryptionUpgrade(userPrvOptions, params.upgradeEncryption);
     const presign = {
       ...params,
       walletData: this._wallet,

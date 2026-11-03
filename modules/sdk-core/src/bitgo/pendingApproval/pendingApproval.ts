@@ -18,6 +18,7 @@ import {
 } from '../pendingApproval';
 import { RequestTracer, RequestType } from '../utils';
 import { IWallet } from '../wallet';
+import { shouldUpgradeEncryption } from '../keychain';
 import { isSafeChildPublicOnlyKeychain } from '../wallet/safeKeychain';
 import { BuildParams, ERC7984_INTENT_TX_TYPES } from '../wallet/BuildParams';
 import { IRequestTracer } from '../../api';
@@ -244,7 +245,7 @@ export class PendingApproval implements IPendingApproval {
    * @param {RequestTracer} reqId id tracer.
    */
   async recreateAndSignTSSTransaction(params: ApproveOptions, reqId: IRequestTracer): Promise<{ txHex: string }> {
-    const { walletPassphrase } = params;
+    const { walletPassphrase, upgradeEncryption } = params;
     const txRequestId = this._pendingApproval.txRequestId;
 
     if (!this.wallet) {
@@ -270,7 +271,7 @@ export class PendingApproval implements IPendingApproval {
           walletPassphrase,
         })
       : await this.wallet.getPrv({ walletPassphrase });
-    if (!isSafeChild && childUserKeychain?.encryptedPrv) {
+    if (!isSafeChild && childUserKeychain?.encryptedPrv && shouldUpgradeEncryption(this.bitgo, upgradeEncryption)) {
       // getPrv decrypted the first keychain with an encryptedPrv, which is this same user keychain.
       // Fire-and-forget; never awaited and never affects signing.
       void this.wallet.baseCoin
