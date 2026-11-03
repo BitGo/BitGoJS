@@ -546,7 +546,7 @@ export const botOfcTokens = [
   AccountCtors.tofcsolToken(
     'f6856f72-1523-4bef-8613-dbd71f8ca9b8',
     'ofctsol:nvdago',
-    'ofcTest NVIDIA',
+    'Test NVIDIA',
     9,
     'tsol:nvdago' as unknown as UnderlyingAsset,
     undefined,
@@ -558,7 +558,7 @@ export const botOfcTokens = [
   AccountCtors.tofcsolToken(
     '5dfa6d71-171a-4b9c-99ca-b972642fdc9c',
     'ofctsol:aaplgo',
-    'ofcTest Apple',
+    'Test Apple',
     9,
     'tsol:aaplgo' as unknown as UnderlyingAsset,
     undefined,
@@ -570,7 +570,7 @@ export const botOfcTokens = [
   AccountCtors.tofcsolToken(
     '02a72155-dae9-4f19-ac42-bde418efb7cc',
     'ofctsol:amzngo',
-    'ofcTest Amazon',
+    'Test Amazon',
     9,
     'tsol:amzngo' as unknown as UnderlyingAsset,
     undefined,
@@ -582,7 +582,7 @@ export const botOfcTokens = [
   AccountCtors.tofcsolToken(
     'fa55324e-00fa-4887-bc00-2319af2e50da',
     'ofctsol:googlgo',
-    'ofcTest Alphabet',
+    'Test Alphabet',
     9,
     'tsol:googlgo' as unknown as UnderlyingAsset,
     undefined,
@@ -594,7 +594,7 @@ export const botOfcTokens = [
   AccountCtors.tofcsolToken(
     '26f59535-10e1-4d5f-9af3-956058a12b53',
     'ofctsol:metago',
-    'ofcTest Meta',
+    'Test Meta',
     9,
     'tsol:metago' as unknown as UnderlyingAsset,
     undefined,
@@ -606,7 +606,7 @@ export const botOfcTokens = [
   AccountCtors.tofcsolToken(
     '7e92c72d-9cd3-4cd2-b330-2a784e2c7560',
     'ofctsol:msftgo',
-    'ofcTest Microsoft',
+    'Test Microsoft',
     9,
     'tsol:msftgo' as unknown as UnderlyingAsset,
     undefined,
@@ -618,7 +618,7 @@ export const botOfcTokens = [
   AccountCtors.tofcsolToken(
     'fcf9ca79-7af8-425f-8887-351862bb9ce5',
     'ofctsol:spcxgo',
-    'ofcTest SpaceX',
+    'Test SpaceX',
     9,
     'tsol:spcxgo' as unknown as UnderlyingAsset,
     undefined,
@@ -630,7 +630,7 @@ export const botOfcTokens = [
   AccountCtors.tofcsolToken(
     'a268defe-db02-4089-9198-f707a04e21bf',
     'ofctsol:spygo',
-    'ofcTest SPY',
+    'Test SPY',
     9,
     'tsol:spygo' as unknown as UnderlyingAsset,
     undefined,
@@ -642,7 +642,7 @@ export const botOfcTokens = [
   AccountCtors.tofcsolToken(
     '1b816f29-548d-469f-807d-341b9c7f70e8',
     'ofctsol:tslago',
-    'ofcTest Tesla',
+    'Test Tesla',
     9,
     'tsol:tslago' as unknown as UnderlyingAsset,
     undefined,
