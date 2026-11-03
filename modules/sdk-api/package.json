@@ -5,7 +5,9 @@
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "browser": {
-    "proxy-agent": false
+    "proxy-agent": false,
+    "https": false,
+    "tls": false
   },
   "scripts": {
     "build": "yarn tsc --build --incremental --verbose .",
