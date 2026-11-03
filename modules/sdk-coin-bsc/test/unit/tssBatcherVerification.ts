@@ -1,7 +1,7 @@
 import 'should';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { coins, Erc7984Coin } from '@bitgo/statics';
+import { coins, ContractAddressDefinedToken, Erc7984Coin } from '@bitgo/statics';
 import { TransactionType, TssVerificationWarning, Wallet } from '@bitgo/sdk-core';
 import { optionalDeps } from '@bitgo/abstract-eth';
 
@@ -25,6 +25,18 @@ const MAX_UINT256 = ((1n << 256n) - 1n).toString();
 
 const erc7984Pair = coins.get('hteth:cusdt') as Erc7984Coin;
 const erc7984WrapperAddress = String(erc7984Pair.contractAddress);
+
+// Two distinct tbsc tokens, so a batch can be shown to move exactly one asset.
+const tokenContractOf = (tokenName: string): string => {
+  const token = coins.get(tokenName);
+  if (!(token instanceof ContractAddressDefinedToken)) {
+    throw new Error(`${tokenName} has no contract address in statics`);
+  }
+  return String(token.contractAddress);
+};
+const busdTokenName = 'tbsc:busd';
+const usd1TokenName = 'tbsc:usd1';
+const busdContractAddress = tokenContractOf(busdTokenName);
 
 const word = (value: bigint): string => value.toString(16).padStart(64, '0');
 const addrWord = (address: string): string => address.toLowerCase().replace(/^0x/, '').padStart(64, '0');
@@ -200,6 +212,76 @@ describe('EVM TSS fail-closed verification (batcher contract flows)', function (
       await verify({ type: 'transfer', recipients }, txHex, true).should.be.rejectedWith(
         /token contract does not match/
       );
+    });
+  });
+
+  describe('batch asset binding (CECHO-2460)', function () {
+    const nativeRecipients = [
+      { address: recipientAddress, amount: '10' },
+      { address: attackerAddress, amount: '20' },
+    ];
+    const tokenRecipients = [
+      { address: recipientAddress, amount: '10', tokenName: busdTokenName },
+      { address: attackerAddress, amount: '20', tokenName: busdTokenName },
+    ];
+
+    it('rejects native batch calldata for a token batch intent', async function () {
+      const txHex = await buildTxHex({
+        to: batcherAddress,
+        value: '30',
+        data: encodeBatch([recipientAddress, attackerAddress], ['10', '20']),
+      });
+      (await verify({ type: 'transfer', recipients: tokenRecipients }, txHex)).should.equal(true);
+      warnings.some((w) => /token batch payment must use batchTransferFrom/.test(w.reason)).should.equal(true);
+      await verify({ type: 'transfer', recipients: tokenRecipients }, txHex, true).should.be.rejectedWith(
+        /token batch payment must use batchTransferFrom/
+      );
+    });
+
+    it('rejects batchTransferFrom calldata for a native batch intent', async function () {
+      const txHex = await buildTxHex({
+        to: batcherAddress,
+        value: '0',
+        data: encodeBatchTransferFrom(busdContractAddress, [recipientAddress, attackerAddress], ['10', '20']),
+      });
+      (await verify({ type: 'transfer', recipients: nativeRecipients }, txHex)).should.equal(true);
+      warnings
+        .some((w) => /native batch payment must use batch\(address\[\],uint256\[\]\)/.test(w.reason))
+        .should.equal(true);
+      await verify({ type: 'transfer', recipients: nativeRecipients }, txHex, true).should.be.rejectedWith(
+        /native batch payment must use batch\(address\[\],uint256\[\]\)/
+      );
+    });
+
+    it('rejects a batch whose recipients declare two different tokens', async function () {
+      const mixedRecipients = [
+        { address: recipientAddress, amount: '10', tokenName: busdTokenName },
+        { address: attackerAddress, amount: '20', tokenName: usd1TokenName },
+      ];
+      const txHex = await buildTxHex({
+        to: batcherAddress,
+        value: '0',
+        data: encodeBatchTransferFrom(busdContractAddress, [recipientAddress, attackerAddress], ['10', '20']),
+      });
+      (await verify({ type: 'transfer', recipients: mixedRecipients }, txHex)).should.equal(true);
+      warnings.some((w) => /more than one asset/.test(w.reason)).should.equal(true);
+      await verify({ type: 'transfer', recipients: mixedRecipients }, txHex, true).should.be.rejectedWith(
+        /more than one asset/
+      );
+    });
+
+    it('rejects a batch with an unresolvable token identity', async function () {
+      const unresolvedRecipients = [
+        { address: recipientAddress, amount: '10', tokenName: 'tbsc:not-a-registered-token' },
+        { address: attackerAddress, amount: '20', tokenName: 'tbsc:not-a-registered-token' },
+      ];
+      const txHex = await buildTxHex({
+        to: batcherAddress,
+        value: '0',
+        data: encodeBatchTransferFrom(busdContractAddress, [recipientAddress, attackerAddress], ['10', '20']),
+      });
+      (await verify({ type: 'transfer', recipients: unresolvedRecipients }, txHex)).should.equal(true);
+      warnings.some((w) => /cannot be resolved to a token contract/.test(w.reason)).should.equal(true);
     });
   });
 

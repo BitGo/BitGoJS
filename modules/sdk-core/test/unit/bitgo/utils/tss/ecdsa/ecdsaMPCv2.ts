@@ -19,6 +19,7 @@ import {
   EcdsaMPCv2Utils,
   EcdsaMPCv2KeyGenCallbacks,
   IBaseCoin,
+  IRequestTracer,
   IWallet,
   RequestTracer,
   SignatureShareRecord,
@@ -26,6 +27,7 @@ import {
   TxRequest,
 } from '../../../../../../src';
 import { bitgoGpgKey } from './gpgKeys';
+import { readKey } from 'openpgp';
 
 describe('ECDSA MPC v2', async () => {
   let userShare: Buffer;
@@ -837,7 +839,87 @@ describe('ECDSA MPC v2', async () => {
         (txRequest as any).intent,
         'stored intent must reach verifyTransaction'
       );
+      assert.strictEqual(
+        verifyCallArgs.callerTxParams,
+        undefined,
+        'pending approval supplies no caller txParams; the stored intent is the only source'
+      );
     });
+  });
+
+  it('signRequestBase should pass the caller txParams and the stored intent to verifyTransaction', async function () {
+    const serializedTxHex = 'f86c808504a817c80082520894' + '00'.repeat(20) + '80808080';
+    const callerTxParams = {
+      type: 'transfer',
+      recipients: [{ address: '0x' + '11'.repeat(20), amount: '1000' }],
+    };
+    const intent = {
+      intentType: 'payment',
+      recipients: [{ address: { address: '0x' + '11'.repeat(20) }, amount: { value: '1000', symbol: 'hteth' } }],
+    };
+
+    const mockBgWithPost = {} as BitGoBase;
+    mockBgWithPost.getEnv = sinon.stub().returns('test');
+    mockBgWithPost.setRequestTracer = sinon.stub();
+    mockBgWithPost.encrypt = sinon.stub().resolves('encrypted');
+    mockBgWithPost.decrypt = sinon.stub().resolves('decrypted');
+    mockBgWithPost.post = sinon.stub().returns({
+      send: sinon.stub().returnsThis(),
+      set: sinon.stub().returnsThis(),
+      result: sinon.stub().rejects(new Error('mock: HTTP not available')),
+    });
+
+    const verifyTransactionSpy = sinon.stub().resolves(true);
+    const mockCoinForDirectSend = {
+      getHashFunction: sinon.stub().callsFake(() => createKeccakHash('keccak256') as Hash),
+      verifyTransaction: verifyTransactionSpy,
+      getMPCAlgorithm: sinon.stub().returns('ecdsa'),
+      getConfig: sinon.stub().returns({ family: 'hteth' }),
+      getChain: sinon.stub().returns('hteth'),
+    } as unknown as IBaseCoin;
+
+    const mockWallet = {
+      id: sinon.stub().returns(walletID),
+      multisigType: sinon.stub().returns('tss'),
+      multisigTypeVersion: sinon.stub().returns('MPCv2'),
+    };
+
+    const directUtils = new EcdsaMPCv2Utils(mockBgWithPost, mockCoinForDirectSend, mockWallet as unknown as IWallet);
+    const bitgoPubKey = await readKey({ armoredKey: bitgoGpgKey.public });
+    sinon.stub(directUtils, 'pickBitgoPubGpgKeyForSigning').resolves(bitgoPubKey);
+
+    const txRequest = {
+      txRequestId: 'direct-send-test',
+      apiVersion: 'full',
+      walletId: walletID,
+      intent,
+      transactions: [
+        {
+          unsignedTx: { derivationPath: 'm/0', signableHex: serializedTxHex, serializedTxHex },
+          signatureShares: [],
+        },
+      ],
+    } as unknown as TxRequest;
+
+    try {
+      await directUtils.signTxRequest({
+        txRequest,
+        txParams: callerTxParams,
+        prv: userShare.toString('base64'),
+        reqId: { inc: sinon.stub(), toString: sinon.stub().returns('test-req') } as unknown as IRequestTracer,
+      });
+    } catch (e) {}
+
+    assert.strictEqual(verifyTransactionSpy.callCount, 1, 'verifyTransaction must be reached exactly once');
+    const verifyCallArgs = verifyTransactionSpy.firstCall.args[0];
+    assert.strictEqual(verifyCallArgs.intent, intent, 'stored intent must reach verifyTransaction');
+    assert.deepStrictEqual(
+      verifyCallArgs.callerTxParams,
+      callerTxParams,
+      'the untouched caller input must reach the verifier'
+    );
+    assert.strictEqual(verifyCallArgs.txParams.type, 'transfer');
+    assert.deepStrictEqual(verifyCallArgs.txParams.recipients, callerTxParams.recipients);
   });
 
   it('should still apply keccak256 for regular FLR EVM transactions', async () => {
