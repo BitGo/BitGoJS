@@ -9,10 +9,6 @@ id = "GHSA-2w8x-224x-785m"
 reason = "sjcl.ecc invalid-curve attack (ECDH); transitive via @bitgo/abstract-lightning > macaroon > sjcl; macaroon uses only HMAC/hash — no ECC; @bitgo/sjcl fork excludes sjcl.ecc entirely; resolved via root resolutions sjcl->@bitgo/sjcl@1.0.1; no upstream fix (first_patched_version: null)"
 
 
-[[IgnoredVulns]]
-id = "GHSA-7c78-jf6q-g5cm"
-reason = "tmp path traversal via type-confusion in _assertPath (non-string args); transitive via cypress/karma/lerna/nx (dev-time only, never in production); all prefix/postfix/template args are hard-coded string constants — type-confusion vector does not apply"
-
 
 
 [[IgnoredVulns]]
@@ -30,9 +26,5 @@ reason = "pacote DoS via addGitSha on malicious spec.rawSpec (CVE-2026-9496); tr
 [[IgnoredVulns]]
 id = "GHSA-vfj7-8cjw-p6xm"
 reason = "braces stack-overflow DoS (CVE-2026-93687) via deeply nested brace patterns in the recursive AST walker; no upstream fix available (last_affected: 3.0.3, latest release); transitive via chokidar, karma, and lint-staged/micromatch — dev-time tooling only; all brace patterns we feed in are code-controlled globs (watcher roots, lint globs, test patterns), never user-supplied. Re-evaluate on 2026-12-03: drop this exclusion if braces ships a patched release"
-
-[[IgnoredVulns]]
-id = "GHSA-ch52-4w7c-c8xp"
-reason = "http-cache-semantics shared-cache response confusion (CVE-2026-93748) exposing other users' Set-Cookie entries via max-stale on security-zeroed cache entries; no upstream fix available (last_affected: 4.2.0, latest release); transitive via lerna/pacote/@npmcli/arborist/node-gyp/sigstore (dev-time registry + release signing) and via @bitgo/sdk-coin-apt > @aptos-labs/ts-sdk > @aptos-labs/aptos-client > got > cacheable-request (runtime). The CVE requires operating as a shared/proxy HTTP cache serving multiple users; all our usages are single-process client caches (npm registry fetches, in-process got client) — the shared-cache attack vector does not apply. Re-evaluate on 2026-12-03: drop this exclusion if http-cache-semantics ships a patched release"
 
 
