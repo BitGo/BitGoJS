@@ -60,6 +60,121 @@ function isUnpublishedModule(module: { dir: string; json: PackageJson }): boolea
 
 let lernaModuleLocations: string[] = [];
 
+// Steps in publish.yml tee their lerna output here; Verify's propagation wait
+// trusts this list (fail-open: unreadable or empty logs revert to waiting for
+// every package, so the list is an optimization, never a correctness dependency).
+const publishedLogEnvVars = ['LERNA_SIBLINGS_PUBLISH_LOG', 'LERNA_BITGO_PUBLISH_LOG'];
+
+export interface LernaPublishLog {
+  /** Packages lerna confirmed published (`lerna success published <name> <version>`). */
+  published: Set<string>;
+  /**
+   * Packages lerna dispatched a publish for (`lerna verb publish <name>`),
+   * published or errored. A TLOG-409-errored package usually landed on npm anyway
+   * (the error is a duplicate-provenance false negative), so the propagation
+   * wait must cover it — otherwise the settle republishes it, hits a conflict,
+   * and burns a needless version bump plus dependent-bump cascades.
+   */
+  attempted: Set<string>;
+}
+
+/** Extracts the package names lerna actually published from its step log. */
+export function parseLernaPublishedPackages(logText: string): Set<string> {
+  // Require a version (digit-led) after the name: lerna also logs a count
+  // summary — `lerna success published 24 packages` — whose bare number must
+  // not land in the set (it would inflate the size used by
+  // shouldShortPollConflict's aborted-wave threshold), and \S+ (not
+  // @-anchored) so unscoped names would match too.
+  return new Set([...logText.matchAll(/lerna success published (\S+) \d+\./g)].map((m) => m[1]));
+}
+
+/** Extracts every package lerna dispatched a publish for, successful or not. */
+export function parseLernaAttemptedPackages(logText: string): Set<string> {
+  // `lerna verb publish <name>` fires per attempt (retries log it again), so
+  // the Set dedupes; a stray non-package token is harmless — it can never
+  // match a candidate name.
+  return new Set([...logText.matchAll(/lerna verb publish (\S+)/g)].map((m) => m[1]));
+}
+
+/**
+ * Parses both lerna publish logs. Returns undefined when the result cannot be
+ * trusted — callers must then fall back to waiting for every package
+ * (fail-open): no log was readable, or a readable log yielded no recognized
+ * lines at all, which means lerna's output format drifted and every set built
+ * from it would be wrong.
+ */
+export function readLernaPublishSets(env: NodeJS.ProcessEnv = process.env): LernaPublishLog | undefined {
+  const result: LernaPublishLog = { published: new Set(), attempted: new Set() };
+  let failedAnyRead = false;
+  let readAnyLog = false;
+  for (const envVar of publishedLogEnvVars) {
+    const logPath = env[envVar];
+    if (!logPath) continue;
+    try {
+      const logText = readFileSync(logPath, 'utf-8');
+      readAnyLog = true;
+      const logPublished = parseLernaPublishedPackages(logText);
+      const logAttempted = parseLernaAttemptedPackages(logText);
+      if ([...logPublished].some((name) => !logAttempted.has(name))) {
+        // Success lines without matching verb lines mean the `lerna verb publish`
+        // grammar drifted: attempted would silently shrink to published,
+        // bringing back the needless-bump behavior without tripping the
+        // zero-lines drift check.
+        console.warn(
+          `Lerna log ${logPath}: published packages without a \`lerna verb publish\` line — output-format drift?`
+        );
+      }
+      for (const name of logPublished) result.published.add(name);
+      for (const name of logAttempted) result.attempted.add(name);
+    } catch (e) {
+      failedAnyRead = true;
+      console.warn(`Could not read ${envVar} (${logPath})`, e);
+    }
+  }
+  // A partial read must never shrink the wait list: one unreadable log would
+  // drop every package it carried from the wait — the exact needless-bump
+  // failure this change exists to prevent. Fail open whenever any configured
+  // log is unreadable.
+  if (failedAnyRead) {
+    console.warn('Failing open to the full propagation wait: not every configured lerna log was readable.');
+    return undefined;
+  }
+  if (!readAnyLog) return undefined;
+  // attempted must be a superset of published: a package with a success line
+  // but no verb line (partial log, output-format variance) must still get the
+  // propagation wait — never skipping the wait for something that landed.
+  for (const name of result.published) {
+    result.attempted.add(name);
+  }
+  if (result.published.size === 0 && result.attempted.size === 0) {
+    console.warn(
+      'Lerna publish logs were readable but contained no recognized publish or attempt lines — ' +
+        'possible lerna output-format drift; failing open to the full propagation wait.'
+    );
+    return undefined;
+  }
+  return result;
+}
+
+/**
+ * Decides whether per-package conflict polls should be capped short during the
+ * settle pass. Both signals mean the registry is degraded: most of the wait
+ * list never became visible, or lerna's wave aborted before attempting half the
+ * tree (so the settle will republish most packages and any conflicts must not
+ * each burn the full poll budget).
+ */
+export function shouldShortPollConflict(
+  stillMissingCount: number,
+  waitListCount: number,
+  lernaReachedCount: number | undefined,
+  candidateCount: number
+): boolean {
+  if (waitListCount > 0 && stillMissingCount > waitListCount / 2) {
+    return true;
+  }
+  return lernaReachedCount !== undefined && candidateCount > 0 && lernaReachedCount < candidateCount / 2;
+}
+
 // Bump-on-conflict is the default posture: a Rekor/staged conflict does not mean
 // the registry write failed, and dist-tags lag minutes behind completed writes.
 // Set RECOVERY_MODE=false to restore fail-fast behavior.
@@ -69,6 +184,16 @@ const MAX_RECOVERY_ATTEMPTS = 5;
 // on npm before bumping it — the write usually completed despite the client error.
 const CONFLICT_POLL_TIMEOUT_MS = 5 * 60_000;
 const VERSION_POLL_DELAY_MS = 30_000;
+// On mass-stall days (most of the tree invisible, or lerna's wave aborted early)
+// the settle republishes most packages; a full 5-minute poll per conflict would
+// blow the job cap, so polls are capped to a ~30s budget (at most two checks
+// at the 30s delay) on those days.
+// The cap applies to every package for the whole settle pass (it is computed
+// once, before the settle starts): a package whose write genuinely completed
+// but is still propagating gets ~2 checks and then a version bump. That bump
+// is the accepted cost on degraded-registry days — bounded beats packages × 5
+// minutes against the job cap, and beta version numbers are cheap.
+const MASS_STALL_CONFLICT_POLL_TIMEOUT_MS = 30_000;
 
 async function getLernaModuleLocations(): Promise<void> {
   const modules = await getLernaModules();
@@ -216,6 +341,12 @@ export interface VerifyPackageOptions {
   versionExists?: PackageVersionExists;
   fetchDistTags?: (name: string) => Promise<Record<string, string>>;
   runPublish?: (cwd: string, preid: string) => Promise<string>;
+  /** Injectable for tests. */
+  sleep?: (delayMs: number) => Promise<void>;
+  /** Injectable for tests. */
+  now?: () => number;
+  /** Caps publishWithRecovery's per-package conflict poll; used by the settle pass on mass-stall days. */
+  conflictPollTimeoutMs?: number;
 }
 
 // Verifies one package against registry truth and, when needed, (re)publishes
@@ -247,7 +378,13 @@ export async function verifyPackage(
   };
   const attemptPublish = async (): Promise<boolean> => {
     try {
-      const { stdout, exitCode } = await publishWithRecovery(cwd, json, preid, { runPublish });
+      const { stdout, exitCode } = await publishWithRecovery(cwd, json, preid, {
+        runPublish,
+        versionExists,
+        sleep: options.sleep,
+        now: options.now,
+        conflictPollTimeoutMs: options.conflictPollTimeoutMs,
+      });
       console.log(stdout);
       if (exitCode !== 0) {
         return false;
@@ -478,9 +615,28 @@ export async function settleInDependencyOrder(
 async function verify(preid?: string) {
   await getLernaModuleLocations();
   const modules: WorkspaceModule[] = lernaModuleLocations.map((dir) => ({ dir, json: readPackageJson(dir) }));
-  const expected = modules
-    .filter((m) => !isUnpublishedModule(m))
-    .map((m) => ({ name: m.json.name, version: m.json.version }));
+  const candidates = modules.filter((m) => !isUnpublishedModule(m));
+
+  // Wait only for packages lerna reached (published or errored). Packages a
+  // storm-aborted wave never dispatched cannot be on npm, so waiting for them
+  // is pure loss — the settle pass below republishes them immediately instead.
+  // Errored packages ARE waited for: a TLOG 409 usually means the registry
+  // write completed anyway, and without the wait the settle would bump them
+  // (and their dependents) needlessly. The reverse cost is accepted: when the
+  // errored writes genuinely never landed (Oct 29's storm profile), the wait
+  // runs its full budget on their names instead of resolving early. Fail-open:
+  // without a readable publish log the wait covers every package (the log is
+  // an optimization, never a correctness dependency).
+  const lernaLog = readLernaPublishSets();
+  const waitList = lernaLog ? candidates.filter((m) => lernaLog.attempted.has(m.json.name)) : candidates;
+  if (lernaLog && waitList.length < candidates.length) {
+    console.log(
+      `Lerna reached ${waitList.length} of ${candidates.length} packages ` +
+        `(${lernaLog.published.size} published); skipping the propagation wait for the other ` +
+        `${candidates.length - waitList.length} never dispatched (the settle pass republishes them).`
+    );
+  }
+  const expected = waitList.map((m) => ({ name: m.json.name, version: m.json.version }));
 
   // One bounded wait for the whole release: a successful publish can stay
   // invisible on npm for minutes (occasionally much longer when npm stages a
@@ -493,8 +649,19 @@ async function verify(preid?: string) {
         'attempting recovery publish for those below.'
     );
   }
+  // Mass-stall days (most of the wait list invisible, or lerna's wave aborted
+  // early) mean the settle will republish most packages; cap the per-package
+  // conflict poll so a degraded registry cannot turn it into (packages × 5 min).
+  const conflictPollTimeoutMs = shouldShortPollConflict(
+    stillMissing.length,
+    expected.length,
+    lernaLog?.attempted.size,
+    candidates.length
+  )
+    ? MASS_STALL_CONFLICT_POLL_TIMEOUT_MS
+    : undefined;
   const anyFailed = await settleInDependencyOrder(modules, preid ?? 'beta', {
-    verifyPackage: (dir, preidArg, pinsDirty) => verifyPackage(dir, preidArg, pinsDirty),
+    verifyPackage: (dir, preidArg, pinsDirty) => verifyPackage(dir, preidArg, pinsDirty, { conflictPollTimeoutMs }),
     failFast: !RECOVERY_MODE,
   });
   if (anyFailed) {

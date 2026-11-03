@@ -24,6 +24,10 @@ jobs:
     # bumps, and the fallback publish's own sibling wait (20 min) — this cap
     # covers that with headroom while still failing out of a registry outage
     # instead of holding the runner for hours.
+    # Empirical floors (WCI-1858/WCI-2113): healthy-day green 43 min (Nov 3),
+    # storm-recovery green 78 min (Oct 29) — 22 min under this cap. A cap-kill
+    # costs a full re-release (prepare-release recomputes +1 for every package
+    # each run, so there is no bitgo-only redo). Do not trim this number.
     timeout-minutes: 100
     # Restricts @bitgo-beta/@bitgo-alpha publishing to protected branches via
     # a deployment branch policy on this environment, so the job cannot run
@@ -99,6 +103,7 @@ jobs:
         run: git commit -am "Auto updated ${{ env.preid }} branch" --no-verify || echo "No changes to commit"
 
       - name: Lerna Publish (siblings)
+        id: lerna-siblings
         # The lerna exit code is not a reliable failure signal: a Rekor TLOG 409 is
         # usually a duplicate submission of provenance whose registry write already
         # completed, and npm can report failure for versions it then publishes fine.
@@ -106,25 +111,74 @@ jobs:
         # endpoint and only republishes (bumping the version on staged conflicts)
         # for packages that genuinely never landed. Set RECOVERY_MODE=false in that
         # script's env to restore fail-fast behavior.
+        # The tee'd log records what lerna actually published so Verify Publish can
+        # skip its propagation wait for versions that never existed. GitHub's
+        # default run shell (bash -e) has NO pipefail — shell: bash opts into
+        # -eo pipefail so lerna's exit code survives the pipe and the step
+        # outcome stays failure under continue-on-error.
         continue-on-error: true
-        run: yarn lerna publish from-package --preid ${{ env.preid }} --dist-tag ${{ env.preid }} --force-publish --yes --loglevel silly
+        shell: bash
+        run: >-
+          yarn lerna publish from-package --preid ${{ env.preid }} --dist-tag ${{ env.preid }}
+          --force-publish --yes --loglevel silly 2>&1 | tee /tmp/lerna-siblings-publish.log
         env:
           NPM_CONFIG_PROVENANCE: true
 
+      - name: Warn on failed siblings publish
+        # outcome is the real result; conclusion is masked to success by
+        # continue-on-error, which is why the step badge cannot be trusted.
+        if: steps.lerna-siblings.outcome == 'failure'
+        run: >-
+          echo "::warning::Lerna siblings publish failed (continue-on-error). Verify Publish
+          will republish whatever is missing. See the Lerna Publish (siblings) step log for
+          the per-package errors."
+
       - name: Lerna Publish (bitgo)
+        id: lerna-bitgo
         # Non-fatal for the same reason as the siblings step; a bitgo failure here
         # (e.g. its prepack sibling-visibility wait timing out) is retried by
         # Verify Publish with BITGO_GENERATE_SHRINKWRAP enabled.
+        # This step usually fails with EUNCOMMIT on storm days: an aborted siblings
+        # wave leaves its rewritten package.jsons uncommitted, and lerna refuses a
+        # dirty tree. That instant skip is DESIRABLE — fixing it would run a 20-min
+        # prepack against dependencies that are not on npm yet. Verify Publish's
+        # fallback publishes bitgo after the settle has republished its deps. On
+        # healthy days this step publishes bitgo itself, shrinkwrap included.
         continue-on-error: true
+        # shell: bash for -eo pipefail — see the siblings step: without it the
+        # tee'd pipeline masks lerna's failure (the green-badge trap).
+        shell: bash
         run: |
           bitgo_name=$(jq -r '.name' modules/bitgo/package.json)
-          yarn lerna publish from-package --include-private "$bitgo_name" --preid ${{ env.preid }} --dist-tag ${{ env.preid }} --force-publish --yes --loglevel silly
+          yarn lerna publish from-package --include-private "$bitgo_name" --preid ${{ env.preid }} --dist-tag ${{ env.preid }} --force-publish --yes --loglevel silly 2>&1 | tee /tmp/lerna-bitgo-publish.log
         env:
           NPM_CONFIG_PROVENANCE: true
           BITGO_GENERATE_SHRINKWRAP: true
+
+      - name: Warn on failed bitgo publish
+        if: steps.lerna-bitgo.outcome == 'failure'
+        run: >-
+          echo "::warning::Lerna bitgo publish failed (continue-on-error). Verify Publish
+          will publish bitgo via its fallback path after the settle pass."
 
       - name: Verify Publish
         run: npx tsx ./scripts/verify-release.ts ${{ env.preid }}
         env:
           NPM_CONFIG_PROVENANCE: true
           RECOVERY_MODE: true
+          LERNA_SIBLINGS_PUBLISH_LOG: /tmp/lerna-siblings-publish.log
+          LERNA_BITGO_PUBLISH_LOG: /tmp/lerna-bitgo-publish.log
+
+      - name: Upload lerna publish logs on failure
+        # The tee'd logs are the ground truth for what lerna actually published
+        # (Verify parses them); the step log is the only other copy and is
+        # painful to grep at --loglevel silly volumes. Runs after Verify so it
+        # also captures the case where only Verify Publish failed.
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: lerna-publish-logs
+          path: |
+            /tmp/lerna-siblings-publish.log
+            /tmp/lerna-bitgo-publish.log
+          retention-days: 7

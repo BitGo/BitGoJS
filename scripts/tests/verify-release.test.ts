@@ -10,10 +10,14 @@ import {
   type WorkspaceModule,
   isRecoverablePublishConflict,
   getDistTagsWithRetry,
+  parseLernaPublishedPackages,
+  parseLernaAttemptedPackages,
   publishWithRecovery,
   propagateVersionToDependents,
+  readLernaPublishSets,
   readPackageJson,
   settleInDependencyOrder,
+  shouldShortPollConflict,
   topoOrder,
   verifyPackage,
 } from '../../scripts/verify-release';
@@ -182,6 +186,150 @@ describe('waitForPackageVersions', function () {
     );
     assert.deepEqual(missing, []);
     assert.equal(calls, behavior.length);
+  });
+});
+
+describe('parseLernaPublishedPackages', function () {
+  it('extracts scoped and unscoped names from lerna step logs', function () {
+    const log = [
+      'lerna sill argv { ... }',
+      'lerna notice \u{1f4e6}  @bitgo-beta/blake2b-wasm@3.0.4-beta.2426',
+      '2026-11-03T09:01:38Z lerna success published @bitgo-beta/bitgo 14.2.1-beta.2223',
+      'lerna success published @bitgo-beta/statics 15.1.1-beta.2193',
+      'lerna success published bitgo 54.3.0',
+      'lerna success published 24 packages',
+      'lerna success published 1 package',
+      'lerna WARN Unable to determine published version, assuming "@bitgo-beta/sdk-test" unpublished.',
+    ].join('\n');
+    const names = parseLernaPublishedPackages(log);
+    assert.deepEqual([...names].sort(), ['@bitgo-beta/bitgo', '@bitgo-beta/statics', 'bitgo']);
+  });
+
+  it('returns an empty set when nothing was published', function () {
+    assert.equal(parseLernaPublishedPackages('lerna ERR! EUNCOMMIT ...').size, 0);
+  });
+
+  it('parseLernaAttemptedPackages dedupes retries and tolerates unscoped names', function () {
+    const log = [
+      'lerna verb publish @bitgo-beta/a',
+      'lerna verb publish @bitgo-beta/a', // retry duplicates dedupe
+      'lerna verb publish bitgo',
+      'lerna verb packed modules/argon2', // packing noise: different verb, must not match
+      'lerna success published @bitgo-beta/a 1.0.0',
+    ].join('\n');
+    const attempted = parseLernaAttemptedPackages(log);
+    assert.deepEqual([...attempted].sort(), ['@bitgo-beta/a', 'bitgo']);
+  });
+});
+
+describe('readLernaPublishSets', function () {
+  it('unions both lerna step logs into published and attempted sets', function () {
+    const siblings = makePackageDir({ name: 'x', version: '1.0.0' });
+    const bitgo = makePackageDir({ name: 'x', version: '1.0.0' });
+    fs.writeFileSync(
+      path.join(siblings.dir, 'siblings.log'),
+      [
+        'lerna verb publish @bitgo-beta/a',
+        'lerna success published @bitgo-beta/a 1.0.0',
+        'lerna verb publish @bitgo-beta/b',
+        'lerna verb publish @bitgo-beta/b', // retry: duplicate attempt lines dedupe
+        'lerna ERR! TLOG_CREATE_ENTRY_ERROR error creating tlog entry',
+        'lerna success published @bitgo-beta/b 1.0.0',
+        'lerna verb publish @bitgo-beta/c',
+        'lerna ERR! TLOG_CREATE_ENTRY_ERROR error creating tlog entry',
+      ].join('\n') + '\n'
+    );
+    fs.writeFileSync(path.join(bitgo.dir, 'bitgo.log'), 'lerna success published @bitgo-beta/bitgo 1.0.0\n');
+    const log = readLernaPublishSets({
+      LERNA_SIBLINGS_PUBLISH_LOG: path.join(siblings.dir, 'siblings.log'),
+      LERNA_BITGO_PUBLISH_LOG: path.join(bitgo.dir, 'bitgo.log'),
+    });
+    assert.ok(log);
+    // attempted covers errored-but-dispatched packages: a TLOG 409 usually
+    // means the registry write completed, so the wait must cover package c
+    assert.deepEqual([...log.attempted].sort(), [
+      '@bitgo-beta/a',
+      '@bitgo-beta/b',
+      '@bitgo-beta/bitgo',
+      '@bitgo-beta/c',
+    ]);
+    assert.deepEqual([...log.published].sort(), ['@bitgo-beta/a', '@bitgo-beta/b', '@bitgo-beta/bitgo']);
+  });
+
+  it('fails open to undefined when no logs are readable', function () {
+    assert.equal(readLernaPublishSets({}), undefined);
+    assert.equal(readLernaPublishSets({ LERNA_SIBLINGS_PUBLISH_LOG: '/nonexistent/log.txt' }), undefined);
+  });
+
+  it('fails open to undefined when one configured log is unreadable, even if the other reads', function () {
+    // regression: a partial read used to return just the readable log's names,
+    // shrinking the wait list to those packages and skipping the wait for
+    // every sibling that the missing log carried
+    const pkg = makePackageDir({ name: 'x', version: '1.0.0' });
+    fs.writeFileSync(path.join(pkg.dir, 'bitgo.log'), 'lerna verb publish @bitgo-beta/bitgo\n');
+    assert.equal(
+      readLernaPublishSets({
+        LERNA_SIBLINGS_PUBLISH_LOG: '/nonexistent/siblings.log',
+        LERNA_BITGO_PUBLISH_LOG: path.join(pkg.dir, 'bitgo.log'),
+      }),
+      undefined
+    );
+  });
+
+  it('warns when published names lack verb-publish lines (grammar drift), but still waits for them', function () {
+    const pkg = makePackageDir({ name: 'x', version: '1.0.0' });
+    fs.writeFileSync(
+      path.join(pkg.dir, 'drifted.log'),
+      'lerna success published @bitgo-beta/a 1.0.0\nlerna success published @bitgo-beta/b 1.0.0\n'
+    );
+    const log = readLernaPublishSets({ LERNA_SIBLINGS_PUBLISH_LOG: path.join(pkg.dir, 'drifted.log') });
+    assert.ok(log);
+    // the superset guarantee keeps the published names on the wait list even
+    // when the verb grammar drifted
+    assert.deepEqual([...log.attempted].sort(), ['@bitgo-beta/a', '@bitgo-beta/b']);
+    assert.deepEqual([...log.published].sort(), ['@bitgo-beta/a', '@bitgo-beta/b']);
+  });
+
+  it('fails open to undefined when readable logs contain no recognized lines (format drift)', function () {
+    const pkg = makePackageDir({ name: 'x', version: '1.0.0' });
+    fs.writeFileSync(path.join(pkg.dir, 'empty.log'), 'lerna ERR! EUNCOMMIT ...\n');
+    assert.equal(readLernaPublishSets({ LERNA_SIBLINGS_PUBLISH_LOG: path.join(pkg.dir, 'empty.log') }), undefined);
+  });
+
+  it('keeps a zero-publish, all-errored storm on the attempted wait list', function () {
+    const pkg = makePackageDir({ name: 'x', version: '1.0.0' });
+    fs.writeFileSync(
+      path.join(pkg.dir, 'storm.log'),
+      [
+        'lerna verb publish @bitgo-beta/a',
+        'lerna ERR! TLOG_CREATE_ENTRY_ERROR error creating tlog entry',
+        'lerna verb publish @bitgo-beta/b',
+        'lerna ERR! TLOG_CREATE_ENTRY_ERROR error creating tlog entry',
+      ].join('\n') + '\n'
+    );
+    const log = readLernaPublishSets({ LERNA_SIBLINGS_PUBLISH_LOG: path.join(pkg.dir, 'storm.log') });
+    assert.ok(log);
+    assert.equal(log.published.size, 0);
+    assert.deepEqual([...log.attempted].sort(), ['@bitgo-beta/a', '@bitgo-beta/b']);
+  });
+});
+
+describe('shouldShortPollConflict', function () {
+  it('triggers when most of the wait list stayed invisible', function () {
+    assert.equal(shouldShortPollConflict(104, 114, 114, 114), true);
+  });
+
+  it('triggers when lerna published less than half the tree', function () {
+    assert.equal(shouldShortPollConflict(0, 10, 10, 114), true);
+  });
+
+  it('does not trigger on healthy days', function () {
+    assert.equal(shouldShortPollConflict(1, 114, 114, 114), false);
+    assert.equal(shouldShortPollConflict(0, 114, 114, 114), false);
+  });
+
+  it('does not trigger when the published set is unknown', function () {
+    assert.equal(shouldShortPollConflict(2, 10, undefined, 114), false);
   });
 });
 
@@ -631,6 +779,43 @@ describe('verifyPackage', function () {
     assert.equal(publishCalls, 1);
     assert.ok(lines.includes('@bitgo-beta/sdk-verify-target matches expected version 1.0.0-beta.2'));
     assert.equal(pkg.read().version, '1.0.0-beta.2');
+  });
+
+  it('caps the conflict poll when conflictPollTimeoutMs is set (mass-stall path)', async function () {
+    const pkg = makeTarget('1.0.0-beta.1');
+    const clock = fakeClock();
+    const tlogConflict = new Error(
+      'npm error TLOG_CREATE_ENTRY_ERROR (409) an equivalent entry already exists'
+    ) as Error & { stdout?: string };
+    tlogConflict.stdout = tlogConflict.message;
+    let publishCalls = 0;
+    let versionChecks = 0;
+    const { lines, result } = await captureConsoleLog(() =>
+      verifyPackage(pkg.dir, 'beta', false, {
+        conflictPollTimeoutMs: 60_000,
+        sleep: clock.sleep,
+        now: clock.now,
+        versionExists: async () => {
+          versionChecks += 1;
+          return false;
+        },
+        fetchDistTags: async () => ({ beta: '0.9.9-beta.1' }),
+        runPublish: async () => {
+          publishCalls += 1;
+          if (publishCalls === 1) {
+            throw tlogConflict;
+          }
+          return 'published';
+        },
+      })
+    );
+    assert.equal(result, true);
+    assert.equal(publishCalls, 2);
+    // 1 visibility check + 3 poll checks (60s budget / 30s delay); the default
+    // 5-minute budget would poll 10 times — this asserts the cap is threaded
+    // through verifyPackage into publishWithRecovery
+    assert.equal(versionChecks, 4);
+    assert.ok(lines.includes('@bitgo-beta/sdk-verify-target matches expected version 1.0.0-beta.2'));
   });
 
   it('publishes a missing package with a diagnostic', async function () {
