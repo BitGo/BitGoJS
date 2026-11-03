@@ -359,10 +359,12 @@ PendingApproval.prototype.reject = function (params, callback) {
 
 //
 // cancel
-// rejects the pending approval
+// cancels the pending approval
 //
 PendingApproval.prototype.cancel = function (params, callback) {
-  return this.reject(params, callback);
+  return Promise.resolve(this.bitgo.put(this.url()).send({ state: 'canceled' }).result())
+    .then(callback)
+    .catch(callback);
 };
 
 export = PendingApproval;
