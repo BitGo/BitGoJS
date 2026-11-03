@@ -11,6 +11,13 @@ import {
 import utils from './utils';
 import { normalizeCantonAmount } from './amount';
 
+/**
+ * Error for an amount that cannot fund an allocation. Zero only becomes valid for a receive-only
+ * allocation, so the message names the escape hatch that unlocks it.
+ */
+const AMOUNT_ERROR_MESSAGE =
+  "amount must be a positive number; zero is only allowed for a receive-only allocation, so call allocationRole('receive')";
+
 export class AllocationAllocateBuilder extends TransactionBuilder {
   private _commandId: string;
   private _amount: CantonAmount;
@@ -77,7 +84,7 @@ export class AllocationAllocateBuilder extends TransactionBuilder {
 
   /**
    * Sets the role of this allocation. A 'receive' allocation is an unfunded, receive-only V2 allocation
-   * (cross-issuer trades): it locks nothing, so its amount is 0. Call before amount().
+   * (cross-issuer trades): it locks nothing, so its amount is 0. May be called before or after amount().
    * @param role - 'send' (default) or 'receive'
    * @returns The current builder instance for chaining.
    */
@@ -91,17 +98,17 @@ export class AllocationAllocateBuilder extends TransactionBuilder {
 
   /**
    * Sets the allocation amount.
+   *
+   * Zero is accepted here regardless of the role so that amount() and allocationRole() may be called in
+   * either order; a zero amount is only valid for a receive-only allocation, which is enforced when the
+   * request object is built. Negative, empty and non-numeric amounts are rejected immediately.
+   *
    * @param amount - allocation amount. Use a string or bigint above Number.MAX_SAFE_INTEGER.
-   *   Zero is accepted only for a 'receive' allocation (set allocationRole first).
    * @returns The current builder instance for chaining.
-   * @throws Error if amount is not positive (or negative, for a receive allocation)
+   * @throws Error if amount is negative, empty or not a number.
    */
   amount(amount: CantonAmountInput): this {
-    this._amount = normalizeCantonAmount(
-      amount,
-      'amount must be a positive number',
-      this._allocationRole === 'receive'
-    );
+    this._amount = normalizeCantonAmount(amount, AMOUNT_ERROR_MESSAGE, true);
     return this;
   }
 
@@ -280,7 +287,7 @@ export class AllocationAllocateBuilder extends TransactionBuilder {
   private validate(): void {
     if (!this._commandId) throw new Error('commandId is missing');
     if (this._amount === undefined || this._amount === null) throw new Error('amount is missing');
-    if (this._allocationRole === 'send' && !Number(this._amount)) throw new Error('amount is missing');
+    if (this._allocationRole === 'send' && !Number(this._amount)) throw new Error(AMOUNT_ERROR_MESSAGE);
     if (!this._token) throw new Error('token is missing');
     if (!this._operatorId) throw new Error('operatorId is missing');
     if (this._contractId === undefined) throw new Error('contractId is missing');

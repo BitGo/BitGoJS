@@ -40,6 +40,13 @@ function buildWithAllRequired(txBuilder: AllocationAllocateBuilder): AllocationA
     .senderPartyId(senderPartyId);
 }
 
+// Helper to create an initialised builder with no fields set
+function newAllocationBuilder(): AllocationAllocateBuilder {
+  const txBuilder = new AllocationAllocateBuilder(coins.get('tcanton'));
+  txBuilder.initBuilder(new Transaction(coins.get('tcanton')));
+  return txBuilder;
+}
+
 describe('AllocationAllocate Builder', () => {
   it('should build the allocation allocate request object with all fields', function () {
     const txBuilder = new AllocationAllocateBuilder(coins.get('tcanton'));
@@ -82,9 +89,7 @@ describe('AllocationAllocate Builder', () => {
   });
 
   it('should build an unfunded receive-only allocation with amount 0', function () {
-    const txBuilder = new AllocationAllocateBuilder(coins.get('tcanton'));
-    const tx = new Transaction(coins.get('tcanton'));
-    txBuilder.initBuilder(tx);
+    const txBuilder = newAllocationBuilder();
     buildWithAllRequired(txBuilder.allocationRole('receive')).amount(0);
     const requestObj = txBuilder.toRequestObject();
     assert.equal(requestObj.amount, 0);
@@ -92,26 +97,54 @@ describe('AllocationAllocate Builder', () => {
   });
 
   it('should accept a zero string amount for a receive-only allocation', function () {
-    const txBuilder = new AllocationAllocateBuilder(coins.get('tcanton'));
-    const tx = new Transaction(coins.get('tcanton'));
-    txBuilder.initBuilder(tx);
+    const txBuilder = newAllocationBuilder();
     buildWithAllRequired(txBuilder.allocationRole('receive')).amount('0');
     assert.equal(txBuilder.toRequestObject().amount, '0');
   });
 
-  it('should still reject a zero amount for a send allocation', function () {
-    const txBuilder = new AllocationAllocateBuilder(coins.get('tcanton'));
-    const tx = new Transaction(coins.get('tcanton'));
-    txBuilder.initBuilder(tx);
-    assert.throws(() => txBuilder.amount(0), /amount must be a positive number/);
-    assert.throws(() => txBuilder.allocationRole('send').amount('0'), /amount must be a positive number/);
+  it('should build a receive-only allocation when amount() is called before allocationRole()', function () {
+    const txBuilder = newAllocationBuilder();
+    buildWithAllRequired(txBuilder).amount(0).allocationRole('receive');
+    const requestObj = txBuilder.toRequestObject();
+    assert.equal(requestObj.amount, 0);
+    assert.equal(requestObj.allocationRole, 'receive');
+  });
+
+  it('should build a receive-only allocation with a zero string amount set before the role', function () {
+    const txBuilder = newAllocationBuilder();
+    buildWithAllRequired(txBuilder).amount('0').allocationRole('receive');
+    assert.equal(txBuilder.toRequestObject().amount, '0');
+  });
+
+  it('should still reject a zero amount for a send allocation, naming the receive role', function () {
+    const txBuilder = newAllocationBuilder();
+    buildWithAllRequired(txBuilder).amount(0);
+    assert.throws(() => txBuilder.toRequestObject(), /allocationRole\('receive'\)/);
+  });
+
+  it('should still reject an explicit send allocation with a zero string amount, naming the receive role', function () {
+    const txBuilder = newAllocationBuilder();
+    buildWithAllRequired(txBuilder).amount('0').allocationRole('send');
+    assert.throws(() => txBuilder.toRequestObject(), /allocationRole\('receive'\)/);
+  });
+
+  it('should reject a negative or empty amount with no receive role, naming the receive role', function () {
+    for (const badAmount of [-1, '-1', '']) {
+      assert.throws(
+        () => newAllocationBuilder().amount(badAmount),
+        /allocationRole\('receive'\)/,
+        `amount ${JSON.stringify(badAmount)} should name allocationRole('receive')`
+      );
+    }
   });
 
   it('should reject a negative amount even for a receive-only allocation', function () {
-    const txBuilder = new AllocationAllocateBuilder(coins.get('tcanton'));
-    const tx = new Transaction(coins.get('tcanton'));
-    txBuilder.initBuilder(tx);
-    assert.throws(() => txBuilder.allocationRole('receive').amount(-1), /amount must be a positive number/);
+    for (const badAmount of [-1, '-1']) {
+      assert.throws(
+        () => newAllocationBuilder().allocationRole('receive').amount(badAmount),
+        /amount must be a positive number/
+      );
+    }
   });
 
   it('should not set allocationRole on a send allocation request', function () {
