@@ -347,6 +347,17 @@ describe('Tokenized Equity CoinFeatures', function () {
     coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
   });
 
+  ['stgaaplgo', 'stgamzngo', 'stggooglgo', 'stgmetago', 'stgmsftgo', 'stgnvdago', 'stgspcxgo', 'stgspygo', 'stgtslago']
+    .flatMap((symbol) => [`tsol:${symbol}`, `ofctsol:${symbol}`])
+    .forEach((name) => {
+      it(`${name} should be a tokenized equity and not a stablecoin`, function () {
+        const coin = coins.get(name);
+        coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+        coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+        coin.features.should.not.containEql(CoinFeature.STABLECOIN);
+      });
+    });
+
   it('invariant: BITGO_TOKENIZED_EQUITY without TOKENIZED_EQUITY should throw MissingRequiredCoinFeatureError', function () {
     let threw = false;
     let errorMessage = '';

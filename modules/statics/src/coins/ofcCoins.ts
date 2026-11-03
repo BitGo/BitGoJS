@@ -2231,6 +2231,78 @@ export const ofcCoins = [
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
   ),
   tofcsolToken(
+    '21567898-926b-45c5-aafa-7f61f6d4df16',
+    'ofctsol:stgaaplgo',
+    'Test Apple',
+    9,
+    UnderlyingAsset['tsol:stgaaplgo'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
+  ),
+  tofcsolToken(
+    '92263fa0-9218-477c-b1b9-2f827da72fcf',
+    'ofctsol:stgamzngo',
+    'Test Amazon',
+    9,
+    UnderlyingAsset['tsol:stgamzngo'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
+  ),
+  tofcsolToken(
+    '1caadf04-c4fa-4b3f-9170-da5b73fe8cc7',
+    'ofctsol:stggooglgo',
+    'Test Alphabet',
+    9,
+    UnderlyingAsset['tsol:stggooglgo'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
+  ),
+  tofcsolToken(
+    '25521e04-8390-42dc-a01c-f02189dc1795',
+    'ofctsol:stgmetago',
+    'Test Meta',
+    9,
+    UnderlyingAsset['tsol:stgmetago'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
+  ),
+  tofcsolToken(
+    'f4500eba-e625-4c83-88f9-1320f6601c1a',
+    'ofctsol:stgmsftgo',
+    'Test Microsoft',
+    9,
+    UnderlyingAsset['tsol:stgmsftgo'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
+  ),
+  tofcsolToken(
+    '3e89dc81-9666-4f8e-9c1f-2860057da534',
+    'ofctsol:stgnvdago',
+    'Test NVIDIA',
+    9,
+    UnderlyingAsset['tsol:stgnvdago'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
+  ),
+  tofcsolToken(
+    '1e3e21f0-eec7-4c37-985b-15bbd27bc73f',
+    'ofctsol:stgspcxgo',
+    'Test SpaceX',
+    9,
+    UnderlyingAsset['tsol:stgspcxgo'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
+  ),
+  tofcsolToken(
+    '7e9326f8-0aeb-41d3-b71e-ff0253e97073',
+    'ofctsol:stgspygo',
+    'Test SPY',
+    9,
+    UnderlyingAsset['tsol:stgspygo'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
+  ),
+  tofcsolToken(
+    '3cf698f5-b4cf-4586-b6f2-52467cc54bc1',
+    'ofctsol:stgtslago',
+    'Test Tesla',
+    9,
+    UnderlyingAsset['tsol:stgtslago'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY]
+  ),
+  tofcsolToken(
     '750f0e40-c5b9-464f-874f-dc455cf1494b',
     'ofctsol:stgusd1',
     'Test USD1 Token',

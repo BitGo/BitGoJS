@@ -3976,6 +3976,105 @@ export const solTokens = [
     ProgramID.Token2022ProgramId
   ),
   tsolToken(
+    '674920d0-9c9a-44c3-b415-41475b673f5c',
+    'tsol:stgaaplgo',
+    'Test Apple',
+    9,
+    '6NQArPECT5gVDtwrQdQBzELRo997ZzYha1fXjshbG9mP',
+    '6NQArPECT5gVDtwrQdQBzELRo997ZzYha1fXjshbG9mP',
+    UnderlyingAsset['tsol:stgaaplgo'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY],
+    ProgramID.Token2022ProgramId
+  ),
+  tsolToken(
+    '5afca248-a6f1-4d2b-b18f-729430ca5b20',
+    'tsol:stgamzngo',
+    'Test Amazon',
+    9,
+    '2xTNbbMcmh1c5axbYgkhXqHHzgXLXUhqmnLSZvhyu3Ud',
+    '2xTNbbMcmh1c5axbYgkhXqHHzgXLXUhqmnLSZvhyu3Ud',
+    UnderlyingAsset['tsol:stgamzngo'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY],
+    ProgramID.Token2022ProgramId
+  ),
+  tsolToken(
+    '38fef93d-c056-46cd-8f51-f67d22131cd4',
+    'tsol:stggooglgo',
+    'Test Alphabet',
+    9,
+    'CJLkf1JGasdd2AepT6cFu1EQ1EbzNsBt5evmmJMr8Ui4',
+    'CJLkf1JGasdd2AepT6cFu1EQ1EbzNsBt5evmmJMr8Ui4',
+    UnderlyingAsset['tsol:stggooglgo'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY],
+    ProgramID.Token2022ProgramId
+  ),
+  tsolToken(
+    '7242437d-9f51-4d69-8a02-41814380cd9f',
+    'tsol:stgmetago',
+    'Test Meta',
+    9,
+    'q7sX4dfZ4WkhzfYyFDXbSanZ8vqLfis6wxLkVRhJAsk',
+    'q7sX4dfZ4WkhzfYyFDXbSanZ8vqLfis6wxLkVRhJAsk',
+    UnderlyingAsset['tsol:stgmetago'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY],
+    ProgramID.Token2022ProgramId
+  ),
+  tsolToken(
+    '9b401618-767f-46e6-a476-d12e3f5f0cf7',
+    'tsol:stgmsftgo',
+    'Test Microsoft',
+    9,
+    'C1Z4ney6gthGugJf7n9SJL3DC78zNTgJqBzfsGUMS3R6',
+    'C1Z4ney6gthGugJf7n9SJL3DC78zNTgJqBzfsGUMS3R6',
+    UnderlyingAsset['tsol:stgmsftgo'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY],
+    ProgramID.Token2022ProgramId
+  ),
+  tsolToken(
+    '489c7cb8-186a-48d4-af6b-8bfebb6e0b8b',
+    'tsol:stgnvdago',
+    'Test NVIDIA',
+    9,
+    '3mTaChNVKNr5XkVqw9xGAg4235kfEo7Xq1NVDzKKhdxD',
+    '3mTaChNVKNr5XkVqw9xGAg4235kfEo7Xq1NVDzKKhdxD',
+    UnderlyingAsset['tsol:stgnvdago'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY],
+    ProgramID.Token2022ProgramId
+  ),
+  tsolToken(
+    '26476392-a7f1-480f-9080-5a41c307a710',
+    'tsol:stgspcxgo',
+    'Test SpaceX',
+    9,
+    '5YYx6fA2aZQ3LbEfKmomRymTxFoTaModz5rDCMYfqz1j',
+    '5YYx6fA2aZQ3LbEfKmomRymTxFoTaModz5rDCMYfqz1j',
+    UnderlyingAsset['tsol:stgspcxgo'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY],
+    ProgramID.Token2022ProgramId
+  ),
+  tsolToken(
+    '9323dfba-a6a5-4f29-8798-2ddf6f17bac9',
+    'tsol:stgspygo',
+    'Test SPY',
+    9,
+    'A2pQBXCBZNZsnzPPxuoWkMsfthtXhDd9TVjbNv7Uj5mc',
+    'A2pQBXCBZNZsnzPPxuoWkMsfthtXhDd9TVjbNv7Uj5mc',
+    UnderlyingAsset['tsol:stgspygo'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY],
+    ProgramID.Token2022ProgramId
+  ),
+  tsolToken(
+    'e9e9c30e-356e-4da4-8767-8cfff83afe3d',
+    'tsol:stgtslago',
+    'Test Tesla',
+    9,
+    '9wU7WieH4NtFDri1XnKQRzPipvk2MKp1DLYkNf9Aotye',
+    '9wU7WieH4NtFDri1XnKQRzPipvk2MKp1DLYkNf9Aotye',
+    UnderlyingAsset['tsol:stgtslago'],
+    [...SOL_TOKEN_FEATURES, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY],
+    ProgramID.Token2022ProgramId
+  ),
+  tsolToken(
     '6405b589-e0cf-4481-a48f-60f8416e21ca',
     'tsol:stgusd1',
     'Test USD1 Token',
