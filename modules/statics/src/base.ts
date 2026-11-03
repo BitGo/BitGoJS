@@ -1286,6 +1286,7 @@ export enum UnderlyingAsset {
   'sol:gousd' = 'sol:gousd',
   'tsol:gousd' = 'tsol:gousd',
   'tsol:stggousd' = 'tsol:stggousd',
+  'tsol:cttest' = 'tsol:cttest',
   'sol:usdm1' = 'sol:usdm1',
   'tsol:slnd' = 'tsol:slnd',
   'tsol:orca' = 'tsol:orca',

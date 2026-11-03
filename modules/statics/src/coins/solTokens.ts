@@ -4500,4 +4500,15 @@ export const solTokens = [
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN],
     ProgramID.Token2022ProgramId
   ),
+  tsolToken(
+    'a1be8cfa-b772-42f4-9c6a-9f8326d3b384',
+    'tsol:cttest',
+    'Test Confidential Token',
+    6,
+    'Ai1kEjbXhD31NxkYfjCpDgfHNVSYqkQcfYSGAwXidoxU', // sandbox devnet mint, ConfidentialTransferMint auto-approve ON
+    'Ai1kEjbXhD31NxkYfjCpDgfHNVSYqkQcfYSGAwXidoxU',
+    UnderlyingAsset['tsol:cttest'],
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
+  ),
 ];
