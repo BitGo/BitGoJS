@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [20.6.5](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-ethw%4020.6.4...%40bitgo%2Fsdk-coin-ethw%4020.6.5) (2026-11-03)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-ethw
+
+
+
+
+
 ## [20.6.4](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-ethw%4020.6.3...%40bitgo%2Fsdk-coin-ethw%4020.6.4) (2026-10-29)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ethw

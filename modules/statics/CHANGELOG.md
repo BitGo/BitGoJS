@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.28.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fstatics%4059.27.0...%40bitgo%2Fstatics%4059.28.0) (2026-11-03)
+
+### Bug Fixes
+
+* **statics:** restore dropped tokens, add hoodeth token features ([c47296c](https://github.com/BitGo/BitGoJS/commit/c47296c81af0c3d0662d4070db40673ede2da3f6))
+
+### Features
+
+* add new tokens from AMS API ([5cf142c](https://github.com/BitGo/BitGoJS/commit/5cf142c39d3b552f9cfcb01665deb97ac6d4d0c1))
+* add new tokens from AMS API ([bd3a04b](https://github.com/BitGo/BitGoJS/commit/bd3a04b7df240e873bb5de203444bb28ec6db5a0))
+* **statics:** add 9 goStocks staging tsol token definitions ([3602c0e](https://github.com/BitGo/BitGoJS/commit/3602c0e51cf2deac0d0593def2b8881b82631522))
+* **statics:** add 9 goStocks test tokens from AMS ([50a78cc](https://github.com/BitGo/BitGoJS/commit/50a78cce7f1e4545b682160baef575dbf8375ee7))
+* **statics:** add tsol:cttest devnet CT test mint (CHALO-2025) ([0c69ff1](https://github.com/BitGo/BitGoJS/commit/0c69ff1ad20f3c714aa83c7fb7392ec20523d646))
+* **statics:** onboard arc, xrp, and sepolia tokens for CSHLD-2081 ([7c9e06c](https://github.com/BitGo/BitGoJS/commit/7c9e06cd06b5a35c5748b862f4c70c01d1c7c8b2))
+
+
 # [59.27.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fstatics%4059.26.0...%40bitgo%2Fstatics%4059.27.0) (2026-10-29)
 
 ### Bug Fixes

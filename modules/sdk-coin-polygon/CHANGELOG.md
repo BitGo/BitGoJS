@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [21.9.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-polygon%4021.8.4...%40bitgo%2Fsdk-coin-polygon%4021.9.0) (2026-11-03)
+
+### Features
+
+* accept Safe keycard params-EVM TSS recovery ([b2832ac](https://github.com/BitGo/BitGoJS/commit/b2832ac1515d3872f993c494775d9e7fbf2d7723))
+
+
 ## [21.8.4](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-polygon%4021.8.3...%40bitgo%2Fsdk-coin-polygon%4021.8.4) (2026-10-29)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-polygon

@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.21.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-sol%408.20.2...%40bitgo%2Fsdk-coin-sol%408.21.0) (2026-11-03)
+
+### Features
+
+* add eddsaMpc and XLM Safe recovery key params ([c650971](https://github.com/BitGo/BitGoJS/commit/c6509710caa8086e4f0f3eb7f321f1fc02062316))
+
+
 ## [8.20.2](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-sol%408.20.1...%40bitgo%2Fsdk-coin-sol%408.20.2) (2026-10-29)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [13.15.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-atom%4013.14.6...%40bitgo%2Fsdk-coin-atom%4013.15.0) (2026-11-03)
+
+### Features
+
+* accept Safe keycard params-EVM TSS recovery ([b2832ac](https://github.com/BitGo/BitGoJS/commit/b2832ac1515d3872f993c494775d9e7fbf2d7723))
+
+
 ## [13.14.6](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-atom%4013.14.5...%40bitgo%2Fsdk-coin-atom%4013.14.6) (2026-10-29)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-atom

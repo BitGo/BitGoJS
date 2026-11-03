@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.5.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-xlm%404.4.1...%40bitgo%2Fsdk-coin-xlm%404.5.0) (2026-11-03)
+
+### Bug Fixes
+
+* **sdk-coin-xlm:** accept alphanumeric Stellar asset codes in StellarToken ([e2ef458](https://github.com/BitGo/BitGoJS/commit/e2ef45826903f546950c4821d8cdc5bf0f362f01))
+
+### Features
+
+* add eddsaMpc and XLM Safe recovery key params ([c650971](https://github.com/BitGo/BitGoJS/commit/c6509710caa8086e4f0f3eb7f321f1fc02062316))
+* **sdk-coin-xlm:** report full setOptions fields and unmodelled ops in explain ([416b1f5](https://github.com/BitGo/BitGoJS/commit/416b1f5e7c820684e7d0e8008869ab87f0922777))
+
+
 ## [4.4.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-xlm%404.4.0...%40bitgo%2Fsdk-coin-xlm%404.4.1) (2026-10-29)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xlm

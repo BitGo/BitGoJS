@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [17.7.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fexpress%4017.7.0...%40bitgo%2Fexpress%4017.7.1) (2026-11-03)
+
+### Bug Fixes
+
+* **express:** render Optional codec as union in OpenAPI generation ([bceac0a](https://github.com/BitGo/BitGoJS/commit/bceac0a74ce9f97927dbeba6f9c0983564cbd99e))
+
+
 # [17.7.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fexpress%4017.6.3...%40bitgo%2Fexpress%4017.7.0) (2026-10-29)
 
 ### Bug Fixes

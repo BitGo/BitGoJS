@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.21.5](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-flrp%401.21.4...%40bitgo%2Fsdk-coin-flrp%401.21.5) (2026-11-03)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-flrp
+
+
+
+
+
 ## [1.21.4](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-flrp%401.21.3...%40bitgo%2Fsdk-coin-flrp%401.21.4) (2026-10-29)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-flrp

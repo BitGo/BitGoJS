@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [25.6.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fabstract-eth%4025.5.4...%40bitgo%2Fabstract-eth%4025.6.0) (2026-11-03)
+
+### Bug Fixes
+
+* **abstract-eth:** address review feedback on Safe keycard recovery ([1fdd01c](https://github.com/BitGo/BitGoJS/commit/1fdd01ce8d9929032ce0b59a8c713601ce8e521d))
+* **abstract-eth:** erc-7984 pa-rebuild approval verifies content-based ([c33828f](https://github.com/BitGo/BitGoJS/commit/c33828f6beb59cb280bc5c3676fe5141b8ff6c9d))
+
+### Features
+
+* accept Safe keycard params-EVM TSS recovery ([b2832ac](https://github.com/BitGo/BitGoJS/commit/b2832ac1515d3872f993c494775d9e7fbf2d7723))
+
+
 ## [25.5.4](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fabstract-eth%4025.5.3...%40bitgo%2Fabstract-eth%4025.5.4) (2026-10-29)
 
 **Note:** Version bump only for package @bitgo/abstract-eth
