@@ -2,7 +2,15 @@ import * as assert from 'assert';
 import { TestBitGo } from '@bitgo/sdk-test';
 import nock = require('nock');
 import * as sinon from 'sinon';
-import { BaseCoin, Keychains, PendingApprovalData, State, Type } from '@bitgo/sdk-core';
+import {
+  BaseCoin,
+  KeyEncryptionUpgradeFailureReason,
+  Keychains,
+  PendingApprovalData,
+  RequestTracer,
+  State,
+  Type,
+} from '@bitgo/sdk-core';
 import {
   CreateInvoiceBody,
   getLightningWallet,
@@ -498,7 +506,7 @@ describe('Lightning wallets', function () {
 
     it('should not upgrade the user auth key with the default setting', async function () {
       const { params, scopes } = nockPayInvoice();
-      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves();
+      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
 
       await wallet.payInvoice(params);
 
@@ -520,7 +528,7 @@ describe('Lightning wallets', function () {
     it('should not upgrade the user auth key when the setting is on and the call opts out', async function () {
       sinon.stub(bitgo, 'isUpgradeEncryptionOnSignEnabled').returns(true);
       const { params, scopes } = nockPayInvoice();
-      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves();
+      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
 
       await wallet.payInvoice({ ...params, upgradeEncryption: false });
 
@@ -704,13 +712,16 @@ describe('Lightning wallets', function () {
       const nodeAuthKeyNock = nock(bgUrl)
         .get('/api/v2/' + coinName + '/key/ghi')
         .reply(200, nodeAuthKey);
-      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ status: 'upgraded' });
+      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
 
-      const result = await wallet.upgradeUserAuthKeyEncryption({ passphrase });
+      const reqId = new RequestTracer();
 
-      assert.deepStrictEqual(result, { status: 'upgraded' });
+      const result = await wallet.upgradeUserAuthKeyEncryption({ passphrase, reqId });
+
+      assert.deepStrictEqual(result, { upgraded: true });
       sinon.assert.calledOnce(upgrade);
-      assert.strictEqual(upgrade.firstCall.args[0].passphrase, passphrase);
+      assert.strictEqual(upgrade.firstCall.args[0]?.passphrase, passphrase);
+      assert.strictEqual(upgrade.firstCall.args[0]?.reqId, reqId);
       userAuthKeyNock.done();
       nodeAuthKeyNock.done();
     });
@@ -726,7 +737,7 @@ describe('Lightning wallets', function () {
 
       const result = await wallet.upgradeUserAuthKeyEncryption({ passphrase });
 
-      assert.deepStrictEqual(result, { status: 'failed', reason: 'error' });
+      assert.deepStrictEqual(result, { upgraded: false, failed: KeyEncryptionUpgradeFailureReason.Error });
       sinon.assert.notCalled(upgrade);
       userAuthKeyNock.done();
     });
@@ -1133,7 +1144,7 @@ describe('Lightning wallets', function () {
 
     it('should not upgrade the user auth key with the default setting', async function () {
       const { params, scopes } = nockWithdrawOnchain();
-      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves();
+      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
 
       await wallet.withdrawOnchain(params);
 
@@ -1155,7 +1166,7 @@ describe('Lightning wallets', function () {
     it('should not upgrade the user auth key when the setting is on and the call opts out', async function () {
       sinon.stub(bitgo, 'isUpgradeEncryptionOnSignEnabled').returns(true);
       const { params, scopes } = nockWithdrawOnchain();
-      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves();
+      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
 
       await wallet.withdrawOnchain({ ...params, upgradeEncryption: false });
 

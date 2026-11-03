@@ -29,7 +29,9 @@ import {
   RotateKeychainOptions,
   UpdatePasswordOptions,
   UpdateSingleKeychainPasswordOptions,
+  KeyEncryptionUpgradeFailureReason,
   KeyEncryptionUpgradeResult,
+  KeyEncryptionUpgradeSkipReason,
   UpgradeKeychainEncryptionOptions,
 } from './iKeychains';
 import { BitGoKeyFromOvcShares, BitGoToOvcJSON, OvcToBitGoJSON } from './ovcJsonCodec';
@@ -42,11 +44,17 @@ const debug = require('debug')('bitgo:v2:keychains');
  * of all-or-nothing across chunks. */
 const BULK_KEY_UPDATE_BATCH_SIZE = 500;
 
+/** An upgradeEncryption request whose keychain id and v1 envelope have already been validated. */
+type ValidatedKeyEncryptionUpgrade = UpgradeKeychainEncryptionOptions & { keyId: string; oldEncryptedPrv: string };
+
 export class Keychains implements IKeychains {
   private readonly bitgo: BitGoBase;
   private readonly baseCoin: IBaseCoin;
-  /** Keychain ids with an upgradeEncryption call in flight on this instance. */
-  private readonly upgradesInFlight = new Set<string>();
+  /**
+   * Pending upgradeEncryption outcomes on this instance, by keychain id. A call for a key that is
+   * already being upgraded shares the pending outcome instead of starting a second write.
+   */
+  private readonly upgradesInFlight = new Map<string, Promise<KeyEncryptionUpgradeResult>>();
 
   constructor(bitgo: BitGoBase, baseCoin: IBaseCoin) {
     this.bitgo = bitgo;
@@ -405,6 +413,7 @@ export class Keychains implements IKeychains {
   /**
    * Upgrades the stored encryption of this key to the latest format, using the same passphrase.
    * Never throws; returns what happened, so it can be shown to the user or ignored.
+   * Concurrent calls for the same key share one upgrade and all receive its outcome.
    *
    * @param params.keychain - the keychain as read from BitGo
    * @param params.passphrase - the passphrase that decrypts the key
@@ -412,28 +421,46 @@ export class Keychains implements IKeychains {
    * @returns the outcome of the upgrade
    */
   async upgradeEncryption(params: UpgradeKeychainEncryptionOptions): Promise<KeyEncryptionUpgradeResult> {
-    const { keychain, passphrase, reqId } = params ?? ({} as UpgradeKeychainEncryptionOptions);
+    const { keychain, passphrase } = params;
     const keyId = keychain?.id;
     const oldEncryptedPrv = keychain?.encryptedPrv;
     if (!_.isString(keyId) || !_.isString(passphrase)) {
-      return { status: 'failed', reason: 'error' };
+      return { upgraded: false, failed: KeyEncryptionUpgradeFailureReason.Error };
     }
     if (!_.isString(oldEncryptedPrv)) {
-      return { status: 'skipped', reason: 'noPrivateKey' };
+      return { upgraded: false, skipped: KeyEncryptionUpgradeSkipReason.NoPrivateKey };
     }
     let encryptionVersion: EncryptionVersion;
     try {
       encryptionVersion = this.getEncryptionVersion(oldEncryptedPrv);
     } catch (e) {
-      return { status: 'failed', reason: 'error' };
+      return { upgraded: false, failed: KeyEncryptionUpgradeFailureReason.Error };
     }
     if (encryptionVersion !== 1) {
-      return { status: 'skipped', reason: 'alreadyUpgraded' };
+      return { upgraded: false, skipped: KeyEncryptionUpgradeSkipReason.AlreadyUpgraded };
     }
-    if (this.upgradesInFlight.has(keyId)) {
-      return { status: 'skipped', reason: 'inProgress' };
+    const inFlight = this.upgradesInFlight.get(keyId);
+    if (inFlight) {
+      return inFlight;
     }
-    this.upgradesInFlight.add(keyId);
+    // Registered before any await so concurrent calls for the same key share this outcome.
+    const upgrade = this.runEncryptionUpgrade({ ...params, keyId, oldEncryptedPrv });
+    this.upgradesInFlight.set(keyId, upgrade);
+    const release = () => {
+      if (this.upgradesInFlight.get(keyId) === upgrade) {
+        this.upgradesInFlight.delete(keyId);
+      }
+    };
+    upgrade.then(release, release);
+    return upgrade;
+  }
+
+  /**
+   * Re-encrypts a validated v1 envelope as v2, checks it decrypts back to the same key, and writes it
+   * only if the stored envelope is still the one that was read. Never rejects.
+   */
+  private async runEncryptionUpgrade(params: ValidatedKeyEncryptionUpgrade): Promise<KeyEncryptionUpgradeResult> {
+    const { keychain, passphrase, reqId, keyId, oldEncryptedPrv } = params;
     try {
       const prv = await this.bitgo.decrypt({ input: oldEncryptedPrv, password: passphrase });
       const newEncryptedPrv = await this.bitgo.encrypt({ input: prv, password: passphrase, encryptionVersion: 2 });
@@ -441,7 +468,7 @@ export class Keychains implements IKeychains {
       const roundTrip = await this.bitgo.decrypt({ input: newEncryptedPrv, password: passphrase });
       if (roundTrip !== prv) {
         debug('upgradeEncryption: v2 round-trip mismatch for key %s, not writing', keyId);
-        return { status: 'failed', reason: 'verificationFailed' };
+        return { upgraded: false, failed: KeyEncryptionUpgradeFailureReason.VerificationFailed };
       }
       if (reqId) {
         this.bitgo.setRequestTracer(reqId);
@@ -458,19 +485,17 @@ export class Keychains implements IKeychains {
         })
         .result();
       debug('upgradeEncryption: upgraded key %s to v2', keyId);
-      return { status: 'upgraded' };
+      return { upgraded: true };
     } catch (e) {
       debug('upgradeEncryption: failed for key %s: %s', keyId, e instanceof Error ? e.message : String(e));
       const status = (e as Partial<Pick<ApiResponseError, 'status'>>)?.status;
       if (status === 409) {
-        return { status: 'skipped', reason: 'keyChanged' };
+        return { upgraded: false, skipped: KeyEncryptionUpgradeSkipReason.KeyChanged };
       }
       if (status === 503) {
-        return { status: 'failed', reason: 'unavailable' };
+        return { upgraded: false, failed: KeyEncryptionUpgradeFailureReason.Unavailable };
       }
-      return { status: 'failed', reason: 'error' };
-    } finally {
-      this.upgradesInFlight.delete(keyId);
+      return { upgraded: false, failed: KeyEncryptionUpgradeFailureReason.Error };
     }
   }
 

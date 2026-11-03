@@ -427,7 +427,7 @@ describe('Pending Approvals:', () => {
         const pendingApproval = new PendingApproval(bitgo, coin, pendingApprovalData, wallet);
         sandbox.stub(Keychains.prototype, 'getKeysForSigning').resolves([userKeychain]);
         sandbox.stub(Wallet.prototype, 'getPrv').rejects(new Error('error decrypting wallet private key'));
-        const upgrade = sandbox.stub(Keychains.prototype, 'upgradeEncryption').resolves();
+        const upgrade = sandbox.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
 
         await pendingApproval
           .recreateAndSignTSSTransaction({ walletPassphrase }, new RequestTracer())
@@ -440,7 +440,7 @@ describe('Pending Approvals:', () => {
         const pendingApproval = new PendingApproval(bitgo, coin, pendingApprovalData, wallet);
         sandbox.stub(Keychains.prototype, 'getKeysForSigning').resolves([userKeychain]);
         sandbox.stub(Wallet.prototype, 'getPrv').resolves('decryptedPrv');
-        const upgrade = sandbox.stub(Keychains.prototype, 'upgradeEncryption').resolves();
+        const upgrade = sandbox.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
         sandbox.stub(TssUtils.prototype, 'recreateTxRequest').resolves(txRequest);
         return { pendingApproval, upgrade };
       };

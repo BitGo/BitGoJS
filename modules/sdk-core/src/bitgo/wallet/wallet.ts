@@ -38,6 +38,7 @@ import {
   decryptKeychainPrivateKey,
   Keychain,
   KeychainWithEncryptedPrv,
+  KeyEncryptionUpgradeFailureReason,
   KeyEncryptionUpgradeResult,
   KeyIndices,
   shouldUpgradeEncryption,
@@ -2546,7 +2547,7 @@ export class Wallet implements IWallet {
     try {
       keychain = await this.baseCoin.keychains().get({ id: this.keyIds()[KeyIndices.USER], reqId });
     } catch (e) {
-      return { status: 'failed', reason: 'error' };
+      return { upgraded: false, failed: KeyEncryptionUpgradeFailureReason.Error };
     }
     return this.baseCoin.keychains().upgradeEncryption({ keychain, passphrase: walletPassphrase, reqId });
   }

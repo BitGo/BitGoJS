@@ -8,6 +8,7 @@ import {
   commonTssMethods,
   TxRequestState,
   decodeOrElse,
+  KeyEncryptionUpgradeFailureReason,
   KeyEncryptionUpgradeResult,
   shouldUpgradeEncryption,
 } from '@bitgo/sdk-core';
@@ -169,6 +170,7 @@ export interface ILightningWallet {
    * passphrase. Use it after a payment or withdrawal to run the upgrade and show the outcome. It
    * applies regardless of the `upgradeEncryptionOnSign` setting and never throws.
    * @param params.passphrase - the wallet passphrase that decrypts the user auth key
+   * @param params.reqId - optional request tracer
    */
   upgradeUserAuthKeyEncryption(params: UpgradeUserAuthKeyEncryptionParams): Promise<KeyEncryptionUpgradeResult>;
 
@@ -270,9 +272,11 @@ export class LightningWallet implements ILightningWallet {
     try {
       ({ userAuthKey } = await getLightningAuthKeychains(this.wallet));
     } catch (e) {
-      return { status: 'failed', reason: 'error' };
+      return { upgraded: false, failed: KeyEncryptionUpgradeFailureReason.Error };
     }
-    return this.wallet.baseCoin.keychains().upgradeEncryption({ keychain: userAuthKey, passphrase: params.passphrase });
+    return this.wallet.baseCoin
+      .keychains()
+      .upgradeEncryption({ keychain: userAuthKey, passphrase: params.passphrase, reqId: params.reqId });
   }
 
   async payInvoice(params: SubmitPaymentParams): Promise<PayInvoiceResponse> {

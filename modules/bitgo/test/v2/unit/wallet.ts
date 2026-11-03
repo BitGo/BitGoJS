@@ -17,6 +17,7 @@ import {
   EDDSAUtils,
   GetUserPrvOptions,
   Keychain,
+  KeyEncryptionUpgradeFailureReason,
   Keychains,
   KeyType,
   ManageUnspentsOptions,
@@ -449,7 +450,7 @@ describe('V2 Wallet:', function () {
     }
 
     it('triggers the upgrade with the user keychain and passphrase without changing the signing result', async function () {
-      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ status: 'upgraded' });
+      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
       const coinSign = sinon.stub(basecoin, 'signTransaction').resolves(signed);
 
       const result = await wallet.signTransaction(signParams());
@@ -489,7 +490,7 @@ describe('V2 Wallet:', function () {
     });
 
     it('does not upgrade when the caller supplies prv', async function () {
-      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ status: 'upgraded' });
+      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
       sinon.stub(basecoin, 'signTransaction').resolves(signed);
 
       await wallet.signTransaction(signParams({ prv: 'xprv1' }));
@@ -498,7 +499,7 @@ describe('V2 Wallet:', function () {
     });
 
     it('does not upgrade from getUserPrv alone', async function () {
-      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ status: 'upgraded' });
+      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
 
       (await wallet.getUserPrv({ keychain: userKeychain, walletPassphrase })).should.equal('xprv1');
 
@@ -507,7 +508,7 @@ describe('V2 Wallet:', function () {
 
     it('does not upgrade with the default setting', async function () {
       upgradeOnSignSetting.restore();
-      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves();
+      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
       sinon.stub(basecoin, 'signTransaction').resolves(signed);
 
       (await wallet.signTransaction(signParams())).should.deepEqual(signed);
@@ -520,7 +521,7 @@ describe('V2 Wallet:', function () {
       const optedInBitgo = TestBitGo.decorate(BitGo, { env: 'test', upgradeEncryptionOnSign: true });
       const optedInCoin = optedInBitgo.coin('tbtc');
       const optedInWallet = new Wallet(optedInBitgo, optedInCoin, walletData);
-      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves();
+      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
       sinon.stub(optedInCoin, 'signTransaction').resolves(signed);
 
       (await optedInWallet.signTransaction(signParams())).should.deepEqual(signed);
@@ -531,7 +532,7 @@ describe('V2 Wallet:', function () {
 
     it('does not upgrade when upgradeEncryptionOnSign is off', async function () {
       upgradeOnSignSetting.returns(false);
-      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves();
+      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
       sinon.stub(basecoin, 'signTransaction').resolves(signed);
 
       (await wallet.signTransaction(signParams())).should.deepEqual(signed);
@@ -541,7 +542,7 @@ describe('V2 Wallet:', function () {
 
     it('upgrades when upgradeEncryptionOnSign is off and the call passes upgradeEncryption: true', async function () {
       upgradeOnSignSetting.returns(false);
-      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves();
+      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
       sinon.stub(basecoin, 'signTransaction').resolves(signed);
 
       await wallet.signTransaction(signParams({ upgradeEncryption: true }));
@@ -551,7 +552,7 @@ describe('V2 Wallet:', function () {
     });
 
     it('does not upgrade when the call passes upgradeEncryption: false', async function () {
-      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves();
+      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
       sinon.stub(basecoin, 'signTransaction').resolves(signed);
 
       await wallet.signTransaction(signParams({ upgradeEncryption: false }));
@@ -564,7 +565,7 @@ describe('V2 Wallet:', function () {
       sinon
         .stub(wallet.baseCoin, 'presignTransaction')
         .callsFake(async (p) => _.omit(p, 'upgradeEncryption') as typeof p);
-      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves();
+      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
       sinon.stub(basecoin, 'signTransaction').resolves(signed);
 
       await wallet.signTransaction(signParams({ upgradeEncryption: true }));
@@ -574,7 +575,7 @@ describe('V2 Wallet:', function () {
 
     it('does not send upgradeEncryption to BitGo from sendMany', async function () {
       upgradeOnSignSetting.returns(false);
-      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves();
+      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
       const bodies: Record<string, unknown>[] = [];
       sinon.stub(Keychains.prototype, 'getKeysForSigning').resolves([userKeychain]);
       sinon.stub(basecoin, 'getExtraPrebuildParams').resolves({});
@@ -628,11 +629,11 @@ describe('V2 Wallet:', function () {
 
     it('upgrades the user keychain and returns the result', async function () {
       sinon.stub(Keychains.prototype, 'get').resolves(userKeychain);
-      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ status: 'upgraded' });
+      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
 
       const result = await wallet.upgradeUserKeyEncryption({ walletPassphrase });
 
-      result.should.deepEqual({ status: 'upgraded' });
+      result.should.deepEqual({ upgraded: true });
       sinon.assert.calledOnce(upgrade);
       sinon.assert.calledWithExactly(upgrade, {
         keychain: userKeychain,
@@ -644,7 +645,7 @@ describe('V2 Wallet:', function () {
     it('upgrades even when upgradeEncryptionOnSign is off', async function () {
       const upgradeOnSignEnabled = sinon.stub(bitgo, 'isUpgradeEncryptionOnSignEnabled').returns(false);
       sinon.stub(Keychains.prototype, 'get').resolves(userKeychain);
-      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ status: 'upgraded' });
+      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
 
       await wallet.upgradeUserKeyEncryption({ walletPassphrase });
 
@@ -658,7 +659,7 @@ describe('V2 Wallet:', function () {
 
       const result = await wallet.upgradeUserKeyEncryption({ walletPassphrase });
 
-      result.should.deepEqual({ status: 'failed', reason: 'error' });
+      result.should.deepEqual({ upgraded: false, failed: KeyEncryptionUpgradeFailureReason.Error });
       sinon.assert.notCalled(upgrade);
     });
   });
@@ -4927,7 +4928,7 @@ describe('V2 Wallet:', function () {
           encryptedPrv: await bitgo.encrypt({ input: 'secretKey', password: walletPassphrase, encryptionVersion: 1 }),
         };
         sandbox.stub(TssUtils.prototype, 'signTxRequest').resolves(txRequest);
-        const upgrade = sandbox.stub(Keychains.prototype, 'upgradeEncryption').resolves();
+        const upgrade = sandbox.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
 
         await tssSolWallet.signTransaction({
           reqId,
@@ -5298,7 +5299,7 @@ describe('V2 Wallet:', function () {
         });
 
         it('does not upgrade when the caller supplies prv', async function () {
-          const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ status: 'upgraded' });
+          const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
 
           await tssEthWallet.signMessage({
             reqId,
@@ -5316,7 +5317,7 @@ describe('V2 Wallet:', function () {
 
         it('does not upgrade with the default setting', async function () {
           upgradeOnSignSetting.restore();
-          const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves();
+          const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
 
           await tssEthWallet.signMessage({
             reqId,
@@ -5333,7 +5334,7 @@ describe('V2 Wallet:', function () {
 
         it('does not upgrade when upgradeEncryptionOnSign is off', async function () {
           upgradeOnSignSetting.returns(false);
-          const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves();
+          const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
 
           await tssEthWallet.signMessage({
             reqId,
@@ -5350,7 +5351,7 @@ describe('V2 Wallet:', function () {
 
         it('upgrades when upgradeEncryptionOnSign is off and the call passes upgradeEncryption: true', async function () {
           upgradeOnSignSetting.returns(false);
-          const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves();
+          const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
 
           await tssEthWallet.signMessage({
             reqId,
@@ -5368,7 +5369,7 @@ describe('V2 Wallet:', function () {
         });
 
         it('does not upgrade when the call passes upgradeEncryption: false', async function () {
-          const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves();
+          const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
 
           await tssEthWallet.signMessage({
             reqId,
@@ -5972,7 +5973,7 @@ describe('V2 Wallet:', function () {
         });
 
         it('does not upgrade when the caller supplies prv', async function () {
-          const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ status: 'upgraded' });
+          const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
 
           await tssEthWallet.signTypedData({
             reqId,
@@ -5986,7 +5987,7 @@ describe('V2 Wallet:', function () {
 
         it('does not upgrade with the default setting', async function () {
           upgradeOnSignSetting.restore();
-          const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves();
+          const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
 
           await tssEthWallet.signTypedData({
             reqId,
@@ -5999,7 +6000,7 @@ describe('V2 Wallet:', function () {
 
         it('does not upgrade when upgradeEncryptionOnSign is off', async function () {
           upgradeOnSignSetting.returns(false);
-          const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves();
+          const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
 
           await tssEthWallet.signTypedData({
             reqId,
@@ -6012,7 +6013,7 @@ describe('V2 Wallet:', function () {
 
         it('upgrades when upgradeEncryptionOnSign is off and the call passes upgradeEncryption: true', async function () {
           upgradeOnSignSetting.returns(false);
-          const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves();
+          const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
 
           await tssEthWallet.signTypedData({
             reqId,
@@ -6026,7 +6027,7 @@ describe('V2 Wallet:', function () {
         });
 
         it('does not upgrade when the call passes upgradeEncryption: false', async function () {
-          const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves();
+          const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
 
           await tssEthWallet.signTypedData({
             reqId,

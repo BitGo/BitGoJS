@@ -9,7 +9,17 @@ import nock = require('nock');
 import should = require('should');
 import * as sinon from 'sinon';
 
-import { common, decodeOrElse, ECDSAUtils, EDDSAUtils, Keychain, Keychains, OvcShare } from '@bitgo/sdk-core';
+import {
+  common,
+  decodeOrElse,
+  ECDSAUtils,
+  EDDSAUtils,
+  KeyEncryptionUpgradeFailureReason,
+  KeyEncryptionUpgradeSkipReason,
+  Keychain,
+  Keychains,
+  OvcShare,
+} from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
 import { SinonStub } from 'sinon';
@@ -1492,6 +1502,8 @@ describe('V2 Keychains', function () {
     afterEach(function () {
       sandbox.restore();
       nock.cleanAll();
+      // Every upgrade a test starts must have settled, so none is shared with the next test.
+      keychains.upgradesInFlight.size.should.equal(0);
     });
 
     function v1Keychain(overrides: Partial<Keychain> = {}): Keychain {
@@ -1516,7 +1528,7 @@ describe('V2 Keychains', function () {
 
       const result = await keychains.upgradeEncryption({ keychain, passphrase });
 
-      result.should.deepEqual({ status: 'upgraded' });
+      result.should.deepEqual({ upgraded: true });
       scope.isDone().should.be.true();
       bodies.should.have.length(1);
       const body = bodies[0];
@@ -1534,7 +1546,7 @@ describe('V2 Keychains', function () {
 
       const result = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
 
-      result.should.deepEqual({ status: 'upgraded' });
+      result.should.deepEqual({ upgraded: true });
       scope.isDone().should.be.true();
       bodies.should.have.length(1);
     });
@@ -1548,7 +1560,7 @@ describe('V2 Keychains', function () {
         passphrase,
       });
 
-      result.should.deepEqual({ status: 'skipped', reason: 'alreadyUpgraded' });
+      result.should.deepEqual({ upgraded: false, skipped: KeyEncryptionUpgradeSkipReason.AlreadyUpgraded });
       scope.isDone().should.be.false();
     });
 
@@ -1560,7 +1572,7 @@ describe('V2 Keychains', function () {
         passphrase,
       });
 
-      result.should.deepEqual({ status: 'failed', reason: 'error' });
+      result.should.deepEqual({ upgraded: false, failed: KeyEncryptionUpgradeFailureReason.Error });
       scope.isDone().should.be.false();
     });
 
@@ -1572,7 +1584,7 @@ describe('V2 Keychains', function () {
         passphrase,
       });
 
-      result.should.deepEqual({ status: 'failed', reason: 'error' });
+      result.should.deepEqual({ upgraded: false, failed: KeyEncryptionUpgradeFailureReason.Error });
       scope.isDone().should.be.false();
     });
 
@@ -1581,7 +1593,7 @@ describe('V2 Keychains', function () {
 
       const result = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase: 'wrongPass' });
 
-      result.should.deepEqual({ status: 'failed', reason: 'error' });
+      result.should.deepEqual({ upgraded: false, failed: KeyEncryptionUpgradeFailureReason.Error });
       scope.isDone().should.be.false();
     });
 
@@ -1591,7 +1603,7 @@ describe('V2 Keychains', function () {
       const result = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
 
       scope.isDone().should.be.true();
-      result.should.deepEqual({ status: 'skipped', reason: 'keyChanged' });
+      result.should.deepEqual({ upgraded: false, skipped: KeyEncryptionUpgradeSkipReason.KeyChanged });
     });
 
     it('resolves when the server fails with 500', async function () {
@@ -1600,7 +1612,7 @@ describe('V2 Keychains', function () {
       const result = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
 
       scope.isDone().should.be.true();
-      result.should.deepEqual({ status: 'failed', reason: 'error' });
+      result.should.deepEqual({ upgraded: false, failed: KeyEncryptionUpgradeFailureReason.Error });
     });
 
     it('reports unavailable when the server rejects the upgrade with 503', async function () {
@@ -1609,7 +1621,7 @@ describe('V2 Keychains', function () {
       const result = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
 
       scope.isDone().should.be.true();
-      result.should.deepEqual({ status: 'failed', reason: 'unavailable' });
+      result.should.deepEqual({ upgraded: false, failed: KeyEncryptionUpgradeFailureReason.Unavailable });
     });
 
     it('reports an error when the request fails at the network level', async function () {
@@ -1618,7 +1630,7 @@ describe('V2 Keychains', function () {
       const result = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
 
       scope.isDone().should.be.true();
-      result.should.deepEqual({ status: 'failed', reason: 'error' });
+      result.should.deepEqual({ upgraded: false, failed: KeyEncryptionUpgradeFailureReason.Error });
     });
 
     it('does not write when the v2 envelope does not decrypt back to the same prv', async function () {
@@ -1629,11 +1641,11 @@ describe('V2 Keychains', function () {
       const result = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
 
       decrypt.callCount.should.equal(2);
-      result.should.deepEqual({ status: 'failed', reason: 'verificationFailed' });
+      result.should.deepEqual({ upgraded: false, failed: KeyEncryptionUpgradeFailureReason.VerificationFailed });
       scope.isDone().should.be.false();
     });
 
-    it('sends one write for concurrent upgrades of the same key', async function () {
+    it('sends one write for concurrent upgrades of the same key and gives both callers its outcome', async function () {
       const { bodies } = mockPut(200, 2);
 
       const results = await Promise.all([
@@ -1642,15 +1654,28 @@ describe('V2 Keychains', function () {
       ]);
 
       bodies.should.have.length(1);
-      results.should.containDeep([{ status: 'upgraded' }, { status: 'skipped', reason: 'inProgress' }]);
+      results.should.deepEqual([{ upgraded: true }, { upgraded: true }]);
     });
 
-    it('allows a new upgrade of the same key after the previous one settled', async function () {
+    it('starts a new upgrade of the same key after the previous one settled', async function () {
+      const { bodies } = mockPut(200, 2);
+
+      const first = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
+      const second = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
+
+      first.should.deepEqual({ upgraded: true });
+      second.should.deepEqual({ upgraded: true });
+      bodies.should.have.length(2);
+    });
+
+    it('starts a new upgrade of the same key after the previous one was skipped', async function () {
       const { bodies } = mockPut(409, 2);
 
-      await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
-      await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
+      const first = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
+      const second = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
 
+      first.should.deepEqual({ upgraded: false, skipped: KeyEncryptionUpgradeSkipReason.KeyChanged });
+      second.should.deepEqual({ upgraded: false, skipped: KeyEncryptionUpgradeSkipReason.KeyChanged });
       bodies.should.have.length(2);
     });
 

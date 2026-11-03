@@ -1,3 +1,4 @@
+import type { IRequestTracer } from '@bitgo/sdk-core';
 import * as t from 'io-ts';
 import { NonEmptyString } from 'io-ts-types';
 import { getCodecPair } from '../shared';
@@ -7,6 +8,7 @@ import { getCodecPair } from '../shared';
 export type UpgradeUserAuthKeyEncryptionParams = {
   /** The wallet passphrase that decrypts the user auth key. */
   passphrase: string;
+  reqId?: IRequestTracer;
 };
 
 export const KeyPurpose = t.union([t.literal('userAuth'), t.literal('nodeAuth')], 'KeyPurpose');

@@ -182,20 +182,37 @@ export interface UpgradeKeychainEncryptionOptions {
   reqId?: IRequestTracer;
 }
 
+/** Why an upgrade of a key's stored encryption was not attempted or not needed. */
+export enum KeyEncryptionUpgradeSkipReason {
+  /** The key already uses the latest format. */
+  AlreadyUpgraded = 'alreadyUpgraded',
+  /** The key was changed elsewhere since it was read, so it was left as is. */
+  KeyChanged = 'keyChanged',
+  /** There is no stored private key to upgrade. */
+  NoPrivateKey = 'noPrivateKey',
+}
+
+/** Why an upgrade of a key's stored encryption failed. The key is left unchanged and can be upgraded later. */
+export enum KeyEncryptionUpgradeFailureReason {
+  /** The re-encrypted key did not check out, so it was not saved. */
+  VerificationFailed = 'verificationFailed',
+  /** BitGo is not accepting upgrades right now. Try again later. */
+  Unavailable = 'unavailable',
+  /** Any other failure, such as a wrong passphrase or a network error. */
+  Error = 'error',
+}
+
 /**
  * Outcome of upgrading the stored encryption of a key.
- * - `upgraded`: the key now uses the latest format.
- * - `skipped`: no upgrade was attempted or needed. `alreadyUpgraded`: the key already uses the latest format.
- *   `inProgress`: an upgrade of the same key is already running. `keyChanged`: the key was changed
- *   elsewhere since it was read. `noPrivateKey`: there is no stored private key to upgrade.
- * - `failed`: the key was left unchanged and can be upgraded on a later attempt.
- *   `verificationFailed`: the re-encrypted key did not check out, so it was not saved.
- *   `unavailable`: BitGo is not accepting upgrades right now. `error`: any other failure.
+ * - `{ upgraded: true }`: the key now uses the latest format.
+ * - `{ upgraded: false, skipped }`: no upgrade was attempted or needed; `skipped` says why.
+ * - `{ upgraded: false, failed }`: the key was left unchanged and can be upgraded on a later attempt;
+ *   `failed` says why.
  */
 export type KeyEncryptionUpgradeResult =
-  | { status: 'upgraded' }
-  | { status: 'skipped'; reason: 'alreadyUpgraded' | 'inProgress' | 'keyChanged' | 'noPrivateKey' }
-  | { status: 'failed'; reason: 'verificationFailed' | 'unavailable' | 'error' };
+  | { upgraded: true }
+  | { upgraded: false; skipped: KeyEncryptionUpgradeSkipReason }
+  | { upgraded: false; failed: KeyEncryptionUpgradeFailureReason };
 
 /**
  * Parameters for the rotateKeychain method for ofc multi-user-key
