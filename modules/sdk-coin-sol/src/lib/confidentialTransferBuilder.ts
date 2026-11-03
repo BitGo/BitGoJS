@@ -159,6 +159,7 @@ export class ConfidentialTransferBuilder extends TransactionBuilder {
         payerAddress: params.payerAddress,
         ownerAddress: params.ownerAddress,
         programId: params.programId,
+        mintHasTransferFeeConfig: params.mintHasTransferFeeConfig,
       },
     });
     return this;
@@ -166,14 +167,13 @@ export class ConfidentialTransferBuilder extends TransactionBuilder {
 
   /**
    * Add a ConfigureAccount instruction to the transaction.
-   * One-time ATA setup — registers ElGamal pubkey + AES zero ciphertext.
-   * Must be accompanied by a VerifyPubkeyValidity proof instruction.
+   * One-time ATA setup — registers the AES zero ciphertext and pending-balance counter; the
+   * ElGamal pubkey is taken from the accompanying VerifyPubkeyValidity proof.
    */
   configureAccount(params: ConfigureConfidentialTransferAccount['params']): this {
     assert(params.tokenAddress, 'Missing tokenAddress param');
     assert(params.mintAddress, 'Missing mintAddress param');
     assert(params.authorityAddress, 'Missing authorityAddress param');
-    assert(params.elgamalPubkey, 'Missing elgamalPubkey param');
     assert(params.decryptableZeroBalance, 'Missing decryptableZeroBalance param');
     assert(params.maximumPendingBalanceCreditCounter, 'Missing maximumPendingBalanceCreditCounter param');
 

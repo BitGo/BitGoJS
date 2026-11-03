@@ -285,6 +285,11 @@ export interface AtaInit {
     payerAddress: string;
     tokenName: string;
     programId?: string;
+    /**
+     * True when the mint carries `TransferFeeConfig`. The ATA then also needs room for the
+     * ConfidentialTransferFeeAmount extension, so the bundled Reallocate reserves it.
+     */
+    mintHasTransferFeeConfig?: boolean;
   };
 }
 
@@ -296,6 +301,11 @@ export interface ReallocateConfidentialTransferAccount {
     payerAddress: string;
     ownerAddress: string;
     programId?: string;
+    /**
+     * True when the mint carries `TransferFeeConfig`. ConfigureAccount initializes
+     * ConfidentialTransferFeeAmount for such mints, so its 68 bytes must be reserved here.
+     */
+    mintHasTransferFeeConfig?: boolean;
   };
 }
 
@@ -413,6 +423,9 @@ export interface TransactionExplanation extends BaseTransactionExplanation {
  * Layout: [27][2] + decryptable_zero_balance(36) + maximum_pending_balance_credit_counter(u64) + proof_instruction_offset(i8) = 47 bytes
  *
  * Accounts: [token(writable), mint, instructionsSysvar|contextState, authority(signer)]
+ *
+ * The account's ElGamal pubkey is not part of the instruction data — Token-2022 takes it
+ * from the accompanying VerifyPubkeyValidity proof context.
  */
 export interface ConfigureConfidentialTransferAccount {
   type: InstructionBuilderTypes.ConfigureConfidentialTransferAccount;
@@ -420,8 +433,6 @@ export interface ConfigureConfidentialTransferAccount {
     tokenAddress: string;
     mintAddress: string;
     authorityAddress: string;
-    /** 32-byte ElGamal pubkey registered on the token account (hex). */
-    elgamalPubkey: string;
     /** Instructions sysvar (inline proof) or context state account (pre-verified proof). Defaults to instructions sysvar. */
     instructionsSysvarOrContextStateAddress?: string;
     /** AES-encrypted zero balance (36 bytes hex). */

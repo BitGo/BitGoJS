@@ -169,7 +169,6 @@ describe('Solana Confidential Transfer Builder - v1', () => {
       tokenAddress,
       mintAddress,
       authorityAddress,
-      elgamalPubkey: '11'.repeat(32),
       decryptableZeroBalance: zeroBytes36,
       maximumPendingBalanceCreditCounter: '65536',
       proofInstructionOffset: 1,
