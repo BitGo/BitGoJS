@@ -149,6 +149,21 @@ export interface NativeTransferData extends TransferData {
   data: string;
 }
 
+export interface BatchTransferRecipient {
+  address: string;
+  amount: string;
+}
+
+/** Decoded inner recipients of batch(address[],uint256[]) batcher calldata. */
+export interface BatchTransferData {
+  recipients: BatchTransferRecipient[];
+}
+
+/** Decoded batchTransferFrom(address,address[],uint256[]) batcher calldata. */
+export interface BatchTransferFromData extends BatchTransferData {
+  tokenContractAddress: string;
+}
+
 export interface WalletInitializationData {
   salt?: string;
   owners: string[];

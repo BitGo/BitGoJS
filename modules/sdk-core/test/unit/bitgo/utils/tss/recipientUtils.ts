@@ -29,8 +29,11 @@ describe('recipientUtils', function () {
         'disabletoken',
         'customTx',
         'defiApprove',
+        'defi-approve',
         'defiDeposit',
+        'defi-deposit',
         'defiWithdraw',
+        'defi-withdraw',
         // Native wrap/unwrap — registered in both spellings on purpose
         'wrapNative',
         'wrap-native',
@@ -82,9 +85,30 @@ describe('recipientUtils', function () {
     });
 
     it('does not contain value-transfer types', function () {
-      ['payment', 'fanout', 'vote', 'defi-deposit', 'defi-redeem'].forEach((t) => {
+      ['payment', 'fanout', 'vote'].forEach((t) => {
         assert.ok(!NO_RECIPIENT_TX_TYPES.has(t), `${t} must NOT be in NO_RECIPIENT_TX_TYPES`);
       });
+    });
+
+    it('accepts kebab-case stored DeFi intent types without recipients', function () {
+      // Stored defi-* intents have no recipients; they must reach verifyTssTransaction's DeFi
+      // calldata checks (no InvalidTransactionError, no silent skip) instead of being rejected
+      // by the missing-recipients guard.
+      for (const intentType of ['defi-approve', 'defi-deposit', 'defi-withdraw']) {
+        const txRequest = makeTxRequest({ intent: { intentType } as PopulatedIntent });
+        assert.doesNotThrow(
+          () => resolveEffectiveTxParams(txRequest, undefined),
+          `${intentType} should not throw without recipients`
+        );
+      }
+    });
+
+    it('keeps rejecting stored defi-redeem intents, which have no EVM verifier handler', function () {
+      for (const intentType of ['defi-redeem', 'defiRedeem']) {
+        assert.ok(!NO_RECIPIENT_TX_TYPES.has(intentType), `${intentType} must NOT be in NO_RECIPIENT_TX_TYPES`);
+        const txRequest = makeTxRequest({ intent: { intentType } as PopulatedIntent });
+        assert.throws(() => resolveEffectiveTxParams(txRequest, undefined), InvalidTransactionError);
+      }
     });
   });
 

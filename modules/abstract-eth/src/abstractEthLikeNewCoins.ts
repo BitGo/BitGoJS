@@ -54,8 +54,23 @@ import {
   DeriveAddressResult,
   NO_RECIPIENT_TX_TYPES,
   CoinWithSignableConsistency,
+  TssVerificationWarning,
 } from '@bitgo/sdk-core';
 import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
+import {
+  buildEvmTssIntentContext,
+  callerDeclaresIntent,
+  canonicalizeEvmTssIntentType,
+  DecodedEvmTx,
+  evaluateEvmTssIntent,
+  isUnsupportedEvmTssIntentType,
+  mapDefiParamsFromIntent,
+  resolveCoinTokenContractAddress,
+  selectDeclaredIntent,
+  TssFinding,
+  TssFindingSeverity,
+  verifyConsolidation,
+} from './tssVerification';
 import { bip32 } from '@bitgo/secp256k1';
 import {
   BaseCoin as StaticsBaseCoin,
@@ -3550,15 +3565,37 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
   }
 
   /**
+   * Verify that a TSS transaction prebuild complies with the original intention before the
+   * user key share signs it (TOB-BITGOEDMPC-2 / INFOSEC-671).
+   *
+   * One flow: the intent is normalized once, the bytes are decoded once, and small checks per
+   * operation return findings. The intent type picks the checks; each accepts a closed set of
+   * decoded transaction shapes and anything unmatched is a finding. Fatal findings (the checks
+   * that historically threw) throw at once, including on the pending-approval path. Every other
+   * finding goes through {@link applyTssVerificationPolicy}: `console.warn` plus the optional
+   * `onVerificationWarning` callback, or a hard failure when the client opts into `BitGoAPI`'s
+   * `strictTssVerification`.
+   *
    * @param {VerifyEthTransactionOptions} params
    * @param {TransactionParams} params.txParams - params object passed to send
    * @param {TransactionPrebuild} params.txPrebuild - prebuild object returned by server
    * @param {Wallet} params.wallet - Wallet object to obtain keys to verify against
+   * @param {PopulatedIntent} params.intent - stored tx request intent (pending-approval path)
    * @returns {boolean}
    * @throws {TxIntentMismatchRecipientError} if transaction recipients don't match user intent
    */
   async verifyTssTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
-    const { txParams, txPrebuild, wallet } = params;
+    const ethNetwork = this.getNetwork();
+    const { txParams, txPrebuild, wallet, intent } = params;
+    // Exactly one source speaks for the user intent: the caller's own params when it declared a
+    // type or recipients, otherwise the stored tx request intent (pending approval). The other
+    // source is dropped, so server data never selects the handler or fills in what the caller
+    // left out. See selectDeclaredIntent.
+    const { callerParams, storedIntent } = selectDeclaredIntent({
+      txParams,
+      callerTxParams: params.callerTxParams,
+      intent,
+    });
 
     // Helper to throw TxIntentMismatchRecipientError with recipient details
     const throwRecipientMismatch = async (message: string, mismatchedRecipients: Recipient[]): Promise<never> => {
@@ -3578,6 +3615,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       !(
         txParams.prebuildTx?.consolidateId ||
         txPrebuild?.consolidateId ||
+        storedIntent?.consolidateId ||
         txParams.stakingRequestId ||
         txParams.prebuildTx?.stakingRequestId ||
         (txParams.type && NO_RECIPIENT_TX_TYPES.has(txParams.type))
@@ -3593,91 +3631,98 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       throw new Error('tx cannot be both a batch and hop transaction');
     }
 
-    if (txParams.type && ['transfer'].includes(txParams.type)) {
-      if (txParams.recipients && txParams.recipients.length === 1) {
-        const recipients = txParams.recipients;
-        const expectedAmount = recipients[0].amount.toString();
-        const expectedDestination = recipients[0].address;
+    // Canonical verifier intent type, derived only from the source that speaks for the user.
+    // The caller's own `type` wins and is never defaulted from the stored intent: on a direct
+    // send `txParams.type` is the caller's alone, and a caller that declared recipients without a
+    // type is making a payment. Only when the caller declared nothing does the stored intent
+    // type apply: resolveEffectiveTxParams has already put the raw stored spelling (payment,
+    // defi-approve, …) in txParams.type, which is normalized here.
+    const explicitType = storedIntent
+      ? canonicalizeEvmTssIntentType(txParams.type) || canonicalizeEvmTssIntentType(storedIntent.intentType)
+      : canonicalizeEvmTssIntentType(callerParams?.type);
+    // A consolidation id on the prebuild or the stored intent is server data. It marks the tx as a
+    // consolidation only when the caller declared nothing of its own; it can never reroute a
+    // caller-declared payment to the consolidate handler.
+    const consolidateId = callerDeclaresIntent(callerParams)
+      ? undefined
+      : txParams.prebuildTx?.consolidateId || txPrebuild?.consolidateId || storedIntent?.consolidateId || undefined;
+    const isConsolidation =
+      !!params.verification?.consolidationToBaseAddress || explicitType === 'consolidate' || !!consolidateId;
+    const canonicalType = explicitType || (isConsolidation ? 'consolidate' : 'transfer');
 
-        const txBuilder = this.getTransactionBuilder();
-        txBuilder.from(txPrebuild.txHex);
-        const tx = await txBuilder.build();
-        const txJson = tx.toJson();
-        if (txJson.data === '0x') {
-          if (expectedAmount !== txJson.value) {
-            await throwRecipientMismatch(
-              'the transaction amount in txPrebuild does not match the value given by client',
-              [{ address: txJson.to, amount: txJson.value }]
-            );
-          }
-          if (expectedDestination.toLowerCase() !== txJson.to.toLowerCase()) {
-            await throwRecipientMismatch('destination address does not match with the recipient address', [
-              { address: txJson.to, amount: txJson.value },
-            ]);
-          }
-        } else if (txJson.data.startsWith('0xa9059cbb')) {
-          const [recipientAddress, amount] = getRawDecoded(
-            ['address', 'uint256'],
-            getBufferedByteCode('0xa9059cbb', txJson.data)
-          );
-
-          // Check if recipients[0].data exists (WalletConnect flow)
-          let expectedRecipientAddress: string;
-          let expectedTokenAmount: string;
-          const recipientData = (recipients[0] as any).data;
-
-          if (recipientData && recipientData.startsWith('0xa9059cbb')) {
-            // WalletConnect: decode expected recipient and amount from recipients[0].data
-            const [expectedRecipient, expectedAmount] = getRawDecoded(
-              ['address', 'uint256'],
-              getBufferedByteCode('0xa9059cbb', recipientData)
-            );
-            expectedRecipientAddress = addHexPrefix(expectedRecipient.toString()).toLowerCase();
-            expectedTokenAmount = expectedAmount.toString();
-          } else {
-            // Normal flow: use recipients[0].address and recipients[0].amount
-            expectedRecipientAddress = expectedDestination.toLowerCase();
-            expectedTokenAmount = expectedAmount;
-          }
-
-          if (expectedTokenAmount !== amount.toString()) {
-            await throwRecipientMismatch(
-              'the transaction amount in txPrebuild does not match the value given by client',
-              [{ address: addHexPrefix(recipientAddress.toString()), amount: amount.toString() }]
-            );
-          }
-
-          if (expectedRecipientAddress !== addHexPrefix(recipientAddress.toString()).toLowerCase()) {
-            await throwRecipientMismatch('destination address does not match with the recipient address', [
-              { address: addHexPrefix(recipientAddress.toString()), amount: amount.toString() },
-            ]);
-          }
-        }
-      }
+    // contractCall / customTx cannot be created on EVM and carry arbitrary calldata with no
+    // intent shape to verify — never let them reach signing on this path.
+    if (isUnsupportedEvmTssIntentType(canonicalType)) {
+      throw new Error(`unsupported intent type for EVM TSS: ${canonicalType}`);
     }
 
-    if (txParams.type && ['defiApprove', 'defiDeposit', 'defiWithdraw'].includes(txParams.type)) {
+    // Decode the bytes once; every check below reads these same fields.
+    let decodedTx: DecodedEvmTx | undefined;
+    let decodeError: Error | undefined;
+    try {
+      decodedTx = await this.decodeTssTransaction(txPrebuild.txHex);
+    } catch (e) {
+      decodeError = e as Error;
+    }
+    const requireDecoded = (): DecodedEvmTx => {
+      if (!decodedTx) {
+        throw decodeError;
+      }
+      return decodedTx;
+    };
+    const raise = (finding: TssFinding): Promise<never> =>
+      throwRecipientMismatch(finding.reason, [
+        { address: finding.decoded.to ?? '', amount: finding.decoded.value ?? '' },
+      ]);
+    const raiseFatal = async (findings: TssFinding[]): Promise<void> => {
+      const fatal = findings.find((finding) => finding.severity === 'fatal');
+      if (fatal) {
+        await raise(fatal);
+      }
+    };
+
+    const coinBaseAddress = wallet.coinSpecific()?.baseAddress;
+    const baseAddress = typeof coinBaseAddress === 'string' ? coinBaseAddress : undefined;
+    const ctx = buildEvmTssIntentContext({
+      intentType: canonicalType,
+      txParams,
+      callerParams,
+      storedIntent,
+      coinTokenContractAddress: resolveCoinTokenContractAddress(this.getChain()),
+      baseAddress,
+      batcherAddress: ethNetwork?.batcherContractAddress,
+    });
+
+    // Operation checks. A single-recipient payment's historic checks need the decoded bytes, so
+    // bytes that cannot be decoded still fail there as they always did. Fatal findings (those
+    // historic checks) throw now; the rest wait for the policy step at the end.
+    if (canonicalType === 'transfer' && ctx.recipients.length === 1) {
+      requireDecoded();
+    }
+    const intentFindings = evaluateEvmTssIntent(ctx, decodedTx ?? { to: '', value: '0', data: '0x' });
+    await raiseFatal(intentFindings);
+
+    // DeFi vault calldata vs defiParams. Stored defi-* intents reach this branch through the
+    // intent type mapping, with defiParams reconstructed from the stored intent fields.
+    if (['defiApprove', 'defiDeposit', 'defiWithdraw'].includes(canonicalType)) {
       if (!txPrebuild.txHex) {
         throw new Error('missing txHex in txPrebuild');
       }
 
-      const baseAddress = wallet.coinSpecific()?.baseAddress;
-      const defiParams = txParams.defiParams;
-      if (!baseAddress || !defiParams) {
+      const defiParams = txParams.defiParams ?? (storedIntent ? mapDefiParamsFromIntent(storedIntent) : undefined);
+      if (!coinBaseAddress || !defiParams) {
         await throwRecipientMismatch('DeFi transaction is missing required intent parameters', []);
         return false;
       }
 
-      const validatedBaseAddress = baseAddress as string;
+      const validatedBaseAddress = coinBaseAddress as string;
       const validatedDefiParams = defiParams;
-      const txBuilder = this.getTransactionBuilder();
-      txBuilder.from(txPrebuild.txHex);
-      const txJson = (await txBuilder.build()).toJson();
+      const txJson = requireDecoded();
       const mismatch = async (message: string, address = txJson.to, amount = txJson.value): Promise<never> =>
         throwRecipientMismatch(message, [{ address: address || '', amount: amount || '' }]);
       const data = txJson.data || '';
 
-      if (txParams.type === 'defiApprove') {
+      if (canonicalType === 'defiApprove') {
         const selector = addHexPrefix(optionalDeps.ethAbi.methodID('approve', ['address', 'uint256']).toString('hex'));
         if (!data.startsWith(selector)) {
           await mismatch('defiApprove transaction must use ERC-20 approve(address,uint256) calldata');
@@ -3690,7 +3735,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
             amount.toString()
           );
         }
-      } else if (txParams.type === 'defiDeposit') {
+      } else if (canonicalType === 'defiDeposit') {
         const selector = addHexPrefix(optionalDeps.ethAbi.methodID('deposit', ['uint256', 'address']).toString('hex'));
         if (!data.startsWith(selector)) {
           await mismatch('defiDeposit transaction must use deposit(uint256,address) calldata');
@@ -3744,7 +3789,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       }
     }
 
-    if (txParams.type === 'wrapApprove') {
+    if (canonicalType === 'wrapApprove') {
       await this.verifyWrapApproveTransaction(params, throwRecipientMismatch);
     } else {
       // Declared as anything else: only an approve of a registered wrapper is rejected (see the method doc);
@@ -3752,55 +3797,85 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       await this.assertWrapperApproveIsDeclared(params, throwRecipientMismatch);
     }
 
-    // Verify consolidation transactions send to base address
-    if (params.verification?.consolidationToBaseAddress) {
-      const coinSpecific = wallet.coinSpecific();
-      if (!coinSpecific || !coinSpecific.baseAddress) {
-        throw new Error('Unable to determine base address for consolidation');
-      }
-      const baseAddress = coinSpecific.baseAddress;
-
-      if (!txPrebuild.txHex) {
-        throw new Error('missing txHex in txPrebuild');
-      }
-
-      const txBuilder = this.getTransactionBuilder();
-      txBuilder.from(txPrebuild.txHex);
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
-
-      // Verify the transaction recipient matches the base address
-      if (!txJson.to) {
-        throw new Error('Consolidation transaction is missing recipient address');
-      }
-
-      const erc20TransferSelector = addHexPrefix(
-        optionalDeps.ethAbi.methodID('transfer', ['address', 'uint256']).toString('hex')
-      );
-
-      if (txJson.data && txJson.data.startsWith(erc20TransferSelector)) {
-        // For ERC20 token consolidations, txJson.to is the token contract address,
-        // not the actual transfer recipient. The real recipient is encoded in the
-        // transfer(address,uint256) calldata. Decode it and verify against baseAddress.
-        const [recipientAddress] = getRawDecoded(
-          ['address', 'uint256'],
-          getBufferedByteCode(erc20TransferSelector, txJson.data)
-        );
-        const decodedRecipient = addHexPrefix(recipientAddress.toString()).toLowerCase();
-        if (decodedRecipient !== baseAddress.toLowerCase()) {
-          await throwRecipientMismatch('Consolidation transaction recipient does not match wallet base address', [
-            { address: decodedRecipient, amount: txJson.value },
-          ]);
+    // Consolidations must pay the wallet base address. The check is fatal when the caller sets
+    // consolidationToBaseAddress, as it always was; for consolidate intents and consolidateId
+    // flows it is a new check that follows the warn / strict policy.
+    const consolidationFindings: TssFinding[] = [];
+    if (isConsolidation) {
+      const severity: TssFindingSeverity = params.verification?.consolidationToBaseAddress ? 'fatal' : 'new';
+      try {
+        if (!baseAddress) {
+          throw new Error('Unable to determine base address for consolidation');
         }
-      } else if (txJson.to.toLowerCase() !== baseAddress.toLowerCase()) {
-        // Native coin consolidation: txJson.to is the actual recipient
-        await throwRecipientMismatch('Consolidation transaction recipient does not match wallet base address', [
-          { address: txJson.to, amount: txJson.value },
-        ]);
+        const tx = requireDecoded();
+        if (!tx.to) {
+          throw new Error('Consolidation transaction is missing recipient address');
+        }
+        consolidationFindings.push(...verifyConsolidation(tx, baseAddress, severity));
+      } catch (e) {
+        if (severity === 'fatal') {
+          throw e;
+        }
+        consolidationFindings.push({
+          severity,
+          intentType: 'consolidate',
+          reason: `consolidation destination could not be verified: ${(e as Error).message}`,
+          expected: { to: baseAddress ?? '' },
+          decoded: {},
+        });
       }
+      await raiseFatal(consolidationFindings);
     }
 
+    const decodeFindings: TssFinding[] = decodedTx
+      ? []
+      : [
+          {
+            severity: 'new',
+            intentType: canonicalType,
+            reason: txPrebuild.txHex
+              ? `transaction bytes could not be decoded to verify intent: ${decodeError?.message}`
+              : 'missing txHex in txPrebuild: transaction bytes cannot be verified against intent',
+            expected: {},
+            decoded: {},
+          },
+        ];
+
+    await this.applyTssVerificationPolicy([...consolidationFindings, ...decodeFindings, ...intentFindings], raise);
     return true;
+  }
+
+  /** Decodes the TSS transaction bytes once, so every verifier check reads the same fields. */
+  private async decodeTssTransaction(txHex: string | undefined): Promise<DecodedEvmTx> {
+    if (!txHex) {
+      throw new Error('missing txHex in txPrebuild');
+    }
+    const txBuilder = this.getTransactionBuilder();
+    txBuilder.from(txHex);
+    const txJson = (await txBuilder.build()).toJson();
+    return { to: txJson.to ?? '', value: txJson.value ?? '0', data: txJson.data ?? '0x' };
+  }
+
+  /**
+   * The one place that decides warn or throw for findings that are not fatal: they throw when
+   * the client sets `strictTssVerification`, and otherwise go to `console.warn` and the
+   * optional `onVerificationWarning` callback.
+   */
+  private async applyTssVerificationPolicy(
+    findings: TssFinding[],
+    raise: (finding: TssFinding) => Promise<never>
+  ): Promise<void> {
+    if (!findings.length) {
+      return;
+    }
+    if (this.bitgo?.strictTssVerification) {
+      await raise(findings[0]);
+    }
+    for (const { intentType, reason, expected, decoded } of findings) {
+      const warning: TssVerificationWarning = { intentType, reason, expected, decoded };
+      console.warn(`[tss verification] ${reason}`, JSON.stringify({ expected, decoded }));
+      this.bitgo?.onVerificationWarning?.(warning);
+    }
   }
 
   /**

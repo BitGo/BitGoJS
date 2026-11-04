@@ -1,5 +1,13 @@
 export const sendMultisigMethodId = '0x39125215';
 export const sendMultisigTokenMethodId = '0x0dcd7a6c';
+// Selector for batch(address[],uint256[]) used by batcher contract sends (native batches).
+export const batchMethodId = '0xc00c4e9e';
+export const batchMethodName = 'batch';
+export const batchMethodTypes = ['address[]', 'uint256[]'];
+// Selector for batchTransferFrom(address,address[],uint256[]) used for token batches.
+export const batchTransferFromMethodId = '0x4885b254';
+export const batchTransferFromMethodName = 'batchTransferFrom';
+export const batchTransferFromMethodTypes = ['address', 'address[]', 'uint256[]'];
 export const v1CreateForwarderMethodId = '0xfb90b320';
 export const v4CreateForwarderMethodId = '0x13b2f75c';
 export const v1WalletInitializationFirstBytes = '0x60806040';

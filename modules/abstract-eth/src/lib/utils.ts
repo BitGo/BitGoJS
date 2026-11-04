@@ -32,6 +32,8 @@ import {
 } from '@bitgo/sdk-core';
 
 import {
+  BatchTransferData,
+  BatchTransferFromData,
   ERC1155TransferData,
   ERC721TransferData,
   FlushTokensData,
@@ -91,6 +93,10 @@ import {
   confidentialTransferWithProofMethodId,
   confidentialTransferWithProofTypes,
   confidentialTransferNoProofMethodId,
+  batchMethodId,
+  batchMethodTypes,
+  batchTransferFromMethodId,
+  batchTransferFromMethodTypes,
 } from './walletUtil';
 import { EthTransactionData } from './types';
 import {
@@ -477,6 +483,65 @@ export function decodeTransferData(data: string, isFirstSigner?: boolean): Trans
   } else {
     throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
   }
+}
+
+/**
+ * Decode batch(address[],uint256[]) calldata used for native batch sends to the batcher contract.
+ *
+ * @param data Hex string starting with the batch method selector
+ * @returns Decoded recipients and amounts in the order they appear in the calldata
+ */
+export function decodeBatchTransferData(data: string): BatchTransferData {
+  if (!data.toLowerCase().startsWith(batchMethodId)) {
+    throw new BuildTransactionError(`Invalid batch transfer bytecode: ${data}`);
+  }
+  const [addresses, amounts] = getRawDecoded(batchMethodTypes, getBufferedByteCode(batchMethodId, data));
+  if (!Array.isArray(addresses) || !Array.isArray(amounts)) {
+    throw new BuildTransactionError(`Invalid batch transfer bytecode: ${data}`);
+  }
+  if (addresses.length !== amounts.length) {
+    throw new BuildTransactionError(
+      `Mismatched batch address/amount array lengths: ${addresses.length} vs ${amounts.length}`
+    );
+  }
+  return {
+    recipients: addresses.map((addr, i) => ({
+      address: addHexPrefix(addr as string),
+      amount: new BigNumber(bufferToHex(amounts[i] as Buffer)).toFixed(),
+    })),
+  };
+}
+
+/**
+ * Decode batchTransferFrom(address,address[],uint256[]) calldata used for token batch sends
+ * to the batcher contract.
+ *
+ * @param data Hex string starting with the batchTransferFrom method selector
+ * @returns Decoded token contract, recipients and amounts in calldata order
+ */
+export function decodeBatchTransferFromData(data: string): BatchTransferFromData {
+  if (!data.toLowerCase().startsWith(batchTransferFromMethodId)) {
+    throw new BuildTransactionError(`Invalid batchTransferFrom bytecode: ${data}`);
+  }
+  const [tokenContractAddress, addresses, amounts] = getRawDecoded(
+    batchTransferFromMethodTypes,
+    getBufferedByteCode(batchTransferFromMethodId, data)
+  );
+  if (!Array.isArray(addresses) || !Array.isArray(amounts)) {
+    throw new BuildTransactionError(`Invalid batchTransferFrom bytecode: ${data}`);
+  }
+  if (addresses.length !== amounts.length) {
+    throw new BuildTransactionError(
+      `Mismatched batchTransferFrom address/amount array lengths: ${addresses.length} vs ${amounts.length}`
+    );
+  }
+  return {
+    tokenContractAddress: addHexPrefix(tokenContractAddress as string),
+    recipients: addresses.map((addr, i) => ({
+      address: addHexPrefix(addr as string),
+      amount: new BigNumber(bufferToHex(amounts[i] as Buffer)).toFixed(),
+    })),
+  };
 }
 
 /**
