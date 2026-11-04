@@ -428,6 +428,11 @@ export abstract class MpcUtils {
       memo: params.memo?.value,
       token: params.tokenName,
       enableTokens: params.enableTokens,
+      // enableToken's configureAccount opt-in (Solana Token-2022 confidential transfers)
+      // must survive the generic tail: the Solana enableToken prebuild supplies no
+      // feeOptions, and gating the flag on that branch silently routed explicit
+      // opt-ins to plain ATA-init. Scoped to enableToken so other intents gain no field.
+      ...(params.intentType === 'enableToken' ? { configureAccount: params.configureAccount } : {}),
       feeToken: params.feeToken,
     };
   }
