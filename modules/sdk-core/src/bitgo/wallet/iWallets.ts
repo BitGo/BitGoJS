@@ -484,7 +484,27 @@ export interface BulkAcceptShareResponse {
   acceptedWalletShares: AcceptShareResponse[];
 }
 
+export interface ReshareWalletOptions {
+  /** Also reshare to wallet admins who can spend. By default admins are skipped. */
+  includeAdmins?: boolean;
+  /** Only reshare to users flagged `needsRecovery` on the wallet, e.g. after a lightning userAuth key reset. */
+  onlyNeedsRecovery?: boolean;
+}
+
+export interface ReshareWalletResult {
+  /** ids of the users the wallet was reshared to */
+  shared: string[];
+  /** users that were selected but could not be reshared, e.g. an active or pending share already exists */
+  failed: { userId: string; error: string }[];
+}
+
 export interface IWallets {
+  reshareWalletWithSpenders(
+    walletId: string,
+    userPassword: string,
+    encryptionVersion?: EncryptionVersion,
+    opts?: ReshareWalletOptions
+  ): Promise<ReshareWalletResult>;
   get(params?: GetWalletOptions): Promise<Wallet>;
   list(params?: ListWalletOptions): Promise<{ wallets: IWallet[] }>;
   add(params?: AddWalletOptions): Promise<any>;

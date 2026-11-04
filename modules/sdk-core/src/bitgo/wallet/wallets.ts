@@ -39,6 +39,8 @@ import {
   IWallets,
   LightningWalletWithKeychains,
   ListWalletOptions,
+  ReshareWalletOptions,
+  ReshareWalletResult,
   UpdateShareOptions,
   WalletShares,
   WalletWithKeychains,
@@ -1107,15 +1109,26 @@ export class Wallets implements IWallets {
   }
 
   /**
-   * Re-share wallet with existing spenders of the wallet
+   * Re-share wallet with existing spenders of the wallet.
+   *
+   * Failures for an individual recipient (for example an existing active or pending share to the same user)
+   * are collected in `failed` and do not stop the remaining recipients. Setup errors (wallet or enterprise
+   * lookup, decrypting the wallet key) still reject.
+   *
    * @param walletId
    * @param userPassword
+   * @param encryptionVersion
+   * @param opts
+   * @param opts.includeAdmins - also reshare to admins who can spend (default: admins are skipped)
+   * @param opts.onlyNeedsRecovery - only reshare to users flagged `needsRecovery` on the wallet
+   * @returns the users the wallet was reshared to and the users that could not be reshared
    */
   async reshareWalletWithSpenders(
     walletId: string,
     userPassword: string,
-    encryptionVersion?: EncryptionVersion
-  ): Promise<void> {
+    encryptionVersion?: EncryptionVersion,
+    opts?: ReshareWalletOptions
+  ): Promise<ReshareWalletResult> {
     const wallet = await this.get({ id: walletId });
     if (!wallet?._wallet?.enterprise) {
       throw new Error('Enterprise not found for the wallet');
@@ -1129,16 +1142,27 @@ export class Wallets implements IWallets {
       [...enterpriseUsersResponse?.adminUsers, ...enterpriseUsersResponse?.nonAdminUsers].map((obj) => [obj.id, obj])
     );
 
-    if (!wallet._wallet.users) {
-      return;
-    }
+    const result: ReshareWalletResult = { shared: [], failed: [] };
 
-    const spenders = wallet._wallet.users.filter(
-      (user) => user.permissions.includes('spend') && !user.permissions.includes('admin') && usersMap.has(user.user)
+    const spenders = (wallet._wallet.users ?? []).filter(
+      (user) =>
+        user.permissions.includes('spend') &&
+        (opts?.includeAdmins || !user.permissions.includes('admin')) &&
+        (!opts?.onlyNeedsRecovery || user.needsRecovery === true)
     );
 
-    if (spenders.length === 0) {
-      return;
+    // A selected spender who is not an enterprise user has no email to share with: report it instead of dropping it silently.
+    const recipients: typeof spenders = [];
+    for (const user of spenders) {
+      if (usersMap.has(user.user)) {
+        recipients.push(user);
+      } else {
+        result.failed.push({ userId: user.user, error: 'User is not a member of the wallet enterprise' });
+      }
+    }
+
+    if (recipients.length === 0) {
+      return result;
     }
 
     // Decrypt the wallet keychain once and thread the plaintext into each shareWallet call.
@@ -1159,20 +1183,26 @@ export class Wallets implements IWallets {
 
     // Sequential loop to bound concurrent Argon2id WASM instances on the per-recipient ECDH
     // encrypt side (each recipient's secret is unique so Promise.all could OOM at scale).
-    for (const user of spenders) {
-      const userObject = usersMap.get(user.user);
-      assert(userObject, `User ${user.user} not found in enterprise users map`);
-      const shareOptions: ShareWalletOptions = {
-        permissions: user.permissions.join(','),
-        walletPassphrase: userPassword,
-        email: userObject.email.email,
-        reshare: true,
-        skipKeychain: false,
-        encryptionVersion,
-        decryptedKeychain,
-      };
-      await wallet.shareWallet(shareOptions);
+    for (const user of recipients) {
+      try {
+        const userObject = usersMap.get(user.user);
+        assert(userObject, `User ${user.user} not found in enterprise users map`);
+        const shareOptions: ShareWalletOptions = {
+          permissions: user.permissions.join(','),
+          walletPassphrase: userPassword,
+          email: userObject.email.email,
+          reshare: true,
+          skipKeychain: false,
+          encryptionVersion,
+          decryptedKeychain,
+        };
+        await wallet.shareWallet(shareOptions);
+        result.shared.push(user.user);
+      } catch (e) {
+        result.failed.push({ userId: user.user, error: e instanceof Error ? e.message : String(e) });
+      }
     }
+    return result;
   }
 
   /**
@@ -1641,7 +1671,11 @@ export class Wallets implements IWallets {
         if (specialOverrideCases.has(walletShareId)) {
           const walletId = specialOverrideCases.get(walletShareId);
           try {
-            await this.reshareWalletWithSpenders(walletId, userLoginPassword, encryptionVersion);
+            const reshareResult = await this.reshareWalletWithSpenders(walletId, userLoginPassword, encryptionVersion);
+            // Recipient failures are returned, not thrown: keep logging them as before
+            for (const { userId, error } of reshareResult.failed) {
+              console.error(`Error resharing wallet ${walletId} with spender ${userId}: ${error}`);
+            }
           } catch (e) {
             // Log error but continue processing other shares
             console.error(`Error resharing wallet ${walletId} with spenders: ${e?.message}`);
