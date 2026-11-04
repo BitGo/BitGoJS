@@ -1455,6 +1455,7 @@ describe('EddsaMPCv2Utils.createOfflineRound2Share', () => {
         });
       }),
       decrypt: sinon.stub().callsFake(async (params) => sjcl.decrypt(params.password, params.input)),
+      getEnv: sinon.stub().returns('mock'),
     } as unknown as BitGoBase;
 
     const mockCoin = {
@@ -1462,6 +1463,79 @@ describe('EddsaMPCv2Utils.createOfflineRound2Share', () => {
     } as unknown as IBaseCoin;
 
     eddsaMPCv2Utils = new EddsaMPCv2Utils(mockBitgo, mockCoin);
+  });
+
+  it('should reject a replayed encryptedRound1Session', async () => {
+    const round1 = await eddsaMPCv2Utils.createOfflineRound1Share({
+      txRequest: baseTxRequest,
+      prv: userKeyShare.toString('base64'),
+      walletPassphrase,
+    });
+
+    const messageBuffer = Buffer.from(signableHex, 'hex');
+    const bitgoDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.BITGO);
+    await bitgoDsg.initDsg(bitgoKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.USER);
+
+    const txRequestRound1 = await signBitgoEddsaRound1(
+      bitgoDsg,
+      cloneTxRequestWithEmptySignatureShares(baseTxRequest),
+      round1.signatureShareRound1,
+      round1.userGpgPubKey,
+      bitgoGpgPrivKey
+    );
+
+    const params = {
+      txRequest: txRequestRound1,
+      walletPassphrase,
+      bitgoPublicGpgKey: bitgoGpgKeyPair.publicKey,
+      encryptedUserGpgPrvKey: round1.encryptedUserGpgPrvKey,
+      encryptedRound1Session: round1.encryptedRound1Session,
+    };
+    await eddsaMPCv2Utils.createOfflineRound2Share(params);
+
+    await assert.rejects(
+      () => eddsaMPCv2Utils.createOfflineRound2Share(params),
+      /Session state has already been used; replay is not allowed/
+    );
+  });
+
+  it('should reject non-BitGo GPG key when env requires BitGo pub key config', async () => {
+    const round1 = await eddsaMPCv2Utils.createOfflineRound1Share({
+      txRequest: baseTxRequest,
+      prv: userKeyShare.toString('base64'),
+      walletPassphrase,
+    });
+
+    const messageBuffer = Buffer.from(signableHex, 'hex');
+    const bitgoDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.BITGO);
+    await bitgoDsg.initDsg(bitgoKeyShare, messageBuffer, derivationPath, MPCv2PartiesEnum.USER);
+
+    const txRequestRound1 = await signBitgoEddsaRound1(
+      bitgoDsg,
+      cloneTxRequestWithEmptySignatureShares(baseTxRequest),
+      round1.signatureShareRound1,
+      round1.userGpgPubKey,
+      bitgoGpgPrivKey
+    );
+
+    const prodMockBitgo = {
+      ...mockBitgo,
+      getEnv: sinon.stub().returns('prod'),
+    } as unknown as BitGoBase;
+    const mockCoin = { getMPCAlgorithm: sinon.stub().returns('eddsa') } as unknown as IBaseCoin;
+    const prodUtils = new EddsaMPCv2Utils(prodMockBitgo, mockCoin);
+
+    await assert.rejects(
+      () =>
+        prodUtils.createOfflineRound2Share({
+          txRequest: txRequestRound1,
+          walletPassphrase,
+          bitgoPublicGpgKey: bitgoGpgKeyPair.publicKey,
+          encryptedUserGpgPrvKey: round1.encryptedUserGpgPrvKey,
+          encryptedRound1Session: round1.encryptedRound1Session,
+        }),
+      /Invalid BitGo GPG public key/
+    );
   });
 
   it('should create a round-2 share from offline round 1', async () => {
@@ -1796,6 +1870,7 @@ describe('EddsaMPCv2Utils.createOfflineRound3Share', () => {
         });
       }),
       decrypt: sinon.stub().callsFake(async (params) => sjcl.decrypt(params.password, params.input)),
+      getEnv: sinon.stub().returns('mock'),
     } as unknown as BitGoBase;
 
     const mockCoin = {
@@ -1803,6 +1878,47 @@ describe('EddsaMPCv2Utils.createOfflineRound3Share', () => {
     } as unknown as IBaseCoin;
 
     eddsaMPCv2Utils = new EddsaMPCv2Utils(mockBitgo, mockCoin);
+  });
+
+  it('should reject a replayed encryptedRound2Session', async () => {
+    const { round1, round2, txRequestRound2 } = await createRound2Flow(baseTxRequest);
+
+    const params = {
+      txRequest: txRequestRound2,
+      walletPassphrase,
+      bitgoPublicGpgKey: bitgoGpgKeyPair.publicKey,
+      encryptedUserGpgPrvKey: round1.encryptedUserGpgPrvKey,
+      encryptedRound2Session: round2.encryptedRound2Session,
+    };
+    await eddsaMPCv2Utils.createOfflineRound3Share(params);
+
+    await assert.rejects(
+      () => eddsaMPCv2Utils.createOfflineRound3Share(params),
+      /Session state has already been used; replay is not allowed/
+    );
+  });
+
+  it('should reject non-BitGo GPG key when env requires BitGo pub key config', async () => {
+    const { round1, round2, txRequestRound2 } = await createRound2Flow(baseTxRequest);
+
+    const prodMockBitgo = {
+      ...mockBitgo,
+      getEnv: sinon.stub().returns('prod'),
+    } as unknown as BitGoBase;
+    const mockCoin = { getMPCAlgorithm: sinon.stub().returns('eddsa') } as unknown as IBaseCoin;
+    const prodUtils = new EddsaMPCv2Utils(prodMockBitgo, mockCoin);
+
+    await assert.rejects(
+      () =>
+        prodUtils.createOfflineRound3Share({
+          txRequest: txRequestRound2,
+          walletPassphrase,
+          bitgoPublicGpgKey: bitgoGpgKeyPair.publicKey,
+          encryptedUserGpgPrvKey: round1.encryptedUserGpgPrvKey,
+          encryptedRound2Session: round2.encryptedRound2Session,
+        }),
+      /Invalid BitGo GPG public key/
+    );
   });
 
   async function createRound2Flow(

@@ -14,7 +14,7 @@ import {
   ShareKeyPosition,
   TxRequest,
   SignatureShareRecord,
-  generateGPGKeyPair,
+  BitgoMpcGpgPubKeys,
 } from '@bitgo/sdk-core';
 import { Hash, createPublicKey, verify as cryptoVerify } from 'crypto';
 import { logger } from '@bitgo/logger';
@@ -1312,7 +1312,9 @@ describe('External signer', () => {
     // EdDSA MPCv2 requires ed25519 GPG keys (not secp256k1) for PGP-authenticated message exchange.
     // GPG auth is tested by the sdk-core unit tests; here we stub the comms layer so the test
     // exercises only the WASM DSG protocol without needing openpgp as a direct express dep.
-    const bitgoEddsaGpgKey = await generateGPGKeyPair('ed25519');
+    // Round 2/3 pin the BitGo GPG key in envs that require BitGo pub key config ('test' here),
+    // so the request must carry the hardcoded BitGo onprem EdDSA MPCv2 public key.
+    const pinnedBitgoGpgKey = BitgoMpcGpgPubKeys.getBitgoMpcGpgPubKey('test', 'onprem', 'eddsaMpcv2');
     const detachSignStub = sinon
       .stub(MPSComms, 'detachSignMpsMessage')
       .callsFake(async (rawBytes) => ({ message: Buffer.from(rawBytes).toString('base64'), signature: '' }));
@@ -1372,7 +1374,7 @@ describe('External signer', () => {
         txRequest: txRequestRound1,
         encryptedRound1Session: round1Result.encryptedRound1Session,
         encryptedUserGpgPrvKey: round1Result.encryptedUserGpgPrvKey,
-        bitgoPublicGpgKey: bitgoEddsaGpgKey.publicKey,
+        bitgoPublicGpgKey: pinnedBitgoGpgKey,
       },
       decoded: {
         coin: 'tsol',
@@ -1380,7 +1382,7 @@ describe('External signer', () => {
         txRequest: txRequestRound1,
         encryptedRound1Session: round1Result.encryptedRound1Session,
         encryptedUserGpgPrvKey: round1Result.encryptedUserGpgPrvKey,
-        bitgoPublicGpgKey: bitgoEddsaGpgKey.publicKey,
+        bitgoPublicGpgKey: pinnedBitgoGpgKey,
       },
       params: { coin: 'tsol', sharetype: 'EddsaMPCv2Round2' },
       config: { signerFileSystemPath: 'signerFileSystemPath' },
@@ -1411,7 +1413,7 @@ describe('External signer', () => {
         txRequest: txRequestRound2,
         encryptedRound2Session: round2Result.encryptedRound2Session,
         encryptedUserGpgPrvKey: round1Result.encryptedUserGpgPrvKey,
-        bitgoPublicGpgKey: bitgoEddsaGpgKey.publicKey,
+        bitgoPublicGpgKey: pinnedBitgoGpgKey,
       },
       decoded: {
         coin: 'tsol',
@@ -1419,7 +1421,7 @@ describe('External signer', () => {
         txRequest: txRequestRound2,
         encryptedRound2Session: round2Result.encryptedRound2Session,
         encryptedUserGpgPrvKey: round1Result.encryptedUserGpgPrvKey,
-        bitgoPublicGpgKey: bitgoEddsaGpgKey.publicKey,
+        bitgoPublicGpgKey: pinnedBitgoGpgKey,
       },
       params: { coin: 'tsol', sharetype: 'EddsaMPCv2Round3' },
       config: { signerFileSystemPath: 'signerFileSystemPath' },
@@ -1442,6 +1444,12 @@ describe('External signer', () => {
     assert.ok(
       cryptoVerify(null, message, pubKeyObj, signature),
       'Ed25519 signature must verify under the derived public key'
+    );
+
+    // Session blobs are single-use: replaying the same encryptedRound2Session must be rejected.
+    await assert.rejects(
+      () => handleV2GenerateShareTSS(reqEdDSARound3),
+      /Session state has already been used; replay is not allowed/
     );
 
     detachSignStub.restore();

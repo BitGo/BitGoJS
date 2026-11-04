@@ -1,4 +1,5 @@
 import assert from 'assert';
+import { createHash } from 'crypto';
 import * as sjcl from '@bitgo/sjcl';
 import * as pgp from 'openpgp';
 import { NonEmptyString } from 'io-ts-types';
@@ -59,6 +60,52 @@ import { EddsaMPCv2KeyGenSendFn, KeyGenSenderForEnterprise } from './eddsaMPCv2K
 import { EddsaMPCv2RecoveryKeyShares } from './types';
 import { parseMpcV2KeyShareEnvelope } from '../keyShareEnvelope';
 import { SigningMaterial } from '../../../tss';
+
+/** Entries older than this are dropped; mirrors the express ConsumedShareRegistry retention. */
+const CONSUMED_OFFLINE_SIGNING_SESSION_MAX_AGE_MS = 30 * 24 * 3600 * 1000;
+/** Hard size cap: beyond this, the oldest entries are evicted (insertion order = oldest first). */
+const CONSUMED_OFFLINE_SIGNING_SESSION_MAX_ENTRIES = 100_000;
+
+/**
+ * Encrypted offline-signing session blobs that have already been consumed by a
+ * round-2/round-3 helper. Single-use enforcement: replaying a round-1/round-2
+ * session blob restores the same DSG nonce, and two partial signatures under one
+ * nonce leak the signer's key share (CWE-323, WAL-2455). Keyed by SHA-256 of the
+ * ciphertext with a consumption timestamp; pruned lazily by age and capped by
+ * size so the in-memory map stays bounded. Module-level because the express
+ * route constructs a fresh EddsaMPCv2Utils instance per request.
+ */
+const consumedEncryptedOfflineSigningSessions = new Map<string, number>();
+
+function pruneConsumedEncryptedOfflineSigningSessions(now: number): void {
+  if (consumedEncryptedOfflineSigningSessions.size <= CONSUMED_OFFLINE_SIGNING_SESSION_MAX_ENTRIES) {
+    return;
+  }
+  for (const [key, consumedAt] of consumedEncryptedOfflineSigningSessions) {
+    if (now - consumedAt >= CONSUMED_OFFLINE_SIGNING_SESSION_MAX_AGE_MS) {
+      consumedEncryptedOfflineSigningSessions.delete(key);
+    } else {
+      break; // insertion order is chronological; nothing older remains
+    }
+  }
+  while (consumedEncryptedOfflineSigningSessions.size > CONSUMED_OFFLINE_SIGNING_SESSION_MAX_ENTRIES) {
+    const oldest = consumedEncryptedOfflineSigningSessions.keys().next();
+    if (oldest.done) {
+      break;
+    }
+    consumedEncryptedOfflineSigningSessions.delete(oldest.value);
+  }
+}
+
+function consumeSingleUseEncryptedSession(encryptedSession: string): void {
+  const digest = createHash('sha256').update(encryptedSession).digest('hex');
+  if (consumedEncryptedOfflineSigningSessions.has(digest)) {
+    throw new Error('Session state has already been used; replay is not allowed');
+  }
+  const now = Date.now();
+  consumedEncryptedOfflineSigningSessions.set(digest, now);
+  pruneConsumedEncryptedOfflineSigningSessions(now);
+}
 
 export class EddsaMPCv2Utils extends BaseEddsaUtils {
   private static readonly MPS_DSG_SIGNING_USER_GPG_KEY = 'MPS_DSG_SIGNING_USER_GPG_KEY';
@@ -1023,6 +1070,11 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
   }> {
     const { walletPassphrase, encryptedUserGpgPrvKey, encryptedRound1Session, bitgoPublicGpgKey, txRequest } = params;
 
+    if (envRequiresBitgoPubGpgKeyConfig(this.bitgo.getEnv())) {
+      assert(isBitgoEddsaMpcv2PubKey(bitgoPublicGpgKey), 'Invalid BitGo GPG public key');
+    }
+    consumeSingleUseEncryptedSession(encryptedRound1Session);
+
     const { signableHex, derivationPath } = this.getSignableHexAndDerivationPath(
       txRequest,
       'Unable to find transactions in txRequest'
@@ -1120,6 +1172,11 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     signatureShareRound3: SignatureShareRecord;
   }> {
     const { walletPassphrase, encryptedUserGpgPrvKey, encryptedRound2Session, bitgoPublicGpgKey, txRequest } = params;
+
+    if (envRequiresBitgoPubGpgKeyConfig(this.bitgo.getEnv())) {
+      assert(isBitgoEddsaMpcv2PubKey(bitgoPublicGpgKey), 'Invalid BitGo GPG public key');
+    }
+    consumeSingleUseEncryptedSession(encryptedRound2Session);
 
     const { signableHex, derivationPath } = this.getSignableHexAndDerivationPath(
       txRequest,
