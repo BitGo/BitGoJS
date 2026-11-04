@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [40.5.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4040.4.0...%40bitgo%2Fsdk-core%4040.5.0) (2026-11-03)
+
+### Bug Fixes
+
+* **abstract-eth:** address review feedback on Safe keycard recovery ([1fdd01c](https://github.com/BitGo/BitGoJS/commit/1fdd01ce8d9929032ce0b59a8c713601ce8e521d))
+* **sdk-core:** skip auto-sign for message-sign approvals ([8173889](https://github.com/BitGo/BitGoJS/commit/8173889576e657eea3c8e53c0b0e1506ea0c5e07))
+
+### Features
+
+* add eddsaMpc and XLM Safe recovery key params ([c650971](https://github.com/BitGo/BitGoJS/commit/c6509710caa8086e4f0f3eb7f321f1fc02062316))
+
+
 # [40.4.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4040.3.0...%40bitgo%2Fsdk-core%4040.4.0) (2026-10-29)
 
 ### Bug Fixes

@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.4.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-ada%405.3.6...%40bitgo%2Fsdk-coin-ada%405.4.0) (2026-11-03)
+
+### Features
+
+* add eddsaMpc and XLM Safe recovery key params ([c650971](https://github.com/BitGo/BitGoJS/commit/c6509710caa8086e4f0f3eb7f321f1fc02062316))
+
+
 ## [5.3.6](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-ada%405.3.5...%40bitgo%2Fsdk-coin-ada%405.3.6) (2026-10-29)
 
 ### Bug Fixes

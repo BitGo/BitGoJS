@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [54.3.1](https://github.com/BitGo/BitGoJS/compare/bitgo%4054.3.0...bitgo%4054.3.1) (2026-11-03)
+
+### Bug Fixes
+
+* **sdk-core:** skip auto-sign for message-sign approvals ([8173889](https://github.com/BitGo/BitGoJS/commit/8173889576e657eea3c8e53c0b0e1506ea0c5e07))
+
+
 # [54.3.0](https://github.com/BitGo/BitGoJS/compare/bitgo%4054.2.3...bitgo%4054.3.0) (2026-10-29)
 
 ### Bug Fixes

@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.7.34](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-starknet%401.7.33...%40bitgo%2Fsdk-coin-starknet%401.7.34) (2026-11-03)
+
+### Bug Fixes
+
+* **sdk-coin-starknet:** remove live Sepolia RPC dependency from unit test ([f65110f](https://github.com/BitGo/BitGoJS/commit/f65110fb8a63ece0197300e10b9c0d8adcd592e5))
+
+
 ## [1.7.33](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-starknet%401.7.32...%40bitgo%2Fsdk-coin-starknet%401.7.33) (2026-10-29)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-starknet
