@@ -1497,6 +1497,32 @@ describe('EddsaMPCv2Utils.createOfflineRound2Share', () => {
       () => eddsaMPCv2Utils.createOfflineRound2Share(params),
       /Session state has already been used; replay is not allowed/
     );
+
+    // Reformatting the envelope JSON (whitespace, key order, extra field) must not mint
+    // a fresh digest for the same ciphertext: the digest covers iv/salt/ct only.
+    const reformatted = JSON.stringify(
+      { extraField: 'ignored', ...JSON.parse(params.encryptedRound1Session) },
+      null,
+      2
+    );
+    await assert.rejects(
+      () => eddsaMPCv2Utils.createOfflineRound2Share({ ...params, encryptedRound1Session: reformatted }),
+      /Session state has already been used; replay is not allowed/
+    );
+  });
+
+  it('should reject an encryptedRound1Session that does not parse', async () => {
+    await assert.rejects(
+      () =>
+        eddsaMPCv2Utils.createOfflineRound2Share({
+          txRequest: baseTxRequest,
+          walletPassphrase,
+          bitgoPublicGpgKey: bitgoGpgKeyPair.publicKey,
+          encryptedUserGpgPrvKey: 'unused',
+          encryptedRound1Session: 'not-json',
+        }),
+      /Session state is not a valid encrypted session envelope/
+    );
   });
 
   it('should reject non-BitGo GPG key when env requires BitGo pub key config', async () => {
@@ -1589,9 +1615,17 @@ describe('EddsaMPCv2Utils.createOfflineRound2Share', () => {
   });
 
   it('should use v2 decryption when encryptedRound1Session is a v2 envelope', async () => {
-    const encrypt = sinon
-      .stub()
-      .callsFake((input: string, adata: string) => Promise.resolve(JSON.stringify({ v: 2, input, adata })));
+    const encrypt = sinon.stub().callsFake((input: string, adata: string) =>
+      Promise.resolve(
+        JSON.stringify({
+          v: 2,
+          iv: randomBytes(12).toString('base64'),
+          hkdfSalt: randomBytes(16).toString('base64'),
+          ct: Buffer.from(input, 'utf8').toString('base64'),
+          adata,
+        })
+      )
+    );
     const destroy = sinon.stub();
     const createEncryptionSession = sinon.stub().resolves({ encrypt, destroy });
     mockBitgo.createEncryptionSession = createEncryptionSession;
@@ -1617,6 +1651,9 @@ describe('EddsaMPCv2Utils.createOfflineRound2Share', () => {
 
     const decrypt = sinon.stub().callsFake(async (params: { input: string }) => {
       const envelope = JSON.parse(params.input);
+      if (envelope.v === 2) {
+        return Buffer.from(envelope.ct, 'base64').toString('utf8');
+      }
       return envelope.input;
     });
     mockBitgo.decrypt = decrypt;
@@ -1896,6 +1933,18 @@ describe('EddsaMPCv2Utils.createOfflineRound3Share', () => {
       () => eddsaMPCv2Utils.createOfflineRound3Share(params),
       /Session state has already been used; replay is not allowed/
     );
+
+    // Reformatting the envelope JSON (whitespace, key order, extra field) must not mint
+    // a fresh digest for the same ciphertext: the digest covers the inner iv/salt/ct only.
+    const reformatted = JSON.stringify(
+      { extraField: 'ignored', ...JSON.parse(params.encryptedRound2Session) },
+      null,
+      2
+    );
+    await assert.rejects(
+      () => eddsaMPCv2Utils.createOfflineRound3Share({ ...params, encryptedRound2Session: reformatted }),
+      /Session state has already been used; replay is not allowed/
+    );
   });
 
   it('should reject non-BitGo GPG key when env requires BitGo pub key config', async () => {
@@ -2012,15 +2061,26 @@ describe('EddsaMPCv2Utils.createOfflineRound3Share', () => {
   });
 
   it('should use v2 decryption when encryptedRound2Session is a v2 envelope', async () => {
-    const encrypt = sinon
-      .stub()
-      .callsFake((input: string, adata: string) => Promise.resolve(JSON.stringify({ v: 2, input, adata })));
+    const encrypt = sinon.stub().callsFake((input: string, adata: string) =>
+      Promise.resolve(
+        JSON.stringify({
+          v: 2,
+          iv: randomBytes(12).toString('base64'),
+          hkdfSalt: randomBytes(16).toString('base64'),
+          ct: Buffer.from(input, 'utf8').toString('base64'),
+          adata,
+        })
+      )
+    );
     const destroy = sinon.stub();
     const createEncryptionSession = sinon.stub().resolves({ encrypt, destroy });
     mockBitgo.createEncryptionSession = createEncryptionSession;
 
     const decrypt = sinon.stub().callsFake(async (params: { input: string }) => {
       const envelope = JSON.parse(params.input);
+      if (envelope.v === 2) {
+        return Buffer.from(envelope.ct, 'base64').toString('utf8');
+      }
       return envelope.input;
     });
     mockBitgo.decrypt = decrypt;
