@@ -91,9 +91,9 @@ describe('recipientUtils', function () {
     });
 
     it('accepts kebab-case stored DeFi intent types without recipients', function () {
-      // Stored defi-* intents have no recipients; they must reach verifyTssTransaction's DeFi
-      // calldata checks (no InvalidTransactionError, no silent skip) instead of being rejected
-      // by the missing-recipients guard.
+      // Stored defi-* intents have no recipients; the guard must not reject them here, so they
+      // reach verifyTssTransaction, which rejects a stored DeFi intent explicitly (no local
+      // vault binding to anchor the target contract or spender) instead of silently passing it.
       for (const intentType of ['defi-approve', 'defi-deposit', 'defi-withdraw']) {
         const txRequest = makeTxRequest({ intent: { intentType } as PopulatedIntent });
         assert.doesNotThrow(

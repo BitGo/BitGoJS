@@ -4,7 +4,7 @@ import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { coins } from '@bitgo/statics';
 
-import { Flr, Tflr } from '../../src/index';
+import { Flr, Tflr, TransactionBuilder } from '../../src/index';
 import { ExplainTransactionOptions } from '../../src/iface';
 import { UnsignedSweepTxMPCv2 } from '@bitgo/abstract-eth';
 import { mockDataUnsignedSweep, mockDataNonBitGoRecovery, EXPORT_C_TEST_DATA } from '../resources';
@@ -31,6 +31,19 @@ describe('flr', function () {
   let hopExportTxBitgoSignature;
 
   const address2 = '0x7e85bdc27c050e3905ebf4b8e634d9ad6edd0de6';
+  const tssBaseAddress = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
+
+  // verifyTssTransaction rejects bytes it cannot decode, so the TSS flows below build the
+  // transaction they verify instead of passing a placeholder '0x'.
+  const buildTflrNativeTxHex = async (to: string, value: string): Promise<string> => {
+    const txBuilder = new TransactionBuilder(coins.get('tflr'));
+    txBuilder.type(TransactionType.SingleSigSend);
+    txBuilder.fee({ fee: '10', gasLimit: '21000' });
+    txBuilder.counter(1);
+    txBuilder.contract(to);
+    txBuilder.value(value);
+    return (await txBuilder.build()).toBroadcastFormat();
+  };
   const hopExportTx = EXPORT_C_TEST_DATA.fullsigntxHex;
   const hopExportTxId = '0x' + getTxHash(hopExportTx).toString('hex');
 
@@ -460,7 +473,7 @@ describe('flr', function () {
         // txPrebuild with consolidateId (set by server during consolidation build)
         const txPrebuild = {
           consolidateId: '68a7d5d0c66e74e216b97173bd558c6d',
-          txHex: '0x',
+          txHex: await buildTflrNativeTxHex(tssBaseAddress, '1000000000000000000'),
           coin: 'tflr',
           walletId: 'fakeWalletId',
         };
@@ -491,7 +504,7 @@ describe('flr', function () {
         };
 
         const txPrebuild = {
-          txHex: '0x',
+          txHex: await buildTflrNativeTxHex(tssBaseAddress, '1000000000000000000'),
           coin: 'tflr',
           walletId: 'fakeWalletId',
         };
@@ -522,7 +535,7 @@ describe('flr', function () {
         };
 
         const txPrebuild = {
-          txHex: '0x',
+          txHex: await buildTflrNativeTxHex(tssBaseAddress, '1'),
           coin: 'tflr',
           walletId: 'fakeWalletId',
         };
@@ -552,8 +565,9 @@ describe('flr', function () {
           walletPassphrase: 'fakeWalletPassphrase',
         };
 
+        // fillNonce is exactly a 1 wei self-send to the base address.
         const txPrebuild = {
-          txHex: '0x',
+          txHex: await buildTflrNativeTxHex(tssBaseAddress, '1'),
           coin: 'tflr',
           walletId: 'fakeWalletId',
         };

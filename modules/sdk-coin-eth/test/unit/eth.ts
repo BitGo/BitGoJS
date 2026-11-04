@@ -7,6 +7,7 @@ import * as secp256k1 from 'secp256k1';
 import request from 'superagent';
 import {
   common,
+  DefiIntentParams,
   ErrorNoInputToRecover,
   generateRandomPassword,
   InvalidAddressError,
@@ -15,6 +16,7 @@ import {
   RecoveryKeyMismatchError,
   RecoveryProviderError,
   resolveEffectiveTxParams,
+  TransactionParams,
   TransactionType,
   TxIntentMismatchRecipientError,
   UnexpectedAddressError,
@@ -37,7 +39,7 @@ import {
   UnsignedSweepTxMPCv2,
   VerifyEthAddressOptions,
 } from '../../src';
-import { coins, Erc7984Coin, EthereumNetwork } from '@bitgo/statics';
+import { coins, ContractAddressDefinedToken, Erc7984Coin, EthereumNetwork } from '@bitgo/statics';
 import assert from 'assert';
 import { getBuilder } from './getBuilder';
 import * as testData from '../resources/eth';
@@ -48,6 +50,9 @@ import { ethMultiSigBackupKey } from './fixtures/ethMultiSigBackupKey';
 import { ethTssBackupKey } from './fixtures/ethTssBackupKey';
 
 nock.enableNetConnect();
+
+// DeFi legs carry defiParams, which TransactionParams does not model; the verifier reads it.
+type DeFiTxParams = TransactionParams & { defiParams: DefiIntentParams };
 
 describe('ETH:', function () {
   let bitgo: TestBitGoAPI;
@@ -67,7 +72,8 @@ describe('ETH:', function () {
   const buildDefiTxHex = async (
     data: string,
     to: string = address1,
-    coinName: 'eth' | 'hteth' = 'hteth'
+    coinName: 'eth' | 'hteth' = 'hteth',
+    value?: string
   ): Promise<string> => {
     const txBuilder = getBuilder(coinName) as TransactionBuilder;
     txBuilder.type(TransactionType.ContractCall);
@@ -75,6 +81,34 @@ describe('ETH:', function () {
     txBuilder.counter(1);
     txBuilder.contract(to);
     txBuilder.data(data);
+    if (value) {
+      txBuilder.value(value);
+    }
+    return (await txBuilder.build()).toBroadcastFormat();
+  };
+
+  // verifyTransaction's EVM prebuild is the fully typed abstract-eth shape, but the TSS verifier
+  // only reads txHex; the other required fields are inert defaults so the fixture stays typed.
+  const defiPrebuild = (txHex: string, coin: string) => ({
+    txHex,
+    buildParams: { recipients: [] },
+    recipients: [],
+    nextContractSequenceId: 0,
+    gasPrice: 10,
+    gasLimit: 100000,
+    isBatch: false,
+    coin,
+  });
+
+  // Real native send bytes. verifyTssTransaction rejects bytes it cannot decode, so flows that
+  // used to pass a placeholder '0x' now build the transaction they actually verify.
+  const buildNativeTxHex = async (to: string, value: string, coinName: 'eth' | 'hteth' = 'hteth'): Promise<string> => {
+    const txBuilder = getBuilder(coinName) as TransactionBuilder;
+    txBuilder.type(TransactionType.SingleSigSend);
+    txBuilder.fee({ fee: '10', gasLimit: '21000' });
+    txBuilder.counter(1);
+    txBuilder.contract(to);
+    txBuilder.value(value);
     return (await txBuilder.build()).toBroadcastFormat();
   };
 
@@ -724,7 +758,7 @@ describe('ETH:', function () {
       // txPrebuild with consolidateId (set by server during consolidation build)
       const txPrebuild = {
         consolidateId: '68a7d5d0c66e74e216b97173bd558c6d',
-        txHex: '0x',
+        txHex: await buildNativeTxHex(baseAddress, '1000000000000000000'),
         coin: 'hteth',
         walletId: 'fakeWalletId',
       };
@@ -757,7 +791,7 @@ describe('ETH:', function () {
       };
 
       const txPrebuild = {
-        txHex: '0x',
+        txHex: await buildNativeTxHex(baseAddress, '1000000000000000000'),
         coin: 'hteth',
         walletId: 'fakeWalletId',
       };
@@ -792,7 +826,7 @@ describe('ETH:', function () {
       };
 
       const txPrebuild = {
-        txHex: '0x',
+        txHex: await buildNativeTxHex(baseAddress, '1000000000000000000'),
         coin: 'hteth',
         walletId: 'fakeWalletId',
       };
@@ -858,7 +892,7 @@ describe('ETH:', function () {
       };
 
       const txPrebuild = {
-        txHex: '0x',
+        txHex: await buildNativeTxHex(baseAddress, '1'),
         coin: 'hteth',
         walletId: 'fakeWalletId',
       };
@@ -890,8 +924,10 @@ describe('ETH:', function () {
         walletPassphrase: 'fakeWalletPassphrase',
       };
 
+      // fillNonce is exactly a 1 wei self-send to the base address, so the bytes are built, not
+      // faked: undecodable bytes are rejected before any handler runs.
       const txPrebuild = {
-        txHex: '0x',
+        txHex: await buildNativeTxHex(baseAddress, '1'),
         coin: 'hteth',
         walletId: 'fakeWalletId',
       };
@@ -1954,6 +1990,55 @@ describe('ETH:', function () {
         verify('defiApprove', { vaultId: 'vault', amount: '10' }, '0x'),
         /approve\(address,uint256\)/
       );
+    });
+
+    it('should reject a DeFi leg that carries native value', async function () {
+      const coin = bitgo.coin('hteth') as Hteth;
+      const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: address1 } });
+      const verify = async (type: string, data: string) => {
+        const txParams: DeFiTxParams = { type, defiParams: { vaultId: 'vault', amount: '10' } };
+        return coin.verifyTransaction({
+          txParams,
+          txPrebuild: defiPrebuild(await buildDefiTxHex(data, address1, 'hteth', '1'), 'hteth'),
+          wallet,
+          verification: {},
+          walletType: 'tss',
+        });
+      };
+
+      // Native value on a vault calldata call pays whatever contract `to` names.
+      await expectDefiRejection(
+        verify('defiApprove', defiCalldata('approve(address,uint256)', [address2, '10'])),
+        /must not carry native value/
+      );
+      await expectDefiRejection(
+        verify('defiDeposit', defiCalldata('deposit(uint256,address)', ['10', address1])),
+        /must not carry native value/
+      );
+      await expectDefiRejection(
+        verify('defiWithdraw', defiCalldata('redeem(uint256,address,address)', ['10', address1, address1])),
+        /must not carry native value/
+      );
+    });
+
+    it('should anchor a defiApprove leg to the wallet token contract when statics knows it', async function () {
+      const tokenCoin = bitgo.coin('hteth:tusdc') as Erc20Token;
+      const tokenContract = String((coins.get('hteth:tusdc') as ContractAddressDefinedToken).contractAddress);
+      const wallet = new Wallet(bitgo, tokenCoin, { coinSpecific: { baseAddress: address1 } });
+      // approve(vault, amount) on the token contract is the ERC-4626 approve leg.
+      const data = defiCalldata('approve(address,uint256)', [address2, '10']);
+      const txParams: DeFiTxParams = { type: 'defiApprove', defiParams: { vaultId: 'vault', amount: '10' } };
+      const verify = async (to: string) =>
+        tokenCoin.verifyTransaction({
+          txParams,
+          txPrebuild: defiPrebuild(await buildDefiTxHex(data, to), 'hteth:tusdc'),
+          wallet,
+          verification: {},
+          walletType: 'tss',
+        });
+
+      (await verify(tokenContract)).should.equal(true);
+      await expectDefiRejection(verify(address2), /must target the wallet token contract/);
     });
 
     it('should verify TSS transaction with defiWithdraw type', async function () {

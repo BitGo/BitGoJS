@@ -14,7 +14,6 @@
  * `strictTssVerification`.
  */
 import {
-  DefiIntentParams,
   ITransactionRecipient,
   PopulatedIntent,
   TssVerificationMismatch,
@@ -111,6 +110,12 @@ export interface TssFinding extends TssVerificationWarning {
   severity: TssFindingSeverity;
 }
 
+/** One token identity a recipient declares, either flat or through the intent `tokenData` shape. */
+export interface EvmTokenIdentityDeclaration {
+  tokenName?: string;
+  tokenContractAddress?: string;
+}
+
 /** One recipient of the user intent, flattened from txParams or the stored tx request intent. */
 export interface EvmTssExpectedRecipient {
   address: string;
@@ -119,6 +124,12 @@ export interface EvmTssExpectedRecipient {
   data?: string;
   tokenName?: string;
   tokenContractAddress?: string;
+  /**
+   * Every token identity the source declared for this recipient (`tokenAddress` / `tokenName` and
+   * `tokenData.tokenName` / `tokenData.tokenContractAddress`). They are all resolved, so two
+   * declarations of different tokens stay ambiguous instead of one silently overriding the other.
+   */
+  declaredTokenIdentities?: EvmTokenIdentityDeclaration[];
 }
 
 export interface EvmTssIntentContext {
@@ -133,6 +144,11 @@ export interface EvmTssIntentContext {
    * token of its own.
    */
   coinTokenContractAddress?: string;
+  /**
+   * Address whose nonce is filled (`fillNonce`), read from the source that speaks for the user
+   * intent only: the declared `receiveAddress`, or the stored intent's `receiveAddress`.
+   */
+  receiveAddress?: string;
   /** Wallet base address (`wallet.coinSpecific().baseAddress`). */
   baseAddress?: string;
   /** Network batcher contract from statics (`network.batcherContractAddress`). */
@@ -180,12 +196,21 @@ function toBigInt(value: unknown): bigint {
   return BigInt(String(value));
 }
 
-function isEmptyCalldata(data?: string): boolean {
-  return !data || data.toLowerCase() === '0x';
+/**
+ * Canonical calldata for every comparison: missing data, `''` and `'0x'` are the same empty
+ * payload, hex is lowercased, and a dropped `0x` prefix is restored. Selector gates and decoders
+ * all read this form, so a format difference can never route the same bytes past a check.
+ */
+function normalizeCalldata(data?: string): string {
+  const lower = (data ?? '').toLowerCase();
+  if (!lower || lower === '0x') {
+    return '0x';
+  }
+  return lower.startsWith('0x') ? lower : `0x${lower}`;
 }
 
-function normalizeCalldata(data?: string): string {
-  return (data ?? '0x').toLowerCase();
+function isEmptyCalldata(data?: string): boolean {
+  return normalizeCalldata(data) === '0x';
 }
 
 function valuesEqual(a: unknown, b: unknown): boolean {
@@ -247,24 +272,35 @@ const EVM_ADDRESS = /^0x[0-9a-fA-F]{40}$/;
 
 /**
  * Resolve the asset a payment is declared to move. Identity comes from the recipient's own
- * `tokenAddress` / `tokenName`, the top-level `tokenName`, and the coin instance, and nothing
- * else: the context never carries server-supplied token metadata when the caller declared its
- * own intent. No declared identity at all means native. Identity that cannot be resolved to a
- * contract, or that names two different contracts, is `unresolved`: the intended asset is
- * unknown, so no calldata shape can be accepted for it.
+ * `tokenAddress` / `tokenName` / `tokenData` declarations, the top-level `tokenName`, and the
+ * coin instance, and nothing else: the context never carries server-supplied token metadata when
+ * the caller declared its own intent. No declared identity at all means native. Identity that
+ * cannot be resolved to a contract, or that names two different contracts, is `unresolved`: the
+ * intended asset is unknown, so no calldata shape can be accepted for it.
  */
 function resolveAsset(
   ctx: EvmTssIntentContext,
-  declared: { tokenName?: string; tokenContractAddress?: string }
+  declared: {
+    tokenName?: string;
+    tokenContractAddress?: string;
+    declaredTokenIdentities?: EvmTokenIdentityDeclaration[];
+  }
 ): PaymentAsset {
   const sources: { label: string; contract: string | undefined; native?: boolean }[] = [];
-  if (declared.tokenContractAddress !== undefined) {
-    sources.push({
-      label: `tokenAddress '${declared.tokenContractAddress}'`,
-      contract: EVM_ADDRESS.test(declared.tokenContractAddress) ? declared.tokenContractAddress : undefined,
-    });
-  }
-  for (const name of [declared.tokenName, ctx.tokenName]) {
+  // Every identity the recipient declared is resolved, not just the first that happens to be
+  // set: two declarations of different tokens must stay ambiguous rather than one silently
+  // overriding the other.
+  const identities: EvmTokenIdentityDeclaration[] = declared.declaredTokenIdentities?.length
+    ? declared.declaredTokenIdentities
+    : [{ tokenName: declared.tokenName, tokenContractAddress: declared.tokenContractAddress }];
+  for (const identity of identities) {
+    if (identity.tokenContractAddress !== undefined) {
+      sources.push({
+        label: `tokenAddress '${identity.tokenContractAddress}'`,
+        contract: EVM_ADDRESS.test(identity.tokenContractAddress) ? identity.tokenContractAddress : undefined,
+      });
+    }
+    const name = identity.tokenName;
     if (!name) {
       continue;
     }
@@ -280,6 +316,23 @@ function resolveAsset(
       sources.push({ label: `coin '${name}'`, contract: undefined, native: true });
     } else {
       sources.push({ label: `token '${name}'`, contract: resolveTokenContractAddress(name) });
+    }
+  }
+  const declaredTopLevelName = ctx.tokenName;
+  if (declaredTopLevelName) {
+    let staticsCoin;
+    try {
+      staticsCoin = coins.get(declaredTopLevelName);
+    } catch {
+      staticsCoin = undefined;
+    }
+    if (staticsCoin && !(staticsCoin instanceof ContractAddressDefinedToken && staticsCoin.isToken)) {
+      sources.push({ label: `coin '${declaredTopLevelName}'`, contract: undefined, native: true });
+    } else {
+      sources.push({
+        label: `token '${declaredTopLevelName}'`,
+        contract: resolveTokenContractAddress(declaredTopLevelName),
+      });
     }
   }
   if (ctx.coinTokenContractAddress) {
@@ -314,7 +367,16 @@ function resolveAsset(
   return { kind: 'token', contract: first.contract };
 }
 
-type CallerDeclarableParams = { type?: string; tokenName?: string; recipients?: ITransactionRecipient[] };
+/** EVM recipients also carry the intent `tokenData` shape that `populateIntent` preserves. */
+type CallerDeclarableRecipient = ITransactionRecipient & { tokenData?: EvmTokenIdentityDeclaration };
+
+type CallerDeclarableParams = {
+  type?: string;
+  tokenName?: string;
+  recipients?: CallerDeclarableRecipient[];
+  /** `fillNonce`: the address whose nonce is filled. */
+  receiveAddress?: string;
+};
 
 /** True when the caller named a transaction type or recipients, i.e. declared its own intent. */
 export function callerDeclaresIntent(callerParams?: CallerDeclarableParams): boolean {
@@ -326,9 +388,10 @@ export function callerDeclaresIntent(callerParams?: CallerDeclarableParams): boo
  *
  * - The caller declared a type or recipients: the caller's own params. The stored intent is
  *   dropped entirely: it must not select the handler, add calldata, name the asset, or supply
- *   consolidation / DeFi fields. A caller that declares a payment type (`transfer` / `payment`)
- *   but no recipients is rejected by `verifyTssTransaction` before any handler runs, because
- *   nothing would be left to verify the bytes against; the stored intent is never used instead.
+ *   consolidation / DeFi fields. A caller that declares a payment type (`transfer` / `payment` /
+ *   `transferToken`) but no recipients is rejected by `verifyTssTransaction` before any handler
+ *   runs, because nothing would be left to verify the bytes against; the stored intent is never
+ *   used instead.
  * - The caller declared nothing (signing a stored tx request, e.g. pending approval): the stored
  *   intent, which `resolveEffectiveTxParams` has already folded into `txParams`.
  *
@@ -353,7 +416,10 @@ export function selectDeclaredIntent<T extends CallerDeclarableParams>(params: {
 /**
  * Build the handler context from the source chosen by {@link selectDeclaredIntent}: the stored
  * intent (via the effective `txParams`) when `storedIntent` is set, otherwise the caller's own
- * params. Absent local `data` stays absent and local token identity is never replaced.
+ * params. Absent local `data` stays absent, a recipient's flat and `tokenData` token identities
+ * are all kept (so conflicting declarations stay ambiguous), and only a source that declared no
+ * identity of its own inherits the stored one. `receiveAddress` comes from that same source, so a
+ * caller's declared receive address is never replaced by the stored intent's.
  */
 export function buildEvmTssIntentContext(params: {
   intentType: string;
@@ -371,14 +437,31 @@ export function buildEvmTssIntentContext(params: {
   const source = storedIntent ? params.txParams : params.callerParams;
 
   const recipients: EvmTssExpectedRecipient[] = (source?.recipients ?? []).map((recipient, i) => {
+    // Token identity reaches a recipient both flat (`tokenAddress` / `tokenName`) and inside the
+    // intent `tokenData` shape that `populateIntent` keeps. Both are declarations of the source
+    // that speaks for the user, so both stay in resolution; the stored intent only fills in when
+    // the source declared no identity of its own.
+    const declaredTokenIdentities: EvmTokenIdentityDeclaration[] = [];
+    if (recipient.tokenAddress !== undefined || recipient.tokenName !== undefined) {
+      declaredTokenIdentities.push({ tokenContractAddress: recipient.tokenAddress, tokenName: recipient.tokenName });
+    }
+    if (recipient.tokenData?.tokenContractAddress !== undefined || recipient.tokenData?.tokenName !== undefined) {
+      declaredTokenIdentities.push({ ...recipient.tokenData });
+    }
+    const storedTokenContractAddress = storedIntent?.recipients?.[i]?.tokenData?.tokenContractAddress;
+    if (storedTokenContractAddress !== undefined) {
+      declaredTokenIdentities.push({ tokenContractAddress: storedTokenContractAddress });
+    }
     const tokenContractAddress =
-      recipient.tokenAddress ?? storedIntent?.recipients?.[i]?.tokenData?.tokenContractAddress;
+      recipient.tokenAddress ?? recipient.tokenData?.tokenContractAddress ?? storedTokenContractAddress;
+    const tokenName = recipient.tokenName ?? recipient.tokenData?.tokenName;
     return {
       address: recipient.address,
       amount: String(recipient.amount),
       ...(recipient.data !== undefined && { data: recipient.data }),
-      ...(recipient.tokenName !== undefined && { tokenName: recipient.tokenName }),
+      ...(tokenName !== undefined && { tokenName }),
       ...(tokenContractAddress !== undefined && { tokenContractAddress }),
+      ...(declaredTokenIdentities.length > 0 && { declaredTokenIdentities }),
     };
   });
 
@@ -387,29 +470,9 @@ export function buildEvmTssIntentContext(params: {
     recipients,
     tokenName: source?.tokenName ?? storedIntent?.tokenName,
     coinTokenContractAddress: params.coinTokenContractAddress,
+    receiveAddress: source?.receiveAddress ?? storedIntent?.receiveAddress,
     baseAddress: params.baseAddress,
     batcherAddress: params.batcherAddress,
-  };
-}
-
-/**
- * Map stored DeFi intent fields onto the `defiParams` consumed by the DeFi calldata checks.
- * `shareTokenAmount` is the withdraw (share) amount; `amount` covers approve / deposit.
- */
-export function mapDefiParamsFromIntent(intent: PopulatedIntent): DefiIntentParams | undefined {
-  const canonicalType = canonicalizeEvmTssIntentType(intent.intentType);
-  const rawAmount =
-    canonicalType === 'defiWithdraw'
-      ? intent.shareTokenAmount ?? intent.amount
-      : intent.amount ?? intent.shareTokenAmount;
-  const amount = typeof rawAmount === 'object' ? rawAmount?.value : rawAmount;
-  if (amount === undefined || amount === null) {
-    return undefined;
-  }
-  return {
-    vaultId: intent.vaultId ?? '',
-    amount: String(amount),
-    ...(intent.operationId !== undefined && { operationId: intent.operationId }),
   };
 }
 
@@ -419,7 +482,7 @@ export function mapDefiParamsFromIntent(intent: PopulatedIntent): DefiIntentPara
  */
 function verifyExactCall(ctx: EvmTssIntentContext, tx: DecodedEvmTx, recipient: EvmTssExpectedRecipient): TssFinding[] {
   const warnings: TssFinding[] = [];
-  const expected = { to: recipient.address, value: recipient.amount, data: recipient.data };
+  const expected = { to: recipient.address, value: recipient.amount, data: normalizeCalldata(recipient.data) };
   const decoded = { to: tx.to, value: tx.value, data: tx.data };
   if (normalizeAddress(tx.to) !== normalizeAddress(recipient.address)) {
     warnings.push(
@@ -450,7 +513,10 @@ function verifyHistoricPayment(
 ): TssFinding[] {
   const findings: TssFinding[] = [];
   const decoded = { to: tx.to, value: tx.value, data: tx.data };
-  if (isEmptyCalldata(tx.data)) {
+  // Compare and decode the canonical form only: `''`, `'0x'`, mixed case and a dropped `0x`
+  // prefix all describe the same bytes, so none of them may skip the selector gate below.
+  const calldata = normalizeCalldata(tx.data);
+  if (calldata === '0x') {
     const expected = { to: recipient.address, value: recipient.amount, data: '0x' };
     if (!valuesEqual(tx.value, recipient.amount)) {
       findings.push(
@@ -470,20 +536,21 @@ function verifyHistoricPayment(
     }
     return findings;
   }
-  if (!normalizeCalldata(tx.data).startsWith(erc20TransferMethodId)) {
+  if (!calldata.startsWith(erc20TransferMethodId)) {
     return findings;
   }
 
   const [innerRecipient, innerAmount] = getRawDecoded(
     ['address', 'uint256'],
-    getBufferedByteCode(erc20TransferMethodId, tx.data)
+    getBufferedByteCode(erc20TransferMethodId, calldata)
   );
   const decodedInner = { ...decoded, to: toAddressString(innerRecipient), value: toBigInt(innerAmount).toString() };
-  let expected = { to: recipient.address, value: recipient.amount, data: recipient.data };
-  if (recipient.data && normalizeCalldata(recipient.data).startsWith(erc20TransferMethodId)) {
+  const declaredData = recipient.data === undefined ? undefined : normalizeCalldata(recipient.data);
+  let expected = { to: recipient.address, value: recipient.amount, data: declaredData };
+  if (declaredData && declaredData.startsWith(erc20TransferMethodId)) {
     const [declaredRecipient, declaredAmount] = getRawDecoded(
       ['address', 'uint256'],
-      getBufferedByteCode(erc20TransferMethodId, recipient.data)
+      getBufferedByteCode(erc20TransferMethodId, declaredData)
     );
     expected = { ...expected, to: toAddressString(declaredRecipient), value: toBigInt(declaredAmount).toString() };
   }
@@ -543,7 +610,7 @@ function verifyTokenTransfer(
     try {
       const [innerRecipient, innerAmount] = getRawDecoded(
         ['address', 'uint256'],
-        getBufferedByteCode(erc20TransferMethodId, tx.data)
+        getBufferedByteCode(erc20TransferMethodId, data)
       );
       decodedRecipient = toAddressString(innerRecipient);
       decodedAmount = toBigInt(innerAmount);
@@ -583,7 +650,7 @@ function verifyTokenTransfer(
         : confidentialTransferWithProofTypes;
     let decodedRecipient: string;
     try {
-      const [innerRecipient] = getRawDecoded(types, getBufferedByteCode(selector, tx.data));
+      const [innerRecipient] = getRawDecoded(types, getBufferedByteCode(selector, data));
       decodedRecipient = toAddressString(innerRecipient);
     } catch (e) {
       warnings.push(
@@ -720,7 +787,7 @@ function verifyBatch(ctx: EvmTssIntentContext, tx: DecodedEvmTx): TssFinding[] {
     }
     let batch: BatchTransferData;
     try {
-      batch = decodeBatchTransferData(tx.data);
+      batch = decodeBatchTransferData(data);
     } catch (e) {
       warnings.push(violation(ctx, `batch calldata could not be decoded: ${(e as Error).message}`, expected, decoded));
       return warnings;
@@ -747,7 +814,7 @@ function verifyBatch(ctx: EvmTssIntentContext, tx: DecodedEvmTx): TssFinding[] {
     }
     let batch: BatchTransferFromData;
     try {
-      batch = decodeBatchTransferFromData(tx.data);
+      batch = decodeBatchTransferFromData(data);
     } catch (e) {
       warnings.push(
         violation(ctx, `batchTransferFrom calldata could not be decoded: ${(e as Error).message}`, expected, decoded)
@@ -925,6 +992,7 @@ function verifyTransferToken(ctx: EvmTssIntentContext, tx: DecodedEvmTx): TssFin
 function verifyTokenApproval(ctx: EvmTssIntentContext, tx: DecodedEvmTx): TssFinding[] {
   const warnings: TssFinding[] = [];
   const decoded = { to: tx.to, value: tx.value, data: tx.data };
+  const calldata = normalizeCalldata(tx.data);
   const asset = resolveAsset(ctx, {});
   const tokenContract = asset.kind === 'token' ? asset.contract : undefined;
   const expected = { to: tokenContract, value: '0', data: undefined };
@@ -952,7 +1020,7 @@ function verifyTokenApproval(ctx: EvmTssIntentContext, tx: DecodedEvmTx): TssFin
   let spender: string;
   let amount: string;
   try {
-    const decodedApprove = decodeApproveCalldata(tx.data);
+    const decodedApprove = decodeApproveCalldata(calldata);
     spender = normalizeAddress(decodedApprove.spender);
     amount = decodedApprove.amount;
   } catch (e) {
@@ -999,17 +1067,38 @@ function verifyTokenApproval(ctx: EvmTssIntentContext, tx: DecodedEvmTx): TssFin
   return warnings;
 }
 
-/** `fillNonce` handler — a 1-wei self-send to the wallet base address. */
+/**
+ * `fillNonce` handler — a 1-wei self-send to the address whose nonce is being filled: the
+ * declared `receiveAddress` (the wallet's chosen receive address) when the intent names one,
+ * otherwise the wallet base address.
+ */
 function verifyFillNonce(ctx: EvmTssIntentContext, tx: DecodedEvmTx): TssFinding[] {
   const warnings: TssFinding[] = [];
   const decoded = { to: tx.to, value: tx.value, data: tx.data };
-  const expected = { to: ctx.baseAddress, value: '1', data: '0x' };
-  if (!ctx.baseAddress) {
-    warnings.push(violation(ctx, 'fillNonce intent has no wallet base address to verify against', expected, decoded));
+  const expectedTo = ctx.receiveAddress ?? ctx.baseAddress;
+  const expected = { to: expectedTo, value: '1', data: '0x' };
+  if (!expectedTo) {
+    warnings.push(
+      violation(
+        ctx,
+        'fillNonce intent has no receive address or wallet base address to verify against',
+        expected,
+        decoded
+      )
+    );
     return warnings;
   }
-  if (normalizeAddress(tx.to) !== normalizeAddress(ctx.baseAddress)) {
-    warnings.push(violation(ctx, 'fillNonce transaction must send to the wallet base address', expected, decoded));
+  if (normalizeAddress(tx.to) !== normalizeAddress(expectedTo)) {
+    warnings.push(
+      violation(
+        ctx,
+        ctx.receiveAddress
+          ? 'fillNonce transaction must send to the declared receive address'
+          : 'fillNonce transaction must send to the wallet base address',
+        expected,
+        decoded
+      )
+    );
   }
   if (!valuesEqual(tx.value, '1')) {
     warnings.push(violation(ctx, 'fillNonce transaction must send exactly 1 wei', expected, decoded));
@@ -1039,7 +1128,8 @@ export function verifyConsolidation(tx: DecodedEvmTx, baseAddress: string, sever
   const ctx = { intentType: 'consolidate' };
   const expected = { to: baseAddress };
   const decoded = { to: tx.to, value: tx.value };
-  if (!normalizeCalldata(tx.data).startsWith(erc20TransferMethodId)) {
+  const calldata = normalizeCalldata(tx.data);
+  if (!calldata.startsWith(erc20TransferMethodId)) {
     return normalizeAddress(tx.to) === normalizeAddress(baseAddress)
       ? []
       : [
@@ -1054,7 +1144,7 @@ export function verifyConsolidation(tx: DecodedEvmTx, baseAddress: string, sever
   }
   // For ERC-20 consolidations `to` is the token contract; the real recipient is in the calldata.
   const findings: TssFinding[] = [];
-  const [innerRecipient] = getRawDecoded(['address', 'uint256'], getBufferedByteCode(erc20TransferMethodId, tx.data));
+  const [innerRecipient] = getRawDecoded(['address', 'uint256'], getBufferedByteCode(erc20TransferMethodId, calldata));
   const decodedRecipient = toAddressString(innerRecipient);
   if (decodedRecipient !== normalizeAddress(baseAddress)) {
     findings.push(
@@ -1103,7 +1193,8 @@ export function evaluateEvmTssIntent(ctx: EvmTssIntentContext, tx: DecodedEvmTx)
     case 'defiDeposit':
     case 'defiWithdraw':
     case 'wrapApprove':
-      // Dedicated fail-closed calldata checks in verifyTssTransaction handle these.
+      // Caller-declared legs carry dedicated fail-closed calldata checks in verifyTssTransaction
+      // (stored defi-* intents are rejected there before those checks run).
       return [];
     default:
       return [unhandledTypeViolation(ctx, tx)];

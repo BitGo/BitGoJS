@@ -1,8 +1,10 @@
 import 'should';
+import { setTimeout as delay } from 'timers/promises';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BaseCoin as StaticsBaseCoin, coins, ContractAddressDefinedToken, Erc7984Coin } from '@bitgo/statics';
 import {
+  ITransactionRecipient,
   PopulatedIntent,
   resolveEffectiveTxParams,
   TransactionParams,
@@ -118,8 +120,16 @@ async function buildTxHex(
       wallet = new Wallet(bitgo, coin as any, { coinSpecific: { baseAddress } } as any);
     });
 
-    // Caller params may also carry the EVM-only tokenName that EthTransactionParams adds.
-    type SigningPathCallerParams = TransactionParams & { tokenName?: string };
+    // Caller params may also carry the EVM-only tokenName / receiveAddress that EthTransactionParams
+    // adds, and EVM recipients carry the intent tokenData identity next to the flat fields.
+    type SigningPathRecipient = ITransactionRecipient & {
+      tokenData?: { tokenType?: string; tokenQuantity?: string; tokenName?: string; tokenContractAddress?: string };
+    };
+    type SigningPathCallerParams = Omit<TransactionParams, 'recipients'> & {
+      tokenName?: string;
+      receiveAddress?: string;
+      recipients?: SigningPathRecipient[];
+    };
 
     const verify = (
       txParams: Record<string, unknown>,
@@ -231,6 +241,52 @@ async function buildTxHex(
         warnings[0].decoded.data.should.equal('0xdeadbeef');
         warnings[0].expected.data.should.equal('0xdeadbe00');
         await verify(txParams, swappedHex, { strict: true }).should.be.rejectedWith(/calldata does not match/);
+      });
+
+      it('treats absent, empty and 0x calldata as the same empty payload', async function () {
+        // A caller that declares `''` (or omits data) is declaring a native send; the decoded
+        // bytes are `0x`. Format alone must not turn a matching payment into a mismatch.
+        const txHex = await build({ to: recipientAddress, value: '1000' });
+        for (const data of [undefined, '', '0x']) {
+          warnings = [];
+          const recipient = { address: recipientAddress, amount: '1000', ...(data !== undefined ? { data } : {}) };
+          (await verify({ type: 'transfer', recipients: [recipient] }, txHex)).should.equal(true);
+          warnings.should.have.length(0);
+        }
+      });
+
+      it('normalizes the calldata prefix and case before comparing', async function () {
+        const data = encodeErc20Transfer(recipientAddress, '1000');
+        const txHex = await build({ to: tokenContractAddress, value: '0', data });
+        for (const declared of [data, data.slice(2), `0x${data.slice(2).toUpperCase()}`, data.toUpperCase()]) {
+          warnings = [];
+          (
+            await verify(
+              { type: 'transfer', recipients: [{ address: tokenContractAddress, amount: '0', data: declared }] },
+              txHex
+            )
+          ).should.equal(true);
+          warnings.should.have.length(0);
+        }
+      });
+
+      it('still runs the ERC-20 inner check on prefix-less declared calldata', async function () {
+        // Same bytes without `0x`: the selector gate must recognize them, so a swapped inner
+        // recipient stays the fatal check it is for prefixed calldata instead of becoming a
+        // calldata-format warning.
+        const declared = encodeErc20Transfer(attackerAddress, '1000').slice(2);
+        const txHex = await build({
+          to: tokenContractAddress,
+          value: '0',
+          data: encodeErc20Transfer(recipientAddress, '1000'),
+        });
+        for (const strict of [false, true]) {
+          await verify(
+            { type: 'transfer', recipients: [{ address: tokenContractAddress, amount: '0', data: declared }] },
+            txHex,
+            { strict }
+          ).should.be.rejectedWith(/destination address does not match/);
+        }
       });
 
       it('flags a mismatched destination under an exact-call (dApp) intent', async function () {
@@ -371,6 +427,59 @@ async function buildTxHex(
         );
       });
 
+      it('resolves the caller recipient tokenData tokenContractAddress', async function () {
+        // Callers that use the intent recipient shape declare the token in `tokenData` rather
+        // than `tokenAddress`. It is the caller's own declaration, so it selects the token and
+        // the ERC-20 transfer is verified against it.
+        const caller = {
+          type: 'transfer',
+          recipients: [
+            {
+              address: recipientAddress,
+              amount: '10000000',
+              tokenData: {
+                tokenType: 'ERC20',
+                tokenQuantity: '10000000',
+                tokenContractAddress: localTokenContractAddress,
+              },
+            },
+          ],
+        };
+        const txHex = await build({
+          to: localTokenContractAddress,
+          value: '0',
+          data: encodeErc20Transfer(recipientAddress, '10000000'),
+        });
+        (await verify(caller, txHex)).should.equal(true);
+        warnings.should.have.length(0);
+
+        // A transaction paying another token is a token-contract mismatch, not an unverified
+        // native send: the declared identity now anchors the check.
+        const otherTokenHex = await build({
+          to: serverTokenContractAddress,
+          value: '0',
+          data: encodeErc20Transfer(recipientAddress, '10000000'),
+        });
+        warnings = [];
+        (await verify(caller, otherTokenHex)).should.equal(true);
+        warnings.some((w) => /not the intent token contract/.test(w.reason)).should.equal(true);
+        await verify(caller, otherTokenHex, { strict: true }).should.be.rejectedWith(/not the intent token contract/);
+      });
+
+      it('resolves the caller recipient tokenData tokenName through statics', async function () {
+        const caller = {
+          type: 'transferToken',
+          recipients: [{ address: recipientAddress, amount: '1000', tokenData: { tokenName: localTokenName } }],
+        };
+        const txHex = await build({
+          to: localTokenContractAddress,
+          value: '0',
+          data: encodeErc20Transfer(recipientAddress, '1000'),
+        });
+        (await verify(caller, txHex)).should.equal(true);
+        warnings.should.have.length(0);
+      });
+
       it('flags batch calldata carried by a single declared recipient', async function () {
         const txHex = await build({
           to: tokenContractAddress,
@@ -424,6 +533,108 @@ async function buildTxHex(
         (await verifySigningPath(caller, intent, txHex)).should.equal(true);
         warnings.some((w) => /not the intent token contract/.test(w.reason)).should.equal(true);
         await verifySigningPath(caller, intent, txHex, true).should.be.rejectedWith(/not the intent token contract/);
+      });
+
+      it('keeps the caller tokenData identity when the stored intent names another token', async function () {
+        const caller = {
+          type: 'transferToken',
+          recipients: [
+            {
+              address: recipientAddress,
+              amount: '1000',
+              tokenData: { tokenContractAddress: localTokenContractAddress },
+            },
+          ],
+        };
+        const intent = {
+          intentType: 'transferToken',
+          tokenName: serverTokenName,
+          recipients: [
+            {
+              address: { address: recipientAddress },
+              amount: { value: '1000', symbol: serverTokenName },
+              tokenData: { tokenName: serverTokenName, tokenContractAddress: serverTokenContractAddress },
+            },
+          ],
+        };
+
+        // Paying the stored intent's token contradicts the caller's tokenData declaration.
+        const serverHex = await build({ to: serverTokenContractAddress, value: '0', data: tokenTransferData });
+        (await verifySigningPath(caller, intent, serverHex)).should.equal(true);
+        warnings.some((w) => /not the intent token contract/.test(w.reason)).should.equal(true);
+
+        // Paying the caller's own token verifies with nothing from the stored intent leaking in.
+        warnings = [];
+        const localHex = await build({ to: localTokenContractAddress, value: '0', data: tokenTransferData });
+        (await verifySigningPath(caller, intent, localHex)).should.equal(true);
+        warnings.should.have.length(0);
+        (await verifySigningPath(caller, intent, localHex, true)).should.equal(true);
+      });
+
+      it('rejects caller tokenData identity that contradicts a flat tokenAddress', async function () {
+        // Two declarations of different tokens: the intended asset is unknown, so neither may
+        // silently win (as a precedence chain would).
+        const caller = {
+          type: 'transferToken',
+          recipients: [
+            {
+              address: recipientAddress,
+              amount: '1000',
+              tokenAddress: localTokenContractAddress,
+              tokenData: { tokenContractAddress: serverTokenContractAddress },
+            },
+          ],
+        };
+        const txHex = await build({ to: localTokenContractAddress, value: '0', data: tokenTransferData });
+
+        (await verifySigningPath(caller, {}, txHex)).should.equal(true);
+        warnings.some((w) => /name different token contracts/.test(w.reason)).should.equal(true);
+        await verifySigningPath(caller, {}, txHex, true).should.be.rejectedWith(/name different token contracts/);
+      });
+
+      it('rejects caller tokenData tokenName that contradicts its tokenContractAddress', async function () {
+        const caller = {
+          type: 'transferToken',
+          recipients: [
+            {
+              address: recipientAddress,
+              amount: '1000',
+              tokenData: { tokenName: localTokenName, tokenContractAddress: serverTokenContractAddress },
+            },
+          ],
+        };
+        const txHex = await build({ to: serverTokenContractAddress, value: '0', data: tokenTransferData });
+
+        (await verifySigningPath(caller, {}, txHex)).should.equal(true);
+        warnings.some((w) => /name different token contracts/.test(w.reason)).should.equal(true);
+        await verifySigningPath(caller, {}, txHex, true).should.be.rejectedWith(/name different token contracts/);
+      });
+
+      it('uses the stored tokenData tokenContractAddress when the caller declared nothing', async function () {
+        // The pending-approval effective params carry only `tokenName` (derived from
+        // `tokenData.tokenName` / the amount symbol); the stored `tokenData.tokenContractAddress`
+        // is the only contract anchor, so it must reach asset resolution.
+        const intent = {
+          intentType: 'transferToken',
+          recipients: [
+            {
+              address: { address: recipientAddress },
+              amount: { value: '1000', symbol: chain },
+              tokenData: { tokenContractAddress: localTokenContractAddress },
+            },
+          ],
+        };
+        const goodHex = await build({ to: localTokenContractAddress, value: '0', data: tokenTransferData });
+        (await verifySigningPath(undefined, intent, goodHex)).should.equal(true);
+        warnings.should.have.length(0);
+
+        warnings = [];
+        const otherTokenHex = await build({ to: serverTokenContractAddress, value: '0', data: tokenTransferData });
+        (await verifySigningPath(undefined, intent, otherTokenHex)).should.equal(true);
+        warnings.some((w) => /not the intent token contract/.test(w.reason)).should.equal(true);
+        await verifySigningPath(undefined, intent, otherTokenHex, true).should.be.rejectedWith(
+          /not the intent token contract/
+        );
       });
 
       it('rejects token calldata for a caller-declared native payment', async function () {
@@ -657,26 +868,40 @@ async function buildTxHex(
           warnings.should.have.length(0);
         });
 
-        it('leaves other types without recipients on the warn-first policy', async function () {
-          // The fail-closed rule is limited to caller-declared payments: a transferToken with no
-          // recipients keeps warning by default and keeps throwing only in strict mode.
-          const caller = { type: 'transferToken' };
+        it('rejects a caller `transferToken` type with no recipients, both modes', async function () {
+          // A token payment leaves the same gap as a native one: with no recipients nothing
+          // anchors the bytes, and the stored intent would only supply the attacker's destination.
           const intent = {
             intentType: 'transferToken',
             tokenName: localTokenName,
-            recipients: [{ address: { address: recipientAddress }, amount: { value: '1000', symbol: localTokenName } }],
+            recipients: [{ address: { address: attackerAddress }, amount: { value: '1000', symbol: localTokenName } }],
           };
           const txHex = await build({
             to: localTokenContractAddress,
             value: '0',
-            data: encodeErc20Transfer(recipientAddress, '1000'),
+            data: encodeErc20Transfer(attackerAddress, '1000'),
           });
+          for (const strict of [false, true]) {
+            await verifySigningPath({ type: 'transferToken' }, intent, txHex, strict).should.be.rejectedWith(
+              /caller declared a token transfer without recipients/
+            );
+          }
+          warnings.should.have.length(0);
+        });
 
-          (await verifySigningPath(caller, intent, txHex)).should.equal(true);
-          warnings.some((w) => /must declare exactly one token recipient/.test(w.reason)).should.equal(true);
-          await verifySigningPath(caller, intent, txHex, true).should.be.rejectedWith(
-            /must declare exactly one token recipient/
-          );
+        it('rejects the kebab-case `transfer-token` spelling with no recipients as well', async function () {
+          const intent = {
+            intentType: 'transferToken',
+            tokenName: localTokenName,
+            recipients: [{ address: { address: attackerAddress }, amount: { value: '1000', symbol: localTokenName } }],
+          };
+          const txHex = await build({ to: localTokenContractAddress, value: '0' });
+          for (const strict of [false, true]) {
+            await verifySigningPath({ type: 'transfer-token' }, intent, txHex, strict).should.be.rejectedWith(
+              /caller declared a token transfer without recipients/
+            );
+          }
+          warnings.should.have.length(0);
         });
       });
     });
@@ -775,7 +1000,7 @@ async function buildTxHex(
     });
 
     describe('fillNonce handler', function () {
-      it('verifies a 1-wei self-send to the base address and flags deviations', async function () {
+      it('falls back to the base address when the intent declares no receive address', async function () {
         const good = await build({ to: baseAddress, value: '1' });
         (await verify({ type: 'fillNonce' }, good)).should.equal(true);
         warnings.should.have.length(0);
@@ -797,6 +1022,46 @@ async function buildTxHex(
         await verify({ type: 'fillNonce' }, wrongTo, { strict: true }).should.be.rejectedWith(
           /must send to the wallet base address/
         );
+      });
+
+      it('verifies a 1-wei self-send to the declared receive address, not the base address', async function () {
+        // The nonce that gets filled is the receive address's; the wallet base address is only
+        // the fallback when the intent names none.
+        const txParams = { type: 'fillNonce', receiveAddress: recipientAddress };
+        const good = await build({ to: recipientAddress, value: '1' });
+        (await verify(txParams, good)).should.equal(true);
+        warnings.should.have.length(0);
+
+        const toBase = await build({ to: baseAddress, value: '1' });
+        (await verify(txParams, toBase)).should.equal(true);
+        const destinationWarning = warnings.find((w) => /must send to the declared receive address/.test(w.reason));
+        should.exist(destinationWarning);
+        destinationWarning?.expected.to?.toLowerCase().should.equal(recipientAddress.toLowerCase());
+        await verify(txParams, toBase, { strict: true }).should.be.rejectedWith(
+          /must send to the declared receive address/
+        );
+
+        warnings = [];
+        const wrongValue = await build({ to: recipientAddress, value: '2' });
+        (await verify(txParams, wrongValue)).should.equal(true);
+        warnings.some((w) => /must send exactly 1 wei/.test(w.reason)).should.equal(true);
+      });
+
+      it('uses the stored receive address when the caller declared nothing (pending approval)', async function () {
+        // resolveEffectiveTxParams does not copy receiveAddress, so the stored intent is the only
+        // source of the address whose nonce is filled on this path.
+        const intent = { intentType: 'fillNonce', receiveAddress: recipientAddress };
+        const txRequest = { txRequestId: 'pa-fill', walletId: 'w', intent } as unknown as TxRequest;
+        const txParams = resolveEffectiveTxParams(txRequest, undefined, chain) as unknown as Record<string, unknown>;
+
+        const good = await build({ to: recipientAddress, value: '1' });
+        (await verify(txParams, good, { intent: intent as unknown as PopulatedIntent })).should.equal(true);
+        warnings.should.have.length(0);
+
+        warnings = [];
+        const toBase = await build({ to: baseAddress, value: '1' });
+        (await verify(txParams, toBase, { intent: intent as unknown as PopulatedIntent })).should.equal(true);
+        warnings.some((w) => /must send to the declared receive address/.test(w.reason)).should.equal(true);
       });
     });
 
@@ -868,6 +1133,42 @@ async function buildTxHex(
       });
     });
 
+    describe('undecodable bytes (fail closed before any handler)', function () {
+      it('rejects a placeholder txHex in both modes instead of warning', async function () {
+        for (const strict of [false, true]) {
+          await verify({ type: 'fillNonce' }, '0x', { strict }).should.be.rejectedWith(
+            /transaction bytes could not be decoded to verify intent/
+          );
+        }
+      });
+
+      it('rejects hex that is not a transaction for a handled and an unhandled type alike', async function () {
+        const cases: Array<Record<string, unknown>> = [
+          { type: 'transfer', recipients: [{ address: recipientAddress, amount: '1000' }] },
+          { type: 'acceleration' },
+        ];
+        for (const txParams of cases) {
+          for (const strict of [false, true]) {
+            await verify(txParams, '0xdeadbeef', { strict }).should.be.rejectedWith(
+              /transaction bytes could not be decoded to verify intent/
+            );
+          }
+        }
+      });
+
+      it('rejects a missing txHex with the historical message', async function () {
+        await coin
+          .verifyTransaction({
+            txParams: { type: 'fillNonce' },
+            txPrebuild: {},
+            wallet,
+            verification: {},
+            walletType: 'tss',
+          })
+          .should.be.rejectedWith('missing txHex in txPrebuild');
+      });
+    });
+
     describe('pending-approval path (stored intent via resolveEffectiveTxParams)', function () {
       const verifyPendingApproval = async (
         intent: Record<string, unknown>,
@@ -917,40 +1218,48 @@ async function buildTxHex(
         warnings.should.have.length(0);
       });
 
-      it('verifies stored defi-* intents without InvalidTransactionError and without a silent skip', async function () {
-        const defiCases: Array<{ intentType: string; data: string; tampered: string; amountField: string }> = [
-          {
-            intentType: 'defi-approve',
-            data: encodeApprove(attackerAddress, '123'),
-            tampered: encodeApprove(attackerAddress, '999'),
-            amountField: 'amount',
-          },
+      it('keeps verifying a caller-declared DeFi leg that matches defiParams', async function () {
+        // The stored flow is rejected below, but a caller that declares the leg itself still
+        // gets the calldata checks: the caller's amount and its intent type are its own.
+        const txHex = await build({
+          to: tokenContractAddress,
+          value: '0',
+          data: encodeApprove(attackerAddress, '123'),
+        });
+        for (const strict of [false, true]) {
+          (
+            await verify({ type: 'defiApprove', defiParams: { vaultId: 'vault', amount: '123' } }, txHex, { strict })
+          ).should.equal(true);
+        }
+      });
+
+      it('rejects stored defi-* intents: no local vault binding can verify their calldata', async function () {
+        // A stored intent carries only vaultId and amount, and both come from the server. Nothing
+        // local names the vault contract or the approve spender, so comparing the bytes with the
+        // stored fields would only prove the server agrees with itself: fail closed instead.
+        const defiCases: Array<{ intentType: string; data: string; amountField: string }> = [
+          { intentType: 'defi-approve', data: encodeApprove(attackerAddress, '123'), amountField: 'amount' },
           {
             intentType: 'defi-deposit',
             data: encodeWithAbi('deposit', ['uint256', 'address'], ['123', baseAddress]),
-            tampered: encodeWithAbi('deposit', ['uint256', 'address'], ['999', baseAddress]),
             amountField: 'amount',
           },
           {
             intentType: 'defi-withdraw',
             data: encodeWithAbi('redeem', ['uint256', 'address', 'address'], ['123', baseAddress, baseAddress]),
-            tampered: encodeWithAbi('redeem', ['uint256', 'address', 'address'], ['999', baseAddress, baseAddress]),
             amountField: 'shareTokenAmount',
           },
         ];
-        for (const { intentType, data, tampered, amountField } of defiCases) {
-          warnings = [];
+        for (const { intentType, data, amountField } of defiCases) {
           const intent: Record<string, unknown> = { intentType, vaultId: 'vault', [amountField]: '123' };
           const txHex = await build({ to: tokenContractAddress, value: '0', data });
-          const result = await verifyPendingApproval(intent, txHex);
-          result.should.equal(true, `${intentType} must verify`);
-
-          // Not a silent skip: tampered amounts are rejected by the DeFi calldata checks.
-          const tamperedHex = await build({ to: tokenContractAddress, value: '0', data: tampered });
-          await verifyPendingApproval(intent, tamperedHex).should.be.rejectedWith(
-            /does not match the requested amount|do not match the requested amount/
-          );
+          for (const strict of [false, true]) {
+            await verifyPendingApproval(intent, txHex, strict).should.be.rejectedWith(
+              /stored defi[A-Za-z]+ intent cannot be verified: no locally known vault contract/
+            );
+          }
         }
+        warnings.should.have.length(0);
       });
 
       it('keeps rejecting stored defi-redeem intents, which have no handler, as master does', async function () {
@@ -1005,6 +1314,119 @@ async function buildTxHex(
         const txHex = await build({ to: recipientAddress, value: '1000' });
         await verify({ type: 'transfer', recipients: [{ address: recipientAddress, amount: '1000' }] }, txHex);
         warnings.should.have.length(0);
+      });
+
+      // The sink is local client code, not trusted input: neither a synchronous throw nor a
+      // rejection may decide whether the user's key share signs, and warn mode never awaits it.
+      const verifyWithSink = async (sink: (warning: TssVerificationWarning) => void): Promise<boolean> => {
+        const sinkBitgo = TestBitGo.decorate(BitGoAPI, { env: 'test', onVerificationWarning: sink });
+        const sinkCoin = EvmCoin.createInstance(sinkBitgo, staticsCoin);
+        const sinkWallet = new Wallet(sinkBitgo, sinkCoin, { coinSpecific: { baseAddress } });
+        // A new (non-fatal) finding, so the sink is exactly what this test exercises.
+        const txHex = await build({ to: attackerAddress, value: '0', data: '0xdeadbe00' });
+        return sinkCoin.verifyTransaction({
+          txParams: {
+            type: 'transfer',
+            recipients: [{ address: attackerAddress, amount: '0', data: '0xdeadbeef' }],
+          },
+          txPrebuild: { txHex },
+          wallet: sinkWallet,
+          verification: {},
+          walletType: 'tss',
+        });
+      };
+
+      it('keeps warn mode signing when the sink throws synchronously', async function () {
+        const result = await verifyWithSink(() => {
+          throw new Error('sink exploded');
+        });
+        result.should.equal(true);
+      });
+
+      it('keeps warn mode signing when the sink rejects, leaving no unhandled rejection', async function () {
+        const rejections: unknown[] = [];
+        const onRejection = (reason: unknown): void => {
+          rejections.push(reason);
+        };
+        process.on('unhandledRejection', onRejection);
+        try {
+          const result = await verifyWithSink(async () => {
+            throw new Error('sink rejected');
+          });
+          result.should.equal(true);
+          // Give the event loop a turn: a floating rejection from the sink would surface now.
+          await delay(0);
+          rejections.should.have.length(0);
+        } finally {
+          process.removeListener('unhandledRejection', onRejection);
+        }
+      });
+
+      it('bounds calldata in the console warning but hands the full mismatch to the sink', async function () {
+        const longData = `0xdeadbeef${'ab'.repeat(600)}`;
+        const txHex = await build({ to: attackerAddress, value: '0', data: '0xdeadbe00' });
+        const logged: string[] = [];
+        const originalWarn = console.warn;
+        console.warn = (...args: unknown[]): void => {
+          logged.push(args.map((arg) => String(arg)).join(' '));
+        };
+        try {
+          const result = await verify(
+            { type: 'transfer', recipients: [{ address: attackerAddress, amount: '0', data: longData }] },
+            txHex
+          );
+          result.should.equal(true);
+        } finally {
+          console.warn = originalWarn;
+        }
+
+        const warning = warnings.find((w) => /calldata does not match/.test(w.reason));
+        warning?.expected.data?.should.equal(longData);
+        const line = logged.find((entry) => /calldata does not match/.test(entry));
+        line!.should.containEql('0xdeadbeef...(1210 chars)');
+        line!.should.not.containEql(longData);
+      });
+
+      it('bounds the logged reason but gives the sink the full diagnostic', async function () {
+        // A reason can echo an unbounded value: an unresolvable local token identity is the one a
+        // valid transaction reaches deterministically (decoder errors can echo calldata too). The
+        // bytes are a real, matching ERC-20 transfer; only the local token name is unresolvable.
+        const longTokenName = `hteth:${'not-a-token-'.repeat(40)}`;
+        const txHex = await build({
+          to: localTokenContractAddress,
+          value: '0',
+          data: encodeErc20Transfer(recipientAddress, '1000'),
+        });
+        const logged: string[][] = [];
+        const originalWarn = console.warn;
+        console.warn = (...args: unknown[]): void => {
+          logged.push(args.map((arg) => String(arg)));
+        };
+        let result = false;
+        try {
+          result = await verifySigningPath(
+            {
+              type: 'transferToken',
+              tokenName: longTokenName,
+              recipients: [{ address: recipientAddress, amount: '1000' }],
+            },
+            { intentType: 'transferToken', recipients: [] },
+            txHex
+          );
+        } finally {
+          console.warn = originalWarn;
+        }
+        result.should.equal(true);
+
+        const warning = warnings.find((w) => /cannot be resolved to a token contract/.test(w.reason));
+        warning!.reason.length.should.be.greaterThan(256);
+        warning!.reason.should.containEql(longTokenName);
+
+        const [loggedReason] = logged[0];
+        loggedReason.should.containEql('...(truncated, ');
+        loggedReason.should.containEql(`, ${warning!.reason.length} chars)`);
+        loggedReason.should.not.containEql(longTokenName);
+        loggedReason.length.should.be.lessThan(warning!.reason.length);
       });
     });
   });

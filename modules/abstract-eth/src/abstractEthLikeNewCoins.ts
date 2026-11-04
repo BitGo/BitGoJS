@@ -54,6 +54,7 @@ import {
   DeriveAddressResult,
   NO_RECIPIENT_TX_TYPES,
   CoinWithSignableConsistency,
+  TssVerificationMismatch,
   TssVerificationWarning,
 } from '@bitgo/sdk-core';
 import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
@@ -64,7 +65,6 @@ import {
   DecodedEvmTx,
   evaluateEvmTssIntent,
   isUnsupportedEvmTssIntentType,
-  mapDefiParamsFromIntent,
   resolveCoinTokenContractAddress,
   selectDeclaredIntent,
   TssFinding,
@@ -414,6 +414,11 @@ interface EthTransactionParams extends TransactionParams {
   tokenName?: string;
   feeToken?: string;
   defiParams?: DefiIntentParams;
+  /**
+   * Address a self-send must pay (fillNonce). Callers that fund a specific address pass it so the
+   * verifier compares the decoded `to` with that address instead of the wallet's own base address.
+   */
+  receiveAddress?: string;
   /** ERC-7984 shield intent (`type: 'wrapApprove' | 'wrap'`): wrapper coin name and exact amount. */
   wrapParams?: { tokenName: string; amount: string };
   /** ERC-7984 unshield intent (`type: 'unwrap'`): wrapper coin name and plaintext amount. */
@@ -423,6 +428,49 @@ interface EthTransactionParams extends TransactionParams {
 }
 
 const MAX_UINT256 = 2n ** 256n - 1n;
+
+/** Longest calldata prefix a console warning may echo: the 4-byte selector and nothing more. */
+const MAX_LOGGED_CALLDATA_PREFIX = 10;
+
+/**
+ * Bound the calldata a console warning prints. `data` can be arbitrarily large and carries the
+ * arguments of the call about to be signed, so only the selector and the payload length are
+ * logged. The `onVerificationWarning` callback still receives the full mismatch.
+ */
+function redactMismatchForLog(mismatch: TssVerificationMismatch): TssVerificationMismatch {
+  if (mismatch.data === undefined || mismatch.data.length <= MAX_LOGGED_CALLDATA_PREFIX) {
+    return mismatch;
+  }
+  return {
+    ...mismatch,
+    data: `${mismatch.data.slice(0, MAX_LOGGED_CALLDATA_PREFIX)}...(${mismatch.data.length} chars)`,
+  };
+}
+
+/** Longest finding reason a console warning may print. */
+const MAX_LOGGED_REASON_CHARS = 256;
+
+/**
+ * Bound the reason text a console warning prints. A finding reason can embed a parser error that
+ * echoes calldata, and a token identity in it can be arbitrarily long; the console is a diagnostic
+ * log, so it gets a capped string. The `onVerificationWarning` callback still receives the full
+ * reason.
+ */
+function redactReasonForLog(reason: string): string {
+  if (reason.length <= MAX_LOGGED_REASON_CHARS) {
+    return reason;
+  }
+  return `${reason.slice(0, MAX_LOGGED_REASON_CHARS)}...(truncated, ${reason.length} chars)`;
+}
+
+/** True when a decoded transaction value is exactly zero; an unparseable value is not zero. */
+function isZeroNativeValue(value?: string): boolean {
+  try {
+    return BigInt(value || '0') === 0n;
+  } catch {
+    return false;
+  }
+}
 
 export interface VerifyEthTransactionOptions extends VerifyTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -3585,6 +3633,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
    * @param {Wallet} params.wallet - Wallet object to obtain keys to verify against
    * @param {PopulatedIntent} params.intent - stored tx request intent (pending-approval path)
    * @returns {boolean}
+   * @throws {Error} if txPrebuild.txHex is missing or cannot be decoded, in either mode
    * @throws {TxIntentMismatchRecipientError} if transaction recipients don't match user intent
    */
   async verifyTssTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
@@ -3634,17 +3683,22 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       throw new Error('tx cannot be both a batch and hop transaction');
     }
 
-    // A caller that names a payment (`transfer` / `payment`) must supply the recipients it is
-    // paying. With none there is no caller intent to verify the bytes against, and the stored
-    // intent was dropped (its destination may be attacker-chosen), so the handler would only
-    // warn. `[]` declares nothing, exactly like omitting the field. This runs before the
-    // warn / strict policy: neither mode may downgrade an unverifiable payment to a warning.
-    // Only the caller's own params are read here; the back-filled `txParams` and the stored
-    // intent must not supply the recipients or the type.
-    if (canonicalizeEvmTssIntentType(callerParams?.type) === 'transfer' && !callerParams?.recipients?.length) {
+    // A caller that names a payment (`transfer` / `payment`) or a token payment (`transferToken`)
+    // must supply the recipients it is paying. With none there is no caller intent to verify the
+    // bytes against, and the stored intent was dropped (its destination may be attacker-chosen),
+    // so the handler would only warn. `[]` declares nothing, exactly like omitting the field.
+    // This runs before the warn / strict policy: neither mode may downgrade an unverifiable
+    // payment to a warning. Only the caller's own params are read here; the back-filled `txParams`
+    // and the stored intent must not supply the recipients or the type.
+    const declaredPaymentType = canonicalizeEvmTssIntentType(callerParams?.type);
+    if (
+      (declaredPaymentType === 'transfer' || declaredPaymentType === 'transferToken') &&
+      !callerParams?.recipients?.length
+    ) {
+      const declaredPayment = declaredPaymentType === 'transferToken' ? 'token transfer' : 'payment';
       await throwRecipientMismatch(
-        'caller declared a payment without recipients: pass txParams.recipients so the transaction ' +
-          'can be verified against the user intent',
+        `caller declared a ${declaredPayment} without recipients: pass txParams.recipients so the ` +
+          'transaction can be verified against the user intent',
         []
       );
     }
@@ -3674,20 +3728,19 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       throw new Error(`unsupported intent type for EVM TSS: ${canonicalType}`);
     }
 
-    // Decode the bytes once; every check below reads these same fields.
-    let decodedTx: DecodedEvmTx | undefined;
-    let decodeError: Error | undefined;
+    // The bytes about to be signed are the only ground truth and every check below reads them.
+    // Bytes that cannot be decoded cannot be verified against anything, so reject here, before a
+    // handler or the warn / strict policy runs: no mode may turn missing or undecodable bytes into
+    // a warning, and no placeholder transaction may stand in for them.
+    let tx: DecodedEvmTx;
     try {
-      decodedTx = await this.decodeTssTransaction(txPrebuild.txHex);
+      tx = await this.decodeTssTransaction(txPrebuild.txHex);
     } catch (e) {
-      decodeError = e as Error;
-    }
-    const requireDecoded = (): DecodedEvmTx => {
-      if (!decodedTx) {
-        throw decodeError;
+      if (!txPrebuild.txHex) {
+        throw new Error('missing txHex in txPrebuild');
       }
-      return decodedTx;
-    };
+      throw new Error(`transaction bytes could not be decoded to verify intent: ${(e as Error).message}`);
+    }
     const raise = (finding: TssFinding): Promise<never> =>
       throwRecipientMismatch(finding.reason, [
         { address: finding.decoded.to ?? '', amount: finding.decoded.value ?? '' },
@@ -3701,49 +3754,74 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
 
     const coinBaseAddress = wallet.coinSpecific()?.baseAddress;
     const baseAddress = typeof coinBaseAddress === 'string' ? coinBaseAddress : undefined;
+    // Locally known identity of this coin instance: set only when the coin itself is a token.
+    const coinTokenContractAddress = resolveCoinTokenContractAddress(this.getChain());
     const ctx = buildEvmTssIntentContext({
       intentType: canonicalType,
       txParams,
       callerParams,
       storedIntent,
-      coinTokenContractAddress: resolveCoinTokenContractAddress(this.getChain()),
+      coinTokenContractAddress,
       baseAddress,
       batcherAddress: ethNetwork?.batcherContractAddress,
     });
 
-    // Operation checks. A single-recipient payment's historic checks need the decoded bytes, so
-    // bytes that cannot be decoded still fail there as they always did. Fatal findings (those
-    // historic checks) throw now; the rest wait for the policy step at the end.
-    if (canonicalType === 'transfer' && ctx.recipients.length === 1) {
-      requireDecoded();
-    }
-    const intentFindings = evaluateEvmTssIntent(ctx, decodedTx ?? { to: '', value: '0', data: '0x' });
+    // Fatal findings (the checks that threw before fail-closed verification existed) throw now;
+    // the rest wait for the policy step at the end.
+    const intentFindings = evaluateEvmTssIntent(ctx, tx);
     await raiseFatal(intentFindings);
 
-    // DeFi vault calldata vs defiParams. Stored defi-* intents reach this branch through the
-    // intent type mapping, with defiParams reconstructed from the stored intent fields.
+    // DeFi vault calldata vs defiParams. The leg is built server-side from defiParams, so the
+    // amount and the in-calldata destination are all the caller declared; the target contract and
+    // the approve spender are not among them. Statics is the only registry this process can
+    // consult while signing, and it holds no vault entries, so the vault itself can never be
+    // anchored locally. It does hold the wallet's own token contract, which is the contract an
+    // ERC-20 allowance for the vault must be granted on.
     if (['defiApprove', 'defiDeposit', 'defiWithdraw'].includes(canonicalType)) {
-      if (!txPrebuild.txHex) {
-        throw new Error('missing txHex in txPrebuild');
+      // A stored intent carries only vaultId and amount, all of it server-supplied. Comparing it
+      // with server-supplied bytes would only prove the server agrees with itself, so the stored
+      // flow is rejected instead of reported as verified.
+      if (storedIntent) {
+        await throwRecipientMismatch(
+          `stored ${canonicalType} intent cannot be verified: no locally known vault contract for ` +
+            `vault '${storedIntent.vaultId ?? ''}' to anchor the transaction target and spender`,
+          []
+        );
       }
 
-      const defiParams = txParams.defiParams ?? (storedIntent ? mapDefiParamsFromIntent(storedIntent) : undefined);
+      const defiParams = txParams.defiParams;
       if (!coinBaseAddress || !defiParams) {
         await throwRecipientMismatch('DeFi transaction is missing required intent parameters', []);
-        return false;
       }
 
       const validatedBaseAddress = coinBaseAddress as string;
-      const validatedDefiParams = defiParams;
-      const txJson = requireDecoded();
+      const validatedDefiParams = defiParams as DefiIntentParams;
+      const txJson = tx;
       const mismatch = async (message: string, address = txJson.to, amount = txJson.value): Promise<never> =>
         throwRecipientMismatch(message, [{ address: address || '', amount: amount || '' }]);
       const data = txJson.data || '';
+
+      // An ERC-20 approve or an ERC-4626 deposit / redeem leg moves no native currency. A nonzero
+      // value would hand the wallet's native balance to whatever contract `to` names.
+      if (!isZeroNativeValue(txJson.value)) {
+        await mismatch(`${canonicalType} transaction must not carry native value`);
+      }
 
       if (canonicalType === 'defiApprove') {
         const selector = addHexPrefix(optionalDeps.ethAbi.methodID('approve', ['address', 'uint256']).toString('hex'));
         if (!data.startsWith(selector)) {
           await mismatch('defiApprove transaction must use ERC-20 approve(address,uint256) calldata');
+        }
+        // The allowance is granted by the token contract. When this coin instance is that token,
+        // statics names the contract locally, so the leg can be anchored to it. Base-coin wallets
+        // have no local token identity, and no local registry holds vault addresses, so for them
+        // neither the target contract nor the spender can be anchored here.
+        if (coinTokenContractAddress && txJson.to.toLowerCase() !== coinTokenContractAddress.toLowerCase()) {
+          await mismatch(
+            'defiApprove transaction must target the wallet token contract',
+            txJson.to,
+            validatedDefiParams.amount
+          );
         }
         const [, amount] = getRawDecoded(['address', 'uint256'], getBufferedByteCode(selector, data));
         if (amount.toString() !== validatedDefiParams.amount) {
@@ -3825,7 +3903,6 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
         if (!baseAddress) {
           throw new Error('Unable to determine base address for consolidation');
         }
-        const tx = requireDecoded();
         if (!tx.to) {
           throw new Error('Consolidation transaction is missing recipient address');
         }
@@ -3845,21 +3922,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       await raiseFatal(consolidationFindings);
     }
 
-    const decodeFindings: TssFinding[] = decodedTx
-      ? []
-      : [
-          {
-            severity: 'new',
-            intentType: canonicalType,
-            reason: txPrebuild.txHex
-              ? `transaction bytes could not be decoded to verify intent: ${decodeError?.message}`
-              : 'missing txHex in txPrebuild: transaction bytes cannot be verified against intent',
-            expected: {},
-            decoded: {},
-          },
-        ];
-
-    await this.applyTssVerificationPolicy([...consolidationFindings, ...decodeFindings, ...intentFindings], raise);
+    await this.applyTssVerificationPolicy([...consolidationFindings, ...intentFindings], raise);
     return true;
   }
 
@@ -3876,8 +3939,9 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
 
   /**
    * The one place that decides warn or throw for findings that are not fatal: they throw when
-   * the client sets `strictTssVerification`, and otherwise go to `console.warn` and the
-   * optional `onVerificationWarning` callback.
+   * the client sets `strictTssVerification`, and otherwise go to `console.warn` (reason bounded,
+   * calldata redacted) and the optional `onVerificationWarning` callback, which receives both in
+   * full and whose own failures are dropped.
    */
   private async applyTssVerificationPolicy(
     findings: TssFinding[],
@@ -3887,12 +3951,40 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       return;
     }
     if (this.bitgo?.strictTssVerification) {
+      // Strict mode fails on the first finding in policy order, including an `unhandled` intent
+      // type: nothing here filters or reorders `findings`.
       await raise(findings[0]);
     }
     for (const { intentType, reason, expected, decoded } of findings) {
       const warning: TssVerificationWarning = { intentType, reason, expected, decoded };
-      console.warn(`[tss verification] ${reason}`, JSON.stringify({ expected, decoded }));
-      this.bitgo?.onVerificationWarning?.(warning);
+      console.warn(
+        `[tss verification] ${redactReasonForLog(reason)}`,
+        JSON.stringify({ expected: redactMismatchForLog(expected), decoded: redactMismatchForLog(decoded) })
+      );
+      this.notifyVerificationWarning(warning);
+    }
+  }
+
+  /**
+   * Hand one finding to the client's local warning sink. Warn mode must never fail because of the
+   * sink: a synchronous throw is dropped, and the promise of an `async` handler is not awaited (it
+   * cannot hold up signing) and its rejection is swallowed. The sink still receives the full
+   * warning, exactly once per finding, in policy order.
+   */
+  private notifyVerificationWarning(warning: TssVerificationWarning): void {
+    const handler = this.bitgo?.onVerificationWarning;
+    if (!handler) {
+      return;
+    }
+    try {
+      const result: unknown = handler(warning);
+      if (result && typeof (result as PromiseLike<unknown>).then === 'function') {
+        Promise.resolve(result).catch((e) =>
+          debug('onVerificationWarning rejected: %s', (e as Error)?.message ?? String(e))
+        );
+      }
+    } catch (e) {
+      debug('onVerificationWarning threw: %s', (e as Error)?.message ?? String(e));
     }
   }
 

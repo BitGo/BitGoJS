@@ -31,9 +31,12 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
   'customTx',
   // DeFi vault operations — recipients/calldata built server-side from defiParams.
   // Both spellings registered on purpose (see the wrapNative note below): the stored
-  // WP intentType is kebab-case while buildParams.type is camelCase. These types are
-  // NOT skipped by verifyTssTransaction — the DeFi handlers decode and compare the
-  // calldata against defiParams; this entry only waives the missing-recipients guard.
+  // WP intentType is kebab-case while buildParams.type is camelCase. This entry only
+  // waives the missing-recipients guard so a caller-declared (camelCase) leg reaches the
+  // DeFi calldata checks in verifyTssTransaction, which compare the amount and the
+  // in-calldata destination with defiParams. A stored (kebab-case) defi-* intent is
+  // rejected there instead: it carries only vaultId and amount from the server, and no
+  // local vault registry exists to anchor the target contract or the approve spender.
   'defiApprove',
   'defi-approve',
   'defiDeposit',

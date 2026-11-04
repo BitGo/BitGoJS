@@ -9,6 +9,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 * Reject caller-declared EVM TSS payments without recipients in both verification modes; never substitute stored recipients for missing caller intent.
 * Bind legacy EVM signing payloads using the coin instance's network configuration, avoiding ambiguous chain-id lookups.
+* Resolve caller tokenData consistently, reject conflicting token identities, canonicalize calldata, and verify fillNonce against the declared receive address.
+* Reject undecodable EVM TSS payloads, recipient-less token transfers, stored DeFi intents without a trusted vault binding, and DeFi legs carrying native value.
+* Isolate verification-warning callback failures and redact calldata in console warnings without weakening strict verification.
 
 # [25.6.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fabstract-eth%4025.5.4...%40bitgo%2Fabstract-eth%4025.6.0) (2026-11-03)
 
