@@ -42,6 +42,29 @@ describe('Starknet TransferBuilder', () => {
       tx.signableHex.should.equal(tx.starknetTransactionData.transactionHash!.replace(/^0x/i, '').padStart(64, '0'));
       tx.id.should.equal(tx.starknetTransactionData.transactionHash);
     });
+    it('should build multiple STRK transfer calls and preserve them through round-trip', async () => {
+      const factory = new TransactionBuilderFactory(coinConfig);
+      const builder = factory.getTransferBuilder();
+
+      builder
+        .sender(Accounts.account1.address)
+        .nonce('0x0')
+        .chainId(SandboxTransferData.chainId)
+        .recipients([
+          { address: Accounts.account2.address, amount: '1000000000000000000' },
+          { address: Accounts.account3.address, amount: '2000000000000000000' },
+        ]);
+
+      const tx = (await builder.build()) as Transaction;
+      tx.starknetTransactionData.calls.length.should.equal(2);
+      tx.starknetTransactionData.compiledCalldata?.[0].should.equal('0x2');
+
+      const roundTripBuilder = await factory.from(tx.toInternalHex());
+      const roundTrip = (await roundTripBuilder.build()) as Transaction;
+      roundTrip.starknetTransactionData.calls.length.should.equal(2);
+      roundTrip.signableHex.should.equal(tx.signableHex);
+      roundTrip.explainTransaction().outputs.length.should.equal(2);
+    });
 
     it('should produce different hashes for different recipients', async () => {
       const factory = new TransactionBuilderFactory(coinConfig);

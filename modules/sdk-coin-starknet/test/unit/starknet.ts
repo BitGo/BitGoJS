@@ -1,6 +1,10 @@
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { Starknet } from '../../src/index';
+import { coins } from '@bitgo/statics';
+import { TransactionBuilderFactory } from '../../src/lib/transactionBuilderFactory';
+import { Transaction } from '../../src/lib/transaction';
+
 import * as testData from '../resources/starknet';
 import should from 'should';
 import { getAddressFromPublicKey } from '../../src/lib/utils';
@@ -147,5 +151,30 @@ describe('Starknet', function () {
       });
       result.should.equal(true);
     });
+  });
+  it('should verify multiple recipients in a Starknet transaction', async function () {
+    const factory = new TransactionBuilderFactory(coins.get('starknet'));
+    const builder = factory.getTransferBuilder();
+    builder
+      .sender(testData.Accounts.account1.address)
+      .nonce('0x0')
+      .chainId('0x534e5f4d41494e')
+      .recipients([
+        { address: testData.Accounts.account2.address, amount: '1000000000000000000' },
+        { address: testData.Accounts.account3.address, amount: '2000000000000000000' },
+      ]);
+    const tx = (await builder.build()) as Transaction;
+
+    const result = await basecoin.verifyTransaction({
+      txParams: {
+        recipients: [
+          { address: testData.Accounts.account2.address, amount: '1000000000000000000' },
+          { address: testData.Accounts.account3.address, amount: '2000000000000000000' },
+        ],
+      },
+      txPrebuild: { txHex: tx.toInternalHex() },
+      wallet: {} as any,
+    });
+    result.should.equal(true);
   });
 });
