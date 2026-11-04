@@ -53,6 +53,7 @@ import { BaseEcdsaUtils } from './base';
 import { EncryptionVersion, IRequestTracer } from '../../../../api';
 import { resolveEffectiveTxParams } from '../recipientUtils';
 import { shouldVerifyWithSerializedTxHex } from '../serializedTxHexVerify';
+import { isCoinWithSignableConsistency } from '../signableConsistency';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 
@@ -839,6 +840,12 @@ export class EcdsaUtils extends BaseEcdsaUtils {
           intent: txRequest.intent as PopulatedIntent,
           callerTxParams: params.txParams,
         });
+        // The verifier above inspects serializedTxHex only, but the signing round below signs
+        // signableHex. Both are server-supplied, so bind them the same way the MPCv2 path does:
+        // otherwise verified bytes could be paired with a different signing preimage.
+        if (isCoinWithSignableConsistency(this.baseCoin)) {
+          this.baseCoin.assertSignableConsistency(unsignedTx.serializedTxHex, unsignedTx.signableHex);
+        }
       } else {
         await this.baseCoin.verifyTransaction({
           txPrebuild: { txHex: unsignedTx.signableHex },

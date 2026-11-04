@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## Unreleased
+
+### Bug Fixes
+
+* Verify Kava EVM and Prividium TSS transactions using serialized bytes rather than legacy EIP-155 signing preimages, on mainnet and testnet.
+
 # [59.28.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fstatics%4059.27.0...%40bitgo%2Fstatics%4059.28.0) (2026-11-03)
 
 ### Bug Fixes

@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## Unreleased
+
+### Bug Fixes
+
+* Reject caller-declared EVM TSS payments without recipients in both verification modes; never substitute stored recipients for missing caller intent.
+* Bind legacy EVM signing payloads using the coin instance's network configuration, avoiding ambiguous chain-id lookups.
+
 # [25.6.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fabstract-eth%4025.5.4...%40bitgo%2Fabstract-eth%4025.6.0) (2026-11-03)
 
 ### Bug Fixes

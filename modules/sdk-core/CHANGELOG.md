@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## Unreleased
+
+### Bug Fixes
+
+* Check signing-payload consistency on the ECDSA serialized-transaction verification path, matching MPCv2, before entering the signing round.
+
 # [40.5.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4040.4.0...%40bitgo%2Fsdk-core%4040.5.0) (2026-11-03)
 
 ### Bug Fixes

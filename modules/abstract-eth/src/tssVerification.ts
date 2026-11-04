@@ -326,7 +326,9 @@ export function callerDeclaresIntent(callerParams?: CallerDeclarableParams): boo
  *
  * - The caller declared a type or recipients: the caller's own params. The stored intent is
  *   dropped entirely: it must not select the handler, add calldata, name the asset, or supply
- *   consolidation / DeFi fields.
+ *   consolidation / DeFi fields. A caller that declares a payment type (`transfer` / `payment`)
+ *   but no recipients is rejected by `verifyTssTransaction` before any handler runs, because
+ *   nothing would be left to verify the bytes against; the stored intent is never used instead.
  * - The caller declared nothing (signing a stored tx request, e.g. pending approval): the stored
  *   intent, which `resolveEffectiveTxParams` has already folded into `txParams`.
  *

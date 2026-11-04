@@ -3397,8 +3397,11 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
    *
   /** @inheritdoc CoinWithSignableConsistency */
   assertSignableConsistency(serializedTxHex: string, signableHex: string): void {
-    const common = AbstractEthLikeNewCoins.getCustomChainCommon(this.getChainId());
-    // getCustomChainCommon defaults to the london hardfork, which is only valid for chains
+    // Build the common from this coin's own network. Resolving it from the chain id through
+    // getCustomChainCommon is ambiguous: the id -> coin registry is shared with other families
+    // (kavaevm's 2222 maps to 'kava'), so the lookup can throw or pick the wrong network.
+    const common = getCommon(this.getNetwork() as EthLikeNetwork);
+    // getCommon defaults to the london hardfork, which is only valid for chains
     // that activated EIP-1559. Chains without it (e.g. BSC, XDC) sign under petersburg.
     if (!this.staticsCoin?.features.includes(CoinFeature.EIP1559)) {
       common.setHardfork(optionalDeps.EthCommon.Hardfork.Petersburg);
@@ -3629,6 +3632,21 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
 
     if (txParams.hop && txParams.recipients && txParams.recipients.length > 1) {
       throw new Error('tx cannot be both a batch and hop transaction');
+    }
+
+    // A caller that names a payment (`transfer` / `payment`) must supply the recipients it is
+    // paying. With none there is no caller intent to verify the bytes against, and the stored
+    // intent was dropped (its destination may be attacker-chosen), so the handler would only
+    // warn. `[]` declares nothing, exactly like omitting the field. This runs before the
+    // warn / strict policy: neither mode may downgrade an unverifiable payment to a warning.
+    // Only the caller's own params are read here; the back-filled `txParams` and the stored
+    // intent must not supply the recipients or the type.
+    if (canonicalizeEvmTssIntentType(callerParams?.type) === 'transfer' && !callerParams?.recipients?.length) {
+      await throwRecipientMismatch(
+        'caller declared a payment without recipients: pass txParams.recipients so the transaction ' +
+          'can be verified against the user intent',
+        []
+      );
     }
 
     // Canonical verifier intent type, derived only from the source that speaks for the user.

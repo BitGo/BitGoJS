@@ -269,12 +269,17 @@ async function buildTxHex(
         await verify(txParams, txHex, { strict: true }).should.be.rejectedWith(/not a recognized payment shape/);
       });
 
-      it('flags missing recipients under a payment intent', async function () {
+      it('rejects missing recipients under a caller-declared payment intent (fail closed)', async function () {
+        // An empty recipients array declares nothing to verify the bytes against: signing stops
+        // whether or not the client opted into strictTssVerification.
         const txHex = await build({ to: recipientAddress, value: '1000' });
         const txParams = { type: 'transfer', recipients: [] };
-        (await verify(txParams, txHex)).should.equal(true);
-        warnings.some((w) => /no recipients/.test(w.reason)).should.equal(true);
-        await verify(txParams, txHex, { strict: true }).should.be.rejectedWith(/no recipients/);
+        for (const strict of [false, true]) {
+          await verify(txParams, txHex, { strict }).should.be.rejectedWith(
+            /caller declared a payment without recipients/
+          );
+        }
+        warnings.should.have.length(0);
       });
     });
 
@@ -580,6 +585,99 @@ async function buildTxHex(
         await verifySigningPath(undefined, intent, txHex, true).should.be.rejectedWith(
           /cannot be resolved to a token contract/
         );
+      });
+
+      describe('caller-declared payment without recipients (fail closed)', function () {
+        // A caller that names a payment type but supplies no recipients leaves nothing to verify
+        // the bytes against: the stored intent is dropped (its destination may be attacker
+        // chosen), so signing must stop instead of continuing behind a warning. An empty array
+        // declares nothing, exactly like omitting the field, and no mode may downgrade this.
+        const attackerIntent = {
+          intentType: 'payment',
+          recipients: [{ address: { address: attackerAddress }, amount: { value: '9999', symbol: 'hteth' } }],
+        };
+
+        it('rejects a caller `transfer` type with no recipients, both modes', async function () {
+          const txHex = await build({ to: attackerAddress, value: '9999' });
+          for (const strict of [false, true]) {
+            await verifySigningPath({ type: 'transfer' }, attackerIntent, txHex, strict).should.be.rejectedWith(
+              /caller declared a payment without recipients/
+            );
+          }
+          warnings.should.have.length(0);
+        });
+
+        it('rejects a caller `transfer` type with an empty recipients array, both modes', async function () {
+          const caller = { type: 'transfer', recipients: [] };
+          const txHex = await build({ to: attackerAddress, value: '9999' });
+          for (const strict of [false, true]) {
+            await verifySigningPath(caller, attackerIntent, txHex, strict).should.be.rejectedWith(
+              /caller declared a payment without recipients/
+            );
+          }
+          warnings.should.have.length(0);
+        });
+
+        it('treats the stored spelling `payment` as the same caller declaration', async function () {
+          const txHex = await build({ to: attackerAddress, value: '9999' });
+          for (const strict of [false, true]) {
+            await verifySigningPath({ type: 'payment' }, attackerIntent, txHex, strict).should.be.rejectedWith(
+              /caller declared a payment without recipients/
+            );
+          }
+          warnings.should.have.length(0);
+        });
+
+        it('keeps signing a stored payment intent when the caller declared nothing', async function () {
+          const intent = {
+            intentType: 'payment',
+            recipients: [{ address: { address: recipientAddress }, amount: { value: '1000', symbol: 'hteth' } }],
+          };
+          const txHex = await build({ to: recipientAddress, value: '1000' });
+          for (const strict of [false, true]) {
+            (await verifySigningPath(undefined, intent, txHex, strict)).should.equal(true);
+          }
+          warnings.should.have.length(0);
+        });
+
+        it('keeps the stored token identity when the caller supplies only a token name', async function () {
+          const intent = {
+            intentType: 'transferToken',
+            tokenName: localTokenName,
+            recipients: [{ address: { address: recipientAddress }, amount: { value: '1000', symbol: localTokenName } }],
+          };
+          const txHex = await build({
+            to: localTokenContractAddress,
+            value: '0',
+            data: encodeErc20Transfer(recipientAddress, '1000'),
+          });
+          for (const strict of [false, true]) {
+            (await verifySigningPath({ tokenName: localTokenName }, intent, txHex, strict)).should.equal(true);
+          }
+          warnings.should.have.length(0);
+        });
+
+        it('leaves other types without recipients on the warn-first policy', async function () {
+          // The fail-closed rule is limited to caller-declared payments: a transferToken with no
+          // recipients keeps warning by default and keeps throwing only in strict mode.
+          const caller = { type: 'transferToken' };
+          const intent = {
+            intentType: 'transferToken',
+            tokenName: localTokenName,
+            recipients: [{ address: { address: recipientAddress }, amount: { value: '1000', symbol: localTokenName } }],
+          };
+          const txHex = await build({
+            to: localTokenContractAddress,
+            value: '0',
+            data: encodeErc20Transfer(recipientAddress, '1000'),
+          });
+
+          (await verifySigningPath(caller, intent, txHex)).should.equal(true);
+          warnings.some((w) => /must declare exactly one token recipient/.test(w.reason)).should.equal(true);
+          await verifySigningPath(caller, intent, txHex, true).should.be.rejectedWith(
+            /must declare exactly one token recipient/
+          );
+        });
       });
     });
 
