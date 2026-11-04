@@ -606,6 +606,12 @@ function createATAInstruction(data: AtaInit): TransactionInstruction[] {
   return [associatedTokenAccountInstruction];
 }
 
+// Token-2022 `ExtensionType::ConfidentialTransferFeeAmount`. The pinned `@solana/spl-token`
+// enum predates the confidential-fee members (it jumps TransferHookAccount = 15 to
+// MetadataPointer = 18), so the value is restated from the Token-2022 enum order:
+// ConfidentialTransferAccount = 5, ConfidentialTransferFeeAmount = 17.
+const CONFIDENTIAL_TRANSFER_FEE_AMOUNT_EXTENSION_TYPE = 17;
+
 /**
  * Construct a Token-2022 Reallocate instruction that adds the ConfidentialTransferAccount
  * extension. ConfigureAccount fails on-chain unless the account already holds the extension,
@@ -618,18 +624,26 @@ function reallocateConfidentialTransferAccountInstruction(
   data: ReallocateConfidentialTransferAccount
 ): TransactionInstruction[] {
   const {
-    params: { tokenAddress, payerAddress, ownerAddress, programId },
+    params: { tokenAddress, payerAddress, ownerAddress, programId, mintHasTransferFeeConfig },
   } = data;
   assert(tokenAddress, 'Missing tokenAddress param');
   assert(payerAddress, 'Missing payerAddress param');
   assert(ownerAddress, 'Missing ownerAddress param');
   assert(programId && programId === TOKEN_2022_PROGRAM_ID.toString(), 'Reallocate requires the Token-2022 program');
 
+  const extensionTypes: ExtensionType[] = [ExtensionType.ConfidentialTransferAccount];
+  // ConfigureAccount also initializes ConfidentialTransferFeeAmount when the mint carries
+  // TransferFeeConfig, so the reallocation must reserve that extension's 68 bytes (64 + TLV
+  // header) or the configuration fails on-chain for fee-bearing mints.
+  if (mintHasTransferFeeConfig) {
+    extensionTypes.push(CONFIDENTIAL_TRANSFER_FEE_AMOUNT_EXTENSION_TYPE as ExtensionType);
+  }
+
   return [
     createReallocateInstruction(
       new PublicKey(tokenAddress),
       new PublicKey(payerAddress),
-      [ExtensionType.ConfidentialTransferAccount],
+      extensionTypes,
       new PublicKey(ownerAddress),
       [],
       TOKEN_2022_PROGRAM_ID
@@ -991,21 +1005,22 @@ function assertValidI8(value: number, fieldName: string): void {
 }
 
 // Buffer layouts for CT instructions with multi-byte fields
+// Token-2022 `ConfigureAccountInstructionData` carries no ElGamal pubkey: the key is
+// extracted from the accompanying VerifyPubkeyValidity proof context. Layout:
+// [27][2] + decryptable_zero_balance(36) + maximum_pending_balance_credit_counter(u64) + proof_instruction_offset(i8).
 const configureAccountDataLayout = struct<{
   instruction: number;
   confidentialTransferInstruction: number;
-  elgamalPubkey: Uint8Array;
   decryptableZeroBalance: Uint8Array;
   maximumPendingBalanceCreditCounter: Uint8Array;
   proofInstructionOffset: number;
 }>([
   u8('instruction'), // 27
   u8('confidentialTransferInstruction'), // 2
-  blob(32, 'elgamalPubkey'), // new_account_elgamal_pubkey
   blob(36, 'decryptableZeroBalance'),
   blob(8, 'maximumPendingBalanceCreditCounter'),
   s8('proofInstructionOffset'), // i8 — signed: negative = proof is before this instruction
-]); // span = 79
+]); // span = 47
 
 const applyPendingBalanceDataLayout = struct<{
   instruction: number;
@@ -1072,7 +1087,6 @@ function configureConfidentialTransferAccountInstruction(
       tokenAddress,
       mintAddress,
       authorityAddress,
-      elgamalPubkey,
       instructionsSysvarOrContextStateAddress,
       decryptableZeroBalance,
       maximumPendingBalanceCreditCounter,
@@ -1082,7 +1096,6 @@ function configureConfidentialTransferAccountInstruction(
   assert(tokenAddress, 'Missing tokenAddress param');
   assert(mintAddress, 'Missing mintAddress param');
   assert(authorityAddress, 'Missing authorityAddress param');
-  assert(elgamalPubkey, 'Missing elgamalPubkey param');
   assert(decryptableZeroBalance, 'Missing decryptableZeroBalance param');
   assertValidAmountString(maximumPendingBalanceCreditCounter, 'maximumPendingBalanceCreditCounter');
   assertValidI8(proofInstructionOffset, 'proofInstructionOffset');
@@ -1100,8 +1113,6 @@ function configureConfidentialTransferAccountInstruction(
 
   const decryptableBytes = Buffer.from(decryptableZeroBalance, 'hex');
   assert(decryptableBytes.length === 36, 'decryptableZeroBalance must be 36 bytes');
-  const elgamalPubkeyBytes = Buffer.from(elgamalPubkey, 'hex');
-  assert(elgamalPubkeyBytes.length === 32, 'elgamalPubkey must be 32 bytes');
 
   const dataBuffer = Buffer.alloc(configureAccountDataLayout.span);
   const counterBuffer = Buffer.alloc(8);
@@ -1111,7 +1122,6 @@ function configureConfidentialTransferAccountInstruction(
     {
       instruction: CT_EXT_DISCRIMINATOR,
       confidentialTransferInstruction: CT_CONFIGURE_ACCOUNT_DISCRIMINATOR,
-      elgamalPubkey: elgamalPubkeyBytes,
       decryptableZeroBalance: decryptableBytes,
       maximumPendingBalanceCreditCounter: counterBuffer,
       proofInstructionOffset,

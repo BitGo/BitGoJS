@@ -46,7 +46,6 @@ describe('Solana Confidential Transfer Builder - CT account enablement (v1)', ()
         tokenAddress,
         mintAddress,
         authorityAddress,
-        elgamalPubkey: '11'.repeat(32),
         decryptableZeroBalance: zeroBytes36,
         maximumPendingBalanceCreditCounter: '18446744073709551615',
         proofInstructionOffset: 1,

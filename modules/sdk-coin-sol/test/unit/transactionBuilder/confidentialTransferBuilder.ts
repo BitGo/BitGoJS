@@ -35,13 +35,12 @@ describe('Solana Confidential Transfer Builder', () => {
   const solTx = (tx: any): any => (tx as Transaction).solTransaction;
 
   describe('ConfigureAccount', () => {
-    it('should build a configure account instruction with correct 79-byte layout', async () => {
+    it('should build a configure account instruction with the 47-byte Token-2022 layout', async () => {
       const builder = ctBuilder();
       builder.configureAccount({
         tokenAddress,
         mintAddress,
         authorityAddress,
-        elgamalPubkey: '11'.repeat(32),
         decryptableZeroBalance: zeroBytes36,
         maximumPendingBalanceCreditCounter: '65536',
         proofInstructionOffset: 1,
@@ -56,13 +55,15 @@ describe('Solana Confidential Transfer Builder', () => {
       const rawInstructions = solTx(tx).instructions;
       rawInstructions.should.have.length(1);
       const data = rawInstructions[0].data;
-      data.length.should.equal(79);
+      // Token-2022 ConfigureAccount carries no ElGamal pubkey: the key travels in the
+      // VerifyPubkeyValidity proof instruction's context. Layout is
+      // [27][2] + decryptable_zero_balance(36) + maximum_pending_balance_credit_counter(u64) + proof_instruction_offset(i8).
+      data.length.should.equal(47);
       data[0].should.equal(27); // ConfidentialTransferExtension
       data[1].should.equal(2); // ConfigureAccount
-      data.slice(2, 34).toString('hex').should.equal('11'.repeat(32)); // new_account_elgamal_pubkey
-      data.slice(34, 70).toString('hex').should.equal(zeroBytes36); // decryptable_zero_balance
-      data.readBigUInt64LE(70).toString().should.equal('65536'); // max pending balance credit counter
-      data[78].should.equal(1); // proof_instruction_offset
+      data.slice(2, 38).toString('hex').should.equal(zeroBytes36); // decryptable_zero_balance
+      data.readBigUInt64LE(38).toString().should.equal('65536'); // max pending balance credit counter
+      data[46].should.equal(1); // proof_instruction_offset
 
       // Verify accounts
       const keys = rawInstructions[0].keys;
@@ -83,7 +84,6 @@ describe('Solana Confidential Transfer Builder', () => {
         tokenAddress,
         mintAddress,
         authorityAddress,
-        elgamalPubkey: '11'.repeat(32),
         instructionsSysvarOrContextStateAddress: contextStateAddress,
         decryptableZeroBalance: zeroBytes36,
         maximumPendingBalanceCreditCounter: '65536',
@@ -94,7 +94,55 @@ describe('Solana Confidential Transfer Builder', () => {
       const keys = solTx(tx).instructions[0].keys;
       keys[2].pubkey.toString().should.equal(contextStateAddress);
       const data = solTx(tx).instructions[0].data;
-      data[78].should.equal(0); // proof_instruction_offset = 0 (context state)
+      data[46].should.equal(0); // proof_instruction_offset = 0 (context state)
+    });
+  });
+
+  describe('createAta reallocate extension list', () => {
+    const token2022ProgramId = 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb';
+    // Reallocate data: [29][extensionType(u16 LE), ...]. ExtensionType values follow the
+    // Token-2022 enum: ConfidentialTransferAccount = 5, ConfidentialTransferFeeAmount = 17.
+    const REALLOCATE = 29;
+    const CONFIDENTIAL_TRANSFER_ACCOUNT = 5;
+    const CONFIDENTIAL_TRANSFER_FEE_AMOUNT = 17;
+
+    it('should reallocate only ConfidentialTransferAccount for a mint without TransferFeeConfig', async () => {
+      const builder = ctBuilder();
+      builder.createAta({
+        mintAddress,
+        ataAddress: tokenAddress,
+        ownerAddress: authorityAddress,
+        payerAddress: account.pub,
+        tokenName: 'tsol:ray',
+        programId: token2022ProgramId,
+      });
+
+      const tx = await builder.build();
+      solTx(tx).instructions.should.have.length(2);
+      const data = solTx(tx).instructions[1].data;
+      data.length.should.equal(3);
+      data[0].should.equal(REALLOCATE);
+      data.readUInt16LE(1).should.equal(CONFIDENTIAL_TRANSFER_ACCOUNT);
+    });
+
+    it('should also reserve ConfidentialTransferFeeAmount when the mint has TransferFeeConfig', async () => {
+      const builder = ctBuilder();
+      builder.createAta({
+        mintAddress,
+        ataAddress: tokenAddress,
+        ownerAddress: authorityAddress,
+        payerAddress: account.pub,
+        tokenName: 'tsol:usdc',
+        programId: token2022ProgramId,
+        mintHasTransferFeeConfig: true,
+      });
+
+      const tx = await builder.build();
+      const data = solTx(tx).instructions[1].data;
+      data.length.should.equal(5);
+      data[0].should.equal(REALLOCATE);
+      data.readUInt16LE(1).should.equal(CONFIDENTIAL_TRANSFER_ACCOUNT);
+      data.readUInt16LE(3).should.equal(CONFIDENTIAL_TRANSFER_FEE_AMOUNT);
     });
   });
 
@@ -457,7 +505,6 @@ describe('Solana Confidential Transfer Builder', () => {
           tokenAddress,
           mintAddress,
           authorityAddress,
-          elgamalPubkey: '11'.repeat(32),
           decryptableZeroBalance: zeroBytes36,
           maximumPendingBalanceCreditCounter: '65536',
           proofInstructionOffset: 1,
@@ -482,7 +529,6 @@ describe('Solana Confidential Transfer Builder', () => {
         tokenAddress,
         mintAddress,
         authorityAddress,
-        elgamalPubkey: '11'.repeat(32),
         decryptableZeroBalance: zeroBytes36,
         maximumPendingBalanceCreditCounter: '65536',
         proofInstructionOffset: 1,
@@ -507,7 +553,6 @@ describe('Solana Confidential Transfer Builder', () => {
           tokenAddress: '',
           mintAddress,
           authorityAddress,
-          elgamalPubkey: '11'.repeat(32),
           decryptableZeroBalance: zeroBytes36,
           maximumPendingBalanceCreditCounter: '65536',
           proofInstructionOffset: 1,
@@ -525,7 +570,6 @@ describe('Solana Confidential Transfer Builder', () => {
         tokenAddress,
         mintAddress,
         authorityAddress,
-        elgamalPubkey: '11'.repeat(32),
         decryptableZeroBalance: zeroBytes36,
         maximumPendingBalanceCreditCounter: '65536',
         proofInstructionOffset: -1, // proof is the previous instruction
@@ -533,7 +577,7 @@ describe('Solana Confidential Transfer Builder', () => {
 
       const tx = await builder.build();
       const data = solTx(tx).instructions[0].data;
-      data[78].should.equal(255); // -1 as i8 = 255 as u8 (two's complement)
+      data[46].should.equal(255); // -1 as i8 = 255 as u8 (two's complement)
     });
 
     it('should correctly encode negative offset on Withdraw', async () => {
@@ -715,7 +759,6 @@ describe('Solana Confidential Transfer Builder', () => {
         tokenAddress,
         mintAddress,
         authorityAddress,
-        elgamalPubkey: '11'.repeat(32),
         decryptableZeroBalance: zeroBytes36,
         maximumPendingBalanceCreditCounter: 'foo',
         proofInstructionOffset: 1,
@@ -767,7 +810,6 @@ describe('Solana Confidential Transfer Builder', () => {
         tokenAddress,
         mintAddress,
         authorityAddress,
-        elgamalPubkey: '11'.repeat(32),
         decryptableZeroBalance: zeroBytes36,
         maximumPendingBalanceCreditCounter: '65536',
         proofInstructionOffset: 1,
@@ -845,7 +887,6 @@ describe('Solana Confidential Transfer Builder', () => {
         tokenAddress,
         mintAddress,
         authorityAddress,
-        elgamalPubkey: '11'.repeat(32),
         decryptableZeroBalance: zeroBytes36,
         maximumPendingBalanceCreditCounter: '65536',
         proofInstructionOffset: 128,
@@ -859,7 +900,6 @@ describe('Solana Confidential Transfer Builder', () => {
         tokenAddress,
         mintAddress,
         authorityAddress,
-        elgamalPubkey: '11'.repeat(32),
         decryptableZeroBalance: zeroBytes36,
         maximumPendingBalanceCreditCounter: '65536',
         proofInstructionOffset: -129,
@@ -927,7 +967,6 @@ describe('Solana Confidential Transfer Builder', () => {
         tokenAddress,
         mintAddress,
         authorityAddress,
-        elgamalPubkey: '11'.repeat(32),
         decryptableZeroBalance: zeroBytes36,
         maximumPendingBalanceCreditCounter: '65536',
         proofInstructionOffset: 127,
@@ -935,7 +974,7 @@ describe('Solana Confidential Transfer Builder', () => {
 
       const tx = await builder.build();
       const data = solTx(tx).instructions[0].data;
-      data[78].should.equal(127);
+      data[46].should.equal(127);
     });
   });
 
@@ -973,7 +1012,6 @@ describe('Solana Confidential Transfer Builder', () => {
         tokenAddress,
         mintAddress,
         authorityAddress,
-        elgamalPubkey: '11'.repeat(32),
         decryptableZeroBalance: zeroBytes36,
         maximumPendingBalanceCreditCounter: '18446744073709551616', // 2^64
         proofInstructionOffset: 1,

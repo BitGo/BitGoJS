@@ -56,7 +56,6 @@ describe('SOL: CT enablement token verification', function () {
         tokenAddress,
         mintAddress,
         authorityAddress,
-        elgamalPubkey: '11'.repeat(32),
         decryptableZeroBalance: zeroBytes36,
         maximumPendingBalanceCreditCounter: '18446744073709551615',
         proofInstructionOffset: 1,
