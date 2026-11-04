@@ -442,6 +442,12 @@ export enum CoinFeature {
   ALPHANUMERIC_MEMO_ID = 'alphanumeric-memo-id',
 
   /**
+   * This coin supports memos/tags embedded in addresses (e.g. `?memoId=`, `?dt=`, `?transferId=`)
+   * to route deposits to a shared base address. Consumers use this to strip and compare memos.
+   */
+  SUPPORTS_MEMO = 'supports-memo',
+
+  /**
    * This coin supports WalletConnect
    */
   WALLET_CONNECT_DEFI = 'wallet-connect-defi',

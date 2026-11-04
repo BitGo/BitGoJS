@@ -155,6 +155,7 @@ export const XLM_FEATURES = [
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
   CoinFeature.MULTISIG_COLD,
   CoinFeature.MULTISIG,
+  CoinFeature.SUPPORTS_MEMO,
 ];
 export const XTZ_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
@@ -175,6 +176,7 @@ export const XRP_FEATURES = [
   CoinFeature.CUSTODY_BITGO_KOREA,
   CoinFeature.MULTISIG_COLD,
   CoinFeature.MULTISIG,
+  CoinFeature.SUPPORTS_MEMO,
 ];
 export const POLYGON_TOKEN_FEATURES_WITH_FRANKFURT = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
@@ -191,6 +193,7 @@ export const CSPR_FEATURES = [
   CoinFeature.MULTISIG_COLD,
   CoinFeature.MULTISIG,
   CoinFeature.STAKING,
+  CoinFeature.SUPPORTS_MEMO,
 ];
 export const ALGO_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
@@ -238,6 +241,7 @@ export const DOT_FEATURES = [
   CoinFeature.REBUILD_ON_CUSTODY_SIGNING,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
+  CoinFeature.SUPPORTS_MEMO,
 ];
 export const EOS_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
@@ -247,6 +251,7 @@ export const EOS_FEATURES = [
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
   CoinFeature.MULTISIG_COLD,
   CoinFeature.MULTISIG,
+  CoinFeature.SUPPORTS_MEMO,
 ];
 export const HBAR_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
@@ -259,6 +264,7 @@ export const HBAR_FEATURES = [
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.ALPHANUMERIC_MEMO_ID,
   CoinFeature.STAKING,
+  CoinFeature.SUPPORTS_MEMO,
 ];
 export const POLYGON_FEATURES = [
   ...ETH_FEATURES_WITH_MMI,
@@ -314,6 +320,7 @@ export const SOL_FEATURES = [
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.WALLET_CONNECT_DEFI,
   CoinFeature.CUSTODY_BULK_TRANSACTION,
+  CoinFeature.SUPPORTS_MEMO,
 ];
 export const TSOL_FEATURES = [...SOL_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.CUSTODY_BITGO_SINGAPORE];
 export const SOL_TOKEN_FEATURES = [
@@ -376,6 +383,7 @@ export const STX_FEATURES = [
   CoinFeature.STAKING,
   CoinFeature.SUPPORTS_TOKENS,
   CoinFeature.ALPHANUMERIC_MEMO_ID,
+  CoinFeature.SUPPORTS_MEMO,
 ];
 export const STX_TOKEN_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
@@ -493,6 +501,7 @@ export const COSMOS_SIDECHAIN_FEATURES = [
   CoinFeature.ALPHANUMERIC_MEMO_ID,
   CoinFeature.SUPPORTS_TOKENS,
   CoinFeature.CUSTODY_BULK_TRANSACTION,
+  CoinFeature.SUPPORTS_MEMO,
 ];
 export const COSMOS_SIDECHAIN_FEATURES_WITH_STAKING = [
   ...COSMOS_SIDECHAIN_FEATURES,
@@ -539,6 +548,7 @@ export const TON_FEATURES = [
   CoinFeature.CUSTODY_BITGO_KOREA,
   CoinFeature.ALPHANUMERIC_MEMO_ID,
   CoinFeature.SUPPORTS_TOKENS,
+  CoinFeature.SUPPORTS_MEMO,
 ];
 export const TON_TOKEN_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
@@ -622,6 +632,7 @@ export const BERA_FEATURES = [
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BULK_TRANSACTION,
   CoinFeature.ERC20_BULK_TRANSACTION,
+  CoinFeature.SUPPORTS_MEMO,
 ];
 export const OAS_FEATURES = [
   ...ETH_FEATURES,
@@ -692,6 +703,7 @@ export const ICP_FEATURES = [
   CoinFeature.SHA256_WITH_ECDSA_TSS,
   CoinFeature.REBUILD_ON_CUSTODY_SIGNING,
   CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX,
+  CoinFeature.SUPPORTS_MEMO,
 ];
 
 export const STARKNET_FEATURES = [
@@ -737,6 +749,7 @@ export const POLYX_FEATURES = [
   CoinFeature.STAKING,
   CoinFeature.SUPPORTS_TOKENS,
   CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
+  CoinFeature.SUPPORTS_MEMO,
 ];
 
 export const POLYX_TOKEN_FEATURES = [
@@ -839,6 +852,7 @@ export const CANTON_FEATURES = [
   CoinFeature.REQUIRES_DEPOSIT_ACCEPTANCE_TRANSACTION,
   CoinFeature.ALPHANUMERIC_MEMO_ID,
   CoinFeature.SUPPORTS_TOKENS,
+  CoinFeature.SUPPORTS_MEMO,
 ];
 
 export const CANTON_TOKEN_FEATURES = [
