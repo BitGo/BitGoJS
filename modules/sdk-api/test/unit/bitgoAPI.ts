@@ -44,12 +44,12 @@ describe('Constructor', function () {
   });
 
   describe('upgradeEncryptionOnSign argument', function () {
-    it('is disabled by default', function () {
+    it('is off by default', function () {
       const bitgo = new BitGoAPI({ env: 'custom', customRootURI: 'https://app.example.local' });
       bitgo.isUpgradeEncryptionOnSignEnabled().should.equal(false);
     });
 
-    it('is enabled explicitly', function () {
+    it('is on when set to true', function () {
       const bitgo = new BitGoAPI({
         env: 'custom',
         customRootURI: 'https://app.example.local',
@@ -58,7 +58,7 @@ describe('Constructor', function () {
       bitgo.isUpgradeEncryptionOnSignEnabled().should.equal(true);
     });
 
-    it('is disabled explicitly', function () {
+    it('is off when set to false', function () {
       const bitgo = new BitGoAPI({
         env: 'custom',
         customRootURI: 'https://app.example.local',

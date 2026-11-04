@@ -498,7 +498,7 @@ describe('V2 Wallet:', function () {
       sinon.assert.notCalled(upgrade);
     });
 
-    it('does not upgrade from getUserPrv alone', async function () {
+    it('does not upgrade when only getUserPrv is called', async function () {
       const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
 
       (await wallet.getUserPrv({ keychain: userKeychain, walletPassphrase })).should.equal('xprv1');
@@ -4893,7 +4893,7 @@ describe('V2 Wallet:', function () {
           .should.be.rejectedWith('txRequestId required to sign transactions with TSS');
       });
 
-      it('triggers the v1 to v2 user key upgrade when the prv came from the passphrase', async function () {
+      it('triggers the v1 to v2 user key upgrade when signing decrypts the user key with the passphrase', async function () {
         sandbox.stub(bitgo, 'isUpgradeEncryptionOnSignEnabled').returns(true);
         const walletPassphrase = 'upgradePassphrase';
         const userKeychain: Keychain = {
@@ -5278,7 +5278,7 @@ describe('V2 Wallet:', function () {
             .reply(200, { txRequests: [txRequestForMessageSigning] });
         });
 
-        it('triggers the upgrade when the prv came from the passphrase', async function () {
+        it('triggers the upgrade when signing decrypts the user key with the passphrase', async function () {
           const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').returns(new Promise(() => undefined));
 
           const signed = await tssEthWallet.signMessage({
@@ -5956,7 +5956,7 @@ describe('V2 Wallet:', function () {
             .reply(200, { txRequests: [txRequestForTypedDataSigning] });
         });
 
-        it('triggers the upgrade when the prv came from the passphrase', async function () {
+        it('triggers the upgrade when signing decrypts the user key with the passphrase', async function () {
           const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').returns(new Promise(() => undefined));
 
           const signed = await tssEthWallet.signTypedData({

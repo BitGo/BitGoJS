@@ -1522,7 +1522,7 @@ describe('V2 Keychains', function () {
       return { scope, bodies };
     }
 
-    it('writes a v2 envelope of the same prv with the compare-and-swap fields for a v1 keychain', async function () {
+    it('upgrades a v1 key by sending the v2 encryption of the same prv with existingEncryptedPrv', async function () {
       const keychain = v1Keychain();
       const { scope, bodies } = mockPut();
 
@@ -1540,7 +1540,7 @@ describe('V2 Keychains', function () {
       should(keychain.encryptedPrv).equal(encryptedV1);
     });
 
-    it('still writes when upgradeEncryptionOnSign is off, since only signing hooks are gated', async function () {
+    it('upgrades when called directly, even with upgradeEncryptionOnSign off', async function () {
       sandbox.stub(bitgo, 'isUpgradeEncryptionOnSignEnabled').returns(false);
       const { scope, bodies } = mockPut();
 
@@ -1551,7 +1551,7 @@ describe('V2 Keychains', function () {
       bodies.should.have.length(1);
     });
 
-    it('does not write for a v2 keychain', async function () {
+    it('skips a key that is already v2', async function () {
       const encryptedV2 = await bitgo.encrypt({ input: prv, password: passphrase, encryptionVersion: 2 });
       const { scope } = mockPut();
 
@@ -1564,7 +1564,7 @@ describe('V2 Keychains', function () {
       scope.isDone().should.be.false();
     });
 
-    it('does not write for an unparseable envelope', async function () {
+    it('reports an error without writing when encryptedPrv cannot be parsed', async function () {
       const { scope } = mockPut();
 
       const result = await keychains.upgradeEncryption({
@@ -1576,7 +1576,7 @@ describe('V2 Keychains', function () {
       scope.isDone().should.be.false();
     });
 
-    it('does not write when the keychain has no id', async function () {
+    it('reports an error without writing when the keychain has no id', async function () {
       const { scope } = mockPut();
 
       const result = await keychains.upgradeEncryption({
@@ -1588,7 +1588,7 @@ describe('V2 Keychains', function () {
       scope.isDone().should.be.false();
     });
 
-    it('resolves without writing when the passphrase is wrong', async function () {
+    it('reports an error without writing when the passphrase is wrong', async function () {
       const { scope } = mockPut();
 
       const result = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase: 'wrongPass' });
@@ -1597,7 +1597,7 @@ describe('V2 Keychains', function () {
       scope.isDone().should.be.false();
     });
 
-    it('resolves when the server rejects the compare-and-swap with 409', async function () {
+    it('reports keyChanged when the key changed on the server (409)', async function () {
       const { scope } = mockPut(409);
 
       const result = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
@@ -1606,7 +1606,7 @@ describe('V2 Keychains', function () {
       result.should.deepEqual({ upgraded: false, skipped: KeyEncryptionUpgradeSkipReason.KeyChanged });
     });
 
-    it('resolves when the server fails with 500', async function () {
+    it('reports an error when the server fails with 500', async function () {
       const { scope } = mockPut(500);
 
       const result = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
@@ -1633,7 +1633,7 @@ describe('V2 Keychains', function () {
       result.should.deepEqual({ upgraded: false, failed: KeyEncryptionUpgradeFailureReason.Error });
     });
 
-    it('does not write when the v2 envelope does not decrypt back to the same prv', async function () {
+    it('reports verificationFailed without writing when the new encryption does not decrypt back to the same prv', async function () {
       const decrypt = sandbox.stub(bitgo, 'decrypt').callThrough();
       decrypt.onSecondCall().resolves('other');
       const { scope } = mockPut();
