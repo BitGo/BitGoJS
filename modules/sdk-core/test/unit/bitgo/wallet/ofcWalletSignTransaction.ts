@@ -178,6 +178,20 @@ describe('Wallet - OFC', function () {
       });
     });
 
+    describe('submitTransaction', function () {
+      it('should preserve the payload string and signature', async function () {
+        const sendRequest = makeRequestChain({ txid: 'test-txid', status: 'signed' });
+        mockBitGo.post.withArgs(sendUrl()).returns(sendRequest);
+
+        const result = await remoteWallet.submitTransaction({
+          halfSigned: { payload, signature: hexSignature },
+        });
+
+        sendRequest.send.calledOnceWith({ halfSigned: { payload, signature: hexSignature } }).should.be.true();
+        result.should.deepEqual({ txid: 'test-txid', status: 'signed' });
+      });
+    });
+
     describe('prebuildAndSignTransaction', function () {
       beforeEach(function () {
         mockBitGo.post.withArgs(buildUrl()).returns(makeRequestChain({ payload }));

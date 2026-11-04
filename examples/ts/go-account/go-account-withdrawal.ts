@@ -173,11 +173,9 @@ async function main() {
   console.log('✓ Session unlocked\n');
 
   console.log('Submitting signed transaction to BitGo...');
-  // wallet.submitTransaction() runs the body through an io-ts codec (TxSendBody)
-  // that strips unknown fields — including `payload` — from halfSigned before
-  // sending. For OFC the server needs both fields, so call the endpoint directly.
-  const sendUrl = (wallet as Wallet).baseCoin.url('/wallet/' + wallet.id() + '/tx/send');
-  const sendResult = await (bitgo as any).post(sendUrl).send({ halfSigned: { payload, signature } }).result();
+  const sendResult = await wallet.submitTransaction({
+    halfSigned: { payload, signature },
+  });
 
   console.log('✓ Transaction submitted successfully!');
   console.log('\nTransaction result:');

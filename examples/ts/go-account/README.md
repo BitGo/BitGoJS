@@ -47,12 +47,40 @@ Required `.env` variables:
 
 **Withdrawal flow:**
 ```
-Step 1: wallet.prebuildTransaction({ recipients })              → prebuild
-Step 2: tradingAccount.signPayload({ payload, passphrase })    → signature
-Step 3: POST /tx/send { halfSigned: { payload, signature } }   → txid or pendingApproval
+Step 1: wallet.prebuildTransaction({ recipients })             → prebuild
+Step 2: tradingAccount.signPayload({ payload, passphrase })   → signature
+Step 3: wallet.submitTransaction({                             → txid or pendingApproval
+          halfSigned: { payload, signature },
+        })
 ```
 
+For Go Accounts, `payload` is the JSON **string** returned by `tx/build`; do not pass a parsed object. `signature` is the hex string returned by `tradingAccount.signPayload()`. The build service assigns the transaction nonce; callers must not invent one. `wallet.submitTransaction()` preserves both fields for this flow.
+
 If your enterprise has an approval policy, Step 3 returns a pending approval instead of a txid. A **different** admin must then run `go-account-approve.ts` to approve it — you cannot approve your own transaction.
+
+---
+
+### Access-token spending limits
+
+Access-token spending limits are cumulative budgets per coin, not per-transaction
+limits. `txCount` and `txValue` accumulate until the configured budget is
+reached; there is no rolling window or daily reset. `spendingLimits` does not
+provide a per-transaction ceiling.
+
+For a production integration that should not exhaust a token budget during a
+high-volume day, configure the coin entry with `maxLimit: true`. This removes
+the spending cap while retaining the access-token flow without an OTP/unlock
+requirement, so there is no daily volume to size against. If `maxLimit: true`
+and a finite `txValueLimit` are both supplied, `maxLimit` takes precedence.
+
+Limits are coin-specific. `allErc20TokensLimit` applies only to ERC-20 tokens;
+it is not a wildcard for every coin. Unlocking a token with spending limits
+removes those limits.
+
+Protocol and BitGo dust thresholds still apply to each transaction. The SDK
+does not expose a client-facing table of per-coin minimums or maximums; invalid
+amounts are rejected by transaction validation. Configure per-transaction risk
+bounds separately from access-token spending limits.
 
 Approvals may be wallet-scoped or enterprise-scoped depending on how the policy was configured. `go-account-approve.ts` queries both.
 
