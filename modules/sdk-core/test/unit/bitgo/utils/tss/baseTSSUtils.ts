@@ -8,6 +8,9 @@ import { DklsUtils } from '@bitgo/sdk-lib-mpc';
 
 import { BitGoBase, EcdsaMPCv2Utils, IBaseCoin, IWallet, RequestTracer, TxRequest } from '../../../../../src';
 import BaseTssUtils from '../../../../../src/bitgo/utils/tss/baseTSSUtils';
+import { Wallet } from '../../../../../src/bitgo/wallet/wallet';
+import { MessageStandardType } from '../../../../../src/bitgo/utils/messageTypes';
+import { SignTypedDataVersion } from '../../../../../src/bitgo/baseCoin/iBaseCoin';
 
 type BitgoGpgKeyPair = openpgp.SerializedKeyPair<string> & { revocationCertificate: string };
 type TxRequestTransaction = NonNullable<TxRequest['transactions']>[number];
@@ -106,6 +109,195 @@ describe('Base TSS Utils', function () {
 
     baseTssUtils = new TestBaseTssUtils(mockBitgo, mockCoin);
     ecdsaMPCv2Utils = new EcdsaMPCv2Utils(mockBitgo, mockCoin);
+  });
+
+  describe('message request WalletConnect marker', function () {
+    for (const isWalletConnectTx of [true, undefined] as const) {
+      for (const request of ['msgrequests', 'message txrequests', 'typed data txrequests'] as const) {
+        it(`forwards ${String(isWalletConnectTx)} to ${request}`, async function () {
+          const send = sinon.stub().returns({ result: sinon.stub().resolves(buildTxRequest()) });
+          mockBitgo.post = sinon.stub().returns({ send });
+          mockBitgo.url = sinon.stub().callsFake((url: string) => url);
+          mockBitgo.setRequestTracer = sinon.stub();
+          const wallet = { id: sinon.stub().returns('wallet-id') } as unknown as IWallet;
+          const coin = {} as IBaseCoin;
+          const utils = new TestBaseTssUtils(mockBitgo, coin, wallet);
+          const reqId = new RequestTracer();
+          const marker: { isWalletConnectTx?: true } = isWalletConnectTx === undefined ? {} : { isWalletConnectTx };
+
+          if (request === 'typed data txrequests') {
+            await utils.createTxRequestWithIntentForTypedDataSigning({
+              reqId,
+              intentType: 'signTypedStructuredData',
+              typedDataRaw: '{}',
+              ...marker,
+            });
+          } else {
+            const options = { reqId, intentType: 'signMessage', messageRaw: 'hello', ...marker };
+            if (request === 'msgrequests') {
+              await utils.buildSignMessageRequest(options);
+            } else {
+              await utils.createTxRequestWithIntentForMessageSigning(options);
+            }
+          }
+
+          sinon.assert.calledOnce(send);
+          const body = send.firstCall.args[0];
+          assert.strictEqual(body.intent.isWalletConnectTx, isWalletConnectTx);
+          assert.strictEqual(
+            Object.prototype.hasOwnProperty.call(body.intent, 'isWalletConnectTx'),
+            isWalletConnectTx === true
+          );
+          assert.strictEqual(body.intent.messageRaw, request === 'typed data txrequests' ? '{}' : 'hello');
+          assert.strictEqual(
+            body.intent.intentType,
+            request === 'typed data txrequests' ? 'signTypedStructuredData' : 'signMessage'
+          );
+          assert.strictEqual(Object.prototype.hasOwnProperty.call(body.intent, 'txChannel'), false);
+          sinon.assert.calledWith(
+            mockBitgo.post as sinon.SinonStub,
+            `/wallet/wallet-id/${request === 'msgrequests' ? 'msgrequests' : 'txrequests'}`
+          );
+        });
+      }
+    }
+  });
+
+  describe('wallet message signing WalletConnect marker', function () {
+    for (const isWalletConnectTx of [true, undefined] as const) {
+      for (const { operation, coinName, messageStandardType } of [
+        { operation: 'signMessage', coinName: 'teth', messageStandardType: MessageStandardType.EIP191 },
+        { operation: 'signMessage', coinName: 'tsol', messageStandardType: MessageStandardType.SIMPLE },
+        { operation: 'buildSignMessageRequest', coinName: 'teth', messageStandardType: MessageStandardType.EIP191 },
+        { operation: 'buildSignMessageRequest', coinName: 'tsol', messageStandardType: MessageStandardType.SIMPLE },
+        { operation: 'signTypedData', coinName: 'teth', messageStandardType: MessageStandardType.EIP712 },
+      ] as const) {
+        it(`forwards ${String(isWalletConnectTx)} from ${coinName} ${operation}`, async function () {
+          const response = buildTxRequest({
+            apiVersion: 'full',
+            state: 'pendingApproval',
+            pendingApprovalId: 'approval-id',
+          });
+          const send = sinon.stub().returns({ result: sinon.stub().resolves(response) });
+          mockBitgo.post = sinon.stub().returns({ send });
+          mockBitgo.url = sinon.stub().callsFake((url: string) => url);
+          mockBitgo.setRequestTracer = sinon.stub();
+          const coin = {
+            supportsTss: () => false,
+            supportsMessageSigning: () => true,
+            supportsSigningTypedData: () => true,
+            keychains: () => ({ getKeysForSigning: async () => [{ commonKeychain: 'key' }] }),
+          } as unknown as IBaseCoin;
+          const wallet = new Wallet(mockBitgo, coin, { id: 'wallet-id', coin: coinName, multisigType: 'tss' });
+          Object.defineProperty(wallet, 'tssUtils', { value: new TestBaseTssUtils(mockBitgo, coin, wallet) });
+          sinon.stub(wallet, 'getUserPrv').resolves('prv');
+          const marker: { isWalletConnectTx?: true } = isWalletConnectTx === undefined ? {} : { isWalletConnectTx };
+          if (operation === 'signTypedData') {
+            const result = await wallet.signTypedData({
+              typedData: {
+                typedDataRaw: '{}',
+                typedDataEncoded: Buffer.from('abcd', 'hex'),
+                version: SignTypedDataVersion.V4,
+              },
+              ...marker,
+            });
+            assert.deepStrictEqual(result, {
+              state: 'pendingApproval',
+              coin: coinName,
+              messageRaw: '{}',
+              txRequestId: 'tx-request-id',
+              pendingApprovalId: 'approval-id',
+            });
+          } else {
+            const options = {
+              message: { messageRaw: 'hello', messageStandardType },
+              ...marker,
+            };
+            if (operation === 'signMessage') {
+              const result = await wallet.signMessage(options);
+              assert.deepStrictEqual(result, {
+                state: 'pendingApproval',
+                coin: coinName,
+                messageRaw: 'hello',
+                txRequestId: 'tx-request-id',
+                pendingApprovalId: 'approval-id',
+              });
+            } else {
+              await wallet.buildSignMessageRequest(options);
+            }
+          }
+          sinon.assert.calledOnce(send);
+          const intent = send.firstCall.args[0].intent;
+          assert.strictEqual(intent.isWalletConnectTx, isWalletConnectTx);
+          assert.strictEqual(
+            Object.prototype.hasOwnProperty.call(intent, 'isWalletConnectTx'),
+            isWalletConnectTx === true
+          );
+          assert.strictEqual(
+            intent.intentType,
+            operation === 'signTypedData' ? 'signTypedStructuredData' : 'signMessage'
+          );
+          assert.strictEqual(intent.messageRaw, operation === 'signTypedData' ? '{}' : 'hello');
+          assert.strictEqual(intent.messageEncoded, operation === 'signTypedData' ? 'abcd' : '');
+          if (operation !== 'signTypedData') {
+            assert.strictEqual(intent.messageStandardType, messageStandardType);
+          }
+          assert.strictEqual(Object.prototype.hasOwnProperty.call(intent, 'txChannel'), false);
+          sinon.assert.calledWith(
+            mockBitgo.post as sinon.SinonStub,
+            `/wallet/wallet-id/${operation === 'signTypedData' ? 'txrequests' : 'msgrequests'}`
+          );
+        });
+      }
+    }
+  });
+
+  describe('resuming message requests with WalletConnect metadata', function () {
+    for (const operation of ['signMessage', 'signTypedData'] as const) {
+      it(`reuses the existing request for ${operation}`, async function () {
+        const response = buildTxRequest({
+          apiVersion: 'full',
+          state: 'pendingApproval',
+          pendingApprovalId: 'approval-id',
+        });
+        const retry = sinon.stub().returns({ result: sinon.stub().resolves({ txRequests: [response] }) });
+        const query = sinon.stub().returns({ retry });
+        mockBitgo.get = sinon.stub().returns({ query });
+        mockBitgo.post = sinon.stub();
+        mockBitgo.url = sinon.stub().callsFake((url: string) => url);
+        mockBitgo.setRequestTracer = sinon.stub();
+        const coin = {
+          supportsTss: () => false,
+          supportsMessageSigning: () => true,
+          supportsSigningTypedData: () => true,
+          keychains: () => ({ getKeysForSigning: async () => [{ commonKeychain: 'key' }] }),
+        } as unknown as IBaseCoin;
+        const wallet = new Wallet(mockBitgo, coin, { id: 'wallet-id', coin: 'teth', multisigType: 'tss' });
+        Object.defineProperty(wallet, 'tssUtils', { value: new TestBaseTssUtils(mockBitgo, coin, wallet) });
+        sinon.stub(wallet, 'getUserPrv').resolves('prv');
+
+        if (operation === 'signMessage') {
+          await wallet.signMessage({
+            isWalletConnectTx: true,
+            message: { messageRaw: 'hello', messageStandardType: MessageStandardType.EIP191, txRequestId: 'existing' },
+          });
+        } else {
+          await wallet.signTypedData({
+            isWalletConnectTx: true,
+            typedData: {
+              typedDataRaw: '{}',
+              typedDataEncoded: Buffer.from('abcd', 'hex'),
+              version: SignTypedDataVersion.V4,
+              txRequestId: 'existing',
+            },
+          });
+        }
+
+        sinon.assert.calledOnce(mockBitgo.get as sinon.SinonStub);
+        sinon.assert.calledWith(query, { txRequestIds: 'existing', latest: 'true' });
+        sinon.assert.notCalled(mockBitgo.post as sinon.SinonStub);
+      });
+    }
   });
 
   describe('getSignableHexAndDerivationPath', function () {

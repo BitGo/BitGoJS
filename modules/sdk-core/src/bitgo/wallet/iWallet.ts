@@ -450,6 +450,11 @@ export interface WalletSignTransactionOptions extends WalletSignBaseOptions {
 }
 
 interface WalletSignMessageBase extends WalletSignBaseOptions {
+  /**
+   * Identifies a new WalletConnect message signing request for classification, not authorization.
+   * When resuming an existing request by txRequestId, its original metadata is retained.
+   */
+  isWalletConnectTx?: true;
   walletPassphrase?: string;
   custodianMessageId?: string;
   customPaillierModulusGeneratingFunction?: CustomPaillierModulusGetterFunction;

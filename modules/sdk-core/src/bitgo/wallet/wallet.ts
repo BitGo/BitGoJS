@@ -2632,6 +2632,7 @@ export class Wallet implements IWallet {
         messageStandardType,
         signerAddress: params.message.signerAddress,
         preparedTransaction: params.message.preparedTransaction,
+        ...(params.isWalletConnectTx !== undefined && { isWalletConnectTx: params.isWalletConnectTx }),
       };
 
       if (!this.tssUtils) {
@@ -5510,6 +5511,7 @@ export class Wallet implements IWallet {
         messageStandardType: params.message.messageStandardType,
         signerAddress: params.message.signerAddress,
         preparedTransaction: params.message.preparedTransaction,
+        ...(params.isWalletConnectTx !== undefined && { isWalletConnectTx: params.isWalletConnectTx }),
       };
       txRequest = await this.tssUtils!.buildSignMessageRequest(intentOption);
       params.message.txRequestId = txRequest.txRequestId;
@@ -5596,6 +5598,7 @@ export class Wallet implements IWallet {
         isTss: true,
         typedDataRaw: params.typedData.typedDataRaw,
         typedDataEncoded: params.typedData.typedDataEncoded!.toString('hex'),
+        ...(params.isWalletConnectTx !== undefined && { isWalletConnectTx: params.isWalletConnectTx }),
       };
       txRequest = await this.tssUtils!.createTxRequestWithIntentForTypedDataSigning(intentOptions);
       params.typedData.txRequestId = txRequest.txRequestId;
