@@ -478,7 +478,7 @@ export const botOfcTokens = [
     undefined
   ),
   AccountCtors.tofcerc20(
-    '495184dd-bfb6-477e-8519-62bb9f0d5d0d',
+    'd7c2c0ee-3af7-411d-88a7-9a5e8170f250',
     'ofchteth:WBTC',
     'Wrapped BTC',
     8,
