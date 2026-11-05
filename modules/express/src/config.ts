@@ -49,6 +49,8 @@ export interface Config {
   externalSignerUrl?: string;
   signerMode?: boolean;
   signerFileSystemPath?: string;
+  /** Overrides the consumed-share registry location (defaults to `<signerFileSystemPath>.consumedShares.json`). */
+  signerRegistryFilePath?: string;
   lightningSignerFileSystemPath?: string;
   keepAliveTimeout?: number;
   headersTimeout?: number;
@@ -76,6 +78,7 @@ export const ArgConfig = (args): Partial<Config> => ({
   externalSignerUrl: args.externalSignerUrl,
   signerMode: args.signerMode,
   signerFileSystemPath: args.signerFileSystemPath,
+  signerRegistryFilePath: args.signerRegistryFilePath,
   lightningSignerFileSystemPath: args.lightningSignerFileSystemPath,
   keepAliveTimeout: args.keepalivetimeout,
   headersTimeout: args.headerstimeout,
@@ -103,6 +106,7 @@ export const EnvConfig = (): Partial<Config> => ({
   externalSignerUrl: readEnvVar('BITGO_EXTERNAL_SIGNER_URL'),
   signerMode: readEnvVar('BITGO_SIGNER_MODE') ? true : undefined,
   signerFileSystemPath: readEnvVar('BITGO_SIGNER_FILE_SYSTEM_PATH'),
+  signerRegistryFilePath: readEnvVar('BITGO_SIGNER_REGISTRY_FILE_PATH'),
   lightningSignerFileSystemPath: readEnvVar('BITGO_LIGHTNING_SIGNER_FILE_SYSTEM_PATH'),
   keepAliveTimeout: Number(readEnvVar('BITGO_KEEP_ALIVE_TIMEOUT')),
   headersTimeout: Number(readEnvVar('BITGO_HEADERS_TIMEOUT')),
@@ -191,6 +195,7 @@ function mergeConfigs(...configs: Partial<Config>[]): Config {
     externalSignerUrl,
     signerMode: get('signerMode'),
     signerFileSystemPath: get('signerFileSystemPath'),
+    signerRegistryFilePath: get('signerRegistryFilePath'),
     lightningSignerFileSystemPath: get('lightningSignerFileSystemPath'),
     keepAliveTimeout: get('keepAliveTimeout'),
     headersTimeout: get('headersTimeout'),

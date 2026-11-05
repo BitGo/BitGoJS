@@ -50,6 +50,8 @@ import {
 import * as assert from 'assert';
 import nock from 'nock';
 import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 
 import 'should-http';
 import 'should-sinon';
@@ -64,6 +66,11 @@ import {
   handleV2SignTSSWalletTx,
 } from '../../../src/clientRoutes';
 import { fetchKeys } from '../../../src/fetchEncryptedPrivKeys';
+import {
+  ConsumedShareRegistry,
+  computeConsumedShareKey,
+  resetConsumedShareRegistriesForTesting,
+} from '../../../src/consumedSharesRegistry';
 import { mockChallengeA, mockChallengeB } from './mocks/ecdsaNtilde';
 import { ExpressApiRouteRequest } from '../../../src/typedRoutes/api';
 import { Coin, BitGo, SignedTransaction } from 'bitgo';
@@ -169,9 +176,9 @@ describe('External signer', () => {
     envStub.restore();
   });
 
-  it('should read an encrypted prv from signerFileSystemPath and pass it to PaillierModulus, K, MuDelta, and S share generators', async function () {
-    // This test performs multiple MPC ECDSA rounds and can exceed Mocha's default 60s timeout on CI
-    this.timeout(180000);
+  // Runs a full PaillierModulus -> K -> MuDelta -> S external-signing session through
+  // handleV2GenerateShareTSS and returns the requests/results so replay tests can re-send them.
+  async function runEcdsaSigningSession(opts: { signerRegistryFilePath?: string } = {}) {
     const walletID = '62fe536a6b4cf70007acb48c0e7bb0b0';
     const user = keyShareOneEcdsa; // await mpcEcdsa.keyShare(1, 2, 3);
     const backup = keyShareTwoEcdsa; // await mpcEcdsa.keyShare(2, 2, 3);
@@ -190,9 +197,15 @@ describe('External signer', () => {
     const output: Output = {};
     output[walletID] = validPrv;
     const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify(output));
+    // Unique temp path per session so the real consumed-shares persistence writes to a throwaway file
+    const signerTmpPath = path.join(
+      os.tmpdir(),
+      `bitgojs-test-signer-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}`
+    );
     const envStub = sinon
       .stub(process, 'env')
       .value({ WALLET_62fe536a6b4cf70007acb48c0e7bb0b0_PASSPHRASE: walletPassphrase });
+    resetConsumedShareRegistriesForTesting();
     const tMessage = 'testMessage';
     const bgTest = new BitGo({ env: 'test' });
     const derivationPath = '';
@@ -233,7 +246,8 @@ describe('External signer', () => {
         sharetype: 'PaillierModulus',
       },
       config: {
-        signerFileSystemPath: 'signerFileSystemPath',
+        signerFileSystemPath: signerTmpPath,
+        signerRegistryFilePath: opts.signerRegistryFilePath,
       },
     } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>;
     const paillierResult = await handleV2GenerateShareTSS(reqPaillierModulus);
@@ -316,7 +330,8 @@ describe('External signer', () => {
         sharetype: 'K',
       },
       config: {
-        signerFileSystemPath: 'signerFileSystemPath',
+        signerFileSystemPath: signerTmpPath,
+        signerRegistryFilePath: opts.signerRegistryFilePath,
       },
     } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>;
     const kResult = await handleV2GenerateShareTSS(reqK);
@@ -334,18 +349,21 @@ describe('External signer', () => {
     const reqMuDelta = {
       bitgo: bgTest,
       body: {
-        txRequest: {
-          apiVersion: 'full',
-          walletId: walletID,
-          transactions: [
-            {
-              unsignedTx: {
-                derivationPath,
-                signableHex: tMessage,
+        tssParams: {
+          txRequest: {
+            apiVersion: 'full',
+            walletId: walletID,
+            transactions: [
+              {
+                unsignedTx: {
+                  derivationPath,
+                  signableHex: tMessage,
+                },
               },
-            },
-          ],
+            ],
+          },
         },
+        requestType: 0,
         aShareFromBitgo: aShareFromBitgo.aShare,
         bitgoChallenge: {
           ntilde: bitgoChallenge.ntilde,
@@ -359,18 +377,21 @@ describe('External signer', () => {
       decoded: {
         coin: 'tbsc',
         sharetype: 'MuDelta',
-        txRequest: {
-          apiVersion: 'full',
-          walletId: walletID,
-          transactions: [
-            {
-              unsignedTx: {
-                derivationPath,
-                signableHex: tMessage,
+        tssParams: {
+          txRequest: {
+            apiVersion: 'full',
+            walletId: walletID,
+            transactions: [
+              {
+                unsignedTx: {
+                  derivationPath,
+                  signableHex: tMessage,
+                },
               },
-            },
-          ],
+            ],
+          },
         },
+        requestType: 0,
         aShareFromBitgo: aShareFromBitgo.aShare,
         bitgoChallenge: {
           ntilde: bitgoChallenge.ntilde,
@@ -386,7 +407,8 @@ describe('External signer', () => {
         sharetype: 'MuDelta',
       },
       config: {
-        signerFileSystemPath: 'signerFileSystemPath',
+        signerFileSystemPath: signerTmpPath,
+        signerRegistryFilePath: opts.signerRegistryFilePath,
       },
     } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>;
     const muDeltaResult = await handleV2GenerateShareTSS(reqMuDelta);
@@ -450,7 +472,8 @@ describe('External signer', () => {
         sharetype: 'S',
       },
       config: {
-        signerFileSystemPath: 'signerFileSystemPath',
+        signerFileSystemPath: signerTmpPath,
+        signerRegistryFilePath: opts.signerRegistryFilePath,
       },
     } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>;
     const sResult = await handleV2GenerateShareTSS(reqS);
@@ -465,8 +488,192 @@ describe('External signer', () => {
     );
     const signature = mpcEcdsa.constructSignature([bitGoSShare, sResult]);
     mpcEcdsa.verify(Buffer.from(tMessage, 'hex'), signature, createKeccakHash('keccak256') as Hash).should.be.true;
-    readFileStub.restore();
-    envStub.restore();
+    fs.promises.unlink(`${signerTmpPath}.consumedShares.json`).catch(() => undefined);
+    const cleanup = () => {
+      readFileStub.restore();
+      envStub.restore();
+    };
+    return { reqMuDelta, reqS, kResult, muDeltaResult, sResult, cleanup };
+  }
+
+  it('should read an encrypted prv from signerFileSystemPath and pass it to PaillierModulus, K, MuDelta, and S share generators', async function () {
+    // This test performs multiple MPC ECDSA rounds and can exceed Mocha's default 60s timeout on CI
+    this.timeout(180000);
+    const { sResult, cleanup } = await runEcdsaSigningSession();
+    try {
+      sResult.should.have.property('R');
+      sResult.should.have.property('s');
+      sResult.should.have.property('y');
+    } finally {
+      cleanup();
+    }
+  });
+
+  it('should reject a replayed MuDelta wShare ciphertext', async function () {
+    this.timeout(180000);
+    const { reqMuDelta, cleanup } = await runEcdsaSigningSession();
+    try {
+      await handleV2GenerateShareTSS(reqMuDelta).should.be.rejectedWith(
+        'encrypted share has already been consumed; restart the signing session'
+      );
+    } finally {
+      cleanup();
+    }
+  });
+
+  it('should reject a replayed S oShare ciphertext', async function () {
+    this.timeout(180000);
+    const { reqS, cleanup } = await runEcdsaSigningSession();
+    try {
+      await handleV2GenerateShareTSS(reqS).should.be.rejectedWith(
+        'encrypted share has already been consumed; restart the signing session'
+      );
+    } finally {
+      cleanup();
+    }
+  });
+
+  it('should reject an S replay with a different dShareFromBitgo (nonce-reuse attempt)', async function () {
+    this.timeout(180000);
+    const { reqS, cleanup } = await runEcdsaSigningSession();
+    try {
+      // same oShare ciphertext, different dShare: must be rejected by the registry before signing
+      const tamperDelta = (share: { delta: string } | undefined) => {
+        assert.ok(share && typeof share.delta === 'string', 'S request must carry dShareFromBitgo with a delta');
+        share.delta = 'ff' + share.delta.slice(2);
+      };
+      tamperDelta('dShareFromBitgo' in reqS.body ? reqS.body.dShareFromBitgo : undefined);
+      tamperDelta('dShareFromBitgo' in reqS.decoded ? reqS.decoded.dShareFromBitgo : undefined);
+      await handleV2GenerateShareTSS(reqS).should.be.rejectedWith(
+        'encrypted share has already been consumed; restart the signing session'
+      );
+    } finally {
+      cleanup();
+    }
+  });
+
+  it('should complete a fresh signing session after a rejected replay', async function () {
+    this.timeout(180000);
+    const first = await runEcdsaSigningSession(); // first session consumes its shares
+    first.cleanup();
+    const second = await runEcdsaSigningSession(); // fresh K -> new ciphertexts
+    try {
+      second.sResult.should.have.property('R');
+      second.sResult.should.have.property('s');
+      second.sResult.should.have.property('y');
+    } finally {
+      second.cleanup();
+    }
+  });
+
+  describe('ConsumedShareRegistry', () => {
+    let tempDir: string;
+    // v1-shaped envelope like real SJCL output: 16-byte iv, ts=64 (8-byte tag), 32-byte ct.
+    // CCM truncates the iv to a 13-byte nonce for this plaintext size.
+    const ivB64 = Buffer.alloc(16, 1).toString('base64');
+    const ctB64 = Buffer.alloc(32, 2).toString('base64');
+    const envelope = JSON.stringify({ ts: 64, iv: ivB64, ct: ctB64 });
+    const key = computeConsumedShareKey('S', envelope);
+
+    beforeEach(() => {
+      tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'bitgojs-registry-test-'));
+    });
+
+    afterEach(() => {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    });
+
+    it('should reject a replay after a restart (state survives in the file)', () => {
+      const registryFile = path.join(tempDir, 'registry.json');
+      new ConsumedShareRegistry(registryFile).markConsumed(key);
+      (() => new ConsumedShareRegistry(registryFile).markConsumed(key)).should.throw(
+        'encrypted share has already been consumed; restart the signing session'
+      );
+    });
+
+    it('should reject a re-serialized (malleated) replay of a consumed envelope', () => {
+      const registryFile = path.join(tempDir, 'registry.json');
+      const registry = new ConsumedShareRegistry(registryFile);
+      registry.markConsumed(key);
+      // key reorder + whitespace + extra field: decrypts identically, must still collide
+      const malleated = JSON.stringify({ extra: 'field', ct: ctB64, iv: ivB64 }, null, 2);
+      (() => registry.markConsumed(computeConsumedShareKey('S', malleated))).should.throw(
+        'encrypted share has already been consumed; restart the signing session'
+      );
+    });
+
+    it('should reject an appended-iv v1 envelope (trailing bytes do not change the key)', () => {
+      const registryFile = path.join(tempDir, 'registry.json');
+      const registry = new ConsumedShareRegistry(registryFile);
+      registry.markConsumed(key);
+      // v1 decryption truncates the iv to the nonce length, so appending iv bytes changes
+      // nothing for decryption; the key must still collide with the original.
+      const appendedIv = JSON.stringify({ ts: 64, iv: Buffer.alloc(17, 1).toString('base64'), ct: ctB64 });
+      (() => registry.markConsumed(computeConsumedShareKey('S', appendedIv))).should.throw(
+        'encrypted share has already been consumed; restart the signing session'
+      );
+    });
+
+    it('should fail closed when the registry file is corrupt', () => {
+      const registryFile = path.join(tempDir, 'registry.json');
+      fs.writeFileSync(registryFile, 'not json');
+      (() => new ConsumedShareRegistry(registryFile).markConsumed(key)).should.throw(
+        /failed to parse consumed share registry/
+      );
+    });
+
+    it('should fail closed when the registry file is unreadable', () => {
+      // a directory at the registry path: reads fail with EISDIR, not ENOENT
+      const registryPath = path.join(tempDir, 'registry-dir');
+      fs.mkdirSync(registryPath);
+      (() => new ConsumedShareRegistry(registryPath).markConsumed(key)).should.throw(
+        /failed to read consumed share registry/
+      );
+    });
+
+    it('should degrade to in-memory protection when persisting fails', () => {
+      const registryFile = path.join(tempDir, 'registry.json');
+      const registry = new ConsumedShareRegistry(registryFile);
+      registry.markConsumed(key);
+      // Replace the registry file with a directory: the atomic rename (temp file ->
+      // registry) fails with EISDIR regardless of process privileges — root ignores
+      // permission bits, so a chmod-based failure would not reproduce for root runs.
+      fs.rmSync(registryFile);
+      fs.mkdirSync(registryFile);
+      // The signer never assumes file write access: a persist failure must not fail the
+      // request — protection degrades to in-memory only (lost on restart).
+      const newKey = computeConsumedShareKey(
+        'S',
+        JSON.stringify({
+          ts: 64,
+          iv: Buffer.alloc(16, 3).toString('base64'),
+          ct: Buffer.alloc(32, 4).toString('base64'),
+        })
+      );
+      registry.markConsumed(newKey);
+      // the failed-persist entry is still recorded in memory: replaying it is rejected
+      (() => registry.markConsumed(newKey)).should.throw(
+        'encrypted share has already been consumed; restart the signing session'
+      );
+      // the first share is still considered consumed in memory
+      (() => registry.markConsumed(key)).should.throw(
+        'encrypted share has already been consumed; restart the signing session'
+      );
+    });
+  });
+
+  it('should honor a signerRegistryFilePath override for the consumed-share registry', async function () {
+    this.timeout(180000);
+    const overridePath = path.join(os.tmpdir(), `bitgojs-registry-override-${process.pid}-${Date.now()}.json`);
+    const { cleanup } = await runEcdsaSigningSession({ signerRegistryFilePath: overridePath });
+    try {
+      fs.existsSync(overridePath).should.be.true('registry must be persisted at the override path');
+      const entries = JSON.parse(fs.readFileSync(overridePath, 'utf8'));
+      Object.keys(entries).length.should.be.greaterThan(0);
+    } finally {
+      cleanup();
+      fs.promises.unlink(overridePath).catch(() => undefined);
+    }
   });
 
   it('should read an encrypted prv from signerFileSystemPath and pass it to commitment, R and G share generators', async () => {

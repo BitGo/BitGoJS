@@ -2,7 +2,7 @@ import assert from 'assert';
 import { Buffer } from 'buffer';
 import * as openpgp from 'openpgp';
 import { Key, SerializedKeyPair } from 'openpgp';
-import { Hash } from 'crypto';
+import { Hash, createHash } from 'crypto';
 import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes, hexToBigInt, minModulusBitLength } from '@bitgo/sdk-lib-mpc';
 import { bip32 } from '@bitgo/utxo-lib';
 
@@ -33,6 +33,7 @@ import {
   TssSignTxRequestParamsWithPrv,
   TssTxRecipientSource,
   TxRequest,
+  UnsignedTransactionTss,
 } from '../baseTypes';
 import { getTxRequest } from '../../../tss';
 import { AShare, DShare, EncryptedNShare, SendShareType, SShare, WShare, OShare } from '../../../tss/ecdsa/types';
@@ -55,8 +56,14 @@ import { shouldVerifyWithSerializedTxHex } from '../serializedTxHexVerify';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 
+/** Encrypted signing-share envelopes older than this are rejected along with their registry entries. */
+const OFFLINE_SIGNING_SHARE_MAX_AGE_MS = 30 * 24 * 3600 * 1000; // 30 days
+
 /** @inheritdoc */
 export class EcdsaUtils extends BaseEcdsaUtils {
+  private static readonly GG18_SIGNING_WSHARE_STATE = 'GG18_SIGNING_WSHARE_STATE';
+  private static readonly GG18_SIGNING_OSHARE_STATE = 'GG18_SIGNING_OSHARE_STATE';
+
   async finalizeBitgoHeldBackupKeyShare(
     keyId: string,
     commonKeychain: string,
@@ -459,6 +466,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     derivationPath: string;
     walletPassphrase?: string;
     encryptionVersion?: EncryptionVersion;
+    signableAdata?: string;
   }): Promise<TssEcdsaStep1ReturnMessage> {
     const { challenges, derivationPath, prv } = params;
     const userSigningMaterial: ECDSAMethodTypes.SigningMaterial = JSON.parse(prv);
@@ -526,6 +534,9 @@ export class EcdsaUtils extends BaseEcdsaUtils {
             input: JSON.stringify(userSignShare.wShare),
             password: params.walletPassphrase,
             encryptionVersion: params.encryptionVersion,
+            adata: params.signableAdata
+              ? this.formatOfflineSigningAdata(EcdsaUtils.GG18_SIGNING_WSHARE_STATE, params.signableAdata)
+              : undefined,
           })
         : userSignShare.wShare,
     };
@@ -537,6 +548,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     aShareFromBitgo: Omit<AShare, 'h1' | 'h2' | 'ntilde'>;
     walletPassphrase?: string;
     encryptionVersion?: EncryptionVersion;
+    signableAdata?: string;
   }): Promise<TssEcdsaStep2ReturnMessage> {
     // Append the BitGo challenge to the Ashare to be used in subsequent proofs
     const bitgoToUserAShareWithNtilde: AShare = {
@@ -561,6 +573,9 @@ export class EcdsaUtils extends BaseEcdsaUtils {
             input: JSON.stringify(userOmicronAndDeltaShare.oShare),
             password: params.walletPassphrase,
             encryptionVersion: params.encryptionVersion,
+            adata: params.signableAdata
+              ? this.formatOfflineSigningAdata(EcdsaUtils.GG18_SIGNING_OSHARE_STATE, params.signableAdata)
+              : undefined,
           })
         : userOmicronAndDeltaShare.oShare,
     };
@@ -570,6 +585,109 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     assert(params.prv, 'Params to get paillier modulus are missing prv.');
     const userSigningMaterial: ECDSAMethodTypes.SigningMaterial = JSON.parse(params.prv);
     return { userPaillierModulus: userSigningMaterial.pShare.n };
+  }
+
+  /**
+   * Computes the adata binding string for offline (external-signer) signing: the
+   * sha256 of the signable payload, plus the derivation path (empty for message
+   * signing). Encrypted share envelopes created from the signer's own key
+   * material carry this adata and later rounds validate it, so an envelope can
+   * only be replayed against the exact signable it was created for.
+   */
+  private getOfflineSigningAdata(
+    txRequest: TxRequest,
+    requestType: RequestType,
+    params: { bufferToSign?: unknown } = {}
+  ): string {
+    let signablePayload: Buffer;
+    let derivationPath: string;
+    if (requestType === RequestType.tx) {
+      let unsignedTx: UnsignedTransactionTss | undefined;
+      if (txRequest.apiVersion === 'full') {
+        assert(txRequest.transactions && txRequest.transactions.length > 0, 'Missing transactions in txRequest');
+        unsignedTx = txRequest.transactions[0].unsignedTx;
+      } else {
+        assert(txRequest.unsignedTxs && txRequest.unsignedTxs.length > 0, 'Missing unsignedTxs in txRequest');
+        unsignedTx = txRequest.unsignedTxs[0];
+      }
+      assert(unsignedTx, 'Missing unsignedTx in txRequest');
+      assert(unsignedTx.signableHex, 'Missing signableHex in txRequest');
+      signablePayload = Buffer.from(unsignedTx.signableHex, 'hex');
+      derivationPath = unsignedTx.derivationPath ?? '';
+    } else if (requestType === RequestType.message) {
+      // Declared as Buffer, but over HTTP it may arrive as the JSON round-trip form `{ type: 'Buffer', data: number[] }`
+      const bufferToSign: unknown = params.bufferToSign;
+      assert(bufferToSign, 'Missing bufferToSign for message signing');
+      if (Buffer.isBuffer(bufferToSign)) {
+        signablePayload = bufferToSign;
+      } else if (
+        typeof bufferToSign === 'object' &&
+        bufferToSign !== null &&
+        'data' in bufferToSign &&
+        Array.isArray(bufferToSign.data)
+      ) {
+        // JSON round-trip of a Buffer arrives as `{ type: 'Buffer', data: number[] }`
+        signablePayload = Buffer.from(bufferToSign.data);
+      } else {
+        throw new Error('Invalid bufferToSign type');
+      }
+      derivationPath = '';
+    } else {
+      throw new Error(`Invalid requestType: ${requestType}`);
+    }
+    return `${createHash('sha256').update(signablePayload).digest('hex')}:${derivationPath}`;
+  }
+
+  /**
+   * Returns the Paillier modulus BitGo used at keygen time, as recorded in the
+   * signer's own signing material. Counterparty inputs (challenges, A-shares)
+   * must carry the same modulus.
+   */
+  private getBitgoPaillierModulusFromSigningMaterial(prv: string): string {
+    const userSigningMaterial: ECDSAMethodTypes.SigningMaterial = JSON.parse(prv);
+    assert(userSigningMaterial.bitgoNShare?.n, 'Signer signing material is missing the BitGo Paillier modulus');
+    return userSigningMaterial.bitgoNShare.n;
+  }
+
+  /** Envelope adata format: `<STATE>:<createdEpochMs>:<sha256(signable)>:<derivationPath>`. */
+  private formatOfflineSigningAdata(state: string, core: string): string {
+    return `${state}:${Date.now()}:${core}`;
+  }
+
+  /**
+   * Validates an encrypted share envelope's adata against the expected signable binding.
+   * adata is AEAD-authenticated (v1 CCM / v2 GCM), so it cannot be stripped or altered
+   * without breaking decryption. The creation timestamp is checked separately from the
+   * binding, so the two concerns stay independent.
+   */
+  private validateOfflineSigningAdata(cyphertext: string, state: string, expectedCore: string): void {
+    let stored: string | undefined;
+    try {
+      const raw = JSON.parse(cyphertext).adata;
+      // v1 (SJCL) envelopes escape() the adata (':' -> '%3A'); decode before parsing,
+      // matching baseTSSUtils.validateAdata.
+      stored = typeof raw === 'string' ? decodeURIComponent(raw) : undefined;
+    } catch {
+      throw new Error('Failed to parse cyphertext to JSON');
+    }
+    if (typeof stored !== 'string') {
+      throw new Error('Missing adata on encrypted share envelope; restart the signing session');
+    }
+    if (!stored.startsWith(`${state}:`)) {
+      throw new Error('Adata does not match cyphertext adata');
+    }
+    const remainder = stored.slice(state.length + 1);
+    const separator = remainder.indexOf(':');
+    assert(separator > 0, 'Adata does not match cyphertext adata');
+    const created = Number(remainder.slice(0, separator));
+    const core = remainder.slice(separator + 1);
+    if (core !== expectedCore) {
+      throw new Error('Adata does not match cyphertext adata');
+    }
+    assert(
+      Number.isFinite(created) && Date.now() - created <= OFFLINE_SIGNING_SHARE_MAX_AGE_MS,
+      'Encrypted share envelope has expired; restart the signing session'
+    );
   }
 
   async createOfflineKShare(params: {
@@ -602,32 +720,113 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       // TODO BG-67299 Message signing with derivation path
       derivationPath = '';
     }
+    const bufferToSign = tssParams && 'bufferToSign' in tssParams ? tssParams.bufferToSign : undefined;
+    assert(
+      challenges.bitgoChallenge?.n &&
+        challenges.bitgoChallenge.n.toLowerCase() ===
+          this.getBitgoPaillierModulusFromSigningMaterial(prv).toLowerCase(),
+      "BitGo challenge Paillier modulus does not match the signer's BitGo key material"
+    );
     return this.createTssEcdsaStep1SigningMaterial({
       prv: prv,
       challenges: challenges,
       derivationPath: derivationPath,
       walletPassphrase: params.walletPassphrase,
       encryptionVersion: params.encryptionVersion,
+      signableAdata: this.getOfflineSigningAdata(txRequest, requestType, { bufferToSign }),
     });
   }
 
   async createOfflineMuDeltaShare(params: {
+    /** Bound signable context; enables wShare adata validation. */
+    tssParams?: TSSParams | TSSParamsForMessage;
+    requestType?: RequestType;
+    /** Legacy relays pass txRequest at top level; still fully validated. */
+    txRequest?: TxRequest;
+    /** Injected by the express signer route; enables Paillier-modulus validation. */
+    prv?: string;
+    /** Marks the wShare ciphertext consumed; invoked only after the envelope fully authenticates. */
+    markConsumed?: () => void;
     aShareFromBitgo: Omit<AShare, 'ntilde' | 'h1' | 'h2'>;
     bitgoChallenge: TxRequestChallengeResponse;
     encryptedWShare: string;
     walletPassphrase: string;
     encryptionVersion?: EncryptionVersion;
   }): Promise<TssEcdsaStep2ReturnMessage> {
+    // Resolve txRequest/requestType from the current shape (tssParams/requestType) or the
+    // legacy relay shape (top-level txRequest; relays only sign transactions).
+    const tssParams = params.tssParams;
+    let txRequest: TxRequest | undefined;
+    if (tssParams) {
+      // fail loudly on a malformed (string) txRequest rather than skipping validation
+      assert(typeof tssParams.txRequest !== 'string', 'Invalid txRequest type');
+      txRequest = tssParams.txRequest;
+    } else {
+      txRequest = params.txRequest;
+    }
+    const requestType = params.requestType ?? RequestType.tx;
+    const bufferToSign = tssParams && 'bufferToSign' in tssParams ? tssParams.bufferToSign : undefined;
+    // With txRequest: validate the wShare binding and re-bind the oShare to the same signable.
+    // Without txRequest (legacy direct callers): propagate the wShare envelope's own binding;
+    // this path does not itself check the signable — the S round enforces that binding
+    // (re-prefixed for the oShare), so the S round still validates strictly. adata is
+    // AEAD-authenticated, so a captured envelope's binding cannot be stripped or altered.
+    const expectedCore = txRequest ? this.getOfflineSigningAdata(txRequest, requestType, { bufferToSign }) : undefined;
+    let signableAdata: string;
+    if (expectedCore) {
+      this.validateOfflineSigningAdata(params.encryptedWShare, EcdsaUtils.GG18_SIGNING_WSHARE_STATE, expectedCore);
+      signableAdata = expectedCore;
+    } else {
+      let wAdata: unknown;
+      try {
+        // v1 (SJCL) envelopes escape() the adata (':' -> '%3A'); decode before parsing,
+        // matching baseTSSUtils.validateAdata.
+        wAdata = decodeURIComponent(JSON.parse(params.encryptedWShare).adata ?? '');
+      } catch {
+        throw new Error('Failed to parse encryptedWShare to JSON');
+      }
+      const wPrefix = `${EcdsaUtils.GG18_SIGNING_WSHARE_STATE}:`;
+      assert(
+        typeof wAdata === 'string' && wAdata.startsWith(wPrefix),
+        'wShare envelope is missing a binding; restart the signing session'
+      );
+      // Re-prefix the wShare binding for the oShare: strip the original timestamp (checking
+      // its age), then let the builder stamp the oShare's own creation time.
+      const wCore = wAdata.slice(wPrefix.length);
+      const wSeparator = wCore.indexOf(':');
+      assert(wSeparator > 0, 'Adata does not match cyphertext adata');
+      const wCreated = Number(wCore.slice(0, wSeparator));
+      assert(
+        Number.isFinite(wCreated) && Date.now() - wCreated <= OFFLINE_SIGNING_SHARE_MAX_AGE_MS,
+        'Encrypted share envelope has expired; restart the signing session'
+      );
+      signableAdata = wCore.slice(wSeparator + 1);
+    }
+    if (params.prv) {
+      const bitgoPaillierModulus = this.getBitgoPaillierModulusFromSigningMaterial(params.prv).toLowerCase();
+      assert(
+        params.bitgoChallenge?.n && params.bitgoChallenge.n.toLowerCase() === bitgoPaillierModulus,
+        "BitGo challenge Paillier modulus does not match the signer's BitGo key material"
+      );
+      assert(
+        params.aShareFromBitgo?.n && params.aShareFromBitgo.n.toLowerCase() === bitgoPaillierModulus,
+        'A-share from BitGo has an unexpected Paillier modulus'
+      );
+    }
     const decryptedWShare = await this.bitgo.decrypt({
       input: params.encryptedWShare,
       password: params.walletPassphrase,
     });
+    // The envelope has fully authenticated (AEAD tag verified); only now is it marked
+    // consumed, so unauthenticated junk never reaches the registry.
+    params.markConsumed?.();
     return await this.createTssEcdsaStep2SigningMaterial({
       aShareFromBitgo: params.aShareFromBitgo,
       bitgoChallenge: params.bitgoChallenge,
       wShare: JSON.parse(decryptedWShare),
       walletPassphrase: params.walletPassphrase,
       encryptionVersion: params.encryptionVersion,
+      signableAdata: signableAdata,
     });
   }
 
@@ -637,6 +836,8 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     requestType: RequestType;
     encryptedOShare: string;
     walletPassphrase: string;
+    /** Marks the oShare ciphertext consumed; invoked only after the envelope fully authenticates. */
+    markConsumed?: () => void;
   }): Promise<SShare> {
     const { tssParams, requestType, dShareFromBitgo, encryptedOShare, walletPassphrase } = params;
     assert(typeof tssParams.txRequest !== 'string', 'Invalid txRequest type');
@@ -655,6 +856,13 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     } else if (requestType === RequestType.message) {
       signablePayload = (params.tssParams as TSSParamsForMessage).bufferToSign;
     }
+    const bufferToSign =
+      params.tssParams && 'bufferToSign' in params.tssParams ? params.tssParams.bufferToSign : undefined;
+    this.validateOfflineSigningAdata(
+      encryptedOShare,
+      EcdsaUtils.GG18_SIGNING_OSHARE_STATE,
+      this.getOfflineSigningAdata(txRequest, requestType, { bufferToSign })
+    );
     let hash: Hash | undefined;
     try {
       hash = this.baseCoin.getHashFunction();
@@ -662,6 +870,9 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       hash = undefined;
     }
     const decryptedOShare = await this.bitgo.decrypt({ input: encryptedOShare, password: walletPassphrase });
+    // The envelope has fully authenticated (AEAD tag verified); only now is it marked
+    // consumed, so unauthenticated junk never reaches the registry.
+    params.markConsumed?.();
     const { i, R, s, y } = await ECDSAMethods.createUserSignatureShare(
       JSON.parse(decryptedOShare),
       dShareFromBitgo,
@@ -726,6 +937,11 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     )) as Omit<AShare, 'ntilde' | 'h1' | 'h2'>; // WP/HSM does not return the initial challenge
     const step2Return = await externalSignerMuDeltaShareGenerator({
       txRequest: txRequestObj,
+      tssParams: {
+        ...params,
+        txRequest: txRequestObj,
+      },
+      requestType: requestType,
       aShareFromBitgo: bitgoToUserAShare,
       bitgoChallenge: bitgoChallenge,
       encryptedWShare: step1SigningMaterial.wShare as string,
