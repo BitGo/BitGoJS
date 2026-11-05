@@ -20,6 +20,7 @@ import {
   InvalidAddressError,
   InvalidAddressVerificationObjectPropertyError,
   InvalidTransactionError,
+  ITransactionRecipient,
   IWallet,
   KeyPair,
   MPCSweepRecoveryOptions,
@@ -587,6 +588,58 @@ export const optionalDeps = {
     }
   },
 };
+
+/** Intent types other than payments that verifyTssTransaction already verifies. */
+const TSS_DEDICATED_INTENT_TYPES = new Set(['defiApprove', 'defiDeposit', 'defiWithdraw', 'wrapApprove']);
+
+type TssDecodedArg = ReturnType<typeof getRawDecoded>[number];
+
+const TSS_ERC20_TRANSFER_TYPES = ['address', 'uint256'];
+const TSS_NATIVE_BATCH_TYPES = ['address[]', 'uint256[]'];
+const TSS_TOKEN_BATCH_TYPES = ['address', 'address[]', 'uint256[]'];
+
+function tssMethodId(name: string, types: string[]): string {
+  return addHexPrefix(optionalDeps.ethAbi.methodID(name, types).toString('hex')).toLowerCase();
+}
+
+function isEmptyTssCalldata(data?: string): boolean {
+  return !data || data === '0x';
+}
+
+function tssValuesEqual(a: unknown, b: unknown): boolean {
+  try {
+    return BigInt(String(a)) === BigInt(String(b));
+  } catch {
+    return false;
+  }
+}
+
+/** ABI-decode the arguments after the 4-byte selector, without splitting on the selector bytes. */
+function decodeTssCalldataArgs(data: string, types: string[]): TssDecodedArg[] {
+  return getRawDecoded(types, Buffer.from(stripHexPrefix(data).slice(8), 'hex'));
+}
+
+/** Prefix decoded addresses so the values can be passed back to rawEncode. */
+function toTssEncodable(value: TssDecodedArg): unknown {
+  if (Array.isArray(value)) {
+    return value.map(toTssEncodable);
+  }
+  return typeof value === 'string' ? addHexPrefix(value) : value;
+}
+
+/**
+ * True when the arguments after the selector are exactly the canonical ABI encoding of `types`:
+ * no trailing bytes, no dirty address padding, no non-standard dynamic offsets.
+ */
+function isCanonicalTssCalldata(data: string, types: string[]): boolean {
+  try {
+    const args = stripHexPrefix(data).slice(8).toLowerCase();
+    const decoded = decodeTssCalldataArgs(data, types);
+    return optionalDeps.ethAbi.rawEncode(types, decoded.map(toTssEncodable)).toString('hex') === args;
+  } catch {
+    return false;
+  }
+}
 
 export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implements CoinWithSignableConsistency {
   static hopTransactionSalt = 'bitgoHopAddressRequestSalt';
@@ -3550,6 +3603,219 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
   }
 
   /**
+   * Report a check verifyTssTransaction could not complete. Only the intent type and the missing
+   * check are logged: addresses, amounts and calldata are not.
+   */
+  protected warnTssVerificationIncomplete(intentType: string, reason: string): void {
+    console.warn(`[tss verification] ${intentType}: ${reason}`);
+  }
+
+  /**
+   * Resolve a declared token to its contract from local statics. With no token name, a token coin
+   * declares itself and a base coin declares no asset (`isToken: false`).
+   */
+  private resolveTssToken(tokenName?: string): {
+    isToken: boolean;
+    contract?: string;
+    confidential?: boolean;
+    reason?: string;
+  } {
+    // Token coins (e.g. `txdc:usdc`) resolve through their own chain name.
+    const self = coins.getOrUndefined(this.getChain());
+    const network = self?.network ?? this.staticsCoin?.network;
+    const declared = tokenName ?? (self?.isToken ? self.name : undefined);
+    if (!declared) {
+      return { isToken: false };
+    }
+    const token = coins.getOrUndefined(declared);
+    if (token && !token.isToken && token.network === network) {
+      return { isToken: false }; // the chain's own native coin
+    }
+    const contract = (token as { contractAddress?: string } | undefined)?.contractAddress;
+    if (!token || token.network !== network || !contract || !/^0x[0-9a-fA-F]{40}$/.test(contract)) {
+      return { isToken: true, reason: `token '${declared}' cannot be resolved to a contract on this network` };
+    }
+    if (token instanceof Erc7984Coin) {
+      return { isToken: true, confidential: true, reason: `token '${declared}' is an ERC-7984 token` };
+    }
+    return { isToken: true, contract: contract.toLowerCase() };
+  }
+
+  /**
+   * Verify a single-recipient payment: explicit calldata must match exactly; otherwise the bytes
+   * must be a plain native send or a canonical ERC-20 transfer of the declared token.
+   */
+  private async verifyTssSinglePayment(
+    txParams: EthTransactionParams,
+    recipient: ITransactionRecipient,
+    txHex: string | undefined,
+    throwRecipientMismatch: (message: string, mismatchedRecipients: Recipient[]) => Promise<never>
+  ): Promise<void> {
+    const txBuilder = this.getTransactionBuilder();
+    txBuilder.from(txHex);
+    const txJson = (await txBuilder.build()).toJson();
+    const to = (txJson.to ?? '').toLowerCase();
+    const value = txJson.value ?? '0';
+    const data = (txJson.data || '0x').toLowerCase();
+    const mismatch = (message: string, address = to, amount = value): Promise<never> =>
+      throwRecipientMismatch(message, [{ address, amount }]);
+
+    // Explicit dApp / WalletConnect calldata: the caller authorised exactly these bytes, including
+    // any native value sent with them.
+    if (!isEmptyTssCalldata(recipient.data)) {
+      if (to !== recipient.address.toLowerCase()) {
+        await mismatch('destination address does not match with the recipient address');
+      }
+      if (!tssValuesEqual(value, recipient.amount)) {
+        await mismatch('the transaction amount in txPrebuild does not match the value given by client');
+      }
+      if (data !== addHexPrefix(recipient.data as string).toLowerCase()) {
+        await mismatch('transaction calldata does not match the calldata given by client');
+      }
+      return;
+    }
+
+    const token = this.resolveTssToken(recipient.tokenName ?? txParams.tokenName);
+
+    if (isEmptyTssCalldata(data)) {
+      if (token.isToken) {
+        await mismatch('token payment carries no ERC-20 transfer calldata');
+      }
+      if (!tssValuesEqual(value, recipient.amount)) {
+        await mismatch('the transaction amount in txPrebuild does not match the value given by client');
+      }
+      if (to !== recipient.address.toLowerCase()) {
+        await mismatch('destination address does not match with the recipient address');
+      }
+      return;
+    }
+
+    const transferMethodId = tssMethodId('transfer', TSS_ERC20_TRANSFER_TYPES);
+    if (!data.startsWith(transferMethodId)) {
+      if (token.confidential) {
+        this.warnTssVerificationIncomplete('transfer', `${token.reason}: the payment calldata was not verified`);
+        return;
+      }
+      await mismatch('payment calldata is not a native send or an ERC-20 transfer(address,uint256)');
+    }
+    if (!isCanonicalTssCalldata(data, TSS_ERC20_TRANSFER_TYPES)) {
+      await mismatch('ERC-20 transfer calldata is not canonical');
+    }
+    const [innerRecipient, innerAmount] = decodeTssCalldataArgs(data, TSS_ERC20_TRANSFER_TYPES);
+    const decodedRecipient = addHexPrefix(innerRecipient as string).toLowerCase();
+    const decodedAmount = (innerAmount as BN).toString(10);
+    if (!tssValuesEqual(decodedAmount, recipient.amount)) {
+      await mismatch(
+        'the transaction amount in txPrebuild does not match the value given by client',
+        decodedRecipient,
+        decodedAmount
+      );
+    }
+    if (decodedRecipient !== recipient.address.toLowerCase()) {
+      await mismatch('destination address does not match with the recipient address', decodedRecipient, decodedAmount);
+    }
+    if (!tssValuesEqual(value, '0')) {
+      await mismatch('token transfer must not carry native value');
+    }
+    if (token.contract) {
+      if (to !== token.contract) {
+        await mismatch('transaction is not sent to the declared token contract');
+      }
+    } else {
+      // No declared token (historic behaviour: recipient and amount are still enforced above) or a
+      // token statics cannot resolve: the contract being called is unverified, not mismatched.
+      this.warnTssVerificationIncomplete(
+        'transfer',
+        `${token.reason ?? 'payment declares no token'}: the token contract was not verified`
+      );
+    }
+  }
+
+  /**
+   * Verify a multi-recipient payment sent through the network batcher: `batch` for the native
+   * asset (value = sum of amounts), `batchTransferFrom` for a token (value = 0).
+   */
+  private async verifyTssBatchPayment(
+    txParams: EthTransactionParams,
+    recipients: ITransactionRecipient[],
+    txHex: string | undefined,
+    throwRecipientMismatch: (message: string, mismatchedRecipients: Recipient[]) => Promise<never>
+  ): Promise<void> {
+    const txBuilder = this.getTransactionBuilder();
+    txBuilder.from(txHex);
+    const txJson = (await txBuilder.build()).toJson();
+    const to = (txJson.to ?? '').toLowerCase();
+    const value = txJson.value ?? '0';
+    const data = (txJson.data || '0x').toLowerCase();
+    const mismatch = (message: string, address = to, amount = value): Promise<never> =>
+      throwRecipientMismatch(message, [{ address, amount }]);
+
+    // A missing batcher is incomplete verification; it must not hide the comparisons below.
+    const batcher = this.getNetwork()?.batcherContractAddress;
+    if (!batcher) {
+      this.warnTssVerificationIncomplete(
+        'transfer',
+        'no batcher contract is configured: the batch destination was not verified'
+      );
+    } else if (to !== batcher.toLowerCase()) {
+      await mismatch('batch transaction is not sent to the network batcher contract');
+    }
+
+    const nativeMethodId = tssMethodId('batch', TSS_NATIVE_BATCH_TYPES);
+    const tokenMethodId = tssMethodId('batchTransferFrom', TSS_TOKEN_BATCH_TYPES);
+    const isNativeBatch = data.startsWith(nativeMethodId);
+    if (!isNativeBatch && !data.startsWith(tokenMethodId)) {
+      await mismatch(
+        'batch payment calldata is not batch(address[],uint256[]) or batchTransferFrom(address,address[],uint256[])'
+      );
+    }
+    const types = isNativeBatch ? TSS_NATIVE_BATCH_TYPES : TSS_TOKEN_BATCH_TYPES;
+    if (!isCanonicalTssCalldata(data, types)) {
+      await mismatch('batch calldata is not canonical');
+    }
+    const decoded = decodeTssCalldataArgs(data, types);
+    const [addresses, amounts] = (isNativeBatch ? decoded : decoded.slice(1)) as [string[], BN[]];
+    if (addresses.length !== recipients.length) {
+      await mismatch(`batch calldata has ${addresses.length} recipients but the intent has ${recipients.length}`);
+    }
+    for (let i = 0; i < recipients.length; i++) {
+      const address = addHexPrefix(addresses[i]).toLowerCase();
+      const amount = amounts[i].toString(10);
+      if (address !== recipients[i].address.toLowerCase() || !tssValuesEqual(amount, recipients[i].amount)) {
+        await mismatch(`batch calldata entry ${i} does not match the intent recipient`, address, amount);
+      }
+    }
+
+    // Each recipient declares its own asset; a batch moves exactly one.
+    const tokens = recipients.map((recipient) => this.resolveTssToken(recipient.tokenName ?? txParams.tokenName));
+    if (isNativeBatch) {
+      if (tokens.some((token) => token.isToken)) {
+        await mismatch('token batch payment must use batchTransferFrom calldata');
+      }
+      const total = recipients.reduce((sum, recipient) => sum + BigInt(String(recipient.amount)), 0n);
+      if (!tssValuesEqual(value, total.toString())) {
+        await mismatch('batch transaction value does not match the sum of intent amounts');
+      }
+      return;
+    }
+
+    if (!tssValuesEqual(value, '0')) {
+      await mismatch('token batch transaction must not carry native value');
+    }
+    const tokenContract = addHexPrefix(decoded[0] as string).toLowerCase();
+    for (const token of tokens) {
+      if (!token.contract) {
+        this.warnTssVerificationIncomplete(
+          'transfer',
+          `${token.reason ?? 'batch recipient declares no token'}: the batch token contract was not verified`
+        );
+      } else if (token.contract !== tokenContract) {
+        await mismatch('batchTransferFrom token contract does not match the declared token', tokenContract);
+      }
+    }
+  }
+
+  /**
    * @param {VerifyEthTransactionOptions} params
    * @param {TransactionParams} params.txParams - params object passed to send
    * @param {TransactionPrebuild} params.txPrebuild - prebuild object returned by server
@@ -3593,67 +3859,23 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       throw new Error('tx cannot be both a batch and hop transaction');
     }
 
-    if (txParams.type && ['transfer'].includes(txParams.type)) {
-      if (txParams.recipients && txParams.recipients.length === 1) {
-        const recipients = txParams.recipients;
-        const expectedAmount = recipients[0].amount.toString();
-        const expectedDestination = recipients[0].address;
+    // Stored tx requests persist a payment as `payment`; callers declare it as `transfer`.
+    const txType = txParams.type === 'payment' ? 'transfer' : txParams.type;
 
-        const txBuilder = this.getTransactionBuilder();
-        txBuilder.from(txPrebuild.txHex);
-        const tx = await txBuilder.build();
-        const txJson = tx.toJson();
-        if (txJson.data === '0x') {
-          if (expectedAmount !== txJson.value) {
-            await throwRecipientMismatch(
-              'the transaction amount in txPrebuild does not match the value given by client',
-              [{ address: txJson.to, amount: txJson.value }]
-            );
-          }
-          if (expectedDestination.toLowerCase() !== txJson.to.toLowerCase()) {
-            await throwRecipientMismatch('destination address does not match with the recipient address', [
-              { address: txJson.to, amount: txJson.value },
-            ]);
-          }
-        } else if (txJson.data.startsWith('0xa9059cbb')) {
-          const [recipientAddress, amount] = getRawDecoded(
-            ['address', 'uint256'],
-            getBufferedByteCode('0xa9059cbb', txJson.data)
-          );
-
-          // Check if recipients[0].data exists (WalletConnect flow)
-          let expectedRecipientAddress: string;
-          let expectedTokenAmount: string;
-          const recipientData = (recipients[0] as any).data;
-
-          if (recipientData && recipientData.startsWith('0xa9059cbb')) {
-            // WalletConnect: decode expected recipient and amount from recipients[0].data
-            const [expectedRecipient, expectedAmount] = getRawDecoded(
-              ['address', 'uint256'],
-              getBufferedByteCode('0xa9059cbb', recipientData)
-            );
-            expectedRecipientAddress = addHexPrefix(expectedRecipient.toString()).toLowerCase();
-            expectedTokenAmount = expectedAmount.toString();
-          } else {
-            // Normal flow: use recipients[0].address and recipients[0].amount
-            expectedRecipientAddress = expectedDestination.toLowerCase();
-            expectedTokenAmount = expectedAmount;
-          }
-
-          if (expectedTokenAmount !== amount.toString()) {
-            await throwRecipientMismatch(
-              'the transaction amount in txPrebuild does not match the value given by client',
-              [{ address: addHexPrefix(recipientAddress.toString()), amount: amount.toString() }]
-            );
-          }
-
-          if (expectedRecipientAddress !== addHexPrefix(recipientAddress.toString()).toLowerCase()) {
-            await throwRecipientMismatch('destination address does not match with the recipient address', [
-              { address: addHexPrefix(recipientAddress.toString()), amount: amount.toString() },
-            ]);
-          }
-        }
+    if (txType === 'transfer') {
+      const recipients = txParams.recipients ?? [];
+      if (recipients.length === 0) {
+        this.warnTssVerificationIncomplete(txType, 'no recipients were given: the transaction was not verified');
+      } else if (recipients.length === 1) {
+        await this.verifyTssSinglePayment(txParams, recipients[0], txPrebuild.txHex, throwRecipientMismatch);
+      } else {
+        await this.verifyTssBatchPayment(txParams, recipients, txPrebuild.txHex, throwRecipientMismatch);
       }
+    } else if (txType && !TSS_DEDICATED_INTENT_TYPES.has(txType) && !params.verification?.consolidationToBaseAddress) {
+      this.warnTssVerificationIncomplete(
+        txType,
+        'no verifier is implemented for this intent type: the transaction was not compared against the intent'
+      );
     }
 
     if (txParams.type && ['defiApprove', 'defiDeposit', 'defiWithdraw'].includes(txParams.type)) {
@@ -3792,9 +4014,38 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
             { address: decodedRecipient, amount: txJson.value },
           ]);
         }
+        if (!isCanonicalTssCalldata(txJson.data, TSS_ERC20_TRANSFER_TYPES)) {
+          await throwRecipientMismatch('Consolidation transaction calldata is not a canonical ERC-20 transfer', [
+            { address: decodedRecipient, amount: txJson.value },
+          ]);
+        }
+        if (!tssValuesEqual(txJson.value, '0')) {
+          await throwRecipientMismatch('Consolidation token transfer must not carry native value', [
+            { address: txJson.to, amount: txJson.value },
+          ]);
+        }
+        // Sweep amounts are not compared: a consolidation moves whatever the address holds.
+        const token = this.resolveTssToken(txParams.tokenName);
+        if (token.contract) {
+          if (txJson.to.toLowerCase() !== token.contract) {
+            await throwRecipientMismatch('Consolidation transaction does not call the declared token contract', [
+              { address: txJson.to, amount: txJson.value },
+            ]);
+          }
+        } else {
+          this.warnTssVerificationIncomplete(
+            'consolidate',
+            `${token.reason}: the consolidation token contract was not verified`
+          );
+        }
       } else if (txJson.to.toLowerCase() !== baseAddress.toLowerCase()) {
         // Native coin consolidation: txJson.to is the actual recipient
         await throwRecipientMismatch('Consolidation transaction recipient does not match wallet base address', [
+          { address: txJson.to, amount: txJson.value },
+        ]);
+      } else if (!isEmptyTssCalldata(txJson.data)) {
+        // A native consolidation is a plain send to the base address.
+        await throwRecipientMismatch('Native consolidation transaction must not carry calldata', [
           { address: txJson.to, amount: txJson.value },
         ]);
       }

@@ -131,7 +131,8 @@ describe('XDC Token:', function () {
   describe('verifyTssTransaction', function () {
     const recipientAddress = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
     const wrongAddress = '0x7e85bdc27c050e3905ebf4b8e634d9ad6edd0de6';
-    const tokenContractAddress = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
+    // txdc:tmt's contract in statics: verifyTssTransaction checks the token contract being called.
+    const tokenContractAddress = '0xb283ec8dad644effc5c4c50bb7bb21442ac3c2db';
 
     it('should accept an ERC-20 transfer where calldata matches declared recipient', async function () {
       const token = bitgo.coin('txdc:tmt') as XdcToken;

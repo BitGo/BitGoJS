@@ -224,7 +224,7 @@ describe('Native BNB', function () {
           txPrebuild: { txHex, coin: 'tbsc', walletId: 'fakeWalletId' } as any,
           wallet,
         })
-        .should.be.rejectedWith('destination address does not match with the recipient address');
+        .should.be.rejectedWith('transaction calldata does not match the calldata given by client');
     });
 
     describe('assertSignableConsistency (Gap 2 / WCI-1398)', function () {
