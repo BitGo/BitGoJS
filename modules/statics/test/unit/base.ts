@@ -440,6 +440,17 @@ describe('ZAMA staking feature', function () {
     );
   });
 });
+describe('Monad staking feature', function () {
+  it('tmon should expose STAKING without dropping its existing features', function () {
+    const coin = coins.get('tmon');
+    coin.features.should.containEql(CoinFeature.STAKING);
+    coin.features.should.containEql(CoinFeature.SHARED_EVM_SDK);
+  });
+
+  it('mon should not expose STAKING', function () {
+    coins.get('mon').features.includes(CoinFeature.STAKING).should.be.false();
+  });
+});
 
 describe('bip44CoinType', function () {
   function accountCoinOptions(bip44CoinType?: number): ConstructorParameters<typeof AccountCoin>[0] {
