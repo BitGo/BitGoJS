@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.29.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fstatics%4059.28.0...%40bitgo%2Fstatics%4059.29.0) (2026-11-05)
+
+### Features
+
+* **statics:** add SUPPORTS_MEMO coin feature ([2408f5a](https://github.com/BitGo/BitGoJS/commit/2408f5a06dac822424b7c5cd8c476b0ecc7bba2f))
+* **statics:** enable CoinFeature.STAKING on tmon ([42fab82](https://github.com/BitGo/BitGoJS/commit/42fab829d5e5a4c3494ad7412628025d0b5e164a))
+
+
 # [59.28.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fstatics%4059.27.0...%40bitgo%2Fstatics%4059.28.0) (2026-11-03)
 
 ### Bug Fixes

@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.1.31](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-pearl%401.1.30...%40bitgo%2Fsdk-coin-pearl%401.1.31) (2026-11-05)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-pearl
+
+
+
+
+
 ## [1.1.30](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-pearl%401.1.29...%40bitgo%2Fsdk-coin-pearl%401.1.30) (2026-11-03)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-pearl

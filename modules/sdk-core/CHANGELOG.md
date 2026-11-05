@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [40.5.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4040.5.0...%40bitgo%2Fsdk-core%4040.5.1) (2026-11-05)
+
+### Bug Fixes
+
+* keep configureAccount on enableToken intents (Refs: CHALO-1883) ([7abf28d](https://github.com/BitGo/BitGoJS/commit/7abf28d30fca9c6a819bafc2cc75f1d356eb9841))
+* **sdk-coin-atom:** normalize memo recipients in verifyTransaction ([684ef0f](https://github.com/BitGo/BitGoJS/commit/684ef0f9b6362a29bcfd73c2c38f753bb1823311))
+
+
 # [40.5.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4040.4.0...%40bitgo%2Fsdk-core%4040.5.0) (2026-11-03)
 
 ### Bug Fixes

@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [13.15.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-atom%4013.15.0...%40bitgo%2Fsdk-coin-atom%4013.15.1) (2026-11-05)
+
+### Bug Fixes
+
+* **sdk-coin-atom:** normalize memo recipients in verifyTransaction ([684ef0f](https://github.com/BitGo/BitGoJS/commit/684ef0f9b6362a29bcfd73c2c38f753bb1823311))
+
+
 # [13.15.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-atom%4013.14.6...%40bitgo%2Fsdk-coin-atom%4013.15.0) (2026-11-03)
 
 ### Features

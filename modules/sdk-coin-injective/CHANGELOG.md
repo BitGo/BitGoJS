@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.8.8](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-injective%403.8.7...%40bitgo%2Fsdk-coin-injective%403.8.8) (2026-11-05)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-injective
+
+
+
+
+
 ## [3.8.7](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-injective%403.8.6...%40bitgo%2Fsdk-coin-injective%403.8.7) (2026-11-03)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-injective
