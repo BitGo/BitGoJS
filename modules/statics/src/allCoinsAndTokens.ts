@@ -1862,6 +1862,7 @@ export const allCoinsAndTokens = [
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.STAKING,
     ]
   ),
   account(
