@@ -764,6 +764,14 @@ export const avaxTokens = [
     '0x6122c5964d39416c3f34475d00ceb37f50700314',
     UnderlyingAsset['avaxc:mxnd']
   ),
+  avaxErc20(
+    'fa8544d2-9e3e-4151-9eeb-c4aae148cd04',
+    'avaxc:ktc',
+    'Kitocoin',
+    18,
+    '0x1ad5d102e269f2f52be892c6296027d5d36e5442',
+    UnderlyingAsset['avaxc:ktc']
+  ),
   // End FTX missing AVAXC tokens
   tavaxErc20(
     'cd107316-6e78-4936-946f-70e8fd5d8040',
