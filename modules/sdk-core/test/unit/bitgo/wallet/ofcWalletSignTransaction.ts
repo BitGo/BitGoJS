@@ -59,6 +59,7 @@ describe('Wallet - OFC', function () {
       url: sinon.stub().returns('https://test.bitgo.com/'),
       post: sinon.stub(),
       setRequestTracer: sinon.stub(),
+      isUpgradeEncryptionOnSignEnabled: () => false,
     };
     ofcToken = new OfcToken(mockBitGo, TEST_TOKEN_CONFIG);
     mockBitGo.coin = sinon.stub().returns(ofcToken);

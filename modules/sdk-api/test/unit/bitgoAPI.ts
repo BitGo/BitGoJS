@@ -43,6 +43,31 @@ describe('Constructor', function () {
     });
   });
 
+  describe('upgradeEncryptionOnSign argument', function () {
+    it('is off by default', function () {
+      const bitgo = new BitGoAPI({ env: 'custom', customRootURI: 'https://app.example.local' });
+      bitgo.isUpgradeEncryptionOnSignEnabled().should.equal(false);
+    });
+
+    it('is on when set to true', function () {
+      const bitgo = new BitGoAPI({
+        env: 'custom',
+        customRootURI: 'https://app.example.local',
+        upgradeEncryptionOnSign: true,
+      });
+      bitgo.isUpgradeEncryptionOnSignEnabled().should.equal(true);
+    });
+
+    it('is off when set to false', function () {
+      const bitgo = new BitGoAPI({
+        env: 'custom',
+        customRootURI: 'https://app.example.local',
+        upgradeEncryptionOnSign: false,
+      });
+      bitgo.isUpgradeEncryptionOnSignEnabled().should.equal(false);
+    });
+  });
+
   describe('requestIdPrefix argument', function () {
     afterEach(function () {
       nock.cleanAll();

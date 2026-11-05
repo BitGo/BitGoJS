@@ -8,6 +8,9 @@ import {
   commonTssMethods,
   TxRequestState,
   decodeOrElse,
+  KeyEncryptionUpgradeFailureReason,
+  KeyEncryptionUpgradeResult,
+  shouldUpgradeEncryption,
 } from '@bitgo/sdk-core';
 import * as t from 'io-ts';
 import {
@@ -35,6 +38,7 @@ import {
   ListPaymentsResponse,
   LndCreateWithdrawResponse,
   WatchOnly,
+  UpgradeUserAuthKeyEncryptionParams,
 } from '../codecs';
 import { LightningPaymentIntent, LightningPaymentRequest } from '@bitgo/public-types';
 
@@ -162,6 +166,15 @@ export interface ILightningWallet {
   payInvoice(params: SubmitPaymentParams): Promise<PayInvoiceResponse>;
 
   /**
+   * Upgrade the stored encryption of the user auth key to the latest format, using the wallet
+   * passphrase. Use it after a payment or withdrawal to run the upgrade and show the outcome. It
+   * applies regardless of the `upgradeEncryptionOnSign` setting and never throws.
+   * @param params.passphrase - the wallet passphrase that decrypts the user auth key
+   * @param params.reqId - optional request tracer
+   */
+  upgradeUserAuthKeyEncryption(params: UpgradeUserAuthKeyEncryptionParams): Promise<KeyEncryptionUpgradeResult>;
+
+  /**
    * On chain withdrawal
    * @param {LightningOnchainWithdrawParams} params - Withdraw parameters
    * @param {LightningOnchainRecipient[]} params.recipients - The recipients to pay
@@ -254,6 +267,18 @@ export class LightningWallet implements ILightningWallet {
     });
   }
 
+  async upgradeUserAuthKeyEncryption(params: UpgradeUserAuthKeyEncryptionParams): Promise<KeyEncryptionUpgradeResult> {
+    let userAuthKey: LightningAuthKeychain;
+    try {
+      ({ userAuthKey } = await getLightningAuthKeychains(this.wallet));
+    } catch (e) {
+      return { upgraded: false, failed: KeyEncryptionUpgradeFailureReason.Error };
+    }
+    return this.wallet.baseCoin
+      .keychains()
+      .upgradeEncryption({ keychain: userAuthKey, passphrase: params.passphrase, reqId: params.reqId });
+  }
+
   async payInvoice(params: SubmitPaymentParams): Promise<PayInvoiceResponse> {
     const reqId = new RequestTracer();
     this.wallet.bitgo.setRequestTracer(reqId);
@@ -267,6 +292,9 @@ export class LightningWallet implements ILightningWallet {
       t.exact(LightningPaymentRequest).encode(params),
       await this.wallet.bitgo.decrypt({ password: params.passphrase, input: userAuthKeyEncryptedPrv })
     );
+    if (shouldUpgradeEncryption(this.wallet.bitgo, params.upgradeEncryption)) {
+      void this.wallet.baseCoin.keychains().upgradeEncryption({ keychain: userAuthKey, passphrase: params.passphrase });
+    }
 
     const paymentIntent: { intent: LightningPaymentIntent } = {
       intent: {
@@ -392,6 +420,9 @@ export class LightningWallet implements ILightningWallet {
       transactionRequestCreate.transactions[0].unsignedTx.serializedTxHex,
       await this.wallet.bitgo.decrypt({ password: params.passphrase, input: userAuthKeyEncryptedPrv })
     );
+    if (shouldUpgradeEncryption(this.wallet.bitgo, params.upgradeEncryption)) {
+      void this.wallet.baseCoin.keychains().upgradeEncryption({ keychain: userAuthKey, passphrase: params.passphrase });
+    }
 
     const transactionRequestWithSignature = (await this.wallet.bitgo
       .put(
