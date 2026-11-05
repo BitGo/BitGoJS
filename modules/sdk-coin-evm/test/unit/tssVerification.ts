@@ -76,6 +76,45 @@ function encodeConfidentialTransferNoProof(to: string): string {
   return encodeWithAbi('confidentialTransfer', ['address', 'bytes32'], [to, '0x' + '11'.repeat(32)]);
 }
 
+// ERC-721 / ERC-1155 collection used by the transferToken NFT tests, plus the standard transfer
+// calldata the verifier accepts: safeTransferFrom with and without the data parameter and
+// transferFrom for ERC-721, safeTransferFrom and safeBatchTransferFrom for ERC-1155.
+const nftContractAddress = '0x0000000000000000000000000000000000000abc';
+// A registered ERC-721 whose name resolves to a real, different contract than nftContractAddress.
+const otherNftName = 'erc721:witch';
+
+function encodeErc721SafeTransferFrom(to: string, tokenId: string): string {
+  return encodeWithAbi('safeTransferFrom', ['address', 'address', 'uint256'], [baseAddress, to, tokenId]);
+}
+
+function encodeErc721SafeTransferFromWithData(to: string, tokenId: string): string {
+  return encodeWithAbi(
+    'safeTransferFrom',
+    ['address', 'address', 'uint256', 'bytes'],
+    [baseAddress, to, tokenId, Buffer.alloc(0)]
+  );
+}
+
+function encodeErc721TransferFrom(to: string, tokenId: string): string {
+  return encodeWithAbi('transferFrom', ['address', 'address', 'uint256'], [baseAddress, to, tokenId]);
+}
+
+function encodeErc1155SafeTransferFrom(to: string, tokenId: string, quantity: string): string {
+  return encodeWithAbi(
+    'safeTransferFrom',
+    ['address', 'address', 'uint256', 'uint256', 'bytes'],
+    [baseAddress, to, tokenId, quantity, Buffer.alloc(0)]
+  );
+}
+
+function encodeErc1155SafeBatchTransferFrom(to: string, tokenIds: string[], quantities: string[]): string {
+  return encodeWithAbi(
+    'safeBatchTransferFrom',
+    ['address', 'address', 'uint256[]', 'uint256[]', 'bytes'],
+    [baseAddress, to, tokenIds, quantities, Buffer.alloc(0)]
+  );
+}
+
 async function buildTxHex(
   coin: Readonly<StaticsBaseCoin>,
   opts: { to: string; value?: string; data?: string }
@@ -489,6 +528,273 @@ async function buildTxHex(
         const txParams = { type: 'transfer', recipients: [tokenRecipient] };
         (await verify(txParams, txHex)).should.equal(true);
         warnings.some((w) => /single declared recipient/.test(w.reason)).should.equal(true);
+      });
+    });
+
+    // ERC-721 / ERC-1155 transferToken: the recipient names the destination and the tokenData
+    // standard / id / quantity / collection, while the bytes go to the collection with the
+    // standard's transfer calldata.
+    describe('transferToken handler (ERC-721 / ERC-1155)', function () {
+      const erc721Recipient = (tokenId: string, tokenQuantity = '1'): Record<string, unknown> => ({
+        address: recipientAddress,
+        amount: '0',
+        tokenData: {
+          tokenType: 'ERC721',
+          tokenQuantity,
+          tokenId,
+          tokenContractAddress: nftContractAddress,
+        },
+      });
+      const erc1155Recipient = (tokenId: string, tokenQuantity: string): Record<string, unknown> => ({
+        address: recipientAddress,
+        amount: '0',
+        tokenData: {
+          tokenType: 'ERC1155',
+          tokenQuantity,
+          tokenId,
+          tokenContractAddress: nftContractAddress,
+        },
+      });
+      const nftTx = (data: string, overrides: { to?: string; value?: string } = {}): Promise<string> =>
+        build({ to: overrides.to ?? nftContractAddress, value: overrides.value ?? '0', data });
+
+      it('verifies the ERC-721 safeTransferFrom and transferFrom signatures', async function () {
+        const txParams = { type: 'transferToken', recipients: [erc721Recipient('7')] };
+        for (const data of [
+          encodeErc721SafeTransferFrom(recipientAddress, '7'),
+          encodeErc721SafeTransferFromWithData(recipientAddress, '7'),
+          encodeErc721TransferFrom(recipientAddress, '7'),
+        ]) {
+          warnings = [];
+          const txHex = await nftTx(data);
+          (await verify(txParams, txHex)).should.equal(true);
+          warnings.should.have.length(0);
+          (await verify(txParams, txHex, { strict: true })).should.equal(true);
+        }
+      });
+
+      it('verifies a tokenId whose 32-byte encoding contains the selector bytes', async function () {
+        // The arguments are decoded from the fixed position after the matched selector, so an id
+        // that happens to encode the selector's own bytes (0x42842e0e / 0xb88d4fde) is legitimate.
+        const selectorId = BigInt('0x42842e0e').toString();
+        const dataSelectorId = BigInt('0xb88d4fde').toString();
+        const cases: Array<{ tokenId: string; data: string }> = [
+          { tokenId: selectorId, data: encodeErc721SafeTransferFrom(recipientAddress, selectorId) },
+          { tokenId: dataSelectorId, data: encodeErc721SafeTransferFromWithData(recipientAddress, dataSelectorId) },
+        ];
+        for (const { tokenId, data } of cases) {
+          warnings = [];
+          const txParams = { type: 'transferToken', recipients: [erc721Recipient(tokenId)] };
+          const txHex = await nftTx(data);
+          (await verify(txParams, txHex)).should.equal(true);
+          warnings.should.have.length(0);
+          (await verify(txParams, txHex, { strict: true })).should.equal(true);
+        }
+      });
+
+      it('verifies ERC-1155 single and one-entry batch transfers', async function () {
+        const txParams = { type: 'transferToken', recipients: [erc1155Recipient('7', '3')] };
+        for (const data of [
+          encodeErc1155SafeTransferFrom(recipientAddress, '7', '3'),
+          encodeErc1155SafeBatchTransferFrom(recipientAddress, ['7'], ['3']),
+        ]) {
+          warnings = [];
+          const txHex = await nftTx(data);
+          (await verify(txParams, txHex)).should.equal(true);
+          warnings.should.have.length(0);
+          (await verify(txParams, txHex, { strict: true })).should.equal(true);
+        }
+      });
+
+      it('flags an NFT sent to a swapped destination (warn, throw in strict mode)', async function () {
+        const txParams = { type: 'transferToken', recipients: [erc721Recipient('7')] };
+        const txHex = await nftTx(encodeErc721SafeTransferFrom(attackerAddress, '7'));
+        (await verify(txParams, txHex)).should.equal(true);
+        warnings.some((w) => /destination address does not match/.test(w.reason)).should.equal(true);
+        await verify(txParams, txHex, { strict: true }).should.be.rejectedWith(/destination address does not match/);
+      });
+
+      it('flags a swapped ERC-721 tokenId and an inflated ERC-1155 quantity', async function () {
+        const erc721 = { type: 'transferToken', recipients: [erc721Recipient('7')] };
+        const wrongIdHex = await nftTx(encodeErc721SafeTransferFrom(recipientAddress, '8'));
+        (await verify(erc721, wrongIdHex)).should.equal(true);
+        warnings.some((w) => /tokenId in calldata does not match/.test(w.reason)).should.equal(true);
+        await verify(erc721, wrongIdHex, { strict: true }).should.be.rejectedWith(/tokenId in calldata does not match/);
+
+        warnings = [];
+        const erc1155 = { type: 'transferToken', recipients: [erc1155Recipient('7', '3')] };
+        const wrongQuantityHex = await nftTx(encodeErc1155SafeTransferFrom(recipientAddress, '7', '4'));
+        (await verify(erc1155, wrongQuantityHex)).should.equal(true);
+        warnings.some((w) => /tokenQuantity in calldata does not match/.test(w.reason)).should.equal(true);
+        await verify(erc1155, wrongQuantityHex, { strict: true }).should.be.rejectedWith(
+          /tokenQuantity in calldata does not match/
+        );
+      });
+
+      it('flags an ERC-1155 batch that moves more than the single declared entry', async function () {
+        const erc1155 = { type: 'transferToken', recipients: [erc1155Recipient('7', '3')] };
+        const twoEntries = ['7', '8'];
+        const twoEntryQuantities = ['3', '1'];
+        const twoEntriesHex = await nftTx(
+          encodeErc1155SafeBatchTransferFrom(recipientAddress, twoEntries, twoEntryQuantities)
+        );
+        (await verify(erc1155, twoEntriesHex)).should.equal(true);
+        warnings
+          .some((w) => /must move exactly the declared tokenId and tokenQuantity/.test(w.reason))
+          .should.equal(true);
+        await verify(erc1155, twoEntriesHex, { strict: true }).should.be.rejectedWith(
+          /must move exactly the declared tokenId and tokenQuantity/
+        );
+      });
+
+      it('flags another standard selector, native value, a foreign contract and a missing tokenId', async function () {
+        const erc721 = { type: 'transferToken', recipients: [erc721Recipient('7')] };
+        // The declared standard decides: ERC-1155 calldata is not an ERC-721 transfer.
+        const otherStandardHex = await nftTx(encodeErc1155SafeTransferFrom(recipientAddress, '7', '1'));
+        (await verify(erc721, otherStandardHex)).should.equal(true);
+        warnings.some((w) => /ERC721 token transfer must use/.test(w.reason)).should.equal(true);
+
+        warnings = [];
+        const nativeValueHex = await nftTx(encodeErc721SafeTransferFrom(recipientAddress, '7'), { value: '5' });
+        (await verify(erc721, nativeValueHex)).should.equal(true);
+        warnings.some((w) => /must not carry native value/.test(w.reason)).should.equal(true);
+
+        warnings = [];
+        const otherContractHex = await nftTx(encodeErc721SafeTransferFrom(recipientAddress, '7'), {
+          to: tokenContractAddress,
+        });
+        (await verify(erc721, otherContractHex)).should.equal(true);
+        warnings.some((w) => /not the intent token contract/.test(w.reason)).should.equal(true);
+
+        warnings = [];
+        const noTokenId = {
+          type: 'transferToken',
+          recipients: [
+            {
+              address: recipientAddress,
+              amount: '0',
+              tokenData: { tokenType: 'ERC721', tokenQuantity: '1', tokenContractAddress: nftContractAddress },
+            },
+          ],
+        };
+        (await verify(noTokenId, await nftTx(encodeErc721SafeTransferFrom(recipientAddress, '7')))).should.equal(true);
+        warnings.some((w) => /must declare tokenData.tokenId/.test(w.reason)).should.equal(true);
+      });
+
+      it('verifies a stored NFT intent whose tokenData tokenName is a generic display label', async function () {
+        // The intent schema makes tokenData.tokenName mandatory, and for an unsupported collection
+        // it is only a label ('erc721:token' -> the '0xerc721:token' statics placeholder). The
+        // declared contract is the identity, so the legitimate transfer must verify cleanly.
+        const intent = {
+          intentType: 'transferToken',
+          recipients: [
+            {
+              address: { address: recipientAddress },
+              amount: { value: '0', symbol: 'erc721:token' },
+              tokenData: {
+                tokenType: 'ERC721',
+                tokenQuantity: '1',
+                tokenId: '9',
+                tokenName: 'erc721:token',
+                tokenContractAddress: nftContractAddress,
+              },
+            },
+          ],
+        };
+        const txHex = await nftTx(encodeErc721SafeTransferFrom(recipientAddress, '9'));
+        (await verifySigningPath(undefined, intent, txHex)).should.equal(true);
+        warnings.should.have.length(0);
+        (await verifySigningPath(undefined, intent, txHex, true)).should.equal(true);
+      });
+
+      it('flags an unregistered or other-standard NFT tokenName instead of treating it as a label', async function () {
+        // Only a statics placeholder of the declared standard is a display label. Any other name is
+        // an identity declaration: unregistered it cannot be resolved, and a placeholder of the
+        // other standard contradicts the declared collection.
+        const callerFor = (tokenName: string): Record<string, unknown> => ({
+          type: 'transferToken',
+          recipients: [
+            {
+              address: recipientAddress,
+              amount: '0',
+              tokenData: {
+                tokenType: 'ERC721',
+                tokenQuantity: '1',
+                tokenId: '7',
+                tokenName,
+                tokenContractAddress: nftContractAddress,
+              },
+            },
+          ],
+        });
+        const txHex = await nftTx(encodeErc721SafeTransferFrom(recipientAddress, '7'));
+
+        const unknownName = callerFor('hteth:not-a-registered-collection');
+        (await verify(unknownName, txHex)).should.equal(true);
+        warnings.some((w) => /cannot be resolved to a token contract/.test(w.reason)).should.equal(true);
+        await verify(unknownName, txHex, { strict: true }).should.be.rejectedWith(
+          /cannot be resolved to a token contract/
+        );
+
+        warnings = [];
+        const otherStandardName = callerFor('erc1155:token');
+        (await verify(otherStandardName, txHex)).should.equal(true);
+        warnings.some((w) => /name different token contracts/.test(w.reason)).should.equal(true);
+        await verify(otherStandardName, txHex, { strict: true }).should.be.rejectedWith(
+          /name different token contracts/
+        );
+      });
+
+      it('flags a stored NFT intent whose tokenName names another collection', async function () {
+        // A name that resolves to a real, different collection is still a conflict: only the
+        // generic statics placeholder of the declared standard is a display label.
+        const intent = {
+          intentType: 'transferToken',
+          recipients: [
+            {
+              address: { address: recipientAddress },
+              amount: { value: '0', symbol: otherNftName },
+              tokenData: {
+                tokenType: 'ERC721',
+                tokenQuantity: '1',
+                tokenId: '9',
+                tokenName: otherNftName,
+                tokenContractAddress: nftContractAddress,
+              },
+            },
+          ],
+        };
+        const txHex = await nftTx(encodeErc721SafeTransferFrom(recipientAddress, '9'));
+        (await verifySigningPath(undefined, intent, txHex)).should.equal(true);
+        warnings.some((w) => /name different token contracts/.test(w.reason)).should.equal(true);
+        await verifySigningPath(undefined, intent, txHex, true).should.be.rejectedWith(
+          /name different token contracts/
+        );
+      });
+
+      it('enforces the stored tokenData tokenId on the pending-approval path', async function () {
+        const intent = {
+          intentType: 'transferToken',
+          recipients: [
+            {
+              address: { address: recipientAddress },
+              amount: { value: '0', symbol: 'erc721:token' },
+              tokenData: {
+                tokenType: 'ERC721',
+                tokenQuantity: '1',
+                tokenId: '9',
+                tokenName: 'erc721:token',
+                tokenContractAddress: nftContractAddress,
+              },
+            },
+          ],
+        };
+        const txHex = await nftTx(encodeErc721SafeTransferFrom(recipientAddress, '10'));
+        (await verifySigningPath(undefined, intent, txHex)).should.equal(true);
+        warnings.some((w) => /tokenId in calldata does not match/.test(w.reason)).should.equal(true);
+        await verifySigningPath(undefined, intent, txHex, true).should.be.rejectedWith(
+          /tokenId in calldata does not match/
+        );
       });
     });
 

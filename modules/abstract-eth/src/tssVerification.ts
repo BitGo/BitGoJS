@@ -34,6 +34,15 @@ import {
   decodeApproveCalldata,
   decodeBatchTransferData,
   decodeBatchTransferFromData,
+  ERC1155BatchTransferTypeMethodId,
+  ERC1155BatchTransferTypes,
+  ERC1155SafeTransferTypeMethodId,
+  ERC1155SafeTransferTypes,
+  ERC721SafeTransferFromMethodId,
+  ERC721SafeTransferTypeMethodId,
+  ERC721SafeTransferTypes,
+  ERC721TransferFromMethodId,
+  ERC721TransferFromTypes,
   getBufferedByteCode,
   getRawDecoded,
 } from './lib';
@@ -116,6 +125,17 @@ export interface EvmTokenIdentityDeclaration {
   tokenContractAddress?: string;
 }
 
+/**
+ * The NFT fields of the intent `tokenData` shape. They say which standard and which token the
+ * recipient moves; the contract identity itself stays in {@link EvmTokenIdentityDeclaration}, so
+ * `tokenType` / `tokenId` / `tokenQuantity` are never fed into asset resolution.
+ */
+interface EvmTokenDataDeclaration extends EvmTokenIdentityDeclaration {
+  tokenType?: string;
+  tokenId?: string;
+  tokenQuantity?: string;
+}
+
 /** One recipient of the user intent, flattened from txParams or the stored tx request intent. */
 export interface EvmTssExpectedRecipient {
   address: string;
@@ -130,6 +150,12 @@ export interface EvmTssExpectedRecipient {
    * declarations of different tokens stay ambiguous instead of one silently overriding the other.
    */
   declaredTokenIdentities?: EvmTokenIdentityDeclaration[];
+  /** `tokenData.tokenType`: the declared standard, which picks the calldata shape (`transferToken`). */
+  tokenType?: string;
+  /** `tokenData.tokenId`: the declared NFT id (ERC-721 / ERC-1155). */
+  tokenId?: string;
+  /** `tokenData.tokenQuantity`: the declared amount (ERC-1155, and ERC-721 must be 1 when set). */
+  tokenQuantity?: string;
 }
 
 export interface EvmTssIntentContext {
@@ -271,12 +297,30 @@ type PaymentAsset = { kind: 'native' } | { kind: 'token'; contract: string } | {
 const EVM_ADDRESS = /^0x[0-9a-fA-F]{40}$/;
 
 /**
+ * Name prefixes of the statics placeholder entries each NFT standard uses when the collection is
+ * not itself registered (`erc721:token` / `terc721:token`, and the per-chain placeholders). Only a
+ * name of the recipient's own standard can be a label for its collection; any other name keeps its
+ * identity meaning.
+ */
+const NFT_DISPLAY_NAME_PREFIXES: Record<'ERC721' | 'ERC1155', RegExp> = {
+  ERC721: /^t?erc721:/i,
+  ERC1155: /^t?erc1155:/i,
+};
+
+/**
  * Resolve the asset a payment is declared to move. Identity comes from the recipient's own
  * `tokenAddress` / `tokenName` / `tokenData` declarations, the top-level `tokenName`, and the
  * coin instance, and nothing else: the context never carries server-supplied token metadata when
  * the caller declared its own intent. No declared identity at all means native. Identity that
  * cannot be resolved to a contract, or that names two different contracts, is `unresolved`: the
  * intended asset is unknown, so no calldata shape can be accepted for it.
+ *
+ * `nftTokenType` (set by the `transferToken` handler for a declared ERC-721 / ERC-1155) enables one
+ * narrow exception: a statics placeholder of that same standard (`tokenData.tokenName` is required
+ * by the intent schema, and `getTokenName` leaves `erc721:token` in place when the collection is
+ * unknown). Such a name is display metadata, so it is dropped from identity when the recipient also
+ * declared a real collection address. Nothing else is: an unregistered name still fails
+ * resolution, and a name that resolves to a real contract still contradicts the declared one.
  */
 function resolveAsset(
   ctx: EvmTssIntentContext,
@@ -284,9 +328,28 @@ function resolveAsset(
     tokenName?: string;
     tokenContractAddress?: string;
     declaredTokenIdentities?: EvmTokenIdentityDeclaration[];
-  }
+  },
+  nftTokenType?: 'ERC721' | 'ERC1155'
 ): PaymentAsset {
   const sources: { label: string; contract: string | undefined; native?: boolean }[] = [];
+  // Only a real collection address can anchor a declared NFT; without one the name is the only
+  // identity and must still resolve (or be reported unresolvable) exactly as for any token.
+  const nftContract =
+    nftTokenType && declared.tokenContractAddress && EVM_ADDRESS.test(declared.tokenContractAddress)
+      ? declared.tokenContractAddress
+      : undefined;
+  const nftDisplayName = nftTokenType ? NFT_DISPLAY_NAME_PREFIXES[nftTokenType] : undefined;
+  // True only for a statics placeholder of the declared standard whose contract is the
+  // `0xerc721:token`-style pseudo-address: `getTokenName` leaves `tokenData.tokenName` as a generic
+  // label when the collection is unknown, and the schema makes that field mandatory. An
+  // unregistered name here still expresses an unresolvable token, so it keeps failing resolution.
+  const isDisplayOnlyNftName = (name: string): boolean => {
+    if (!nftContract || !nftDisplayName?.test(name)) {
+      return false;
+    }
+    const contract = resolveTokenContractAddress(name);
+    return contract !== undefined && !EVM_ADDRESS.test(contract);
+  };
   // Every identity the recipient declared is resolved, not just the first that happens to be
   // set: two declarations of different tokens must stay ambiguous rather than one silently
   // overriding the other.
@@ -301,7 +364,7 @@ function resolveAsset(
       });
     }
     const name = identity.tokenName;
-    if (!name) {
+    if (!name || isDisplayOnlyNftName(name)) {
       continue;
     }
     let staticsCoin;
@@ -319,7 +382,7 @@ function resolveAsset(
     }
   }
   const declaredTopLevelName = ctx.tokenName;
-  if (declaredTopLevelName) {
+  if (declaredTopLevelName && !isDisplayOnlyNftName(declaredTopLevelName)) {
     let staticsCoin;
     try {
       staticsCoin = coins.get(declaredTopLevelName);
@@ -368,7 +431,7 @@ function resolveAsset(
 }
 
 /** EVM recipients also carry the intent `tokenData` shape that `populateIntent` preserves. */
-type CallerDeclarableRecipient = ITransactionRecipient & { tokenData?: EvmTokenIdentityDeclaration };
+type CallerDeclarableRecipient = ITransactionRecipient & { tokenData?: EvmTokenDataDeclaration };
 
 type CallerDeclarableParams = {
   type?: string;
@@ -419,7 +482,9 @@ export function selectDeclaredIntent<T extends CallerDeclarableParams>(params: {
  * params. Absent local `data` stays absent, a recipient's flat and `tokenData` token identities
  * are all kept (so conflicting declarations stay ambiguous), and only a source that declared no
  * identity of its own inherits the stored one. `receiveAddress` comes from that same source, so a
- * caller's declared receive address is never replaced by the stored intent's.
+ * caller's declared receive address is never replaced by the stored intent's. The NFT fields of
+ * `tokenData` (`tokenType` / `tokenId` / `tokenQuantity`) follow the same precedence and are read
+ * from the stored intent directly when the effective params carry no `tokenData`.
  */
 export function buildEvmTssIntentContext(params: {
   intentType: string;
@@ -437,6 +502,10 @@ export function buildEvmTssIntentContext(params: {
   const source = storedIntent ? params.txParams : params.callerParams;
 
   const recipients: EvmTssExpectedRecipient[] = (source?.recipients ?? []).map((recipient, i) => {
+    // The effective params carry no `tokenData` on the pending-approval path, so the stored
+    // intent supplies it there. The NFT fields it carries (`tokenType` / `tokenId` /
+    // `tokenQuantity`) never take part in asset identity resolution.
+    const tokenData = recipient.tokenData ?? storedIntent?.recipients?.[i]?.tokenData;
     // Token identity reaches a recipient both flat (`tokenAddress` / `tokenName`) and inside the
     // intent `tokenData` shape that `populateIntent` keeps. Both are declarations of the source
     // that speaks for the user, so both stay in resolution; the stored intent only fills in when
@@ -445,22 +514,28 @@ export function buildEvmTssIntentContext(params: {
     if (recipient.tokenAddress !== undefined || recipient.tokenName !== undefined) {
       declaredTokenIdentities.push({ tokenContractAddress: recipient.tokenAddress, tokenName: recipient.tokenName });
     }
-    if (recipient.tokenData?.tokenContractAddress !== undefined || recipient.tokenData?.tokenName !== undefined) {
-      declaredTokenIdentities.push({ ...recipient.tokenData });
+    if (tokenData?.tokenContractAddress !== undefined || tokenData?.tokenName !== undefined) {
+      declaredTokenIdentities.push({
+        tokenContractAddress: tokenData.tokenContractAddress,
+        tokenName: tokenData.tokenName,
+      });
     }
     const storedTokenContractAddress = storedIntent?.recipients?.[i]?.tokenData?.tokenContractAddress;
     if (storedTokenContractAddress !== undefined) {
       declaredTokenIdentities.push({ tokenContractAddress: storedTokenContractAddress });
     }
     const tokenContractAddress =
-      recipient.tokenAddress ?? recipient.tokenData?.tokenContractAddress ?? storedTokenContractAddress;
-    const tokenName = recipient.tokenName ?? recipient.tokenData?.tokenName;
+      recipient.tokenAddress ?? tokenData?.tokenContractAddress ?? storedTokenContractAddress;
+    const tokenName = recipient.tokenName ?? tokenData?.tokenName;
     return {
       address: recipient.address,
       amount: String(recipient.amount),
       ...(recipient.data !== undefined && { data: recipient.data }),
       ...(tokenName !== undefined && { tokenName }),
       ...(tokenContractAddress !== undefined && { tokenContractAddress }),
+      ...(tokenData?.tokenType !== undefined && { tokenType: tokenData.tokenType }),
+      ...(tokenData?.tokenId !== undefined && { tokenId: tokenData.tokenId }),
+      ...(tokenData?.tokenQuantity !== undefined && { tokenQuantity: tokenData.tokenQuantity }),
       ...(declaredTokenIdentities.length > 0 && { declaredTokenIdentities }),
     };
   });
@@ -680,6 +755,165 @@ function verifyTokenTransfer(
     )
   );
   return warnings;
+}
+
+/** The `tokenData.tokenType` values with a dedicated calldata handler, or undefined for the rest. */
+function normalizeNftTokenType(tokenType?: string): 'ERC721' | 'ERC1155' | undefined {
+  const normalized = tokenType?.trim().toUpperCase();
+  return normalized === 'ERC721' || normalized === 'ERC1155' ? normalized : undefined;
+}
+
+/** One calldata shape an NFT standard accepts, with the ABI types needed to decode it. */
+interface NftTransferShape {
+  selector: string;
+  types: string[];
+  /** `safeBatchTransferFrom`: the id and quantity are single-element arrays of the declared values. */
+  batch?: boolean;
+}
+
+/** The ERC-721 transfer signatures this handler accepts. */
+const ERC721_TRANSFER_SHAPES: NftTransferShape[] = [
+  // `safeTransferFrom(address,address,uint256)`: the ERC-721 overload without the data parameter.
+  { selector: ERC721SafeTransferFromMethodId, types: ERC721TransferFromTypes },
+  // `safeTransferFrom(address,address,uint256,bytes)`: the ERC-721 overload with the data parameter.
+  { selector: ERC721SafeTransferTypeMethodId, types: ERC721SafeTransferTypes },
+  // `transferFrom(address,address,uint256)`: Hedera HTS NFTs only accept this form.
+  { selector: ERC721TransferFromMethodId, types: ERC721TransferFromTypes },
+];
+
+/** The ERC-1155 transfer signatures this handler accepts (single entry or one-entry batch). */
+const ERC1155_TRANSFER_SHAPES: NftTransferShape[] = [
+  { selector: ERC1155SafeTransferTypeMethodId, types: ERC1155SafeTransferTypes },
+  { selector: ERC1155BatchTransferTypeMethodId, types: ERC1155BatchTransferTypes, batch: true },
+];
+
+/**
+ * R3b — one recipient that declares an NFT (`tokenData.tokenType`): `to` must be the collection
+ * contract, `value` must be zero, and the decoded transfer must move the declared token id (and,
+ * for ERC-1155, quantity) to the declared destination. Only the signatures listed for the
+ * declared standard are accepted; a selector of the other standard, or an unknown one, is a
+ * violation. The sender (`_from`) is not compared: it is the wallet or one of its forwarders, and
+ * the intent never names it.
+ */
+function verifyNftTokenTransfer(
+  ctx: EvmTssIntentContext,
+  tx: DecodedEvmTx,
+  recipient: EvmTssExpectedRecipient,
+  tokenContract: string,
+  tokenType: 'ERC721' | 'ERC1155'
+): TssFinding[] {
+  const findings: TssFinding[] = [];
+  const data = normalizeCalldata(tx.data);
+  const decoded = { to: tx.to, value: tx.value, data: tx.data };
+  const expected = { to: tokenContract, value: '0', data: recipient.data };
+  // Findings that are about the token id / quantity still name the destination pair, so the
+  // report says which transfer was wrong without relabelling an id as a native amount.
+  const expectedTransfer = { ...expected, to: recipient.address };
+  const isErc721 = tokenType === 'ERC721';
+
+  if (!valuesEqual(tx.value, '0')) {
+    findings.push(violation(ctx, 'token transfer must not carry native value', expected, decoded));
+  }
+  if (normalizeAddress(tx.to) !== normalizeAddress(tokenContract)) {
+    findings.push(violation(ctx, 'transaction to is not the intent token contract', expected, decoded));
+  }
+
+  const shape = (isErc721 ? ERC721_TRANSFER_SHAPES : ERC1155_TRANSFER_SHAPES).find(
+    (candidate) => candidate.selector === data.slice(0, 10)
+  );
+  if (!shape) {
+    findings.push(
+      violation(
+        ctx,
+        `${tokenType} token transfer must use ${
+          isErc721
+            ? 'safeTransferFrom(address,address,uint256[,bytes]) or transferFrom(address,address,uint256)'
+            : 'safeTransferFrom(address,address,uint256,uint256,bytes) or safeBatchTransferFrom(address,address,uint256[],uint256[],bytes)'
+        } calldata`,
+        expected,
+        decoded
+      )
+    );
+    return findings;
+  }
+
+  const tokenId = recipient.tokenId;
+  const tokenQuantity = recipient.tokenQuantity;
+  if (tokenId === undefined) {
+    findings.push(violation(ctx, `${tokenType} token transfer must declare tokenData.tokenId`, expected, decoded));
+    return findings;
+  }
+  if (!isErc721 && tokenQuantity === undefined) {
+    findings.push(violation(ctx, 'ERC1155 token transfer must declare tokenData.tokenQuantity', expected, decoded));
+    return findings;
+  }
+  if (isErc721 && tokenQuantity !== undefined && !valuesEqual(tokenQuantity, '1')) {
+    findings.push(violation(ctx, 'ERC721 token transfer must declare tokenData.tokenQuantity of 1', expected, decoded));
+  }
+
+  let decodedRecipient: string;
+  let decodedIds: string[];
+  let decodedQuantities: string[] | undefined;
+  try {
+    // The selector is already matched at offset 0, so decode exactly the arguments after it.
+    // `getBufferedByteCode` splits the calldata on the selector string, which is wrong here: an
+    // argument (a tokenId is 32 bytes) may legitimately contain the selector's bytes.
+    const raw = getRawDecoded(shape.types, Buffer.from(data.slice(10), 'hex'));
+    decodedRecipient = toAddressString(raw[1]);
+    if (shape.batch) {
+      decodedIds = (raw[2] as unknown[]).map((id) => toBigInt(id).toString());
+      decodedQuantities = (raw[3] as unknown[]).map((quantity) => toBigInt(quantity).toString());
+    } else {
+      decodedIds = [toBigInt(raw[2]).toString()];
+      decodedQuantities = isErc721 ? undefined : [toBigInt(raw[3]).toString()];
+    }
+  } catch (e) {
+    findings.push(
+      violation(ctx, `${tokenType} transfer calldata could not be decoded: ${(e as Error).message}`, expected, decoded)
+    );
+    return findings;
+  }
+
+  const decodedTransfer = { ...decoded, to: addHexPrefix(decodedRecipient) };
+  if (normalizeAddress(decodedRecipient) !== normalizeAddress(recipient.address)) {
+    findings.push(
+      violation(ctx, 'destination address does not match with the recipient address', expectedTransfer, decodedTransfer)
+    );
+  }
+
+  if (shape.batch && (decodedIds.length !== 1 || decodedQuantities?.length !== 1)) {
+    findings.push(
+      violation(
+        ctx,
+        `ERC1155 batch transfer must move exactly the declared tokenId and tokenQuantity (decoded ` +
+          `${decodedIds.length} ids / ${decodedQuantities?.length ?? 0} quantities)`,
+        expectedTransfer,
+        decodedTransfer
+      )
+    );
+    return findings;
+  }
+  if (!valuesEqual(decodedIds[0], tokenId)) {
+    findings.push(
+      violation(
+        ctx,
+        `${tokenType} tokenId in calldata does not match tokenData.tokenId (expected ${tokenId}, decoded ${decodedIds[0]})`,
+        expectedTransfer,
+        decodedTransfer
+      )
+    );
+  }
+  if (!isErc721 && decodedQuantities !== undefined && !valuesEqual(decodedQuantities[0], tokenQuantity)) {
+    findings.push(
+      violation(
+        ctx,
+        `ERC1155 tokenQuantity in calldata does not match tokenData.tokenQuantity (expected ${tokenQuantity}, decoded ${decodedQuantities[0]})`,
+        expectedTransfer,
+        decodedTransfer
+      )
+    );
+  }
+  return findings;
 }
 
 /**
@@ -941,7 +1175,11 @@ function verifyPaymentShape(
   ];
 }
 
-/** `transferToken` handler — same shape set as R3, exactly one recipient, which must move a token. */
+/**
+ * `transferToken` handler — exactly one recipient, which must move a token. A recipient that
+ * declares `tokenData.tokenType` ERC-721 / ERC-1155 is verified against that standard's transfer
+ * calldata (R3b); every other token keeps the R3 ERC-20 / ERC-7984 shapes.
+ */
 function verifyTransferToken(ctx: EvmTssIntentContext, tx: DecodedEvmTx): TssFinding[] {
   const decoded = { to: tx.to, value: tx.value, data: tx.data };
   if (ctx.recipients.length !== 1) {
@@ -955,7 +1193,11 @@ function verifyTransferToken(ctx: EvmTssIntentContext, tx: DecodedEvmTx): TssFin
     ];
   }
   const recipient = ctx.recipients[0];
-  const asset = resolveAsset(ctx, recipient);
+  // A declared NFT standard picks its own calldata set. `tokenData.tokenName` is display metadata
+  // only when it is that standard's statics placeholder, so the declared collection contract (or a
+  // name that resolves to a real one) anchors the transfer.
+  const nftTokenType = normalizeNftTokenType(recipient.tokenType);
+  const asset = resolveAsset(ctx, recipient, nftTokenType);
   if (asset.kind === 'unresolved') {
     return [
       violation(ctx, `transferToken ${asset.reason}`, { to: recipient.address, value: recipient.amount }, decoded),
@@ -970,6 +1212,9 @@ function verifyTransferToken(ctx: EvmTssIntentContext, tx: DecodedEvmTx): TssFin
         decoded
       ),
     ];
+  }
+  if (nftTokenType) {
+    return verifyNftTokenTransfer(ctx, tx, recipient, asset.contract, nftTokenType);
   }
   if (isEmptyCalldata(tx.data)) {
     return [

@@ -26,9 +26,10 @@ import {
   Recipient,
   SignableTransaction,
   TransactionExplanation,
+  TransactionType,
   Entry,
 } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, coins, FlareNetwork } from '@bitgo/statics';
 import {
   AbstractEthLikeNewCoins,
   optionalDeps,
@@ -36,6 +37,7 @@ import {
   UnsignedSweepTxMPCv2,
   RecoverOptions,
   OfflineVaultTxInfo,
+  VerifyEthTransactionOptions,
 } from '@bitgo/abstract-eth';
 import { TransactionBuilder } from './lib';
 import { FlrPLib } from '@bitgo/sdk-coin-flrp';
@@ -57,6 +59,14 @@ import {
  */
 interface AtomicTransactionExplanation extends TransactionExplanation {
   inputs: Entry[];
+  /** Decoded transaction type, set by the atomic builder's explainTransaction. */
+  type?: TransactionType;
+}
+
+/** The user intent a TSS transaction must satisfy, taken from the one source that speaks for it. */
+interface FlrDeclaredTssIntent {
+  type?: string;
+  recipients: Array<{ address: string; amount: string }>;
 }
 
 export class Flr extends AbstractEthLikeNewCoins {
@@ -137,14 +147,23 @@ export class Flr extends AbstractEthLikeNewCoins {
   }
 
   /**
+   * Decode atomic transaction bytes with the atomic builder.
+   * @param {string} txHex - the transaction hex
+   * @returns {Promise<BaseTransaction>} the built atomic transaction
+   * @private
+   */
+  private async getAtomicTransaction(txHex: string): Promise<BaseTransaction> {
+    return this.getAtomicBuilder().from(txHex).build();
+  }
+
+  /**
    * Explains an atomic transaction using atomic builder.
    * @param {string} txHex - the transaction hex
    * @returns {Promise<AtomicTransactionExplanation>} the transaction explanation
    * @private
    */
   private async explainAtomicTransaction(txHex: string): Promise<AtomicTransactionExplanation> {
-    const txBuilder = this.getAtomicBuilder().from(txHex);
-    const tx = await txBuilder.build();
+    const tx = await this.getAtomicTransaction(txHex);
     return tx.explainTransaction() as AtomicTransactionExplanation;
   }
 
@@ -155,8 +174,7 @@ export class Flr extends AbstractEthLikeNewCoins {
    * @private
    */
   private async verifySignatureForAtomicTransaction(txHex: string): Promise<boolean> {
-    const txBuilder = this.getAtomicBuilder().from(txHex);
-    const tx = await txBuilder.build();
+    const tx = await this.getAtomicTransaction(txHex);
     const payload = tx.signablePayload;
     const signatures = tx.signature.map((s) => Buffer.from(FlrPLib.Utils.removeHexPrefix(s), 'hex'));
     const recoverPubkey = signatures.map((s) => FlrPLib.Utils.recoverySignature(payload, s));
@@ -310,6 +328,202 @@ export class Flr extends AbstractEthLikeNewCoins {
       throw new Error(`coin in txPrebuild did not match that in txParams supplied by client`);
     }
     return true;
+  }
+
+  /**
+   * Verify a TSS transaction against the intent the user approved.
+   *
+   * A C-chain -> P-chain export is signed as an Avalanche atomic transaction, which the EVM
+   * transaction decoder cannot parse, so it is verified here before the parent verifier runs.
+   * Every other FLR TSS transaction keeps the parent's EVM intent verification unchanged.
+   *
+   * @param {VerifyEthTransactionOptions} params
+   * @returns {Promise<boolean>}
+   */
+  async verifyTssTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
+    const intent = Flr.resolveDeclaredTssIntent(params);
+    const declaredExport = Flr.isExportIntent(intent);
+    if (!Flr.isAtomicTransactionHex(params.txPrebuild?.txHex)) {
+      if (declaredExport) {
+        // Exporting from the C-chain is only ever an atomic transaction: bytes that are not atomic
+        // can never satisfy a declared export, and no warn / strict policy may downgrade that.
+        throw new Error('declared export intent requires an atomic transaction in txPrebuild.txHex');
+      }
+      return super.verifyTssTransaction(params);
+    }
+    if (!declaredExport) {
+      // Other atomic formats (import / importtoc) keep the parent baseline: this verifier owns
+      // only the C-chain -> P-chain export shape, so their policy is not decided here.
+      return super.verifyTssTransaction(params);
+    }
+    return this.verifyAtomicExportTssTransaction(params, intent);
+  }
+
+  /**
+   * Verify the Avalanche atomic export bytes about to be signed against the declared intent.
+   *
+   * The amount follows the Export convention already used by {@link validateHopPrebuild}: the
+   * declared C-chain amount is in wei, the P-chain output is in nanoFLR, and the output must cover
+   * the declared amount plus the import fee, up to the network's maximum import fee.
+   *
+   * @param {VerifyEthTransactionOptions} params
+   * @param {FlrDeclaredTssIntent} intent - the intent resolved by the caller
+   * @returns {Promise<boolean>}
+   * @private
+   */
+  private async verifyAtomicExportTssTransaction(
+    params: VerifyEthTransactionOptions,
+    intent: FlrDeclaredTssIntent
+  ): Promise<boolean> {
+    const { txPrebuild, wallet } = params;
+    if (!wallet || !txPrebuild?.txHex) {
+      throw new Error('missing params');
+    }
+
+    let tx: BaseTransaction;
+    let explained: AtomicTransactionExplanation;
+    try {
+      tx = await this.getAtomicTransaction(txPrebuild.txHex);
+      explained = tx.explainTransaction() as AtomicTransactionExplanation;
+    } catch (e) {
+      throw new Error(`transaction bytes could not be decoded to verify intent: ${(e as Error).message}`);
+    }
+
+    if (explained.type !== TransactionType.Export) {
+      throw new Error(`atomic transaction type ${String(explained.type)} does not match the declared export intent`);
+    }
+    // Explanations map every owner onto this coin's P-chain alias, so matching the output address
+    // does not prove the export targets the P-chain. Read the chains encoded in the bytes.
+    const { sourceChain, destinationChain } = (tx as FlrPLib.Transaction).toJson();
+    if (sourceChain !== 'C' || destinationChain !== 'P') {
+      throw new Error(
+        `atomic export must be a C-chain to P-chain export but encodes ${sourceChain} -> ${destinationChain}`
+      );
+    }
+    const outputs = explained.outputs;
+    if (outputs.length !== 1) {
+      throw new Error(`atomic export transaction must have exactly 1 output but ${outputs.length} found`);
+    }
+    if (intent.recipients.length !== 1) {
+      throw new Error(`atomic export requires exactly 1 recipient but ${intent.recipients.length} found`);
+    }
+
+    const declaredRecipient = intent.recipients[0];
+    const declaredDestination = Flr.normalizePChainAddressSet(declaredRecipient.address);
+    if (!declaredDestination) {
+      throw new Error(`atomic export recipient ${declaredRecipient.address} is not a valid P-chain address`);
+    }
+    const decodedDestination = Flr.normalizePChainAddressSet(outputs[0].address);
+    if (!decodedDestination) {
+      throw new Error(`atomic export destination ${outputs[0].address} is not a valid P-chain address`);
+    }
+    if (declaredDestination !== decodedDestination) {
+      throw new Error(
+        `atomic export destination ${outputs[0].address} does not match the declared recipient ${declaredRecipient.address}`
+      );
+    }
+
+    this.assertAtomicExportAmount(declaredRecipient.amount, explained.outputAmount);
+    return true;
+  }
+
+  /**
+   * Resolve the intent that speaks for the user, with the same precedence as the parent verifier:
+   * the caller's own params when it declared a type or recipients, otherwise the stored tx request
+   * intent. `txParams` cannot answer this because the linking path back-fills it from the stored
+   * intent, so `callerTxParams` (the untouched caller input) decides.
+   *
+   * @param {VerifyEthTransactionOptions} params
+   * @returns {FlrDeclaredTssIntent}
+   * @private
+   */
+  private static resolveDeclaredTssIntent(params: VerifyEthTransactionOptions): FlrDeclaredTssIntent {
+    const callerParams = params.callerTxParams ?? (params.intent ? undefined : params.txParams);
+    const callerDeclaresIntent = !!(callerParams?.type || callerParams?.recipients?.length);
+    const storedIntent = params.intent && !callerDeclaresIntent ? params.intent : undefined;
+
+    if (storedIntent) {
+      return {
+        type: storedIntent.intentType,
+        recipients: (storedIntent.recipients ?? []).map((recipient) => ({
+          address: recipient.address.address,
+          amount: String(recipient.amount.value),
+        })),
+      };
+    }
+
+    const declared = callerParams ?? params.txParams;
+    return {
+      type: declared?.type,
+      recipients: (declared?.recipients ?? []).map((recipient) => ({
+        address: recipient.address,
+        amount: String(recipient.amount),
+      })),
+    };
+  }
+
+  /** True when the declared intent type selects an export, in either the caller or stored spelling. */
+  private static isExportIntent(intent: FlrDeclaredTssIntent): boolean {
+    return (intent.type ?? '').trim().toLowerCase() === 'export';
+  }
+
+  /**
+   * Avalanche atomic transactions are identified by their codec prefix (0x0000), the same marker
+   * used by {@link explainTransaction} and {@link isSignablePreHashed}.
+   */
+  private static isAtomicTransactionHex(txHex?: string): boolean {
+    const hex = txHex?.startsWith('0x') ? txHex.slice(2) : txHex;
+    return !!hex && hex.startsWith('0000');
+  }
+
+  /**
+   * Normalize a P-chain address (a single address or a `~`-separated multisig set) so address
+   * order and case cannot make two descriptions of the same destination compare unequal.
+   *
+   * @param {string} address - the P-chain address or address set
+   * @returns {string | undefined} the normalized set, undefined when any address is invalid
+   * @private
+   */
+  private static normalizePChainAddressSet(address?: string): string | undefined {
+    const addresses = (address ?? '')
+      .split('~')
+      .map((part) => part.trim())
+      .filter((part) => !!part);
+    if (!addresses.length || !addresses.every((part) => FlrPLib.Utils.isValidAddress(part))) {
+      return undefined;
+    }
+    return addresses
+      .map((part) => part.toLowerCase())
+      .sort()
+      .join('~');
+  }
+
+  /**
+   * Check that the atomic export output covers the declared C-chain amount plus an import fee.
+   *
+   * The declared amount is in wei and the export output is in nanoFLR (the same wei -> nanoFLR
+   * conversion {@link validateHopPrebuild} applies). The output may not exceed the declared amount
+   * plus the network's maximum import fee, which is also the bound Flrp.validateExportTx applies.
+   *
+   * @param {string} declaredAmount - the C-chain amount declared by the user, in wei
+   * @param {string} outputAmount - the amount the atomic export pays on the P-chain, in nanoFLR
+   * @private
+   */
+  private assertAtomicExportAmount(declaredAmount: string, outputAmount?: string): void {
+    const flrpNetwork = coins.get(this.getFlrP()).network as FlareNetwork;
+    const amount = new BigNumber(declaredAmount);
+    const output = new BigNumber(outputAmount ?? '');
+    if (!amount.isFinite() || amount.isNegative() || !output.isFinite() || output.isNegative()) {
+      throw new Error(`atomic export amount ${declaredAmount} or output amount ${outputAmount} is not a valid amount`);
+    }
+    const expectedOutput = amount.div(1e9);
+    const minOutput = expectedOutput.plus(flrpNetwork.minImportToPFee);
+    const maxOutput = expectedOutput.plus(flrpNetwork.maxImportFee);
+    if (output.isLessThan(minOutput) || output.isGreaterThan(maxOutput)) {
+      throw new Error(
+        `atomic export output amount ${outputAmount} is outside the expected range [${minOutput.toFixed()}, ${maxOutput.toFixed()}] for the declared amount ${declaredAmount}`
+      );
+    }
   }
 
   /**

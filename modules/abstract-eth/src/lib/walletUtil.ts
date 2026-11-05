@@ -24,6 +24,8 @@ export const flushERC1155ForwarderTokensMethodId = '0xe6bd0aa4';
 export const flushERC1155ForwarderTokensMethodIdV4 = '0x8972c17c';
 
 export const ERC721SafeTransferTypeMethodId = '0xb88d4fde';
+// Selector for the 3-argument safeTransferFrom(address,address,uint256) ERC-721 overload.
+export const ERC721SafeTransferFromMethodId = '0x42842e0e';
 export const ERC721TransferFromMethodId = '0x23b872dd';
 export const ERC1155SafeTransferTypeMethodId = '0xf242432a';
 export const ERC1155BatchTransferTypeMethodId = '0x2eb2c2d6';

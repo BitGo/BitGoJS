@@ -2,11 +2,12 @@ import * as should from 'should';
 
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { coins } from '@bitgo/statics';
+import { coins, FlareNetwork } from '@bitgo/statics';
 
 import { Flr, Tflr, TransactionBuilder } from '../../src/index';
-import { ExplainTransactionOptions } from '../../src/iface';
+import { ExplainTransactionOptions, FlrTransactionParams } from '../../src/iface';
 import { UnsignedSweepTxMPCv2 } from '@bitgo/abstract-eth';
+import { FlrPLib } from '@bitgo/sdk-coin-flrp';
 import { mockDataUnsignedSweep, mockDataNonBitGoRecovery, EXPORT_C_TEST_DATA } from '../resources';
 import nock from 'nock';
 import { common, TransactionType, Wallet } from '@bitgo/sdk-core';
@@ -646,6 +647,278 @@ describe('flr', function () {
           walletType: 'onchain',
         });
         isTransactionVerified.should.equal(true);
+      });
+
+      describe('TSS atomic export', function () {
+        // The export fixture is a real C -> P atomic export whose P-chain output is
+        // EXPORT_C_TEST_DATA.amount nanoFLR. The legitimate C-chain request that produces it
+        // exports that output minus the minimum P-chain import fee, in wei.
+        const minImportToPFee = (coins.get('tflrp').network as FlareNetwork).minImportToPFee;
+        const declaredAmount = (
+          (BigInt(EXPORT_C_TEST_DATA.amount) - BigInt(minImportToPFee)) *
+          BigInt(1000000000)
+        ).toString();
+        const exportPrebuild = {
+          txHex: EXPORT_C_TEST_DATA.unsignedTxHex,
+          coin: 'tflr',
+          walletId: 'fakeWalletId',
+        };
+        const pAddress = EXPORT_C_TEST_DATA.pAddresses[0];
+        const singlePAddress = EXPORT_C_TEST_DATA.pAddresses[1];
+
+        const verifyTss = (
+          txParams: FlrTransactionParams,
+          txPrebuild: { txHex: string } & Record<string, unknown>,
+          extra: Record<string, unknown> = {}
+        ) =>
+          tflrCoin.verifyTransaction({
+            txParams,
+            txPrebuild,
+            wallet: new Wallet(bitgo, tflrCoin, {
+              coinSpecific: { baseAddress: EXPORT_C_TEST_DATA.cHexAddress },
+            }),
+            walletType: 'tss',
+            ...extra,
+          });
+
+        it('should verify a legitimate TSS atomic export', async function () {
+          const verified = await verifyTss(
+            {
+              type: 'Export',
+              recipients: [{ address: EXPORT_C_TEST_DATA.pMultisigAddress, amount: declaredAmount }],
+            },
+            exportPrebuild
+          );
+          verified.should.equal(true);
+        });
+
+        it('should verify a legitimate TSS atomic export declared with the multisig set sorted', async function () {
+          const verified = await verifyTss(
+            {
+              type: 'export',
+              recipients: [
+                {
+                  address: EXPORT_C_TEST_DATA.pAddresses.slice().sort().join('~'),
+                  amount: declaredAmount,
+                },
+              ],
+            },
+            exportPrebuild
+          );
+          verified.should.equal(true);
+        });
+
+        it('should verify a legitimate TSS atomic export from the stored pending-approval intent', async function () {
+          // Pending approval: the caller supplies no txParams, resolveEffectiveTxParams has already
+          // folded the stored intent into txParams, and the stored intent is the source of truth.
+          const intent = {
+            intentType: 'export',
+            recipients: [
+              {
+                address: { address: EXPORT_C_TEST_DATA.pMultisigAddress },
+                amount: { value: declaredAmount, symbol: 'tflr' },
+              },
+            ],
+          };
+          const verified = await verifyTss(
+            {
+              type: 'export',
+              recipients: [{ address: EXPORT_C_TEST_DATA.pMultisigAddress, amount: declaredAmount }],
+            },
+            exportPrebuild,
+            { callerTxParams: undefined, intent }
+          );
+          verified.should.equal(true);
+        });
+
+        it('should reject an atomic export whose destination is not the declared recipient', async function () {
+          await verifyTss(
+            { type: 'Export', recipients: [{ address: singlePAddress, amount: declaredAmount }] },
+            exportPrebuild
+          ).should.be.rejectedWith(/does not match the declared recipient/);
+        });
+
+        it('should reject an atomic export from the stored intent whose destination is not the declared recipient', async function () {
+          const intent = {
+            intentType: 'export',
+            recipients: [{ address: { address: singlePAddress }, amount: { value: declaredAmount, symbol: 'tflr' } }],
+          };
+          await verifyTss(
+            {
+              type: 'export',
+              recipients: [{ address: EXPORT_C_TEST_DATA.pMultisigAddress, amount: declaredAmount }],
+            },
+            exportPrebuild,
+            { callerTxParams: undefined, intent }
+          ).should.be.rejectedWith(/does not match the declared recipient/);
+        });
+
+        it('should let the caller-declared intent win over a stored export intent', async function () {
+          const intent = {
+            intentType: 'export',
+            recipients: [
+              {
+                address: { address: EXPORT_C_TEST_DATA.pMultisigAddress },
+                amount: { value: declaredAmount, symbol: 'tflr' },
+              },
+            ],
+          };
+          await verifyTss(
+            {
+              type: 'export',
+              recipients: [{ address: EXPORT_C_TEST_DATA.pMultisigAddress, amount: declaredAmount }],
+            },
+            exportPrebuild,
+            {
+              callerTxParams: { type: 'Export', recipients: [{ address: singlePAddress, amount: declaredAmount }] },
+              intent,
+            }
+          ).should.be.rejectedWith(/does not match the declared recipient/);
+        });
+
+        it('should reject an atomic export that exports less than the declared amount', async function () {
+          await verifyTss(
+            {
+              type: 'Export',
+              recipients: [
+                {
+                  address: EXPORT_C_TEST_DATA.pMultisigAddress,
+                  amount: (BigInt(declaredAmount) * BigInt(2)).toString(),
+                },
+              ],
+            },
+            exportPrebuild
+          ).should.be.rejectedWith(/outside the expected range/);
+        });
+
+        it('should reject an atomic export that exports more than the declared amount plus the maximum import fee', async function () {
+          await verifyTss(
+            { type: 'Export', recipients: [{ address: EXPORT_C_TEST_DATA.pMultisigAddress, amount: '1000000' }] },
+            exportPrebuild
+          ).should.be.rejectedWith(/outside the expected range/);
+        });
+
+        it('should reject an atomic export with more than one declared recipient', async function () {
+          await verifyTss(
+            {
+              type: 'Export',
+              recipients: [
+                { address: EXPORT_C_TEST_DATA.pMultisigAddress, amount: declaredAmount },
+                { address: pAddress, amount: '1' },
+              ],
+            },
+            exportPrebuild
+          ).should.be.rejectedWith(/exactly 1 recipient/);
+        });
+
+        it('should reject atomic bytes declared as a payment instead of an export', async function () {
+          // Wrongly labelled atomic bytes must fail closed before the warn / strict policy.
+          await verifyTss(
+            {
+              type: 'transfer',
+              recipients: [{ address: EXPORT_C_TEST_DATA.pMultisigAddress, amount: declaredAmount }],
+            },
+            exportPrebuild
+          ).should.be.rejected();
+        });
+
+        it('should reject a C-chain export tx labelled with an import intent', async function () {
+          // These are Export bytes declared as an import: the type is wrong, so nothing here may
+          // verify them. Import / ImportToC policy is not decided by this verifier, so the request
+          // keeps the parent baseline and fails closed on bytes the EVM decoder cannot read.
+          await verifyTss(
+            {
+              type: 'import',
+              recipients: [{ address: EXPORT_C_TEST_DATA.pMultisigAddress, amount: declaredAmount }],
+            },
+            exportPrebuild
+          ).should.be.rejectedWith(/could not be decoded to verify intent/);
+        });
+
+        it('should reject an atomic export whose destination chain is not the P-chain', async function () {
+          // The fixture's destinationChain field holds the 32-byte P-chain ID. Replacing it with
+          // the C-chain ID keeps the destination address and amount identical, so only the chain
+          // check can catch it: explanations format every owner with this coin's P-chain alias.
+          // Layout: 10-byte header, 32-byte C-chain blockchainId, then 32-byte destinationChain.
+          const destinationChainOffset = 84;
+          const cChainIdHex = FlrPLib.Utils.cb58Decode(
+            (coins.get('tflrp').network as FlareNetwork).cChainBlockchainID
+          ).toString('hex');
+          const exportTxHex = FlrPLib.Utils.removeHexPrefix(EXPORT_C_TEST_DATA.unsignedTxHex);
+          const misdirectedExportHex =
+            '0x' +
+            exportTxHex.slice(0, destinationChainOffset) +
+            cChainIdHex +
+            exportTxHex.slice(destinationChainOffset + cChainIdHex.length);
+
+          await verifyTss(
+            {
+              type: 'Export',
+              recipients: [{ address: EXPORT_C_TEST_DATA.pMultisigAddress, amount: declaredAmount }],
+            },
+            { txHex: misdirectedExportHex, coin: 'tflr', walletId: 'fakeWalletId' }
+          ).should.be.rejectedWith(/must be a C-chain to P-chain export/);
+        });
+
+        it('should reject a declared export backed by non-atomic transaction bytes', async function () {
+          const evmTxHex = await buildTflrNativeTxHex(tssBaseAddress, '1');
+          await verifyTss(
+            {
+              type: 'Export',
+              recipients: [{ address: EXPORT_C_TEST_DATA.pMultisigAddress, amount: declaredAmount }],
+            },
+            { txHex: evmTxHex, coin: 'tflr', walletId: 'fakeWalletId' }
+          ).should.be.rejectedWith(/declared export intent requires an atomic transaction/);
+        });
+
+        it('should reject a declared export that only supplies the prehashed signable digest', async function () {
+          // The MPCv1 signing path passes signableHex (SHA-256 of the atomic body) as txHex because
+          // v1 has no prehashed signable support. The serialized bytes are required to verify the
+          // intent, so a digest-only export fails closed instead of being signed unverified.
+          await verifyTss(
+            {
+              type: 'Export',
+              recipients: [{ address: EXPORT_C_TEST_DATA.pMultisigAddress, amount: declaredAmount }],
+            },
+            { txHex: 'a'.repeat(64), coin: 'tflr', walletId: 'fakeWalletId' }
+          ).should.be.rejectedWith(/declared export intent requires an atomic transaction/);
+        });
+
+        it('should reject undecodable atomic bytes', async function () {
+          await verifyTss(
+            {
+              type: 'Export',
+              recipients: [{ address: EXPORT_C_TEST_DATA.pMultisigAddress, amount: declaredAmount }],
+            },
+            { txHex: '0x0000deadbeef', coin: 'tflr', walletId: 'fakeWalletId' }
+          ).should.be.rejectedWith(/could not be decoded to verify intent/);
+        });
+
+        it('should keep ordinary EVM TSS transfers on the parent verifier', async function () {
+          const verified = await verifyTss(
+            {
+              type: 'transfer',
+              recipients: [{ address: tssBaseAddress, amount: '100000000000000000' }],
+            },
+            {
+              txHex: await buildTflrNativeTxHex(tssBaseAddress, '100000000000000000'),
+              coin: 'tflr',
+              walletId: 'fakeWalletId',
+            }
+          );
+          verified.should.equal(true);
+        });
+
+        it('should keep rejecting EVM TSS transfers whose destination is not the declared recipient', async function () {
+          await verifyTss(
+            { type: 'transfer', recipients: [{ address: address2, amount: '100000000000000000' }] },
+            {
+              txHex: await buildTflrNativeTxHex(tssBaseAddress, '100000000000000000'),
+              coin: 'tflr',
+              walletId: 'fakeWalletId',
+            }
+          ).should.be.rejected();
+        });
       });
     });
 
