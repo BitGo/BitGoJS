@@ -179,7 +179,6 @@ const PEARL_FEATURES = [
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.CUSTODY_BITGO_SINGAPORE,
   CoinFeature.CUSTODY_BITGO_SISTER_TRUST_ONE,
-  CoinFeature.CUSTODY_BITGO_KOREA,
   CoinFeature.CUSTODY_BITGO_EUROPE_APS,
 ];
 export const utxoCoins: Readonly<BaseCoin>[] = [
