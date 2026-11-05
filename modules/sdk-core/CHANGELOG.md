@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## Unreleased
+
+### Bug Fixes
+
+* **sdk-core:** pass the caller txParams and the stored tx request intent to verifyTransaction, bind signableHex to the verified serializedTxHex on the ECDSA signing path, route by the actual signable envelope so a legacy type-0 transaction on an EIP-1559-capable chain is verified from serializedTxHex, and keep a native intent amount (e.g. symbol 'ETH' on chain 'eth') out of tokenName by comparing the chain symbol case-insensitively.
+
 # [40.5.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4040.4.0...%40bitgo%2Fsdk-core%4040.5.0) (2026-11-03)
 
 ### Bug Fixes

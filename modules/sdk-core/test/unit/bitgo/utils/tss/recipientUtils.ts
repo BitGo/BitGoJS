@@ -413,6 +413,42 @@ describe('recipientUtils', function () {
         assert.strictEqual(result.recipients?.[0].tokenName, undefined);
       });
 
+      it('does NOT set tokenName when a native symbol differs from chainName only by case', function () {
+        // The platform stores native amounts with the upper-case chain symbol ('ETH' on 'eth').
+        // That must stay a native payment, not become a token named 'ETH'.
+        const txRequest = makeTxRequest({
+          intent: {
+            intentType: 'payment',
+            recipients: [
+              {
+                address: { address: '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be' },
+                amount: { value: '1000', symbol: 'ETH' },
+              },
+            ],
+          } as PopulatedIntent,
+        });
+        const result = resolveEffectiveTxParams(txRequest, {}, 'eth');
+        assert.strictEqual(result.recipients?.length, 1);
+        assert.strictEqual(result.recipients?.[0].address, '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be');
+        assert.strictEqual(result.recipients?.[0].tokenName, undefined);
+      });
+
+      it('still sets tokenName when the symbol differs from chainName beyond case', function () {
+        const txRequest = makeTxRequest({
+          intent: {
+            intentType: 'payment',
+            recipients: [
+              {
+                address: { address: '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be' },
+                amount: { value: '1000', symbol: 'ETH:USDC' },
+              },
+            ],
+          } as PopulatedIntent,
+        });
+        const result = resolveEffectiveTxParams(txRequest, {}, 'eth');
+        assert.strictEqual(result.recipients?.[0].tokenName, 'ETH:USDC');
+      });
+
       it('prefers tokenData.tokenName over amount.symbol (uses distinct values to verify)', function () {
         const txRequest = makeTxRequest({
           intent: {

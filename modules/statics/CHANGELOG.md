@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## Unreleased
+
+### Bug Fixes
+
+* **statics:** add the verified Katana mainnet and testnet batcher contract address so batch prebuilds are checked against the deployed batcher.
+* **statics:** add TSS_VERIFY_USE_SERIALIZED_TX_HEX to kavaevm, tkavaevm, prividiumeth and tprividiumeth, whose signableHex is the EIP-155 preimage.
+
 # [59.28.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fstatics%4059.27.0...%40bitgo%2Fstatics%4059.28.0) (2026-11-03)
 
 ### Bug Fixes

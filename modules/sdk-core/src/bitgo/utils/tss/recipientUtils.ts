@@ -136,10 +136,14 @@ export function resolveEffectiveTxParams(
   const intentRecipients = (txRequest.intent as PopulatedIntent)?.recipients?.map((intentRecipient) => {
     // Prefer tokenData.tokenName; fall back to amount.symbol when chainName is
     // provided and differs from it. When absent, skip the symbol fallback.
+    // Native amounts are labelled with the chain symbol, which the platform may upper-case
+    // (e.g. 'ETH' for 'eth'), so the exclusion has to ignore case: otherwise a native payment
+    // would be reported as a token named 'ETH'.
     const { symbol } = intentRecipient.amount;
+    const isNativeSymbol = chainName !== undefined && !!symbol && symbol.toLowerCase() === chainName.toLowerCase();
     const tokenName =
       intentRecipient.tokenData?.tokenName ||
-      (chainName !== undefined && symbol && symbol !== chainName ? symbol : undefined);
+      (chainName !== undefined && symbol && !isNativeSymbol ? symbol : undefined);
     return {
       address: intentRecipient.address.address,
       amount: intentRecipient.amount.value,

@@ -4,12 +4,17 @@ import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { coins } from '@bitgo/statics';
 
-import { Flr, Tflr } from '../../src/index';
-import { ExplainTransactionOptions } from '../../src/iface';
+import { Flr, Tflr, TransactionBuilder } from '../../src/index';
+import { ExplainTransactionOptions, TransactionPrebuild } from '../../src/iface';
 import { UnsignedSweepTxMPCv2 } from '@bitgo/abstract-eth';
-import { mockDataUnsignedSweep, mockDataNonBitGoRecovery, EXPORT_C_TEST_DATA } from '../resources';
+import {
+  mockDataUnsignedSweep,
+  mockDataNonBitGoRecovery,
+  EXPORT_C_TEST_DATA,
+  IMPORT_IN_C_ATOMIC_TX,
+} from '../resources';
 import nock from 'nock';
-import { common, TransactionType, Wallet } from '@bitgo/sdk-core';
+import { common, PopulatedIntent, TransactionType, Wallet } from '@bitgo/sdk-core';
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx';
 import { stripHexPrefix } from '@ethereumjs/util';
 import * as sinon from 'sinon';
@@ -31,6 +36,19 @@ describe('flr', function () {
   let hopExportTxBitgoSignature;
 
   const address2 = '0x7e85bdc27c050e3905ebf4b8e634d9ad6edd0de6';
+  const tssBaseAddress = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
+
+  // TSS verification only accepts bytes it can decode, so the flows below pass a real transaction
+  // instead of the '0x' placeholder that earlier fixtures used.
+  const buildTflrNativeTxHex = async (to: string, value: string): Promise<string> => {
+    const txBuilder = new TransactionBuilder(coins.get('tflr'));
+    txBuilder.type(TransactionType.SingleSigSend);
+    txBuilder.fee({ fee: '10', gasLimit: '21000' });
+    txBuilder.counter(1);
+    txBuilder.contract(to);
+    txBuilder.value(value);
+    return (await txBuilder.build()).toBroadcastFormat();
+  };
   const hopExportTx = EXPORT_C_TEST_DATA.fullsigntxHex;
   const hopExportTxId = '0x' + getTxHash(hopExportTx).toString('hex');
 
@@ -460,7 +478,7 @@ describe('flr', function () {
         // txPrebuild with consolidateId (set by server during consolidation build)
         const txPrebuild = {
           consolidateId: '68a7d5d0c66e74e216b97173bd558c6d',
-          txHex: '0x',
+          txHex: await buildTflrNativeTxHex(tssBaseAddress, '1000000000000000000'),
           coin: 'tflr',
           walletId: 'fakeWalletId',
         };
@@ -491,7 +509,7 @@ describe('flr', function () {
         };
 
         const txPrebuild = {
-          txHex: '0x',
+          txHex: await buildTflrNativeTxHex(tssBaseAddress, '1000000000000000000'),
           coin: 'tflr',
           walletId: 'fakeWalletId',
         };
@@ -522,7 +540,8 @@ describe('flr', function () {
         };
 
         const txPrebuild = {
-          txHex: '0x',
+          // acceleration carries no recipients; the bytes are still decoded by the verifier.
+          txHex: await buildTflrNativeTxHex(tssBaseAddress, '1'),
           coin: 'tflr',
           walletId: 'fakeWalletId',
         };
@@ -553,7 +572,7 @@ describe('flr', function () {
         };
 
         const txPrebuild = {
-          txHex: '0x',
+          txHex: await buildTflrNativeTxHex(tssBaseAddress, '1'),
           coin: 'tflr',
           walletId: 'fakeWalletId',
         };
@@ -632,6 +651,210 @@ describe('flr', function () {
           walletType: 'onchain',
         });
         isTransactionVerified.should.equal(true);
+      });
+    });
+
+    describe('TSS atomic cross-chain verification', function () {
+      // The fixture is a real Avalanche atomic transaction (0x0000 codec prefix). This verifier
+      // recognizes the encoding with the existing atomic parser only: it does not compare the
+      // destination, amount or owner with the intent, so an accepted transaction must always
+      // report that gap.
+      const exportPrebuild: TransactionPrebuild = {
+        txHex: EXPORT_C_TEST_DATA.unsignedTxHex,
+        coin: 'tflr',
+        buildParams: { recipients: [] },
+        recipients: [],
+        nextContractSequenceId: 0,
+        gasPrice: 0,
+        gasLimit: 0,
+        isBatch: false,
+      };
+      const pRecipient = { address: EXPORT_C_TEST_DATA.pMultisigAddress, amount: '1' };
+      const atomicWarning = /\[tss verification\].*Avalanche atomic transaction.*not verified/;
+
+      let exportWallet: Wallet;
+
+      beforeEach(function () {
+        exportWallet = new Wallet(bitgo, tflrCoin, {
+          coinSpecific: { baseAddress: EXPORT_C_TEST_DATA.cHexAddress },
+        });
+      });
+
+      it('should keep a TSS atomic export signable and warn that it was not verified', async function () {
+        const warnStub = sinon.stub(console, 'warn');
+        let verified: boolean;
+        try {
+          verified = await tflrCoin.verifyTransaction({
+            txParams: { type: 'Export', recipients: [pRecipient] },
+            txPrebuild: exportPrebuild,
+            wallet: exportWallet,
+            walletType: 'tss',
+          });
+        } finally {
+          warnStub.restore();
+        }
+        verified!.should.equal(true);
+        warnStub.callCount.should.equal(1);
+        String(warnStub.firstCall.args[0]).should.match(atomicWarning);
+      });
+
+      it('should recognize an export declared only by the stored pending-approval intent', async function () {
+        const warnStub = sinon.stub(console, 'warn');
+        let verified: boolean;
+        try {
+          verified = await tflrCoin.verifyTransaction({
+            // Pending approval: the caller declared nothing, resolveEffectiveTxParams back-filled
+            // txParams from the stored tx request intent.
+            txParams: { type: 'export', recipients: [pRecipient] },
+            callerTxParams: undefined,
+            intent: {
+              intentType: 'export',
+              recipients: [
+                {
+                  address: { address: EXPORT_C_TEST_DATA.pMultisigAddress },
+                  amount: { value: '1', symbol: 'tflr' },
+                },
+              ],
+            } satisfies PopulatedIntent,
+            txPrebuild: exportPrebuild,
+            wallet: exportWallet,
+            walletType: 'tss',
+          });
+        } finally {
+          warnStub.restore();
+        }
+        verified!.should.equal(true);
+        String(warnStub.firstCall.args[0]).should.match(atomicWarning);
+      });
+
+      it('should keep atomic imports signable without recipients', async function () {
+        // Imports carry no client recipients: the destination is the wallet itself, which is why
+        // NO_RECIPIENT_TX_TYPES lists import / importtoc. The fixture is a real C-chain import the
+        // atomic parser understands, so it keeps the behaviour it had before the EVM verifier
+        // became fail-closed, with the incomplete-verification warning.
+        for (const type of ['ImportToC', 'importtoc', 'Import', 'import']) {
+          const warnStub = sinon.stub(console, 'warn');
+          let verified: boolean;
+          try {
+            verified = await tflrCoin.verifyTransaction({
+              txParams: { type },
+              txPrebuild: { ...exportPrebuild, txHex: IMPORT_IN_C_ATOMIC_TX.unsignedTxHex },
+              wallet: exportWallet,
+              walletType: 'tss',
+            });
+          } finally {
+            warnStub.restore();
+          }
+          verified!.should.equal(true);
+          String(warnStub.firstCall.args[0]).should.match(atomicWarning);
+        }
+      });
+
+      it('should not compare the export amount or destination with the intent', async function () {
+        // Ticket-scoped decision: this verifier recognizes the atomic encoding only. An amount
+        // that does not correspond to the export output is still accepted, and the warning is the
+        // contract with the caller: the export was not verified against its intent.
+        const warnStub = sinon.stub(console, 'warn');
+        let verified: boolean;
+        try {
+          verified = await tflrCoin.verifyTransaction({
+            txParams: {
+              type: 'Export',
+              recipients: [{ address: EXPORT_C_TEST_DATA.pAddresses[0], amount: '123456789' }],
+            },
+            txPrebuild: exportPrebuild,
+            wallet: exportWallet,
+            walletType: 'tss',
+          });
+        } finally {
+          warnStub.restore();
+        }
+        verified!.should.equal(true);
+        String(warnStub.firstCall.args[0]).should.match(atomicWarning);
+      });
+
+      it('should keep rejecting atomic bytes declared as a payment', async function () {
+        // The caller declared a payment: atomic bytes are not an EVM payment, and the encoding
+        // must not carry them past the verifier that the declared intent selects.
+        const warnStub = sinon.stub(console, 'warn');
+        try {
+          await tflrCoin
+            .verifyTransaction({
+              txParams: { type: 'transfer', recipients: [{ address: tssBaseAddress, amount: '1' }] },
+              txPrebuild: exportPrebuild,
+              wallet: exportWallet,
+              walletType: 'tss',
+            })
+            .should.be.rejected();
+        } finally {
+          warnStub.restore();
+        }
+        warnStub.args
+          .map((args) => String(args[0]))
+          .filter((line) => atomicWarning.test(line))
+          .should.have.length(0);
+      });
+
+      it('should keep the parent hop rejection for atomic bytes', async function () {
+        // Atomic encoding must not make the verifier skip the guards that already existed.
+        await tflrCoin
+          .verifyTransaction({
+            txParams: {
+              type: 'Export',
+              hop: true,
+              recipients: [pRecipient, { address: EXPORT_C_TEST_DATA.pAddresses[0], amount: '1' }],
+            },
+            txPrebuild: exportPrebuild,
+            wallet: exportWallet,
+            walletType: 'tss',
+          })
+          .should.be.rejectedWith('tx cannot be both a batch and hop transaction');
+      });
+
+      it('should keep rejecting an export declaration without recipients', async function () {
+        await tflrCoin
+          .verifyTransaction({
+            txParams: { type: 'Export' },
+            txPrebuild: exportPrebuild,
+            wallet: exportWallet,
+            walletType: 'tss',
+          })
+          .should.be.rejectedWith('missing txParams');
+      });
+
+      it('should reject malformed atomic bytes', async function () {
+        // The codec prefix alone is not recognition: bytes the atomic parser cannot read are not
+        // an atomic cross-chain transaction and must not be signed.
+        await tflrCoin
+          .verifyTransaction({
+            txParams: { type: 'Export', recipients: [pRecipient] },
+            txPrebuild: { ...exportPrebuild, txHex: '0x0000deadbeef' },
+            wallet: exportWallet,
+            walletType: 'tss',
+          })
+          .should.be.rejectedWith(/could not be decoded as an Avalanche atomic transaction/);
+      });
+
+      it('should leave EVM bytes declared as an export to the parent verifier', async function () {
+        const evmTxHex = await buildTflrNativeTxHex(tssBaseAddress, '1');
+        const warnStub = sinon.stub(console, 'warn');
+        try {
+          await tflrCoin.verifyTransaction({
+            txParams: { type: 'export', recipients: [pRecipient] },
+            txPrebuild: { ...exportPrebuild, txHex: evmTxHex },
+            wallet: exportWallet,
+            walletType: 'tss',
+          });
+        } catch {
+          // The parent owns the verdict for EVM bytes; this test only pins the routing.
+        } finally {
+          warnStub.restore();
+        }
+        // Non-atomic bytes are never reported as a recognized atomic transaction.
+        warnStub.args
+          .map((args) => String(args[0]))
+          .filter((line) => atomicWarning.test(line))
+          .should.have.length(0);
       });
     });
 

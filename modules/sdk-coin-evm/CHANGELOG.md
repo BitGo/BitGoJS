@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## Unreleased
+
+### Bug Fixes
+
+* **sdk-coin-evm:** drop the legacy (non-EIP-1559) verifyTssTransaction bypass so every EVM TSS transaction runs the full intent verification.
+
 # [1.17.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-evm%401.16.11...%40bitgo%2Fsdk-coin-evm%401.17.0) (2026-11-03)
 
 ### Features

@@ -36,6 +36,7 @@ import {
   UnsignedSweepTxMPCv2,
   RecoverOptions,
   OfflineVaultTxInfo,
+  VerifyEthTransactionOptions,
 } from '@bitgo/abstract-eth';
 import { TransactionBuilder } from './lib';
 import { FlrPLib } from '@bitgo/sdk-coin-flrp';
@@ -310,6 +311,109 @@ export class Flr extends AbstractEthLikeNewCoins {
       throw new Error(`coin in txPrebuild did not match that in txParams supplied by client`);
     }
     return true;
+  }
+
+  /**
+   * Verify a TSS transaction against the intent the user approved.
+   *
+   * FLR cross-chain transactions are signed as Avalanche atomic transactions, which are not EVM
+   * transactions and cannot be decoded by the EVM intent verifier. This verifier recognizes the
+   * atomic cross-chain formats (`export`, `import`, `importtoc`) by decoding the bytes with the
+   * existing atomic parser: the codec prefix alone is not recognition, malformed bytes are
+   * rejected, and a transaction the parser understands keeps the behaviour it had before the EVM
+   * verifier became fail-closed.
+   *
+   * Recognizing the format is not verification: the export / import destination, amount and owner
+   * are not compared with the intent, so `true` from this method means "not rejected by this
+   * verifier", never "verified". The gap is reported as an explicit incomplete-verification
+   * warning.
+   *
+   * Residual risk this method does not close: on the MPCv2 path the atomic `serializedTxHex`
+   * verified here is not cryptographically bound to the pre-hashed `signableHex` that is actually
+   * signed (`assertSignableConsistency` runs only for TSS_VERIFY_USE_SERIALIZED_TX_HEX coins), so
+   * the bytes that get signed are not proven to be the bytes recognized above.
+   *
+   * Every other transaction keeps the parent verifier unchanged: non-atomic bytes are EVM bytes
+   * and are verified (or rejected) there, and atomic bytes declared as anything else stay on the
+   * parent path, which decides them exactly as it does for every other coin.
+   *
+   * @param {VerifyEthTransactionOptions} params
+   * @returns {Promise<boolean>}
+   */
+  async verifyTssTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
+    // Avalanche atomic transactions carry the 0x0000 codec prefix, the same marker used by
+    // explainTransaction and isSignablePreHashed. The prefix is only a hint that decides whether
+    // the atomic parser gets asked; the decoded transaction decides whether the format is
+    // recognized.
+    const txHex = params.txPrebuild?.txHex;
+    const unprefixedHex = txHex?.startsWith('0x') ? txHex.slice(2) : txHex;
+    const declaredFormat = (Flr.declaredTssIntentType(params) ?? '').trim().toLowerCase();
+    // Hop, missing-params and non-atomic cases keep the parent path unchanged; only a declared
+    // atomic cross-chain format backed by atomic-prefixed bytes is considered here. Imports carry
+    // no client recipients (the destination is the wallet itself, per NO_RECIPIENT_TX_TYPES); an
+    // export always names the P-chain recipients it pays, so a missing list keeps the parent's
+    // existing rejection.
+    if (
+      !params.wallet ||
+      params.txParams?.hop ||
+      !unprefixedHex?.startsWith('0000') ||
+      !['export', 'import', 'importtoc'].includes(declaredFormat) ||
+      (declaredFormat === 'export' && !params.txParams?.recipients?.length)
+    ) {
+      return super.verifyTssTransaction(params);
+    }
+
+    // The bytes must parse with the atomic parser: a bare 0x0000 prefix is not a recognized
+    // format. Nothing below compares the decoded destination, amount or owner with the intent.
+    this.assertDecodableAtomicTransaction(`0x${unprefixedHex}`);
+
+    this.emitTssVerificationWarning(
+      `FLR ${declaredFormat} is an Avalanche atomic transaction: its bytes were recognized but not ` +
+        'verified against the intent (destination, amount and ownership are not checked)',
+      declaredFormat
+    );
+    return true;
+  }
+
+  /**
+   * Decode atomic transaction bytes with the existing atomic parser.
+   *
+   * @param {string} txHex - the atomic transaction hex, with its codec prefix
+   * @returns {void} throws when the bytes are not a parseable Avalanche atomic transaction
+   * @private
+   */
+  private assertDecodableAtomicTransaction(txHex: string): void {
+    try {
+      // `from` parses the bytes and selects the matching atomic transaction builder; it throws
+      // for anything the atomic codec cannot read, so no `build` (which would require a complete
+      // unsigned body) is needed to recognize the format.
+      this.getAtomicBuilder().from(txHex);
+    } catch (e) {
+      throw new Error(
+        `transaction bytes could not be decoded as an Avalanche atomic transaction: ${(e as Error).message}`
+      );
+    }
+  }
+
+  /**
+   * Resolve the intent type that speaks for the user, with the same precedence as the parent
+   * verifier: the caller's own params when it declared a type or recipients, otherwise the stored
+   * tx request intent. `txParams` cannot answer this because the linking path back-fills it from
+   * the stored intent, so `callerTxParams` (the untouched caller input) decides.
+   *
+   * @param {VerifyEthTransactionOptions} params
+   * @returns {string | undefined} the declared intent type
+   * @private
+   */
+  private static declaredTssIntentType(params: VerifyEthTransactionOptions): string | undefined {
+    const callerParams = params.callerTxParams ?? (params.intent ? undefined : params.txParams);
+    const callerDeclaresIntent = !!(callerParams?.type || callerParams?.recipients?.length);
+    if (params.intent && !callerDeclaresIntent) {
+      // The parent prefers the back-filled `txParams.type` over `intent.intentType`; keep the same
+      // order so both verifiers always read the stored intent the same way.
+      return params.txParams?.type ?? params.intent.intentType;
+    }
+    return callerParams?.type;
   }
 
   /**

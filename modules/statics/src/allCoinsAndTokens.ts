@@ -2170,6 +2170,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX,
     ]
   ),
   account(
@@ -2189,6 +2190,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX,
     ]
   ),
   account(
@@ -2878,6 +2880,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.SUPPORTS_ERC20,
+      CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX,
     ]
   ),
   account(
@@ -2895,6 +2898,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX,
     ]
   ),
 

@@ -2761,6 +2761,7 @@ class KatanaEth extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://katanascan.com/address/';
   chainId = 747474;
   nativeCoinOperationHashPrefix = '747474';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class KatanaEthTestnet extends Testnet implements EthereumNetwork {
@@ -2770,6 +2771,7 @@ class KatanaEthTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://explorer-bokuto.katanarpc.com/address/';
   chainId = 737373;
   nativeCoinOperationHashPrefix = '737373';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class PrividiumETH extends Mainnet implements EthereumNetwork {

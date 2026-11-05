@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## Unreleased
+
+### Bug Fixes
+
+* Reject EVM TSS payments whose decoded destination, amount, token contract, native value or calldata shape does not match the declared intent, including on the pending-approval path where the stored `payment` intent previously skipped the `transfer` checks.
+* Verify batch payments against the network batcher and the full decoded recipient/amount arrays.
+* Never let server data select the TSS intent handler, supply absent caller calldata or replace a declared token; `callerTxParams` and the stored intent are now kept apart.
+* Reject `contractCall` / `customTx` on EVM TSS and reject malformed EVM bytes for every intent type; intent types without verification rules are reported explicitly instead of passing silently.
+* Bind legacy signing payloads to the coin's own network configuration and the transaction envelope rather than a chain-id lookup.
+* Verify EVM TSS consolidations: recognise the stored `consolidateToken` intent even without a consolidate id (the missing-params guard is unchanged — recipients or a consolidate id are still required), require a consolidation whose intent declares the chain asset to carry no calldata, and require token consolidations to use canonical ERC-20 `transfer(address,uint256)` calldata paying the base address with zero native value (any other function on an established ERC-20 contract, and native value on an established ERC-20 sweep, are rejected). An authorised field naming the chain asset makes any calldata a definite mismatch, a token contract statics classifies as ERC-20 must be swept with `transfer(address,uint256)` (batch encodings included), and the flag-driven path keeps its historic rejection: a tx that is not an ERC-20 transfer must pay the base address with `tx.to`. A generic `consolidate` that declares no asset is not assumed native — its batch and arbitrary shapes are reported, as are batches of an unresolved token and shapes on a specialised (ERC-7984) token verified by its own coin. A declared asset only counts when it resolves on the transaction's own network: a name from another chain (including non-EVM coins and tokens) is treated as unresolved and reported, never as this chain's native asset or as a local contract. ERC-20 expectations apply only on positive evidence: exported ERC-20 classes by identity and the unexported BSC/XDC/L2/generic ERC-20 families by a verified class allowlist; any other token class (NFT, specialised, future type, minified name) stays unclassified and is reported. The token contract is compared only when the intent declares a token identity that resolves through statics to exactly one EVM contract on this network; otherwise the base address, calldata shape and zero native value are still enforced and a warning names the unchecked token contract instead of claiming it was verified. Sweep amounts are never compared with an intent amount.
+
 # [25.6.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fabstract-eth%4025.5.4...%40bitgo%2Fabstract-eth%4025.6.0) (2026-11-03)
 
 ### Bug Fixes

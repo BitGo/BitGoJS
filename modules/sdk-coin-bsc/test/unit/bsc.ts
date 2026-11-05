@@ -130,7 +130,7 @@ describe('Native BNB', function () {
       const result = await coin.verifyTssTransaction({
         txParams: {
           type: 'transfer',
-          recipients: [{ address: recipientAddress, amount: '10000000' }],
+          recipients: [{ address: recipientAddress, amount: '10000000', tokenAddress: tokenContractAddress }],
         } as any,
         txPrebuild: { txHex, coin: 'tbsc', walletId: 'fakeWalletId' } as any,
         wallet,

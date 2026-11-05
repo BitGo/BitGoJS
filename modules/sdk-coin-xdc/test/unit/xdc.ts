@@ -134,7 +134,7 @@ describe('xdc', function () {
       const result = await coin.verifyTssTransaction({
         txParams: {
           type: 'transfer',
-          recipients: [{ address: recipientAddress, amount: '10000000' }],
+          recipients: [{ address: recipientAddress, amount: '10000000', tokenAddress: tokenContractAddress }],
         } as any,
         txPrebuild: { txHex, coin: 'txdc', walletId: 'fakeWalletId' } as any,
         wallet,

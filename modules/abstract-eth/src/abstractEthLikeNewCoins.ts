@@ -28,6 +28,7 @@ import {
   MPCTxs,
   ParsedTransaction,
   ParseTransactionOptions,
+  PopulatedIntent,
   PrebuildTransactionResult,
   PresignTransactionOptions as BasePresignTransactionOptions,
   Recipient,
@@ -58,10 +59,14 @@ import {
 import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { bip32 } from '@bitgo/secp256k1';
 import {
+  AvaxERC20Token,
   BaseCoin as StaticsBaseCoin,
+  CeloCoin,
   ChainIdNotFoundError,
   CoinFeature,
   coins,
+  ContractAddressDefinedToken,
+  Erc20Coin,
   Erc7984Coin,
   EthereumNetwork as EthLikeNetwork,
   ethGasConfigs,
@@ -86,6 +91,10 @@ import {
   calculateForwarderV1Address,
   coinFamiliesWithL1Fees,
   approveMethodId,
+  confidentialTransferNoProofMethodId,
+  confidentialTransferNoProofTypes,
+  confidentialTransferWithProofMethodId,
+  confidentialTransferWithProofTypes,
   decodeApproveCalldata,
   decodeFinalizeUnwrapCalldata,
   decodeNativeTransferData,
@@ -412,6 +421,11 @@ const MAX_UINT256 = 2n ** 256n - 1n;
 export interface VerifyEthTransactionOptions extends VerifyTransactionOptions {
   txPrebuild: TransactionPrebuild;
   txParams: EthTransactionParams;
+  /**
+   * EVM callers declare the asset they are paying with as a top-level `tokenName`, which the
+   * chain-agnostic `TransactionParams` does not carry.
+   */
+  callerTxParams?: EthTransactionParams;
 }
 
 interface PresignTransactionOptions extends TransactionPrebuild, BasePresignTransactionOptions {
@@ -587,6 +601,575 @@ export const optionalDeps = {
     }
   },
 };
+
+/** Canonical intent types that must never reach signing on an EVM chain. */
+const EVM_TSS_UNSUPPORTED_INTENT_TYPES = new Set(['contractCall', 'customTx']);
+
+/**
+ * Intent types that already have dedicated verification: the DeFi vault legs and ERC-7984
+ * shield/unshield legs checked in this file or in the token coin. They are excluded from the
+ * "no fail-closed verifier" warning; every other type without a handler is reported.
+ */
+const EVM_TSS_DEDICATED_CHECK_INTENT_TYPES = new Set([
+  'defiApprove',
+  'defiDeposit',
+  'defiWithdraw',
+  'wrapApprove',
+  'wrap',
+  'unwrap',
+  'finalizeUnwrap',
+]);
+
+/** Stored (kebab-case) intent spellings mapped onto the canonical verifier type. */
+const EVM_TSS_INTENT_TYPE_ALIASES: Record<string, string> = {
+  payment: 'transfer',
+  'transfer-token': 'transferToken',
+  transfertoken: 'transferToken',
+  'contract-call': 'contractCall',
+  'custom-tx': 'customTx',
+  'defi-approve': 'defiApprove',
+  'defi-deposit': 'defiDeposit',
+  'defi-withdraw': 'defiWithdraw',
+  'wrap-approve': 'wrapApprove',
+  // Token consolidation; WP persists the camelCase spelling, the kebab form is accepted too.
+  'consolidate-token': 'consolidateToken',
+};
+
+/** ERC-20 `transfer(address,uint256)` selector. */
+const ERC20_TRANSFER_METHOD_ID = '0xa9059cbb';
+
+/**
+ * A consolidation has exactly two shapes. Calldata that fits neither is a definite mismatch, never
+ * an unverifiable shape: the unknown half of an unresolved token is its contract, not its calldata.
+ */
+const TSS_CONSOLIDATION_TOKEN_SHAPE_MESSAGE =
+  'Consolidation transaction does not use ERC-20 transfer(address,uint256): the declared token cannot be swept ' +
+  'to the wallet base address';
+const TSS_CONSOLIDATION_NATIVE_CALLDATA_MESSAGE =
+  'Consolidation transaction must not carry calldata: a native consolidation is a plain send to the wallet ' +
+  'base address';
+
+/** A well-formed 20-byte EVM address. Anything else cannot name a token contract. */
+const EVM_ADDRESS_PATTERN = /^0x[0-9a-fA-F]{40}$/;
+
+/** One recipient of the user intent, flattened from txParams or the stored tx request intent. */
+interface TssExpectedRecipient {
+  address: string;
+  amount: string;
+  /** Raw calldata the intent declares for this recipient (WalletConnect / dApp flows). */
+  data?: string;
+  tokenName?: string;
+  tokenAddress?: string;
+  tokenData?: {
+    tokenName?: string;
+    tokenContractAddress?: string;
+    tokenType?: string;
+  };
+}
+
+/** The asset a payment is declared to move, resolved only from locally declared identity. */
+type TssPaymentAsset =
+  | { kind: 'native' }
+  | { kind: 'token'; contract: string }
+  | { kind: 'unresolved'; reason: string };
+
+/** The `to` / `value` / `data` of the bytes about to be signed. */
+interface DecodedTssTransaction {
+  to: string;
+  value: string;
+  data: string;
+}
+
+type TssMismatchThrower = (message: string, mismatchedRecipients: Recipient[]) => Promise<never>;
+
+/**
+ * Report a check this verifier could not perform. A warning names the intent type and the missing
+ * check only: expected and decoded transaction fields (addresses, values, calldata) never reach the
+ * logs, where they would outlive the signing attempt.
+ */
+type TssUnverifiableReporter = (intentType: string, reason: string) => void;
+
+/**
+ * Map a declared transaction type onto the canonical verifier type. Caller `txParams.type` and
+ * the stored `intent.intentType` both flow through here, so `payment` lands on `transfer` and
+ * kebab-case stored spellings (`defi-approve`, `wrap-approve`, …) on their handlers.
+ */
+function canonicalTssIntentType(rawType?: string): string {
+  if (!rawType) {
+    return '';
+  }
+  const trimmed = rawType.trim();
+  return (
+    EVM_TSS_INTENT_TYPE_ALIASES[trimmed] ??
+    EVM_TSS_INTENT_TYPE_ALIASES[trimmed.toLowerCase()] ??
+    trimmed.replace(/-([a-z0-9])/g, (_, char: string) => char.toUpperCase())
+  );
+}
+
+/**
+ * Canonical calldata for every comparison: missing data, `''` and `'0x'` are the same empty
+ * payload, hex is lowercased, and a dropped `0x` prefix is restored.
+ */
+function normalizeTssCalldata(data?: string): string {
+  const lower = (data ?? '').toLowerCase();
+  if (!lower || lower === '0x') {
+    return '0x';
+  }
+  return lower.startsWith('0x') ? lower : `0x${lower}`;
+}
+
+function isTssEmptyCalldata(data?: string): boolean {
+  return normalizeTssCalldata(data) === '0x';
+}
+
+function normalizeTssAddress(address?: string): string {
+  return (address ?? '').toLowerCase();
+}
+
+function tssValuesEqual(a: unknown, b: unknown): boolean {
+  try {
+    return BigInt(String(a)) === BigInt(String(b));
+  } catch {
+    return String(a) === String(b);
+  }
+}
+
+/** `getRawDecoded` keeps uint256 values as BN and addresses / bytes as byte arrays. */
+function tssToBuffer(value: unknown): Buffer {
+  return Buffer.isBuffer(value) ? value : Buffer.from(value as Uint8Array);
+}
+
+function tssBigIntFromBuffer(value: unknown): bigint {
+  // `ethereumjs-abi` returns uint256 as BN, and address / bytes32 / bytes as hex strings or
+  // byte arrays depending on the type, so all three shapes are accepted here.
+  if (BN.isBN(value)) {
+    return BigInt((value as BN).toString(10));
+  }
+  if (typeof value === 'string') {
+    return BigInt(addHexPrefix(value));
+  }
+  const hex = bufferToHex(tssToBuffer(value));
+  return BigInt(hex === '0x' ? '0' : hex);
+}
+
+function tssDecodedAddress(value: unknown): string {
+  if (typeof value === 'string') {
+    return addHexPrefix(value).toLowerCase();
+  }
+  return addHexPrefix(bufferToHex(tssToBuffer(value))).toLowerCase();
+}
+
+/** The ABI payload of selector-prefixed calldata, or a throw when it is not valid hex. */
+function tssCalldataPayload(calldata: string): Buffer {
+  const payloadHex = normalizeTssCalldata(calldata).slice(10);
+  if (payloadHex.length % 2 !== 0 || /[^0-9a-f]/.test(payloadHex)) {
+    throw new Error(`transaction calldata is not valid hex: ${calldata}`);
+  }
+  return Buffer.from(payloadHex, 'hex');
+}
+
+function readTssAbiWord(payloadHex: string, wordIndex: number): bigint {
+  const start = wordIndex * 64;
+  if (start + 64 > payloadHex.length) {
+    throw new Error(`transaction calldata is truncated at ABI word ${wordIndex}`);
+  }
+  return BigInt(`0x${payloadHex.slice(start, start + 64)}`);
+}
+
+/** Reject calldata whose payload is not exactly `wordCount` 32-byte ABI words. */
+function assertCanonicalStaticTssArgs(calldata: string, wordCount: number, label: string): void {
+  const payloadHex = normalizeTssCalldata(calldata).slice(10);
+  if (payloadHex.length !== wordCount * 64) {
+    throw new Error(
+      `${label} calldata is not canonical: ${payloadHex.length / 2} payload bytes, expected ${wordCount * 32}`
+    );
+  }
+}
+
+/**
+ * Reject calldata whose final dynamic `bytes` argument is not the canonical encoding: its
+ * offset must point past the head, and a single length word plus exactly the padded payload
+ * must be the rest of the calldata.
+ */
+function assertCanonicalBytesTailTssArgs(calldata: string, dynamicArgIndex: number, label: string): void {
+  const payloadHex = normalizeTssCalldata(calldata).slice(10);
+  const headBytes = (dynamicArgIndex + 1) * 32;
+  const offset = readTssAbiWord(payloadHex, dynamicArgIndex);
+  if (offset !== BigInt(headBytes)) {
+    throw new Error(`${label} calldata is not canonical: the bytes argument offset is ${offset}`);
+  }
+  const length = readTssAbiWord(payloadHex, dynamicArgIndex + 1);
+  if (length > BigInt(payloadHex.length / 2)) {
+    throw new Error(`${label} calldata is not canonical: the bytes argument length ${length} exceeds the payload`);
+  }
+  const paddedLength = Number((length + 31n) / 32n) * 32;
+  const expected = headBytes * 2 + 64 + paddedLength * 2;
+  if (payloadHex.length !== expected) {
+    throw new Error(
+      `${label} calldata is not canonical: ${payloadHex.length / 2} payload bytes, expected ${expected / 2}`
+    );
+  }
+}
+
+interface DecodedTssBatch {
+  tokenContract?: string;
+  recipients: Array<{ address: string; amount: string }>;
+}
+
+/**
+ * Decode the batcher's `batch(address[],uint256[])` / `batchTransferFrom(address,address[],uint256[])`
+ * calldata and reject anything that is not its canonical encoding (head offsets, array lengths,
+ * total size). Decoding never splits on the selector: an argument word may contain those bytes.
+ */
+function decodeTssBatchCalldata(calldata: string, tokenBatch: boolean): DecodedTssBatch {
+  const payloadHex = normalizeTssCalldata(calldata).slice(10);
+  if (payloadHex.length % 64 !== 0) {
+    throw new Error('batch calldata is not canonical: the payload is not a whole number of ABI words');
+  }
+  const types = tokenBatch ? ['address', 'address[]', 'uint256[]'] : ['address[]', 'uint256[]'];
+  const decoded = getRawDecoded(types, Buffer.from(payloadHex, 'hex')) as unknown[];
+  const headWords = tokenBatch ? 3 : 2;
+  const addressOffsetWord = tokenBatch ? 1 : 0;
+  const addresses = decoded[tokenBatch ? 1 : 0];
+  const amounts = decoded[tokenBatch ? 2 : 1];
+  if (!Array.isArray(addresses) || !Array.isArray(amounts)) {
+    throw new Error('batch calldata is not canonical: address and amount arguments must be arrays');
+  }
+  if (addresses.length !== amounts.length) {
+    throw new Error(`Mismatched batch address/amount array lengths: ${addresses.length} vs ${amounts.length}`);
+  }
+  const headBytes = headWords * 32;
+  if (readTssAbiWord(payloadHex, addressOffsetWord) !== BigInt(headBytes)) {
+    throw new Error('batch calldata is not canonical: the address array offset is not the first tail word');
+  }
+  const amountOffsetWord = addressOffsetWord + 1;
+  if (readTssAbiWord(payloadHex, amountOffsetWord) !== BigInt(headBytes + 32 * (1 + addresses.length))) {
+    throw new Error('batch calldata is not canonical: the amount array offset does not follow the address array');
+  }
+  const expectedBytes = headBytes + 32 * (1 + addresses.length) + 32 * (1 + amounts.length);
+  if (payloadHex.length !== expectedBytes * 2) {
+    throw new Error(
+      `batch calldata is not canonical: ${payloadHex.length / 2} payload bytes, expected ${expectedBytes}`
+    );
+  }
+  return {
+    ...(tokenBatch && { tokenContract: tssDecodedAddress(decoded[0]) }),
+    recipients: addresses.map((address, index) => ({
+      address: tssDecodedAddress(address),
+      amount: tssBigIntFromBuffer(amounts[index]).toString(),
+    })),
+  };
+}
+
+/**
+ * True only for the intent `tokenData.tokenType` values that denote an NFT. Ordinary ERC-20
+ * recipients also carry `tokenType` (e.g. `ERC20`) plus `tokenQuantity` / `tokenName`, so this
+ * must never be a generic "has tokenData" check.
+ */
+function isNftTokenType(tokenType?: string): boolean {
+  const normalized = tokenType?.trim().toUpperCase();
+  return normalized === 'ERC721' || normalized === 'ERC1155';
+}
+
+/** Calldata selectors of the network batcher's batch functions. */
+function tssBatchMethodIds(): { native: string; token: string } {
+  return {
+    native: addHexPrefix(
+      optionalDeps.ethAbi.methodID('batch', ['address[]', 'uint256[]']).toString('hex')
+    ).toLowerCase(),
+    token: addHexPrefix(
+      optionalDeps.ethAbi.methodID('batchTransferFrom', ['address', 'address[]', 'uint256[]']).toString('hex')
+    ).toLowerCase(),
+  };
+}
+
+type TssDeclaredRecipient = NonNullable<TransactionParams['recipients']>[number];
+
+/**
+ * Read the recipients of the stored tx request intent in the same shape as caller recipients.
+ * Used only when the caller declared nothing and the effective params did not carry them.
+ */
+function tssRecipientsFromStoredIntent(intent: PopulatedIntent): TssDeclaredRecipient[] {
+  return (intent.recipients ?? []).map((recipient) => ({
+    address: recipient.address.address,
+    amount: String(recipient.amount.value),
+    ...(recipient.data !== undefined && { data: recipient.data }),
+    ...(recipient.tokenData?.tokenName !== undefined && { tokenName: recipient.tokenData.tokenName }),
+  }));
+}
+
+/**
+ * Flatten the recipients of the source that speaks for the user. The stored intent only fills
+ * in the `tokenData` shape the effective txParams do not carry; it never supplies a recipient.
+ */
+function toTssExpectedRecipients(
+  recipients: TssDeclaredRecipient[],
+  storedIntent?: PopulatedIntent
+): TssExpectedRecipient[] {
+  return recipients.map((recipient, index) => {
+    const callerTokenData = (recipient as TssDeclaredRecipient & { tokenData?: TssExpectedRecipient['tokenData'] })
+      .tokenData;
+    const tokenData = callerTokenData ?? storedIntent?.recipients?.[index]?.tokenData;
+    return {
+      address: recipient.address,
+      amount: String(recipient.amount),
+      ...(recipient.data !== undefined && { data: recipient.data }),
+      ...(recipient.tokenName !== undefined && { tokenName: recipient.tokenName }),
+      ...(recipient.tokenAddress !== undefined && { tokenAddress: recipient.tokenAddress }),
+      ...(tokenData && {
+        tokenData: {
+          ...(tokenData.tokenName !== undefined && { tokenName: tokenData.tokenName }),
+          ...(tokenData.tokenContractAddress !== undefined && {
+            tokenContractAddress: tokenData.tokenContractAddress,
+          }),
+          ...(tokenData.tokenType !== undefined && { tokenType: tokenData.tokenType }),
+        },
+      }),
+    };
+  });
+}
+
+/**
+ * ERC-20-compatible statics token classes that statics does not export, recognised by their
+ * verified class name. This is a positive allowlist: a class that is not named here — an NFT, a
+ * future token type, or a class whose name a bundler rewrote — stays unclassified and is reported,
+ * never assumed to be ERC-20.
+ */
+const ERC20_TOKEN_CLASS_NAMES: Record<string, true> = {
+  BscCoin: true,
+  EthLikeERC20Token: true,
+  PolygonERC20Token: true,
+  ArbethERC20Token: true,
+  OpethERC20Token: true,
+  ZkethERC20Token: true,
+  BeraERC20Token: true,
+  CoredaoERC20Token: true,
+  WorldERC20Token: true,
+  FlrERC20Token: true,
+  XdcERC20Token: true,
+  MonERC20Token: true,
+};
+
+/**
+ * The standard statics establishes for a contract-defined token, judged only on positive evidence:
+ * `Erc7984Coin` is a specialised standard; `Erc20Coin`, `CeloCoin` and `AvaxERC20Token` are
+ * ERC-20-compatible and export their classes, so they are matched by identity; the remaining
+ * ERC-20-compatible families (`BscCoin`, `XdcERC20Token`, the L2 token classes, …) are matched by
+ * the allowlist above. Everything else is unclassified, which makes the verifier report the shape
+ * instead of applying ERC-20 expectations to it.
+ */
+function classifyTssTokenStandard(coin: ContractAddressDefinedToken): 'erc20' | 'specialized' | undefined {
+  if (coin instanceof Erc7984Coin) {
+    return 'specialized';
+  }
+  if (coin instanceof Erc20Coin || coin instanceof CeloCoin || coin instanceof AvaxERC20Token) {
+    return 'erc20';
+  }
+  return ERC20_TOKEN_CLASS_NAMES[coin.constructor.name] ? 'erc20' : undefined;
+}
+
+/** One locally trusted asset declaration: a token contract (maybe unresolved) or the chain asset. */
+interface TssAssetSource {
+  label: string;
+  contract?: string;
+  native?: boolean;
+  /** Token standard, only when statics classifies the declared token. */
+  standard?: 'erc20' | 'specialized';
+}
+
+/**
+ * Collect every locally trusted asset declaration for an intent: recipient `tokenAddress` /
+ * `tokenName` / `tokenData`, the declared top-level token name, and the coin instance itself.
+ * Nothing read from the transaction contributes, so a server cannot make its own token selection
+ * look like the user's.
+ */
+function collectTssAssetSources(
+  chain: string,
+  declaredTokenName: string | undefined,
+  recipients: TssExpectedRecipient[]
+): TssAssetSource[] {
+  const sources: TssAssetSource[] = [];
+  const chainCoin = coins.getOrUndefined(chain);
+  const addTokenNameSource = (tokenName: string): void => {
+    const staticsCoin = coins.getOrUndefined(tokenName);
+    if (!staticsCoin) {
+      sources.push({ label: `token '${tokenName}'` });
+      return;
+    }
+    // A declaration only speaks for an asset on this chain. `coins` also resolves names, ids and
+    // aliases from other networks (a non-EVM coin, a token of another chain), and such a name says
+    // nothing about what this transaction moves: it stays an unresolved declaration so the caller
+    // is warned, never treated as this chain's native asset or as a local token contract.
+    if (!chainCoin || staticsCoin.network !== chainCoin.network) {
+      sources.push({ label: `asset '${tokenName}' on another network` });
+      return;
+    }
+    // The name of this chain's native coin is a declaration of the chain asset, not of a token.
+    if (!(staticsCoin instanceof ContractAddressDefinedToken) || !staticsCoin.isToken) {
+      sources.push({ label: `coin '${tokenName}'`, native: true });
+      return;
+    }
+    const contract = String(staticsCoin.contractAddress);
+    // ERC-20 expectations come from the statics class family, never from "has a contract address":
+    // NFT classes stay unclassified and ERC-7984 is specialised.
+    const standard = classifyTssTokenStandard(staticsCoin);
+    sources.push(
+      EVM_ADDRESS_PATTERN.test(contract)
+        ? { label: `token '${tokenName}'`, contract, standard }
+        : { label: `token '${tokenName}'`, standard }
+    );
+  };
+  const addContractSource = (contract: string, label: string): void => {
+    sources.push(EVM_ADDRESS_PATTERN.test(contract) ? { label, contract } : { label });
+  };
+  recipients.forEach((recipient) => {
+    if (recipient.tokenAddress !== undefined) {
+      addContractSource(recipient.tokenAddress, `recipient tokenAddress '${recipient.tokenAddress}'`);
+    }
+    if (recipient.tokenName !== undefined) {
+      addTokenNameSource(recipient.tokenName);
+    }
+    if (recipient.tokenData?.tokenContractAddress !== undefined) {
+      addContractSource(
+        recipient.tokenData.tokenContractAddress,
+        `recipient tokenData tokenContractAddress '${recipient.tokenData.tokenContractAddress}'`
+      );
+    }
+    if (recipient.tokenData?.tokenName !== undefined) {
+      addTokenNameSource(recipient.tokenData.tokenName);
+    }
+  });
+  if (declaredTokenName) {
+    addTokenNameSource(declaredTokenName);
+  }
+  if (
+    chainCoin instanceof ContractAddressDefinedToken &&
+    chainCoin.isToken &&
+    EVM_ADDRESS_PATTERN.test(String(chainCoin.contractAddress))
+  ) {
+    sources.push({
+      label: `the coin token '${chain}'`,
+      contract: String(chainCoin.contractAddress),
+      standard: classifyTssTokenStandard(chainCoin),
+    });
+  }
+  return sources;
+}
+
+/**
+ * Resolve the asset a payment is declared to move, from locally trusted identity only: the
+ * recipient's own `tokenAddress` / `tokenName` / `tokenData` declarations, the declared top-level
+ * token name, and the coin instance itself. Nothing read from the transaction contributes, so a
+ * server cannot make its own token selection look like the user's.
+ *
+ * No token identity at all means native. That is the SDK's own convention, not a guess: `wallet.send`
+ * / `sendMany` attach `tokenName` to a recipient only when the caller names a token, and a token
+ * transfer on an EVM chain is either a token coin (`tbsc:usd1`) or a `transferToken` intent. A
+ * payment on a native coin that names no token therefore declares a native send, and token calldata
+ * on it is a definite mismatch rather than an unknown asset.
+ *
+ * Identity that cannot be resolved to an EVM contract, or that names two different assets, is
+ * `unresolved`: the intended asset is unknown, so only the checks that do not depend on it may run.
+ */
+function resolveTssPaymentAsset(
+  chain: string,
+  declaredTokenName: string | undefined,
+  recipients: TssExpectedRecipient[]
+): TssPaymentAsset {
+  const sources = collectTssAssetSources(chain, declaredTokenName, recipients);
+  const tokenSources = sources.filter((source) => !source.native);
+  if (!tokenSources.length) {
+    return { kind: 'native' };
+  }
+  const unresolved = tokenSources.find((source) => source.contract === undefined);
+  if (unresolved) {
+    return { kind: 'unresolved', reason: `${unresolved.label} cannot be resolved to an EVM token contract` };
+  }
+  const nativeSource = sources.find((source) => source.native);
+  if (nativeSource) {
+    const tokenSource = tokenSources[0] as { label: string };
+    return { kind: 'unresolved', reason: `${nativeSource.label} and ${tokenSource.label} name different assets` };
+  }
+  const [first, ...rest] = tokenSources as Array<{ label: string; contract: string }>;
+  const conflict = rest.find((source) => normalizeTssAddress(source.contract) !== normalizeTssAddress(first.contract));
+  if (conflict) {
+    return { kind: 'unresolved', reason: `${first.label} and ${conflict.label} name different token contracts` };
+  }
+  return { kind: 'token', contract: first.contract };
+}
+
+/**
+ * Flatten a stored tx request intent into the recipient shape the asset resolver reads, keeping the
+ * full `tokenData` (contract address included) that `tssRecipientsFromStoredIntent` drops.
+ */
+function tssExpectedRecipientsFromStoredIntent(intent: PopulatedIntent): TssExpectedRecipient[] {
+  return (intent.recipients ?? []).map((recipient) => ({
+    address: recipient.address.address,
+    amount: String(recipient.amount.value),
+    ...(recipient.data !== undefined && { data: recipient.data }),
+    ...(recipient.tokenData?.tokenName !== undefined && { tokenName: recipient.tokenData.tokenName }),
+    ...(recipient.tokenData?.tokenContractAddress !== undefined && {
+      tokenData: {
+        ...(recipient.tokenData.tokenName !== undefined && { tokenName: recipient.tokenData.tokenName }),
+        tokenContractAddress: recipient.tokenData.tokenContractAddress,
+        ...(recipient.tokenData.tokenType !== undefined && { tokenType: recipient.tokenData.tokenType }),
+      },
+    }),
+  }));
+}
+
+/**
+ * The asset a consolidation intent declares. Unlike a payment, a consolidation has no "no token
+ * means native" convention: a generic `consolidate` that declares no asset at all may be a native
+ * send, an ERC-20 sweep or a specialised format, so it stays `undetermined` and only the checks its
+ * bytes establish are enforced. `native-declared` requires an authorised field that names the chain
+ * asset; a `consolidateToken` intent always declares a token, even when it names no contract.
+ */
+type TssConsolidationAsset =
+  | { kind: 'native-declared' }
+  | { kind: 'undetermined' }
+  | { kind: 'token'; contract: string; standard: 'erc20' | 'specialized' | 'unknown' }
+  | { kind: 'unresolved'; reason: string };
+
+function resolveTssConsolidationAsset(
+  chain: string,
+  intentType: string,
+  declaredTokenName: string | undefined,
+  recipients: TssExpectedRecipient[]
+): TssConsolidationAsset {
+  const sources = collectTssAssetSources(chain, declaredTokenName, recipients);
+  const tokenSources = sources.filter((source) => !source.native);
+  if (!tokenSources.length) {
+    if (intentType === 'consolidateToken') {
+      return { kind: 'unresolved', reason: 'the consolidateToken intent declares no token contract' };
+    }
+    return sources.some((source) => source.native) ? { kind: 'native-declared' } : { kind: 'undetermined' };
+  }
+  const unresolved = tokenSources.find((source) => source.contract === undefined);
+  if (unresolved) {
+    return { kind: 'unresolved', reason: `${unresolved.label} cannot be resolved to an EVM token contract` };
+  }
+  const nativeSource = sources.find((source) => source.native);
+  if (nativeSource) {
+    return {
+      kind: 'unresolved',
+      reason: `${nativeSource.label} and ${tokenSources[0].label} name different assets`,
+    };
+  }
+  const [first, ...rest] = tokenSources as Array<TssAssetSource & { contract: string }>;
+  const conflict = rest.find((source) => normalizeTssAddress(source.contract) !== normalizeTssAddress(first.contract));
+  if (conflict) {
+    return { kind: 'unresolved', reason: `${first.label} and ${conflict.label} name different token contracts` };
+  }
+  // Only a declaration statics can classify establishes the standard. An address-only declaration
+  // still fixes the contract, but says nothing about which calls it supports.
+  const standards = tokenSources
+    .map((source) => source.standard)
+    .filter((standard): standard is 'erc20' | 'specialized' => standard !== undefined);
+  const standard: 'erc20' | 'specialized' | 'unknown' =
+    standards.length > 0 && standards.every((value) => value === standards[0]) ? standards[0] : 'unknown';
+  return { kind: 'token', contract: first.contract, standard };
+}
 
 export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implements CoinWithSignableConsistency {
   static hopTransactionSalt = 'bitgoHopAddressRequestSalt';
@@ -3382,10 +3965,23 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
    *
   /** @inheritdoc CoinWithSignableConsistency */
   assertSignableConsistency(serializedTxHex: string, signableHex: string): void {
-    const common = AbstractEthLikeNewCoins.getCustomChainCommon(this.getChainId());
-    // getCustomChainCommon defaults to the london hardfork, which is only valid for chains
-    // that activated EIP-1559. Chains without it (e.g. BSC, XDC) sign under petersburg.
-    if (!this.staticsCoin?.features.includes(CoinFeature.EIP1559)) {
+    const network = this.getNetwork();
+    if (!network) {
+      throw new InvalidTransactionError('cannot verify signable consistency without a coin network');
+    }
+    // Build the common from this coin's own network: the bytes may belong to a token coin whose
+    // statics entry carries none of the base chain's fork features.
+    const common = getCommon(network);
+    // The fork is fixed before parsing, because the factory copies this Common when it decides
+    // whether the envelope is even valid on the chain. Chains without EIP-1559 (e.g. BSC, XDC,
+    // Kava) sign under petersburg, so a type-2 payload on them is rejected at parse exactly as it
+    // was before. An EIP-1559 chain keeps london, which parses both a type-0 legacy envelope and a
+    // type-2 fee-market envelope; the preimage below follows the envelope, not the fork.
+    const baseCoin = coins.getOrUndefined(this.getFamily());
+    const chainSupportsEip1559 = baseCoin
+      ? baseCoin.features.includes(CoinFeature.EIP1559)
+      : this.staticsCoin?.features.includes(CoinFeature.EIP1559) ?? false;
+    if (!chainSupportsEip1559) {
       common.setHardfork(optionalDeps.EthCommon.Hardfork.Petersburg);
     }
     const ethTx = TransactionFactory.fromSerializedData(toBuffer(addHexPrefix(serializedTxHex)), { common });
@@ -3550,6 +4146,646 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
   }
 
   /**
+   * Emit a precise, non-fatal warning for a check this verifier could not perform: identity that
+   * cannot be resolved locally, a format it does not parse, or an intent type with no handler.
+   * Never throws: a definite mismatch goes through the caller's mismatch thrower instead.
+   *
+   * The warning carries the intent type and the missing check only. Expected and decoded
+   * transaction fields are deliberately not logged: console output is shipped to log pipelines,
+   * and addresses / calldata must not be retained there just because a check was incomplete.
+   */
+  protected emitTssVerificationWarning(reason: string, intentType: string): void {
+    console.warn(`[tss verification] ${intentType}: ${reason}`);
+  }
+
+  /**
+   * Decode the bytes about to be signed. Only intent types this verifier understands reach this
+   * method, so special formats (FLR atomic exports, Tempo, VET, …) are never routed here.
+   */
+  private async decodeTssVerificationTransaction(txHex?: string): Promise<DecodedTssTransaction> {
+    if (!txHex) {
+      throw new Error('missing txHex in txPrebuild');
+    }
+    const txBuilder = this.getTransactionBuilder();
+    txBuilder.from(txHex);
+    const txJson = (await txBuilder.build()).toJson();
+    return { to: txJson.to ?? '', value: txJson.value ?? '0', data: txJson.data ?? '0x' };
+  }
+
+  /**
+   * Verify a payment against the bytes about to be signed: one recipient must match a single
+   * payment shape, several must match a batcher batch.
+   */
+  private async verifyTssPaymentTransaction(args: {
+    intentType: string;
+    recipients: TssExpectedRecipient[];
+    declaredTokenName?: string;
+    tx: DecodedTssTransaction;
+    throwRecipientMismatch: TssMismatchThrower;
+    reportUnverifiable: TssUnverifiableReporter;
+  }): Promise<void> {
+    if (args.recipients.length > 1) {
+      await this.verifyTssBatchPayment(args);
+      return;
+    }
+    await this.verifyTssSinglePayment({ ...args, recipient: args.recipients[0] });
+  }
+
+  /**
+   * Verify one payment recipient. The native-send and ERC-20 `transfer` amount/destination
+   * comparisons are the checks this verifier always performed; the rest close the calldata shapes
+   * those checks left open and pin the asset identity the caller declared.
+   */
+  private async verifyTssSinglePayment(args: {
+    intentType: string;
+    recipient: TssExpectedRecipient;
+    declaredTokenName?: string;
+    tx: DecodedTssTransaction;
+    throwRecipientMismatch: TssMismatchThrower;
+    reportUnverifiable: TssUnverifiableReporter;
+  }): Promise<void> {
+    const { recipient, tx, intentType, throwRecipientMismatch, reportUnverifiable } = args;
+    const calldata = normalizeTssCalldata(tx.data);
+    // `''` / `'0x'` declare no calldata at all, exactly like omitting the field: the prebuild flow
+    // passes the caller's recipients through unchanged, and an empty string must not reclassify a
+    // native or ERC-20 payment as an exact arbitrary-calldata call.
+    const declaredCalldata = isTssEmptyCalldata(recipient.data) ? undefined : normalizeTssCalldata(recipient.data);
+
+    // Historic checks: same comparisons and messages, now for every payment spelling.
+    if (isTssEmptyCalldata(calldata)) {
+      if (!tssValuesEqual(tx.value, recipient.amount)) {
+        await throwRecipientMismatch('the transaction amount in txPrebuild does not match the value given by client', [
+          { address: tx.to, amount: tx.value },
+        ]);
+      }
+      if (normalizeTssAddress(tx.to) !== normalizeTssAddress(recipient.address)) {
+        await throwRecipientMismatch('destination address does not match with the recipient address', [
+          { address: tx.to, amount: tx.value },
+        ]);
+      }
+    } else if (calldata.startsWith(ERC20_TRANSFER_METHOD_ID)) {
+      // Malformed supported bytes throw here: the bytes cannot be verified against anything.
+      const declaredData = declaredCalldata ?? '0x';
+      let expectedRecipient = normalizeTssAddress(recipient.address);
+      let expectedAmount = recipient.amount;
+      if (declaredData.startsWith(ERC20_TRANSFER_METHOD_ID)) {
+        // WalletConnect: the recipient declares its own transfer calldata instead of to/amount.
+        const [declaredRecipient, declaredAmount] = getRawDecoded(
+          ['address', 'uint256'],
+          tssCalldataPayload(declaredData)
+        );
+        expectedRecipient = tssDecodedAddress(declaredRecipient);
+        expectedAmount = tssBigIntFromBuffer(declaredAmount).toString();
+      }
+      const [innerRecipient, innerAmount] = getRawDecoded(['address', 'uint256'], tssCalldataPayload(calldata));
+      const decodedRecipient = tssDecodedAddress(innerRecipient);
+      const decodedAmount = tssBigIntFromBuffer(innerAmount).toString();
+      if (expectedAmount !== decodedAmount) {
+        await throwRecipientMismatch('the transaction amount in txPrebuild does not match the value given by client', [
+          { address: decodedRecipient, amount: decodedAmount },
+        ]);
+      }
+      if (expectedRecipient !== decodedRecipient) {
+        await throwRecipientMismatch('destination address does not match with the recipient address', [
+          { address: decodedRecipient, amount: decodedAmount },
+        ]);
+      }
+    }
+
+    // A recipient that declares raw calldata is a WalletConnect / dApp call: the caller authorised
+    // exactly these bytes, so `to`, `value` (a nonzero native value included) and `data` must all
+    // match. This is the only payment shape that may carry arbitrary calldata.
+    if (declaredCalldata !== undefined) {
+      if (normalizeTssAddress(tx.to) !== normalizeTssAddress(recipient.address)) {
+        await throwRecipientMismatch('destination address does not match with the recipient address', [
+          { address: tx.to, amount: tx.value },
+        ]);
+      }
+      if (!tssValuesEqual(tx.value, recipient.amount)) {
+        await throwRecipientMismatch('the transaction amount in txPrebuild does not match the value given by client', [
+          { address: tx.to, amount: tx.value },
+        ]);
+      }
+      if (calldata !== declaredCalldata) {
+        await throwRecipientMismatch('transaction calldata does not match the calldata given by the client', [
+          { address: tx.to, amount: tx.value },
+        ]);
+      }
+      return;
+    }
+
+    // NFT payments move calldata this verifier does not model; report instead of guessing. Only the
+    // NFT token types take this path: an ordinary ERC-20 recipient also carries tokenData, and its
+    // contract / native value / calldata shape are verified below.
+    if (isNftTokenType(recipient.tokenData?.tokenType)) {
+      reportUnverifiable(
+        intentType,
+        `payment declares tokenData.tokenType '${recipient.tokenData?.tokenType}': NFT payment verification is ` +
+          'not implemented, transaction bytes were not compared against the declared token'
+      );
+      return;
+    }
+
+    const asset = resolveTssPaymentAsset(this.getChain(), args.declaredTokenName, [recipient]);
+    const selector = calldata.slice(0, 10);
+    const batchIds = tssBatchMethodIds();
+    const isConfidential =
+      selector === confidentialTransferWithProofMethodId || selector === confidentialTransferNoProofMethodId;
+    const isBatch = selector === batchIds.native || selector === batchIds.token;
+    if (asset.kind === 'unresolved') {
+      reportUnverifiable(intentType, `payment ${asset.reason}: the intended asset cannot be verified`);
+    }
+
+    if (asset.kind === 'native') {
+      if (isTssEmptyCalldata(calldata)) {
+        return; // to/value were compared above.
+      }
+      if (selector === ERC20_TRANSFER_METHOD_ID || isConfidential || isBatch) {
+        await throwRecipientMismatch(
+          'payment intent declares a native asset but the transaction carries token or batch calldata',
+          [{ address: tx.to, amount: tx.value }]
+        );
+      }
+      await throwRecipientMismatch(
+        'payment intent calldata is not a recognized payment shape: a native payment must not carry calldata',
+        [{ address: tx.to, amount: tx.value }]
+      );
+      return;
+    }
+
+    if (asset.kind === 'token') {
+      if (!tssValuesEqual(tx.value, '0')) {
+        await throwRecipientMismatch('token transfer must not carry native value', [
+          { address: tx.to, amount: tx.value },
+        ]);
+      }
+      if (normalizeTssAddress(tx.to) !== normalizeTssAddress(asset.contract)) {
+        await throwRecipientMismatch('transaction to is not the intent token contract', [
+          { address: tx.to, amount: tx.value },
+        ]);
+      }
+      if (isTssEmptyCalldata(calldata)) {
+        await throwRecipientMismatch(
+          'token payment requires ERC-20 transfer(address,uint256) or ERC-7984 confidentialTransfer calldata; ' +
+            'the transaction data payload is empty',
+          [{ address: tx.to, amount: tx.value }]
+        );
+      }
+      if (selector === ERC20_TRANSFER_METHOD_ID) {
+        // The historic check above already compared the inner recipient and amount.
+        assertCanonicalStaticTssArgs(calldata, 2, 'ERC-20 transfer');
+        return;
+      }
+      if (isConfidential) {
+        await this.verifyTssConfidentialPayment({
+          calldata,
+          recipient,
+          intentType,
+          throwRecipientMismatch,
+          reportUnverifiable,
+        });
+        return;
+      }
+      if (isBatch) {
+        await throwRecipientMismatch('batch calldata cannot be verified against a single declared recipient', [
+          { address: tx.to, amount: tx.value },
+        ]);
+      }
+      await throwRecipientMismatch(
+        'payment intent calldata is not a recognized payment shape (native send, ERC-20 transfer, ERC-7984 ' +
+          'confidentialTransfer, or batch): refusing to treat it as a payment',
+        [{ address: tx.to, amount: tx.value }]
+      );
+      return;
+    }
+
+    // Asset unresolved: enforce every check that does not depend on knowing the asset.
+    if (isBatch) {
+      await throwRecipientMismatch('batch calldata cannot be verified against a single declared recipient', [
+        { address: tx.to, amount: tx.value },
+      ]);
+    }
+    if (selector === ERC20_TRANSFER_METHOD_ID) {
+      assertCanonicalStaticTssArgs(calldata, 2, 'ERC-20 transfer');
+      return; // inner recipient/amount were compared above
+    }
+    if (isConfidential) {
+      await this.verifyTssConfidentialPayment({
+        calldata,
+        recipient,
+        intentType,
+        throwRecipientMismatch,
+        reportUnverifiable,
+      });
+      return;
+    }
+    await throwRecipientMismatch(
+      'payment intent calldata is not a recognized payment shape (native send, ERC-20 transfer, ERC-7984 ' +
+        'confidentialTransfer, or batch): refusing to treat it as a payment',
+      [{ address: tx.to, amount: tx.value }]
+    );
+  }
+
+  /**
+   * Verify an ERC-7984 `confidentialTransfer` payment: the selector's own recipient must match;
+   * the amount is encrypted, so it cannot be compared and is reported as unverified.
+   */
+  private async verifyTssConfidentialPayment(args: {
+    calldata: string;
+    recipient: TssExpectedRecipient;
+    intentType: string;
+    throwRecipientMismatch: TssMismatchThrower;
+    reportUnverifiable: TssUnverifiableReporter;
+  }): Promise<void> {
+    const { calldata, recipient, intentType } = args;
+    const withProof = calldata.startsWith(confidentialTransferWithProofMethodId);
+    if (withProof) {
+      assertCanonicalBytesTailTssArgs(calldata, 2, 'confidentialTransfer');
+    } else {
+      assertCanonicalStaticTssArgs(calldata, 2, 'confidentialTransfer');
+    }
+    const [innerRecipient] = getRawDecoded(
+      withProof ? confidentialTransferWithProofTypes : confidentialTransferNoProofTypes,
+      tssCalldataPayload(calldata)
+    );
+    const decodedRecipient = tssDecodedAddress(innerRecipient);
+    if (decodedRecipient !== normalizeTssAddress(recipient.address)) {
+      await args.throwRecipientMismatch(
+        'confidentialTransfer recipient does not match the recipient address given by the client',
+        [{ address: decodedRecipient, amount: '' }]
+      );
+    }
+    args.reportUnverifiable(
+      intentType,
+      'confidentialTransfer carries an encrypted amount: the amount cannot be compared with the declared amount'
+    );
+  }
+
+  /**
+   * Verify a multi-recipient payment: `to` is the network batcher and the decoded arrays must
+   * match the intent 1:1. Native batches use `batch(address[],uint256[])` with `value` equal to
+   * the sum; token batches use `batchTransferFrom(address,address[],uint256[])` with `value` 0 and
+   * the intent token contract.
+   */
+  private async verifyTssBatchPayment(args: {
+    intentType: string;
+    recipients: TssExpectedRecipient[];
+    declaredTokenName?: string;
+    tx: DecodedTssTransaction;
+    throwRecipientMismatch: TssMismatchThrower;
+    reportUnverifiable: TssUnverifiableReporter;
+  }): Promise<void> {
+    const { recipients, tx, intentType, throwRecipientMismatch, reportUnverifiable } = args;
+    const calldata = normalizeTssCalldata(tx.data);
+    const totalAmount = recipients.reduce((sum, recipient) => sum + BigInt(recipient.amount), 0n).toString();
+    const batcher = this.getNetwork()?.batcherContractAddress;
+    if (!batcher) {
+      reportUnverifiable(
+        intentType,
+        'no batcher contract address is configured for this network: the batch payment destination cannot be verified'
+      );
+    } else if (normalizeTssAddress(tx.to) !== normalizeTssAddress(batcher)) {
+      await throwRecipientMismatch('batch transaction to does not match the network batcher contract', [
+        { address: tx.to, amount: tx.value },
+      ]);
+    }
+
+    // Each recipient resolves its own asset. Unresolved identities are reported and every other
+    // (definite) batch comparison still runs below.
+    const assets = recipients.map((recipient, index) => {
+      const asset = resolveTssPaymentAsset(this.getChain(), args.declaredTokenName, [recipient]);
+      if (asset.kind === 'unresolved') {
+        reportUnverifiable(intentType, `batch payment recipient ${index}: ${asset.reason}`);
+      }
+      return asset;
+    });
+    const resolvedAssets = assets.filter(
+      (asset): asset is Exclude<TssPaymentAsset, { kind: 'unresolved' }> => asset.kind !== 'unresolved'
+    );
+    let batchAsset: TssPaymentAsset = resolvedAssets[0] ?? {
+      kind: 'unresolved',
+      reason: 'no batch recipient declares a resolvable asset',
+    };
+    const mixedAssets = resolvedAssets.some(
+      (asset) =>
+        asset.kind !== batchAsset.kind ||
+        (asset.kind === 'token' &&
+          batchAsset.kind === 'token' &&
+          normalizeTssAddress(asset.contract) !== normalizeTssAddress(batchAsset.contract))
+    );
+    if (mixedAssets) {
+      reportUnverifiable(
+        intentType,
+        'batch payment recipients declare more than one asset: one batch call cannot be verified'
+      );
+      batchAsset = { kind: 'unresolved', reason: 'batch recipients declare more than one asset' };
+    }
+
+    const compareRecipients = async (
+      batchRecipients: Array<{ address: string; amount: string }>,
+      expectedValue: string,
+      valueMessage: string
+    ): Promise<void> => {
+      if (batchRecipients.length !== recipients.length) {
+        await throwRecipientMismatch(
+          `batch calldata recipient count (${batchRecipients.length}) does not match intent recipients (${recipients.length})`,
+          [{ address: tx.to, amount: tx.value }]
+        );
+      }
+      for (let index = 0; index < batchRecipients.length; index++) {
+        const want = recipients[index];
+        const got = batchRecipients[index];
+        if (
+          normalizeTssAddress(got.address) !== normalizeTssAddress(want.address) ||
+          !tssValuesEqual(got.amount, want.amount)
+        ) {
+          await throwRecipientMismatch(`batch calldata entry ${index} does not match intent recipient`, [
+            { address: got.address, amount: got.amount },
+          ]);
+        }
+      }
+      if (!tssValuesEqual(tx.value, expectedValue)) {
+        await throwRecipientMismatch(valueMessage, [{ address: tx.to, amount: tx.value }]);
+      }
+    };
+
+    const batchIds = tssBatchMethodIds();
+    const selector = calldata.slice(0, 10);
+    if (selector === batchIds.native) {
+      if (batchAsset.kind === 'token') {
+        await throwRecipientMismatch(
+          'token batch payment must use batchTransferFrom(address,address[],uint256[]) calldata',
+          [{ address: tx.to, amount: tx.value }]
+        );
+      }
+      const batch = decodeTssBatchCalldata(calldata, false);
+      await compareRecipients(
+        batch.recipients,
+        totalAmount,
+        'batch transaction value does not match the sum of intent amounts'
+      );
+      return;
+    }
+    if (selector === batchIds.token) {
+      if (batchAsset.kind === 'native') {
+        await throwRecipientMismatch('native batch payment must use batch(address[],uint256[]) calldata', [
+          { address: tx.to, amount: tx.value },
+        ]);
+      }
+      const batch = decodeTssBatchCalldata(calldata, true);
+      if (batchAsset.kind === 'token') {
+        if (normalizeTssAddress(batch.tokenContract) !== normalizeTssAddress(batchAsset.contract)) {
+          await throwRecipientMismatch('batchTransferFrom token contract does not match the intent token contract', [
+            { address: batch.tokenContract ?? '', amount: tx.value },
+          ]);
+        }
+      }
+      await compareRecipients(batch.recipients, '0', 'token batch transaction must not carry native value');
+      return;
+    }
+    await throwRecipientMismatch(
+      'batch payment must use batch(address[],uint256[]) or batchTransferFrom(address,address[],uint256[]) calldata',
+      [{ address: tx.to, amount: tx.value }]
+    );
+  }
+
+  /**
+   * Validate the envelope of an intent type this verifier has no intent rules for. Malformed bytes
+   * must never reach signing just because the intent is unhandled, so the bytes still have to
+   * decode as an EVM transaction. Formats that are not EVM are never recognised here: a coin that
+   * owns such a format (e.g. FLR atomic transactions) must handle it in its own verifier override
+   * before delegating to this one.
+   */
+  private async assertTssUnimplementedEncoding(txHex?: string): Promise<void> {
+    if (!txHex) {
+      throw new Error('missing txHex in txPrebuild');
+    }
+    try {
+      await this.decodeTssVerificationTransaction(txHex);
+    } catch (e) {
+      throw new Error(`transaction bytes could not be decoded as an EVM transaction: ${(e as Error).message}`);
+    }
+  }
+
+  /**
+   * Verify the shape of a consolidation recognised from the intent type, a consolidate id, or the
+   * caller's `verification.consolidationToBaseAddress` flag. Only two consolidation shapes are
+   * established by this SDK:
+   *
+   * - a native sweep is a plain send to the wallet base address and carries no calldata;
+   * - a token sweep is exactly `transfer(baseAddress, amount)` on the declared ERC-20 contract with
+   *   no native value.
+   *
+   * Only established expectations reject; everything else is reported, never claimed:
+   *
+   * - an authorised field that names the chain asset (`native-declared`) makes any calldata a
+   *   definite mismatch, because a native sweep is a plain send;
+   * - a declared token sweep never carries native value, whatever calldata shape it uses;
+   * - a token contract statics classifies as ERC-20 must be swept with `transfer(address,uint256)`:
+   *   any other function, batch encodings included, is a definite mismatch;
+   * - the flag-driven path keeps its historic rule that any calldata which is not an ERC-20
+   *   transfer must pay the wallet base address with `tx.to`.
+   *
+   * A generic `consolidate` that declares no asset at all is deliberately *not* treated as native:
+   * its bytes may belong to an ERC-20 or specialised sweep (the v6 server builds token sweeps on
+   * the plain `consolidate` type), so a non-empty shape is reported as unverifiable. A specialised
+   * token contract (ERC-7984) is verified by its own coin and is never rejected here.
+   *
+   * `tx.to` is the token contract for the token shape, so it is compared with the token identity the
+   * intent declares (caller declarations first, otherwise the stored intent's), resolved through
+   * the coin's own statics: a caller or stored `tokenName`, a recipient `tokenContractAddress` /
+   * `tokenAddress`, or the coin instance itself. A missing contract never suppresses the checks
+   * that do not need it.
+   *
+   * No amount rule applies: a sweep moves whatever the address holds, so the calldata amount is
+   * never compared with an intent amount.
+   */
+  private async verifyTssConsolidationShape(args: {
+    intentType: string;
+    tx: DecodedTssTransaction;
+    baseAddress: string;
+    /** The caller set `verification.consolidationToBaseAddress`: its historic rejections apply. */
+    flagDriven: boolean;
+    declaredTokenName?: string;
+    declaredRecipients: TssExpectedRecipient[];
+    throwRecipientMismatch: TssMismatchThrower;
+    reportUnverifiable: TssUnverifiableReporter;
+  }): Promise<void> {
+    const { tx, baseAddress, intentType, throwRecipientMismatch, reportUnverifiable } = args;
+    const calldata = normalizeTssCalldata(tx.data);
+    const asset = resolveTssConsolidationAsset(
+      this.getChain(),
+      intentType,
+      args.declaredTokenName,
+      args.declaredRecipients
+    );
+    const declaresToken = asset.kind === 'token' || asset.kind === 'unresolved';
+    const isErc20Transfer = calldata.startsWith(ERC20_TRANSFER_METHOD_ID);
+    const batchIds = tssBatchMethodIds();
+    const isBatch = calldata.startsWith(batchIds.native) || calldata.startsWith(batchIds.token);
+    // Only a token statics classifies as ERC-20 has a single known sweep encoding.
+    const hasKnownErc20Contract = asset.kind === 'token' && asset.standard === 'erc20';
+    const tokenContractCannotBeChecked = `consolidation ${
+      asset.kind === 'unresolved' ? asset.reason : 'declares no token contract'
+    }: the token contract cannot be checked, only the wallet base address and native value were verified`;
+    const rejectNativeValue = (): Promise<never> =>
+      throwRecipientMismatch('Consolidation token transfer must not carry native value', [
+        { address: tx.to, amount: tx.value },
+      ]);
+    const rejectNativeCalldata = (): Promise<never> =>
+      throwRecipientMismatch(TSS_CONSOLIDATION_NATIVE_CALLDATA_MESSAGE, [{ address: tx.to, amount: tx.value }]);
+
+    // No consolidation shape is a contract creation: both a native send and a token transfer need a
+    // destination, and an empty `to` can only deploy the calldata as code.
+    if (!tx.to) {
+      await throwRecipientMismatch('Consolidation transaction is missing recipient address', []);
+    }
+
+    // Historic flag rejection, enforced before any warning: the flag has always required a tx that
+    // is not an ERC-20 transfer to pay the wallet base address with `tx.to`. Batch and arbitrary
+    // calldata are included, so nothing below may downgrade them to a report.
+    if (args.flagDriven && !isErc20Transfer && normalizeTssAddress(tx.to) !== normalizeTssAddress(baseAddress)) {
+      await throwRecipientMismatch('Consolidation transaction recipient does not match wallet base address', [
+        { address: tx.to, amount: tx.value },
+      ]);
+    }
+
+    if (isErc20Transfer) {
+      // Canonical ERC-20 transfer(address,uint256) only: a trailing argument or a shorter payload
+      // would call something this verifier has not modelled.
+      assertCanonicalStaticTssArgs(calldata, 2, 'ERC-20 transfer');
+      // For ERC-20 consolidations `tx.to` is the token contract; the recipient is in the calldata.
+      const [innerRecipient] = getRawDecoded(['address', 'uint256'], tssCalldataPayload(calldata));
+      const decodedRecipient = tssDecodedAddress(innerRecipient);
+      if (decodedRecipient !== normalizeTssAddress(baseAddress)) {
+        await throwRecipientMismatch('Consolidation transaction recipient does not match wallet base address', [
+          { address: decodedRecipient, amount: tx.value },
+        ]);
+      }
+      if (!tssValuesEqual(tx.value, '0')) {
+        await rejectNativeValue();
+      }
+      if (asset.kind === 'token') {
+        if (normalizeTssAddress(tx.to) !== normalizeTssAddress(asset.contract)) {
+          await throwRecipientMismatch('Consolidation transaction does not call the declared token contract', [
+            { address: tx.to, amount: tx.value },
+          ]);
+        }
+        // Only a plain ERC-20 is verified by this shape (recipient, value, canonical args and
+        // contract). A specialised token is owned by its own coin, and an unclassified standard
+        // (NFT, dynamically generated token) is not established as ERC-20: both are reported.
+        if (asset.standard !== 'erc20') {
+          reportUnverifiable(
+            intentType,
+            asset.standard === 'specialized'
+              ? 'specialised token consolidation is verified by the token coin and is not modelled here'
+              : 'consolidation declares a token whose standard is not established as ERC-20: the token movement ' +
+                  'cannot be verified'
+          );
+        }
+        return;
+      }
+      // A field declared the chain asset, so a token transfer contradicts the intent.
+      if (asset.kind === 'native-declared') {
+        await rejectNativeCalldata();
+      }
+      reportUnverifiable(intentType, tokenContractCannotBeChecked);
+      return;
+    }
+
+    if (isBatch) {
+      // A declared token sweep never carries native value, whatever batch encoding is used. For an
+      // unresolved token that does not depend on which contract it is: the intent still declares a
+      // token, exactly as in the non-batch branch below.
+      if ((hasKnownErc20Contract || asset.kind === 'unresolved') && !tssValuesEqual(tx.value, '0')) {
+        await rejectNativeValue();
+      }
+      // An explicitly declared native asset cannot be moved by batcher calldata at all.
+      if (asset.kind === 'native-declared') {
+        await rejectNativeCalldata();
+      }
+      // A known ERC-20 token has exactly one sweep encoding; a batch cannot carry it to the base
+      // address. Anything less certain stays a reported, unimplemented shape: an undeclared asset
+      // may be a specialised sweep, an unresolved one names no contract to judge.
+      if (hasKnownErc20Contract) {
+        await throwRecipientMismatch(TSS_CONSOLIDATION_TOKEN_SHAPE_MESSAGE, [{ address: tx.to, amount: tx.value }]);
+      }
+      reportUnverifiable(intentType, 'batch consolidation calldata cannot be verified against the wallet base address');
+      return;
+    }
+
+    if (isTssEmptyCalldata(calldata)) {
+      // A sweep that declares a token cannot move it without `transfer` calldata.
+      if (declaresToken) {
+        await throwRecipientMismatch(
+          'Consolidation transaction declares a token but carries no ERC-20 transfer(address,uint256) calldata',
+          [{ address: tx.to, amount: tx.value }]
+        );
+      }
+      if (normalizeTssAddress(tx.to) !== normalizeTssAddress(baseAddress)) {
+        await throwRecipientMismatch('Consolidation transaction recipient does not match wallet base address', [
+          { address: tx.to, amount: tx.value },
+        ]);
+      }
+      return;
+    }
+
+    // Any other calldata is not a consolidation shape.
+    if (asset.kind === 'native-declared') {
+      await rejectNativeCalldata();
+    }
+    // A known ERC-20 contract has exactly one sweep encoding and never carries native value.
+    if (asset.kind === 'token' && hasKnownErc20Contract) {
+      if (!tssValuesEqual(tx.value, '0')) {
+        await rejectNativeValue();
+      }
+      if (normalizeTssAddress(tx.to) !== normalizeTssAddress(asset.contract)) {
+        await throwRecipientMismatch('Consolidation transaction does not call the declared token contract', [
+          { address: tx.to, amount: tx.value },
+        ]);
+      }
+      await throwRecipientMismatch(TSS_CONSOLIDATION_TOKEN_SHAPE_MESSAGE, [{ address: tx.to, amount: tx.value }]);
+    }
+    if (asset.kind === 'token') {
+      // A specialised token may legitimately be swept through its own contract entry point (the
+      // ERC-7984 token coin verifies those), so only a plain ERC-20 fixes `tx.to` here. How a
+      // specialised or unclassified standard behaves with native value is not established, so it is
+      // reported, never forced through the ERC-20 expectation.
+      if (asset.standard !== 'specialized' && normalizeTssAddress(tx.to) !== normalizeTssAddress(asset.contract)) {
+        await throwRecipientMismatch('Consolidation transaction does not call the declared token contract', [
+          { address: tx.to, amount: tx.value },
+        ]);
+      }
+      reportUnverifiable(
+        intentType,
+        asset.standard === 'specialized'
+          ? 'specialised token consolidation is verified by the token coin and is not modelled here'
+          : `consolidation calldata is not ERC-20 transfer(address,uint256)${
+              tssValuesEqual(tx.value, '0') ? '' : ' and carries native value'
+            } and the declared token standard is unknown: the token movement cannot be verified`
+      );
+      return;
+    }
+    if (asset.kind === 'unresolved') {
+      // The contract is unknown, but a token sweep still carries no native value.
+      if (!tssValuesEqual(tx.value, '0')) {
+        await rejectNativeValue();
+      }
+      reportUnverifiable(
+        intentType,
+        `consolidation ${asset.reason}: neither the token contract nor the calldata can be verified`
+      );
+      return;
+    }
+    // No asset is declared: the intent is a generic consolidation whose bytes may belong to a token
+    // or specialised sweep, so nothing here is a definite mismatch.
+    reportUnverifiable(
+      intentType,
+      'consolidation calldata is not a native send and the intent declares no asset: the bytes cannot be verified'
+    );
+  }
+
+  /**
    * @param {VerifyEthTransactionOptions} params
    * @param {TransactionParams} params.txParams - params object passed to send
    * @param {TransactionPrebuild} params.txPrebuild - prebuild object returned by server
@@ -3558,7 +4794,16 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
    * @throws {TxIntentMismatchRecipientError} if transaction recipients don't match user intent
    */
   async verifyTssTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
-    const { txParams, txPrebuild, wallet } = params;
+    const { txParams, txPrebuild, wallet, intent, callerTxParams } = params;
+
+    // Exactly one source speaks for the user intent: the caller's own params when it declared a
+    // type or recipients, otherwise the stored tx request intent (pending approval). The other
+    // source is dropped, so server data never selects the handler or fills in what the caller
+    // left out. `txParams` alone cannot answer this: with a stored intent present, its `type`
+    // and `recipients` have already been back-filled from that server data.
+    const callerParams = callerTxParams ?? (intent ? undefined : txParams);
+    const callerDeclaresIntent = !!(callerParams?.type || callerParams?.recipients?.length);
+    const storedIntent = intent && !callerDeclaresIntent ? intent : undefined;
 
     // Helper to throw TxIntentMismatchRecipientError with recipient details
     const throwRecipientMismatch = async (message: string, mismatchedRecipients: Recipient[]): Promise<never> => {
@@ -3573,11 +4818,18 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       );
     };
 
+    // A check this verifier cannot perform (unresolved metadata, a format it does not parse, an
+    // intent type without a handler) is reported here and never silently dropped. Definite
+    // mismatches go through throwRecipientMismatch instead.
+    const reportUnverifiable: TssUnverifiableReporter = (intentType, reason) =>
+      this.emitTssVerificationWarning(reason, intentType);
+
     if (
       !txParams?.recipients &&
       !(
         txParams.prebuildTx?.consolidateId ||
         txPrebuild?.consolidateId ||
+        storedIntent?.consolidateId ||
         txParams.stakingRequestId ||
         txParams.prebuildTx?.stakingRequestId ||
         (txParams.type && NO_RECIPIENT_TX_TYPES.has(txParams.type))
@@ -3593,67 +4845,79 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       throw new Error('tx cannot be both a batch and hop transaction');
     }
 
-    if (txParams.type && ['transfer'].includes(txParams.type)) {
-      if (txParams.recipients && txParams.recipients.length === 1) {
-        const recipients = txParams.recipients;
-        const expectedAmount = recipients[0].amount.toString();
-        const expectedDestination = recipients[0].address;
+    // Canonical verifier intent type, derived only from the source that speaks for the user: the
+    // stored intent type when it was selected, otherwise the caller's own declared type. It is
+    // never inferred from calldata, and `payment` is the stored spelling of `transfer`.
+    const explicitType = storedIntent
+      ? canonicalTssIntentType(storedIntent.intentType)
+      : canonicalTssIntentType(callerParams?.type);
+    // A consolidation id on the prebuild or the stored intent is server data. It marks the tx as
+    // a consolidation only when the caller declared nothing of its own; it can never reroute a
+    // caller-declared payment to the consolidate checks.
+    const consolidateId = callerDeclaresIntent
+      ? undefined
+      : txParams.prebuildTx?.consolidateId || txPrebuild?.consolidateId || storedIntent?.consolidateId || undefined;
+    const isConsolidation =
+      !!params.verification?.consolidationToBaseAddress ||
+      explicitType === 'consolidate' ||
+      explicitType === 'consolidateToken' ||
+      !!consolidateId;
+    const canonicalType = explicitType || (isConsolidation ? 'consolidate' : 'transfer');
 
-        const txBuilder = this.getTransactionBuilder();
-        txBuilder.from(txPrebuild.txHex);
-        const tx = await txBuilder.build();
-        const txJson = tx.toJson();
-        if (txJson.data === '0x') {
-          if (expectedAmount !== txJson.value) {
-            await throwRecipientMismatch(
-              'the transaction amount in txPrebuild does not match the value given by client',
-              [{ address: txJson.to, amount: txJson.value }]
-            );
-          }
-          if (expectedDestination.toLowerCase() !== txJson.to.toLowerCase()) {
-            await throwRecipientMismatch('destination address does not match with the recipient address', [
-              { address: txJson.to, amount: txJson.value },
-            ]);
-          }
-        } else if (txJson.data.startsWith('0xa9059cbb')) {
-          const [recipientAddress, amount] = getRawDecoded(
-            ['address', 'uint256'],
-            getBufferedByteCode('0xa9059cbb', txJson.data)
-          );
+    // contractCall / customTx carry arbitrary calldata with no intent shape to verify — never let
+    // them reach signing on this path.
+    if (EVM_TSS_UNSUPPORTED_INTENT_TYPES.has(canonicalType)) {
+      throw new Error(`unsupported intent type for EVM TSS: ${canonicalType}`);
+    }
 
-          // Check if recipients[0].data exists (WalletConnect flow)
-          let expectedRecipientAddress: string;
-          let expectedTokenAmount: string;
-          const recipientData = (recipients[0] as any).data;
+    // A caller that names a payment (`transfer` / `payment`) must supply the recipients it is
+    // paying: with none there is nothing to verify the bytes against, and the stored intent was
+    // dropped (its destination may be attacker-chosen). `[]` declares nothing, like omitting it.
+    // No mode may downgrade an unverifiable payment to a warning, and a token transfer
+    // (`transferToken`) keeps its own specialised handling rather than inheriting this rule.
+    if (canonicalTssIntentType(callerParams?.type) === 'transfer' && !callerParams?.recipients?.length) {
+      await throwRecipientMismatch(
+        'caller declared a payment without recipients: pass txParams.recipients so the transaction can be ' +
+          'verified against the user intent',
+        []
+      );
+    }
 
-          if (recipientData && recipientData.startsWith('0xa9059cbb')) {
-            // WalletConnect: decode expected recipient and amount from recipients[0].data
-            const [expectedRecipient, expectedAmount] = getRawDecoded(
-              ['address', 'uint256'],
-              getBufferedByteCode('0xa9059cbb', recipientData)
-            );
-            expectedRecipientAddress = addHexPrefix(expectedRecipient.toString()).toLowerCase();
-            expectedTokenAmount = expectedAmount.toString();
-          } else {
-            // Normal flow: use recipients[0].address and recipients[0].amount
-            expectedRecipientAddress = expectedDestination.toLowerCase();
-            expectedTokenAmount = expectedAmount;
-          }
-
-          if (expectedTokenAmount !== amount.toString()) {
-            await throwRecipientMismatch(
-              'the transaction amount in txPrebuild does not match the value given by client',
-              [{ address: addHexPrefix(recipientAddress.toString()), amount: amount.toString() }]
-            );
-          }
-
-          if (expectedRecipientAddress !== addHexPrefix(recipientAddress.toString()).toLowerCase()) {
-            await throwRecipientMismatch('destination address does not match with the recipient address', [
-              { address: addHexPrefix(recipientAddress.toString()), amount: amount.toString() },
-            ]);
-          }
-        }
+    // Payments (`transfer` / `payment`) must match the closed set of payment shapes in
+    // verifyTssPaymentTransaction. Hop transactions keep their dedicated validateHopPrebuild path.
+    if (canonicalType === 'transfer' && !txParams.hop) {
+      const declaredRecipients = storedIntent
+        ? txParams.recipients?.length
+          ? txParams.recipients
+          : tssRecipientsFromStoredIntent(storedIntent)
+        : callerParams?.recipients ?? [];
+      const declaredTokenName = storedIntent ? txParams.tokenName ?? storedIntent.tokenName : callerParams?.tokenName;
+      if (!declaredRecipients.length) {
+        reportUnverifiable(
+          'transfer',
+          'payment intent has no recipients: the transaction bytes cannot be verified against intent'
+        );
+      } else {
+        await this.verifyTssPaymentTransaction({
+          intentType: 'transfer',
+          recipients: toTssExpectedRecipients(declaredRecipients, storedIntent),
+          declaredTokenName,
+          tx: await this.decodeTssVerificationTransaction(txPrebuild.txHex),
+          throwRecipientMismatch,
+          reportUnverifiable,
+        });
       }
+    }
+
+    // A stored DeFi leg carries only the server-supplied vault id and amount; no local registry
+    // anchors its target contract or approve spender, so it is reported rather than checked
+    // against bytes that only prove the server agrees with itself.
+    if (storedIntent && ['defiApprove', 'defiDeposit', 'defiWithdraw'].includes(canonicalType)) {
+      reportUnverifiable(
+        canonicalType,
+        `stored ${canonicalType} intent cannot be verified: the transaction target and approve spender ` +
+          'cannot be anchored to a locally known vault contract'
+      );
     }
 
     if (txParams.type && ['defiApprove', 'defiDeposit', 'defiWithdraw'].includes(txParams.type)) {
@@ -3752,52 +5016,72 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       await this.assertWrapperApproveIsDeclared(params, throwRecipientMismatch);
     }
 
-    // Verify consolidation transactions send to base address
+    // Consolidation verification: one shape verifier serves both the caller's
+    // `verification.consolidationToBaseAddress` flag and a consolidation recognised from the intent
+    // type (`consolidate`, `consolidateToken`) or a consolidate id. The flag keeps its historic
+    // requirement that the wallet base address is known; the recognised-intent path decodes the
+    // bytes first and reports a missing base address instead, so a malformed payload never becomes
+    // signable just because the base address is unavailable.
+    const coinSpecificBaseAddress = wallet.coinSpecific()?.baseAddress;
+    const walletBaseAddress = typeof coinSpecificBaseAddress === 'string' ? coinSpecificBaseAddress : undefined;
+    // Token identity is read only from the source that speaks for the user: the caller's own
+    // declarations when it declared the intent, otherwise the stored tx request intent. Never from
+    // the transaction bytes.
+    const consolidationTokenName = storedIntent
+      ? txParams.tokenName ?? storedIntent.tokenName
+      : callerParams?.tokenName;
+    const consolidationDeclaredRecipients: TssExpectedRecipient[] = storedIntent
+      ? tssExpectedRecipientsFromStoredIntent(storedIntent)
+      : toTssExpectedRecipients(callerParams?.recipients ?? []);
+    const consolidationIntentType = canonicalType === 'consolidateToken' ? 'consolidateToken' : 'consolidate';
     if (params.verification?.consolidationToBaseAddress) {
-      const coinSpecific = wallet.coinSpecific();
-      if (!coinSpecific || !coinSpecific.baseAddress) {
+      if (!walletBaseAddress) {
         throw new Error('Unable to determine base address for consolidation');
       }
-      const baseAddress = coinSpecific.baseAddress;
-
-      if (!txPrebuild.txHex) {
-        throw new Error('missing txHex in txPrebuild');
-      }
-
-      const txBuilder = this.getTransactionBuilder();
-      txBuilder.from(txPrebuild.txHex);
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
-
-      // Verify the transaction recipient matches the base address
-      if (!txJson.to) {
-        throw new Error('Consolidation transaction is missing recipient address');
-      }
-
-      const erc20TransferSelector = addHexPrefix(
-        optionalDeps.ethAbi.methodID('transfer', ['address', 'uint256']).toString('hex')
-      );
-
-      if (txJson.data && txJson.data.startsWith(erc20TransferSelector)) {
-        // For ERC20 token consolidations, txJson.to is the token contract address,
-        // not the actual transfer recipient. The real recipient is encoded in the
-        // transfer(address,uint256) calldata. Decode it and verify against baseAddress.
-        const [recipientAddress] = getRawDecoded(
-          ['address', 'uint256'],
-          getBufferedByteCode(erc20TransferSelector, txJson.data)
+      await this.verifyTssConsolidationShape({
+        intentType: consolidationIntentType,
+        tx: await this.decodeTssVerificationTransaction(txPrebuild.txHex),
+        baseAddress: walletBaseAddress,
+        flagDriven: true,
+        declaredTokenName: consolidationTokenName,
+        declaredRecipients: consolidationDeclaredRecipients,
+        throwRecipientMismatch,
+        reportUnverifiable,
+      });
+    } else if (isConsolidation) {
+      const consolidationTx = await this.decodeTssVerificationTransaction(txPrebuild.txHex);
+      if (!walletBaseAddress) {
+        reportUnverifiable(
+          consolidationIntentType,
+          'wallet base address is not available: the consolidation destination cannot be verified'
         );
-        const decodedRecipient = addHexPrefix(recipientAddress.toString()).toLowerCase();
-        if (decodedRecipient !== baseAddress.toLowerCase()) {
-          await throwRecipientMismatch('Consolidation transaction recipient does not match wallet base address', [
-            { address: decodedRecipient, amount: txJson.value },
-          ]);
-        }
-      } else if (txJson.to.toLowerCase() !== baseAddress.toLowerCase()) {
-        // Native coin consolidation: txJson.to is the actual recipient
-        await throwRecipientMismatch('Consolidation transaction recipient does not match wallet base address', [
-          { address: txJson.to, amount: txJson.value },
-        ]);
+      } else {
+        await this.verifyTssConsolidationShape({
+          intentType: consolidationIntentType,
+          tx: consolidationTx,
+          baseAddress: walletBaseAddress,
+          flagDriven: false,
+          declaredTokenName: consolidationTokenName,
+          declaredRecipients: consolidationDeclaredRecipients,
+          throwRecipientMismatch,
+          reportUnverifiable,
+        });
       }
+    }
+
+    // Every other intent type has no fail-closed verifier here. Say so precisely instead of
+    // implying the bytes were checked; specialized formats (FLR atomic exports, Tempo, VET, …)
+    // are never routed through the EVM parser above.
+    if (
+      !['transfer', 'consolidate', 'consolidateToken'].includes(canonicalType) &&
+      !EVM_TSS_DEDICATED_CHECK_INTENT_TYPES.has(canonicalType)
+    ) {
+      await this.assertTssUnimplementedEncoding(txPrebuild.txHex);
+      reportUnverifiable(
+        canonicalType || String(txParams.type ?? ''),
+        `no fail-closed verifier for intent type '${canonicalType || txParams.type}': the bytes are a valid EVM ` +
+          'transaction but were not compared against intent'
+      );
     }
 
     return true;

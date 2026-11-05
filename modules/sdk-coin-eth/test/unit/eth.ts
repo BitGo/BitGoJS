@@ -78,6 +78,21 @@ describe('ETH:', function () {
     return (await txBuilder.build()).toBroadcastFormat();
   };
 
+  /**
+   * Build the serialized bytes of a real native-coin send. Consolidation, acceleration and
+   * fillNonce intents are verified against these bytes, so they must be a decodable EVM
+   * transaction rather than a placeholder.
+   */
+  const buildNativeTxHex = async (to: string, value = '0'): Promise<string> => {
+    const txBuilder = getBuilder('hteth') as TransactionBuilder;
+    txBuilder.type(TransactionType.SingleSigSend);
+    txBuilder.fee({ fee: '10', gasLimit: '21000' });
+    txBuilder.counter(1);
+    txBuilder.contract(to);
+    txBuilder.value(value);
+    return (await txBuilder.build()).toBroadcastFormat();
+  };
+
   const defiCalldata = (signature: string, values: string[]): string => {
     const types = signature.slice(signature.indexOf('(') + 1, -1).split(',');
     const methodId = EthereumAbi.methodID(signature.split('(')[0], types);
@@ -706,6 +721,44 @@ describe('ETH:', function () {
       throw new Error('expected verifyTransaction to be rejected, but it resolved');
     };
 
+    /**
+     * Run a verification while collecting the verifier's warning lines, so a test can tell
+     * "the bytes were checked" apart from "the intent type has no fail-closed verifier".
+     */
+    const withVerificationWarnings = async (
+      run: () => Promise<boolean>
+    ): Promise<{ result: boolean; warnings: string[] }> => {
+      const warnings: string[] = [];
+      const originalWarn = console.warn;
+      console.warn = (...args: unknown[]): void => {
+        warnings.push(args.map((arg) => String(arg)).join(' '));
+      };
+      try {
+        return { result: await run(), warnings };
+      } finally {
+        console.warn = originalWarn;
+      }
+    };
+
+    /**
+     * Run a fixture through the coin's real TSS signing entry point. The fixtures are the loose
+     * shapes that path passes: no caller recipients for intent-only flows, and a prebuild that
+     * carries only the fields the verifier reads.
+     */
+    const verifyTssFixture = (
+      txParams: Record<string, unknown>,
+      txPrebuild: Record<string, unknown>,
+      wallet: Wallet,
+      verification: Record<string, unknown> = {}
+    ): Promise<boolean> =>
+      (bitgo.coin('hteth') as Hteth).verifyTransaction({
+        txParams: txParams as unknown as VerifyEthTransactionOptions['txParams'],
+        txPrebuild: txPrebuild as unknown as VerifyEthTransactionOptions['txPrebuild'],
+        wallet,
+        verification: verification as unknown as VerifyEthTransactionOptions['verification'],
+        walletType: 'tss',
+      });
+
     it('should verify TSS consolidation transaction when txPrebuild has consolidateId', async function () {
       const coin = bitgo.coin('hteth') as Hteth;
       const baseAddress = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
@@ -724,21 +777,17 @@ describe('ETH:', function () {
       // txPrebuild with consolidateId (set by server during consolidation build)
       const txPrebuild = {
         consolidateId: '68a7d5d0c66e74e216b97173bd558c6d',
-        txHex: '0x',
+        // A sweep of the address balance to the wallet base address.
+        txHex: await buildNativeTxHex(baseAddress, '1000000000000000000'),
         coin: 'hteth',
         walletId: 'fakeWalletId',
       };
 
-      const verification = {};
-
-      const isTransactionVerified = await coin.verifyTransaction({
-        txParams: txParams as any,
-        txPrebuild: txPrebuild as any,
-        wallet,
-        verification,
-        walletType: 'tss',
-      });
-      isTransactionVerified.should.equal(true);
+      const { result, warnings } = await withVerificationWarnings(() => verifyTssFixture(txParams, txPrebuild, wallet));
+      result.should.equal(true);
+      // The consolidation destination was checked against the base address, so nothing was
+      // reported as unverifiable.
+      warnings.should.have.length(0);
     });
 
     it('should verify TSS transaction when txParams.type is consolidate', async function () {
@@ -757,21 +806,17 @@ describe('ETH:', function () {
       };
 
       const txPrebuild = {
-        txHex: '0x',
+        // A sweep of the address balance to the wallet base address.
+        txHex: await buildNativeTxHex(baseAddress, '1000000000000000000'),
         coin: 'hteth',
         walletId: 'fakeWalletId',
       };
 
-      const verification = {};
-
-      const isTransactionVerified = await coin.verifyTransaction({
-        txParams: txParams as any,
-        txPrebuild: txPrebuild as any,
-        wallet,
-        verification,
-        walletType: 'tss',
-      });
-      isTransactionVerified.should.equal(true);
+      const { result, warnings } = await withVerificationWarnings(() => verifyTssFixture(txParams, txPrebuild, wallet));
+      result.should.equal(true);
+      // The consolidation destination was checked against the base address, so nothing was
+      // reported as unverifiable.
+      warnings.should.have.length(0);
     });
 
     it('should verify TSS transaction when txParams.prebuildTx has consolidateId', async function () {
@@ -792,21 +837,17 @@ describe('ETH:', function () {
       };
 
       const txPrebuild = {
-        txHex: '0x',
+        // A sweep of the address balance to the wallet base address.
+        txHex: await buildNativeTxHex(baseAddress, '1000000000000000000'),
         coin: 'hteth',
         walletId: 'fakeWalletId',
       };
 
-      const verification = {};
-
-      const isTransactionVerified = await coin.verifyTransaction({
-        txParams: txParams as any,
-        txPrebuild: txPrebuild as any,
-        wallet,
-        verification,
-        walletType: 'tss',
-      });
-      isTransactionVerified.should.equal(true);
+      const { result, warnings } = await withVerificationWarnings(() => verifyTssFixture(txParams, txPrebuild, wallet));
+      result.should.equal(true);
+      // The consolidation destination was checked against the base address, so nothing was
+      // reported as unverifiable.
+      warnings.should.have.length(0);
     });
 
     it('should reject TSS transaction without recipients, consolidateId, or valid type', async function () {
@@ -857,22 +898,19 @@ describe('ETH:', function () {
         walletPassphrase: 'fakeWalletPassphrase',
       };
 
+      // An acceleration replaces an existing payment: the fee bump has no caller recipients to
+      // compare against, so the bytes only have to be a decodable EVM transaction.
       const txPrebuild = {
-        txHex: '0x',
+        txHex: await buildNativeTxHex(address2, '1000000000000000000'),
         coin: 'hteth',
         walletId: 'fakeWalletId',
       };
 
-      const verification = {};
-
-      const isTransactionVerified = await coin.verifyTransaction({
-        txParams: txParams as any,
-        txPrebuild: txPrebuild as any,
-        wallet,
-        verification,
-        walletType: 'tss',
-      });
-      isTransactionVerified.should.equal(true);
+      const { result, warnings } = await withVerificationWarnings(() => verifyTssFixture(txParams, txPrebuild, wallet));
+      result.should.equal(true);
+      // Accepted, but reported: the bytes were never compared against the original payment.
+      warnings.should.have.length(1);
+      warnings[0].should.match(/no fail-closed verifier for intent type 'acceleration'/);
     });
 
     it('should verify TSS transaction with fillNonce type', async function () {
@@ -890,22 +928,18 @@ describe('ETH:', function () {
         walletPassphrase: 'fakeWalletPassphrase',
       };
 
+      // A nonce fill is a self-directed zero-value send: the recipient is the wallet base address.
       const txPrebuild = {
-        txHex: '0x',
+        txHex: await buildNativeTxHex(baseAddress, '0'),
         coin: 'hteth',
         walletId: 'fakeWalletId',
       };
 
-      const verification = {};
-
-      const isTransactionVerified = await coin.verifyTransaction({
-        txParams: txParams as any,
-        txPrebuild: txPrebuild as any,
-        wallet,
-        verification,
-        walletType: 'tss',
-      });
-      isTransactionVerified.should.equal(true);
+      const { result, warnings } = await withVerificationWarnings(() => verifyTssFixture(txParams, txPrebuild, wallet));
+      result.should.equal(true);
+      // Accepted, but reported: the verifier has no intent rules for a nonce fill.
+      warnings.should.have.length(1);
+      warnings[0].should.match(/no fail-closed verifier for intent type 'fillNonce'/);
     });
 
     it('should verify TSS transaction with defiApprove type', async function () {
@@ -1626,7 +1660,7 @@ describe('ETH:', function () {
         });
       };
 
-      ['tokenApproval', 'customTx', 'defiApprove'].forEach((type) => {
+      ['tokenApproval', 'defiApprove'].forEach((type) => {
         it(`should reject approve(wrapper, amount) on the underlying relabelled as ${type}`, async function () {
           await expectDefiRejection(
             verifyAs(type, defiCalldata('approve(address,uint256)', [wrapper, amount])),
@@ -1635,64 +1669,57 @@ describe('ETH:', function () {
         });
       });
 
-      it('should reject a mutated-amount wrapper approve relabelled as customTx', async function () {
+      it('should reject a customTx intent outright — EVM has no verifiable shape for it', async function () {
+        // customTx is refused before any calldata check, so even a benign approve of another spender cannot pass.
+        await verifyAs('customTx', defiCalldata('approve(address,uint256)', [address2, amount])).should.be.rejectedWith(
+          /unsupported intent type for EVM TSS: customTx/
+        );
+      });
+
+      it('should reject a mutated-amount wrapper approve relabelled as tokenApproval', async function () {
         await expectDefiRejection(
-          verifyAs('customTx', defiCalldata('approve(address,uint256)', [wrapper, '999999999999'])),
+          verifyAs('tokenApproval', defiCalldata('approve(address,uint256)', [wrapper, '999999999999'])),
           /must be declared as a wrapApprove intent/
         );
       });
 
       it('should reject a wrapper approve with trailing bytes (an ERC-20 ignores them)', async function () {
         await expectDefiRejection(
-          verifyAs('customTx', defiCalldata('approve(address,uint256)', [wrapper, amount]) + '00'),
+          verifyAs('tokenApproval', defiCalldata('approve(address,uint256)', [wrapper, amount]) + '00'),
           /must be declared as a wrapApprove intent/
         );
       });
 
       it('should not affect approvals of the underlying to other spenders', async function () {
-        (await verifyAs('customTx', defiCalldata('approve(address,uint256)', [address2, amount]))).should.equal(true);
+        (await verifyAs('defiApprove', defiCalldata('approve(address,uint256)', [address2, amount]))).should.equal(
+          true
+        );
         (await verifyAs('tokenApproval', defiCalldata('approve(address,uint256)', [address2, amount]))).should.equal(
           true
         );
       });
 
-      it('should not parse the tx at all when the calldata carries no approve selector', async function () {
-        const coin = bitgo.coin('hteth') as Hteth;
-        const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: address1 } });
-        const verifyWith = async (data: string) => {
-          const txHex = await buildDefiTxHex(data, underlying);
-          // getTransactionBuilder is not part of the coin's public type, so spy through a minimal structural view.
-          const builderSpy = sinon.spy(
-            coin as unknown as { getTransactionBuilder: () => unknown },
-            'getTransactionBuilder'
-          );
-          try {
-            await coin.verifyTransaction({
-              txParams: { type: 'customTx', wallet } as any,
-              txPrebuild: { txHex, coin: 'hteth', walletId: 'w' } as any,
-              wallet,
-              verification: {},
-              walletType: 'tss',
-            });
-            return builderSpy.callCount;
-          } finally {
-            builderSpy.restore();
-          }
-        };
-
-        (await verifyWith(defiCalldata('transfer(address,uint256)', [wrapper, amount]))).should.equal(0);
-        (await verifyWith(defiCalldata('approve(address,uint256)', [address2, amount]))).should.equal(1);
+      it('should not reject a transfer or an approve of another spender declared as tokenApproval', async function () {
+        // Only a wrapper-directed approve is forced through wrapApprove. A transfer, and an approve
+        // whose spender is not the wrapper, still reach signing; they are reported as unverified
+        // because tokenApproval has no intent rules here.
+        (await verifyAs('tokenApproval', defiCalldata('transfer(address,uint256)', [wrapper, amount]))).should.equal(
+          true
+        );
+        (await verifyAs('tokenApproval', defiCalldata('approve(address,uint256)', [address2, amount]))).should.equal(
+          true
+        );
       });
 
       it('should leave other declared types untouched for txs that are not a wrapper approve', async function () {
         // Every type below skips the wrapApprove check and reaches the guard; none of these txs is an approve of a
-        // wrapper, so all must verify exactly as they did before the guard existed.
+        // wrapper, so all must still verify. customTx is deliberately absent: the verifier rejects that intent type
+        // outright, so it can no longer stand for an untouched type.
         const benign: Array<[string, string, string]> = [
-          ['customTx', defiCalldata('transfer(address,uint256)', [address2, amount]), underlying],
-          ['customTx', defiCalldata('approve(address,uint256)', [address2, amount]), underlying],
-          ['customTx', defiCalldata('approve(address,uint256)', [wrapper, amount]), address2],
+          ['tokenApproval', defiCalldata('transfer(address,uint256)', [address2, amount]), underlying],
           ['tokenApproval', defiCalldata('approve(address,uint256)', [address2, amount]), underlying],
           ['tokenApproval', defiCalldata('approve(address,uint256)', [wrapper, amount]), address2],
+          ['defiApprove', defiCalldata('approve(address,uint256)', [address2, amount]), underlying],
           ['acceleration', defiCalldata('transfer(address,uint256)', [address2, amount]), address2],
           ['fillNonce', '0x', address2],
           ['enabletoken', defiCalldata('transfer(address,uint256)', [address2, amount]), address2],
@@ -1703,9 +1730,11 @@ describe('ETH:', function () {
       });
 
       it('should not affect transfers to the underlying or approves of the wrapper on other contracts', async function () {
-        (await verifyAs('customTx', defiCalldata('transfer(address,uint256)', [wrapper, amount]))).should.equal(true);
+        (await verifyAs('tokenApproval', defiCalldata('transfer(address,uint256)', [wrapper, amount]))).should.equal(
+          true
+        );
         (
-          await verifyAs('customTx', defiCalldata('approve(address,uint256)', [wrapper, amount]), address2)
+          await verifyAs('tokenApproval', defiCalldata('approve(address,uint256)', [wrapper, amount]), address2)
         ).should.equal(true);
       });
 

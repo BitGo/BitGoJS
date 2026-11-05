@@ -5,3 +5,4 @@ export * from './coin';
 export * from './messages';
 export * from './zamaUtils';
 export * from './decryptionDelegationBuilder';
+export * from './tssVerification';

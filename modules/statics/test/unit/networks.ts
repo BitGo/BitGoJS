@@ -103,6 +103,15 @@ Object.entries(Networks).forEach(([category, networks]) => {
   });
 });
 
+describe('Katana Network', function () {
+  const TRUSTED_BATCHER_ADDRESS = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
+
+  it('should verify batch prebuilds against the deployed batcher on mainnet and testnet', function () {
+    Networks.main.katanaeth.batcherContractAddress.should.equal(TRUSTED_BATCHER_ADDRESS);
+    Networks.test.katanaeth.batcherContractAddress.should.equal(TRUSTED_BATCHER_ADDRESS);
+  });
+});
+
 describe('Cosmos-family addressPrefix', function () {
   const cases: Array<[string, AccountNetwork, string]> = [
     ['main.atom', Networks.main.atom, 'cosmos'],

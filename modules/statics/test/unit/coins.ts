@@ -1447,6 +1447,19 @@ describe('TSS Verify Use Serialized Tx Hex Feature', () => {
     });
   });
 
+  it('should have TSS_VERIFY_USE_SERIALIZED_TX_HEX on the non-EIP-1559 EVM chains', () => {
+    // Their signableHex is the EIP-155 preimage RLP([...,chainId,0,0]), which ethereumjs cannot
+    // parse as a transaction, so TSS verification must decode serializedTxHex instead.
+    const legacyEvmChains = ['kavaevm', 'tkavaevm', 'prividiumeth', 'tprividiumeth'];
+    legacyEvmChains.forEach((coinName) => {
+      const coin = coins.get(coinName);
+      coin.features.includes(CoinFeature.EIP1559).should.eql(false, `${coinName} must not claim EIP-1559`);
+      coin.features
+        .includes(CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX)
+        .should.eql(true, `${coinName} must verify serializedTxHex`);
+    });
+  });
+
   it('should have TSS_VERIFY_USE_SERIALIZED_TX_HEX on BSC and XDC tokens', () => {
     coins.get('bsc:busd').features.includes(CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX).should.eql(true);
     coins.get('xdc:usdc').features.includes(CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX).should.eql(true);

@@ -39,6 +39,7 @@ import {
   CustomMPCv2SigningRound1GeneratingFunction,
   CustomMPCv2SigningRound2GeneratingFunction,
   CustomMPCv2SigningRound3GeneratingFunction,
+  PopulatedIntent,
   RequestType,
   SignatureShareRecord,
   TSSParams,
@@ -981,29 +982,44 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
         );
       }
 
-      // For some coins, signableHex is not a parseable transaction. Pass
-      // serializedTxHex so verifyTransaction can decode the full tx bytes.
-      // - CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX: ICP hash digests,
-      //   BSC/XDC legacy EIP-155 RLP with v=chainId, etc.
-      // - Avalanche atomic (FLRP/FLR cross-chain): signableHex is SHA-256(txBody);
-      //   serializedTxHex is the PVM/EVM atomic tx (codec prefix 0x0000).
-      // For other coins, signableHex IS the unsigned transaction (e.g. EIP-1559 RLP).
-      if (shouldVerifyWithSerializedTxHex(this.baseCoin) || shouldUsePreHashedSignable(this.baseCoin, unsignedTx)) {
+      // For some transactions signableHex is not a parseable transaction. Pass serializedTxHex
+      // so verifyTransaction can decode the full tx bytes:
+      // - Pre-hashed signable: Avalanche atomic cross-chain (FLRP/FLR) signableHex is
+      //   SHA-256(txBody) and serializedTxHex is the PVM/EVM atomic tx (codec prefix 0x0000).
+      //   That route stays as it is; the atomic payload must not be parsed as an EVM tx and
+      //   there is no EVM signableHex to derive from it.
+      // - Everything else is routed by the actual envelope, not only coin features: an
+      //   EIP-1559-capable chain can still carry a type-0 tx whose signableHex is the EIP-155
+      //   preimage. CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX remains the fallback for coins
+      //   that cannot answer from the envelope (ICP hash digests, BSC/XDC legacy EIP-155 RLP).
+      const preHashedSignable = shouldUsePreHashedSignable(this.baseCoin, unsignedTx);
+      const verifyWithSerializedTxHex =
+        !preHashedSignable && shouldVerifyWithSerializedTxHex(this.baseCoin, unsignedTx);
+      if (verifyWithSerializedTxHex) {
+        if (!unsignedTx.serializedTxHex) {
+          throw new InvalidTransactionError('serializedTxHex is required to verify this transaction before signing');
+        }
+      }
+      if (verifyWithSerializedTxHex || preHashedSignable) {
         await this.baseCoin.verifyTransaction({
           txPrebuild: { txHex: unsignedTx.serializedTxHex, txInfo: unsignedTx.signableHex },
-          txParams: resolveEffectiveTxParams(txRequest, params.txParams),
+          txParams: resolveEffectiveTxParams(txRequest, params.txParams, this.baseCoin.getChain()),
           wallet: this.wallet,
           walletType: this.wallet.multisigType(),
+          intent: txRequest.intent as PopulatedIntent,
+          callerTxParams: params.txParams,
         });
-        if (shouldVerifyWithSerializedTxHex(this.baseCoin) && isCoinWithSignableConsistency(this.baseCoin)) {
+        if (verifyWithSerializedTxHex && isCoinWithSignableConsistency(this.baseCoin)) {
           this.baseCoin.assertSignableConsistency(unsignedTx.serializedTxHex, unsignedTx.signableHex);
         }
       } else {
         await this.baseCoin.verifyTransaction({
           txPrebuild: { txHex: unsignedTx.signableHex },
-          txParams: resolveEffectiveTxParams(txRequest, params.txParams),
+          txParams: resolveEffectiveTxParams(txRequest, params.txParams, this.baseCoin.getChain()),
           wallet: this.wallet,
           walletType: this.wallet.multisigType(),
+          intent: txRequest.intent as PopulatedIntent,
+          callerTxParams: params.txParams,
         });
       }
       txOrMessageToSign = unsignedTx.signableHex;
