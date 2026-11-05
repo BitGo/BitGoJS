@@ -2969,6 +2969,7 @@ export const ofcCoins = [
     UnderlyingAsset['avaxc:mxnd']
   ),
   ofcAvaxErc20('9fb77e47-8916-4dcb-ac10-e11fa07172fb', 'ofcavaxc:nxpc', 'NEXPACE', 18, UnderlyingAsset['avaxc:nxpc']),
+  ofcAvaxErc20('71577090-7bec-461e-b547-1b642a858488', 'ofcavaxc:ktc', 'Kitocoin', 18, UnderlyingAsset['avaxc:ktc']),
   ofcOpethErc20('10259b23-2e2e-4574-b146-b49f1119600f', 'ofcopeth:op', 'Optimism', 18, UnderlyingAsset['opeth:op']),
   ofcOpethErc20(
     '550edf0d-1617-404e-bdab-931e98f37326',
