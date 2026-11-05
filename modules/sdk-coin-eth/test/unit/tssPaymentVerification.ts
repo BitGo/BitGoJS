@@ -1,10 +1,20 @@
 import 'should';
 import sinon from 'sinon';
+import { Hash } from 'crypto';
 import EthereumAbi from 'ethereumjs-abi';
+import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { TransactionType, TxIntentMismatchRecipientError, Wallet } from '@bitgo/sdk-core';
-import { coins, EthereumNetwork } from '@bitgo/statics';
+import {
+  EcdsaMPCv2Utils,
+  RequestTracer,
+  TransactionType,
+  TxIntentMismatchRecipientError,
+  TxRequest,
+  Wallet,
+} from '@bitgo/sdk-core';
+import { AbstractEthLikeNewCoins, TransferBuilderERC7984 } from '@bitgo/abstract-eth';
+import { BaseCoin as StaticsBaseCoin, CoinFeature, coins, EthereumNetwork } from '@bitgo/statics';
 import { Hteth, TransactionBuilder } from '../../src';
 import { getBuilder } from './getBuilder';
 
@@ -325,6 +335,126 @@ describe('TSS payment verification', function () {
       const txHex = await buildTx({ to: recipient, value: '1' });
       (await verify({ type: 'acceleration' }, txHex)).should.be.true();
       warned(/acceleration: no verifier is implemented/).should.be.true();
+    });
+  });
+
+  // Approval recreation carries no caller txParams; the token survives only in amount.symbol.
+  // Exercise both verification routes with the real coin verifier, stopping before signing.
+  describe('MPCv2 signing of a stored confidential payment without caller txParams', function () {
+    const confidentialToken = 'hteth:ctest1';
+    const confidentialRecipient = '0x19645032c7f1533395d44a629462e751084d3e4c';
+    const confidentialSendAmount = '1000000';
+    const encryptedHandle = '0x' + 'ab'.repeat(32);
+    const inputProof = '0x' + 'cd'.repeat(50);
+    const gpgKeyStub = 'stubbed-gpg-key';
+    const signedBoundaryMessage = 'signing boundary reached after recipient verification';
+
+    function tokenContractAddress(tokenName: string): string {
+      const token = coins.get(tokenName);
+      if (!('contractAddress' in token) || typeof token.contractAddress !== 'string') {
+        throw new Error(`${tokenName} has no contract address in statics`);
+      }
+      return token.contractAddress;
+    }
+
+    function buildConfidentialTransferBytes(): { signableHex: string; serializedTxHex: string } {
+      const tokenContract = tokenContractAddress(confidentialToken);
+      const common = AbstractEthLikeNewCoins.getCustomChainCommon(coin.getChainId());
+      const confidentialTransfer = new TransferBuilderERC7984()
+        .to(confidentialRecipient)
+        .tokenContractAddress(tokenContract)
+        .encryptedHandle(encryptedHandle)
+        .inputProof(inputProof)
+        .build();
+      const tx = FeeMarketEIP1559Transaction.fromTxData(
+        {
+          nonce: 1,
+          maxPriorityFeePerGas: 10,
+          maxFeePerGas: 100,
+          gasLimit: 200000,
+          to: tokenContract,
+          value: 0,
+          data: confidentialTransfer,
+          chainId: coin.getChainId(),
+        },
+        { common }
+      );
+      return {
+        signableHex: tx.getMessageToSign(false).toString('hex'),
+        serializedTxHex: tx.serialize().toString('hex'),
+      };
+    }
+
+    async function expectSigningBoundary(useSerializedTxHex: boolean): Promise<void> {
+      const { signableHex, serializedTxHex } = buildConfidentialTransferBytes();
+      const signingWallet = new Wallet(bitgo, coin, {
+        id: 'confidentialSigningWallet',
+        multisigType: 'tss',
+        multisigTypeVersion: 'MPCv2',
+        coinSpecific: { baseAddress },
+      });
+      const utils = new EcdsaMPCv2Utils(bitgo, coin, signingWallet);
+      // Avoid the remote GPG lookup; verification does not consume this key.
+      const stubbableUtils = utils as unknown as Record<string, (...args: unknown[]) => Promise<string>>;
+      sinon.stub(stubbableUtils, 'pickBitgoPubGpgKeyForSigning').resolves(gpgKeyStub);
+
+      const realFeatures = coin
+        .getConfig()
+        .features.filter((feature) => feature !== CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX);
+      sinon.stub(coin, 'getConfig').returns({
+        ...coin.getConfig(),
+        features: useSerializedTxHex ? [...realFeatures, CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX] : realFeatures,
+      } as unknown as Readonly<StaticsBaseCoin>);
+
+      // The MPCv2 flow hashes the verified bytes before it exchanges any signature share. Throwing
+      // here proves verification succeeded: a recipient mismatch rejects before this boundary.
+      const boundary = new Error(signedBoundaryMessage);
+      sinon.stub(coin, 'getHashFunction').returns({
+        update: () => {
+          throw boundary;
+        },
+      } as unknown as Hash);
+
+      const txRequest = {
+        txRequestId: 'confidential-payment-signing',
+        apiVersion: 'full',
+        walletId: 'confidentialSigningWallet',
+        intent: {
+          intentType: 'payment',
+          recipients: [
+            {
+              address: { address: confidentialRecipient },
+              amount: { value: confidentialSendAmount, symbol: confidentialToken },
+            },
+          ],
+        },
+        transactions: [
+          {
+            unsignedTx: { derivationPath: 'm/0', signableHex, serializedTxHex },
+            signatureShares: [],
+          },
+        ],
+      } as unknown as TxRequest;
+
+      try {
+        await utils.signTxRequest({
+          txRequest,
+          prv: '',
+          reqId: new RequestTracer(),
+        });
+      } catch (e) {
+        e.should.be.exactly(boundary);
+        return;
+      }
+      throw new Error('expected signTxRequest to stop at the signing boundary');
+    }
+
+    it('verifies the stored payment from signableHex', async function () {
+      await expectSigningBoundary(false);
+    });
+
+    it('verifies the stored payment from serializedTxHex', async function () {
+      await expectSigningBoundary(true);
     });
   });
 

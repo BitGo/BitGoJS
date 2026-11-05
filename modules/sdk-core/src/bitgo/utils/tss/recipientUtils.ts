@@ -114,6 +114,9 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
  *
  * tokenName is derived from tokenData.tokenName when present, otherwise from
  * amount.symbol when chainName is provided and symbol differs from it.
+ * MPCv2 callers supply the signing coin's chain name to retain token identity on
+ * stored-request approvals. This fallback only affects reconstructed recipients;
+ * a nonempty caller-supplied recipient list is preserved unchanged.
  *
  * Staking intents (BSC delegate/undelegate, CELO stake/unstake, etc.) are
  * identified generically by the presence of `stakingRequestId` on the intent —
