@@ -324,6 +324,7 @@ export interface UnwrapIntentParams {
 }
 
 export interface IntentOptionsForMessage extends IntentOptionsBase {
+  isWalletConnectTx?: true;
   messageRaw: string;
   messageEncoded?: string;
   messageStandardType?: MessageStandardType;
@@ -333,6 +334,7 @@ export interface IntentOptionsForMessage extends IntentOptionsBase {
 }
 
 export interface IntentOptionsForTypedData extends IntentOptionsBase {
+  isWalletConnectTx?: true;
   typedDataRaw: string;
   typedDataEncoded?: string;
 }
@@ -460,6 +462,7 @@ interface PopulatedIntentBase {
 }
 
 export interface PopulatedIntentForMessageSigning extends PopulatedIntentBase {
+  isWalletConnectTx?: true;
   messageRaw: string;
   messageEncoded: string;
   custodianMessageId?: string;
@@ -470,6 +473,7 @@ export interface PopulatedIntentForMessageSigning extends PopulatedIntentBase {
 }
 
 export interface PopulatedIntentForTypedDataSigning extends PopulatedIntentBase {
+  isWalletConnectTx?: true;
   messageRaw: string;
   messageEncoded: string;
   custodianMessageId?: string;
