@@ -1,7 +1,16 @@
 import * as assert from 'assert';
 import { TestBitGo } from '@bitgo/sdk-test';
 import nock = require('nock');
-import { BaseCoin, PendingApprovalData, State, Type } from '@bitgo/sdk-core';
+import * as sinon from 'sinon';
+import {
+  BaseCoin,
+  KeyEncryptionUpgradeFailureReason,
+  Keychains,
+  PendingApprovalData,
+  RequestTracer,
+  State,
+  Type,
+} from '@bitgo/sdk-core';
 import {
   CreateInvoiceBody,
   getLightningWallet,
@@ -67,6 +76,37 @@ describe('Lightning wallets', function () {
     nock.cleanAll();
     nock.pendingMocks().length.should.equal(0);
   });
+
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  type UpgradeBody = { encryptedPrv: string; existingEncryptedPrv: string; encryptionUpgrade: boolean };
+  type UpgradeNock = { scope: nock.Scope; bodies: UpgradeBody[] };
+
+  /** Nock the fire-and-forget v1 to v2 upgrade PUT of the user auth key and capture its body. */
+  function nockUserAuthKeyUpgrade(): UpgradeNock {
+    const bodies: UpgradeBody[] = [];
+    const scope = nock(bgUrl)
+      .put('/api/v2/' + coinName + '/key/def')
+      .reply((uri, body) => {
+        bodies.push(body as UpgradeBody);
+        return [200, userAuthKey];
+      });
+    return { scope, bodies };
+  }
+
+  async function assertUserAuthKeyUpgraded(upgrade: sinon.SinonSpy, upgradeNock: UpgradeNock, passphrase: string) {
+    assert.strictEqual(upgrade.callCount, 1);
+    assert.strictEqual(upgrade.firstCall.args[0].keychain.id, userAuthKey.id);
+    assert.strictEqual(upgrade.firstCall.args[0].passphrase, passphrase);
+    await upgrade.firstCall.returnValue;
+    assert.ok(upgradeNock.scope.isDone());
+    const body = upgradeNock.bodies[0];
+    assert.strictEqual(body.encryptionUpgrade, true);
+    assert.strictEqual(body.existingEncryptedPrv, userAuthKey.encryptedPrv);
+    assert.strictEqual(JSON.parse(body.encryptedPrv).v, 2);
+  }
 
   describe('Generate lightning wallet', function () {
     it('should validate parameters', async function () {
@@ -358,7 +398,8 @@ describe('Lightning wallets', function () {
       createInvoiceNock.done();
     });
 
-    it('should pay invoice', async function () {
+    /** Nock every request a successful payInvoice makes, except the auth key upgrade. */
+    function nockPayInvoice() {
       const params: SubmitPaymentParams = {
         invoice: 'lnbc1...',
         amountMsat: 1000n,
@@ -403,7 +444,7 @@ describe('Lightning wallets', function () {
       };
 
       const createTxRequestNock = nock(bgUrl)
-        .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests`)
+        .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests`, (body) => !('upgradeEncryption' in body))
         .reply(200, txRequestResponse);
 
       const createTransferNock = nock(bgUrl)
@@ -420,6 +461,19 @@ describe('Lightning wallets', function () {
       const nodeAuthKeyNock = nock(bgUrl)
         .get('/api/v2/' + coinName + '/key/ghi')
         .reply(200, nodeAuthKey);
+
+      return {
+        params,
+        finalPaymentResponse,
+        scopes: [createTxRequestNock, createTransferNock, sendTxRequestNock, userAuthKeyNock, nodeAuthKeyNock],
+      };
+    }
+
+    it('should pay invoice', async function () {
+      sinon.stub(bitgo, 'isUpgradeEncryptionOnSignEnabled').returns(true);
+      const { params, finalPaymentResponse, scopes } = nockPayInvoice();
+      const upgrade = sinon.spy(Keychains.prototype, 'upgradeEncryption');
+      const upgradeNock = nockUserAuthKeyUpgrade();
 
       const response = await wallet.payInvoice(params);
       assert.strictEqual(response.txRequestId, 'txReq123');
@@ -446,11 +500,40 @@ describe('Lightning wallets', function () {
         finalPaymentResponse.transactions[0].unsignedTx.coinSpecific.paymentPreimage
       );
 
-      createTxRequestNock.done();
-      sendTxRequestNock.done();
-      createTransferNock.done();
-      userAuthKeyNock.done();
-      nodeAuthKeyNock.done();
+      scopes.forEach((scope) => scope.done());
+      await assertUserAuthKeyUpgraded(upgrade, upgradeNock, params.passphrase);
+    });
+
+    it('should not upgrade the user auth key with the default setting', async function () {
+      const { params, scopes } = nockPayInvoice();
+      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
+
+      await wallet.payInvoice(params);
+
+      scopes.forEach((scope) => scope.done());
+      assert.strictEqual(upgrade.callCount, 0);
+    });
+
+    it('should upgrade the user auth key when the call opts in', async function () {
+      const { params, scopes } = nockPayInvoice();
+      const upgrade = sinon.spy(Keychains.prototype, 'upgradeEncryption');
+      const upgradeNock = nockUserAuthKeyUpgrade();
+
+      await wallet.payInvoice({ ...params, upgradeEncryption: true });
+
+      scopes.forEach((scope) => scope.done());
+      await assertUserAuthKeyUpgraded(upgrade, upgradeNock, params.passphrase);
+    });
+
+    it('should not upgrade the user auth key when the setting is on and the call opts out', async function () {
+      sinon.stub(bitgo, 'isUpgradeEncryptionOnSignEnabled').returns(true);
+      const { params, scopes } = nockPayInvoice();
+      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
+
+      await wallet.payInvoice({ ...params, upgradeEncryption: false });
+
+      scopes.forEach((scope) => scope.done());
+      assert.strictEqual(upgrade.callCount, 0);
     });
 
     it('should handle pending approval when paying invoice', async function () {
@@ -601,6 +684,62 @@ describe('Lightning wallets', function () {
         .reply(200, { payments: [{ amountMsat: '1000' }] });
       await assert.rejects(async () => await wallet.listPayments({}), /Invalid payment list response/);
       listPaymentsNock.done();
+    });
+  });
+
+  describe('upgradeUserAuthKeyEncryption', function () {
+    const passphrase = 'password123';
+    let wallet: LightningWallet;
+    beforeEach(function () {
+      wallet = getLightningWallet(
+        new Wallet(bitgo, basecoin, {
+          id: 'walletId',
+          coin: 'tlnbtc',
+          subType: 'lightningCustody',
+          coinSpecific: { keys: ['def', 'ghi'] },
+        })
+      ) as LightningWallet;
+    });
+
+    afterEach(function () {
+      nock.cleanAll();
+    });
+
+    it('upgrades the user auth key and returns the result', async function () {
+      const userAuthKeyNock = nock(bgUrl)
+        .get('/api/v2/' + coinName + '/key/def')
+        .reply(200, userAuthKey);
+      const nodeAuthKeyNock = nock(bgUrl)
+        .get('/api/v2/' + coinName + '/key/ghi')
+        .reply(200, nodeAuthKey);
+      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
+
+      const reqId = new RequestTracer();
+
+      const result = await wallet.upgradeUserAuthKeyEncryption({ passphrase, reqId });
+
+      assert.deepStrictEqual(result, { upgraded: true });
+      sinon.assert.calledOnce(upgrade);
+      assert.strictEqual(upgrade.firstCall.args[0]?.passphrase, passphrase);
+      assert.strictEqual(upgrade.firstCall.args[0]?.reqId, reqId);
+      userAuthKeyNock.done();
+      nodeAuthKeyNock.done();
+    });
+
+    it('reports an error when the auth keychains cannot be fetched', async function () {
+      const userAuthKeyNock = nock(bgUrl)
+        .get('/api/v2/' + coinName + '/key/def')
+        .reply(500, { error: 'internal error' });
+      nock(bgUrl)
+        .get('/api/v2/' + coinName + '/key/ghi')
+        .reply(200, nodeAuthKey);
+      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption');
+
+      const result = await wallet.upgradeUserAuthKeyEncryption({ passphrase });
+
+      assert.deepStrictEqual(result, { upgraded: false, failed: KeyEncryptionUpgradeFailureReason.Error });
+      sinon.assert.notCalled(upgrade);
+      userAuthKeyNock.done();
     });
   });
 
@@ -822,7 +961,9 @@ describe('Lightning wallets', function () {
         })
       ) as LightningWallet;
     });
-    it('should withdraw on chain', async function () {
+
+    /** Nock every request a successful withdrawOnchain makes, except the auth key upgrade. */
+    function nockWithdrawOnchain() {
       const params: LightningOnchainWithdrawParams = {
         recipients: [
           {
@@ -949,7 +1090,7 @@ describe('Lightning wallets', function () {
       };
 
       const createTxRequestNock = nock(bgUrl)
-        .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests`)
+        .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests`, (body) => !('upgradeEncryption' in body))
         .reply(200, txRequestResponse);
 
       const storeSignatureNock = nock(bgUrl)
@@ -971,6 +1112,25 @@ describe('Lightning wallets', function () {
         .get('/api/v2/' + coinName + '/key/ghi')
         .reply(200, nodeAuthKey);
 
+      return {
+        params,
+        scopes: [
+          userAuthKeyNock,
+          nodeAuthKeyNock,
+          createTxRequestNock,
+          storeSignatureNock,
+          createTransferNock,
+          sendTxRequestNock,
+        ],
+      };
+    }
+
+    it('should withdraw on chain', async function () {
+      sinon.stub(bitgo, 'isUpgradeEncryptionOnSignEnabled').returns(true);
+      const { params, scopes } = nockWithdrawOnchain();
+      const upgrade = sinon.spy(Keychains.prototype, 'upgradeEncryption');
+      const upgradeNock = nockUserAuthKeyUpgrade();
+
       const response = await wallet.withdrawOnchain(params);
       assert.strictEqual(response.txRequestId, 'txReq123');
       assert.strictEqual(response.txRequestState, 'delivered');
@@ -978,12 +1138,40 @@ describe('Lightning wallets', function () {
       assert.strictEqual(response.withdrawStatus?.txid, 'tx123');
       assert.strictEqual((response.withdrawStatus as any).signature, undefined);
 
-      userAuthKeyNock.done();
-      nodeAuthKeyNock.done();
-      createTxRequestNock.done();
-      storeSignatureNock.done();
-      createTransferNock.done();
-      sendTxRequestNock.done();
+      scopes.forEach((scope) => scope.done());
+      await assertUserAuthKeyUpgraded(upgrade, upgradeNock, params.passphrase);
+    });
+
+    it('should not upgrade the user auth key with the default setting', async function () {
+      const { params, scopes } = nockWithdrawOnchain();
+      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
+
+      await wallet.withdrawOnchain(params);
+
+      scopes.forEach((scope) => scope.done());
+      assert.strictEqual(upgrade.callCount, 0);
+    });
+
+    it('should upgrade the user auth key when the call opts in', async function () {
+      const { params, scopes } = nockWithdrawOnchain();
+      const upgrade = sinon.spy(Keychains.prototype, 'upgradeEncryption');
+      const upgradeNock = nockUserAuthKeyUpgrade();
+
+      await wallet.withdrawOnchain({ ...params, upgradeEncryption: true });
+
+      scopes.forEach((scope) => scope.done());
+      await assertUserAuthKeyUpgraded(upgrade, upgradeNock, params.passphrase);
+    });
+
+    it('should not upgrade the user auth key when the setting is on and the call opts out', async function () {
+      sinon.stub(bitgo, 'isUpgradeEncryptionOnSignEnabled').returns(true);
+      const { params, scopes } = nockWithdrawOnchain();
+      const upgrade = sinon.stub(Keychains.prototype, 'upgradeEncryption').resolves({ upgraded: true });
+
+      await wallet.withdrawOnchain({ ...params, upgradeEncryption: false });
+
+      scopes.forEach((scope) => scope.done());
+      assert.strictEqual(upgrade.callCount, 0);
     });
 
     it('should handle pending approval when withdrawing onchain', async function () {

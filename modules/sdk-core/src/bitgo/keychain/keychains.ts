@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 import * as common from '../../common';
 import { IBaseCoin, KeychainsTriplet, KeyPair } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
-import { IncorrectPasswordError, SafeMpcCeremonyUnsupportedError } from '../errors';
+import { ApiResponseError, IncorrectPasswordError, SafeMpcCeremonyUnsupportedError } from '../errors';
 import {
   decodeEd25519StrKeyPublicKey,
   encodeDerivableEd25519Pub,
@@ -29,18 +29,32 @@ import {
   RotateKeychainOptions,
   UpdatePasswordOptions,
   UpdateSingleKeychainPasswordOptions,
+  KeyEncryptionUpgradeFailureReason,
+  KeyEncryptionUpgradeResult,
+  KeyEncryptionUpgradeSkipReason,
+  UpgradeKeychainEncryptionOptions,
 } from './iKeychains';
 import { BitGoKeyFromOvcShares, BitGoToOvcJSON, OvcToBitGoJSON } from './ovcJsonCodec';
 import { EncryptionVersion, IEncryptionSession } from '../../api';
+
+const debug = require('debug')('bitgo:v2:keychains');
 
 /** Server-side transaction budget for one bulk key update: each write is sub-KB, so hundreds of
  * envelopes fit in one Mongo transaction. Only batches past this size are chunked, at the cost
  * of all-or-nothing across chunks. */
 const BULK_KEY_UPDATE_BATCH_SIZE = 500;
 
+/** An upgradeEncryption request whose keychain id and v1 envelope have already been validated. */
+type ValidatedKeyEncryptionUpgrade = UpgradeKeychainEncryptionOptions & { keyId: string; oldEncryptedPrv: string };
+
 export class Keychains implements IKeychains {
   private readonly bitgo: BitGoBase;
   private readonly baseCoin: IBaseCoin;
+  /**
+   * Pending upgradeEncryption outcomes on this instance, by keychain id. A call for a key that is
+   * already being upgraded shares the pending outcome instead of starting a second write.
+   */
+  private readonly upgradesInFlight = new Map<string, Promise<KeyEncryptionUpgradeResult>>();
 
   constructor(bitgo: BitGoBase, baseCoin: IBaseCoin) {
     this.bitgo = bitgo;
@@ -394,6 +408,95 @@ export class Keychains implements IKeychains {
   async reencryptAsV2(encryptedPrv: string, passphrase: string): Promise<string> {
     const prv = await this.bitgo.decrypt({ input: encryptedPrv, password: passphrase });
     return this.bitgo.encrypt({ input: prv, password: passphrase, encryptionVersion: 2 });
+  }
+
+  /**
+   * Upgrades the stored encryption of this key to the latest format, using the same passphrase.
+   * Never throws; returns what happened, so it can be shown to the user or ignored.
+   * Concurrent calls for the same key share one upgrade and all receive its outcome.
+   *
+   * @param params.keychain - the keychain as read from BitGo
+   * @param params.passphrase - the passphrase that decrypts the key
+   * @param params.reqId - optional request tracer
+   * @returns the outcome of the upgrade
+   */
+  async upgradeEncryption(params: UpgradeKeychainEncryptionOptions): Promise<KeyEncryptionUpgradeResult> {
+    const { keychain, passphrase } = params;
+    const keyId = keychain?.id;
+    const oldEncryptedPrv = keychain?.encryptedPrv;
+    if (!_.isString(keyId) || !_.isString(passphrase)) {
+      return { upgraded: false, failed: KeyEncryptionUpgradeFailureReason.Error };
+    }
+    if (!_.isString(oldEncryptedPrv)) {
+      return { upgraded: false, skipped: KeyEncryptionUpgradeSkipReason.NoPrivateKey };
+    }
+    let encryptionVersion: EncryptionVersion;
+    try {
+      encryptionVersion = this.getEncryptionVersion(oldEncryptedPrv);
+    } catch (e) {
+      return { upgraded: false, failed: KeyEncryptionUpgradeFailureReason.Error };
+    }
+    if (encryptionVersion !== 1) {
+      return { upgraded: false, skipped: KeyEncryptionUpgradeSkipReason.AlreadyUpgraded };
+    }
+    const inFlight = this.upgradesInFlight.get(keyId);
+    if (inFlight) {
+      return inFlight;
+    }
+    // Registered before any await so concurrent calls for the same key share this outcome.
+    const upgrade = this.runEncryptionUpgrade({ ...params, keyId, oldEncryptedPrv });
+    this.upgradesInFlight.set(keyId, upgrade);
+    const release = () => {
+      if (this.upgradesInFlight.get(keyId) === upgrade) {
+        this.upgradesInFlight.delete(keyId);
+      }
+    };
+    upgrade.then(release, release);
+    return upgrade;
+  }
+
+  /**
+   * Re-encrypts a validated v1 envelope as v2, checks it decrypts back to the same key, and writes it
+   * only if the stored envelope is still the one that was read. Never rejects.
+   */
+  private async runEncryptionUpgrade(params: ValidatedKeyEncryptionUpgrade): Promise<KeyEncryptionUpgradeResult> {
+    const { keychain, passphrase, reqId, keyId, oldEncryptedPrv } = params;
+    try {
+      const prv = await this.bitgo.decrypt({ input: oldEncryptedPrv, password: passphrase });
+      const newEncryptedPrv = await this.bitgo.encrypt({ input: prv, password: passphrase, encryptionVersion: 2 });
+      // Decrypt the new envelope again and compare before anything is written.
+      const roundTrip = await this.bitgo.decrypt({ input: newEncryptedPrv, password: passphrase });
+      if (roundTrip !== prv) {
+        debug('upgradeEncryption: v2 round-trip mismatch for key %s, not writing', keyId);
+        return { upgraded: false, failed: KeyEncryptionUpgradeFailureReason.VerificationFailed };
+      }
+      if (reqId) {
+        this.bitgo.setRequestTracer(reqId);
+      }
+      // The server replaces the stored envelope only if it still equals the one read here (409 otherwise),
+      // so a concurrent password change is never rolled back.
+      await this.bitgo
+        .put(this.baseCoin.url('/key/' + encodeURIComponent(keyId)))
+        .send({
+          encryptedPrv: newEncryptedPrv,
+          existingEncryptedPrv: oldEncryptedPrv,
+          encryptionUpgrade: true,
+          ...(Keychains.isMultiUserKey(keychain) && keychain.pub ? { pub: keychain.pub } : {}),
+        })
+        .result();
+      debug('upgradeEncryption: upgraded key %s to v2', keyId);
+      return { upgraded: true };
+    } catch (e) {
+      debug('upgradeEncryption: failed for key %s: %s', keyId, e instanceof Error ? e.message : String(e));
+      const status = (e as Partial<Pick<ApiResponseError, 'status'>>)?.status;
+      if (status === 409) {
+        return { upgraded: false, skipped: KeyEncryptionUpgradeSkipReason.KeyChanged };
+      }
+      if (status === 503) {
+        return { upgraded: false, failed: KeyEncryptionUpgradeFailureReason.Unavailable };
+      }
+      return { upgraded: false, failed: KeyEncryptionUpgradeFailureReason.Error };
+    }
   }
 
   /**
@@ -842,7 +945,7 @@ export class Keychains implements IKeychains {
    * Static helper method to determine if a keychain is a ofc multi-user-key
    * @param keychain
    */
-  static isMultiUserKey(keychain: Keychain): boolean {
+  static isMultiUserKey(keychain: Pick<Keychain, 'coinSpecific'>): boolean {
     return (keychain.coinSpecific?.ofc?.['features'] ?? []).includes('multi-user-key');
   }
 }

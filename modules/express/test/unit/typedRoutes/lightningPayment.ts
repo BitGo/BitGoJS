@@ -333,6 +333,7 @@ describe('Lightning Payment API Tests', function () {
 
       const mockBitgo: any = {
         setRequestTracer: sinon.stub(),
+        isUpgradeEncryptionOnSignEnabled: () => false,
         decrypt: sinon
           .stub()
           .resolves(
@@ -504,6 +505,7 @@ describe('Lightning Payment API Tests', function () {
       // Mock bitgo instance with required methods
       const mockBitgo: any = {
         setRequestTracer: sinon.stub(),
+        isUpgradeEncryptionOnSignEnabled: () => false,
         decrypt: sinon
           .stub()
           .resolves(
@@ -635,6 +637,7 @@ describe('Lightning Payment API Tests', function () {
       // Mock bitgo instance with required methods
       const mockBitgo: any = {
         setRequestTracer: sinon.stub(),
+        isUpgradeEncryptionOnSignEnabled: () => false,
         decrypt: sinon
           .stub()
           .resolves(
@@ -792,6 +795,7 @@ describe('Lightning Payment API Tests', function () {
         // Mock bitgo instance with required methods
         const mockBitgo: any = {
           setRequestTracer: sinon.stub(),
+          isUpgradeEncryptionOnSignEnabled: () => false,
           decrypt: sinon
             .stub()
             .resolves(
@@ -871,6 +875,7 @@ describe('Lightning Payment API Tests', function () {
         // Mock bitgo instance with required methods
         const mockBitgo: any = {
           setRequestTracer: sinon.stub(),
+          isUpgradeEncryptionOnSignEnabled: () => false,
           decrypt: sinon
             .stub()
             .resolves(
@@ -951,6 +956,7 @@ describe('Lightning Payment API Tests', function () {
         // Mock bitgo instance with required methods
         const mockBitgo: any = {
           setRequestTracer: sinon.stub(),
+          isUpgradeEncryptionOnSignEnabled: () => false,
           decrypt: sinon
             .stub()
             .resolves(
