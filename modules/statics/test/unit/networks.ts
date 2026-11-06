@@ -1,4 +1,5 @@
 import 'should';
+import { coins } from '../../src/coins';
 import {
   AccountNetwork,
   BaseNetwork,
@@ -82,7 +83,6 @@ Object.entries(Networks).forEach(([category, networks]) => {
 
     describe('FlareP Network', function () {
       it('should have correct explorer URLs', function () {
-        Networks.main.flrP.explorerUrl.should.equal('https://flarescan.com/blockchain/pvm/tx/');
         Networks.main.flrP.accountExplorerUrl.should.equal('https://flarescan.com/blockchain/pvm/address/');
         Networks.test.flrP.explorerUrl.should.equal('https://coston2.testnet.flarescan.com/blockchain/pvm/tx/');
         Networks.test.flrP.accountExplorerUrl.should.equal(
@@ -100,6 +100,15 @@ Object.entries(Networks).forEach(([category, networks]) => {
         Networks.main.pearl.explorerUrl.should.equal('https://blockbook.pearlresearch.ai/tx/');
       });
     });
+  });
+});
+
+describe('FLRP transaction explorer', function () {
+  it('links a transaction to the P-Chain Explorer', function () {
+    const txId = 'LsGTBjN4hq8yxSpSTY62Jn9SUJVNoi2BLyxnJbhXnEPrD59mh';
+    `${coins.get('flrp').network.explorerUrl}${txId}`.should.equal(
+      'https://flare.space/dapp/p-chain-explorer/tx/LsGTBjN4hq8yxSpSTY62Jn9SUJVNoi2BLyxnJbhXnEPrD59mh'
+    );
   });
 });
 

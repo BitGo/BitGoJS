@@ -170,6 +170,51 @@ export interface UpdateSingleKeychainPasswordOptions {
 }
 
 /**
+ * Parameters for Keychains.upgradeEncryption
+ * @property {Keychain} keychain - the keychain as read from BitGo; its `encryptedPrv` is the envelope to upgrade.
+ *   Only `id`, `encryptedPrv`, `pub` and `coinSpecific` are read.
+ * @property {string} passphrase - the passphrase that decrypts `keychain.encryptedPrv`
+ * @property {IRequestTracer} reqId - optional reqId
+ */
+export interface UpgradeKeychainEncryptionOptions {
+  keychain: Pick<Keychain, 'id' | 'encryptedPrv' | 'pub' | 'coinSpecific'>;
+  passphrase: string;
+  reqId?: IRequestTracer;
+}
+
+/** Why an upgrade of a key's stored encryption was not attempted or not needed. */
+export enum KeyEncryptionUpgradeSkipReason {
+  /** The key already uses the latest format. */
+  AlreadyUpgraded = 'alreadyUpgraded',
+  /** The key was changed elsewhere since it was read, so it was left as is. */
+  KeyChanged = 'keyChanged',
+  /** There is no stored private key to upgrade. */
+  NoPrivateKey = 'noPrivateKey',
+}
+
+/** Why an upgrade of a key's stored encryption failed. The key is left unchanged and can be upgraded later. */
+export enum KeyEncryptionUpgradeFailureReason {
+  /** The re-encrypted key did not check out, so it was not saved. */
+  VerificationFailed = 'verificationFailed',
+  /** BitGo is not accepting upgrades right now. Try again later. */
+  Unavailable = 'unavailable',
+  /** Any other failure, such as a wrong passphrase or a network error. */
+  Error = 'error',
+}
+
+/**
+ * Outcome of upgrading the stored encryption of a key.
+ * - `{ upgraded: true }`: the key now uses the latest format.
+ * - `{ upgraded: false, skipped }`: no upgrade was attempted or needed; `skipped` says why.
+ * - `{ upgraded: false, failed }`: the key was left unchanged and can be upgraded on a later attempt;
+ *   `failed` says why.
+ */
+export type KeyEncryptionUpgradeResult =
+  | { upgraded: true }
+  | { upgraded: false; skipped: KeyEncryptionUpgradeSkipReason }
+  | { upgraded: false; failed: KeyEncryptionUpgradeFailureReason };
+
+/**
  * Parameters for the rotateKeychain method for ofc multi-user-key
  * @property {string} id - the public id of the keychain
  * @property {string} password - the user password use to encrypt/decrypt the private key
@@ -333,6 +378,11 @@ export interface IKeychains {
   updateSingleKeychainPassword(params?: UpdateSingleKeychainPasswordOptions): Promise<Keychain>;
   getEncryptionVersion(ciphertext: string): EncryptionVersion;
   reencryptAsV2(encryptedPrv: string, passphrase: string): Promise<string>;
+  /**
+   * Upgrades the stored encryption of this key to the latest format, using the same passphrase.
+   * Never throws; returns what happened.
+   */
+  upgradeEncryption(params: UpgradeKeychainEncryptionOptions): Promise<KeyEncryptionUpgradeResult>;
   create(params?: { seed?: Buffer; isRootKey?: boolean }): KeyPair;
   add(params?: AddKeychainOptions): Promise<Keychain>;
   createBitGo(params?: CreateBitGoOptions): Promise<Keychain>;

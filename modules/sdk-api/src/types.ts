@@ -74,6 +74,12 @@ export interface BitGoAPIOptions {
   userAgent?: string;
   validate?: boolean;
   cookiesPropagationEnabled?: boolean;
+  /**
+   * Upgrade the stored encryption of your user key to the latest format when you sign with your
+   * wallet passphrase. Defaults to false. Individual signing calls can override it with
+   * `upgradeEncryption`.
+   */
+  upgradeEncryptionOnSign?: boolean;
   getAdditionalHeadersCb?: AdditionalHeadersCallback;
   requestIdPrefix?: string;
   evm?: {

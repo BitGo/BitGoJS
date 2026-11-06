@@ -123,6 +123,11 @@ export const SubmitPaymentParams = t.intersection([
   t.partial({
     sequenceId: optionalString,
     comment: optionalString,
+    /**
+     * Upgrade the stored encryption of your user auth key to the latest format after signing with your
+     * passphrase. Defaults to the `upgradeEncryptionOnSign` setting.
+     */
+    upgradeEncryption: t.boolean,
   }),
 ]);
 

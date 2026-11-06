@@ -9,7 +9,17 @@ import nock = require('nock');
 import should = require('should');
 import * as sinon from 'sinon';
 
-import { common, decodeOrElse, ECDSAUtils, EDDSAUtils, Keychain, Keychains, OvcShare } from '@bitgo/sdk-core';
+import {
+  common,
+  decodeOrElse,
+  ECDSAUtils,
+  EDDSAUtils,
+  KeyEncryptionUpgradeFailureReason,
+  KeyEncryptionUpgradeSkipReason,
+  Keychain,
+  Keychains,
+  OvcShare,
+} from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
 import { SinonStub } from 'sinon';
@@ -1465,6 +1475,228 @@ describe('V2 Keychains', function () {
     it('surfaces decrypt errors directly (no fallback logic in the primitive)', async function () {
       const encrypted = await bitgo.encrypt({ input: 'prv', password: 'realPass', encryptionVersion: 1 });
       await keychains.reencryptAsV2(encrypted, 'wrongPass').should.be.rejected();
+    });
+  });
+
+  describe('upgradeEncryption', function () {
+    const prv = 'xprvUpgradeTestKey';
+    const passphrase = 'upgradePass';
+    const keyId = 'upgradeKeyId';
+    let sandbox: sinon.SinonSandbox;
+    let encryptedV1: string;
+    type UpgradeBody = {
+      encryptedPrv: string;
+      existingEncryptedPrv: string;
+      encryptionUpgrade: boolean;
+      pub?: string;
+    };
+
+    before(async function () {
+      encryptedV1 = await bitgo.encrypt({ input: prv, password: passphrase, encryptionVersion: 1 });
+    });
+
+    beforeEach(function () {
+      sandbox = sinon.createSandbox();
+    });
+
+    afterEach(function () {
+      sandbox.restore();
+      nock.cleanAll();
+      // Every upgrade a test starts must have settled, so none is shared with the next test.
+      keychains.upgradesInFlight.size.should.equal(0);
+    });
+
+    function v1Keychain(overrides: Partial<Keychain> = {}): Keychain {
+      return { id: keyId, pub: 'xpubUpgrade', encryptedPrv: encryptedV1, type: 'independent', ...overrides };
+    }
+
+    function mockPut(status = 200, times = 1) {
+      const bodies: UpgradeBody[] = [];
+      const scope = nock(bgUrl)
+        .put(`/api/v2/tltc/key/${keyId}`)
+        .times(times)
+        .reply((uri, body) => {
+          bodies.push(body as UpgradeBody);
+          return [status, status === 200 ? { id: keyId } : { error: 'failed' }];
+        });
+      return { scope, bodies };
+    }
+
+    it('upgrades a v1 key by sending the v2 encryption of the same prv with existingEncryptedPrv', async function () {
+      const keychain = v1Keychain();
+      const { scope, bodies } = mockPut();
+
+      const result = await keychains.upgradeEncryption({ keychain, passphrase });
+
+      result.should.deepEqual({ upgraded: true });
+      scope.isDone().should.be.true();
+      bodies.should.have.length(1);
+      const body = bodies[0];
+      body.encryptionUpgrade.should.equal(true);
+      body.existingEncryptedPrv.should.equal(encryptedV1);
+      body.should.not.have.property('pub');
+      JSON.parse(body.encryptedPrv).v.should.equal(2);
+      (await bitgo.decrypt({ input: body.encryptedPrv, password: passphrase })).should.equal(prv);
+      should(keychain.encryptedPrv).equal(encryptedV1);
+    });
+
+    it('upgrades when called directly, even with upgradeEncryptionOnSign off', async function () {
+      sandbox.stub(bitgo, 'isUpgradeEncryptionOnSignEnabled').returns(false);
+      const { scope, bodies } = mockPut();
+
+      const result = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
+
+      result.should.deepEqual({ upgraded: true });
+      scope.isDone().should.be.true();
+      bodies.should.have.length(1);
+    });
+
+    it('skips a key that is already v2', async function () {
+      const encryptedV2 = await bitgo.encrypt({ input: prv, password: passphrase, encryptionVersion: 2 });
+      const { scope } = mockPut();
+
+      const result = await keychains.upgradeEncryption({
+        keychain: v1Keychain({ encryptedPrv: encryptedV2 }),
+        passphrase,
+      });
+
+      result.should.deepEqual({ upgraded: false, skipped: KeyEncryptionUpgradeSkipReason.AlreadyUpgraded });
+      scope.isDone().should.be.false();
+    });
+
+    it('reports an error without writing when encryptedPrv cannot be parsed', async function () {
+      const { scope } = mockPut();
+
+      const result = await keychains.upgradeEncryption({
+        keychain: v1Keychain({ encryptedPrv: 'not json' }),
+        passphrase,
+      });
+
+      result.should.deepEqual({ upgraded: false, failed: KeyEncryptionUpgradeFailureReason.Error });
+      scope.isDone().should.be.false();
+    });
+
+    it('reports an error without writing when the keychain has no id', async function () {
+      const { scope } = mockPut();
+
+      const result = await keychains.upgradeEncryption({
+        keychain: v1Keychain({ id: undefined as unknown as string }),
+        passphrase,
+      });
+
+      result.should.deepEqual({ upgraded: false, failed: KeyEncryptionUpgradeFailureReason.Error });
+      scope.isDone().should.be.false();
+    });
+
+    it('reports an error without writing when the passphrase is wrong', async function () {
+      const { scope } = mockPut();
+
+      const result = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase: 'wrongPass' });
+
+      result.should.deepEqual({ upgraded: false, failed: KeyEncryptionUpgradeFailureReason.Error });
+      scope.isDone().should.be.false();
+    });
+
+    it('reports keyChanged when the key changed on the server (409)', async function () {
+      const { scope } = mockPut(409);
+
+      const result = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
+
+      scope.isDone().should.be.true();
+      result.should.deepEqual({ upgraded: false, skipped: KeyEncryptionUpgradeSkipReason.KeyChanged });
+    });
+
+    it('reports an error when the server fails with 500', async function () {
+      const { scope } = mockPut(500);
+
+      const result = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
+
+      scope.isDone().should.be.true();
+      result.should.deepEqual({ upgraded: false, failed: KeyEncryptionUpgradeFailureReason.Error });
+    });
+
+    it('reports unavailable when the server rejects the upgrade with 503', async function () {
+      const { scope } = mockPut(503);
+
+      const result = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
+
+      scope.isDone().should.be.true();
+      result.should.deepEqual({ upgraded: false, failed: KeyEncryptionUpgradeFailureReason.Unavailable });
+    });
+
+    it('reports an error when the request fails at the network level', async function () {
+      const scope = nock(bgUrl).put(`/api/v2/tltc/key/${keyId}`).replyWithError('socket hang up');
+
+      const result = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
+
+      scope.isDone().should.be.true();
+      result.should.deepEqual({ upgraded: false, failed: KeyEncryptionUpgradeFailureReason.Error });
+    });
+
+    it('reports verificationFailed without writing when the new encryption does not decrypt back to the same prv', async function () {
+      const decrypt = sandbox.stub(bitgo, 'decrypt').callThrough();
+      decrypt.onSecondCall().resolves('other');
+      const { scope } = mockPut();
+
+      const result = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
+
+      decrypt.callCount.should.equal(2);
+      result.should.deepEqual({ upgraded: false, failed: KeyEncryptionUpgradeFailureReason.VerificationFailed });
+      scope.isDone().should.be.false();
+    });
+
+    it('sends one write for concurrent upgrades of the same key and gives both callers its outcome', async function () {
+      const { bodies } = mockPut(200, 2);
+
+      const results = await Promise.all([
+        keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase }),
+        keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase }),
+      ]);
+
+      bodies.should.have.length(1);
+      results.should.deepEqual([{ upgraded: true }, { upgraded: true }]);
+    });
+
+    it('starts a new upgrade of the same key after the previous one settled', async function () {
+      const { bodies } = mockPut(200, 2);
+
+      const first = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
+      const second = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
+
+      first.should.deepEqual({ upgraded: true });
+      second.should.deepEqual({ upgraded: true });
+      bodies.should.have.length(2);
+    });
+
+    it('starts a new upgrade of the same key after the previous one was skipped', async function () {
+      const { bodies } = mockPut(409, 2);
+
+      const first = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
+      const second = await keychains.upgradeEncryption({ keychain: v1Keychain(), passphrase });
+
+      first.should.deepEqual({ upgraded: false, skipped: KeyEncryptionUpgradeSkipReason.KeyChanged });
+      second.should.deepEqual({ upgraded: false, skipped: KeyEncryptionUpgradeSkipReason.KeyChanged });
+      bodies.should.have.length(2);
+    });
+
+    it('includes pub for an OFC multi-user key', async function () {
+      const ofcKeychains = bitgo.coin('ofc').keychains();
+      const bodies: UpgradeBody[] = [];
+      const scope = nock(bgUrl)
+        .put(`/api/v2/ofc/key/${keyId}`)
+        .reply((uri, body) => {
+          bodies.push(body as UpgradeBody);
+          return [200, { id: keyId }];
+        });
+
+      await ofcKeychains.upgradeEncryption({
+        keychain: v1Keychain({ coinSpecific: { ofc: { features: ['multi-user-key'] } } }),
+        passphrase,
+      });
+
+      scope.isDone().should.be.true();
+      should(bodies[0].pub).equal('xpubUpgrade');
+      bodies[0].encryptionUpgrade.should.equal(true);
     });
   });
 });

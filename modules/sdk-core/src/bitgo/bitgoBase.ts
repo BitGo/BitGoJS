@@ -51,6 +51,7 @@ export interface BitGoBase {
   getECDHKeychain(ecdhKeychainPub?: string, options?: { allowMissing?: boolean }): Promise<any | undefined>;
   getEcdhKeypairPrivate(password: string, entId?: string): Promise<EcdhDerivedKeypair>;
   getEnv(): EnvironmentName;
+  isUpgradeEncryptionOnSignEnabled(): boolean;
   getSharingKey({ email }: GetSharingKeyOptions): Promise<any>;
   getSigningKeyForUser(enterpriseId: string, userId?: string): Promise<GetSigningKeyApi>;
   microservicesUrl(path: string): string;
