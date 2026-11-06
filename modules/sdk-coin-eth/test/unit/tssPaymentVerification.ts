@@ -7,6 +7,7 @@ import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import {
   EcdsaMPCv2Utils,
+  EcdsaUtils,
   RequestTracer,
   TransactionType,
   TxIntentMismatchRecipientError,
@@ -456,6 +457,168 @@ describe('TSS payment verification', function () {
     it('verifies the stored payment from serializedTxHex', async function () {
       await expectSigningBoundary(true);
     });
+  });
+
+  // MPCv1 approvals take the same route: recreateTxRequest() -> signTxRequest() carries no caller
+  // txParams, so token identity survives only in the stored intent. Verification is followed
+  // immediately by the Paillier modulus lookup, before any share is generated or exchanged;
+  // throwing there proves the real coin verifier accepted the bytes.
+  describe('MPCv1 signing of a stored payment without caller txParams', function () {
+    const confidentialToken = 'hteth:ctest1';
+    const confidentialRecipient = '0x19645032c7f1533395d44a629462e751084d3e4c';
+    const confidentialSendAmount = '1000000';
+    const encryptedHandle = '0x' + 'ab'.repeat(32);
+    const inputProof = '0x' + 'cd'.repeat(50);
+    const signingBoundaryMessage = 'signing boundary reached after recipient verification';
+    // signRequestBase only inspects the user share index and the presence of the backup share
+    // before verification; the Paillier modulus and everything after it are stubbed out.
+    const signingMaterial = JSON.stringify({
+      pShare: { i: 1, n: 'stub-user-paillier-modulus' },
+      backupNShare: { i: 3, n: 'stub-backup-paillier-modulus' },
+    });
+
+    const routes = [
+      { route: 'signableHex', useSerializedTxHex: false },
+      { route: 'serializedTxHex', useSerializedTxHex: true },
+    ];
+
+    function tokenContractAddress(tokenName: string): string {
+      const token = coins.get(tokenName);
+      if (!('contractAddress' in token) || typeof token.contractAddress !== 'string') {
+        throw new Error(`${tokenName} has no contract address in statics`);
+      }
+      return token.contractAddress;
+    }
+
+    function buildTxBytes({ to, value, data }: { to: string; value?: number; data?: string }) {
+      const common = AbstractEthLikeNewCoins.getCustomChainCommon(coin.getChainId());
+      const tx = FeeMarketEIP1559Transaction.fromTxData(
+        {
+          nonce: 1,
+          maxPriorityFeePerGas: 10,
+          maxFeePerGas: 100,
+          gasLimit: 200000,
+          to,
+          value: value ?? 0,
+          data,
+          chainId: coin.getChainId(),
+        },
+        { common }
+      );
+      return {
+        signableHex: tx.getMessageToSign(false).toString('hex'),
+        serializedTxHex: tx.serialize().toString('hex'),
+      };
+    }
+
+    function confidentialTransferBytes() {
+      const tokenContract = tokenContractAddress(confidentialToken);
+      const data = new TransferBuilderERC7984()
+        .to(confidentialRecipient)
+        .tokenContractAddress(tokenContract)
+        .encryptedHandle(encryptedHandle)
+        .inputProof(inputProof)
+        .build();
+      return buildTxBytes({ to: tokenContract, data });
+    }
+
+    function storedPaymentRequest(
+      recipientAddress: string,
+      amount: { value: string; symbol: string },
+      txBytes: { signableHex: string; serializedTxHex: string }
+    ): TxRequest {
+      return {
+        txRequestId: 'mpcv1-stored-payment',
+        apiVersion: 'full',
+        walletId: 'mpcv1SigningWallet',
+        intent: {
+          intentType: 'payment',
+          recipients: [{ address: { address: recipientAddress }, amount }],
+        },
+        transactions: [
+          {
+            unsignedTx: { derivationPath: 'm/0', ...txBytes },
+            signatureShares: [],
+          },
+        ],
+      } as unknown as TxRequest;
+    }
+
+    async function runSigning(
+      txRequest: TxRequest,
+      useSerializedTxHex: boolean
+    ): Promise<{ error: Error; boundary: Error }> {
+      const signingWallet = new Wallet(bitgo, coin, {
+        id: 'mpcv1SigningWallet',
+        multisigType: 'tss',
+        coinSpecific: { baseAddress },
+      });
+      const utils = new EcdsaUtils(bitgo, coin, signingWallet);
+      const baseConfig = coin.getConfig();
+      const features = baseConfig.features.filter(
+        (feature) => feature !== CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX
+      );
+      sinon.stub(coin, 'getConfig').returns({
+        ...baseConfig,
+        features: useSerializedTxHex ? [...features, CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX] : features,
+      } as unknown as Readonly<StaticsBaseCoin>);
+
+      const boundary = new Error(signingBoundaryMessage);
+      sinon.stub(utils, 'getOfflineSignerPaillierModulus').throws(boundary);
+
+      try {
+        await utils.signTxRequest({ txRequest, prv: signingMaterial, reqId: new RequestTracer() });
+      } catch (e) {
+        return { error: e as Error, boundary };
+      }
+      throw new Error('expected signTxRequest to reject');
+    }
+
+    for (const { route, useSerializedTxHex } of routes) {
+      it(`verifies a stored confidential payment from ${route}`, async function () {
+        const request = storedPaymentRequest(
+          confidentialRecipient,
+          { value: confidentialSendAmount, symbol: confidentialToken },
+          confidentialTransferBytes()
+        );
+        const { error, boundary } = await runSigning(request, useSerializedTxHex);
+        error.should.be.exactly(boundary);
+        warned(/ERC-7984 token: the payment calldata was not verified/).should.be.true();
+      });
+
+      it(`verifies a stored native payment from ${route} without warnings`, async function () {
+        const request = storedPaymentRequest(
+          recipient,
+          { value: '1000', symbol: 'hteth' },
+          buildTxBytes({ to: recipient, value: 1000 })
+        );
+        const { error, boundary } = await runSigning(request, useSerializedTxHex);
+        error.should.be.exactly(boundary);
+        warned(/\[tss verification\]/).should.be.false();
+      });
+
+      it(`verifies a stored ERC-20 payment from ${route} without an unresolved contract warning`, async function () {
+        const request = storedPaymentRequest(
+          recipient,
+          { value: '1000', symbol: tokenName },
+          buildTxBytes({ to: tokenContractAddress(tokenName), data: erc20Transfer(recipient, '1000') })
+        );
+        const { error, boundary } = await runSigning(request, useSerializedTxHex);
+        error.should.be.exactly(boundary);
+        warned(/the token contract was not verified/).should.be.false();
+      });
+
+      it(`rejects a stored ERC-20 payment sent to a different contract from ${route}`, async function () {
+        const request = storedPaymentRequest(
+          recipient,
+          { value: '1000', symbol: tokenName },
+          buildTxBytes({ to: otherTokenContract, data: erc20Transfer(recipient, '1000') })
+        );
+        const { error } = await runSigning(request, useSerializedTxHex);
+        error.should.be.instanceOf(TxIntentMismatchRecipientError);
+        error.message.should.match(/not sent to the declared token contract/);
+      });
+    }
   });
 
   describe('consolidation to base address', function () {

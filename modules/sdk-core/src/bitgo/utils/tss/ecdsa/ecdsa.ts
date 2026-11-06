@@ -832,14 +832,14 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       if (shouldVerifyWithSerializedTxHex(this.baseCoin)) {
         await this.baseCoin.verifyTransaction({
           txPrebuild: { txHex: unsignedTx.serializedTxHex, txInfo: unsignedTx.signableHex },
-          txParams: resolveEffectiveTxParams(txRequest, params.txParams),
+          txParams: resolveEffectiveTxParams(txRequest, params.txParams, this.baseCoin.getChain()),
           wallet: this.wallet,
           walletType: this.wallet.multisigType(),
         });
       } else {
         await this.baseCoin.verifyTransaction({
           txPrebuild: { txHex: unsignedTx.signableHex },
-          txParams: resolveEffectiveTxParams(txRequest, params.txParams),
+          txParams: resolveEffectiveTxParams(txRequest, params.txParams, this.baseCoin.getChain()),
           wallet: this.wallet,
           walletType: this.wallet.multisigType(),
         });
