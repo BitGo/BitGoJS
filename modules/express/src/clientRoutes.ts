@@ -34,6 +34,7 @@ import {
   ShareType,
   SignShare,
   SShare,
+  computeEncryptedSessionDigest,
   TssEcdsaStep1ReturnMessage,
   TssEcdsaStep2ReturnMessage,
   UnsupportedCoinError,
@@ -465,6 +466,22 @@ function markConsumedShareClosure(registryFilePath: string, shareType: string, e
     getConsumedShareRegistry(registryFilePath).markConsumed(computeConsumedShareKey(shareType, encryptedShare));
 }
 
+/**
+ * Durable single-use consumption of an encrypted offline-signing session blob
+ * (EdDSA MPCv2 rounds 2/3). Keys the file-backed ConsumedShareRegistry on the
+ * sdk-core canonical session digest so JSON reformulation of the same
+ * ciphertext is still rejected, and consumption survives signer restarts.
+ * Marked before the round runs (fail-closed, mirroring the MuDelta/S shares).
+ */
+function markConsumedEddsaSession(signerFileSystemPath: string, shareType: string, encryptedSession: unknown): void {
+  if (typeof encryptedSession !== 'string' || !encryptedSession) {
+    throw new ApiResponseError('Missing encrypted session state in request', 400);
+  }
+  getConsumedShareRegistry(signerFileSystemPath).markConsumed(
+    computeConsumedShareKey(shareType, computeEncryptedSessionDigest(encryptedSession))
+  );
+}
+
 async function decryptPrivKey(bg: BitGo, encryptedPrivKey: string, walletPw: string): Promise<string> {
   try {
     return await bg.decrypt({ password: walletPw, input: encryptedPrivKey });
@@ -516,8 +533,10 @@ export async function handleV2GenerateShareTSS(
           case ShareType.EddsaMPCv2Round1:
             return await eddsaMPCv2Utils.createOfflineRound1Share(req.body);
           case ShareType.EddsaMPCv2Round2:
+            markConsumedEddsaSession(signerFileSystemPath, req.decoded.sharetype, req.body.encryptedRound1Session);
             return await eddsaMPCv2Utils.createOfflineRound2Share(req.body);
           case ShareType.EddsaMPCv2Round3:
+            markConsumedEddsaSession(signerFileSystemPath, req.decoded.sharetype, req.body.encryptedRound2Session);
             return await eddsaMPCv2Utils.createOfflineRound3Share(req.body);
           default:
             throw new Error(

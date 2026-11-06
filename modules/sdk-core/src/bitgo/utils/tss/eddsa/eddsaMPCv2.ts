@@ -1,4 +1,5 @@
 import assert from 'assert';
+import { createHash } from 'crypto';
 import * as sjcl from '@bitgo/sjcl';
 import * as pgp from 'openpgp';
 import { NonEmptyString } from 'io-ts-types';
@@ -59,6 +60,124 @@ import { EddsaMPCv2KeyGenSendFn, KeyGenSenderForEnterprise } from './eddsaMPCv2K
 import { EddsaMPCv2RecoveryKeyShares } from './types';
 import { parseMpcV2KeyShareEnvelope } from '../keyShareEnvelope';
 import { SigningMaterial } from '../../../tss';
+
+/** Entries older than this are dropped once the map exceeds the size cap; mirrors the express ConsumedShareRegistry retention. */
+const CONSUMED_OFFLINE_SIGNING_SESSION_MAX_AGE_MS = 30 * 24 * 3600 * 1000;
+/** Hard size cap: beyond this, the oldest entries are evicted. */
+const CONSUMED_OFFLINE_SIGNING_SESSION_MAX_ENTRIES = 100_000;
+
+/**
+ * Encrypted offline-signing session blobs that have already been consumed by a
+ * round-2/round-3 helper. Single-use enforcement: replaying a round-1/round-2
+ * session blob restores the same DSG nonce, and two partial signatures under one
+ * nonce leak the signer's key share (CWE-323, WAL-2455). Keyed by a formatting-
+ * independent digest of the ciphertext (see computeEncryptedSessionDigest) with a
+ * consumption timestamp; the map is bounded by a hard size cap, with expired
+ * entries dropped lazily only when the cap is exceeded. Module-level because the
+ * express route constructs a fresh EddsaMPCv2Utils instance per request.
+ */
+const consumedEncryptedOfflineSigningSessions = new Map<string, number>();
+
+function isJsonObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Digest of an encrypted session blob that is invariant under every
+ * decrypt-equivalent reformulation: hashing the raw string would let a relay
+ * re-serialize the same ciphertext into a "fresh" blob and replay the same DSG
+ * nonce. The digest covers the decoded bytes that decryption actually consumes
+ * (base64-decoded iv and ct); for v1 (SJCL/CCM) the iv is truncated to the
+ * effective nonce length, mirroring @bitgo/sdk-api decryptV1.ts ccmNonceLength
+ * (keep in sync), because trailing iv bytes do not affect decryption. The salt
+ * is deliberately omitted: altering it changes the derived key, so decryption
+ * fails and no nonce is restored (merging such blobs is fail-closed).
+ * Exported so the express route's durable ConsumedShareRegistry keys consumed
+ * EdDSA sessions identically.
+ */
+export function computeEncryptedSessionDigest(encryptedSession: string): string {
+  let envelope: Record<string, unknown>;
+  try {
+    envelope = JSON.parse(encryptedSession);
+  } catch {
+    throw new Error('Session state is not a valid encrypted session envelope');
+  }
+  if (!isJsonObject(envelope) || typeof envelope.iv !== 'string' || typeof envelope.ct !== 'string') {
+    throw new Error('Session state is not a valid encrypted session envelope');
+  }
+  const iv = Buffer.from(envelope.iv, 'base64');
+  const ct = Buffer.from(envelope.ct, 'base64');
+  // v2 (GCM) authenticates the full iv. v1 (CCM) truncates the iv to the nonce length
+  // (real SJCL envelopes carry a 16-byte iv for a 13-byte nonce), so hash only the
+  // effective nonce bytes.
+  let effectiveIv = iv;
+  if (envelope.v !== 2) {
+    const tagBytes = typeof envelope.ts === 'number' ? envelope.ts / 8 : 0;
+    const nonceLen = ccmNonceLength(ct.length - tagBytes);
+    if (nonceLen <= 0 || iv.length < nonceLen) {
+      // decryption would reject this envelope anyway
+      throw new Error('Session state is not a valid encrypted session envelope');
+    }
+    effectiveIv = iv.subarray(0, nonceLen);
+  }
+  return createHash('sha256').update(effectiveIv).update(ct).digest('hex');
+}
+
+/**
+ * Mirrors @bitgo/sdk-api decryptV1.ts ccmNonceLength: v1 (SJCL/CCM) decryption
+ * truncates the iv to the nonce length derived from the plaintext size, so
+ * trailing iv bytes do not affect decryption. Keep in sync with decryptV1.ts.
+ */
+function ccmNonceLength(plaintextLen: number): number {
+  let l = 2;
+  while (l < 4 && plaintextLen >= 2 ** (8 * l)) {
+    l++;
+  }
+  return 15 - l;
+}
+
+function assertEncryptedSessionNotConsumed(digest: string): void {
+  if (consumedEncryptedOfflineSigningSessions.has(digest)) {
+    throw new Error('Session state has already been used; replay is not allowed');
+  }
+}
+
+/**
+ * Marks a session blob consumed. Called only right before the decrypted DSG
+ * nonce state is restored: nothing before this point uses the nonce, and the
+ * first call to reach here consumes the blob, so a concurrent replay cannot
+ * reach restoreSession twice (the check-then-set is synchronous).
+ */
+function markEncryptedSessionConsumed(digest: string): void {
+  if (consumedEncryptedOfflineSigningSessions.has(digest)) {
+    throw new Error('Session state has already been used; replay is not allowed');
+  }
+  const now = Date.now();
+  consumedEncryptedOfflineSigningSessions.set(digest, now);
+  pruneConsumedEncryptedOfflineSigningSessions(now);
+}
+
+function pruneConsumedEncryptedOfflineSigningSessions(now: number): void {
+  if (consumedEncryptedOfflineSigningSessions.size <= CONSUMED_OFFLINE_SIGNING_SESSION_MAX_ENTRIES) {
+    return;
+  }
+  for (const [key, consumedAt] of consumedEncryptedOfflineSigningSessions) {
+    if (now - consumedAt >= CONSUMED_OFFLINE_SIGNING_SESSION_MAX_AGE_MS) {
+      consumedEncryptedOfflineSigningSessions.delete(key);
+    } else {
+      // Insertion order is chronological under a monotonic clock; a backwards
+      // clock adjustment only delays pruning, and the size cap below still holds.
+      break;
+    }
+  }
+  while (consumedEncryptedOfflineSigningSessions.size > CONSUMED_OFFLINE_SIGNING_SESSION_MAX_ENTRIES) {
+    const oldest = consumedEncryptedOfflineSigningSessions.keys().next();
+    if (oldest.done) {
+      break;
+    }
+    consumedEncryptedOfflineSigningSessions.delete(oldest.value);
+  }
+}
 
 export class EddsaMPCv2Utils extends BaseEddsaUtils {
   private static readonly MPS_DSG_SIGNING_USER_GPG_KEY = 'MPS_DSG_SIGNING_USER_GPG_KEY';
@@ -1023,6 +1142,15 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
   }> {
     const { walletPassphrase, encryptedUserGpgPrvKey, encryptedRound1Session, bitgoPublicGpgKey, txRequest } = params;
 
+    if (envRequiresBitgoPubGpgKeyConfig(this.bitgo.getEnv())) {
+      assert(isBitgoEddsaMpcv2PubKey(bitgoPublicGpgKey), 'Invalid BitGo GPG public key');
+    }
+    // Early replay check; the blob is only marked consumed after the decrypted DSG
+    // nonce state is about to be restored, so transient failures (wrong passphrase,
+    // malformed peer share) can be retried but a restored nonce can never be reused.
+    const round1SessionDigest = computeEncryptedSessionDigest(encryptedRound1Session);
+    assertEncryptedSessionNotConsumed(round1SessionDigest);
+
     const { signableHex, derivationPath } = this.getSignableHexAndDerivationPath(
       txRequest,
       'Unable to find transactions in txRequest'
@@ -1070,6 +1198,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     };
 
     const userDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.USER);
+    markEncryptedSessionConsumed(round1SessionDigest);
     await userDsg.restoreSession(dsgSession);
     const userMsg1: MPSTypes.DeserializedMessage = {
       from: MPCv2PartiesEnum.USER,
@@ -1121,6 +1250,12 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
   }> {
     const { walletPassphrase, encryptedUserGpgPrvKey, encryptedRound2Session, bitgoPublicGpgKey, txRequest } = params;
 
+    if (envRequiresBitgoPubGpgKeyConfig(this.bitgo.getEnv())) {
+      assert(isBitgoEddsaMpcv2PubKey(bitgoPublicGpgKey), 'Invalid BitGo GPG public key');
+    }
+    const round2SessionDigest = computeEncryptedSessionDigest(encryptedRound2Session);
+    assertEncryptedSessionNotConsumed(round2SessionDigest);
+
     const { signableHex, derivationPath } = this.getSignableHexAndDerivationPath(
       txRequest,
       'Unable to find transactions in txRequest'
@@ -1167,6 +1302,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     };
 
     const userDsg = new EddsaMPSDsg.DSG(MPCv2PartiesEnum.USER);
+    markEncryptedSessionConsumed(round2SessionDigest);
     await userDsg.restoreSession(dsgSession);
     const userMsg2: MPSTypes.DeserializedMessage = {
       from: MPCv2PartiesEnum.USER,
