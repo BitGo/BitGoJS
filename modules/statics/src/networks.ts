@@ -2447,7 +2447,7 @@ export class FlareP extends Mainnet implements FlareNetwork {
   assetId = '2MxKSeEWXViLdYyDhW1SQ46AECZEbE2bnVRZptv42JrxqyUX5k';
   name = 'FlareP';
   family = CoinFamily.FLRP;
-  explorerUrl = 'https://flarescan.com/blockchain/pvm/tx/';
+  explorerUrl = 'https://flare.space/dapp/p-chain-explorer/tx/';
   accountExplorerUrl = 'https://flarescan.com/blockchain/pvm/address/';
   blockchainID = '11111111111111111111111111111111LpoYY';
   cChainBlockchainID = 'umkbhSrjVw5nUvy1eo25AdrjRkPBdtzAMewuxA2rqEx4YMo4c';
