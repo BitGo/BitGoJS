@@ -1,6 +1,7 @@
 import * as sjcl from '@bitgo/sjcl';
 import { randomBytes } from 'crypto';
 
+import { assertSafeLegacyV1Envelope } from '@bitgo/sdk-core';
 import { decryptV1, parseV1Envelope } from './decryptV1';
 import { decryptV2, encryptV2 } from './encryptV2';
 
@@ -117,6 +118,7 @@ export async function decryptV1WithFallback(
   native: (pw: string, ct: string) => Promise<string> = decryptV1,
   isBrowser: boolean = isBrowserRuntime()
 ): Promise<string> {
+  assertSafeLegacyV1Envelope(ciphertext);
   if (isBrowser) {
     try {
       parseV1Envelope(ciphertext);

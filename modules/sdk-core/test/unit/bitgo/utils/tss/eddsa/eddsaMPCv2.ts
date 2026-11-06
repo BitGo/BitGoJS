@@ -32,6 +32,7 @@ import {
   getEddsaSigningMaterial,
   isEddsaSigningMaterial,
   signEddsaMpcV2RecoveryTx,
+  assertSafeLegacyV1Envelope,
 } from '../../../../../../src';
 import {
   getSignatureShareRoundOne,
@@ -390,6 +391,65 @@ describe('EdDSA MPS DSG helper functions', async () => {
       verifyPeerMessageRoundThree(round3Output, bitgoGpgPubKey),
       'should throw on invalid signature'
     );
+  });
+});
+
+describe('legacy v1 decrypt without a bitgo instance', () => {
+  const PASSPHRASE = 'test-passphrase';
+  const tamper = (envelope: Record<string, unknown>, change: Record<string, unknown>): string =>
+    JSON.stringify({ ...envelope, ...change });
+  const valid = JSON.parse(sjcl.encrypt(PASSPHRASE, 'plaintext'));
+
+  it('rejects an iter above the cap before running PBKDF2', async () => {
+    const tampered = tamper(valid, { iter: 100_001 });
+    await assert.rejects(EDDSAUtils.isEddsaMpcV1SigningMaterial(tampered, PASSPHRASE), /iter out of range/);
+    await assert.rejects(EDDSAUtils.getEddsaSigningMaterial(tampered, PASSPHRASE), /iter out of range/);
+    await assert.rejects(
+      EDDSAUtils.getEddsaMpcV2RecoveryKeySharesFromReducedKey(tampered, tampered, PASSPHRASE),
+      /iter out of range/
+    );
+  });
+
+  it('rejects an iter that is not an integer within range', async () => {
+    for (const iter of ['10000', 0]) {
+      await assert.rejects(
+        EDDSAUtils.isEddsaMpcV1SigningMaterial(tamper(valid, { iter }), PASSPHRASE),
+        /iter out of range/,
+        `iter ${JSON.stringify(iter)} must be rejected`
+      );
+    }
+
+    // SJCL's decoder only accepts non-negative integers, so these never reach PBKDF2.
+    for (const iter of [1.5, -1]) {
+      await assert.rejects(EDDSAUtils.isEddsaMpcV1SigningMaterial(tamper(valid, { iter }), PASSPHRASE));
+    }
+  });
+
+  it('rejects a non-ccm mode', async () => {
+    await assert.rejects(
+      EDDSAUtils.isEddsaMpcV1SigningMaterial(tamper(valid, { mode: 'ocb2' }), PASSPHRASE),
+      /unsupported mode/
+    );
+  });
+
+  it('screens the envelope SJCL decodes, not the one JSON.parse sees', () => {
+    // SJCL strips all whitespace before decoding, so these keys are iter and mode to SJCL.
+    const base = JSON.stringify(valid);
+    const spacedIter = base.replace(/"iter":\d+/, '"it er":3000000');
+    const spacedMode = base.replace('"mode":"ccm"', '"mo de":"ocb2"');
+    assert.strictEqual(JSON.parse(spacedIter).iter, undefined);
+    assert.throws(() => assertSafeLegacyV1Envelope(spacedIter), /iter out of range/);
+    assert.throws(() => assertSafeLegacyV1Envelope(spacedMode), /unsupported mode/);
+  });
+
+  it('leaves input SJCL cannot decode for sjcl.decrypt to report', () => {
+    for (const input of ['not json', 'null', '"a string"', '42']) {
+      assert.doesNotThrow(() => assertSafeLegacyV1Envelope(input), `input ${input} must pass through`);
+    }
+  });
+
+  it('still decrypts an envelope with the default iter and mode', async () => {
+    assert.strictEqual(await EDDSAUtils.isEddsaMpcV1SigningMaterial(JSON.stringify(valid), PASSPHRASE), false);
   });
 });
 
