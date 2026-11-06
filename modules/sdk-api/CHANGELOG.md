@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.2.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-api%403.1.7...%40bitgo%2Fsdk-api%403.2.0) (2026-11-05)
+
+### Features
+
+* **express:** add default domain-scoped CA trust for BitGo connection ([4354fd9](https://github.com/BitGo/BitGoJS/commit/4354fd95e88a17bbcc6acb9d941d7e3f46eeb2b5))
+
+
 ## [3.1.7](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-api%403.1.6...%40bitgo%2Fsdk-api%403.1.7) (2026-11-03)
 
 **Note:** Version bump only for package @bitgo/sdk-api

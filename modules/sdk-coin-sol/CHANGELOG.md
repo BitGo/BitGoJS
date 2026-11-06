@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [8.21.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-sol%408.21.0...%40bitgo%2Fsdk-coin-sol%408.21.1) (2026-11-05)
+
+### Bug Fixes
+
+* **sdk-coin-sol:** correct ConfigureAccount wire and fee reallocation ([091fe71](https://github.com/BitGo/BitGoJS/commit/091fe71b4c03b52bc95e76e12caffd9f01a2cbbb))
+
+
 # [8.21.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-sol%408.20.2...%40bitgo%2Fsdk-coin-sol%408.21.0) (2026-11-03)
 
 ### Features
