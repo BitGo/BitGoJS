@@ -66,7 +66,7 @@ import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
 import EddsaUtils, { EddsaMPCv2Utils } from '../utils/tss/eddsa';
 import { RedpallasMPCv2Utils } from '../utils/tss/redpallas';
 import { getTxRequestApiVersion, validateTxRequestApiVersion } from '../utils/txRequest';
-import { buildParamKeys, BuildParams, ERC7984_INTENT_TX_TYPES } from './BuildParams';
+import { AttestationPayload, buildParamKeys, BuildParams, ERC7984_INTENT_TX_TYPES } from './BuildParams';
 import {
   fetchRootKeychainForSafeChild,
   isSafeChildPublicOnlyKeychain,
@@ -2324,9 +2324,12 @@ export class Wallet implements IWallet {
   async getUserKeyAndSignTssTransaction({
     txRequestId,
     walletPassphrase,
+    attestation,
   }: {
     txRequestId: string;
     walletPassphrase: string;
+    /** Optional WebAuthn proof for the first TSS withdrawal-signing round; pass-through only. */
+    attestation?: AttestationPayload;
   }): Promise<SignedTransaction> {
     if (this._wallet.multisigType !== 'tss') {
       throw new Error('getUserKeyAndSignTssTransaction is only supported for TSS wallets');
@@ -2347,6 +2350,7 @@ export class Wallet implements IWallet {
       walletPassphrase,
       reqId,
       keychain: userKeychain,
+      ...(attestation !== undefined && { attestation }),
     });
   }
 
@@ -5216,9 +5220,12 @@ export class Wallet implements IWallet {
   public async signAndSendTxRequest(params: SignAndSendTxRequestOptions): Promise<SignedTransaction> {
     await this.tssUtils?.deleteSignatureShares(params.txRequestId);
 
+    // Clearing shares above resets the request to its first signing round, so the attestation
+    // rides on round one. It is not sent with the lite submit below: round one consumes its nonce.
     const ret = await this.getUserKeyAndSignTssTransaction({
       walletPassphrase: params.walletPassphrase,
       txRequestId: params.txRequestId,
+      ...(params.attestation !== undefined && { attestation: params.attestation }),
     });
     if (!params.isTxRequestFull) {
       // It is assumed that if its not a full tx request, then it is a lite tx request

@@ -481,6 +481,11 @@ export interface SignAndSendTxRequestOptions {
   txRequestId: string;
   walletPassphrase: string;
   isTxRequestFull: boolean;
+  /**
+   * Optional WebAuthn proof from the current signer for the request's withdrawal intent;
+   * pass-through only. Sent on the first signing round only, never on the lite submit.
+   */
+  attestation?: AttestationPayload;
 }
 
 export interface SignAndSendMessageTxRequestOptions {
