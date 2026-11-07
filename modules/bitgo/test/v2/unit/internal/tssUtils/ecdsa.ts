@@ -46,7 +46,7 @@ import {
   nockGetTxRequest,
 } from '../../tss/helpers';
 import { bip32, ecc } from '@bitgo/utxo-lib';
-import { Hash } from 'crypto';
+import { Hash, createHash } from 'crypto';
 import { mockChallengeA, mockChallengeB, mockChallengeC } from './mocks/ecdsaNtilde';
 
 import { loadWebAssembly } from '@bitgo/sdk-opensslbytes';
@@ -557,6 +557,18 @@ describe('TSS Ecdsa Utils:', async function () {
         );
     });
   });
+
+  // adata strings bound into the wShare/oShare envelopes, mirroring EcdsaUtils' offline signing binding
+  const WSHARE_STATE = 'GG18_SIGNING_WSHARE_STATE';
+  const OSHARE_STATE = 'GG18_SIGNING_OSHARE_STATE';
+  const offlineShareAdataCore = (txr: TxRequest) =>
+    `${createHash('sha256').update(Buffer.from(txr.unsignedTxs[0].signableHex, 'hex')).digest('hex')}:${
+      txr.unsignedTxs[0].derivationPath
+    }`;
+  const offlineShareAdata = (txr: TxRequest, state: string = WSHARE_STATE) =>
+    `${state}:${Date.now()}:${offlineShareAdataCore(txr)}`;
+  const expiredOfflineShareAdata = (txr: TxRequest, state: string = WSHARE_STATE) =>
+    `${state}:${Date.now() - 31 * 24 * 3600 * 1000}:${offlineShareAdataCore(txr)}`;
 
   describe('signTxRequest:', () => {
     const txRequestId = 'randomidEcdsa';
@@ -1104,6 +1116,8 @@ describe('TSS Ecdsa Utils:', async function () {
 
     it('createOfflineKShare should succeed', async function () {
       const mockPassword = 'password';
+      // pre-condition: BitGo challenge modulus must match the signer's bitgoNShare
+      assert.strictEqual(bitgoChallenges.n, bitgoKeyShare.nShares[1].n);
       const step1SigningMaterial = await tssUtils.createOfflineKShare({
         tssParams: {
           txRequest,
@@ -1129,7 +1143,15 @@ describe('TSS Ecdsa Utils:', async function () {
       step1SigningMaterial.encryptedSignerOffsetShare.should.startWith('-----BEGIN PGP MESSAGE-----');
       step1SigningMaterial.userPublicGpgKey.should.startWith('-----BEGIN PGP PUBLIC KEY BLOCK-----');
       step1SigningMaterial.kShare.n.should.equal(userKeyShare.pShare.n);
-      step1SigningMaterial.wShare.should.startWith('{"iv":');
+      const wShareEnvelope = step1SigningMaterial.wShare;
+      // wShare is an encrypted JSON envelope string when a walletPassphrase is provided
+      if (typeof wShareEnvelope !== 'string') {
+        throw new Error('wShare should be an encrypted envelope string');
+      }
+      // adata format: `<WSHARE_STATE>:<createdEpochMs>:<sha256(signable)>:<derivationPath>`
+      const adata = JSON.parse(wShareEnvelope).adata as string;
+      adata.should.startWith(`${WSHARE_STATE}:`);
+      adata.should.endWith(`:${offlineShareAdataCore(txRequest)}`);
     });
 
     it('createOfflineKShare should fail with txId passed', async function () {
@@ -1162,9 +1184,23 @@ describe('TSS Ecdsa Utils:', async function () {
       const deltaLength = 64;
       const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
       const step2SigningMaterial = await tssUtils.createOfflineMuDeltaShare({
+        tssParams: {
+          txRequest,
+          reqId,
+        },
+        requestType: RequestType.tx,
+        prv: JSON.stringify({
+          pShare: userKeyShare.pShare,
+          bitgoNShare: bitgoKeyShare.nShares[1],
+          backupNShare: backupKeyShare.nShares[1],
+        }),
         aShareFromBitgo: aShare,
         bitgoChallenge: bitgoChallenges,
-        encryptedWShare: await bitgo.encrypt({ input: JSON.stringify(wShare), password: mockPassword }),
+        encryptedWShare: await bitgo.encrypt({
+          input: JSON.stringify(wShare),
+          password: mockPassword,
+          adata: offlineShareAdata(txRequest),
+        }),
         walletPassphrase: mockPassword,
       });
       step2SigningMaterial.muDShare.muShare.alpha.length.should.equal(alphaLength);
@@ -1177,12 +1213,424 @@ describe('TSS Ecdsa Utils:', async function () {
       const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
       await tssUtils
         .createOfflineMuDeltaShare({
+          tssParams: {
+            txRequest,
+            reqId,
+          },
+          requestType: RequestType.tx,
+          prv: JSON.stringify({
+            pShare: userKeyShare.pShare,
+            bitgoNShare: bitgoKeyShare.nShares[1],
+            backupNShare: backupKeyShare.nShares[1],
+          }),
           aShareFromBitgo: aShare,
           bitgoChallenge: bitgoChallenges,
-          encryptedWShare: await bitgo.encrypt({ input: JSON.stringify(wShare), password: mockPassword }),
+          encryptedWShare: await bitgo.encrypt({
+            input: JSON.stringify(wShare),
+            password: mockPassword,
+            adata: offlineShareAdata(txRequest),
+          }),
           walletPassphrase: 'password1',
         })
         .should.be.rejectedWith('incorrect password');
+    });
+
+    it('createOfflineMuDeltaShare should fail with wShare adata bound to a different signable', async function () {
+      const mockPassword = 'password';
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      const otherTxRequest = {
+        ...txRequest,
+        unsignedTxs: [{ ...txRequest.unsignedTxs[0], signableHex: 'deadbeef' }],
+      };
+      await tssUtils
+        .createOfflineMuDeltaShare({
+          tssParams: {
+            txRequest,
+            reqId,
+          },
+          requestType: RequestType.tx,
+          prv: JSON.stringify({
+            pShare: userKeyShare.pShare,
+            bitgoNShare: bitgoKeyShare.nShares[1],
+            backupNShare: backupKeyShare.nShares[1],
+          }),
+          aShareFromBitgo: aShare,
+          bitgoChallenge: bitgoChallenges,
+          encryptedWShare: await bitgo.encrypt({
+            input: JSON.stringify(wShare),
+            password: mockPassword,
+            adata: offlineShareAdata(otherTxRequest),
+          }),
+          walletPassphrase: mockPassword,
+        })
+        .should.be.rejectedWith('Adata does not match cyphertext adata');
+    });
+
+    it('createOfflineKShare should fail when BitGo challenge modulus does not match the signer key material', async function () {
+      const mockPassword = 'password';
+      await tssUtils
+        .createOfflineKShare({
+          tssParams: {
+            txRequest,
+            reqId,
+          },
+          challenges: {
+            enterpriseChallenge: enterpriseChallenges,
+            bitgoChallenge: { ...bitgoChallenges, n: '1234' },
+          },
+          prv: JSON.stringify({
+            pShare: userKeyShare.pShare,
+            bitgoNShare: bitgoKeyShare.nShares[1],
+            backupNShare: backupKeyShare.nShares[1],
+          }),
+          requestType: RequestType.tx,
+          walletPassphrase: mockPassword,
+        })
+        .should.be.rejectedWith("BitGo challenge Paillier modulus does not match the signer's BitGo key material");
+    });
+
+    it('createOfflineMuDeltaShare should fail when BitGo challenge modulus does not match the signer key material', async function () {
+      const mockPassword = 'password';
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      await tssUtils
+        .createOfflineMuDeltaShare({
+          tssParams: {
+            txRequest,
+            reqId,
+          },
+          requestType: RequestType.tx,
+          prv: JSON.stringify({
+            pShare: userKeyShare.pShare,
+            bitgoNShare: bitgoKeyShare.nShares[1],
+            backupNShare: backupKeyShare.nShares[1],
+          }),
+          aShareFromBitgo: aShare,
+          bitgoChallenge: { ...bitgoChallenges, n: '1234' },
+          encryptedWShare: await bitgo.encrypt({
+            input: JSON.stringify(wShare),
+            password: mockPassword,
+            adata: offlineShareAdata(txRequest),
+          }),
+          walletPassphrase: mockPassword,
+        })
+        .should.be.rejectedWith("BitGo challenge Paillier modulus does not match the signer's BitGo key material");
+    });
+
+    it('createOfflineMuDeltaShare should fail when the A-share modulus does not match the signer key material', async function () {
+      const mockPassword = 'password';
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      await tssUtils
+        .createOfflineMuDeltaShare({
+          tssParams: {
+            txRequest,
+            reqId,
+          },
+          requestType: RequestType.tx,
+          prv: JSON.stringify({
+            pShare: userKeyShare.pShare,
+            bitgoNShare: bitgoKeyShare.nShares[1],
+            backupNShare: backupKeyShare.nShares[1],
+          }),
+          aShareFromBitgo: { ...aShare, n: '1234' },
+          bitgoChallenge: bitgoChallenges,
+          encryptedWShare: await bitgo.encrypt({
+            input: JSON.stringify(wShare),
+            password: mockPassword,
+            adata: offlineShareAdata(txRequest),
+          }),
+          walletPassphrase: mockPassword,
+        })
+        .should.be.rejectedWith('A-share from BitGo has an unexpected Paillier modulus');
+    });
+
+    it('createOfflineMuDeltaShare should succeed with a legacy relay body: top-level txRequest and route-injected prv', async function () {
+      const mockPassword = 'password';
+      const alphaLength = 1536;
+      const deltaLength = 64;
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      const step2SigningMaterial = await tssUtils.createOfflineMuDeltaShare({
+        txRequest,
+        prv: JSON.stringify({
+          pShare: userKeyShare.pShare,
+          bitgoNShare: bitgoKeyShare.nShares[1],
+          backupNShare: backupKeyShare.nShares[1],
+        }),
+        aShareFromBitgo: aShare,
+        bitgoChallenge: bitgoChallenges,
+        encryptedWShare: await bitgo.encrypt({
+          input: JSON.stringify(wShare),
+          password: mockPassword,
+          adata: offlineShareAdata(txRequest),
+        }),
+        walletPassphrase: mockPassword,
+      });
+      step2SigningMaterial.muDShare.muShare.alpha.length.should.equal(alphaLength);
+      step2SigningMaterial.muDShare.dShare.delta.length.should.equal(deltaLength);
+    });
+
+    it('createOfflineMuDeltaShare should keep legacy behavior for direct callers without txRequest/prv', async function () {
+      const mockPassword = 'password';
+      const alphaLength = 1536;
+      const deltaLength = 64;
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      // Legacy direct callers omit txRequest, so MuDelta propagates the wShare envelope's
+      // own binding (re-prefixed for the oShare) instead of recomputing it.
+      const step2SigningMaterial = await tssUtils.createOfflineMuDeltaShare({
+        aShareFromBitgo: aShare,
+        bitgoChallenge: bitgoChallenges,
+        encryptedWShare: await bitgo.encrypt({
+          input: JSON.stringify(wShare),
+          password: mockPassword,
+          adata: offlineShareAdata(txRequest),
+        }),
+        walletPassphrase: mockPassword,
+      });
+      step2SigningMaterial.muDShare.muShare.alpha.length.should.equal(alphaLength);
+      step2SigningMaterial.muDShare.dShare.delta.length.should.equal(deltaLength);
+      // The propagated binding is re-prefixed for the oShare with a fresh creation timestamp.
+      const oShareAdata = JSON.parse(step2SigningMaterial.oShare as string).adata as string;
+      oShareAdata.should.startWith(`${OSHARE_STATE}:`);
+      oShareAdata.should.endWith(`:${offlineShareAdataCore(txRequest)}`);
+    });
+
+    it('createOfflineMuDeltaShare should reject a wShare without a binding', async function () {
+      const mockPassword = 'password';
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      await tssUtils
+        .createOfflineMuDeltaShare({
+          aShareFromBitgo: aShare,
+          bitgoChallenge: bitgoChallenges,
+          encryptedWShare: await bitgo.encrypt({ input: JSON.stringify(wShare), password: mockPassword }),
+          walletPassphrase: mockPassword,
+        })
+        .should.be.rejectedWith('wShare envelope is missing a binding; restart the signing session');
+    });
+
+    it('createOfflineMuDeltaShare marks the wShare consumed only after authentication', async function () {
+      const mockPassword = 'password';
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      let marks = 0;
+      const markConsumed = () => {
+        marks++;
+      };
+      await tssUtils.createOfflineMuDeltaShare({
+        tssParams: {
+          txRequest,
+          reqId,
+        },
+        requestType: RequestType.tx,
+        prv: JSON.stringify({
+          pShare: userKeyShare.pShare,
+          bitgoNShare: bitgoKeyShare.nShares[1],
+          backupNShare: backupKeyShare.nShares[1],
+        }),
+        aShareFromBitgo: aShare,
+        bitgoChallenge: bitgoChallenges,
+        encryptedWShare: await bitgo.encrypt({
+          input: JSON.stringify(wShare),
+          password: mockPassword,
+          adata: offlineShareAdata(txRequest),
+        }),
+        walletPassphrase: mockPassword,
+        markConsumed,
+      });
+      marks.should.equal(1);
+    });
+
+    it('createOfflineMuDeltaShare does not mark a wShare that fails adata validation', async function () {
+      const mockPassword = 'password';
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      let marks = 0;
+      const markConsumed = () => {
+        marks++;
+      };
+      const otherTxRequest = {
+        ...txRequest,
+        unsignedTxs: [{ ...txRequest.unsignedTxs[0], signableHex: 'deadbeef' }],
+      };
+      await tssUtils
+        .createOfflineMuDeltaShare({
+          tssParams: {
+            txRequest,
+            reqId,
+          },
+          requestType: RequestType.tx,
+          prv: JSON.stringify({
+            pShare: userKeyShare.pShare,
+            bitgoNShare: bitgoKeyShare.nShares[1],
+            backupNShare: backupKeyShare.nShares[1],
+          }),
+          aShareFromBitgo: aShare,
+          bitgoChallenge: bitgoChallenges,
+          encryptedWShare: await bitgo.encrypt({
+            input: JSON.stringify(wShare),
+            password: mockPassword,
+            adata: offlineShareAdata(otherTxRequest),
+          }),
+          walletPassphrase: mockPassword,
+          markConsumed,
+        })
+        .should.be.rejectedWith('Adata does not match cyphertext adata');
+      marks.should.equal(0);
+    });
+
+    it('createOfflineSShare should reject an oShare without adata with a distinct error', async function () {
+      const mockPassword = 'password';
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      let marks = 0;
+      const markConsumed = () => {
+        marks++;
+      };
+      await tssUtils
+        .createOfflineSShare({
+          tssParams: {
+            txRequest,
+            reqId,
+          },
+          dShareFromBitgo: dShare,
+          // an oShare envelope with no adata at all must not pass validation
+          encryptedOShare: await bitgo.encrypt({ input: JSON.stringify(oShare), password: mockPassword }),
+          walletPassphrase: mockPassword,
+          requestType: RequestType.tx,
+          markConsumed,
+        })
+        .should.be.rejectedWith('Missing adata on encrypted share envelope; restart the signing session');
+      marks.should.equal(0);
+    });
+
+    it('createOfflineSShare marks the oShare consumed only after authentication', async function () {
+      const mockPassword = 'password';
+      const pubKeyLength = 66;
+      const privKeyLength = 64;
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      let marks = 0;
+      const markConsumed = () => {
+        marks++;
+      };
+      const step3SigningMaterial = await tssUtils.createOfflineSShare({
+        tssParams: {
+          txRequest,
+          reqId,
+        },
+        dShareFromBitgo: dShare,
+        encryptedOShare: await bitgo.encrypt({
+          input: JSON.stringify(oShare),
+          password: mockPassword,
+          adata: offlineShareAdata(txRequest, OSHARE_STATE),
+        }),
+        walletPassphrase: mockPassword,
+        requestType: RequestType.tx,
+        markConsumed,
+      });
+      marks.should.equal(1);
+      step3SigningMaterial.R.length.should.equal(pubKeyLength);
+      step3SigningMaterial.y.length.should.equal(pubKeyLength);
+      step3SigningMaterial.s.length.should.equal(privKeyLength);
+    });
+
+    it('createOfflineSShare should complete a v1 (SJCL) envelope flow with encryptionVersion 1', async function () {
+      const mockPassword = 'password';
+      const pubKeyLength = 66;
+      const privKeyLength = 64;
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      // v1 (SJCL) envelopes escape() the adata (':' -> '%3A'); the whole K -> MuDelta -> S
+      // chain must still bind and validate correctly.
+      const encryptedWShare = await bitgo.encrypt({
+        input: JSON.stringify(wShare),
+        password: mockPassword,
+        adata: offlineShareAdata(txRequest),
+        encryptionVersion: 1,
+      });
+      const muDeltaResult = await tssUtils.createOfflineMuDeltaShare({
+        tssParams: {
+          txRequest,
+          reqId,
+        },
+        requestType: RequestType.tx,
+        prv: JSON.stringify({
+          pShare: userKeyShare.pShare,
+          bitgoNShare: bitgoKeyShare.nShares[1],
+          backupNShare: backupKeyShare.nShares[1],
+        }),
+        aShareFromBitgo: aShare,
+        bitgoChallenge: bitgoChallenges,
+        encryptedWShare,
+        walletPassphrase: mockPassword,
+        encryptionVersion: 1,
+      });
+      const step3SigningMaterial = await tssUtils.createOfflineSShare({
+        tssParams: {
+          txRequest,
+          reqId,
+        },
+        dShareFromBitgo: dShare,
+        encryptedOShare: muDeltaResult.oShare as string,
+        walletPassphrase: mockPassword,
+        requestType: RequestType.tx,
+      });
+      step3SigningMaterial.R.length.should.equal(pubKeyLength);
+      step3SigningMaterial.y.length.should.equal(pubKeyLength);
+      step3SigningMaterial.s.length.should.equal(privKeyLength);
+    });
+
+    it('createOfflineSShare should complete a legacy direct-caller flow (propagated oShare binding)', async function () {
+      const mockPassword = 'password';
+      const pubKeyLength = 66;
+      const privKeyLength = 64;
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      // Legacy direct callers omit txRequest, so MuDelta propagates the wShare envelope's
+      // own binding (re-prefixed for the oShare) instead of recomputing it.
+      const muDeltaResult = await tssUtils.createOfflineMuDeltaShare({
+        aShareFromBitgo: aShare,
+        bitgoChallenge: bitgoChallenges,
+        encryptedWShare: await bitgo.encrypt({
+          input: JSON.stringify(wShare),
+          password: mockPassword,
+          adata: offlineShareAdata(txRequest),
+        }),
+        walletPassphrase: mockPassword,
+      });
+      // The S round always has tssParams, so it validates the propagated binding strictly.
+      const step3SigningMaterial = await tssUtils.createOfflineSShare({
+        tssParams: {
+          txRequest,
+          reqId,
+        },
+        dShareFromBitgo: dShare,
+        encryptedOShare: muDeltaResult.oShare as string,
+        walletPassphrase: mockPassword,
+        requestType: RequestType.tx,
+      });
+      step3SigningMaterial.R.length.should.equal(pubKeyLength);
+      step3SigningMaterial.y.length.should.equal(pubKeyLength);
+      step3SigningMaterial.s.length.should.equal(privKeyLength);
+    });
+
+    it('createOfflineMuDeltaShare should reject an expired wShare envelope', async function () {
+      const mockPassword = 'password';
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      await tssUtils
+        .createOfflineMuDeltaShare({
+          tssParams: {
+            txRequest,
+            reqId,
+          },
+          requestType: RequestType.tx,
+          prv: JSON.stringify({
+            pShare: userKeyShare.pShare,
+            bitgoNShare: bitgoKeyShare.nShares[1],
+            backupNShare: backupKeyShare.nShares[1],
+          }),
+          aShareFromBitgo: aShare,
+          bitgoChallenge: bitgoChallenges,
+          encryptedWShare: await bitgo.encrypt({
+            input: JSON.stringify(wShare),
+            password: mockPassword,
+            adata: expiredOfflineShareAdata(txRequest),
+          }),
+          walletPassphrase: mockPassword,
+        })
+        .should.be.rejectedWith('Encrypted share envelope has expired; restart the signing session');
     });
 
     it('createOfflineMuDeltaShare should succeed with v2-encrypted wShare', async function () {
@@ -1194,9 +1642,20 @@ describe('TSS Ecdsa Utils:', async function () {
         input: JSON.stringify(wShare),
         password: mockPassword,
         encryptionVersion: 2,
+        adata: offlineShareAdata(txRequest),
       });
       assert.strictEqual(JSON.parse(encryptedWShare).v, 2, 'pre-condition: wShare must be v2-encrypted');
       const step2SigningMaterial = await tssUtils.createOfflineMuDeltaShare({
+        tssParams: {
+          txRequest,
+          reqId,
+        },
+        requestType: RequestType.tx,
+        prv: JSON.stringify({
+          pShare: userKeyShare.pShare,
+          bitgoNShare: bitgoKeyShare.nShares[1],
+          backupNShare: backupKeyShare.nShares[1],
+        }),
         aShareFromBitgo: aShare,
         bitgoChallenge: bitgoChallenges,
         encryptedWShare,
@@ -1217,13 +1676,42 @@ describe('TSS Ecdsa Utils:', async function () {
           reqId: reqId,
         },
         dShareFromBitgo: dShare,
-        encryptedOShare: await bitgo.encrypt({ input: JSON.stringify(oShare), password: mockPassword }),
+        encryptedOShare: await bitgo.encrypt({
+          input: JSON.stringify(oShare),
+          password: mockPassword,
+          adata: offlineShareAdata(txRequest, OSHARE_STATE),
+        }),
         walletPassphrase: mockPassword,
         requestType: RequestType.tx,
       });
       step3SigningMaterial.R.length.should.equal(pubKeyLength);
       step3SigningMaterial.y.length.should.equal(pubKeyLength);
       step3SigningMaterial.s.length.should.equal(privKeyLength);
+    });
+
+    it('createOfflineSShare should fail with oShare adata bound to a different signable', async function () {
+      const mockPassword = 'password';
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      const otherTxRequest = {
+        ...txRequest,
+        unsignedTxs: [{ ...txRequest.unsignedTxs[0], signableHex: 'deadbeef' }],
+      };
+      await tssUtils
+        .createOfflineSShare({
+          tssParams: {
+            txRequest,
+            reqId,
+          },
+          dShareFromBitgo: dShare,
+          encryptedOShare: await bitgo.encrypt({
+            input: JSON.stringify(oShare),
+            password: mockPassword,
+            adata: offlineShareAdata(otherTxRequest, OSHARE_STATE),
+          }),
+          walletPassphrase: mockPassword,
+          requestType: RequestType.tx,
+        })
+        .should.be.rejectedWith('Adata does not match cyphertext adata');
     });
 
     it('createOfflineSShare should succeed with v2-encrypted oShare', async function () {
@@ -1235,6 +1723,7 @@ describe('TSS Ecdsa Utils:', async function () {
         input: JSON.stringify(oShare),
         password: mockPassword,
         encryptionVersion: 2,
+        adata: offlineShareAdata(txRequest, OSHARE_STATE),
       });
       assert.strictEqual(JSON.parse(encryptedOShare).v, 2, 'pre-condition: oShare must be v2-encrypted');
       const step3SigningMaterial = await tssUtils.createOfflineSShare({

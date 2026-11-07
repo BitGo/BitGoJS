@@ -56,6 +56,7 @@ import { Config } from './config';
 import { ApiResponseError, BitGoExpressError } from './errors';
 import { promises as fs } from 'fs';
 import { retryPromise } from './retryPromise';
+import { computeConsumedShareKey, getConsumedShareRegistry } from './consumedSharesRegistry';
 import { SENSITIVE_REQUEST_KEYS } from './sensitiveRequestKeys';
 import {
   handleCreateSignerMacaroon,
@@ -439,6 +440,31 @@ async function getEncryptedPrivKey(path: string, walletId: string): Promise<stri
   return encryptedPrivKey[walletId];
 }
 
+/**
+ * Marks an encrypted share as consumed for this wallet. Each wShare (MuDelta
+ * round) and oShare (S round) ciphertext may be used exactly once; a replayed
+ * ciphertext throws before the share is used (fail-closed).
+ */
+function markConsumedShareClosure(registryFilePath: string, shareType: string, encryptedShare: unknown): () => void {
+  if (typeof encryptedShare !== 'string' || !encryptedShare) {
+    throw new ApiResponseError('Missing encrypted share in request', 400);
+  }
+  // Cheap pre-checks before the helper runs: an unparseable body or one without string
+  // iv/ct would fail decryption anyway, and rejecting it early with a 400 keeps junk
+  // requests from ever reaching the registry.
+  let envelope: Record<string, unknown>;
+  try {
+    envelope = JSON.parse(encryptedShare) as Record<string, unknown>;
+  } catch {
+    throw new ApiResponseError('Invalid encrypted share envelope', 400);
+  }
+  if (typeof envelope.iv !== 'string' || typeof envelope.ct !== 'string') {
+    throw new ApiResponseError('Invalid encrypted share envelope', 400);
+  }
+  return () =>
+    getConsumedShareRegistry(registryFilePath).markConsumed(computeConsumedShareKey(shareType, encryptedShare));
+}
+
 async function decryptPrivKey(bg: BitGo, encryptedPrivKey: string, walletPw: string): Promise<string> {
   try {
     return await bg.decrypt({ password: walletPw, input: encryptedPrivKey });
@@ -467,6 +493,7 @@ export async function handleV2GenerateShareTSS(
   if (!signerFileSystemPath) {
     throw new Error('Missing required configuration: signerFileSystemPath');
   }
+  const registryFilePath = req.config.signerRegistryFilePath ?? `${signerFileSystemPath}.consumedShares.json`;
 
   const encryptedPrivKey = await getEncryptedPrivKey(signerFileSystemPath, walletId);
   const bitgo = req.bitgo;
@@ -540,10 +567,22 @@ export async function handleV2GenerateShareTSS(
             return ecdsaUtils.getOfflineSignerPaillierModulus(req.body);
           case ShareType.K:
             return await ecdsaUtils.createOfflineKShare(req.body);
-          case ShareType.MuDelta:
+          case ShareType.MuDelta: {
+            req.body.markConsumed = markConsumedShareClosure(
+              registryFilePath,
+              req.decoded.sharetype,
+              req.body.encryptedWShare
+            );
             return await ecdsaUtils.createOfflineMuDeltaShare(req.body);
-          case ShareType.S:
+          }
+          case ShareType.S: {
+            req.body.markConsumed = markConsumedShareClosure(
+              registryFilePath,
+              req.decoded.sharetype,
+              req.body.encryptedOShare
+            );
             return await ecdsaUtils.createOfflineSShare(req.body);
+          }
           default:
             throw new Error(
               `Share type ${req.decoded.sharetype} not supported, only PaillierModulus, K, MUDelta, and S share generation is supported.`
