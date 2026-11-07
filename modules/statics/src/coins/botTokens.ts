@@ -12091,7 +12091,7 @@ export const botTokens = [
   AccountCtors.solToken(
     'da2fed8a-81f3-4979-a47b-d5ca5a3da371',
     'sol:hsdt',
-    'Solana Company Class A Common Stock',
+    'Solana Company',
     6,
     'HZBEgyBzXBTiJ9B3uaUmNWXmkNhZz5jzwwA6Et4L326J',
     'HZBEgyBzXBTiJ9B3uaUmNWXmkNhZz5jzwwA6Et4L326J',
