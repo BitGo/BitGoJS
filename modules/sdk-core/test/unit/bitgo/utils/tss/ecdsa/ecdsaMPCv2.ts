@@ -635,6 +635,7 @@ describe('ECDSA MPC v2', async () => {
       getHashFunction: hashFunctionSpy,
       verifyTransaction: sinon.stub().resolves(true),
       getMPCAlgorithm: sinon.stub().returns('ecdsa'),
+      getChain: sinon.stub().returns('flrp'),
       getConfig: sinon.stub().returns({ family: 'flrp' }),
       isSignablePreHashed: (unsignedTx: { serializedTxHex?: string }) =>
         unsignedTx.serializedTxHex?.startsWith('0000') ?? false,
@@ -706,6 +707,7 @@ describe('ECDSA MPC v2', async () => {
       getHashFunction: hashFunctionSpy,
       verifyTransaction: sinon.stub().resolves(true),
       getMPCAlgorithm: sinon.stub().returns('ecdsa'),
+      getChain: sinon.stub().returns('flr'),
       getConfig: sinon.stub().returns({ family: 'flr' }),
     } as unknown as IBaseCoin;
 
@@ -780,6 +782,7 @@ describe('ECDSA MPC v2', async () => {
         getHashFunction: sinon.stub().callsFake(() => createKeccakHash('keccak256') as Hash),
         verifyTransaction: verifyTransactionSpy,
         getMPCAlgorithm: sinon.stub().returns('ecdsa'),
+        getChain: sinon.stub().returns('hteth'),
         getConfig: sinon.stub().returns({ family: 'hteth' }),
       } as unknown as IBaseCoin;
 
