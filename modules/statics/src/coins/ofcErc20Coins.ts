@@ -4452,7 +4452,7 @@ export const ofcErc20Coins = [
   ofcerc20(
     'be47331c-84b6-44c7-ab81-776eb9cc4f3b',
     'ofcchiliz:og',
-    'OG Fan Token',
+    'OG Token',
     0,
     underlyingAssetForSymbol('chiliz:og'),
     undefined,

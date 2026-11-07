@@ -4278,7 +4278,7 @@ export const allCoinsAndTokens = [
   erc20Token(
     'aad9e75e-fd24-416c-948b-7926de77372a',
     'chiliz:og',
-    'OG Fan Token',
+    'OG Token',
     0,
     '0x19ca0f4adb29e2130a56b9c9422150b5dc07f294',
     UnderlyingAsset['chiliz:og'],
