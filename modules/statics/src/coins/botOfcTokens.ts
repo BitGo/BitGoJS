@@ -3760,7 +3760,7 @@ export const botOfcTokens = [
   AccountCtors.ofcsolToken(
     'becf513a-f605-4276-80c4-091ecb284a3f',
     'ofcsol:hsdt',
-    'ofcSolana Company Class A Common Stock',
+    'ofcSolana Company',
     6,
     'sol:hsdt' as unknown as UnderlyingAsset,
     undefined,
