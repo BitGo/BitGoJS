@@ -88,6 +88,9 @@ export const networkFeatureMapForTokens: Partial<Record<CoinFamily, CoinFeature[
   bsc: BSC_TOKEN_FEATURES,
   canton: CANTON_TOKEN_FEATURES,
   celo: AccountCoin.DEFAULT_FEATURES,
+  // chiliz must be static: botTokens.ts resolves getTokenFeatures at module load, before
+  // registerErc20Families backfills EVM families in coins.ts.
+  chiliz: EVM_TOKEN_FEATURES,
   eth: AccountCoin.DEFAULT_FEATURES,
   baseeth: EVM_TOKEN_FEATURES,
   eos: AccountCoin.DEFAULT_FEATURES,
