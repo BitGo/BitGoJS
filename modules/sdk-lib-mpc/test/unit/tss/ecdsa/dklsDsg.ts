@@ -55,6 +55,38 @@ describe('DKLS Dsg 2x3', function () {
     `${__dirname}/fixtures/backupShare`,
     `${__dirname}/fixtures/bitgoShare`,
   ];
+  it('preserves the protocol error and detaches the session when cleanup also fails', async function () {
+    class InspectableDsg extends DklsDsg.Dsg {
+      hasLiveSession(): boolean {
+        return this.dsgSession !== undefined;
+      }
+    }
+    const party = new InspectableDsg(fs.readFileSync(shareFiles[0]), 0, 'm', Buffer.alloc(32));
+    await party.init();
+    const originalHandle = SignSessionOTVariant.prototype.handleMessages;
+    const originalFree = SignSessionOTVariant.prototype.free;
+    let freed = false;
+    SignSessionOTVariant.prototype.handleMessages = function () {
+      throw new Error('primary protocol failure');
+    };
+    SignSessionOTVariant.prototype.free = function () {
+      originalFree.call(this);
+      freed = true;
+      throw new Error('secondary cleanup failure');
+    };
+    try {
+      assert.throws(
+        () => party.handleIncomingMessages({ broadcastMessages: [], p2pMessages: [] }),
+        /primary protocol failure/
+      );
+      assert.strictEqual(freed, true);
+      assert.strictEqual(party.hasLiveSession(), false);
+    } finally {
+      SignSessionOTVariant.prototype.handleMessages = originalHandle;
+      SignSessionOTVariant.prototype.free = originalFree;
+    }
+  });
+
   it('frees serialized sessions after every signing round', async function () {
     const originalFree = SignSessionOTVariant.prototype.free;
     let freed = 0;

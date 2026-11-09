@@ -39,6 +39,17 @@ export class Dsg {
     }
   }
 
+  private releaseSession(preserveError = false): void {
+    const session = this.dsgSession;
+    this.dsgSession = undefined;
+    try {
+      session?.free();
+    } catch (e) {
+      // A native trap can also make destruction fail; retain the original protocol error.
+      if (!preserveError) throw e;
+    }
+  }
+
   private _deserializeState() {
     if (!this.dsgSession) {
       throw Error('Session not intialized');
@@ -138,6 +149,7 @@ export class Dsg {
       throw Error(`Party index: ${this.partyIdx} does not match key share partyId: ${keyShare.partyId} `);
     }
     this.dsgSession = new SignSessionOTVariant(keyShare, this.derivationPath);
+    let failed = false;
     try {
       const firstMessage = this.dsgSession.createFirstMessage();
       let payload: Uint8Array;
@@ -153,10 +165,10 @@ export class Dsg {
         from: this.partyIdx,
       };
     } catch (e) {
+      failed = true;
       throw Error(`Error while creating the first message from party ${this.partyIdx}: ${e}`);
     } finally {
-      this.dsgSession.free();
-      this.dsgSession = undefined;
+      this.releaseSession(failed);
     }
   }
 
@@ -174,10 +186,7 @@ export class Dsg {
     if (this._signature) {
       throw new Error('Session already ended because combined signature was produced.');
     }
-    if (this.dsgSession) {
-      this.dsgSession.free();
-      this.dsgSession = undefined;
-    }
+    this.releaseSession();
     this.dsgState = DsgState.Uninitialized;
   }
 
@@ -195,6 +204,7 @@ export class Dsg {
       throw Error('Session not initialized');
     }
     const { Message } = this.getDklsWasm();
+    let failed = false;
     try {
       if (this.dsgState === DsgState.Round4) {
         this.dsgState = DsgState.Complete;
@@ -255,6 +265,7 @@ export class Dsg {
           }),
       };
     } catch (e) {
+      failed = true;
       if (e.message.startsWith('Abort the protocol and ban')) {
         throw Error(
           'Signing aborted. Please stop all transaction signing from this wallet and contact support@bitgo.com.'
@@ -262,14 +273,22 @@ export class Dsg {
       }
       throw Error(`Error while creating messages from party ${this.partyIdx}, round ${this.dsgState}: ${e}`);
     } finally {
-      nextRoundMessages.forEach((m) => m.free());
-      // Session is freed when combine is called.
-      if (this.dsgState !== DsgState.Complete) {
-        try {
+      try {
+        nextRoundMessages.forEach((m) => m.free());
+        if (!failed && this.dsgState !== DsgState.Complete) {
           this.dsgSessionBytes = this.dsgSession.toBytes();
-        } finally {
-          this.dsgSession.free();
+        }
+      } catch (e) {
+        if (!failed) {
+          failed = true;
+          throw e;
+        }
+      } finally {
+        // combine consumes the native session, including on failure.
+        if (this.dsgState === DsgState.Complete) {
           this.dsgSession = undefined;
+        } else {
+          this.releaseSession(failed);
         }
       }
     }

@@ -1,4 +1,6 @@
 import assert from 'assert';
+import sinon from 'sinon';
+import * as wasm from '@silencelaboratories/dkls-wasm-ll-node';
 import { DklsDkg, DklsTypes } from '../../../../src/tss/ecdsa-dkls';
 import { isRight } from 'fp-ts/Either';
 import {
@@ -676,5 +678,96 @@ describe('DKLS Dkg 2x3', function () {
     assert.deepEqual(decode(backupKeyShare).public_key, decode(bitgoKeyShare).public_key);
     assert.deepEqual(DklsTypes.getCommonKeychain(userKeyShare), DklsTypes.getCommonKeychain(bitgoKeyShare));
     assert.deepEqual(DklsTypes.getCommonKeychain(backupKeyShare), DklsTypes.getCommonKeychain(bitgoKeyShare));
+  });
+});
+
+describe('DKLS key generation ownership', function () {
+  afterEach(function () {
+    sinon.restore();
+  });
+
+  it('releases initialization sessions and messages before an external handoff', async function () {
+    const freeSession = sinon.spy(wasm.KeygenSession.prototype, 'free');
+    const freeMessage = sinon.spy(wasm.Message.prototype, 'free');
+    const dkg = new DklsDkg.Dkg(3, 2, 0);
+    await dkg.initDkg();
+    assert.strictEqual(freeSession.callCount, 1);
+    assert.strictEqual(freeMessage.callCount, 1);
+    assert.strictEqual((dkg as any).dkgSession, undefined);
+    const restored = await DklsDkg.Dkg.restoreSession(3, 2, 0, dkg.getSessionData());
+    assert.strictEqual(freeSession.callCount, 2);
+    assert.strictEqual((restored as any).dkgSession, undefined);
+    assert.deepStrictEqual(restored.getSessionData(), dkg.getSessionData());
+  });
+
+  it('balances session ownership across a complete three-party workflow', async function () {
+    const freeSession = sinon.spy(wasm.KeygenSession.prototype, 'free');
+    const consumeSession = sinon.spy(wasm.KeygenSession.prototype, 'keyshare');
+    const parties = await generateDKGKeyShares();
+    assert.strictEqual(freeSession.callCount, 12);
+    assert.strictEqual(consumeSession.callCount, 3);
+    for (const party of parties) {
+      assert(party.getKeyShare().length > 0);
+      assert.strictEqual((party as any).dkgSession, undefined);
+    }
+  });
+
+  it('preserves initialization errors when disposal also fails and detaches first', async function () {
+    const dkg = new DklsDkg.Dkg(3, 2, 0);
+    const originalFree = wasm.KeygenSession.prototype.free;
+    sinon.stub(wasm.KeygenSession.prototype, 'createFirstMessage').throws(new Error('first message failure'));
+    sinon.stub(wasm.KeygenSession.prototype, 'free').callsFake(function () {
+      assert.strictEqual((dkg as any).dkgSession, undefined);
+      originalFree.call(this);
+      throw new Error('cleanup failure');
+    });
+    await assert.rejects(dkg.initDkg(), /first message failure/);
+  });
+
+  it('does not serialize a failed round or mask its error with cleanup', async function () {
+    const dkg = new DklsDkg.Dkg(3, 2, 0);
+    await dkg.initDkg();
+    const originalFree = wasm.KeygenSession.prototype.free;
+    const serialize = sinon.spy(wasm.KeygenSession.prototype, 'toBytes');
+    sinon.stub(wasm.KeygenSession.prototype, 'handleMessages').throws(new Error('round failure'));
+    sinon.stub(wasm.KeygenSession.prototype, 'free').callsFake(function () {
+      assert.strictEqual((dkg as any).dkgSession, undefined);
+      originalFree.call(this);
+      throw new Error('cleanup failure');
+    });
+    assert.throws(() => dkg.handleIncomingMessages({ broadcastMessages: [], p2pMessages: [] }), /round failure/);
+    assert.strictEqual(serialize.callCount, 0);
+  });
+
+  it('releases borrowed retrofit shares when rotation initialization fails', async function () {
+    const dkg = new DklsDkg.Dkg(3, 2, 0, undefined, { xShare: fixtures.mockDKeyShare.xShare });
+    const freeShare = sinon.spy(wasm.Keyshare.prototype, 'free');
+    sinon.stub(wasm.KeygenSession, 'initKeyRotation').throws(new Error('rotation failure'));
+    await assert.rejects(dkg.initDkg(), /rotation failure/);
+    assert.strictEqual(freeShare.callCount, 1);
+    assert.strictEqual((dkg as any).dklsKeyShareRetrofitObject, undefined);
+    assert.strictEqual((dkg as any).dkgSession, undefined);
+  });
+
+  it('releases initialization resources if serialization fails', async function () {
+    const freeSession = sinon.spy(wasm.KeygenSession.prototype, 'free');
+    const freeMessage = sinon.spy(wasm.Message.prototype, 'free');
+    sinon.stub(wasm.KeygenSession.prototype, 'toBytes').throws(new Error('serialization failure'));
+    const dkg = new DklsDkg.Dkg(3, 2, 0);
+    await assert.rejects(dkg.initDkg(), /serialization failure/);
+    assert.strictEqual(freeSession.callCount, 1);
+    assert.strictEqual(freeMessage.callCount, 1);
+    assert.strictEqual((dkg as any).dkgSession, undefined);
+  });
+
+  it('does not free a session consumed by a throwing keyshare call', async function () {
+    const dkg = new DklsDkg.Dkg(3, 2, 0);
+    await dkg.initDkg();
+    (dkg as any).dkgState = DklsTypes.DkgState.Round4;
+    sinon.stub(wasm.KeygenSession.prototype, 'handleMessages').returns([]);
+    const freeSession = sinon.spy(wasm.KeygenSession.prototype, 'free');
+    assert.throws(() => dkg.handleIncomingMessages({ broadcastMessages: [], p2pMessages: [] }));
+    assert.strictEqual(freeSession.callCount, 0);
+    assert.strictEqual((dkg as any).dkgSession, undefined);
   });
 });
