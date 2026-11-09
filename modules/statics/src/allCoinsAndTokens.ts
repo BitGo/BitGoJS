@@ -4329,6 +4329,69 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['chiliz:tra'],
     Networks.main.chiliz
   ),
+  erc20Token(
+    '35316cb5-1d1e-46b6-a0a1-2fa0f24bb4f3',
+    'chiliz:asm',
+    'AS Monaco Fan Token',
+    18,
+    '0x57f3d2382025cf5d6c3b126dce0360d9cf3aff49',
+    UnderlyingAsset['chiliz:asm'],
+    Networks.main.chiliz
+  ),
+  erc20Token(
+    'f61e6d97-4688-4165-9128-a391b145d261',
+    'chiliz:belg',
+    'Belgium Fan Token',
+    18,
+    '0x6c4c9dfe8c940b51b68d00c6d76de756b252f328',
+    UnderlyingAsset['chiliz:belg'],
+    Networks.main.chiliz
+  ),
+  erc20Token(
+    'ea00f425-8e09-49b4-9cc5-bed823cf19d6',
+    'chiliz:safa',
+    'South Africa Fan Token',
+    18,
+    '0xf81aa505df80278fc4cf2b050086f678d48bddce',
+    UnderlyingAsset['chiliz:safa'],
+    Networks.main.chiliz
+  ),
+  erc20Token(
+    '466d2739-ed6a-4de7-a3e9-3aa8859c45d9',
+    'chiliz:sevilla',
+    'Sevilla FC Fan Token',
+    18,
+    '0xa584cca6a5c46ead6ff8ef3beb8fac76364c36cb',
+    UnderlyingAsset['chiliz:sevilla'],
+    Networks.main.chiliz
+  ),
+  erc20Token(
+    '473f59db-6a6a-4da6-b7e4-952e5cd10702',
+    'chiliz:sfa',
+    'Scotland Fan Token',
+    18,
+    '0xfab24366503eb0fa8cb8fb7d1311159fd4283657',
+    UnderlyingAsset['chiliz:sfa'],
+    Networks.main.chiliz
+  ),
+  erc20Token(
+    'c32bb092-57f6-4b59-8ecc-a78da840ee3e',
+    'chiliz:spain',
+    'Spain Fan Token',
+    18,
+    '0x7a224b67aaa360e48402aab4ff12d89eef9b4cf8',
+    UnderlyingAsset['chiliz:spain'],
+    Networks.main.chiliz
+  ),
+  erc20Token(
+    '4d805294-d0d9-4efd-860a-7bc90024ccbf',
+    'chiliz:vcf',
+    'Valencia CF Fan Token',
+    18,
+    '0x83d7d1df01c698b4379077af4bceb2d4af113bff',
+    UnderlyingAsset['chiliz:vcf'],
+    Networks.main.chiliz
+  ),
   account(
     'e10b89f6-3d14-4d85-a05a-da53d6e60489',
     'codexeth',
