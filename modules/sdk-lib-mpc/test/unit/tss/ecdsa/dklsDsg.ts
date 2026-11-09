@@ -3,8 +3,9 @@ import * as fs from 'fs';
 import * as crypto from 'crypto';
 import should from 'should';
 import assert from 'assert';
+import sinon from 'sinon';
 
-import { Keyshare } from '@silencelaboratories/dkls-wasm-ll-node';
+import { Keyshare, Message, SignSessionOTVariant } from '@silencelaboratories/dkls-wasm-ll-node';
 import { decode } from 'cbor-x';
 import * as mpcv2KeyCardData from './fixtures/mpcv2keycarddata';
 import * as sjcl from '@bitgo/sjcl';
@@ -55,6 +56,87 @@ describe('DKLS Dsg 2x3', function () {
     `${__dirname}/fixtures/backupShare`,
     `${__dirname}/fixtures/bitgoShare`,
   ];
+  for (const payloadFails of [true, false]) {
+    it(`preserves ${payloadFails ? 'payload' : 'cleanup'} failure during first-message disposal`, async function () {
+      const sandbox = sinon.createSandbox();
+      const originalFree = Message.prototype.free;
+      const sessionFree = sandbox.spy(SignSessionOTVariant.prototype, 'free');
+      const messageFree = sandbox.stub(Message.prototype, 'free').callsFake(function (this: Message) {
+        originalFree.call(this);
+        throw new Error('message cleanup failure');
+      });
+      if (payloadFails) {
+        sandbox.stub(Message.prototype, 'payload').get(() => {
+          throw new Error('payload read failure');
+        });
+      }
+      const party = new DklsDsg.Dsg(fs.readFileSync(shareFiles[0]), 0, 'm', Buffer.alloc(32));
+      try {
+        await assert.rejects(party.init(), payloadFails ? /payload read failure/ : /message cleanup failure/);
+        assert.strictEqual(messageFree.callCount, 1);
+        assert.strictEqual(sessionFree.callCount, 1);
+        assert.strictEqual(party['dsgSession'], undefined);
+      } finally {
+        sandbox.restore();
+      }
+    });
+  }
+
+  it('preserves the protocol error and detaches the session when cleanup also fails', async function () {
+    class InspectableDsg extends DklsDsg.Dsg {
+      hasLiveSession(): boolean {
+        return this.dsgSession !== undefined;
+      }
+    }
+    const party = new InspectableDsg(fs.readFileSync(shareFiles[0]), 0, 'm', Buffer.alloc(32));
+    await party.init();
+    const originalHandle = SignSessionOTVariant.prototype.handleMessages;
+    const originalFree = SignSessionOTVariant.prototype.free;
+    let freed = false;
+    SignSessionOTVariant.prototype.handleMessages = function () {
+      throw new Error('primary protocol failure');
+    };
+    SignSessionOTVariant.prototype.free = function () {
+      originalFree.call(this);
+      freed = true;
+      throw new Error('secondary cleanup failure');
+    };
+    try {
+      assert.throws(
+        () => party.handleIncomingMessages({ broadcastMessages: [], p2pMessages: [] }),
+        /primary protocol failure/
+      );
+      assert.strictEqual(freed, true);
+      assert.strictEqual(party.hasLiveSession(), false);
+    } finally {
+      SignSessionOTVariant.prototype.handleMessages = originalHandle;
+      SignSessionOTVariant.prototype.free = originalFree;
+    }
+  });
+
+  it('frees serialized sessions after every signing round', async function () {
+    const originalFree = SignSessionOTVariant.prototype.free;
+    let freed = 0;
+    SignSessionOTVariant.prototype.free = function () {
+      freed++;
+      return originalFree.call(this);
+    };
+    try {
+      const parties = [0, 1].map(
+        (party) => new DklsDsg.Dsg(fs.readFileSync(shareFiles[party]), party, 'm', Buffer.alloc(32))
+      );
+      const messages = await executeTillRound(4, parties[0], parties[1]);
+      assert.strictEqual(freed, 8);
+      parties.forEach((party, index) => {
+        party.handleIncomingMessages({ p2pMessages: [], broadcastMessages: messages[1 - index].broadcastMessages });
+      });
+      assert.deepStrictEqual(parties[0].signature, parties[1].signature);
+      assert.strictEqual(freed, 8);
+    } finally {
+      SignSessionOTVariant.prototype.free = originalFree;
+    }
+  });
+
   vectors.forEach(async function (vector) {
     it(`should create signatures for parties ${vector.party1} and ${vector.party2} with derivation`, async function () {
       const party1 = new DklsDsg.Dsg(

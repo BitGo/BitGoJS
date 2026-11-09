@@ -77,6 +77,30 @@ export class Dkg {
     }
   }
 
+  private _freeSession(): void {
+    const session = this.dkgSession;
+    this.dkgSession = undefined;
+    session?.free();
+  }
+
+  private _cleanup(resources: { free(): void }[], failed: boolean): void {
+    let cleanupError: unknown;
+    let cleanupFailed = false;
+    for (const resource of resources) {
+      try {
+        resource.free();
+      } catch (e) {
+        if (!cleanupFailed) {
+          cleanupError = e;
+          cleanupFailed = true;
+        }
+      }
+    }
+    if (!failed && cleanupFailed) {
+      throw cleanupError;
+    }
+  }
+
   private _createDKLsRetrofitKeyShare() {
     if (this.retrofitData) {
       const dklsKeyShare = buildDklsKeyShare({
@@ -138,30 +162,39 @@ export class Dkg {
       const initDkls = await import('@silencelaboratories/dkls-wasm-ll-web');
       await initDkls.default();
     }
-    this._createDKLsRetrofitKeyShare();
     if (this.seed && this.seed.length !== 32) {
       throw Error(`Seed should be 32 bytes, got ${this.seed.length}.`);
     }
     const { KeygenSession } = this.getDklsWasm();
-    if (this.dklsKeyShareRetrofitObject) {
-      this.dkgSession = this.seed
-        ? KeygenSession.initKeyRotation(this.dklsKeyShareRetrofitObject, new Uint8Array(this.seed))
-        : KeygenSession.initKeyRotation(this.dklsKeyShareRetrofitObject);
-    } else {
-      this.dkgSession = this.seed
-        ? new KeygenSession(this.n, this.t, this.partyIdx, new Uint8Array(this.seed))
-        : new KeygenSession(this.n, this.t, this.partyIdx);
-    }
+    let firstMessage: Message | undefined;
+    let failed = false;
     try {
-      const payload = this.dkgSession.createFirstMessage().payload;
+      this._createDKLsRetrofitKeyShare();
+      if (this.dklsKeyShareRetrofitObject) {
+        this.dkgSession = this.seed
+          ? KeygenSession.initKeyRotation(this.dklsKeyShareRetrofitObject, new Uint8Array(this.seed))
+          : KeygenSession.initKeyRotation(this.dklsKeyShareRetrofitObject);
+      } else {
+        this.dkgSession = this.seed
+          ? new KeygenSession(this.n, this.t, this.partyIdx, new Uint8Array(this.seed))
+          : new KeygenSession(this.n, this.t, this.partyIdx);
+      }
+      firstMessage = this.dkgSession.createFirstMessage();
+      const payload = firstMessage.payload;
       this.dkgSessionBytes = this.dkgSession.toBytes();
       this._deserializeState();
-      return {
-        payload: payload,
-        from: this.partyIdx,
-      };
+      return { payload, from: this.partyIdx };
     } catch (e) {
+      failed = true;
       throw Error(`Error while creating the first message from party ${this.partyIdx}: ${e}`);
+    } finally {
+      // Key rotation borrows the old share; only keyshare() consumes a session.
+      const retrofit = this.dklsKeyShareRetrofitObject;
+      this.dklsKeyShareRetrofitObject = undefined;
+      this._cleanup(
+        [{ free: () => this._freeSession() }, ...(firstMessage ? [firstMessage] : []), ...(retrofit ? [retrofit] : [])],
+        failed
+      );
     }
   }
 
@@ -201,6 +234,8 @@ export class Dkg {
       throw Error('Session not initialized');
     }
     const { Message } = this.getDklsWasm();
+    let failed = false;
+    let keyShare: Keyshare | undefined;
     try {
       if (this.dkgState === DkgState.Round3) {
         const commitmentsUnsorted = messagesForIthRound.p2pMessages
@@ -228,12 +263,11 @@ export class Dkg {
         );
       }
       if (this.dkgState === DkgState.Round4) {
-        this.dkgKeyShare = this.dkgSession.keyshare();
-        this.keyShareBuff = Buffer.from(this.dkgKeyShare.toBytes());
-        this.dkgKeyShare.free();
-        if (this.dklsKeyShareRetrofitObject) {
-          this.dklsKeyShareRetrofitObject.free();
-        }
+        const session = this.dkgSession;
+        // The binding consumes the session even when keyshare() throws.
+        this.dkgSession = undefined;
+        keyShare = session.keyshare();
+        this.keyShareBuff = Buffer.from(keyShare.toBytes());
         this.dkgState = DkgState.Complete;
         return { broadcastMessages: [], p2pMessages: [] };
       } else {
@@ -265,15 +299,15 @@ export class Dkg {
             return broadcastReturn;
           }),
       };
+      this.dkgSessionBytes = this.dkgSession.toBytes();
     } catch (e) {
+      failed = true;
       throw Error(`Error while creating messages from party ${this.partyIdx}, round ${this.dkgState}: ${e}`);
     } finally {
-      nextRoundMessages.forEach((m) => m.free());
-      // Session is freed when keyshare is called.
-      if (this.dkgState !== DkgState.Complete) {
-        this.dkgSessionBytes = this.dkgSession.toBytes();
-        this.dkgSession = undefined;
-      }
+      this._cleanup(
+        [{ free: () => this._freeSession() }, ...nextRoundMessages, ...(keyShare ? [keyShare] : [])],
+        failed
+      );
     }
     return nextRoundDeserializedMessages;
   }
@@ -336,11 +370,19 @@ export class Dkg {
       dkg.keyShareBuff = sessionData.keyShareBuff;
     }
 
-    dkg._restoreSession();
-    // Re-derive state from WASM bytes rather than trusting the caller-supplied dkgState.
-    // This prevents a tampered or corrupted dkgState from causing handleIncomingMessages()
-    // to take the wrong branch (e.g. skipping chain code commitment or calling keyshare() prematurely).
-    dkg._deserializeState();
-    return dkg;
+    let failed = false;
+    try {
+      dkg._restoreSession();
+      // Re-derive state from WASM bytes rather than trusting the caller-supplied dkgState.
+      // This prevents a tampered or corrupted dkgState from causing handleIncomingMessages()
+      // to take the wrong branch (e.g. skipping chain code commitment or calling keyshare() prematurely).
+      dkg._deserializeState();
+      return dkg;
+    } catch (e) {
+      failed = true;
+      throw e;
+    } finally {
+      dkg._cleanup([{ free: () => dkg._freeSession() }], failed);
+    }
   }
 }
