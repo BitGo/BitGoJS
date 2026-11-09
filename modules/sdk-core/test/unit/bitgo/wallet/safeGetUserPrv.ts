@@ -333,24 +333,143 @@ describe('WCN-1200 safe child getUserPrv root-fetch detour', function () {
       mockBaseCoin.deriveKeyWithSeed.notCalled.should.be.true();
     });
 
-    it('fails closed for ed25519 onchain safe owner instead of BIP32-deriving', async function () {
-      mockBaseCoin.getFamily.returns('xlm');
-      const wallet = makeWallet({ safe: 'safe-id-1', coin: 'txlm' });
+    describe('ed25519Multisig safe owner (SLIP-0010 hardened child)', function () {
+      // Fixed root seed; children derived at m/44'/<coinType>'/2'/0'. Expected values were produced with
+      // the public reference libraries (stellar-base for XLM, algosdk for ALGO, the documented Hedera
+      // DER prefixes for HBAR) from the pinned SLIP-0010 child seed.
+      const ED25519_ROOT_SEED = 'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI';
+      const ED25519_ROOT_PUB = 'GAB2CB576PHBBPQ5ODORRZ2LYCMWPZGWGCN2KDK7DXOIMZASKUY3QZ6Q';
+      const HBAR_PUB_PREFIX = '302a300506032b6570032100';
+      const HBAR_PRV_PREFIX = '302e020100300506032b657004220420';
 
-      await wallet
-        .getUserPrv({
-          keychain: {
-            id: 'child-key',
-            pub: 'child-pub',
-            type: 'independent',
-            parent: rootKeyId,
-            derivedFromParentWithSeed: '123',
-          },
-          walletPassphrase: passphrase,
-        })
-        .should.be.rejectedWith(SafeOwnerSigningNotImplementedError);
-      keychainsGetStub.notCalled.should.be.true();
-      mockBaseCoin.deriveKeyWithSeed.notCalled.should.be.true();
+      const cases = [
+        {
+          chain: 'txlm',
+          family: 'xlm',
+          coinType: 148,
+          childSeedHex: '855e8d991b48037b3e0161fd57f1643044878d6afe0db0243719b5201e2e4f69',
+          storedPub: 'GDD3VVFKM64URLG6PO2UFWQXJH67N5UDOV5HZ23M5FJJT5G4LUO7RJWG',
+          expectedPrv: 'SCCV5DMZDNEAG6Z6AFQ72V7RMQYEJB4NNL7A3MBEG4M3KIA6FZHWSAED',
+        },
+        {
+          chain: 'talgo',
+          family: 'algo',
+          coinType: 283,
+          childSeedHex: 'be69531ebbab851b69aa41bb9c905afed52d26ff4278e6418609d4d60570510c',
+          storedPub: 'Q3LIAOII4UOIX7EIT7E5PCG3ZL3FNA3PPLCPC2PLZEFB4YHOVMS5P3DSOM',
+          expectedPrv: 'XZUVGHV3VOCRW2NKIG5ZZEC273KS2JX7IJ4OMQMGBHKNMBLQKEGFCK75SE',
+        },
+        {
+          chain: 'thbar',
+          family: 'hbar',
+          coinType: 3030,
+          childSeedHex: '7dff4c0c0080e641e9273cf304804fcfd7e35a1b52424128dc69ad7a46783c7e',
+          storedPub: HBAR_PUB_PREFIX + '3bc193e74ce74dc20ab1ada472831abc7f9977435dada3fa3d5e2e5ba91509a3',
+          expectedPrv: HBAR_PRV_PREFIX + '7dff4c0c0080e641e9273cf304804fcfd7e35a1b52424128dc69ad7a46783c7e',
+        },
+      ];
+
+      const ed25519RootKeychain = {
+        id: rootKeyId,
+        source: 'user',
+        encryptedPrv: `enc:${ED25519_ROOT_SEED}`,
+        type: 'independent',
+        pub: ED25519_ROOT_PUB,
+      };
+
+      for (const c of cases) {
+        const path = buildSafeBip44Path(c.coinType, 'ed25519Multisig', 0);
+        const ownerChild = {
+          id: 'child-key',
+          pub: c.storedPub,
+          type: 'independent' as const,
+          parent: rootKeyId,
+          derivedFromParentWithPath: path,
+        };
+
+        it(`${c.chain}: resolves the pinned SLIP-0010 child prv in the coin's signing format`, async function () {
+          mockBaseCoin.getFamily.returns(c.family);
+          const wallet = makeWallet({ safe: 'safe-id-1', coin: c.chain });
+          keychainsGetStub.resolves(ed25519RootKeychain);
+
+          const result = await wallet.getUserPrv({ keychain: ownerChild, walletPassphrase: passphrase });
+
+          result.should.equal(c.expectedPrv);
+          result.should.not.containEql(ED25519_ROOT_SEED);
+          keychainsGetStub.calledOnceWithExactly({ id: rootKeyId }).should.be.true();
+          mockBaseCoin.deriveKeyWithSeed.notCalled.should.be.true();
+          if (c.family === 'hbar') {
+            // DER-prefixed private key wraps the raw SLIP-0010 child seed
+            result.should.equal(HBAR_PRV_PREFIX + c.childSeedHex);
+          }
+        });
+
+        it(`${c.chain}: fails closed when the registered pub does not match the derivation`, async function () {
+          mockBaseCoin.getFamily.returns(c.family);
+          const wallet = makeWallet({ safe: 'safe-id-1', coin: c.chain });
+          keychainsGetStub.resolves(ed25519RootKeychain);
+          // another account's child is a valid pub for this coin but not the one at the registered path
+          const otherAccountPath = buildSafeBip44Path(c.coinType, 'ed25519Multisig', 1);
+
+          await wallet
+            .getUserPrv({
+              keychain: { ...ownerChild, derivedFromParentWithPath: otherAccountPath },
+              walletPassphrase: passphrase,
+            })
+            .should.be.rejectedWith(SafeDerivedPublicKeyMismatchError);
+        });
+
+        it(`${c.chain}: fails closed for a m/0' single-level path at the path codec`, async function () {
+          mockBaseCoin.getFamily.returns(c.family);
+          const wallet = makeWallet({ safe: 'safe-id-1', coin: c.chain });
+          keychainsGetStub.resolves(ed25519RootKeychain);
+
+          await wallet
+            .getUserPrv({
+              keychain: { ...ownerChild, derivedFromParentWithPath: "m/0'" },
+              walletPassphrase: passphrase,
+            })
+            .should.be.rejectedWith(/derivedFromParentWithPath/);
+        });
+      }
+
+      it('requires the registered pub in coin format (a bare G... strkey is a mismatch for ALGO)', async function () {
+        mockBaseCoin.getFamily.returns('algo');
+        const wallet = makeWallet({ safe: 'safe-id-1', coin: 'talgo' });
+        keychainsGetStub.resolves(ed25519RootKeychain);
+
+        await wallet
+          .getUserPrv({
+            keychain: {
+              id: 'child-key',
+              pub: 'GCDNNABZBDSRZC74RCP4TV4I3PFPMVUDN55MJ4LJ5PEQUHTA52VSKJKD',
+              type: 'independent',
+              parent: rootKeyId,
+              derivedFromParentWithPath: buildSafeBip44Path(283, 'ed25519Multisig', 0),
+            },
+            walletPassphrase: passphrase,
+          })
+          .should.be.rejectedWith(SafeDerivedPublicKeyMismatchError);
+      });
+
+      it('rejects a wrong passphrase with IncorrectPasswordError', async function () {
+        mockBaseCoin.getFamily.returns('xlm');
+        const wallet = makeWallet({ safe: 'safe-id-1', coin: 'txlm' });
+        keychainsGetStub.resolves(ed25519RootKeychain);
+
+        await wallet
+          .getUserPrv({
+            keychain: {
+              id: 'child-key',
+              pub: cases[0].storedPub,
+              type: 'independent',
+              parent: rootKeyId,
+              derivedFromParentWithPath: buildSafeBip44Path(148, 'ed25519Multisig', 0),
+            },
+            walletPassphrase: 'wrong-passphrase',
+          })
+          .should.be.rejectedWith(IncorrectPasswordError);
+      });
     });
 
     it('aborts locally when derived pub does not match registered child pub', async function () {
