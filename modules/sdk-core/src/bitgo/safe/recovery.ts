@@ -25,6 +25,7 @@ import {
   encodeEd25519StrKeyPublicKey,
   encodeEd25519StrKeySecretSeed,
   type SafeKeycardRootEntry,
+  type SafeKeycardRoots,
 } from '@bitgo/sdk-lib-safes';
 import {
   signEd25519Extended,
@@ -189,12 +190,21 @@ export async function decryptSafeKeycard(params: {
   backupKeyBox: string;
   bitgoKeyBox: string;
   password: string;
-}): Promise<DecryptedSafeRoots> {
+}): Promise<Partial<DecryptedSafeRoots>> {
   const { bitgo, userKeyBox, backupKeyBox, bitgoKeyBox, password } = params;
 
   const userRoots = parseSafeKeycardBox(userKeyBox);
   const backupRoots = parseSafeKeycardBox(backupKeyBox);
   const bitgoRoots = parseSafeKeycardBox(bitgoKeyBox);
+
+  // A keycard carries a slot only when all three boxes declare it; anything else is a torn
+  // write, not a subset.
+  const declaredSlots = new Set(Object.keys(userRoots));
+  const sameSet = (other: SafeKeycardRoots) =>
+    declaredSlots.size === Object.keys(other).length && Object.keys(other).every((key) => declaredSlots.has(key));
+  if (!sameSet(backupRoots) || !sameSet(bitgoRoots)) {
+    throw new Error('safe keycard boxes declare inconsistent root slots');
+  }
 
   const decryptRoot = async (root: string): Promise<string> => {
     try {
@@ -229,28 +239,40 @@ export async function decryptSafeKeycard(params: {
     return { prv: await decryptRoot(entry.prv), chainCode: entry.chainCode };
   };
 
-  return {
-    secp256k1Multisig: {
-      user: await decryptRoot(requireBareString(userRoots.secp256k1Multisig)),
-      backup: await decryptRoot(requireBareString(backupRoots.secp256k1Multisig)),
-      bitgo: requireBareString(bitgoRoots.secp256k1Multisig),
-    },
-    ed25519Multisig: {
-      user: await decryptRoot(requireBareString(userRoots.ed25519Multisig)),
-      backup: await decryptEd25519Backup(backupRoots.ed25519Multisig),
-      bitgo: requireBareString(bitgoRoots.ed25519Multisig),
-    },
-    ecdsaMpc: {
-      user: unwrapMpcRoot(await decryptRoot(requireBareString(userRoots.ecdsaMpc))),
-      backup: unwrapMpcRoot(await decryptRoot(requireBareString(backupRoots.ecdsaMpc))),
-      bitgo: requireBareString(bitgoRoots.ecdsaMpc),
-    },
-    eddsaMpc: {
-      user: unwrapMpcRoot(await decryptRoot(requireBareString(userRoots.eddsaMpc))),
-      backup: unwrapMpcRoot(await decryptRoot(requireBareString(backupRoots.eddsaMpc))),
-      bitgo: requireBareString(bitgoRoots.eddsaMpc),
-    },
-  };
+  // Only the slots the keycard declares are built — a partial-slot safe yields a subset.
+  const has = (slot: keyof DecryptedSafeRoots): boolean => declaredSlots.has(slot);
+  const decrypted: Partial<DecryptedSafeRoots> = {};
+
+  if (has('secp256k1Multisig')) {
+    decrypted.secp256k1Multisig = {
+      user: await decryptRoot(requireBareString(userRoots.secp256k1Multisig!)),
+      backup: await decryptRoot(requireBareString(backupRoots.secp256k1Multisig!)),
+      bitgo: requireBareString(bitgoRoots.secp256k1Multisig!),
+    };
+  }
+  if (has('ed25519Multisig')) {
+    decrypted.ed25519Multisig = {
+      user: await decryptRoot(requireBareString(userRoots.ed25519Multisig!)),
+      backup: await decryptEd25519Backup(backupRoots.ed25519Multisig!),
+      bitgo: requireBareString(bitgoRoots.ed25519Multisig!),
+    };
+  }
+  if (has('ecdsaMpc')) {
+    decrypted.ecdsaMpc = {
+      user: unwrapMpcRoot(await decryptRoot(requireBareString(userRoots.ecdsaMpc!))),
+      backup: unwrapMpcRoot(await decryptRoot(requireBareString(backupRoots.ecdsaMpc!))),
+      bitgo: requireBareString(bitgoRoots.ecdsaMpc!),
+    };
+  }
+  if (has('eddsaMpc')) {
+    decrypted.eddsaMpc = {
+      user: unwrapMpcRoot(await decryptRoot(requireBareString(userRoots.eddsaMpc!))),
+      backup: unwrapMpcRoot(await decryptRoot(requireBareString(backupRoots.eddsaMpc!))),
+      bitgo: requireBareString(bitgoRoots.eddsaMpc!),
+    };
+  }
+
+  return decrypted;
 }
 
 /**
@@ -261,7 +283,7 @@ export async function deriveSafeWalletKeys(params: {
   coin: string;
   slot: RootKeyType;
   account: number;
-  roots: DecryptedSafeRoots;
+  roots: Partial<DecryptedSafeRoots>;
 }): Promise<DerivedSafeWalletKeys> {
   if (!Number.isInteger(params.account) || params.account < 0 || params.account > MAX_BIP32_INDEX) {
     throw new Error(`deriveSafeWalletKeys: invalid account '${params.account}'`);
@@ -272,10 +294,16 @@ export async function deriveSafeWalletKeys(params: {
   const { coinType, slotOrdinal } = parseSafeBip44Path(path);
 
   if (params.slot === 'secp256k1Multisig') {
+    if (!roots.secp256k1Multisig) {
+      throw new Error("safe keycard is missing the 'secp256k1Multisig' root");
+    }
     return { slot: 'secp256k1Multisig', path, keys: deriveSafeChildTriplet(roots.secp256k1Multisig, path) };
   }
 
   if (params.slot === 'ecdsaMpc') {
+    if (!roots.ecdsaMpc) {
+      throw new Error("safe keycard is missing the 'ecdsaMpc' root");
+    }
     const { commonKeychain, userChild, backupChild } = await DklsVrfUtils.deriveSafeEcdsaMpcChild({
       userRoot: roots.ecdsaMpc.user,
       backupRoot: roots.ecdsaMpc.backup,
@@ -291,6 +319,9 @@ export async function deriveSafeWalletKeys(params: {
   }
 
   if (params.slot === 'eddsaMpc') {
+    if (!roots.eddsaMpc) {
+      throw new Error("safe keycard is missing the 'eddsaMpc' root");
+    }
     const { commonKeychain, userChild, backupChild } = await MpsVrfUtils.deriveSafeEddsaMpcChild({
       userRoot: roots.eddsaMpc.user,
       backupRoot: roots.eddsaMpc.backup,
@@ -306,6 +337,9 @@ export async function deriveSafeWalletKeys(params: {
   }
 
   if (params.slot === 'ed25519Multisig') {
+    if (!roots.ed25519Multisig) {
+      throw new Error("safe keycard is missing the 'ed25519Multisig' root");
+    }
     const root = roots.ed25519Multisig;
     const cosignerPath = toSoftTwinPath(path);
 

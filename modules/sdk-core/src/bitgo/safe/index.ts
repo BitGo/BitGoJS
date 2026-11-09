@@ -1,6 +1,7 @@
 export * from './derivableEd25519Pub';
 export * from './iSafe';
 export * from './iSafes';
+export * from './keycard';
 export * from './recovery';
 export * from './safe';
 export * from './safes';

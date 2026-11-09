@@ -247,20 +247,26 @@ function selectRootPublicKey(keychain: Keychain, slot: SafeRootKeyType): string 
 }
 
 /**
- * Serializes one box's four roots into a single JSON object keyed by rootKeyType, e.g.
- * `{"secp256k1Multisig":"<encPrv>","ecdsaMpc":"<reducedEncPrv>",...}`. This keeps the safe
- * keycard on the existing 4-box layout — one box (= one QR/data block) per role — with the
- * four roots packed into each box's data. `splitKeys` fragments the box if it exceeds the QR
- * threshold, exactly as for a normal wallet keycard. Reversed by {@link parseSafeKeycardBox}.
+ * Serializes one box's roots into a single JSON object keyed by rootKeyType, e.g.
+ * `{"secp256k1Multisig":"<encPrv>","ecdsaMpc":"<reducedEncPrv>",...}`. Only the root slots the
+ * safe actually carries are packed, in canonical order, so partial-slot safes render a
+ * keycard too. This keeps the safe keycard on the existing 4-box layout — one box (= one
+ * QR/data block) per role — with the roots packed into each box's data. `splitKeys` fragments
+ * the box if it exceeds the QR threshold, exactly as for a normal wallet keycard. Reversed
+ * by {@link parseSafeKeycardBox}.
  */
 function buildSafeBoxData(
-  roots: Record<SafeRootKeyType, KeychainsTriplet>,
+  roots: Partial<Record<SafeRootKeyType, KeychainsTriplet>>,
   select: (root: KeychainsTriplet, slot: SafeRootKeyType) => SafeKeycardRootEntry
 ): string {
   const box: SafeKeycardRoots = {} as SafeKeycardRoots;
   for (const slot of SAFE_ROOT_ORDER) {
     const root = roots[slot];
-    assert.ok(root, `Safe is missing the ${slot} root`);
+    // A safe need not carry every slot: a root type can be disabled for it (e.g. no ed25519
+    // multisig), so absent slots are simply left out of the box rather than failing.
+    if (root === undefined) {
+      continue;
+    }
     box[slot] = select(root, slot);
   }
   return JSON.stringify(box);
@@ -268,25 +274,31 @@ function buildSafeBoxData(
 
 /**
  * Builds safe keycard QR data in the existing wallet {@link QrData} shape: boxes A (user),
- * B (backup), C (BitGo), D (passcode). Each of A/B/C carries a JSON object of the four roots,
- * so the safe renders and parses through the same {@link drawKeycard} path as a wallet.
+ * B (backup), C (BitGo), D (passcode). Each of A/B/C carries a JSON object of the safe's
+ * root slots, so the safe renders and parses through the same {@link drawKeycard} path as
+ * a wallet. Requires at least one root triplet.
  */
 export async function generateSafeQrData(params: GenerateSafeQrDataParams): Promise<QrData> {
   const { roots } = params;
+  // Count present slots, not keys: `{ ecdsaMpc: undefined }` would otherwise print a keycard
+  // whose A/B/C boxes are all `{}`, which parseSafeKeycardBox later rejects.
+  if (SAFE_ROOT_ORDER.every((slot) => roots[slot] === undefined)) {
+    throw new Error('safe keycard requires at least one root triplet');
+  }
   const qrData: QrData = {
     user: {
       title: 'A: User Key',
-      description: 'Your 4 root private keys, encrypted with your safe password.',
+      description: 'Your root private keys, encrypted with your safe password.',
       data: buildSafeBoxData(roots, (root, slot) => selectRootPrivateKey(root.userKeychain, slot, 'user')),
     },
     backup: {
       title: 'B: Backup Key',
-      description: 'Your 4 root backup keys, encrypted with your safe password.',
+      description: 'Your root backup keys, encrypted with your safe password.',
       data: buildSafeBoxData(roots, (root, slot) => selectBackupRootEntry(root.backupKeychain, slot)),
     },
     bitgo: {
       title: 'C: BitGo Key',
-      description: 'The public parts of the 4 root keys held by BitGo.',
+      description: 'The public parts of the root keys held by BitGo.',
       data: buildSafeBoxData(roots, (root, slot) => selectRootPublicKey(root.bitgoKeychain, slot)),
     },
   };

@@ -113,22 +113,22 @@ describe('decryptSafeKeycard', () => {
       password: PASSWORD,
     });
 
-    result.secp256k1Multisig.user.should.equal('xprv-user');
-    result.secp256k1Multisig.backup.should.equal('xprv-backup');
-    result.secp256k1Multisig.bitgo.should.equal('xpub-secp-bitgo');
+    result.secp256k1Multisig!.user.should.equal('xprv-user');
+    result.secp256k1Multisig!.backup.should.equal('xprv-backup');
+    result.secp256k1Multisig!.bitgo.should.equal('xpub-secp-bitgo');
 
-    result.ed25519Multisig.user.should.equal('S-user-seed');
-    result.ed25519Multisig.backup.prv.should.equal('S-backup-seed');
-    result.ed25519Multisig.backup.chainCode.should.equal('C'.repeat(52));
-    result.ed25519Multisig.bitgo.should.equal('pub-ed25519-bitgo');
+    result.ed25519Multisig!.user.should.equal('S-user-seed');
+    result.ed25519Multisig!.backup.prv.should.equal('S-backup-seed');
+    result.ed25519Multisig!.backup.chainCode.should.equal('C'.repeat(52));
+    result.ed25519Multisig!.bitgo.should.equal('pub-ed25519-bitgo');
 
-    result.ecdsaMpc.user.signing.toString('hex').should.equal(Buffer.from('user-reduced').toString('hex'));
-    result.ecdsaMpc.user.vrf.toString('hex').should.equal(Buffer.from('user-vrf').toString('hex'));
-    result.ecdsaMpc.backup.signing.toString('hex').should.equal(Buffer.from('backup-reduced').toString('hex'));
-    result.ecdsaMpc.backup.vrf.toString('hex').should.equal(Buffer.from('backup-vrf').toString('hex'));
-    result.ecdsaMpc.bitgo.should.equal('common-ecdsa-bitgo');
+    result.ecdsaMpc!.user.signing.toString('hex').should.equal(Buffer.from('user-reduced').toString('hex'));
+    result.ecdsaMpc!.user.vrf.toString('hex').should.equal(Buffer.from('user-vrf').toString('hex'));
+    result.ecdsaMpc!.backup.signing.toString('hex').should.equal(Buffer.from('backup-reduced').toString('hex'));
+    result.ecdsaMpc!.backup.vrf.toString('hex').should.equal(Buffer.from('backup-vrf').toString('hex'));
+    result.ecdsaMpc!.bitgo.should.equal('common-ecdsa-bitgo');
 
-    result.eddsaMpc.bitgo.should.equal('common-eddsa-bitgo');
+    result.eddsaMpc!.bitgo.should.equal('common-eddsa-bitgo');
 
     // 4 slots × (user + backup) = 8 decrypts; BitGo (Box C) is never decrypted.
     (bitgo.decrypt as sinon.SinonStub).callCount.should.equal(8);
@@ -186,8 +186,8 @@ describe('decryptSafeKeycard', () => {
       password: PASSWORD,
     });
 
-    result.ed25519Multisig.backup.prv.should.equal('S-backup-seed');
-    result.ed25519Multisig.backup.chainCode.should.equal('A'.repeat(52));
+    result.ed25519Multisig!.backup.prv.should.equal('S-backup-seed');
+    result.ed25519Multisig!.backup.chainCode.should.equal('A'.repeat(52));
   });
 
   it('rejects an ed25519 chain-code entry in a non-backup slot (fail closed)', async () => {

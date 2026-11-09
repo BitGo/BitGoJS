@@ -48,11 +48,12 @@ describe('Generate Safe Typed Routes Tests', function () {
       const label = 'Test Safe';
       const passphrase = 'mySecurePassphrase123';
       const safeJson = mockSafeJson(label);
-      const generateSafeStub = sinon.stub(Safes.prototype, 'generateSafe').resolves(
-        stubSafe({
+      const generateSafeStub = sinon.stub(Safes.prototype, 'generateSafe').resolves({
+        safe: stubSafe({
           toJSON: () => safeJson,
-        })
-      );
+        }),
+        rootKeychains: {},
+      });
 
       const res = await agent.post(`/api/v2/enterprise/${ENTERPRISE_ID}/safes/generate`).send({
         label,
@@ -222,6 +223,7 @@ describe('Generate Safe Typed Routes Tests', function () {
           secp256k1Multisig: ['user-1', 'backup-1', 'bitgo-1'] as [string, string, string],
         },
       },
+      rootKeychains: {},
     };
 
     it('should run phase-2 ceremonies and return root key ids', async function () {
@@ -235,6 +237,8 @@ describe('Generate Safe Typed Routes Tests', function () {
 
       res.status.should.equal(200);
       res.body.should.have.property('rootKeys');
+      // The express contract returns only the ids; the root triplets stay client-side.
+      res.body.should.not.have.property('rootKeychains');
       res.body.rootKeys.hot.secp256k1Multisig.should.deepEqual(['user-1', 'backup-1', 'bitgo-1']);
       createSafeKeysStub.should.have.been.calledOnce();
       createSafeKeysStub.firstCall.args[0].should.have.property('passphrase', passphrase);

@@ -298,6 +298,9 @@ export interface CreateBackupOptions {
   encryptedPrv?: string;
   passphrase?: string;
   encryptionVersion?: EncryptionVersion;
+  /** Code the backup root's encryptedPrv is additionally wrapped under server-side, so a
+   *  regenerated keycard can re-derive it (WCN-3922). Forwarded by `add` on the wire. @experimental */
+  originalPasscodeEncryptionCode?: string;
   /** Public id of the safe this backup key is a root of (Wallet Safes v1). @experimental */
   safeId?: string;
 }

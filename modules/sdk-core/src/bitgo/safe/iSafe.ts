@@ -19,6 +19,7 @@ import type {
 import type { EncryptionVersion } from '../../api/types';
 import type { Wallet, WalletShare } from '../wallet';
 import type { WebAuthnProvider } from '../webauthn';
+import type { RequestKeycardAccessResult, SafeKeycardMaterial } from './keycard';
 
 /** @experimental */
 export interface InitializeSafeOptions {
@@ -139,6 +140,21 @@ export interface ISafe {
   acceptShare(params: AcceptSafeShareOptions): Promise<SafeShareData>;
   registerPasskey(params: RegisterSafePasskeyOptions): Promise<RegisterSafePasskeyResponse>;
   removePasskey(params: RemoveSafePasskeyOptions): Promise<void>;
+  /**
+   * Request keycard regeneration access for this safe (WCN-3921 route contract). Returns the
+   * granted access window, the pending approval the request created when another enterprise
+   * admin must approve, or the id of the approval already pending from an earlier request.
+   * Gated server-side by the `wp_safe_keycard_access` flag.
+   * @experimental
+   */
+  requestKeycardAccess(): Promise<RequestKeycardAccessResult>;
+  /**
+   * Claim the safe's keycard material (root triplets + optional passcode encryption code)
+   * once keycard access has been granted. Wire shapes are decoded minimally; the exact PA
+   * serialization is owned by the WP routes.
+   * @experimental
+   */
+  claimKeycardMaterial(): Promise<SafeKeycardMaterial>;
   freeze(params?: FreezeSafeBody): Promise<SafeData>;
   archive(): Promise<SafeData>;
   toJSON(): SafeData;

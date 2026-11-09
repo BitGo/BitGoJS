@@ -12,6 +12,7 @@ import {
   parseMpcV2KeyShareEnvelope,
 } from '@bitgo/sdk-core';
 import { generateSafeQrData } from '../../src/generateQrData';
+import { generateSafeKeycardBlob } from '../../src';
 import { splitKeys } from '../../src/utils';
 import { QRBinaryMaxLength } from '../../src/drawKeycard';
 import { parseKeycardFromLines, parseSafeKeycardBox } from '../../src/parseKeycard';
@@ -223,10 +224,52 @@ describe('generateSafeQrData', function () {
     await assert.rejects(() => generateSafeQrData({ coin: coins.get('btc'), roots }), /missing encrypted private key/);
   });
 
-  it('throws a clear error when an entire root triplet is missing', async function () {
+  it('round-trips a 2-slot subset: only the declared slots appear in every box', async function () {
+    const { roots, plaintexts, bitgoPubs } = await buildRoots();
+    const subset: Partial<Record<SafeRootKeyType, KeychainsTriplet>> = {
+      secp256k1Multisig: roots.secp256k1Multisig,
+      ecdsaMpc: roots.ecdsaMpc,
+    };
+    const qrData = await generateSafeQrData({ coin: coins.get('btc'), roots: subset });
+    assert.ok(qrData.backup && qrData.bitgo);
+
+    const expectedKeys = ['secp256k1Multisig', 'ecdsaMpc'];
+    for (const box of [qrData.user, qrData.backup, qrData.bitgo]) {
+      assert.ok(box);
+      Object.keys(parseSafeKeycardBox(box.data)).should.deepEqual(expectedKeys);
+    }
+
+    const userBox = parseSafeKeycardBox(qrData.user.data);
+    const backupBox = parseSafeKeycardBox(qrData.backup.data);
+    const bitgoBox = parseSafeKeycardBox(qrData.bitgo.data);
+    for (const slot of expectedKeys) {
+      (await decrypt(passphrase, userBox[slot] as string)).should.equal(plaintexts[slot].user);
+      (await decrypt(passphrase, backupBox[slot] as string)).should.equal(plaintexts[slot].backup);
+      bitgoBox[slot].should.equal(bitgoPubs[slot]);
+    }
+  });
+
+  it('throws when roots is empty', async function () {
+    await assert.rejects(() => generateSafeQrData({ coin: coins.get('btc'), roots: {} }), /at least one root triplet/);
+    // An explicitly undefined slot is not a present slot.
+    await assert.rejects(
+      () => generateSafeQrData({ coin: coins.get('btc'), roots: { ecdsaMpc: undefined } }),
+      /at least one root triplet/
+    );
+  });
+
+  it('generateSafeKeycardBlob returns a PDF blob for a slot subset, with Box D', async function () {
     const { roots } = await buildRoots();
-    delete (roots as Partial<Record<SafeRootKeyType, KeychainsTriplet>>).ecdsaMpc;
-    await assert.rejects(() => generateSafeQrData({ coin: coins.get('btc'), roots }), /missing the ecdsaMpc root/);
+    const params = {
+      coin: coins.get('btc'),
+      walletLabel: 'Safe',
+      roots: { secp256k1Multisig: roots.secp256k1Multisig },
+    };
+    const blob = await generateSafeKeycardBlob(params);
+    assert.ok(blob instanceof Blob && blob.size > 0, 'expected a non-empty PDF blob');
+    // passphrase + passcodeEncryptionCode add Box D (an extra QR block) to the same PDF.
+    const withBoxD = await generateSafeKeycardBlob({ ...params, passphrase, passcodeEncryptionCode: '12345' });
+    assert.ok(withBoxD.size > blob.size, 'expected Box D to add a QR block');
   });
 
   it('recovers all 4 roots through the existing PDF-line parser + JSON.parse', async function () {
@@ -262,9 +305,11 @@ describe('generateSafeQrData', function () {
   it('parseSafeKeycardBox rejects malformed / incomplete box data', function () {
     assert.throws(() => parseSafeKeycardBox('not json'), /parseSafeKeycardBox/); // invalid JSON
     assert.throws(() => parseSafeKeycardBox('"a string"'), /parseSafeKeycardBox/); // not an object
-    assert.throws(() => parseSafeKeycardBox('{"secp256k1Multisig":"x"}'), /parseSafeKeycardBox/); // missing roots
+    assert.throws(() => parseSafeKeycardBox('{}'), /empty slot set/); // declares no roots
+    assert.throws(() => parseSafeKeycardBox('{"secp256k1Multisig":"a","unknownRoot":"b"}'), /unknownRoot/);
+    parseSafeKeycardBox('{"secp256k1Multisig":"x"}').should.deepEqual({ secp256k1Multisig: 'x' }); // a subset now parses
     // A well-formed box with all four roots decodes successfully.
     const ok = parseSafeKeycardBox('{"secp256k1Multisig":"a","ecdsaMpc":"b","eddsaMpc":"c","ed25519Multisig":"d"}');
-    ok.ecdsaMpc.should.equal('b');
+    ok.ecdsaMpc!.should.equal('b');
   });
 });

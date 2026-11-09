@@ -722,7 +722,7 @@ export async function handleV2GenerateSafe(
   req: ExpressApiRouteRequest<'express.v2.safes.generate', 'post'>
 ): Promise<any> {
   const safes = new Safes(req.bitgo, req.decoded.enterpriseId);
-  const safe = await safes.generateSafe({
+  const { safe } = await safes.generateSafe({
     label: req.decoded.label,
     passphrase: req.decoded.passphrase,
   });
@@ -751,12 +751,15 @@ export async function handleV2GenerateSafeWallet(
  */
 export async function handleV2GenerateSafeKeys(req: ExpressApiRouteRequest<'express.v2.safes.keys.generate', 'post'>) {
   const safes = new Safes(req.bitgo, req.decoded.enterpriseId);
-  return safes.createSafeKeys({
+  const created = await safes.createSafeKeys({
     label: '',
     passphrase: req.decoded.passphrase,
     safeId: req.decoded.safeId,
     enabledRootSlots: req.decoded.enabledRootSlots,
   });
+  // The root triplets are client-side keycard material (encrypted private keys); the express
+  // wire contract stays the documented one — only the root key ids.
+  return { rootKeys: created.rootKeys };
 }
 
 /**

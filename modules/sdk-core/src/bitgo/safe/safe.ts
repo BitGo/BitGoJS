@@ -8,7 +8,7 @@ import * as t from 'io-ts';
 import { FreezeSafeBody, SafeData, SafeShareData, SafeShareState, type RootKeyType } from '@bitgo/public-types';
 import { IBaseCoin } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
-import { IncorrectPasswordError } from '../errors';
+import { ApiResponseError, IncorrectPasswordError } from '../errors';
 import { decryptKeychainPrivateKey } from '../keychain';
 import { ECDSAUtils, parseSafeMpcKeyEnvelopes, EDDSAUtils } from '../utils';
 import { boundedInt, decodeWithCodec } from '../utils/codecs';
@@ -29,6 +29,14 @@ import {
   WalletShareData,
 } from './iSafe';
 import { coinForRoot, SAFE_ROOT_SLOTS } from './rootCoin';
+import {
+  RequestKeycardAccessConflictCodec,
+  RequestKeycardAccessResponseCodec,
+  SafeKeycardMaterialCodec,
+  type RequestKeycardAccessResult,
+  type SafeKeycardMaterial,
+  type SafeKeychainRoots,
+} from './keycard';
 import {
   buildSafeBip44Path,
   deriveAndSelfCheckSafeChildHardened,
@@ -459,5 +467,65 @@ export class Safe implements ISafe {
 
   toJSON(): SafeData {
     return this._safe;
+  }
+
+  /**
+   * Request keycard regeneration access for this safe (WCN-3921 route contract): returns the
+   * granted access window (200), the pending approval the request created when another
+   * enterprise admin must approve (202), or `{ pendingApprovalId }` when an earlier request is
+   * still pending (409). Gated server-side by the `wp_safe_keycard_access` flag.
+   *
+   * Requires a login (short-lived) session that has been unlocked with OTP, and the caller must
+   * be the safe owner: access tokens are rejected. A flag-off or unknown safe is 404, a frozen
+   * safe 403, an initializing safe 409; those errors are thrown.
+   * @experimental
+   */
+  async requestKeycardAccess(): Promise<RequestKeycardAccessResult> {
+    let response: unknown;
+    try {
+      response = await this.bitgo.post(this.url('/keycard/request')).send().result();
+    } catch (e) {
+      // 409 `{ pendingApproval: '<id>' }`: an earlier request is still awaiting approval. That is
+      // a state, not a failure. Any other 409 (e.g. SafeNotActive) is an ApiError body and throws.
+      if (e instanceof ApiResponseError && e.status === 409 && RequestKeycardAccessConflictCodec.is(e.result)) {
+        return { pendingApprovalId: e.result.pendingApproval };
+      }
+      throw e;
+    }
+    return decodeWithCodec(RequestKeycardAccessResponseCodec, response, 'RequestKeycardAccessResponse');
+  }
+
+  /**
+   * Claim the safe's keycard material (root triplets + optional passcode encryption code)
+   * once keycard access has been granted. Each claimed `{ user, backup, bitgo }` triplet is
+   * mapped to the `KeychainsTriplet` shape `buildSafeKeycardRoots` and `generateSafeQrData`
+   * consume. Each key is decoded against WP's root-key projection (id, type, source, and optional
+   * pub / commonKeychain / encryptedPrv), so a changed response shape fails here, not deep in
+   * keycard building.
+   *
+   * Same session requirements as {@link requestKeycardAccess}. The first claim starts a 15-minute
+   * re-claim window; outside it (or with no grant) WP answers 409 `SafeKeycardAccessNotGranted`.
+   * @experimental
+   */
+  async claimKeycardMaterial(): Promise<SafeKeycardMaterial> {
+    const response = await this.bitgo.post(this.url('/keycard')).send().result();
+    const decoded = decodeWithCodec(SafeKeycardMaterialCodec, response, 'SafeKeycardMaterial');
+
+    const roots: SafeKeychainRoots = {};
+    for (const [slot, triplet] of Object.entries(decoded.roots)) {
+      if (!SAFE_ROOT_SLOTS.includes(slot as RootKeyType)) {
+        throw new Error(`SafeKeycardMaterial: unknown root slot ${slot}`);
+      }
+      // Each key was decoded (and stripped) against WP's root-key projection, so it is a Keychain.
+      roots[slot as RootKeyType] = {
+        userKeychain: triplet.user,
+        backupKeychain: triplet.backup,
+        bitgoKeychain: triplet.bitgo,
+      };
+    }
+    if (Object.keys(roots).length === 0) {
+      throw new Error('claim returned no root material');
+    }
+    return { roots, passcodeEncryptionCode: decoded.passcodeEncryptionCode ?? undefined };
   }
 }
