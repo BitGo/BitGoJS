@@ -18,12 +18,7 @@ import {
   parseSafeBip44Path,
   parseSafeKeycardBox,
   toSoftTwinPath,
-  algoMultisigAddress,
-  encodeAlgoKey,
-  encodeHbarPublicKeyDer,
-  encodeHbarPrivateKeyDer,
-  encodeEd25519StrKeyPublicKey,
-  encodeEd25519StrKeySecretSeed,
+  getEd25519MultisigCoinEncoders,
   type SafeKeycardRootEntry,
 } from '@bitgo/sdk-lib-safes';
 import {
@@ -339,40 +334,6 @@ export async function deriveSafeWalletKeys(params: {
 const ED25519_32_BYTE_HEX = /^[0-9a-f]{64}$/i;
 
 /**
- * Per-coin encoders for the `ed25519Multisig` slot: each slot-2 coin re-encodes the same 32-byte
- * children into its own address/seed string formats. A coin absent from the registry is not yet
- * supported for slot-2 recovery.
- */
-const ALGO_ENCODERS = {
-  encodePub: encodeAlgoKey,
-  encodeSeed: encodeAlgoKey,
-  deriveRootAddress: (userPub: Buffer, backupPub: Buffer, bitgoPub: Buffer) =>
-    algoMultisigAddress(1, 2, [userPub, backupPub, bitgoPub]),
-};
-
-const XLM_ENCODERS = {
-  encodePub: encodeEd25519StrKeyPublicKey,
-  encodeSeed: encodeEd25519StrKeySecretSeed,
-};
-
-const ED25519_MULTISIG_COIN_ENCODERS: Record<
-  string,
-  | {
-      encodePub: (bytes: Buffer) => string;
-      encodeSeed: (bytes: Buffer) => string;
-      deriveRootAddress?: (userPub: Buffer, backupPub: Buffer, bitgoPub: Buffer) => string;
-    }
-  | undefined
-> = {
-  algo: ALGO_ENCODERS,
-  talgo: ALGO_ENCODERS,
-  hbar: { encodePub: encodeHbarPublicKeyDer, encodeSeed: encodeHbarPrivateKeyDer },
-  thbar: { encodePub: encodeHbarPublicKeyDer, encodeSeed: encodeHbarPrivateKeyDer },
-  xlm: XLM_ENCODERS,
-  txlm: XLM_ENCODERS,
-};
-
-/**
  * The request shape for `buildSafeRecoverKeyParams`. The `slot` literal is the discriminant that
  * ties each slot to its own `keys` shape, so TypeScript narrows `params.keys` automatically and a
  * slot added without a branch is a compile error rather than a silent cast.
@@ -502,7 +463,7 @@ async function buildEd25519MultisigRecoverKeyParams(
   keys: Ed25519MultisigChildKeys,
   mode: 'signed' | 'unsigned'
 ): Promise<Ed25519SafeRecoverKeyParams> {
-  const encoders = ED25519_MULTISIG_COIN_ENCODERS[coin];
+  const encoders = getEd25519MultisigCoinEncoders(coin);
   if (!encoders) {
     throw new Error(`buildSafeRecoverKeyParams: coin '${coin}' ed25519Multisig is not supported yet`);
   }

@@ -1,9 +1,17 @@
 /**
  * @prettier
  */
+import { Buffer } from 'buffer';
 import { BitGoBase } from '../bitgoBase';
 import { decryptKeychainPrivateKey, IKeychains, Keychain, KeychainWithEncryptedPrv } from '../keychain';
-import { deriveSafeChildHardenedFromXprv, DerivedFromParentWithHardenedPath } from '@bitgo/sdk-lib-safes';
+import {
+  decodeEd25519StrKeyPublicKey,
+  decodeEd25519StrKeySecretSeed,
+  deriveSafeChildEd25519Hardened,
+  deriveSafeChildHardenedFromXprv,
+  DerivedFromParentWithHardenedPath,
+  getEd25519MultisigCoinEncoders,
+} from '@bitgo/sdk-lib-safes';
 import { decodeWithCodec } from '../utils/codecs';
 import { IncorrectPasswordError } from '../errors';
 import type { DecryptedKeychainData } from './iWallet';
@@ -29,7 +37,7 @@ export class SafeDerivedPublicKeyMismatchError extends Error {
   }
 }
 
-/** Thrown when owner signing is not implemented for this safe slot (TSS, ed25519 multisig, …). */
+/** Thrown when owner signing cannot resolve child key material for this safe user key (public-only TSS child). */
 export class SafeOwnerSigningNotImplementedError extends Error {
   constructor(walletId: string, detail: string) {
     super(`Safe wallet ${walletId}: ${detail}`);
@@ -37,16 +45,13 @@ export class SafeOwnerSigningNotImplementedError extends Error {
   }
 }
 
-/** Thrown when wallet sharing is not implemented for this safe slot (TSS, ed25519 multisig, …). */
+/** Thrown when wallet sharing cannot resolve child key material for this safe user key (public-only TSS child). */
 export class SafeShareNotImplementedError extends Error {
   constructor(walletId: string, detail: string) {
     super(`Safe wallet ${walletId}: ${detail}`);
     this.name = 'SafeShareNotImplementedError';
   }
 }
-
-/** ed25519 onchain multisig (slot ④). Needs SLIP-0010, not secp256k1 BIP32. */
-const ED25519_ONCHAIN_FAMILIES = new Set(['algo', 'xlm', 'hbar']);
 
 /**
  * True when this is the safe minter's user key: wallet is in a safe, the key
@@ -88,8 +93,9 @@ export interface SafeKeyMaterialBaseParams {
   bitgo: BitGoBase;
   keychains: IKeychains;
   walletId: string;
-  /** Onchain secp256k1: hardened-derive and verify pub. Other slots throw. */
+  /** `'onchain'`: hardened-derive and verify the registered pub. Anything else throws. */
   multisigType: string | undefined;
+  /** Coin family of the wallet (`baseCoin.getFamily()`); selects ed25519 vs secp256k1 derivation. */
   coinFamily: string;
   childKeychain: Keychain;
   walletPassphrase: string;
@@ -99,21 +105,34 @@ export interface SafeKeyMaterialBaseParams {
 
 export type ResolveSafeOwnerSigningPrvParams = SafeKeyMaterialBaseParams;
 
-type SafeKeyMaterialSlot = 'tss' | 'ed25519';
-
 type ResolveSafeKeyMaterialParams = SafeKeyMaterialBaseParams & {
-  /** Constructs the not-implemented error for the current resolver (signing vs sharing). */
-  makeNotImplementedError: (slot: SafeKeyMaterialSlot, walletId: string) => Error;
+  /** Constructs the error for a non-onchain wallet whose user child has no encryptedPrv (signing vs sharing). */
+  makeUnsupportedMultisigTypeError: (walletId: string) => Error;
 };
+
+function isEd25519StrKeySecretSeed(value: string): boolean {
+  try {
+    decodeEd25519StrKeySecretSeed(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Shared core that resolves safe key material for a pub-only safe child. Returns the CHILD
  * `{prv, pub}` only — never the root — so the root can never leak into a share document.
  *
- * Onchain secp256k1: decrypt root, hardened-derive at `derivedFromParentWithPath`
- * (`m/<n>'`), and verify the registered pub. TSS and ed25519 onchain throw via
- * `makeNotImplementedError` — the caller constructs its own error class + message, so the
- * guard set stays shared while signing/sharing report their own errors.
+ * - Onchain secp256k1: decrypt the root (BIP32 xprv), hardened-derive at
+ *   `derivedFromParentWithPath` (`m/44'/<coinType>'/<slot>'/<account>'`) and verify the registered pub.
+ * - Onchain ed25519 (coins with an entry in the ed25519 multisig encoder registry): decrypt the
+ *   root (a StrKey secret seed), SLIP-0010 hardened-derive at the same path, and encode the
+ *   child into the coin's native formats. The derived pub, encoded for the coin, must equal the
+ *   registered child pub; the returned `prv` is the coin-encoded child seed and the returned
+ *   `pub` is the registered (coin-format) child pub.
+ * - Anything else (`multisigType !== 'onchain'`): an MPC safe child always carries its own
+ *   encryptedPrv and never reaches this resolver, so a public-only one is an invalid state and
+ *   fails closed via `makeUnsupportedMultisigTypeError`.
  */
 async function resolveSafeKeyMaterial(params: ResolveSafeKeyMaterialParams): Promise<{ prv: string; pub: string }> {
   const {
@@ -124,14 +143,11 @@ async function resolveSafeKeyMaterial(params: ResolveSafeKeyMaterialParams): Pro
     coinFamily,
     childKeychain,
     walletPassphrase,
-    makeNotImplementedError,
+    makeUnsupportedMultisigTypeError,
   } = params;
 
   if (multisigType !== 'onchain') {
-    throw makeNotImplementedError('tss', walletId);
-  }
-  if (ED25519_ONCHAIN_FAMILIES.has(coinFamily)) {
-    throw makeNotImplementedError('ed25519', walletId);
+    throw makeUnsupportedMultisigTypeError(walletId);
   }
 
   const rootKeychain = params.rootKeychain ?? (await fetchRootKeychainForSafeChild(keychains, childKeychain));
@@ -146,15 +162,33 @@ async function resolveSafeKeyMaterial(params: ResolveSafeKeyMaterialParams): Pro
   if (childKeychain.derivedFromParentWithPath === undefined) {
     throw new Error(`Safe wallet ${walletId}: child keychain is missing derivedFromParentWithPath`);
   }
-
-  const derived = deriveSafeChildHardenedFromXprv(
-    rootPrv,
-    decodeWithCodec(
-      DerivedFromParentWithHardenedPath,
-      childKeychain.derivedFromParentWithPath,
-      'derivedFromParentWithPath'
-    )
+  const path = decodeWithCodec(
+    DerivedFromParentWithHardenedPath,
+    childKeychain.derivedFromParentWithPath,
+    'derivedFromParentWithPath'
   );
+
+  const encoders = getEd25519MultisigCoinEncoders(coinFamily);
+  if (encoders) {
+    const derived = deriveSafeChildEd25519Hardened(rootPrv, path);
+    const encodedPub = encoders.encodePub(decodeEd25519StrKeyPublicKey(derived.pub));
+    if (encodedPub !== childKeychain.pub) {
+      throw new SafeDerivedPublicKeyMismatchError(walletId, childKeychain.pub, encodedPub);
+    }
+    // The root pub is a StrKey; the child pub is coin-format. Compare in both forms.
+    if (derived.pub === rootKeychain.pub || encodedPub === rootKeychain.pub) {
+      throw new Error(`Safe wallet ${walletId}: derived child pub unexpectedly equals the root pub`);
+    }
+    return { prv: encoders.encodeSeed(Buffer.from(derived.prv, 'hex')), pub: childKeychain.pub };
+  }
+
+  if (isEd25519StrKeySecretSeed(rootPrv)) {
+    throw new Error(
+      `Safe wallet ${walletId}: coin family '${coinFamily}' has an ed25519 safe root but no ed25519 multisig key encoders`
+    );
+  }
+
+  const derived = deriveSafeChildHardenedFromXprv(rootPrv, path);
   if (derived.pub !== childKeychain.pub) {
     throw new SafeDerivedPublicKeyMismatchError(walletId, childKeychain.pub, derived.pub);
   }
@@ -168,9 +202,10 @@ async function resolveSafeKeyMaterial(params: ResolveSafeKeyMaterialParams): Pro
 /**
  * Resolve signing material for a safe owner (child key has no encryptedPrv).
  *
- * Onchain secp256k1: decrypt root, hardened-derive at `derivedFromParentWithPath`
- * (`m/44'/<coinType>'/<slot>'/<account>'`), and verify the registered pub.
- * TSS and ed25519 onchain: throw — do not return root material or BIP32-derive the wrong curve.
+ * Onchain secp256k1 and onchain ed25519 (ALGO, XLM, HBAR): decrypt the root, hardened-derive the
+ * child at `derivedFromParentWithPath` (`m/44'/<coinType>'/<slot>'/<account>'`), verify the registered
+ * pub, and return the child private key in the format the coin signs with. Never returns the root.
+ * A public-only TSS child is an invalid state and throws.
  *
  * Do not use for wallet sharing — that must not receive root key material.
  * Call only when `isSafeChildPublicOnlyKeychain` is true.
@@ -178,41 +213,26 @@ async function resolveSafeKeyMaterial(params: ResolveSafeKeyMaterialParams): Pro
 export async function resolveSafeOwnerSigningPrv(params: ResolveSafeOwnerSigningPrvParams): Promise<string> {
   const { prv } = await resolveSafeKeyMaterial({
     ...params,
-    makeNotImplementedError: (slot, walletId) =>
-      slot === 'ed25519'
-        ? new SafeOwnerSigningNotImplementedError(
-            walletId,
-            `ed25519 multisig owner derivation (${params.coinFamily}) is not implemented; BIP32 would produce the wrong child key.`
-          )
-        : new SafeOwnerSigningNotImplementedError(
-            walletId,
-            'TSS owner signing from the root keyshare is not implemented. ' +
-              'Returning the root private key would expose material that can derive every child in this slot.'
-          ),
+    makeUnsupportedMultisigTypeError: (walletId) =>
+      new SafeOwnerSigningNotImplementedError(
+        walletId,
+        `cannot resolve an owner signing key from a public-only ${params.multisigType ?? 'unknown'} user key. ` +
+          'MPC safe user keys always carry their own encrypted signing share, so this keychain is in an invalid state.'
+      ),
   });
   return prv;
 }
 
-export interface ResolveSafeChildPrvForSharingParams extends SafeKeyMaterialBaseParams {
-  mpcAlgorithm?: 'ecdsa' | 'eddsa';
-}
-
-/** Slot-named not-implemented detail for wallet sharing. */
-function safeShareSlotDetail(slot: SafeKeyMaterialSlot, params: ResolveSafeChildPrvForSharingParams): string {
-  if (slot === 'ed25519') {
-    return `ed25519 multisig safe sharing (${params.coinFamily}) is not implemented; BIP32 would derive the wrong child.`;
-  }
-  return params.mpcAlgorithm === 'eddsa'
-    ? 'eddsaMpc safe sharing is not implemented (needs the EdDSA derive ceremony).'
-    : 'ecdsaMpc safe sharing is not implemented (needs the DKLS derive ceremony).';
-}
+export type ResolveSafeChildPrvForSharingParams = SafeKeyMaterialBaseParams;
 
 /**
  * Resolve sharing material for a safe owner (child key has no encryptedPrv).
  *
- * Onchain secp256k1: decrypt root, hardened-derive at `derivedFromParentWithPath`
- * (`m/<n>'`), verify the registered pub, and return the CHILD `{prv, pub}` — never the root.
- * TSS and ed25519 onchain: throw `SafeShareNotImplementedError` naming the slot + blocker.
+ * Onchain secp256k1 and onchain ed25519 (ALGO, XLM, HBAR): decrypt the root, hardened-derive the
+ * child at `derivedFromParentWithPath`, verify the registered pub, and return the CHILD
+ * `{prv, pub}` — never the root. `prv` is in the format the coin signs with and `pub` is the
+ * registered child pub, as the platform stores it.
+ * A public-only TSS child is an invalid state and throws `SafeShareNotImplementedError`.
  *
  * Call only when `isSafeChildPublicOnlyKeychain` is true.
  */
@@ -221,7 +241,11 @@ export async function resolveSafeChildPrvForSharing(
 ): Promise<DecryptedKeychainData> {
   return resolveSafeKeyMaterial({
     ...params,
-    makeNotImplementedError: (slot, walletId) =>
-      new SafeShareNotImplementedError(walletId, safeShareSlotDetail(slot, params)),
+    makeUnsupportedMultisigTypeError: (walletId) =>
+      new SafeShareNotImplementedError(
+        walletId,
+        `cannot share a public-only ${params.multisigType ?? 'unknown'} user key. ` +
+          'MPC safe user keys always carry their own encrypted signing share, so this keychain is in an invalid state.'
+      ),
   });
 }
