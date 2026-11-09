@@ -1,20 +1,8 @@
 import * as sjcl from '@bitgo/sjcl';
 import { randomBytes } from 'crypto';
 
-import { assertSafeLegacyV1Envelope } from '@bitgo/sdk-core';
-import { decryptV1, parseV1Envelope } from './decryptV1';
+import { decryptV1WithSjcl } from './decryptV1';
 import { decryptV2, encryptV2 } from './encryptV2';
-
-/**
- * True in a browser main thread (`window`) or worker (`self`) runtime. The
- * `crypto` webpack substitutes for `node:crypto` there (`crypto-browserify`,
- * backed by `browserify-aes`) has no working AES-CCM, so a native v1 attempt
- * would only pay for a doomed PBKDF2 run before falling back. Browser
- * runtimes route v1 decrypt straight to SJCL instead.
- */
-function isBrowserRuntime(): boolean {
-  return typeof window !== 'undefined' || typeof self !== 'undefined';
-}
 
 /**
  * convert a 4 element Uint8Array to a 4 byte Number
@@ -78,81 +66,6 @@ export async function encrypt(
 }
 
 /**
- * Iter-cap violations are the only error we refuse to fall back on: SJCL has
- * no upper bound on `iter`, so falling through to it would let a hostile
- * envelope burn CPU running an inflated PBKDF2. Everything else -- codec
- * rejection of a shape SJCL would accept, native crypto bug, auth-tag
- * mismatch -- is safe to fall through to SJCL.
- */
-function isIterCapViolation(err: unknown): boolean {
-  return err instanceof Error && /iter:\s*expected integer|iter out of range/i.test(err.message);
-}
-
-/**
- * v1 decrypt with an SJCL safety net.
- *
- * Node: native `node:crypto` first, SJCL fallback. Design intent during
- * rollout: zero false negatives. Any native failure (envelope shape our
- * stricter codec rejects, framing bug, unsupported algorithm, auth-tag
- * mismatch, etc.) falls through to `sjcl.decrypt` so the caller is never
- * blocked. The only exception is an iter-cap violation, which is rethrown
- * to preserve DoS protection.
- *
- * Browser/worker: skip the native attempt entirely (its polyfilled AES-CCM
- * is broken) and go straight to `sjcl.decrypt`, after running the same
- * `parseV1Envelope` iter-cap check the native path would run.
- *
- * The console.warn only fires when native fails AND SJCL succeeds -- i.e.
- * when the two engines disagree, which is the only signal worth
- * investigating. Wrong password fails both engines silently and surfaces
- * SJCL's auth error (mapped upstream to "incorrect password").
- *
- * `native` defaults to the module's `decryptV1` but is exposed as a parameter
- * so tests can inject a throwing version to exercise the fallback path.
- * `isBrowser` defaults to a real runtime check but is exposed so tests can
- * exercise the browser-only branch under Node.
- */
-export async function decryptV1WithFallback(
-  password: string,
-  ciphertext: string,
-  native: (pw: string, ct: string) => Promise<string> = decryptV1,
-  isBrowser: boolean = isBrowserRuntime()
-): Promise<string> {
-  assertSafeLegacyV1Envelope(ciphertext);
-  if (isBrowser) {
-    try {
-      parseV1Envelope(ciphertext);
-    } catch (parseErr) {
-      // Only honor the iter-cap violation: SJCL has no upper bound on `iter`,
-      // so falling through would let a hostile envelope burn CPU running an
-      // inflated PBKDF2. Any other shape rejection (e.g. a legacy envelope
-      // without a `v` field) is a form SJCL still accepts, so let
-      // sjcl.decrypt make the final call.
-      if (isIterCapViolation(parseErr)) throw parseErr;
-    }
-    return sjcl.decrypt(password, ciphertext);
-  }
-  try {
-    return await native(password, ciphertext);
-  } catch (nativeErr) {
-    if (isIterCapViolation(nativeErr)) throw nativeErr;
-    let result: string;
-    try {
-      result = sjcl.decrypt(password, ciphertext);
-    } catch (sjclErr) {
-      // Both engines rejected -- almost certainly a real auth failure.
-      // Rethrow SJCL's error so BitGoAPI.decrypt maps it to "incorrect password".
-      throw sjclErr;
-    }
-    // Native failed but SJCL succeeded -- real signal, log for the operator.
-    const message = nativeErr instanceof Error ? nativeErr.message : String(nativeErr);
-    // eslint-disable-next-line no-console
-    console.warn('[bitgo-sdk] v1 native decrypt failed; SJCL fallback succeeded:', message);
-    return result;
-  }
-}
-
-/**
  * Auto-detect v1 (PBKDF2-SHA256 + AES-CCM) or v2 (Argon2id + AES-256-GCM)
  * from the envelope `v` field and decrypt.
  */
@@ -171,5 +84,5 @@ export async function decrypt(password: string, ciphertext: string): Promise<str
   if (envelopeVersion !== undefined && envelopeVersion !== 1) {
     throw new Error(`decrypt: unknown envelope version ${envelopeVersion}`);
   }
-  return decryptV1WithFallback(password, ciphertext);
+  return decryptV1WithSjcl(password, ciphertext);
 }
