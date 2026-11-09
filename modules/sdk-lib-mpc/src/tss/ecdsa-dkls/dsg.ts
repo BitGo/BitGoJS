@@ -153,10 +153,18 @@ export class Dsg {
     try {
       const firstMessage = this.dsgSession.createFirstMessage();
       let payload: Uint8Array;
+      let payloadFailed = false;
       try {
         payload = firstMessage.payload;
+      } catch (e) {
+        payloadFailed = true;
+        throw e;
       } finally {
-        firstMessage.free();
+        try {
+          firstMessage.free();
+        } catch (e) {
+          if (!payloadFailed) throw e;
+        }
       }
       this._deserializeState();
       this.dsgSessionBytes = this.dsgSession.toBytes();

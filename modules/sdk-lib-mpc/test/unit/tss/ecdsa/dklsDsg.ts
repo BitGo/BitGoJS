@@ -3,8 +3,9 @@ import * as fs from 'fs';
 import * as crypto from 'crypto';
 import should from 'should';
 import assert from 'assert';
+import sinon from 'sinon';
 
-import { Keyshare, SignSessionOTVariant } from '@silencelaboratories/dkls-wasm-ll-node';
+import { Keyshare, Message, SignSessionOTVariant } from '@silencelaboratories/dkls-wasm-ll-node';
 import { decode } from 'cbor-x';
 import * as mpcv2KeyCardData from './fixtures/mpcv2keycarddata';
 import * as sjcl from '@bitgo/sjcl';
@@ -55,6 +56,32 @@ describe('DKLS Dsg 2x3', function () {
     `${__dirname}/fixtures/backupShare`,
     `${__dirname}/fixtures/bitgoShare`,
   ];
+  for (const payloadFails of [true, false]) {
+    it(`preserves ${payloadFails ? 'payload' : 'cleanup'} failure during first-message disposal`, async function () {
+      const sandbox = sinon.createSandbox();
+      const originalFree = Message.prototype.free;
+      const sessionFree = sandbox.spy(SignSessionOTVariant.prototype, 'free');
+      const messageFree = sandbox.stub(Message.prototype, 'free').callsFake(function (this: Message) {
+        originalFree.call(this);
+        throw new Error('message cleanup failure');
+      });
+      if (payloadFails) {
+        sandbox.stub(Message.prototype, 'payload').get(() => {
+          throw new Error('payload read failure');
+        });
+      }
+      const party = new DklsDsg.Dsg(fs.readFileSync(shareFiles[0]), 0, 'm', Buffer.alloc(32));
+      try {
+        await assert.rejects(party.init(), payloadFails ? /payload read failure/ : /message cleanup failure/);
+        assert.strictEqual(messageFree.callCount, 1);
+        assert.strictEqual(sessionFree.callCount, 1);
+        assert.strictEqual(party['dsgSession'], undefined);
+      } finally {
+        sandbox.restore();
+      }
+    });
+  }
+
   it('preserves the protocol error and detaches the session when cleanup also fails', async function () {
     class InspectableDsg extends DklsDsg.Dsg {
       hasLiveSession(): boolean {

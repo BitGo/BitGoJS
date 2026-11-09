@@ -693,10 +693,10 @@ describe('DKLS key generation ownership', function () {
     await dkg.initDkg();
     assert.strictEqual(freeSession.callCount, 1);
     assert.strictEqual(freeMessage.callCount, 1);
-    assert.strictEqual((dkg as any).dkgSession, undefined);
+    assert.strictEqual(dkg['dkgSession'], undefined);
     const restored = await DklsDkg.Dkg.restoreSession(3, 2, 0, dkg.getSessionData());
     assert.strictEqual(freeSession.callCount, 2);
-    assert.strictEqual((restored as any).dkgSession, undefined);
+    assert.strictEqual(restored['dkgSession'], undefined);
     assert.deepStrictEqual(restored.getSessionData(), dkg.getSessionData());
   });
 
@@ -708,7 +708,7 @@ describe('DKLS key generation ownership', function () {
     assert.strictEqual(consumeSession.callCount, 3);
     for (const party of parties) {
       assert(party.getKeyShare().length > 0);
-      assert.strictEqual((party as any).dkgSession, undefined);
+      assert.strictEqual(party['dkgSession'], undefined);
     }
   });
 
@@ -716,8 +716,8 @@ describe('DKLS key generation ownership', function () {
     const dkg = new DklsDkg.Dkg(3, 2, 0);
     const originalFree = wasm.KeygenSession.prototype.free;
     sinon.stub(wasm.KeygenSession.prototype, 'createFirstMessage').throws(new Error('first message failure'));
-    sinon.stub(wasm.KeygenSession.prototype, 'free').callsFake(function () {
-      assert.strictEqual((dkg as any).dkgSession, undefined);
+    sinon.stub(wasm.KeygenSession.prototype, 'free').callsFake(function (this: wasm.KeygenSession) {
+      assert.strictEqual(dkg['dkgSession'], undefined);
       originalFree.call(this);
       throw new Error('cleanup failure');
     });
@@ -730,8 +730,8 @@ describe('DKLS key generation ownership', function () {
     const originalFree = wasm.KeygenSession.prototype.free;
     const serialize = sinon.spy(wasm.KeygenSession.prototype, 'toBytes');
     sinon.stub(wasm.KeygenSession.prototype, 'handleMessages').throws(new Error('round failure'));
-    sinon.stub(wasm.KeygenSession.prototype, 'free').callsFake(function () {
-      assert.strictEqual((dkg as any).dkgSession, undefined);
+    sinon.stub(wasm.KeygenSession.prototype, 'free').callsFake(function (this: wasm.KeygenSession) {
+      assert.strictEqual(dkg['dkgSession'], undefined);
       originalFree.call(this);
       throw new Error('cleanup failure');
     });
@@ -745,8 +745,8 @@ describe('DKLS key generation ownership', function () {
     sinon.stub(wasm.KeygenSession, 'initKeyRotation').throws(new Error('rotation failure'));
     await assert.rejects(dkg.initDkg(), /rotation failure/);
     assert.strictEqual(freeShare.callCount, 1);
-    assert.strictEqual((dkg as any).dklsKeyShareRetrofitObject, undefined);
-    assert.strictEqual((dkg as any).dkgSession, undefined);
+    assert.strictEqual(dkg['dklsKeyShareRetrofitObject'], undefined);
+    assert.strictEqual(dkg['dkgSession'], undefined);
   });
 
   it('releases initialization resources if serialization fails', async function () {
@@ -757,17 +757,17 @@ describe('DKLS key generation ownership', function () {
     await assert.rejects(dkg.initDkg(), /serialization failure/);
     assert.strictEqual(freeSession.callCount, 1);
     assert.strictEqual(freeMessage.callCount, 1);
-    assert.strictEqual((dkg as any).dkgSession, undefined);
+    assert.strictEqual(dkg['dkgSession'], undefined);
   });
 
   it('does not free a session consumed by a throwing keyshare call', async function () {
     const dkg = new DklsDkg.Dkg(3, 2, 0);
     await dkg.initDkg();
-    (dkg as any).dkgState = DklsTypes.DkgState.Round4;
+    dkg['dkgState'] = DklsTypes.DkgState.Round4;
     sinon.stub(wasm.KeygenSession.prototype, 'handleMessages').returns([]);
     const freeSession = sinon.spy(wasm.KeygenSession.prototype, 'free');
     assert.throws(() => dkg.handleIncomingMessages({ broadcastMessages: [], p2pMessages: [] }));
     assert.strictEqual(freeSession.callCount, 0);
-    assert.strictEqual((dkg as any).dkgSession, undefined);
+    assert.strictEqual(dkg['dkgSession'], undefined);
   });
 });
