@@ -4,7 +4,7 @@ import * as crypto from 'crypto';
 import should from 'should';
 import assert from 'assert';
 
-import { Keyshare } from '@silencelaboratories/dkls-wasm-ll-node';
+import { Keyshare, SignSessionOTVariant } from '@silencelaboratories/dkls-wasm-ll-node';
 import { decode } from 'cbor-x';
 import * as mpcv2KeyCardData from './fixtures/mpcv2keycarddata';
 import * as sjcl from '@bitgo/sjcl';
@@ -55,6 +55,29 @@ describe('DKLS Dsg 2x3', function () {
     `${__dirname}/fixtures/backupShare`,
     `${__dirname}/fixtures/bitgoShare`,
   ];
+  it('frees serialized sessions after every signing round', async function () {
+    const originalFree = SignSessionOTVariant.prototype.free;
+    let freed = 0;
+    SignSessionOTVariant.prototype.free = function () {
+      freed++;
+      return originalFree.call(this);
+    };
+    try {
+      const parties = [0, 1].map(
+        (party) => new DklsDsg.Dsg(fs.readFileSync(shareFiles[party]), party, 'm', Buffer.alloc(32))
+      );
+      const messages = await executeTillRound(4, parties[0], parties[1]);
+      assert.strictEqual(freed, 8);
+      parties.forEach((party, index) => {
+        party.handleIncomingMessages({ p2pMessages: [], broadcastMessages: messages[1 - index].broadcastMessages });
+      });
+      assert.deepStrictEqual(parties[0].signature, parties[1].signature);
+      assert.strictEqual(freed, 8);
+    } finally {
+      SignSessionOTVariant.prototype.free = originalFree;
+    }
+  });
+
   vectors.forEach(async function (vector) {
     it(`should create signatures for parties ${vector.party1} and ${vector.party2} with derivation`, async function () {
       const party1 = new DklsDsg.Dsg(

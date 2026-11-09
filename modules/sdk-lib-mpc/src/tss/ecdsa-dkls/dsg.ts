@@ -139,16 +139,24 @@ export class Dsg {
     }
     this.dsgSession = new SignSessionOTVariant(keyShare, this.derivationPath);
     try {
-      const payload = this.dsgSession.createFirstMessage().payload;
+      const firstMessage = this.dsgSession.createFirstMessage();
+      let payload: Uint8Array;
+      try {
+        payload = firstMessage.payload;
+      } finally {
+        firstMessage.free();
+      }
       this._deserializeState();
       this.dsgSessionBytes = this.dsgSession.toBytes();
-      this.dsgSession = undefined;
       return {
         payload: payload,
         from: this.partyIdx,
       };
     } catch (e) {
       throw Error(`Error while creating the first message from party ${this.partyIdx}: ${e}`);
+    } finally {
+      this.dsgSession.free();
+      this.dsgSession = undefined;
     }
   }
 
@@ -168,6 +176,7 @@ export class Dsg {
     }
     if (this.dsgSession) {
       this.dsgSession.free();
+      this.dsgSession = undefined;
     }
     this.dsgState = DsgState.Uninitialized;
   }
@@ -256,8 +265,12 @@ export class Dsg {
       nextRoundMessages.forEach((m) => m.free());
       // Session is freed when combine is called.
       if (this.dsgState !== DsgState.Complete) {
-        this.dsgSessionBytes = this.dsgSession.toBytes();
-        this.dsgSession = undefined;
+        try {
+          this.dsgSessionBytes = this.dsgSession.toBytes();
+        } finally {
+          this.dsgSession.free();
+          this.dsgSession = undefined;
+        }
       }
     }
     return nextRoundDeserializedMessages;
