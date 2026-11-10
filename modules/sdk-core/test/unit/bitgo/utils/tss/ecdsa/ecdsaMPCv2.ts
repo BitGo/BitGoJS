@@ -45,7 +45,7 @@ describe('ECDSA MPC v2', async () => {
 
   before('initialize EcdsaMPCv2Utils', async () => {
     const mockBg = {} as BitGoBase;
-    mockBg.getEnv = sinon.stub().returns('test');
+    mockBg.getEnv = sinon.stub().returns('mock');
     const encryptImpl = (params: { password: string; input: string; adata?: string }) => {
       const salt = randomBytes(8);
       const iv = randomBytes(16);
@@ -286,11 +286,14 @@ describe('ECDSA MPC v2', async () => {
     const encryptedRound2Session = resMPCv2SigningRound2.encryptedRound2Session;
 
     // A bogus round 3 signing request containing encrypted session from round 1 instead of round 2 should fail.
+    // The session blob is single-use, so mint a fresh round-1 session: the already-consumed
+    // round-1 blob would be rejected by the replay check before the adata check runs.
+    const freshRound1Session = await ecdsaMPCv2Utils.createOfflineRound1Share(reqMPCv2SigningRound1 as any);
     const bogusReqMPCv2SigningRound3 = {
       ...reqMPCv2SigningRound2,
       txRequest: txRequestRound2,
       encryptedRound1Session: null, // not needed for round 3
-      encryptedRound2Session: encryptedRound1Session, // instaed of encryptedRound2Session
+      encryptedRound2Session: freshRound1Session.encryptedRound1Session, // instaed of encryptedRound2Session
     };
 
     await ecdsaMPCv2Utils
@@ -974,13 +977,215 @@ describe('ECDSA MPC v2', async () => {
     assert.strictEqual(sigParts[2].length, 64, 'Signature S must be 32 bytes hex');
   });
 
+  describe('createOfflineRound2Share and createOfflineRound3Share replay protection and GPG pinning', () => {
+    const tMessage = 'testMessage';
+    const derivationPath = 'm/3';
+    // partial TxRequest fixture: the offline round helpers only read these fields
+    const baseTxRequest = {
+      txRequestId: '123456',
+      apiVersion: 'full',
+      walletId: walletID,
+      transactions: [
+        {
+          unsignedTx: {
+            derivationPath,
+            signableHex: tMessage,
+          },
+          signatureShares: [],
+        },
+      ],
+    } as unknown as TxRequest;
+
+    async function createRound2Flow() {
+      const resMPCv2SigningRound1 = await ecdsaMPCv2Utils.createOfflineRound1Share({
+        txRequest: baseTxRequest,
+        prv: userShare.toString('base64'),
+        walletPassphrase,
+      });
+
+      const hashBuffer = createKeccakHash('keccak256').update(Buffer.from(tMessage, 'hex')).digest();
+      const bitgoSession = new DklsDsg.Dsg(bitgoShare, 2, derivationPath, hashBuffer);
+
+      const txRequestRound1 = await signBitgoMPCv2Round1(
+        bitgoSession,
+        baseTxRequest,
+        resMPCv2SigningRound1.signatureShareRound1,
+        resMPCv2SigningRound1.userGpgPubKey
+      );
+
+      const reqMPCv2SigningRound2 = {
+        txRequest: txRequestRound1,
+        prv: userShare.toString('base64'),
+        walletPassphrase,
+        bitgoPublicGpgKey: bitgoGpgKey.public,
+        encryptedUserGpgPrvKey: resMPCv2SigningRound1.encryptedUserGpgPrvKey,
+        encryptedRound1Session: resMPCv2SigningRound1.encryptedRound1Session,
+      };
+      return { bitgoSession, reqMPCv2SigningRound2, resMPCv2SigningRound1 };
+    }
+
+    it('should reject a replayed encryptedRound1Session', async () => {
+      const { reqMPCv2SigningRound2 } = await createRound2Flow();
+      await ecdsaMPCv2Utils.createOfflineRound2Share(reqMPCv2SigningRound2);
+
+      await assert.rejects(
+        () => ecdsaMPCv2Utils.createOfflineRound2Share(reqMPCv2SigningRound2),
+        /Session state has already been used; replay is not allowed/
+      );
+
+      // Reformatting the envelope JSON (whitespace, key order, extra field) must not mint
+      // a fresh digest for the same ciphertext: the digest covers the inner iv/ct only.
+      const reformatted = JSON.stringify(
+        { extraField: 'ignored', ...JSON.parse(reqMPCv2SigningRound2.encryptedRound1Session) },
+        null,
+        2
+      );
+      await assert.rejects(
+        () =>
+          ecdsaMPCv2Utils.createOfflineRound2Share({
+            ...reqMPCv2SigningRound2,
+            encryptedRound1Session: reformatted,
+          }),
+        /Session state has already been used; replay is not allowed/
+      );
+    });
+
+    it('should reject a replayed encryptedRound2Session', async () => {
+      const { bitgoSession, reqMPCv2SigningRound2, resMPCv2SigningRound1 } = await createRound2Flow();
+      const resMPCv2SigningRound2 = await ecdsaMPCv2Utils.createOfflineRound2Share(reqMPCv2SigningRound2);
+      const { txRequest: txRequestRound2 } = await signBitgoMPCv2Round2(
+        bitgoSession,
+        reqMPCv2SigningRound2.txRequest,
+        resMPCv2SigningRound2.signatureShareRound2,
+        resMPCv2SigningRound1.userGpgPubKey
+      );
+
+      const reqMPCv2SigningRound3 = {
+        txRequest: txRequestRound2,
+        prv: userShare.toString('base64'),
+        walletPassphrase,
+        bitgoPublicGpgKey: bitgoGpgKey.public,
+        encryptedUserGpgPrvKey: resMPCv2SigningRound1.encryptedUserGpgPrvKey,
+        encryptedRound2Session: resMPCv2SigningRound2.encryptedRound2Session,
+      };
+      await ecdsaMPCv2Utils.createOfflineRound3Share(reqMPCv2SigningRound3);
+
+      await assert.rejects(
+        () => ecdsaMPCv2Utils.createOfflineRound3Share(reqMPCv2SigningRound3),
+        /Session state has already been used; replay is not allowed/
+      );
+
+      const reformatted = JSON.stringify(
+        { extraField: 'ignored', ...JSON.parse(reqMPCv2SigningRound3.encryptedRound2Session) },
+        null,
+        2
+      );
+      await assert.rejects(
+        () =>
+          ecdsaMPCv2Utils.createOfflineRound3Share({
+            ...reqMPCv2SigningRound3,
+            encryptedRound2Session: reformatted,
+          }),
+        /Session state has already been used; replay is not allowed/
+      );
+    });
+
+    it('should reject a non-BitGo GPG key when env requires BitGo pub key config', async () => {
+      const mockBg = {} as BitGoBase;
+      mockBg.getEnv = sinon.stub().returns('prod');
+      mockBg.encrypt = sinon.stub().callsFake(async (params: { input: string }) => params.input);
+      mockBg.decrypt = sinon.stub().callsFake(async (params: { input: string }) => params.input);
+      const mockCoin = {} as IBaseCoin;
+      mockCoin.getHashFunction = sinon.stub().callsFake(() => createKeccakHash('keccak256') as Hash);
+      const prodUtils = new EcdsaMPCv2Utils(mockBg, mockCoin);
+
+      const baseParams = {
+        txRequest: baseTxRequest,
+        prv: userShare.toString('base64'),
+        walletPassphrase,
+        bitgoPublicGpgKey: bitgoGpgKey.public,
+        encryptedUserGpgPrvKey: 'unused',
+      };
+
+      await assert.rejects(
+        () => prodUtils.createOfflineRound2Share({ ...baseParams, encryptedRound1Session: 'unused' }),
+        /Invalid BitGo GPG public key/
+      );
+      await assert.rejects(
+        () => prodUtils.createOfflineRound3Share({ ...baseParams, encryptedRound2Session: 'unused' }),
+        /Invalid BitGo GPG public key/
+      );
+    });
+
+    it('should reject BitGo round-1 messages minted for a different signing session', async () => {
+      // Two genuine round-1 sessions for the same signable, simulating what a relay can
+      // assemble: session A's WaitMsg1 blob is restored while the incoming BitGo round-1
+      // output comes from session B, re-wrapped under session A's user GPG key. The DSG
+      // session transcript binds the restored state to the original session, so the wasm
+      // must reject the cross-session mix before the nonce advances.
+      const flowA = await createRound2Flow();
+
+      const resMPCv2SigningRound1B = await ecdsaMPCv2Utils.createOfflineRound1Share({
+        txRequest: baseTxRequest,
+        prv: userShare.toString('base64'),
+        walletPassphrase,
+      });
+      const hashBuffer = createKeccakHash('keccak256').update(Buffer.from(tMessage, 'hex')).digest();
+      const bitgoSessionB = new DklsDsg.Dsg(bitgoShare, 2, derivationPath, hashBuffer);
+      const txRequestRound1B = await signBitgoMPCv2Round1(
+        bitgoSessionB,
+        baseTxRequest,
+        resMPCv2SigningRound1B.signatureShareRound1,
+        flowA.resMPCv2SigningRound1.userGpgPubKey
+      );
+
+      await assert.rejects(
+        () =>
+          ecdsaMPCv2Utils.createOfflineRound2Share({
+            ...flowA.reqMPCv2SigningRound2,
+            txRequest: txRequestRound1B,
+          }),
+        /Error while creating messages from party 0|Signing aborted/
+      );
+    });
+
+    it('should reject an expired or future-stamped encryptedRound1Session', async () => {
+      const { reqMPCv2SigningRound2 } = await createRound2Flow();
+
+      // The stamp validator runs before the nonce is restored, so rewriting the stamped
+      // adata in the envelope is enough to exercise the expiry path (mirrors the EdDSA suite).
+      const envelope = JSON.parse(reqMPCv2SigningRound2.encryptedRound1Session) as { adata: string };
+      const [state, , ...rest] = decodeURIComponent(envelope.adata).split(':');
+      const expiredAdata = [state, String(Date.now() - 31 * 24 * 3600 * 1000), ...rest].join(':');
+      await assert.rejects(
+        () =>
+          ecdsaMPCv2Utils.createOfflineRound2Share({
+            ...reqMPCv2SigningRound2,
+            encryptedRound1Session: JSON.stringify({ ...envelope, adata: expiredAdata }),
+          }),
+        /Encrypted session envelope has expired; restart the signing session/
+      );
+
+      // A minted stamp beyond the clock-skew tolerance is rejected by the same branch.
+      const futureAdata = [state, String(Date.now() + 61_000), ...rest].join(':');
+      await assert.rejects(
+        () =>
+          ecdsaMPCv2Utils.createOfflineRound2Share({
+            ...reqMPCv2SigningRound2,
+            encryptedRound1Session: JSON.stringify({ ...envelope, adata: futureAdata }),
+          }),
+        /Encrypted session envelope has expired; restart the signing session/
+      );
+    });
+  });
+
   describe('createOfflineRound1Share and createOfflineRound2Share - encryptionVersion: 1 in v1 path', async () => {
     let ecdsaMPCv2UtilsWithSpy: EcdsaMPCv2Utils;
     let encryptAsyncSpy: sinon.SinonStub;
 
     before(async () => {
       const mockBg = {} as BitGoBase;
-      mockBg.getEnv = sinon.stub().returns('test');
+      mockBg.getEnv = sinon.stub().returns('mock');
       const encryptImpl = (params: { password: string; input: string; adata?: string }) => {
         const salt = randomBytes(8);
         const iv = randomBytes(16);

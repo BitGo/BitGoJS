@@ -567,12 +567,13 @@ describe('Base TSS Utils', function () {
         walletPassphrase,
       });
 
-      // The round-1 session is encrypted with adata = "DKLS23_SIGNING_ROUND1_STATE:<hash>:<derivationPath>",
-      // which proves getHashStringAndDerivationPath produced the right values after the delegation refactor.
+      // The round-1 session is encrypted with adata = "DKLS23_SIGNING_ROUND1_STATE:<createdMs>:<hash>:<derivationPath>";
+      // the creation stamp bounds the session's replay window. Matching the stamp loosely keeps the
+      // assertion on the values getHashStringAndDerivationPath actually produced.
       const { adata } = JSON.parse(encryptedRound1Session) as { adata?: string };
-      assert.equal(
-        adata === undefined ? adata : decodeURIComponent(adata),
-        `DKLS23_SIGNING_ROUND1_STATE:${expectedHashBuffer.toString('hex')}:${derivationPath}`
+      assert.match(
+        adata === undefined ? '' : decodeURIComponent(adata),
+        new RegExp(`^DKLS23_SIGNING_ROUND1_STATE:\\d+:${expectedHashBuffer.toString('hex')}:${derivationPath}$`)
       );
     });
 

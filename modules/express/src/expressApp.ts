@@ -266,7 +266,7 @@ function checkPreconditions(config: Config) {
 
   if (signerMode !== undefined && !envRequiresBitgoPubGpgKeyConfig(env)) {
     console.warn(
-      `warning: environment '${env}' does not enforce a pinned BitGo GPG public key for EdDSA MPCv2 offline ` +
+      `warning: environment '${env}' does not enforce a pinned BitGo GPG public key for EdDSA and ECDSA MPCv2 offline ` +
         'signing; run against prod, test, staging, adminProd or adminTest to enforce it.'
     );
   }

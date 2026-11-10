@@ -477,14 +477,14 @@ function markConsumedShareClosure(
 
 /**
  * Durable single-use consumption of an encrypted offline-signing session blob
- * (EdDSA MPCv2 rounds 2/3). Keys the file-backed ConsumedShareRegistry on the
- * sdk-core canonical session digest so JSON reformulation of the same
+ * (EdDSA and ECDSA MPCv2 rounds 2/3). Keys the file-backed ConsumedShareRegistry
+ * on the sdk-core canonical session digest so JSON reformulation of the same
  * ciphertext is still rejected, and consumption survives signer restarts.
  * Returns a lazy closure that the sdk-core helper invokes only after the
  * session has decrypted and authenticated (as the MuDelta/S closures do), so
  * junk requests never reach the registry.
  */
-function markConsumedEddsaSessionClosure(
+function markConsumedOfflineSessionClosure(
   registryFilePath: string,
   shareType: string,
   encryptedSession: unknown
@@ -559,7 +559,7 @@ export async function handleV2GenerateShareTSS(
           case ShareType.EddsaMPCv2Round2:
             return await eddsaMPCv2Utils.createOfflineRound2Share({
               ...req.body,
-              markSessionConsumed: markConsumedEddsaSessionClosure(
+              markSessionConsumed: markConsumedOfflineSessionClosure(
                 registryFilePath,
                 req.decoded.sharetype,
                 req.body.encryptedRound1Session
@@ -568,7 +568,7 @@ export async function handleV2GenerateShareTSS(
           case ShareType.EddsaMPCv2Round3:
             return await eddsaMPCv2Utils.createOfflineRound3Share({
               ...req.body,
-              markSessionConsumed: markConsumedEddsaSessionClosure(
+              markSessionConsumed: markConsumedOfflineSessionClosure(
                 registryFilePath,
                 req.decoded.sharetype,
                 req.body.encryptedRound2Session
@@ -607,9 +607,23 @@ export async function handleV2GenerateShareTSS(
           case ShareType.MPCv2Round1:
             return await ecdsaMPCv2Utils.createOfflineRound1Share(req.body);
           case ShareType.MPCv2Round2:
-            return await ecdsaMPCv2Utils.createOfflineRound2Share(req.body);
+            return await ecdsaMPCv2Utils.createOfflineRound2Share({
+              ...req.body,
+              markSessionConsumed: markConsumedOfflineSessionClosure(
+                registryFilePath,
+                req.decoded.sharetype,
+                req.body.encryptedRound1Session
+              ),
+            });
           case ShareType.MPCv2Round3:
-            return await ecdsaMPCv2Utils.createOfflineRound3Share(req.body);
+            return await ecdsaMPCv2Utils.createOfflineRound3Share({
+              ...req.body,
+              markSessionConsumed: markConsumedOfflineSessionClosure(
+                registryFilePath,
+                req.decoded.sharetype,
+                req.body.encryptedRound2Session
+              ),
+            });
           default:
             throw new Error(
               `Share type ${req.decoded.sharetype} not supported for MPCv2, only MPCv2Round1, MPCv2Round2 and MPCv2Round3 is supported.`

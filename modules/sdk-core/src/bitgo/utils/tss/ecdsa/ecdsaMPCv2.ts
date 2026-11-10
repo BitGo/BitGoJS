@@ -62,6 +62,12 @@ import { BitGoBase } from '../../../bitgoBase';
 import { resolveEffectiveTxParams } from '../recipientUtils';
 import type { EcdsaMPCv2KeyGenCallbacks } from '../../../wallet/iWallets';
 import { parseMpcV2KeyShareEnvelope } from '../keyShareEnvelope';
+import {
+  assertEncryptedSessionNotConsumed,
+  computeEncryptedSessionDigest,
+  markEncryptedSessionConsumed,
+  validateDsgSessionAdata,
+} from '../encryptedSessionSingleUse';
 
 export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
   private static readonly DKLS23_SIGNING_USER_GPG_KEY = 'DKLS23_SIGNING_USER_GPG_KEY';
@@ -1365,7 +1371,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       try {
         const encryptedRound1Session = await session.encrypt(
           sessionData,
-          `${EcdsaMPCv2Utils.DKLS23_SIGNING_ROUND1_STATE}:${adata}`
+          `${EcdsaMPCv2Utils.DKLS23_SIGNING_ROUND1_STATE}:${Date.now()}:${adata}`
         );
         const encryptedUserGpgPrvKey = await session.encrypt(
           userGpgKey.privateKey,
@@ -1380,7 +1386,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     const encryptedRound1Session = await this.bitgo.encrypt({
       input: sessionData,
       password: walletPassphrase,
-      adata: `${EcdsaMPCv2Utils.DKLS23_SIGNING_ROUND1_STATE}:${adata}`,
+      adata: `${EcdsaMPCv2Utils.DKLS23_SIGNING_ROUND1_STATE}:${Date.now()}:${adata}`,
       encryptionVersion: 1,
     });
     const encryptedUserGpgPrvKey = await this.bitgo.encrypt({
@@ -1400,12 +1406,22 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     bitgoPublicGpgKey: string;
     encryptedUserGpgPrvKey: string;
     encryptedRound1Session: string;
+    /** Durable single-use consumption hook (express route registry); invoked only after the session has decrypted and authenticated. */
+    markSessionConsumed?: () => void;
   }): Promise<{
     signatureShareRound2: SignatureShareRecord;
     encryptedRound2Session: string;
   }> {
     const { prv, walletPassphrase, encryptedUserGpgPrvKey, encryptedRound1Session, bitgoPublicGpgKey, txRequest } =
       params;
+    if (envRequiresBitgoPubGpgKeyConfig(this.bitgo.getEnv())) {
+      assert(isBitgoMpcPubKey(bitgoPublicGpgKey, 'mpcv2'), 'Invalid BitGo GPG public key');
+    }
+    // Early replay check; the blob is only marked consumed once the decrypted DSG
+    // nonce state is about to be restored, so transient failures (wrong passphrase,
+    // malformed peer share) can be retried but a restored nonce can never be reused.
+    const round1SessionDigest = computeEncryptedSessionDigest(encryptedRound1Session);
+    assertEncryptedSessionNotConsumed(round1SessionDigest);
 
     const { hashBuffer, derivationPath } = this.getHashStringAndDerivationPath(txRequest);
     const adata = `${hashBuffer.toString('hex')}:${derivationPath}`;
@@ -1438,11 +1454,15 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       bitgoGpgKey
     );
 
+    validateDsgSessionAdata(encryptedRound1Session, EcdsaMPCv2Utils.DKLS23_SIGNING_ROUND1_STATE, adata);
     const round1Session = await this.bitgo.decrypt({ input: encryptedRound1Session, password: walletPassphrase });
-    this.validateAdata(adata, encryptedRound1Session, EcdsaMPCv2Utils.DKLS23_SIGNING_ROUND1_STATE);
 
     const userKeyShare = Buffer.from(prv, 'base64');
     const userSigner = new DklsDsg.Dsg(userKeyShare, 0, derivationPath, hashBuffer);
+    // Durable route registry first: if it rejects the blob (already consumed), the
+    // in-memory entry is not set and the nonce is never restored.
+    params.markSessionConsumed?.();
+    markEncryptedSessionConsumed(round1SessionDigest);
     await userSigner.setSession(round1Session);
 
     const deserializedMessages = DklsTypes.deserializeMessages(serializedBitGoToUserMessagesRound1);
@@ -1467,7 +1487,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       try {
         const encryptedRound2Session = await encSession.encrypt(
           sessionData,
-          `${EcdsaMPCv2Utils.DKLS23_SIGNING_ROUND2_STATE}:${adata}`
+          `${EcdsaMPCv2Utils.DKLS23_SIGNING_ROUND2_STATE}:${Date.now()}:${adata}`
         );
         return { signatureShareRound2, encryptedRound2Session };
       } finally {
@@ -1478,7 +1498,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     const encryptedRound2Session = await this.bitgo.encrypt({
       input: sessionData,
       password: walletPassphrase,
-      adata: `${EcdsaMPCv2Utils.DKLS23_SIGNING_ROUND2_STATE}:${adata}`,
+      adata: `${EcdsaMPCv2Utils.DKLS23_SIGNING_ROUND2_STATE}:${Date.now()}:${adata}`,
       encryptionVersion: 1,
     });
 
@@ -1495,11 +1515,18 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     bitgoPublicGpgKey: string;
     encryptedUserGpgPrvKey: string;
     encryptedRound2Session: string;
+    /** Durable single-use consumption hook (express route registry); invoked only after the session has decrypted and authenticated. */
+    markSessionConsumed?: () => void;
   }): Promise<{
     signatureShareRound3: SignatureShareRecord;
   }> {
     const { prv, walletPassphrase, encryptedUserGpgPrvKey, encryptedRound2Session, bitgoPublicGpgKey, txRequest } =
       params;
+    if (envRequiresBitgoPubGpgKeyConfig(this.bitgo.getEnv())) {
+      assert(isBitgoMpcPubKey(bitgoPublicGpgKey, 'mpcv2'), 'Invalid BitGo GPG public key');
+    }
+    const round2SessionDigest = computeEncryptedSessionDigest(encryptedRound2Session);
+    assertEncryptedSessionNotConsumed(round2SessionDigest);
 
     assert(txRequest.transactions && txRequest.transactions.length === 1, 'Unable to find transactions in txRequest');
     const { hashBuffer, derivationPath } = this.getHashStringAndDerivationPath(txRequest);
@@ -1536,11 +1563,15 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       broadcastMessages: [],
     });
 
+    validateDsgSessionAdata(encryptedRound2Session, EcdsaMPCv2Utils.DKLS23_SIGNING_ROUND2_STATE, adata);
     const round2Session = await this.bitgo.decrypt({ input: encryptedRound2Session, password: walletPassphrase });
-    this.validateAdata(adata, encryptedRound2Session, EcdsaMPCv2Utils.DKLS23_SIGNING_ROUND2_STATE);
 
     const userKeyShare = Buffer.from(prv, 'base64');
     const userSigner = new DklsDsg.Dsg(userKeyShare, 0, derivationPath, hashBuffer);
+    // Durable route registry first: if it rejects the blob (already consumed), the
+    // in-memory entry is not set and the nonce is never restored.
+    params.markSessionConsumed?.();
+    markEncryptedSessionConsumed(round2SessionDigest);
     await userSigner.setSession(round2Session);
 
     const userToBitGoMessagesRound4 = userSigner.handleIncomingMessages({
