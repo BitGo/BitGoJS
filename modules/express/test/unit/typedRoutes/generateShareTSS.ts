@@ -26,7 +26,7 @@ import { BitGo } from 'bitgo';
 import { EddsaUtils, EcdsaUtils } from '@bitgo/sdk-core';
 import { promises as fs } from 'fs';
 import * as fsSync from 'fs';
-import { setupAgent } from '../../lib/testutil';
+import { SIGNER_AUTH_SECRET, setupAgent } from '../../lib/testutil';
 
 describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
   describe('generateShareTSS', function () {
@@ -472,6 +472,7 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
         const result = await agent
           .post(`/api/v2/${coin}/tssshare/commitment`)
           .set('Authorization', 'Bearer test_access_token_12345')
+          .set('X-Auth-Signer', SIGNER_AUTH_SECRET)
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
@@ -550,6 +551,7 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
         const result = await agent
           .post(`/api/v2/${coin}/tssshare/R`)
           .set('Authorization', 'Bearer test_access_token_12345')
+          .set('X-Auth-Signer', SIGNER_AUTH_SECRET)
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
@@ -626,6 +628,7 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
         const result = await agent
           .post(`/api/v2/${coin}/tssshare/G`)
           .set('Authorization', 'Bearer test_access_token_12345')
+          .set('X-Auth-Signer', SIGNER_AUTH_SECRET)
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
@@ -679,6 +682,7 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
         const result = await agent
           .post(`/api/v2/${ecdsaCoin}/tssshare/PaillierModulus`)
           .set('Authorization', 'Bearer test_access_token_12345')
+          .set('X-Auth-Signer', SIGNER_AUTH_SECRET)
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
@@ -755,6 +759,7 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
         const result = await agent
           .post(`/api/v2/${ecdsaCoin}/tssshare/K`)
           .set('Authorization', 'Bearer test_access_token_12345')
+          .set('X-Auth-Signer', SIGNER_AUTH_SECRET)
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
@@ -785,6 +790,7 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
         const result = await agent
           .post(`/api/v2/${coin}/tssshare/commitment`)
           .set('Authorization', 'Bearer test_access_token_12345')
+          .set('X-Auth-Signer', SIGNER_AUTH_SECRET)
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
@@ -802,6 +808,7 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
         const result = await agent
           .post(`/api/v2/${coin}/tssshare/commitment`)
           .set('Authorization', 'Bearer test_access_token_12345')
+          .set('X-Auth-Signer', SIGNER_AUTH_SECRET)
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
@@ -827,11 +834,12 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
         const result = await agent
           .post(`/api/v2/${coin}/tssshare/commitment`)
           .set('Authorization', 'Bearer test_access_token_12345')
+          .set('X-Auth-Signer', SIGNER_AUTH_SECRET)
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
-        // Verify error response - runtime errors return 500
-        assert.strictEqual(result.status, 500);
+        // Verify error response - wallet lookup failures return a uniform 400
+        assert.strictEqual(result.status, 400);
         assert.ok(result.body);
       });
 
@@ -852,11 +860,12 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
         const result = await agent
           .post(`/api/v2/${coin}/tssshare/R`)
           .set('Authorization', 'Bearer test_access_token_12345')
+          .set('X-Auth-Signer', SIGNER_AUTH_SECRET)
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
-        // Verify error response - runtime errors return 500
-        assert.strictEqual(result.status, 500);
+        // Verify error response - wallet lookup failures return a uniform 400
+        assert.strictEqual(result.status, 400);
         assert.ok(result.body);
       });
 
@@ -886,11 +895,12 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
         const result = await agent
           .post(`/api/v2/${coin}/tssshare/commitment`)
           .set('Authorization', 'Bearer test_access_token_12345')
+          .set('X-Auth-Signer', SIGNER_AUTH_SECRET)
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
-        // Verify error response - runtime errors return 500
-        assert.strictEqual(result.status, 500);
+        // Verify error response - wallet lookup failures return a uniform 400
+        assert.strictEqual(result.status, 400);
         assert.ok(result.body);
 
         // Cleanup
@@ -921,11 +931,12 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
         const result = await agent
           .post(`/api/v2/${coin}/tssshare/G`)
           .set('Authorization', 'Bearer test_access_token_12345')
+          .set('X-Auth-Signer', SIGNER_AUTH_SECRET)
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
-        // Verify error response - wrong passphrase returns 401
-        assert.strictEqual(result.status, 401);
+        // Verify error response - wallet lookup failures return a uniform 400
+        assert.strictEqual(result.status, 400);
         assert.ok(result.body);
       });
 
@@ -954,6 +965,7 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
         const result = await agent
           .post(`/api/v2/${coin}/tssshare/commitment`)
           .set('Authorization', 'Bearer test_access_token_12345')
+          .set('X-Auth-Signer', SIGNER_AUTH_SECRET)
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
@@ -987,6 +999,7 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
         const result = await agent
           .post(`/api/v2/${coin}/tssshare/K`)
           .set('Authorization', 'Bearer test_access_token_12345')
+          .set('X-Auth-Signer', SIGNER_AUTH_SECRET)
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
@@ -1020,6 +1033,7 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
         const result = await agent
           .post(`/api/v2/${ecdsaCoin}/tssshare/invalidShareType`)
           .set('Authorization', 'Bearer test_access_token_12345')
+          .set('X-Auth-Signer', SIGNER_AUTH_SECRET)
           .set('Content-Type', 'application/json')
           .send(requestBody);
 

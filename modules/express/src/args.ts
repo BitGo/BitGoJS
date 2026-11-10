@@ -112,6 +112,26 @@ parser.addArgument(['--signerFileSystemPath'], {
   help: 'Local path specifying where an Express signer machine keeps encrypted user private keys.',
 });
 
+parser.addArgument(['--signerauthsecret'], {
+  help: 'Shared secret used to authenticate requests to a signer-mode instance. Required when signerMode or externalSignerUrl is set.',
+});
+
+parser.addArgument(['--sslca'], {
+  help: 'Path to a CA certificate for TLS client authentication. Required when signerMode listens on external interfaces.',
+});
+
+parser.addArgument(['--signerclientkey'], {
+  help: 'Path to the PEM key presented to a signer-mode instance for TLS client authentication. Use together with --signerclientcert on an instance configured with --externalSignerUrl.',
+});
+
+parser.addArgument(['--signerclientcert'], {
+  help: 'Path to the PEM certificate presented to a signer-mode instance for TLS client authentication. Use together with --signerclientkey.',
+});
+
+parser.addArgument(['--signerclientca'], {
+  help: "Path to the CA certificate that a signer-mode instance's server certificate is verified against.",
+});
+
 parser.addArgument(['--lightningSignerFileSystemPath'], {
   help: 'Local path specifying where an Express machine keeps lightning signer urls.',
 });

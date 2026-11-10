@@ -18,6 +18,7 @@ describe('Custom signing function', () => {
       debug: true,
       env: 'test',
       externalSignerUrl,
+      signerAuthSecret: 'integrationtestsignerauthsecret',
       timeout: 60000,
     };
 

@@ -49,6 +49,11 @@ export interface Config {
   externalSignerUrl?: string;
   signerMode?: boolean;
   signerFileSystemPath?: string;
+  signerAuthSecret?: string;
+  sslCa?: string;
+  signerClientKeyPath?: string;
+  signerClientCertPath?: string;
+  signerClientCaPath?: string;
   lightningSignerFileSystemPath?: string;
   keepAliveTimeout?: number;
   headersTimeout?: number;
@@ -76,6 +81,11 @@ export const ArgConfig = (args): Partial<Config> => ({
   externalSignerUrl: args.externalSignerUrl,
   signerMode: args.signerMode,
   signerFileSystemPath: args.signerFileSystemPath,
+  signerAuthSecret: args.signerauthsecret,
+  sslCa: args.sslca,
+  signerClientKeyPath: args.signerclientkey,
+  signerClientCertPath: args.signerclientcert,
+  signerClientCaPath: args.signerclientca,
   lightningSignerFileSystemPath: args.lightningSignerFileSystemPath,
   keepAliveTimeout: args.keepalivetimeout,
   headersTimeout: args.headerstimeout,
@@ -103,6 +113,11 @@ export const EnvConfig = (): Partial<Config> => ({
   externalSignerUrl: readEnvVar('BITGO_EXTERNAL_SIGNER_URL'),
   signerMode: readEnvVar('BITGO_SIGNER_MODE') ? true : undefined,
   signerFileSystemPath: readEnvVar('BITGO_SIGNER_FILE_SYSTEM_PATH'),
+  signerAuthSecret: readEnvVar('BITGO_SIGNER_AUTH_SECRET'),
+  sslCa: readEnvVar('BITGO_SSL_CA'),
+  signerClientKeyPath: readEnvVar('BITGO_SIGNER_CLIENT_KEY'),
+  signerClientCertPath: readEnvVar('BITGO_SIGNER_CLIENT_CERT'),
+  signerClientCaPath: readEnvVar('BITGO_SIGNER_CLIENT_CA'),
   lightningSignerFileSystemPath: readEnvVar('BITGO_LIGHTNING_SIGNER_FILE_SYSTEM_PATH'),
   keepAliveTimeout: Number(readEnvVar('BITGO_KEEP_ALIVE_TIMEOUT')),
   headersTimeout: Number(readEnvVar('BITGO_HEADERS_TIMEOUT')),
@@ -191,6 +206,11 @@ function mergeConfigs(...configs: Partial<Config>[]): Config {
     externalSignerUrl,
     signerMode: get('signerMode'),
     signerFileSystemPath: get('signerFileSystemPath'),
+    signerAuthSecret: get('signerAuthSecret'),
+    sslCa: get('sslCa'),
+    signerClientKeyPath: get('signerClientKeyPath'),
+    signerClientCertPath: get('signerClientCertPath'),
+    signerClientCaPath: get('signerClientCaPath'),
     lightningSignerFileSystemPath: get('lightningSignerFileSystemPath'),
     keepAliveTimeout: get('keepAliveTimeout'),
     headersTimeout: get('headersTimeout'),

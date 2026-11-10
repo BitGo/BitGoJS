@@ -475,8 +475,10 @@ describe('Bitgo Express', function () {
 
       const args: any = {
         env: 'test',
+        bind: 'localhost',
         signerMode: 'signerMode',
         signerFileSystemPath: 'signerFileSystemPath',
+        signerAuthSecret: 'signerauthsecret0123',
       };
 
       app(args);
@@ -505,6 +507,8 @@ describe('Bitgo Express', function () {
 
       const readFileStub = sinon.stub(fs, 'readFileSync').returns(validPrvJSON);
       args.signerMode = 'signerMode';
+      args.signerAuthSecret = 'signerauthsecret0123';
+      args.bind = 'localhost';
       (() => expressApp(args)).should.not.throw();
 
       readFileStub.restore();
@@ -522,6 +526,7 @@ describe('Bitgo Express', function () {
       });
 
       args.signerMode = undefined;
+      args.signerAuthSecret = 'signerauthsecret0123';
       (() => expressApp(args)).should.not.throw();
     });
 
@@ -547,8 +552,10 @@ describe('Bitgo Express', function () {
     it('should require that an signerFileSystemPath contains a parsable json', function () {
       const args: any = {
         env: 'test',
+        bind: 'localhost',
         signerMode: 'signerMode',
         signerFileSystemPath: 'invalidSignerFileSystemPath',
+        signerAuthSecret: 'signerauthsecret0123',
       };
       (() => expressApp(args)).should.throw();
 
@@ -560,6 +567,154 @@ describe('Bitgo Express', function () {
       const readValidStub = sinon.stub(fs, 'readFileSync').returns(validPrvJSON);
       (() => expressApp(args)).should.not.throw();
       readValidStub.restore();
+    });
+
+    it('should require a signer auth secret when running in signer mode', function () {
+      const readFileStub = sinon.stub(fs, 'readFileSync').returns(validPrvJSON);
+      const args: any = {
+        env: 'test',
+        bind: 'localhost',
+        signerMode: 'signerMode',
+        signerFileSystemPath: 'signerFileSystemPath',
+      };
+
+      (() => expressApp(args)).should.throw({
+        name: 'ExternalSignerConfigError',
+        message:
+          'signerMode requires a signer auth secret of at least 16 printable non-whitespace ASCII characters ' +
+          '(--signerauthsecret / BITGO_SIGNER_AUTH_SECRET).',
+      });
+
+      args.signerAuthSecret = 'short';
+      (() => expressApp(args)).should.throw({
+        name: 'ExternalSignerConfigError',
+        message:
+          'signerMode requires a signer auth secret of at least 16 printable non-whitespace ASCII characters ' +
+          '(--signerauthsecret / BITGO_SIGNER_AUTH_SECRET).',
+      });
+
+      // the secret must survive HTTP header transport on both sides: a newline
+      // makes Node refuse to send the header, and whitespace is stripped by
+      // header parsing, so every request would fail authentication at runtime
+      for (const invalidSecret of [
+        'signerauthsecret0123\n',
+        ' signerauthsecret0123',
+        'signerauthsecret0123 ',
+        'signer auth secret 0123',
+        'signerauthsecret\u00e90123',
+        'signerauthsecret0123\u007f',
+      ]) {
+        args.signerAuthSecret = invalidSecret;
+        (() => expressApp(args)).should.throw({ name: 'ExternalSignerConfigError' });
+      }
+
+      args.signerAuthSecret = 'signerauthsecret0123';
+      (() => expressApp(args)).should.not.throw();
+
+      readFileStub.restore();
+    });
+
+    it('should require a signer auth secret when using an external signer', function () {
+      const args: any = {
+        env: 'test',
+        externalSignerUrl: 'https://external-signer.example',
+      };
+
+      (() => expressApp(args)).should.throw({
+        name: 'ExternalSignerConfigError',
+        message:
+          'externalSignerUrl requires a signer auth secret of at least 16 printable non-whitespace ASCII characters ' +
+          '(--signerauthsecret / BITGO_SIGNER_AUTH_SECRET) so requests to the signer can be authenticated.',
+      });
+
+      args.signerAuthSecret = 'signerauthsecret0123';
+      (() => expressApp(args)).should.not.throw();
+    });
+
+    it('should refuse signer mode on external interfaces without TLS client authentication, regardless of env', function () {
+      const readFileStub = sinon.stub(fs, 'readFileSync').returns(validPrvJSON);
+      const args: any = {
+        env: 'test',
+        bind: '0.0.0.0',
+        signerMode: 'signerMode',
+        signerFileSystemPath: 'signerFileSystemPath',
+        signerAuthSecret: 'signerauthsecret0123',
+      };
+
+      (() => expressApp(args)).should.throw({
+        name: 'TlsConfigurationError',
+        message:
+          'signerMode listening on external interfaces requires TLS with client authentication: ' +
+          'configure --sslca together with --keypath/--crtpath (or --sslkey/--sslcert), ' +
+          'or bind to localhost (--bind localhost) or an IPC socket (--ipc).',
+      });
+
+      // Server-only TLS (no client CA) is not enough
+      args.sslKey = 'ssl-key';
+      args.sslCert = 'ssl-cert';
+      (() => expressApp(args)).should.throw({ name: 'TlsConfigurationError' });
+
+      // TLS client authentication satisfies the gate, even in a non-prod env
+      args.sslCa = 'sslca';
+      (() => expressApp(args)).should.not.throw();
+
+      // Loopback and IPC listeners are fine without TLS
+      args.sslCa = undefined;
+      args.sslKey = undefined;
+      args.sslCert = undefined;
+      args.bind = 'localhost';
+      (() => expressApp(args)).should.not.throw();
+
+      args.bind = '0.0.0.0';
+      args.ipc = 'expressIPC';
+      (() => expressApp(args)).should.not.throw();
+
+      readFileStub.restore();
+    });
+
+    it('should refuse sslCa without TLS server material', function () {
+      const args: any = {
+        env: 'test',
+        bind: 'localhost',
+        signerMode: 'signerMode',
+        signerFileSystemPath: 'signerFileSystemPath',
+        signerAuthSecret: 'signerauthsecret0123',
+        sslCa: 'sslca',
+      };
+
+      (() => expressApp(args)).should.throw({
+        name: 'TlsConfigurationError',
+        message: 'sslCa requires TLS to be enabled (--keypath/--crtpath or --sslkey/--sslcert).',
+      });
+    });
+
+    it('should require signerclientkey and signerclientcert together', function () {
+      const args: any = {
+        env: 'test',
+        signerClientKeyPath: 'client-key.pem',
+      };
+
+      (() => expressApp(args)).should.throw({
+        name: 'TlsConfigurationError',
+        message: 'signerclientkey and signerclientcert must be provided together for TLS client authentication.',
+      });
+
+      args.signerClientKeyPath = undefined;
+      args.signerClientCertPath = 'client-cert.pem';
+      (() => expressApp(args)).should.throw({ name: 'TlsConfigurationError' });
+    });
+
+    it('should require signer client TLS files to be readable', function () {
+      const args: any = {
+        env: 'test',
+        signerClientKeyPath: '/nonexistent/client-key.pem',
+        signerClientCertPath: '/nonexistent/client-cert.pem',
+      };
+
+      (() => expressApp(args)).should.throw({
+        name: 'TlsConfigurationError',
+        message: 'Failed to read signerclientkey file at /nonexistent/client-key.pem',
+      });
     });
 
     it('should require that an lightningSignerFileSystemPath contains a parsable json', function () {

@@ -207,18 +207,8 @@ describe('With the handler to sign an arbitrary payload in external signing mode
     signMessageStub.restore();
   });
 
-  it('should use wallet passphrase from request body', async () => {
-    const stubbedSignature = Buffer.from('mysign');
+  it('should ignore a wallet passphrase supplied in the request body', async () => {
     const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(validPrv);
-
-    const signMessageStub = sinon.stub(Coin.Ofc.prototype, 'signMessage').resolves(stubbedSignature);
-
-    const stubbedSigHex = stubbedSignature.toString('hex');
-
-    const expectedResponse = {
-      payload: JSON.stringify(payload),
-      signature: stubbedSigHex,
-    };
 
     const req = {
       bitgo,
@@ -237,18 +227,14 @@ describe('With the handler to sign an arbitrary payload in external signing mode
       },
     } as unknown as ExpressApiRouteRequest<'express.v2.ofc.extSignPayload', 'post'>;
 
-    await handleV2OFCSignPayloadInExtSigningMode(req).should.be.resolvedWith(expectedResponse);
-    readFileStub.should.be.calledOnceWith('signerFileSystemPath');
-    signMessageStub.should.be.calledOnceWith(
-      sinon.match({
-        prv: secret,
-      })
-    );
+    // no WALLET_<walletId>_PASSPHRASE in env: the body passphrase must not be
+    // used as a fallback, and the response must not reveal the cause
+    await handleV2OFCSignPayloadInExtSigningMode(req).should.be.rejectedWith('unable to sign for the specified wallet');
+    sinon.assert.notCalled(readFileStub);
     readFileStub.restore();
-    signMessageStub.restore();
   });
 
-  it('should prioritize request body passphrase over environment variable', async () => {
+  it('should use the environment passphrase and ignore a different passphrase in the request body', async () => {
     const stubbedSignature = Buffer.from('mysign');
     const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(validPrv);
     const envStub = sinon.stub(process, 'env').value({ [`WALLET_${walletId}_PASSPHRASE`]: walletPassword });
@@ -261,17 +247,18 @@ describe('With the handler to sign an arbitrary payload in external signing mode
       payload: JSON.stringify(payload),
       signature: stubbedSigHex,
     };
+
     const req = {
       bitgo,
       body: {
         walletId,
         payload,
-        walletPassphrase: walletPassword,
+        walletPassphrase: 'not-the-real-passphrase',
       },
       decoded: {
         walletId,
         payload,
-        walletPassphrase: walletPassword,
+        walletPassphrase: 'not-the-real-passphrase',
       },
       config: {
         signerFileSystemPath: 'signerFileSystemPath',
@@ -293,7 +280,7 @@ describe('With the handler to sign an arbitrary payload in external signing mode
   describe('With invalid setup', () => {
     const invalidPrv = JSON.stringify({ [walletId]: 'invalid' });
 
-    it('should throw an error with missing wallet passphrase in env', async () => {
+    it('should throw a uniform error with missing wallet passphrase in env', async () => {
       const req = {
         bitgo,
         body: {
@@ -304,10 +291,13 @@ describe('With the handler to sign an arbitrary payload in external signing mode
           walletId,
           payload,
         },
+        config: {
+          signerFileSystemPath: 'signerFileSystemPath',
+        },
       } as unknown as ExpressApiRouteRequest<'express.v2.ofc.extSignPayload', 'post'>;
 
       await handleV2OFCSignPayloadInExtSigningMode(req).should.be.rejectedWith(
-        `Could not find wallet passphrase WALLET_${walletId}_PASSPHRASE in environment`
+        'unable to sign for the specified wallet'
       );
     });
 
@@ -335,7 +325,7 @@ describe('With the handler to sign an arbitrary payload in external signing mode
       envStub.restore();
     });
 
-    it('should throw error when trying to decrypt with invalid private key', async () => {
+    it('should throw a uniform error when trying to decrypt with invalid private key', async () => {
       const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(invalidPrv);
       const envStub = sinon.stub(process, 'env').value({ [`WALLET_${walletId}_PASSPHRASE`]: walletPassword });
 
@@ -355,14 +345,14 @@ describe('With the handler to sign an arbitrary payload in external signing mode
       } as unknown as ExpressApiRouteRequest<'express.v2.ofc.extSignPayload', 'post'>;
 
       await handleV2OFCSignPayloadInExtSigningMode(req).should.be.rejectedWith(
-        'Error when trying to decrypt private key: decrypt: ciphertext is not valid JSON'
+        'unable to sign for the specified wallet'
       );
 
       readFileStub.restore();
       envStub.restore();
     });
 
-    it('should throw error when trying to decrypt with invalid wallet passphrase key', async () => {
+    it('should throw a uniform error when the env wallet passphrase is wrong', async () => {
       const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(validPrv);
       const envStub = sinon.stub(process, 'env').value({ [`WALLET_${walletId}_PASSPHRASE`]: 'invalidPassphrase' });
 
@@ -382,14 +372,14 @@ describe('With the handler to sign an arbitrary payload in external signing mode
       } as unknown as ExpressApiRouteRequest<'express.v2.ofc.extSignPayload', 'post'>;
 
       await handleV2OFCSignPayloadInExtSigningMode(req).should.be.rejectedWith(
-        'unable to decrypt keychain with the given wallet passphrase'
+        'unable to sign for the specified wallet'
       );
 
       readFileStub.restore();
       envStub.restore();
     });
 
-    it('should throw error when trying to decrypt with invalid wallet passphrase in body', async () => {
+    it('should throw a uniform error when the request body supplies a wallet passphrase', async () => {
       const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(validPrv);
 
       const req = {
@@ -410,7 +400,7 @@ describe('With the handler to sign an arbitrary payload in external signing mode
       } as unknown as ExpressApiRouteRequest<'express.v2.ofc.extSignPayload', 'post'>;
 
       await handleV2OFCSignPayloadInExtSigningMode(req).should.be.rejectedWith(
-        'unable to decrypt keychain with the given wallet passphrase'
+        'unable to sign for the specified wallet'
       );
 
       readFileStub.restore();
