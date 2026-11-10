@@ -124,6 +124,17 @@ export const MULTI_SIG_SIGNED_TRANSACTION =
   '808000000004012fe507c09dbb23c3b7e5d166c81fc4b87692510b000000000000000000000000000000b400000003020123d6d3d22d2ca1b7310f5c45314d1e783c03193e1bb5e08685fc1a48f8bdac7c0d93a463efee18b9b41fffe38d4b4c7475809a37c0fd53f52cef456a8d9280db020010b311f82b1b111eb5efa16c4790687b16dc92b7b4d07a1f0f1fe65baee43eb02ede226f807a097237e7d0ee3aa4fdf9b6287dd23d819ec560df180875f4019a00038e3c4529395611be9abf6fa3b6987e81d402385e3d605a073f42f407565a4a3d000203020000000000051a1ae3f911d8f1d46d7416bfbe4b593fd41eac19cb00000000000003e874657374206d656d6f00000000000000000000000000000000000000000000000000';
 
 // v2-generated (@stacks/transactions 2.0.1) 2-of-3 multisig transfer from UNCOMPRESSED pubkeys.
+//
+// Regenerate in a scratch dir with the old SDK:
+//   npm i @stacks/transactions@2.0.1 @stacks/network@4.3.0
+//   const U = [prv1, prv2, prv3].map((prv) => new KeyPair({ prv }).getKeys().pub); // 130-hex, uncompressed
+//   const opts = {
+//     recipient: 'STDE7Y8HV3RX8VBM2TZVWJTS7ZA1XB0SSC3NEVH0', amount: '1000', fee: '180', nonce: '0',
+//     network: new StacksTestnet(), publicKeys: U, numSignatures: 2,
+//   };
+//   unsigned: makeUnsignedSTXTokenTransfer(opts); appendOrigin(U[0]); appendOrigin(U[1]); appendOrigin(U[2])
+//   signed:   makeUnsignedSTXTokenTransfer(opts); signOrigin(prv1); signOrigin(prv2); appendOrigin(U[2])
+//   hex = tx.serialize().toString('hex')
 export const UNCOMPRESSED_MULTISIG_UNSIGNED_TRANSFER =
   '80800000000401cb97b1dfe00ed612c19b8131cd8678e51f144e96000000000000000000000000000000b4000000030102b087ca52f40fdfdf4b16a0bbf7e91e4db2e183ac5c6491a5f60a5450e25de7d001024abddd63b56c55cd1ed0803c26c473f5f0b9d8473b37b65bd812f035365f154b01038e3c4529395611be9abf6fa3b6987e81d402385e3d605a073f42f407565a4a3d000203020000000000051a1ae3f911d8f1d46d7416bfbe4b593fd41eac19cb00000000000003e800000000000000000000000000000000000000000000000000000000000000000000';
 export const UNCOMPRESSED_MULTISIG_SIGNED_TRANSFER =
