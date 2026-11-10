@@ -7,7 +7,13 @@ import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes, hexToBigInt, minModulu
 import { bip32 } from '@bitgo/utxo-lib';
 
 import { ECDSA, Ecdsa } from '../../../../account-lib/mpc/tss';
-import { AddKeychainOptions, Keychain, KeyType, WebauthnKeyEncryptionInfo } from '../../../keychain';
+import {
+  AddKeychainOptions,
+  EcdhDerivedKeypair,
+  Keychain,
+  KeyType,
+  WebauthnKeyEncryptionInfo,
+} from '../../../keychain';
 import ECDSAMethods, { ECDSAMethodTypes } from '../../../tss/ecdsa';
 import { KeychainsTriplet } from '../../../baseCoin';
 import {
@@ -1134,6 +1140,75 @@ export class EcdsaUtils extends BaseEcdsaUtils {
   }
 
   /**
+   * Derives the ECDH public key from the decrypted ECDH xprv.
+   * Use this, never a server-supplied `derivedPubKey`, when the key is the trust anchor for a signature check.
+   * @param ecdhKeypair - keypair whose xprv was decrypted locally with the user's password
+   */
+  static getEcdhPubKeyFromXprv(ecdhKeypair: Pick<EcdhDerivedKeypair, 'xprv' | 'derivationPath'>): Buffer {
+    return bip32.fromBase58(ecdhKeypair.xprv).derivePath(ecdhKeypair.derivationPath).publicKey;
+  }
+
+  /**
+   * Returns true iff `challenge.verifiers.adminSignature` is a valid signature over the challenge
+   * by the given ECDH keypair. The verifying pubkey is derived from the xprv.
+   * @param challenge - challenge with the stored admin signature
+   * @param ecdhKeypair - expected signer
+   */
+  static isChallengeSignedByEcdhKeypair(
+    challenge: EcdsaTypes.SerializedNtilde & { verifiers?: { adminSignature?: string } },
+    ecdhKeypair: Pick<EcdhDerivedKeypair, 'xprv' | 'derivationPath'>
+  ): boolean {
+    const adminSignature = challenge.verifiers?.adminSignature;
+    if (typeof adminSignature !== 'string' || adminSignature.length === 0) {
+      return false;
+    }
+    return verifyEcdhSignature(
+      this.getMessageToSignFromChallenge(challenge),
+      adminSignature,
+      this.getEcdhPubKeyFromXprv(ecdhKeypair)
+    );
+  }
+
+  /**
+   * Verifies an existing enterprise challenge before the admin's ECDH key re-signs it.
+   * Throws unless:
+   * 1. the stored admin signature was made by this admin's own ECDH key (provenance),
+   * 2. the challenge is not one of BitGo's current HSM challenges (whose trapdoor BitGo knows),
+   * 3. both ntilde discrete-log proofs verify (well-formedness; rejects degenerate h1/h2).
+   * @param challenge - existing enterprise challenge as served by BitGo
+   * @param ecdhKeypair - the admin's locally decrypted ECDH keypair
+   * @param bitgoChallenges - BitGo's current HSM challenges
+   */
+  static async verifyEnterpriseChallengeForResign(
+    challenge: EcdsaTypes.SerializedNtildeWithProofs & { verifiers?: { adminSignature?: string } },
+    ecdhKeypair: Pick<EcdhDerivedKeypair, 'xprv' | 'derivationPath'>,
+    bitgoChallenges: GetBitGoChallengesApi
+  ): Promise<void> {
+    if (!this.isChallengeSignedByEcdhKeypair(challenge, ecdhKeypair)) {
+      throw new Error(
+        'Cannot re-sign. The existing enterprise ECDSA challenge was not signed by your ECDH key. Generate a new challenge instead.'
+      );
+    }
+    const ntilde = hexToBigInt(challenge.ntilde);
+    if (
+      hexToBigInt(bitgoChallenges.bitgoInstitutionalHsm.ntilde) === ntilde ||
+      hexToBigInt(bitgoChallenges.bitgoNitroHsm.ntilde) === ntilde
+    ) {
+      throw new Error('Cannot re-sign. The existing enterprise ECDSA challenge matches a BitGo HSM challenge.');
+    }
+    let proofsValid: boolean;
+    try {
+      proofsValid = !!challenge.ntildeProof && (await this.verifyBitGoChallenge(challenge));
+    } catch (e) {
+      // malformed hex in the proof makes deserialization throw
+      proofsValid = false;
+    }
+    if (!proofsValid) {
+      throw new Error('Cannot re-sign. The existing enterprise ECDSA challenge has invalid ntilde proofs.');
+    }
+  }
+
+  /**
    Verifies ZK proofs of BitGo's challenges for both nitro and institutional HSMs
    which are fetched from the WP API.
    */
@@ -1272,7 +1347,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
    * @param userPassword - enterprise admin's login pw
    * @param bitgoInstChallengeProofSignature - signature on bitgo's institutional HSM challenge after verification
    * @param bitgoNitroChallengeProofSignature - signature on bitgo's nitro HSM challenge after verification
-   * @param challenge - optionally use the challenge for enterprise challenge
+   * @param challenge - optional enterprise challenge generated locally by the caller (e.g. EcdsaRangeProof.generateNtilde). It is signed WITHOUT verification; never pass a challenge fetched from BitGo. To re-sign the enterprise's existing challenge use Enterprise.resignTssEcdsaChallenge.
    */
   static async initiateChallengesForEnterprise(
     bitgo: BitGoBase,
