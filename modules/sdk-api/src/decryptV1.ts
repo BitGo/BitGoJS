@@ -1,12 +1,20 @@
-import { base64String, boundedInt, decodeWithCodec, LEGACY_V1_MAX_ITER } from '@bitgo/sdk-core';
-import { createDecipheriv, pbkdf2 } from 'crypto';
+import * as sjcl from '@bitgo/sjcl';
+import {
+  assertSafeLegacyV1Envelope,
+  base64String,
+  boundedInt,
+  decodeWithCodec,
+  LEGACY_V1_MAX_ITER,
+} from '@bitgo/sdk-core';
 import * as t from 'io-ts';
-import { promisify } from 'util';
 
 /**
  * Upper bound on PBKDF2 iterations accepted from a v1 envelope. BitGo-produced
- * v1 envelopes use 10,000; this cap is 10x that. Envelope validation enforces
- * it up front before any KDF work runs.
+ * v1 envelopes use 10,000; this cap is 10x that. The v1 decrypt path enforces
+ * it before handing the envelope to SJCL, which has no upper bound of its own.
+ *
+ * @deprecated Kept exported for compatibility only. Callers should use
+ * `decrypt` or `decryptV1WithSjcl` instead of enforcing the cap themselves.
  */
 export const V1_MAX_ITER = LEGACY_V1_MAX_ITER;
 
@@ -34,6 +42,11 @@ const V1EnvelopeCodec = t.intersection([
 
 export type V1Envelope = t.TypeOf<typeof V1EnvelopeCodec>;
 
+/**
+ * @deprecated Kept exported for compatibility only. The v1 decrypt path no
+ * longer uses this strict codec: it rejects envelope shapes (such as a missing
+ * `v` field) that SJCL's own decoder still accepts. Use `decryptV1WithSjcl`.
+ */
 export function parseV1Envelope(ciphertext: string): V1Envelope {
   let parsed: unknown;
   try {
@@ -45,49 +58,22 @@ export function parseV1Envelope(ciphertext: string): V1Envelope {
 }
 
 /**
- * CCM length field size L, in bytes, chosen to encode the plaintext length.
+ * Decrypt a v1 (SJCL PBKDF2-SHA256 + AES-CCM) envelope.
  *
- * SJCL picks the smallest L in [2, 4) that can represent the plaintext length,
- * then derives the nonce length as (15 - L). We mirror that so Node's CCM
- * uses the same nonce framing as the SJCL encoder produced.
+ * The single v1 decrypt engine on every runtime (Node, browser, worker):
+ * `assertSafeLegacyV1Envelope` screens the envelope, then SJCL's own decoder
+ * handles it, accepting every historical shape including envelopes without
+ * a `v` field.
  */
-function ccmNonceLength(plaintextLen: number): number {
-  let L = 2;
-  while (L < 4 && plaintextLen >= Math.pow(2, 8 * L)) L++;
-  return 15 - L;
+export async function decryptV1WithSjcl(password: string, ciphertext: string): Promise<string> {
+  assertSafeLegacyV1Envelope(ciphertext);
+  return sjcl.decrypt(password, ciphertext);
 }
 
 /**
- * Decrypt a v1 (SJCL PBKDF2-SHA256 + AES-CCM) envelope with Node's native
- * `node:crypto`.
- *
- * Node runtimes only: the `crypto` webpack substitutes in browser bundles
- * (`crypto-browserify`) has no working AES-CCM, so `decryptV1WithFallback`
- * routes browser runtimes straight to the frozen SJCL decoder instead of
- * ever calling this.
+ * @deprecated Kept exported for compatibility only. Equivalent to
+ * `decryptV1WithSjcl`; prefer `decrypt`, which auto-detects v1/v2 envelopes.
  */
 export async function decryptV1(password: string, ciphertext: string): Promise<string> {
-  const env = parseV1Envelope(ciphertext);
-  const salt = Buffer.from(env.salt, 'base64');
-  const ivFull = Buffer.from(env.iv, 'base64');
-  const full = Buffer.from(env.ct, 'base64');
-  const tagBytes = env.ts / 8;
-  if (full.length < tagBytes) throw new Error('v1 decrypt: ciphertext shorter than tag');
-
-  const cipher = full.subarray(0, full.length - tagBytes);
-  const authTag = full.subarray(full.length - tagBytes);
-  const nonceLen = ccmNonceLength(cipher.length);
-  if (ivFull.length < nonceLen) throw new Error('v1 decrypt: iv shorter than nonce');
-  const iv = ivFull.subarray(0, nonceLen);
-
-  const keyBytes = env.ks / 8;
-  const key: Buffer = await promisify(pbkdf2)(password, salt, env.iter, keyBytes, 'sha256');
-
-  const decipher = createDecipheriv(`aes-${env.ks}-ccm`, key, iv, { authTagLength: tagBytes });
-  decipher.setAuthTag(authTag);
-  const aad = env.adata ? Buffer.from(env.adata, 'utf8') : Buffer.alloc(0);
-  decipher.setAAD(aad, { plaintextLength: cipher.length });
-
-  const pt = Buffer.concat([decipher.update(cipher), decipher.final()]);
-  return pt.toString('utf8');
+  return decryptV1WithSjcl(password, ciphertext);
 }

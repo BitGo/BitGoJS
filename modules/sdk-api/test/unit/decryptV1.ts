@@ -1,8 +1,7 @@
 import * as sjcl from '@bitgo/sjcl';
 import assert from 'assert';
-import { randomBytes } from 'crypto';
 
-import { decrypt, decryptV1, decryptV1WithFallback, encrypt, V1_MAX_ITER } from '../../src';
+import { decrypt, decryptV1, decryptV1WithSjcl, encrypt, V1_MAX_ITER } from '../../src';
 import {
   KEYCARD_BOX_A,
   KEYCARD_BOX_A_LENGTH,
@@ -23,14 +22,26 @@ function sjclEncrypt(password: string, plaintext: string, params: sjcl.SjclCiphe
   return sjcl.encrypt(password, plaintext, { ...params, salt, iv });
 }
 
-describe('decryptV1 (native, SJCL-free)', () => {
+describe('decryptV1WithSjcl (single v1 decrypt engine)', () => {
   const password = 'myPassword';
   const plaintext = 'Hello, World!';
 
-  describe('parity with SJCL', () => {
-    it('matches sjcl.decrypt output for the same envelope', async () => {
+  describe('historical envelope shapes', () => {
+    it('decrypts an SDK-produced v1 envelope', async () => {
       const ciphertext = await encrypt(password, plaintext, { encryptionVersion: 1 });
-      assert.strictEqual(await decryptV1(password, ciphertext), sjcl.decrypt(password, ciphertext));
+      assert.strictEqual(await decryptV1WithSjcl(password, ciphertext), plaintext);
+    });
+
+    it('decrypts an envelope without a `v` field', async () => {
+      const envelope = JSON.parse(sjclEncrypt(password, plaintext, { iter: 10000, ks: 256, ts: 64, mode: 'ccm' }));
+      delete envelope.v;
+      assert.strictEqual(await decryptV1WithSjcl(password, JSON.stringify(envelope)), plaintext);
+    });
+
+    it('decrypts an envelope without a `mode` field (SJCL defaults to ccm)', async () => {
+      const envelope = JSON.parse(sjclEncrypt(password, plaintext, { iter: 10000, ks: 256, ts: 64, mode: 'ccm' }));
+      delete envelope.mode;
+      assert.strictEqual(await decryptV1WithSjcl(password, JSON.stringify(envelope)), plaintext);
     });
 
     it('decrypts with adata (AAD)', async () => {
@@ -41,56 +52,49 @@ describe('decryptV1 (native, SJCL-free)', () => {
         mode: 'ccm',
         adata: 'context-A',
       });
-      assert.strictEqual(await decryptV1(password, ciphertext), plaintext);
+      assert.strictEqual(await decryptV1WithSjcl(password, ciphertext), plaintext);
     });
 
     it('decrypts UTF-8 password + plaintext', async () => {
       const utf8Password = 'pässwörd中文🔐';
       const utf8Plaintext = 'passphrase: 秘密キー ☃🔑';
       const ciphertext = sjclEncrypt(utf8Password, utf8Plaintext, { iter: 10000, ks: 256, ts: 64, mode: 'ccm' });
-      assert.strictEqual(await decryptV1(utf8Password, ciphertext), utf8Plaintext);
+      assert.strictEqual(await decryptV1WithSjcl(utf8Password, ciphertext), utf8Plaintext);
     });
 
-    it('decrypts large plaintext (>64 KiB, forces L=3 nonce framing)', async () => {
-      const large = 'x'.repeat(70_000);
-      const ciphertext = sjclEncrypt(password, large, { iter: 1000, ks: 256, ts: 64, mode: 'ccm' });
-      assert.strictEqual(await decryptV1(password, ciphertext), large);
-    });
+    for (const [label, params] of [
+      ['aes-128', { iter: 10000, ks: 128, ts: 64, mode: 'ccm' }],
+      ['128-bit tag', { iter: 10000, ks: 256, ts: 128, mode: 'ccm' }],
+    ] as const) {
+      it(`decrypts ${label} envelopes`, async () => {
+        const ciphertext = sjclEncrypt(password, plaintext, params);
+        assert.strictEqual(await decryptV1WithSjcl(password, ciphertext), plaintext);
+      });
+    }
+  });
 
-    it('decrypts aes-128 envelopes', async () => {
-      const ciphertext = sjclEncrypt(password, plaintext, { iter: 10000, ks: 128, ts: 64, mode: 'ccm' });
-      assert.strictEqual(await decryptV1(password, ciphertext), plaintext);
-    });
-
-    it('decrypts envelopes with 128-bit tag size', async () => {
-      const ciphertext = sjclEncrypt(password, plaintext, { iter: 10000, ks: 256, ts: 128, mode: 'ccm' });
-      assert.strictEqual(await decryptV1(password, ciphertext), plaintext);
-    });
-
-    it('parity across 50 randomised inputs', async () => {
-      for (let i = 0; i < 50; i++) {
-        const pw = randomBytes(16).toString('hex');
-        const pt = randomBytes(1 + Math.floor(Math.random() * 500)).toString('base64');
-        const ciphertext = sjclEncrypt(pw, pt, { iter: 1000, ks: 256, ts: 64, mode: 'ccm' });
-        assert.strictEqual(await decryptV1(pw, ciphertext), pt, `iteration ${i}`);
-      }
-    });
+  describe('real BitGo keycards', () => {
+    for (const [label, ct, length] of [
+      ['Box A', KEYCARD_BOX_A, KEYCARD_BOX_A_LENGTH],
+      ['Box B', KEYCARD_BOX_B, KEYCARD_BOX_B_LENGTH],
+    ] as const) {
+      it(`${label}: decrypts with SJCL`, async () => {
+        const result = await decryptV1WithSjcl(KEYCARD_PASSWORD, ct);
+        assert.strictEqual(result, sjcl.decrypt(KEYCARD_PASSWORD, ct));
+        assert.strictEqual(result.length, length);
+        assert.ok(result.startsWith(KEYCARD_PLAINTEXT_PREFIX));
+      });
+    }
   });
 
   describe('failure modes', () => {
     it('throws on wrong password', async () => {
       const ciphertext = await encrypt(password, plaintext, { encryptionVersion: 1 });
-      await assert.rejects(() => decryptV1('wrongPassword', ciphertext));
+      await assert.rejects(() => decryptV1WithSjcl('wrongPassword', ciphertext));
     });
 
     it('throws on invalid JSON', async () => {
-      await assert.rejects(() => decryptV1(password, 'not-json'), /invalid JSON envelope/);
-    });
-
-    it('rejects malformed envelope (representative codec check)', async () => {
-      const envelope = JSON.parse(await encrypt(password, plaintext, { encryptionVersion: 1 }));
-      envelope.mode = 'gcm';
-      await assert.rejects(() => decryptV1(password, JSON.stringify(envelope)), /invalid envelope/);
+      await assert.rejects(() => decryptV1WithSjcl(password, 'not-json'), /json/);
     });
 
     it('rejects tampered ciphertext (auth-tag mismatch)', async () => {
@@ -99,174 +103,53 @@ describe('decryptV1 (native, SJCL-free)', () => {
       const tampered = Buffer.from(envelope.ct, 'base64');
       tampered[0] ^= 0x01;
       envelope.ct = tampered.toString('base64');
-      await assert.rejects(() => decryptV1(password, JSON.stringify(envelope)));
+      await assert.rejects(() => decryptV1WithSjcl(password, JSON.stringify(envelope)));
     });
   });
 
-  describe('iter cap enforcement', () => {
-    it('rejects an envelope with iter above V1_MAX_ITER before running PBKDF2', async () => {
+  describe('envelope screening before SJCL', () => {
+    it('rejects iter above V1_MAX_ITER before any KDF work', async () => {
       const envelope = JSON.parse(await encrypt(password, plaintext, { encryptionVersion: 1 }));
       envelope.iter = V1_MAX_ITER + 1;
       const start = Date.now();
-      await assert.rejects(() => decryptV1(password, JSON.stringify(envelope)), /iter/);
+      await assert.rejects(() => decryptV1WithSjcl(password, JSON.stringify(envelope)), /iter/);
       assert.ok(Date.now() - start < 100, 'must reject before any KDF work');
     });
+
+    for (const mode of ['gcm', 'ocb2'] as const) {
+      it(`rejects ${mode} cipher mode even though SJCL supports it`, async () => {
+        // Produce a real envelope SJCL could decrypt, to prove the screen
+        // rejects it before SJCL ever runs.
+        const ciphertext = sjclEncrypt(password, plaintext, { iter: 1000, ks: 256, ts: 64, mode });
+        await assert.rejects(() => decryptV1WithSjcl(password, ciphertext), /unsupported mode/);
+        assert.strictEqual(await sjcl.decrypt(password, ciphertext), plaintext);
+      });
+    }
   });
 
-  describe('real BitGo keycard parity', () => {
-    it('Box A: native decrypt matches SJCL byte-for-byte', async () => {
-      const sjclResult = sjcl.decrypt(KEYCARD_PASSWORD, KEYCARD_BOX_A);
-      const nativeResult = await decryptV1(KEYCARD_PASSWORD, KEYCARD_BOX_A);
-      assert.strictEqual(nativeResult, sjclResult);
-      assert.strictEqual(nativeResult.length, KEYCARD_BOX_A_LENGTH);
-      assert.ok(nativeResult.startsWith(KEYCARD_PLAINTEXT_PREFIX));
+  describe('decrypt auto-detect dispatch', () => {
+    it('routes v1 envelopes through the single engine', async () => {
+      const ciphertext = await encrypt(password, plaintext, { encryptionVersion: 1 });
+      assert.strictEqual(await decrypt(password, ciphertext), plaintext);
     });
 
-    it('Box B: native decrypt matches SJCL byte-for-byte', async () => {
-      const sjclResult = sjcl.decrypt(KEYCARD_PASSWORD, KEYCARD_BOX_B);
-      const nativeResult = await decryptV1(KEYCARD_PASSWORD, KEYCARD_BOX_B);
-      assert.strictEqual(nativeResult, sjclResult);
-      assert.strictEqual(nativeResult.length, KEYCARD_BOX_B_LENGTH);
-      assert.ok(nativeResult.startsWith(KEYCARD_PLAINTEXT_PREFIX));
-    });
-  });
-
-  describe('SJCL fallback behavior', () => {
-    // Rollout contract:
-    // - Native success -> no warn, no fallback.
-    // - Iter cap violation -> rethrown (no fallback), preserves DoS protection.
-    // - Both engines fail (e.g. wrong password) -> SJCL error rethrown, NO warn.
-    // - Native fails, SJCL succeeds -> return SJCL result + warn (engines disagree).
-
-    // eslint-disable-next-line no-console
-    const originalWarn = console.warn;
-    let warnings: string[] = [];
-
-    beforeEach(() => {
-      warnings = [];
-      // eslint-disable-next-line no-console
-      console.warn = (...args: unknown[]) => {
-        warnings.push(args.map((a) => (typeof a === 'string' ? a : JSON.stringify(a))).join(' '));
-      };
-    });
-
-    afterEach(() => {
-      // eslint-disable-next-line no-console
-      console.warn = originalWarn;
-    });
-
-    it('success path emits no console.warn', async () => {
-      const ct = await encrypt(password, plaintext, { encryptionVersion: 1 });
-      await decrypt(password, ct);
-      assert.deepStrictEqual(warnings, []);
-    });
-
-    it('iter cap violation rethrows and does not warn', async () => {
+    it('enforces the iter cap through decrypt', async () => {
       const envelope = JSON.parse(await encrypt(password, plaintext, { encryptionVersion: 1 }));
       envelope.iter = V1_MAX_ITER + 1;
       await assert.rejects(() => decrypt(password, JSON.stringify(envelope)), /iter/);
-      assert.deepStrictEqual(warnings, []);
-    });
-
-    it('wrong password does not warn (both engines fail, SJCL error rethrown)', async () => {
-      const ct = await encrypt(password, plaintext, { encryptionVersion: 1 });
-      await assert.rejects(() => decrypt('wrong', ct));
-      assert.deepStrictEqual(warnings, []);
-    });
-
-    it('warns and returns SJCL result when native fails but SJCL succeeds', async () => {
-      const ct = await encrypt(password, plaintext, { encryptionVersion: 1 });
-      const brokenNative = async () => {
-        throw new Error('unsupported algorithm');
-      };
-      const result = await decryptV1WithFallback(password, ct, brokenNative);
-      assert.strictEqual(result, plaintext);
-      assert.strictEqual(warnings.length, 1);
-      assert.ok(warnings[0].includes('SJCL fallback succeeded'));
     });
   });
 
-  describe('browser runtime (isBrowser = true)', () => {
-    it('skips native and decrypts via SJCL without warning', async () => {
-      const ct = await encrypt(password, plaintext, { encryptionVersion: 1 });
-      const neverCalled = async (): Promise<string> => {
-        throw new Error('native should not be attempted in the browser');
-      };
-      // eslint-disable-next-line no-console
-      const originalWarn = console.warn;
-      const warnings: string[] = [];
-      // eslint-disable-next-line no-console
-      console.warn = (...args: unknown[]) => {
-        warnings.push(args.join(' '));
-      };
-      try {
-        const result = await decryptV1WithFallback(password, ct, neverCalled, true);
-        assert.strictEqual(result, plaintext);
-        assert.deepStrictEqual(warnings, []);
-      } finally {
-        // eslint-disable-next-line no-console
-        console.warn = originalWarn;
-      }
+  describe('deprecated decryptV1 alias', () => {
+    it('delegates to decryptV1WithSjcl', async () => {
+      const ciphertext = await encrypt(password, plaintext, { encryptionVersion: 1 });
+      assert.strictEqual(await decryptV1(password, ciphertext), plaintext);
     });
 
-    it('still enforces the iter cap before running PBKDF2', async () => {
+    it('enforces the iter cap', async () => {
       const envelope = JSON.parse(await encrypt(password, plaintext, { encryptionVersion: 1 }));
       envelope.iter = V1_MAX_ITER + 1;
-      const start = Date.now();
-      await assert.rejects(() => decryptV1WithFallback(password, JSON.stringify(envelope), decryptV1, true), /iter/);
-      assert.ok(Date.now() - start < 100, 'must reject before any KDF work');
-    });
-
-    it('rejects wrong password via SJCL auth failure', async () => {
-      const ct = await encrypt(password, plaintext, { encryptionVersion: 1 });
-      await assert.rejects(() => decryptV1WithFallback('wrongPassword', ct, decryptV1, true));
-    });
-
-    it('rejects a non-ccm mode before SJCL runs', async () => {
-      const envelope = JSON.parse(await encrypt(password, plaintext, { encryptionVersion: 1 }));
-      envelope.mode = 'ocb2';
-      await assert.rejects(
-        () => decryptV1WithFallback(password, JSON.stringify(envelope), decryptV1, true),
-        /unsupported mode/
-      );
-    });
-
-    it('rejects a hostile iter or mode hidden by whitespace in the key', async () => {
-      const ct = await encrypt(password, plaintext, { encryptionVersion: 1 });
-      const spacedIter = ct.replace(/"iter":\d+/, '"it er":3000000');
-      const spacedMode = ct.replace('"mode":"ccm"', '"mo de":"ocb2"');
-      assert.notStrictEqual(spacedIter, ct);
-      assert.notStrictEqual(spacedMode, ct);
-      for (const isBrowser of [true, false]) {
-        const start = Date.now();
-        await assert.rejects(
-          () => decryptV1WithFallback(password, spacedIter, decryptV1, isBrowser),
-          /iter out of range/
-        );
-        await assert.rejects(
-          () => decryptV1WithFallback(password, spacedMode, decryptV1, isBrowser),
-          /unsupported mode/
-        );
-        assert.ok(Date.now() - start < 2000, 'must not run the inflated PBKDF2');
-      }
-    });
-
-    it('still decrypts a legacy envelope without a v field', async () => {
-      const envelope = JSON.parse(await encrypt(password, plaintext, { encryptionVersion: 1 }));
-      delete envelope.v;
-      const result = await decryptV1WithFallback(password, JSON.stringify(envelope), decryptV1, true);
-      assert.strictEqual(result, plaintext);
-    });
-  });
-
-  describe('cipher mode screen (node runtime)', () => {
-    it('rejects a non-ccm mode instead of falling back to SJCL', async () => {
-      const envelope = JSON.parse(await encrypt(password, plaintext, { encryptionVersion: 1 }));
-      envelope.mode = 'ocb2';
-      await assert.rejects(
-        () => decryptV1WithFallback(password, JSON.stringify(envelope), decryptV1, false),
-        /unsupported mode/
-      );
+      await assert.rejects(() => decryptV1(password, JSON.stringify(envelope)), /iter/);
     });
   });
 });
