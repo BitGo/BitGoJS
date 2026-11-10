@@ -1886,7 +1886,63 @@ function redactSensitiveValues(
   ancestors = new WeakSet<Record<string, unknown> | unknown[]>()
 ): unknown {
   if (typeof value === 'string') {
-    return [...sensitiveValues].reduce((redacted, secret) => redacted.split(secret).join('[REDACTED]'), value);
+    if (sensitiveValues.size === 0) {
+      return value;
+    }
+    // Single scan over the input:
+    // - every secret keeps a cached next-match position that only moves
+    //   forward, so each secret scans the string about once and the total
+    //   cost is linear in the input length and the number of secrets, even
+    //   when one secret matches thousands of times while another never does;
+    // - when matches overlap, the union of their ranges is replaced, so no
+    //   part of any matched secret can remain in the output;
+    // - replaced text is never rescanned, so output length stays bounded at
+    //   roughly 11x the input regardless of the number or content of the
+    //   collected secrets. (The previous chained split/join passes re-matched
+    //   the inserted [REDACTED] tokens and grew the output exponentially for
+    //   attacker-chosen values.)
+    const secrets = [...sensitiveValues];
+    const notSearched = -2;
+    const nextMatch = new Array<number>(secrets.length).fill(notSearched);
+    let redacted = '';
+    let fromIndex = 0;
+    while (fromIndex < value.length) {
+      let matchIndex = -1;
+      let matchEnd = -1;
+      for (let i = 0; i < secrets.length; i++) {
+        const cached = nextMatch[i];
+        if (cached !== -1 && (cached === notSearched || cached < fromIndex)) {
+          nextMatch[i] = value.indexOf(secrets[i], fromIndex);
+        }
+        const index = nextMatch[i];
+        if (index !== -1 && (matchIndex === -1 || index < matchIndex)) {
+          matchIndex = index;
+          matchEnd = index + secrets[i].length;
+        }
+      }
+      if (matchIndex === -1) {
+        break;
+      }
+      // extend the replacement over every secret that starts inside the matched
+      // span, so a secret overlapping the chosen match cannot leak its tail
+      let extended = true;
+      while (extended) {
+        extended = false;
+        for (let i = 0; i < secrets.length; i++) {
+          const index = nextMatch[i];
+          if (index !== -1 && index >= matchIndex && index < matchEnd) {
+            const end = index + secrets[i].length;
+            if (end > matchEnd) {
+              matchEnd = end;
+              extended = true;
+            }
+          }
+        }
+      }
+      redacted += `${value.slice(fromIndex, matchIndex)}[REDACTED]`;
+      fromIndex = matchEnd;
+    }
+    return redacted + value.slice(fromIndex);
   }
   if (!isTraversableObject(value)) {
     return value;
@@ -1910,36 +1966,49 @@ function redactSensitiveValues(
 }
 
 function handleRequestHandlerError(res: express.Response, error: unknown, requestBody?: unknown) {
-  let err;
-  if (error instanceof Error) {
-    err = error;
-  } else if (typeof error === 'string') {
-    err = new BitGoExpressError('(string_error) ' + error);
-  } else {
-    err = new BitGoExpressError('(object_error) ' + JSON.stringify(error));
-  }
-
-  const sensitiveValues = collectSensitiveRequestValues(requestBody);
-  const message = (redactSensitiveValues(err.message, sensitiveValues) as string) || 'local error';
-  let result = redactSensitiveValues(err.result || { error: message }, sensitiveValues);
-  result = _.extend({}, result, {
-    message,
-    name: err.name || 'BitGoExpressError',
-    bitgoJsVersion: version,
-    bitgoExpressVersion: pjson.version,
-    ...(err.code ? { code: err.code } : {}),
-  });
-  const status = err.status || 500;
-  if (!(status >= 200 && status < 300)) {
-    console.log('error %s: %s', status, message);
-  }
-  if (status >= 500 && status <= 599) {
-    if (err.response && err.response.request) {
-      console.log(`failed to make ${err.response.request.method} request to ${err.response.request.url}`);
+  try {
+    let err;
+    if (error instanceof Error) {
+      err = error;
+    } else if (typeof error === 'string') {
+      err = new BitGoExpressError('(string_error) ' + error);
+    } else {
+      err = new BitGoExpressError('(object_error) ' + JSON.stringify(error));
     }
-    console.log(redactSensitiveValues(err.stack, sensitiveValues));
+
+    const sensitiveValues = collectSensitiveRequestValues(requestBody);
+    const message = (redactSensitiveValues(err.message, sensitiveValues) as string) || 'local error';
+    let result = redactSensitiveValues(err.result || { error: message }, sensitiveValues);
+    result = _.extend({}, result, {
+      message,
+      name: err.name || 'BitGoExpressError',
+      bitgoJsVersion: version,
+      bitgoExpressVersion: pjson.version,
+      ...(err.code ? { code: err.code } : {}),
+    });
+    const status = err.status || 500;
+    if (!(status >= 200 && status < 300)) {
+      console.log('error %s: %s', status, message);
+    }
+    if (status >= 500 && status <= 599) {
+      if (err.response && err.response.request) {
+        console.log(`failed to make ${err.response.request.method} request to ${err.response.request.url}`);
+      }
+      console.log(redactSensitiveValues(err.stack, sensitiveValues));
+    }
+    res.status(status).send(result);
+  } catch (e) {
+    // Building the error response itself failed (for example redaction or
+    // serialization of a pathological thrown value). Never let this failure
+    // escape: the wrapper's catch block has already run, so an escaped throw
+    // becomes an unobserved rejection and the request hangs until the connect
+    // timeout. Respond generically instead, and log the error name only -
+    // its message may contain unredacted secret content.
+    if (!res.headersSent) {
+      res.status(500).send({ message: 'internal error' });
+    }
+    console.log('error-response construction failed:', e instanceof Error ? e.name : typeof e);
   }
-  res.status(status).send(result);
 }
 
 /**
