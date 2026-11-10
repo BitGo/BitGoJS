@@ -82,23 +82,18 @@ export class Starknet extends BaseCoin {
     const explainedTx = await this.explainTransaction({ transactionHex: txHex });
 
     if (Array.isArray(txParams.recipients) && txParams.recipients.length > 0) {
-      if (txParams.recipients.length > 1) {
-        throw new Error(
-          `${this.getChain()} doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`
-        );
-      }
-
-      if (explainedTx.outputs.length !== 1) {
+      if (explainedTx.outputs.length !== txParams.recipients.length) {
         throw new Error('Tx outputs does not match with expected txParams recipients');
       }
 
-      const output = explainedTx.outputs[0];
-      const recipient = txParams.recipients[0];
-      const normalizedOutput = utils.normalizeAddress(output.address);
-      const normalizedRecipient = utils.normalizeAddress(recipient.address);
-      if (normalizedOutput !== normalizedRecipient || output.amount !== recipient.amount) {
-        throw new Error('Tx outputs does not match with expected txParams recipients');
-      }
+      txParams.recipients.forEach((recipient, index) => {
+        const output = explainedTx.outputs[index];
+        const normalizedOutput = utils.normalizeAddress(output.address);
+        const normalizedRecipient = utils.normalizeAddress(recipient.address);
+        if (normalizedOutput !== normalizedRecipient || output.amount !== recipient.amount) {
+          throw new Error(`Tx output at index ${index} does not match with expected txParams recipient`);
+        }
+      });
     }
     return true;
   }
