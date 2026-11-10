@@ -62,6 +62,7 @@ export {
   getTokenFeatures,
   EVM_TOKEN_FEATURES,
   EVM_TOKEN_FEATURES_NON_EIP1559,
+  STATIC_NETWORK_FEATURE_FAMILIES,
 } from './networkFeatureMapForTokens';
 export {
   generateErc20Coin,
