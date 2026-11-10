@@ -216,6 +216,10 @@ jobs:
     runs-on: ${{ vars.BASE_RUNNER_TYPE || 'ubuntu-latest' }}
     timeout-minutes: 60
     environment: npmjs-release
+    outputs:
+      # The commit this job published from. The express jobs verify the
+      # express git tag still resolves to it before building the image.
+      publish-sha: ${{ steps.capture-publish-sha.outputs.sha }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -300,6 +304,14 @@ jobs:
         if: ${{ inputs.dry-run == false && !inputs.recovery-mode }}
         run: |
           yarn lerna version --sign-git-tag --sign-git-commit --include-merged-tags --conventional-commits --conventional-graduate --yes
+
+      # Recorded for the express tag verification in get-express-release-context.
+      - name: Capture publish SHA
+        id: capture-publish-sha
+        run: |
+          PUBLISH_SHA=$(git rev-parse HEAD)
+          echo "Publish SHA: $PUBLISH_SHA"
+          echo "sha=$PUBLISH_SHA" >> "$GITHUB_OUTPUT"
 
       - name: Publish siblings (pass 1)
         if: inputs.dry-run == false
@@ -453,13 +465,14 @@ jobs:
     outputs:
       version: ${{ steps.compute-express-git-tag.outputs.version }}
       git-tag: ${{ steps.compute-express-git-tag.outputs.git-tag }}
-      git-sha: ${{ steps.compute-express-git-sha.outputs.git-sha }}
+      git-sha: ${{ steps.verify-express-git-tag.outputs.git-sha }}
       docker-exists: ${{ steps.check-docker-image.outputs.docker-exists }}
     steps:
-      - name: Checkout rel/latest branch
+      # Check out the exact commit the release was published from.
+      - name: Checkout release commit
         uses: actions/checkout@v6
         with:
-          ref: rel/latest
+          ref: ${{ needs.release-bitgojs.outputs.publish-sha }}
           fetch-depth: 0
           fetch-tags: true
 
@@ -473,34 +486,43 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "git-tag=$TAG" >> "$GITHUB_OUTPUT"
 
-      - name: Checkout express target git tag
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ steps.compute-express-git-tag.outputs.git-tag }}
-          fetch-depth: 2
-
-      - name: Parse express git SHA
-        id: compute-express-git-sha
+      # The express git tag must resolve to the express version bump commit
+      # (its parent carries a different version) within the published release
+      # history. The Docker build uses this verified tag commit.
+      - name: Verify Express Git Tag
+        id: verify-express-git-tag
         run: |
-          GIT_SHA=$(git rev-parse HEAD)
-          echo "Git SHA: $GIT_SHA"
-          echo "git-sha=$GIT_SHA" >> "$GITHUB_OUTPUT"
+          PUBLISH_SHA="${{ needs.release-bitgojs.outputs.publish-sha }}"
+          TAG="${{ steps.compute-express-git-tag.outputs.git-tag }}"
+          VERSION="${{ steps.compute-express-git-tag.outputs.version }}"
+          # ^{} peels the annotated, GPG-signed tag object down to its commit.
+          TAG_SHA=$(git rev-parse "${TAG}^{}")
+          VERSION_AT_TAG=$(git show "${TAG_SHA}:modules/express/package.json" | jq -r '.version')
 
-      - name: Sanity Check Express Git Tag
-        run: |
-          CURRENT_VERSION="${{ steps.compute-express-git-tag.outputs.version }}"
-          PREVIOUS_VERSION=$(git show HEAD~1:./modules/express/package.json | jq -r '.version')
+          echo "Publish SHA: $PUBLISH_SHA"
+          echo "Tag $TAG resolves to: $TAG_SHA (express version $VERSION_AT_TAG)"
 
-          echo "Current version: $CURRENT_VERSION"
-          echo "Previous version: $PREVIOUS_VERSION"
-
-          if [ "$CURRENT_VERSION" == "$PREVIOUS_VERSION" ]; then
-            echo "::error::Express version bump does not line up with git tag location."
-            echo "::error::This suggests the git tag may have been moved."
+          if [ "$VERSION_AT_TAG" != "$VERSION" ]; then
+            echo "::error::Express git tag $TAG points at $TAG_SHA whose modules/express/package.json version is $VERSION_AT_TAG, not the released $VERSION."
+            echo "::error::The tag may have been moved after the release. Refusing to build the Express Docker image."
             exit 1
           fi
 
-          echo "✅ Express version bump lines up with git tag"
+          VERSION_AT_PARENT=$(git show "${TAG_SHA}^:modules/express/package.json" | jq -r '.version')
+          if [ "$VERSION_AT_PARENT" = "$VERSION_AT_TAG" ]; then
+            echo "::error::Express git tag $TAG points at $TAG_SHA which is not the commit that bumped the express version to $VERSION."
+            echo "::error::The tag may have been moved after the release. Refusing to build the Express Docker image."
+            exit 1
+          fi
+
+          if ! git merge-base --is-ancestor "$TAG_SHA" "$PUBLISH_SHA"; then
+            echo "::error::Express git tag $TAG points at $TAG_SHA which is not part of the published release history (publish SHA $PUBLISH_SHA)."
+            echo "::error::The tag may have been moved after the release. Refusing to build the Express Docker image."
+            exit 1
+          fi
+
+          echo "✅ Express git tag verified; building from the tagged commit"
+          echo "git-sha=$TAG_SHA" >> "$GITHUB_OUTPUT"
 
       - name: Check if Docker image already exists in Docker Hub
         id: check-docker-image
@@ -527,7 +549,8 @@ jobs:
               echo ""
               echo "Express Version: ${{ steps.compute-express-git-tag.outputs.version }}"
               echo "Git Tag: ${{ steps.compute-express-git-tag.outputs.git-tag }}"
-              echo "Commit SHA: ${{ steps.compute-express-git-sha.outputs.git-sha }}"
+              echo "Commit SHA (verified): ${{ steps.verify-express-git-tag.outputs.git-sha }}"
+              echo "Publish SHA (verified): ${{ needs.release-bitgojs.outputs.publish-sha }}"
               echo ""
               echo "### Docker Images to be deployed:"
               echo "- \`bitgo/express:latest\`"
