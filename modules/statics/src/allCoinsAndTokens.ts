@@ -6781,6 +6781,17 @@ export const allCoinsAndTokens = [
     'TXLM:yGHS'
   ),
   tstellarToken(
+    '7c76d0fb-a652-49e0-9d87-19369357ddef',
+    'txlm:yGHS-GATV6YIQGWDOJM2C7WM4AXIV2NPLTNLSPGUET3HA4VLOLXOBNXALHB25',
+    'yGHS v2',
+    7,
+    UnderlyingAsset['txlm:yGHS-GATV6YIQGWDOJM2C7WM4AXIV2NPLTNLSPGUET3HA4VLOLXOBNXALHB25'],
+    '',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'TXLM:yghsv2'
+  ),
+  tstellarToken(
     '853a61c1-c03e-4899-9d27-ad658f4abb7d',
     'txlm:USDC-GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
     'Test Stellar USDC',

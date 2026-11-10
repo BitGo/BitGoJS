@@ -55,6 +55,7 @@ describe('OFC Token Naming Convention Tests', function () {
         'ofctpolygon:activ', // "Activ"
         'ofctpolygon:jpyc', // "JPY Coin"
         'ofctxlm:yghs', // "yGHS"
+        'ofctxlm:yghsv2', // "yGHS v2"
       ];
 
       if (!knownExceptions.includes(token.name)) {
