@@ -15255,6 +15255,42 @@ export const erc20Coins = [
     undefined,
     Networks.test.sepolia
   ),
+  terc20(
+    '4f4d7f11-05e8-47e4-8320-f0ca7e1e2ba5',
+    'sepeth:link',
+    'Sepolia Testnet ChainLink',
+    18,
+    '0x779877a7b0d9e8603169ddbd7836e478b4624789',
+    UnderlyingAsset['sepeth:link'],
+    ACCOUNT_COIN_DEFAULT_FEATURES,
+    undefined,
+    undefined,
+    Networks.test.sepolia
+  ),
+  terc20(
+    'ee7c8748-3de6-4ed1-b642-bf95464021bf',
+    'sepeth:aave',
+    'Sepolia Testnet Aave',
+    18,
+    '0x88541670e55cc00beefd87eb59edd1b7c511ac9a',
+    UnderlyingAsset['sepeth:aave'],
+    ACCOUNT_COIN_DEFAULT_FEATURES,
+    undefined,
+    undefined,
+    Networks.test.sepolia
+  ),
+  terc20(
+    '3c41fc81-8cf5-4b7c-8b32-fc52dc9635d5',
+    'sepeth:uni',
+    'Sepolia Testnet Uniswap',
+    18,
+    '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984',
+    UnderlyingAsset['sepeth:uni'],
+    ACCOUNT_COIN_DEFAULT_FEATURES,
+    undefined,
+    undefined,
+    Networks.test.sepolia
+  ),
 
   // ERC-7984 underlying plain ERC-20 tokens (Zama fhEVM - Hoodi)
   terc20(

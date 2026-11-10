@@ -2030,6 +2030,9 @@ export enum UnderlyingAsset {
   'sepeth:real1' = 'sepeth:real1',
   'sepeth:jpyc' = 'sepeth:jpyc',
   'sepeth:teuroc' = 'sepeth:teuroc',
+  'sepeth:link' = 'sepeth:link',
+  'sepeth:aave' = 'sepeth:aave',
+  'sepeth:uni' = 'sepeth:uni',
   // Robinhood Chain testnet ERC-20 tokens
   'thoodeth:amzn' = 'thoodeth:amzn',
   'thoodeth:tsla' = 'thoodeth:tsla',
