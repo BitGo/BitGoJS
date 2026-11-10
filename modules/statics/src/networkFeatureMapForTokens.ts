@@ -80,36 +80,72 @@ export function getTokenFeatures(
 }
 
 export const networkFeatureMapForTokens: Partial<Record<CoinFamily, CoinFeature[]>> = {
+  abstracteth: EVM_TOKEN_FEATURES,
   algo: AccountCoin.DEFAULT_FEATURES,
   apt: APT_FEATURES,
   arbeth: [...AccountCoin.DEFAULT_FEATURES, CoinFeature.EIP1559],
+  arcusdc: EVM_TOKEN_FEATURES,
   avaxc: AccountCoin.DEFAULT_FEATURES,
+  baseeth: EVM_TOKEN_FEATURES,
   bera: [...AccountCoin.DEFAULT_FEATURES, CoinFeature.EIP1559],
+  bobaeth: EVM_TOKEN_FEATURES,
   bsc: BSC_TOKEN_FEATURES,
   canton: CANTON_TOKEN_FEATURES,
   celo: AccountCoin.DEFAULT_FEATURES,
+  // All SUPPORTS_ERC20 EVM families must be present statically: botTokens.ts resolves
+  // getTokenFeatures(family) at module load, before registerErc20Families runs in coins.ts.
+  chiliz: EVM_TOKEN_FEATURES,
+  codexeth: EVM_TOKEN_FEATURES,
+  dogeos: EVM_TOKEN_FEATURES,
   eth: AccountCoin.DEFAULT_FEATURES,
-  baseeth: EVM_TOKEN_FEATURES,
   eos: AccountCoin.DEFAULT_FEATURES,
-  // flow, okbxlayer and hoodeth must be static: botTokens.ts resolves getTokenFeatures at module load,
-  // before registerErc20Families backfills EVM families in coins.ts.
   flow: EVM_TOKEN_FEATURES,
-  okbxlayer: EVM_TOKEN_FEATURES,
-  hoodeth: EVM_TOKEN_FEATURES,
   gasevm: EVM_TOKEN_FEATURES,
+  h: EVM_TOKEN_FEATURES,
   hbar: AccountCoin.DEFAULT_FEATURES,
-  opeth: [...AccountCoin.DEFAULT_FEATURES, CoinFeature.EIP1559],
+  hbarevm: EVM_TOKEN_FEATURES,
+  hemieth: EVM_TOKEN_FEATURES,
+  hoodeth: EVM_TOKEN_FEATURES,
+  hppeth: EVM_TOKEN_FEATURES,
+  hypeevm: EVM_TOKEN_FEATURES,
+  inketh: EVM_TOKEN_FEATURES,
+  ip: EVM_TOKEN_FEATURES,
+  jovayeth: EVM_TOKEN_FEATURES,
   katanaeth: EVM_TOKEN_FEATURES,
+  lineaeth: EVM_TOKEN_FEATURES,
+  mantle: EVM_TOKEN_FEATURES,
+  megaeth: EVM_TOKEN_FEATURES,
+  morph: EVM_TOKEN_FEATURES,
+  morpheth: EVM_TOKEN_FEATURES,
+  og: EVM_TOKEN_FEATURES,
+  okbxlayer: EVM_TOKEN_FEATURES,
+  opeth: [...AccountCoin.DEFAULT_FEATURES, CoinFeature.EIP1559],
   polygon: POLYGON_TOKEN_FEATURES,
+  prividiumeth: EVM_TOKEN_FEATURES_NON_EIP1559,
   scrolleth: EVM_TOKEN_FEATURES,
+  seievm: EVM_TOKEN_FEATURES,
   sol: SOL_TOKEN_FEATURES,
   stx: STX_TOKEN_FEATURES,
   sui: SUI_TOKEN_FEATURES,
   tao: TAO_TOKEN_FEATURES,
   polyx: POLYX_TOKEN_FEATURES,
   trx: AccountCoin.DEFAULT_FEATURES,
+  unieth: EVM_TOKEN_FEATURES,
+  usdt0: EVM_TOKEN_FEATURES,
   xlm: AccountCoin.DEFAULT_FEATURES,
+  xpl: EVM_TOKEN_FEATURES,
   xrp: AccountCoin.DEFAULT_FEATURES,
+  xtzevm: EVM_TOKEN_FEATURES,
+  zksyncera: EVM_TOKEN_FEATURES,
   ofc: [],
   ada: ADA_TOKEN_FEATURES,
 };
+
+/**
+ * Snapshot of families statically present in `networkFeatureMapForTokens` at module load
+ * (before `registerErc20Families` runs in `coins.ts`). Used by unit tests to ensure every
+ * `SUPPORTS_ERC20` family can resolve `getTokenFeatures(family)` when `botTokens.ts` is evaluated.
+ */
+export const STATIC_NETWORK_FEATURE_FAMILIES: Readonly<Record<string, true>> = Object.freeze(
+  Object.fromEntries(Object.keys(networkFeatureMapForTokens).map((k) => [k, true as const]))
+);

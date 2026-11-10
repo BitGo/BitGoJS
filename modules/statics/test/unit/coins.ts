@@ -25,6 +25,7 @@ import {
   NetworkType,
   registerNetwork,
   SolCoin,
+  STATIC_NETWORK_FEATURE_FAMILIES,
   SuiCoin,
   tokens,
   TrimmedAmsTokenConfig,
@@ -1899,26 +1900,28 @@ describe('create token map using config details', () => {
 });
 
 describe('getNetworkFeatures EVM fallback (drift guard)', () => {
-  it('should return EVM_TOKEN_FEATURES for every mainnet family that supports ERC20 but has no explicit entry in networkFeatureMapForTokens', () => {
-    const erc20Families = new Set(
-      allCoinsAndTokens
-        .filter(
-          (coin) =>
-            !coin.isToken &&
-            coin.network.type === NetworkType.MAINNET &&
-            coin.features.includes(CoinFeature.SUPPORTS_ERC20)
-        )
-        .map((coin) => coin.family)
+  it('should statically include every mainnet SUPPORTS_ERC20 family in networkFeatureMapForTokens before registerErc20Families runs', () => {
+    const erc20Coins = allCoinsAndTokens.filter(
+      (coin) =>
+        !coin.isToken && coin.network.type === NetworkType.MAINNET && coin.features.includes(CoinFeature.SUPPORTS_ERC20)
     );
 
-    erc20Families.forEach((family) => {
-      const features = getNetworkFeatures(family);
+    erc20Coins.forEach((coin) => {
+      Boolean(STATIC_NETWORK_FEATURE_FAMILIES[coin.family]).should.eql(
+        true,
+        `Expected ${coin.family} (CoinFeature.SUPPORTS_ERC20) to be statically listed in networkFeatureMapForTokens so botTokens.ts can resolve getTokenFeatures('${coin.family}') at module load`
+      );
+      const features = getNetworkFeatures(coin.family);
       features?.should.not.be.undefined();
+      const expected = coin.features.includes(CoinFeature.EIP1559)
+        ? EVM_TOKEN_FEATURES
+        : EVM_TOKEN_FEATURES_NON_EIP1559;
+      features?.should.deepEqual(expected);
     });
 
-    // baseeth is the concrete gap this fallback closes: it has no hand-written entry in
-    // networkFeatureMapForTokens, but its base coin supports ERC20.
     getNetworkFeatures('baseeth')?.should.deepEqual(EVM_TOKEN_FEATURES);
+    getNetworkFeatures('chiliz')?.should.deepEqual(EVM_TOKEN_FEATURES);
+    getNetworkFeatures('prividiumeth')?.should.deepEqual(EVM_TOKEN_FEATURES_NON_EIP1559);
   });
 });
 
