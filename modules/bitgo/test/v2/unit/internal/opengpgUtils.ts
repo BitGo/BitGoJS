@@ -146,6 +146,39 @@ describe('OpenGPG Utils Tests', function () {
       isValid.should.be.true();
     });
 
+    it('should reject a proof whose subkey binding is not signed by the primary key', async function () {
+      const uForged = crypto.randomBytes(32).toString('hex');
+      const Q = secp256k1.pointFromScalar(Buffer.from(uForged, 'hex'), false);
+      // openpgp typings omit the runtime oid.write()/computeFingerprintAndKeyID() used to
+      // hand-assemble packets here
+      const oid = [0x2b, 0x81, 0x04, 0x00, 0x0a] as unknown as { write: () => Uint8Array };
+      oid.write = () => new Uint8Array(Buffer.from('052b8104000a', 'hex'));
+      const subkey = new openpgp.PublicSubkeyPacket();
+      subkey.algorithm = openpgp.enums.publicKey.ecdsa;
+      subkey.publicParams = { oid, Q };
+      const subkeyWithFingerprint = subkey as unknown as { computeFingerprintAndKeyID(): Promise<void> };
+      await subkeyWithFingerprint.computeFingerprintAndKeyID();
+      const binding = new openpgp.SignaturePacket();
+      binding.signatureType = openpgp.enums.signature.subkeyBinding;
+      binding.publicKeyAlgorithm = openpgp.enums.publicKey.ecdsa;
+      binding.hashAlgorithm = openpgp.enums.hash.sha256;
+      binding.keyFlags = new Uint8Array([openpgp.enums.keyFlags.authentication]);
+      const senderKeyObj = await openpgp.readKey({ armoredKey: senderKey.publicKey });
+      const recipientKeyObj = await openpgp.readPrivateKey({ armoredKey: recipientKey.privateKey });
+      // openpgp types PrivateKey.keyPacket as a union; signing needs the primary secret packet
+      const attackerSecretPacket = recipientKeyObj.keyPacket as unknown as openpgp.SecretKeyPacket;
+      // openpgp types sign()'s data as bytes only; subkeyBinding signing takes {key, bind} at runtime
+      const bindingData = { key: senderKeyObj.keyPacket, bind: subkey } as unknown as Uint8Array;
+      await binding.sign(attackerSecretPacket, bindingData, new Date());
+      const forged = new openpgp.PacketList();
+      senderKeyObj.toPacketList().forEach((p) => forged.push(p));
+      forged.push(subkey);
+      forged.push(binding);
+      const forgedProof = openpgp.armor(openpgp.enums.armor.publicKey, forged.write());
+      const isValid = await openpgpUtils.verifyShareProof(senderKey.publicKey, forgedProof, uForged, 'ecdsa');
+      isValid.should.be.false();
+    });
+
     it('should be able to detect sender is an attacker', async function () {
       const uValue = crypto.randomBytes(32).toString('hex');
       const proof = await openpgpUtils.createShareProof(otherKey.privateKey, uValue, 'ecdsa');
@@ -180,6 +213,53 @@ describe('OpenGPG Utils Tests', function () {
       // tamper with the data
       dataToProofArray[0].value = 'tampered data';
       isValid = await openpgpUtils.verifySharedDataProof(senderKey.publicKey, proof, dataToProofArray);
+      isValid.should.be.false();
+    });
+
+    it('should reject the proof when a foreign certification is applied after the genuine one', async function () {
+      const sharedData1 = crypto.randomBytes(32).toString('hex');
+      const sharedData2 = crypto.randomBytes(32).toString('hex');
+      const dataToProofArray = [
+        { name: 's1', value: sharedData1 },
+        { name: 's2', value: sharedData2 },
+      ];
+      const proof = await openpgpUtils.createSharedDataProof(
+        senderKey.privateKey,
+        otherKey.publicKey,
+        dataToProofArray
+      );
+      const attacked = await openpgpUtils.createSharedDataProof(recipientKey.privateKey, proof, [
+        { name: 's1', value: sharedData1 },
+        { name: 's2', value: sharedData2 },
+      ]);
+      const isValid = await openpgpUtils.verifySharedDataProof(senderKey.publicKey, attacked, dataToProofArray);
+      isValid.should.be.false();
+    });
+
+    it('should accept the proof when a foreign certification without notations is applied after the genuine one', async function () {
+      const sharedData1 = crypto.randomBytes(32).toString('hex');
+      const sharedData2 = crypto.randomBytes(32).toString('hex');
+      const dataToProofArray = [
+        { name: 's1', value: sharedData1 },
+        { name: 's2', value: sharedData2 },
+      ];
+      const proof = await openpgpUtils.createSharedDataProof(
+        senderKey.privateKey,
+        otherKey.publicKey,
+        dataToProofArray
+      );
+      const peerCertified = await openpgpUtils.createSharedDataProof(recipientKey.privateKey, proof, []);
+      const isValid = await openpgpUtils.verifySharedDataProof(senderKey.publicKey, peerCertified, dataToProofArray);
+      isValid.should.be.true();
+    });
+
+    it('should reject a proof whose only verified certification carries no notations', async function () {
+      const dataToProofArray = [
+        { name: 's1', value: crypto.randomBytes(32).toString('hex') },
+        { name: 's2', value: crypto.randomBytes(32).toString('hex') },
+      ];
+      const proof = await openpgpUtils.createSharedDataProof(senderKey.privateKey, otherKey.publicKey, []);
+      const isValid = await openpgpUtils.verifySharedDataProof(senderKey.publicKey, proof, dataToProofArray);
       isValid.should.be.false();
     });
 

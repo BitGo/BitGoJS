@@ -9,7 +9,7 @@ import { MPCAlgorithm } from '../baseCoin';
 import {
   RequestType,
   TxRequest,
-  verifyPrimaryUserWrapper,
+  getVerifiedCertifications,
   SignatureShareRecord,
   SignatureShareType,
   CommitmentShareRecord,
@@ -286,16 +286,13 @@ export async function commonVerifyWalletSignature(params: {
     throw new Error('Invalid HSM GPG signature');
   }
 
-  const verificationResult = await verifyPrimaryUserWrapper(walletSignature, bitgoPub, false);
-  const isValid = verificationResult.some((result) => result.valid);
-  if (!isValid) {
+  const primaryUser = await walletSignature.getPrimaryUser();
+  const verifiedCertifications = await getVerifiedCertifications(primaryUser, bitgoPub);
+  if (!verifiedCertifications || verifiedCertifications.length === 0) {
     throw new Error('Invalid HSM GPG signature');
   }
-  const primaryUser = await walletSignature.getPrimaryUser();
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore the rawNotations property is missing from the type but it actually exists
-  const rawNotations: { value: Uint8Array }[] = primaryUser.user.otherCertifications[0].rawNotations;
+  const rawNotations: { value: Uint8Array }[] = verifiedCertifications[0].rawNotations;
 
   assert(rawNotations.length === 5, 'invalid wallet signatures');
 
