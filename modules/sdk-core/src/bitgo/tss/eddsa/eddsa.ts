@@ -21,6 +21,7 @@ import {
   RequestType,
   CommitmentShareRecord,
   CommitmentType,
+  UserToBitgoRShareReveal,
 } from '../../utils';
 import { BaseTransaction } from '../../../account-lib';
 import { Ed25519Bip32HdTree } from '@bitgo/sdk-lib-mpc';
@@ -189,11 +190,11 @@ export async function createUserToBitGoGShare(
 }
 
 /**
- * Sends the User to Bitgo RShare to Bitgo
+ * Sends the User to Bitgo RShare reveal to Bitgo
  * @param {BitGoBase} bitgo - the bitgo instance
  * @param {String} walletId - the wallet id
  * @param {String} txRequestId - the txRequest Id
- * @param {SignShare} userSignShare - the user Sign Share
+ * @param {UserToBitgoRShareReveal} rShare - the user nonce reveal (r and R only)
  * @param {String} encryptedSignerShare - signer share encrypted to bitgo key
  * @param {String} apiMode - the api mode, defaults to 'lite'
  * @returns {Promise<void>}
@@ -204,20 +205,13 @@ export async function offerUserToBitgoRShare(
   bitgo: BitGoBase,
   walletId: string,
   txRequestId: string,
-  userSignShare: SignShare,
+  rShare: UserToBitgoRShareReveal,
   encryptedSignerShare: string,
   apiMode: 'full' | 'lite' = 'lite',
   reqId?: IRequestTracer,
   requestType: RequestType = RequestType.tx,
   attestation?: AttestationPayload
 ): Promise<void> {
-  const rShare: RShare = userSignShare.rShares[ShareKeyPosition.BITGO];
-  if (_.isNil(rShare)) {
-    throw new Error('userToBitgo RShare not found');
-  }
-  if (rShare.i !== ShareKeyPosition.BITGO || rShare.j !== ShareKeyPosition.USER) {
-    throw new Error('Invalid RShare, is not from User to Bitgo');
-  }
   const signatureShare: SignatureShareRecord = {
     from: SignatureShareType.USER,
     to: SignatureShareType.BITGO,

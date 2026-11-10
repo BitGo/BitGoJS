@@ -483,11 +483,16 @@ describe('test tss helper functions', function () {
     });
 
     describe('offerUserToBitgoRShare:', async function () {
-      it('should succeed to send Signature Share', async function () {
+      const reveal = {
+        r: validUserSignShare.rShares[3].r,
+        R: validUserSignShare.rShares[3].R,
+      };
+
+      it('should succeed to send the nonce reveal as the signature share', async function () {
         const signatureShare = {
           from: 'user',
           to: 'bitgo',
-          share: validUserSignShare.rShares[3].r + validUserSignShare.rShares[3].R,
+          share: reveal.r + reveal.R,
         } as SignatureShareRecord;
         const nock = await nockSendSignatureShare({
           walletId: wallet.id(),
@@ -499,51 +504,17 @@ describe('test tss helper functions', function () {
           bitgo,
           wallet.id(),
           txRequest.txRequestId,
-          validUserSignShare,
+          reveal,
           'signerShare'
         ).should.be.fulfilled();
         nock.isDone().should.equal(true);
-      });
-
-      it('should fail if no rShare is found', async function () {
-        const invalidUserSignShare = _.cloneDeep(validUserSignShare) as any;
-        delete invalidUserSignShare.rShares[3];
-        await offerUserToBitgoRShare(
-          bitgo,
-          wallet.id(),
-          txRequest.txRequestId,
-          invalidUserSignShare,
-          'signerShare'
-        ).should.be.rejectedWith('userToBitgo RShare not found');
-      });
-
-      it('should fail if the rShare found is invalid', async function () {
-        const invalidUserSignShare = _.cloneDeep(validUserSignShare) as any;
-        invalidUserSignShare.rShares[3].i = 1;
-        await offerUserToBitgoRShare(
-          bitgo,
-          wallet.id(),
-          txRequest.txRequestId,
-          invalidUserSignShare,
-          'signerShare'
-        ).should.be.rejectedWith('Invalid RShare, is not from User to Bitgo');
-
-        const invalidUserSignShare2 = _.cloneDeep(validUserSignShare) as any;
-        invalidUserSignShare2.rShares[3].j = 3;
-        await offerUserToBitgoRShare(
-          bitgo,
-          wallet.id(),
-          txRequest.txRequestId,
-          invalidUserSignShare2,
-          'signerShare'
-        ).should.be.rejectedWith('Invalid RShare, is not from User to Bitgo');
       });
 
       it('should call setRequestTracer', async function () {
         const signatureShare = {
           from: 'user',
           to: 'bitgo',
-          share: validUserSignShare.rShares[3].r + validUserSignShare.rShares[3].R,
+          share: reveal.r + reveal.R,
         } as SignatureShareRecord;
         const nock = await nockSendSignatureShare({
           walletId: wallet.id(),
@@ -558,7 +529,7 @@ describe('test tss helper functions', function () {
           bitgo,
           wallet.id(),
           txRequest.txRequestId,
-          validUserSignShare,
+          reveal,
           'signerShare',
           undefined,
           reqId
