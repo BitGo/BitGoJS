@@ -3,6 +3,7 @@
  */
 
 import {
+  BitgoMpcGpgPubKeys,
   common,
   Ed25519BIP32,
   Eddsa,
@@ -672,7 +673,10 @@ describe('External signer', () => {
     }
   });
 
-  it('should read an encrypted prv from signerFileSystemPath and pass it to commitment, R and G share generators', async () => {
+  // Runs a full commitment -> R -> G external-signing session for an EdDSA MPCv1 key
+  // through handleV2GenerateShareTSS and returns the requests/results so replay tests
+  // can re-send them against the real consumed-shares registry.
+  async function runEddsaMPCv1SigningSession(signableHex = 'testMessage') {
     const walletID = '62fe536a6b4cf70007acb48c0e7bb0b0';
     const user = MPC.keyShare(1, 2, 3);
     const backup = MPC.keyShare(2, 2, 3);
@@ -685,200 +689,232 @@ describe('External signer', () => {
     const bg = new BitGo({ env: 'test' });
     const walletPassphrase = 'testPass';
     const validPrv = await bg.encrypt({ input: JSON.stringify(userSigningMaterial), password: walletPassphrase });
-    const output: Output = {};
-    output[walletID] = validPrv;
-    const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify(output));
+    const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify({ [walletID]: validPrv }));
     const envStub = sinon
       .stub(process, 'env')
       .value({ WALLET_62fe536a6b4cf70007acb48c0e7bb0b0_PASSPHRASE: walletPassphrase });
-    const tMessage = 'testMessage';
+    resetConsumedShareRegistriesForTesting();
+    // Unique temp path per session so the real consumed-shares persistence writes to a throwaway file
+    const signerTmpPath = path.join(
+      os.tmpdir(),
+      `bitgojs-test-signer-eddsa-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}`
+    );
     const bgTest = new BitGo({ env: 'test' });
     const derivationPath = 'm/0';
+    const txRequest = {
+      apiVersion: 'full',
+      walletId: walletID,
+      transactions: [{ unsignedTx: { derivationPath, signableHex } }],
+    };
+    const buildReq = (sharetype: string, body: Record<string, unknown>) =>
+      ({
+        bitgo: bgTest,
+        body,
+        decoded: { coin: 'tsol', sharetype },
+        params: { coin: 'tsol', sharetype },
+        config: { signerFileSystemPath: signerTmpPath },
+      } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>);
 
-    const reqCommitment = {
-      bitgo: bgTest,
-      body: {
-        bitgoGpgPubKey: bitgoGpgKey.public,
-        txRequest: {
-          apiVersion: 'full',
-          walletId: walletID,
-          transactions: [
-            {
-              unsignedTx: {
-                derivationPath,
-                signableHex: tMessage,
-              },
-            },
-          ],
-        },
-      },
-      decoded: {
-        coin: 'tsol',
-        sharetype: 'commitment',
-        bitgoGpgPubKey: bitgoGpgKey.public,
-        txRequest: {
-          apiVersion: 'full',
-          walletId: walletID,
-          transactions: [
-            {
-              unsignedTx: {
-                derivationPath,
-                signableHex: tMessage,
-              },
-            },
-          ],
-        },
-      },
-      params: {
-        coin: 'tsol',
-        sharetype: 'commitment',
-      },
-      config: {
-        signerFileSystemPath: 'signerFileSystemPath',
-      },
-    } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>;
-    const cResult = await handleV2GenerateShareTSS(reqCommitment);
-    cResult.should.have.property('userToBitgoCommitment');
-    cResult.should.have.property('encryptedSignerShare');
-    cResult.should.have.property('encryptedUserToBitgoRShare');
-    const encryptedUserToBitgoRShare = cResult.encryptedUserToBitgoRShare;
-    const reqR = {
-      bitgo: bgTest,
-      body: {
-        txRequest: {
-          apiVersion: 'full',
-          walletId: walletID,
-          transactions: [
-            {
-              unsignedTx: {
-                derivationPath,
-                signableHex: tMessage,
-              },
-            },
-          ],
-        },
-        encryptedUserToBitgoRShare,
-      },
-      decoded: {
-        coin: 'tsol',
-        sharetype: 'R',
-        txRequest: {
-          apiVersion: 'full',
-          walletId: walletID,
-          transactions: [
-            {
-              unsignedTx: {
-                derivationPath,
-                signableHex: tMessage,
-              },
-            },
-          ],
-        },
-        encryptedUserToBitgoRShare,
-      },
-      params: {
-        coin: 'tsol',
-        sharetype: 'R',
-      },
-      config: {
-        signerFileSystemPath: 'signerFileSystemPath',
-      },
-    } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>;
-    const rResult = await handleV2GenerateShareTSS(reqR);
-    rResult.should.have.property('rShare');
-
+    // Real BitGo co-signer material: a genuine nonce pair for the G round.
     const signingKey = MPC.keyDerive(
       userSigningMaterial.uShare,
       [userSigningMaterial.bitgoYShare, userSigningMaterial.backupYShare],
       derivationPath
     );
-
     const bitgoCombine = MPC.keyCombine(bitgo.uShare, [signingKey.yShares[3], backup.yShares[3]]);
-    const bitgoSignShare = await MPC.signShare(Buffer.from(tMessage, 'hex'), bitgoCombine.pShare, [
+    const bitgoSignShare = await MPC.signShare(Buffer.from(signableHex, 'hex'), bitgoCombine.pShare, [
       bitgoCombine.jShares[1],
     ]);
-    const signatureShareRec = {
+    const bitgoToUserRShare = {
       from: SignatureShareType.BITGO,
       to: SignatureShareType.USER,
       share: bitgoSignShare.rShares[1].r + bitgoSignShare.rShares[1].R,
     };
-    const bitgoToUserCommitmentShare = {
+    const bitgoToUserCommitment = {
       from: SignatureShareType.BITGO,
       to: SignatureShareType.USER,
       share: bitgoSignShare.rShares[1].commitment,
       type: 'commitment',
     };
-    const reqG = {
-      bitgo: bgTest,
-      body: {
-        txRequest: {
-          apiVersion: 'full',
-          walletId: walletID,
-          transactions: [
-            {
-              unsignedTx: {
-                derivationPath,
-                signableHex: tMessage,
-              },
-            },
-          ],
-        },
-        userToBitgoRShare: rResult.rShare,
-        bitgoToUserRShare: signatureShareRec,
-        bitgoToUserCommitment: bitgoToUserCommitmentShare,
-      },
-      decoded: {
-        coin: 'tsol',
-        sharetype: 'G',
-        txRequest: {
-          apiVersion: 'full',
-          walletId: walletID,
-          transactions: [
-            {
-              unsignedTx: {
-                derivationPath,
-                signableHex: tMessage,
-              },
-            },
-          ],
-        },
-        userToBitgoRShare: rResult.rShare,
-        bitgoToUserRShare: signatureShareRec,
-        bitgoToUserCommitment: bitgoToUserCommitmentShare,
-      },
-      params: {
-        coin: 'tsol',
-        sharetype: 'G',
-      },
-      config: {
-        signerFileSystemPath: 'signerFileSystemPath',
-      },
-    } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>;
-    const userGShare = await handleV2GenerateShareTSS(reqG);
-    userGShare.should.have.property('i');
-    userGShare.should.have.property('y');
-    userGShare.should.have.property('gamma');
-    userGShare.should.have.property('R');
-    const userToBitgoRShare = {
-      i: ShareKeyPosition.BITGO,
-      j: ShareKeyPosition.USER,
-      u: signingKey.yShares[3].u,
-      v: rResult.rShare.rShares[3].v,
-      r: rResult.rShare.rShares[3].r,
-      R: rResult.rShare.rShares[3].R,
-      commitment: rResult.rShare.rShares[3].commitment,
+
+    const cleanup = () => {
+      readFileStub.restore();
+      envStub.restore();
+      fs.promises.unlink(`${signerTmpPath}.consumedShares.json`).catch(() => undefined);
     };
-    const bitgoGShare = MPC.sign(
-      Buffer.from(tMessage, 'hex'),
-      bitgoSignShare.xShare,
-      [userToBitgoRShare],
-      [backup.yShares[3]]
-    );
-    const signature = MPC.signCombine([userGShare, bitgoGShare]);
-    const veriResult = MPC.verify(Buffer.from(tMessage, 'hex'), signature);
-    veriResult.should.be.true();
-    readFileStub.restore();
-    envStub.restore();
+    try {
+      const commitResult = await handleV2GenerateShareTSS(
+        buildReq('commitment', { txRequest, bitgoGpgPubKey: BitgoMpcGpgPubKeys.bitgoMpcGpgPubKeys.mpcv1.onprem.test })
+      );
+      const rResult = await handleV2GenerateShareTSS(
+        buildReq('R', { txRequest, encryptedUserToBitgoRShare: commitResult.encryptedUserToBitgoRShare })
+      );
+      const buildGRequest = (
+        tx: Record<string, unknown> = txRequest,
+        records: Record<'bitgoToUserRShare' | 'bitgoToUserCommitment', unknown> = {
+          bitgoToUserRShare,
+          bitgoToUserCommitment,
+        }
+      ) =>
+        buildReq('G', {
+          txRequest: tx,
+          encryptedUserToBitgoRShare: commitResult.encryptedUserToBitgoRShare,
+          bitgoToUserRShare: records.bitgoToUserRShare,
+          bitgoToUserCommitment: records.bitgoToUserCommitment,
+        });
+      const gResult = await handleV2GenerateShareTSS(buildGRequest());
+      return {
+        walletID,
+        walletPassphrase,
+        bgTest,
+        signingKey,
+        userSigningMaterial,
+        backup,
+        bitgoSignShare,
+        commitResult,
+        rResult,
+        gResult,
+        buildReq,
+        buildGRequest,
+        bitgoToUserRShare,
+        bitgoToUserCommitment,
+        cleanup,
+      };
+    } catch (e) {
+      cleanup();
+      throw e;
+    }
+  }
+
+  it('should read an encrypted prv from signerFileSystemPath and pass it to commitment, R and G share generators', async () => {
+    const session = await runEddsaMPCv1SigningSession();
+    try {
+      session.commitResult.should.have.property('userToBitgoCommitment');
+      session.commitResult.should.have.property('encryptedSignerShare');
+      session.commitResult.should.have.property('encryptedUserToBitgoRShare');
+      // R round reveals only the nonce material; the full SignShare never leaves the signer
+      session.rResult.should.have.property('rShare');
+      session.rResult.rShare.should.have.property('r').and.be.a.String();
+      session.rResult.rShare.should.have.property('R').and.be.a.String();
+      should.not.exist(session.rResult.rShare.xShare);
+      should.not.exist(session.rResult.rShare.rShares);
+      // G round consumes the signer-held envelope and produces a valid user gamma
+      session.gResult.should.have.property('i');
+      session.gResult.should.have.property('y');
+      session.gResult.should.have.property('gamma');
+      session.gResult.should.have.property('R');
+
+      // Complete the ceremony as BitGo and verify the combined signature
+      const userSignShare = JSON.parse(
+        await session.bgTest.decrypt({
+          input: session.commitResult.encryptedUserToBitgoRShare.share,
+          password: session.walletPassphrase,
+        })
+      );
+      const userToBitgoRShare = {
+        i: ShareKeyPosition.BITGO,
+        j: ShareKeyPosition.USER,
+        u: session.signingKey.yShares[3].u,
+        v: userSignShare.rShares[3].v,
+        r: userSignShare.rShares[3].r,
+        R: userSignShare.rShares[3].R,
+        commitment: userSignShare.rShares[3].commitment,
+      };
+      const bitgoGShare = MPC.sign(
+        Buffer.from('testMessage', 'hex'),
+        session.bitgoSignShare.xShare,
+        [userToBitgoRShare],
+        [session.backup.yShares[3]]
+      );
+      const signature = MPC.signCombine([session.gResult, bitgoGShare]);
+      MPC.verify(Buffer.from('testMessage', 'hex'), signature).should.be.true();
+    } finally {
+      session.cleanup();
+    }
+  });
+
+  it('should reject a replayed EdDSA MPCv1 R-share envelope', async function () {
+    const session = await runEddsaMPCv1SigningSession();
+    try {
+      await handleV2GenerateShareTSS(session.buildGRequest()).should.be.rejectedWith(
+        'encrypted share has already been consumed; restart the signing session'
+      );
+    } finally {
+      session.cleanup();
+    }
+  });
+
+  it('should reject an EdDSA MPCv1 G replay with a different BitGo nonce', async function () {
+    const session = await runEddsaMPCv1SigningSession();
+    try {
+      await handleV2GenerateShareTSS(
+        session.buildGRequest(session.buildReq('G', {}).body.txRequest, {
+          bitgoToUserRShare: session.bitgoToUserRShare,
+          bitgoToUserCommitment: {
+            from: SignatureShareType.BITGO,
+            to: SignatureShareType.USER,
+            share: '00'.repeat(32),
+            type: 'commitment',
+          },
+        })
+      ).should.be.rejectedWith('encrypted share has already been consumed; restart the signing session');
+    } finally {
+      session.cleanup();
+    }
+  });
+
+  it('should reject an EdDSA MPCv1 G envelope bound to a different signable', async function () {
+    const session = await runEddsaMPCv1SigningSession('deadbeef');
+    try {
+      const otherTxRequest = {
+        apiVersion: 'full',
+        walletId: session.walletID,
+        transactions: [{ unsignedTx: { derivationPath: 'm/0', signableHex: 'deadbe00' } }],
+      };
+      await handleV2GenerateShareTSS(session.buildGRequest(otherTxRequest)).should.be.rejectedWith(
+        'Adata does not match cyphertext adata'
+      );
+    } finally {
+      session.cleanup();
+    }
+  });
+
+  it('should reject a non-BitGo GPG public key for the EdDSA MPCv1 commitment round', async function () {
+    const walletID = '62fe536a6b4cf70007acb48c0e7bb0b0';
+    const user = MPC.keyShare(1, 2, 3);
+    const backup = MPC.keyShare(2, 2, 3);
+    const bitgo = MPC.keyShare(3, 2, 3);
+    const userSigningMaterial = {
+      uShare: user.uShare,
+      bitgoYShare: bitgo.yShares[1],
+      backupYShare: backup.yShares[1],
+    };
+    const bg = new BitGo({ env: 'test' });
+    const validPrv = await bg.encrypt({ input: JSON.stringify(userSigningMaterial), password: 'testPass' });
+    const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify({ [walletID]: validPrv }));
+    const envStub = sinon
+      .stub(process, 'env')
+      .value({ WALLET_62fe536a6b4cf70007acb48c0e7bb0b0_PASSPHRASE: 'testPass' });
+    try {
+      const reqCommitment = {
+        bitgo: new BitGo({ env: 'test' }),
+        body: {
+          bitgoGpgPubKey: bitgoGpgKey.public,
+          txRequest: {
+            apiVersion: 'full',
+            walletId: walletID,
+            transactions: [{ unsignedTx: { derivationPath: 'm/0', signableHex: 'testMessage' } }],
+          },
+        },
+        decoded: { coin: 'tsol', sharetype: 'commitment' },
+        params: { coin: 'tsol', sharetype: 'commitment' },
+        config: { signerFileSystemPath: path.join(os.tmpdir(), `bitgojs-test-signer-eddsa-${Date.now()}`) },
+      } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>;
+      await handleV2GenerateShareTSS(reqCommitment).should.be.rejectedWith('Invalid BitGo GPG public key');
+    } finally {
+      readFileStub.restore();
+      envStub.restore();
+    }
   });
 
   it('should route EdDSA MPCv2 share types to offline round share generators', async function () {

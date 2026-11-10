@@ -136,27 +136,6 @@ const DShare = t.type({
 });
 
 /**
- * RShare structure for EDDSA (individual R share)
- * Based on: modules/sdk-core/src/account-lib/mpc/tss/eddsa/types.ts:57-65
- */
-const RShareStructure = t.type({
-  /** Participant index i */
-  i: t.number,
-  /** Participant index j */
-  j: t.number,
-  /** U value (hex string) */
-  u: t.string,
-  /** V value (hex string) */
-  v: t.string,
-  /** r value (hex string) */
-  r: t.string,
-  /** R value (hex string) */
-  R: t.string,
-  /** Commitment value (hex string) */
-  commitment: t.string,
-});
-
-/**
  * Request body for generating TSS shares in external signer mode
  *
  * This route is used when BitGo Express is configured with external signing.
@@ -214,15 +193,6 @@ export const GenerateShareTSSBody = {
       to: t.string,
       /** Share data */
       share: t.string,
-    })
-  ),
-  /** User's R share sent to BitGo containing cryptographic commitments for EDDSA G share generation */
-  userToBitgoRShare: optional(
-    t.partial({
-      /** Participant index in the signing protocol */
-      i: t.number,
-      /** Mapping of participant indices to their R share structures (commitment, u, v, r, R values) */
-      rShares: t.record(t.string, RShareStructure),
     })
   ),
   /** BitGo's commitment share sent to user for EDDSA G share generation */
@@ -324,14 +294,6 @@ const EncryptedSignerShareRecord = t.type({
   type: t.string,
 });
 
-/** EDDSA signing share containing R share commitments indexed by participant */
-const SignShare = t.type({
-  /** Participant index in signing protocol */
-  i: t.number,
-  /** Mapping of participant IDs to R share structures with cryptographic commitments */
-  rShares: t.record(t.string, RShareStructure),
-});
-
 /** EDDSA G share containing signature components (participant index, public values, and R point) */
 const GShare = t.type({
   /** Participant index */
@@ -428,10 +390,15 @@ export const EddsaCommitmentShareResponse = t.type({
   encryptedUserToBitgoRShare: EncryptedSignerShareRecord,
 });
 
-/** EDDSA R share generation response containing R shares for signature */
+/** EDDSA R share generation response containing the nonce reveal offered to BitGo */
 export const EddsaRShareResponse = t.type({
-  /** R share containing participant index and share commitments */
-  rShare: SignShare,
+  /** Nonce reveal (r and R only); the full SignShare never leaves the signer */
+  rShare: t.type({
+    /** Nonce share value */
+    r: t.string,
+    /** Nonce point */
+    R: t.string,
+  }),
 });
 
 /** EDDSA G share generation response with final signature share components */

@@ -32,7 +32,7 @@ import {
   multisigTypes,
   Safes,
   ShareType,
-  SignShare,
+  UserToBitgoRShareReveal,
   SShare,
   TssEcdsaStep1ReturnMessage,
   TssEcdsaStep2ReturnMessage,
@@ -543,8 +543,16 @@ export async function handleV2GenerateShareTSS(
             return await eddsaUtils.createCommitmentShareFromTxRequest(req.body);
           case ShareType.R:
             return await eddsaUtils.createRShareFromTxRequest(req.body);
-          case ShareType.G:
+          case ShareType.G: {
+            // Each R-share envelope may be used exactly once; a replayed envelope is
+            // rejected before the share is used (fail-closed).
+            req.body.markConsumed = markConsumedShareClosure(
+              registryFilePath,
+              req.decoded.sharetype,
+              req.body.encryptedUserToBitgoRShare?.share
+            );
             return await eddsaUtils.createGShareFromTxRequest(req.body);
+          }
           default:
             throw new Error(
               `Share type ${req.decoded.sharetype} not supported, only commitment, G and R share generation is supported.`
@@ -2124,7 +2132,7 @@ export function createCustomCommitmentGenerator(
 }
 
 export function createCustomRShareGenerator(externalSignerUrl: string, coin: string): CustomRShareGeneratingFunction {
-  return async function (params): Promise<{ rShare: SignShare }> {
+  return async function (params): Promise<{ rShare: UserToBitgoRShareReveal }> {
     const { body: rShare } = await retryPromise(
       () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/R`).type('json').send(params),
       (err, tryCount) => {
