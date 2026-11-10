@@ -5116,6 +5116,13 @@ export const ofcCoins = [
     UnderlyingAsset['txlm:yGHS-GCF46XLX3R7OXIDAFZ3HH6DEY5VT3BJJRSTKSSOKPLGNH6H7QYV3A2OA']
   ),
   tofcStellarToken(
+    '55eb96a6-da30-45d0-88a8-349b67589517',
+    'ofctxlm:yghsv2',
+    'yGHS v2',
+    7,
+    UnderlyingAsset['txlm:yGHS-GATV6YIQGWDOJM2C7WM4AXIV2NPLTNLSPGUET3HA4VLOLXOBNXALHB25']
+  ),
+  tofcStellarToken(
     '640aecc5-ebaa-4465-afca-0349202b74b6',
     'ofctxlm:usdl',
     'Test USDL',
