@@ -4,7 +4,7 @@ import { type ITransactionRecipient, KeychainsTriplet, ParsedTransaction, Transa
 import { ApiKeyShare, Keychain, WebauthnKeyEncryptionInfo } from '../../keychain';
 import { ApiVersion, Memo, WalletType, type PrebuildTransactionFeeInfo } from '../../wallet';
 import type { AttestationPayload } from '../../wallet/BuildParams';
-import { EDDSA, GShare, Signature, SignShare } from '../../../account-lib/mpc/tss';
+import { EDDSA, GShare, Signature } from '../../../account-lib/mpc/tss';
 import { Signature as EcdsaSignature } from '../../../account-lib/mpc/tss/ecdsa/types';
 import { KeyShare } from './ecdsa';
 import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
@@ -196,16 +196,22 @@ export interface CustomCommitmentGeneratingFunction {
   }>;
 }
 
+/** The only R-round material that leaves the signer: the nonce reveal offered to BitGo. */
+export interface UserToBitgoRShareReveal {
+  r: string;
+  R: string;
+}
+
 export interface CustomRShareGeneratingFunction {
   (params: { txRequest: TxRequest; encryptedUserToBitgoRShare: EncryptedSignerShareRecord }): Promise<{
-    rShare: SignShare;
+    rShare: UserToBitgoRShareReveal;
   }>;
 }
 
 export interface CustomGShareGeneratingFunction {
   (params: {
     txRequest: TxRequest;
-    userToBitgoRShare: SignShare;
+    encryptedUserToBitgoRShare: EncryptedSignerShareRecord;
     bitgoToUserRShare: SignatureShareRecord;
     bitgoToUserCommitment: CommitmentShareRecord;
   }): Promise<GShare>;
@@ -1004,13 +1010,15 @@ export interface ITssUtils<KeyShare = EDDSA.KeyShare> {
     txRequest: TxRequest;
     walletPassphrase: string;
     encryptedUserToBitgoRShare: EncryptedSignerShareRecord;
-  }): Promise<{ rShare: SignShare }>;
+  }): Promise<{ rShare: UserToBitgoRShareReveal }>;
   createGShareFromTxRequest(params: {
     txRequest: TxRequest;
     prv: string;
+    walletPassphrase: string;
+    encryptedUserToBitgoRShare: EncryptedSignerShareRecord;
     bitgoToUserRShare: SignatureShareRecord;
-    userToBitgoRShare: SignShare;
     bitgoToUserCommitment: CommitmentShareRecord;
+    markConsumed?: (adata: string) => void;
   }): Promise<GShare>;
   prebuildTxWithIntent(
     params: PrebuildTransactionWithIntentOptions,
