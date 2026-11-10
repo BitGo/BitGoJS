@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.3.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-api%403.2.0...%40bitgo%2Fsdk-api%403.3.0) (2026-11-10)
+
+### Bug Fixes
+
+* **sdk-api:** reject non-ccm mode before v1 SJCL decrypt ([27b4481](https://github.com/BitGo/BitGoJS/commit/27b4481f10f4a8b1b45f0e7bdf70f48d5ec8ec37))
+* **sdk-core:** screen the envelope SJCL actually decodes ([154d18a](https://github.com/BitGo/BitGoJS/commit/154d18a0dc46214c26a7cbb3f0f3646460a6f5bb))
+* **sdk-core:** share v1 envelope screening with sdk-api ([c58ce64](https://github.com/BitGo/BitGoJS/commit/c58ce6485872f14dcf517eed1393a5784614f8a2))
+
+### Features
+
+* **sdk-api:** add upgradeEncryptionOnSign option ([ab6d04a](https://github.com/BitGo/BitGoJS/commit/ab6d04a62ea16a4fadc0d7d1fe6566fc0cf7a2cd))
+
+
 # [3.2.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-api%403.1.7...%40bitgo%2Fsdk-api%403.2.0) (2026-11-05)
 
 ### Features

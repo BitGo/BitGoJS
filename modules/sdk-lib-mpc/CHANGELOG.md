@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [11.6.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-lib-mpc%4011.6.0...%40bitgo%2Fsdk-lib-mpc%4011.6.1) (2026-11-10)
+
+### Bug Fixes
+
+* **sdk-lib-mpc:** free serialized DKLS signing sessions ([368a7c1](https://github.com/BitGo/BitGoJS/commit/368a7c1b4748b24fc6bb20364ef73649036dc2e8))
+* **sdk-lib-mpc:** preserve payload errors during message cleanup ([8792aa4](https://github.com/BitGo/BitGoJS/commit/8792aa46c2322c5496b07b997c7b452c74674738))
+* **sdk-lib-mpc:** release keygen sessions and preserve cleanup errors ([7cd4130](https://github.com/BitGo/BitGoJS/commit/7cd4130c2479004fded635d4f8711090e1bcfb4d))
+
+
 # [11.6.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-lib-mpc%4011.5.0...%40bitgo%2Fsdk-lib-mpc%4011.6.0) (2026-10-20)
 
 ### Bug Fixes

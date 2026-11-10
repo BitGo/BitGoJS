@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [54.4.0](https://github.com/BitGo/BitGoJS/compare/bitgo%4054.3.2...bitgo%4054.4.0) (2026-11-10)
+
+### Features
+
+* **sdk-core:** forward attestation through signAndSendTxRequest ([b560574](https://github.com/BitGo/BitGoJS/commit/b5605742a17f465f27729ae132dfdc975dda2936))
+* **sdk-core:** gate sign-time key upgrades ([70601bd](https://github.com/BitGo/BitGoJS/commit/70601bd717cc6152d5c2536ca865c5a59f42c9b5))
+* **sdk-core:** return key upgrade results ([34c92e0](https://github.com/BitGo/BitGoJS/commit/34c92e0c8038c475c2487305760ef664866447e8))
+* **sdk-core:** upgrade v1 user keys to v2 on sign ([ba831c2](https://github.com/BitGo/BitGoJS/commit/ba831c22d3e7e115ea48a7f299eb01bc7038605b))
+
+
 ## [54.3.2](https://github.com/BitGo/BitGoJS/compare/bitgo%4054.3.1...bitgo%4054.3.2) (2026-11-05)
 
 **Note:** Version bump only for package bitgo

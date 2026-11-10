@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.9](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-xdc%402.0.8...%40bitgo%2Fsdk-coin-xdc%402.0.9) (2026-11-10)
+
+### Bug Fixes
+
+* **abstract-eth:** harden EVM TSS payment and consolidation checks ([d52cc25](https://github.com/BitGo/BitGoJS/commit/d52cc25654e72fc8fddefd46b26764488a7db69a))
+
+
 ## [2.0.8](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-xdc%402.0.7...%40bitgo%2Fsdk-coin-xdc%402.0.8) (2026-11-05)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xdc

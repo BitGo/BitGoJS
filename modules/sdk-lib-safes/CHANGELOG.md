@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.9.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-lib-safes%401.8.4...%40bitgo%2Fsdk-lib-safes%401.9.0) (2026-11-10)
+
+### Features
+
+* sign and share ed25519 multisig safe wallets ([bb4fa6d](https://github.com/BitGo/BitGoJS/commit/bb4fa6d24ad7356a5bfa78248f3fabb6dc91fc42))
+
+
 ## [1.8.4](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-lib-safes%401.8.3...%40bitgo%2Fsdk-lib-safes%401.8.4) (2026-11-05)
 
 **Note:** Version bump only for package @bitgo/sdk-lib-safes
