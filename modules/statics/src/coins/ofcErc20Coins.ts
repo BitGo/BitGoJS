@@ -5234,6 +5234,48 @@ export const tOfcErc20Coins = [
     undefined,
     'sepeth'
   ),
+  tofcerc20(
+    '16a89ad7-d8b1-49c6-953c-344f2041044f',
+    'ofcsepeth:link',
+    'Sepolia Testnet ChainLink',
+    18,
+    UnderlyingAsset['sepeth:link'],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'sepeth'
+  ),
+  tofcerc20(
+    'dc9626a5-23dc-4e16-a489-f789205839a6',
+    'ofcsepeth:aave',
+    'Sepolia Testnet Aave',
+    18,
+    UnderlyingAsset['sepeth:aave'],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'sepeth'
+  ),
+  tofcerc20(
+    '506da346-8ccd-4238-baac-15d9f38dd4a7',
+    'ofcsepeth:uni',
+    'Sepolia Testnet Uniswap',
+    18,
+    UnderlyingAsset['sepeth:uni'],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'sepeth'
+  ),
 
   ofcerc20(
     'cc2a92cf-d799-463b-b08c-e9a4d5e87934',
