@@ -1,0 +1,81 @@
+name: Verify published versions
+description: >-
+  Confirms every non-private package's current version resolves on the npm
+  registry, sweeping with retries so freshly published versions ride out
+  registry metadata propagation delay. bitgo is private but published via
+  lerna --include-private, so it is only expected on the registry once the
+  dedicated bitgo publish pass has run (control with include-bitgo).
+
+inputs:
+  attempts:
+    description: Maximum number of registry sweeps before failing
+    required: false
+    default: "5"
+  sleep-seconds:
+    description: Seconds to wait between sweeps
+    required: false
+    default: "10"
+  include-bitgo:
+    description: >-
+      Whether to also verify the private bitgo package. The sibling publish
+      pass runs before bitgo is published, so pass 1 must set this to false.
+    required: false
+    default: "true"
+  error-title:
+    description: Error annotation shown when versions are still missing after all attempts
+    required: false
+    default: "Versions still missing from npm"
+
+runs:
+  using: composite
+  steps:
+    - name: Verify package versions resolve on npm
+      shell: bash
+      env:
+        ATTEMPTS: ${{ inputs.attempts }}
+        SLEEP_SECONDS: ${{ inputs.sleep-seconds }}
+        INCLUDE_BITGO: ${{ inputs.include-bitgo }}
+        ERROR_TITLE: ${{ inputs.error-title }}
+      run: |
+        set -euo pipefail
+
+        # Walk every non-private package and confirm the version in its
+        # package.json resolves on the npm registry. This catches the case
+        # where lerna reports success (or a tolerated publish conflict) but
+        # a version never landed. Freshly published versions can still 404
+        # for a short while until registry metadata propagates (WCI-1754:
+        # run 37556916002 404'd bitgo seconds after a successful publish),
+        # so sweep with retries before failing the release.
+        missing=()
+        for attempt in $(seq 1 "$ATTEMPTS"); do
+          missing=()
+          for f in modules/*/package.json; do
+            # bitgo is private but published via lerna --include-private;
+            # INCLUDE_BITGO decides whether it is expected on the registry yet.
+            if [ "$INCLUDE_BITGO" != "true" ] && [ "$f" = "modules/bitgo/package.json" ]; then
+              continue
+            fi
+            if [ "$(jq -r '.private // false' "$f")" = "true" ] && [ "$f" != "modules/bitgo/package.json" ]; then
+              continue
+            fi
+            name=$(jq -r '.name' "$f")
+            version=$(jq -r '.version' "$f")
+            code=$(curl -sL -o /dev/null -w "%{http_code}" -- "https://registry.npmjs.org/${name}/${version}")
+            if [ "$code" != "200" ]; then
+              missing+=("${name}@${version} (HTTP ${code})")
+            fi
+          done
+          if [ "${#missing[@]}" -eq 0 ]; then
+            echo "✅ All expected package versions resolve on npm (sweep ${attempt}/${ATTEMPTS})."
+            exit 0
+          fi
+          echo "Sweep ${attempt}/${ATTEMPTS} — not yet resolvable on npm (registry propagation delay?):"
+          printf '  - %s\n' "${missing[@]}"
+          if [ "$attempt" -lt "$ATTEMPTS" ]; then
+            sleep "$SLEEP_SECONDS"
+          fi
+        done
+
+        echo "::error::${ERROR_TITLE}:"
+        printf '  - %s\n' "${missing[@]}"
+        exit 1
