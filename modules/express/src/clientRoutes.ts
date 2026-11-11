@@ -53,9 +53,10 @@ import * as superagent from 'superagent';
 import { RequestTracer } from 'bitgo/dist/src/v2/internal/util';
 
 import { Config } from './config';
-import { ApiResponseError, BitGoExpressError } from './errors';
+import { ApiResponseError, BitGoExpressError, ExternalSignerConfigError } from './errors';
 import { promises as fs } from 'fs';
 import { retryPromise } from './retryPromise';
+import { computeConsumedShareKey, getConsumedShareRegistry, isSameFilePath } from './consumedSharesRegistry';
 import { SENSITIVE_REQUEST_KEYS } from './sensitiveRequestKeys';
 import {
   handleCreateSignerMacaroon,
@@ -439,6 +440,38 @@ async function getEncryptedPrivKey(path: string, walletId: string): Promise<stri
   return encryptedPrivKey[walletId];
 }
 
+/**
+ * Marks an encrypted share as consumed for this wallet. Each wShare (MuDelta
+ * round) and oShare (S round) ciphertext may be used exactly once; a replayed
+ * ciphertext throws before the share is used (fail-closed).
+ */
+function markConsumedShareClosure(
+  registryFilePath: string,
+  shareType: string,
+  encryptedShare: unknown
+): (adata: string) => void {
+  if (typeof encryptedShare !== 'string' || !encryptedShare) {
+    throw new ApiResponseError('Missing encrypted share in request', 400);
+  }
+  // Cheap pre-checks before the helper runs: an unparseable body or one without string
+  // iv/ct would fail decryption anyway, and rejecting it early with a 400 keeps junk
+  // requests from ever reaching the registry.
+  let envelope: Record<string, unknown>;
+  try {
+    envelope = JSON.parse(encryptedShare) as Record<string, unknown>;
+  } catch {
+    throw new ApiResponseError('Invalid encrypted share envelope', 400);
+  }
+  if (typeof envelope.iv !== 'string' || typeof envelope.ct !== 'string') {
+    throw new ApiResponseError('Invalid encrypted share envelope', 400);
+  }
+  // The registry key is the validated adata (assigned by the SDK helper after AEAD
+  // authentication), so re-serialization or byte-level malleation of the envelope
+  // cannot mint a fresh key.
+  return (adata: string) =>
+    getConsumedShareRegistry(registryFilePath).markConsumed(computeConsumedShareKey(shareType, adata));
+}
+
 async function decryptPrivKey(bg: BitGo, encryptedPrivKey: string, walletPw: string): Promise<string> {
   try {
     return await bg.decrypt({ password: walletPw, input: encryptedPrivKey });
@@ -466,6 +499,12 @@ export async function handleV2GenerateShareTSS(
 
   if (!signerFileSystemPath) {
     throw new Error('Missing required configuration: signerFileSystemPath');
+  }
+  const registryFilePath = req.config.signerRegistryFilePath ?? `${signerFileSystemPath}.consumedShares.json`;
+  if (isSameFilePath(registryFilePath, signerFileSystemPath)) {
+    throw new ExternalSignerConfigError(
+      'signerRegistryFilePath must not equal signerFileSystemPath — the consumed-share registry would overwrite the encrypted private keys file.'
+    );
   }
 
   const encryptedPrivKey = await getEncryptedPrivKey(signerFileSystemPath, walletId);
@@ -540,10 +579,22 @@ export async function handleV2GenerateShareTSS(
             return ecdsaUtils.getOfflineSignerPaillierModulus(req.body);
           case ShareType.K:
             return await ecdsaUtils.createOfflineKShare(req.body);
-          case ShareType.MuDelta:
+          case ShareType.MuDelta: {
+            req.body.markConsumed = markConsumedShareClosure(
+              registryFilePath,
+              req.decoded.sharetype,
+              req.body.encryptedWShare
+            );
             return await ecdsaUtils.createOfflineMuDeltaShare(req.body);
-          case ShareType.S:
+          }
+          case ShareType.S: {
+            req.body.markConsumed = markConsumedShareClosure(
+              registryFilePath,
+              req.decoded.sharetype,
+              req.body.encryptedOShare
+            );
             return await ecdsaUtils.createOfflineSShare(req.body);
+          }
           default:
             throw new Error(
               `Share type ${req.decoded.sharetype} not supported, only PaillierModulus, K, MUDelta, and S share generation is supported.`

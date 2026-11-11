@@ -25,8 +25,9 @@ export type {
   EddsaMPCv2KeyGenRound2Callback,
   EddsaMPCv2KeyGenFinalizeCallback,
 } from './bitgo/wallet/iWallets';
-import { EcdsaUtils } from './bitgo/utils/tss/ecdsa/ecdsa';
+import { EcdsaUtils, OFFLINE_SIGNING_SHARE_MAX_AGE_MS } from './bitgo/utils/tss/ecdsa/ecdsa';
 export { EcdsaUtils };
+export { OFFLINE_SIGNING_SHARE_MAX_AGE_MS };
 import { EcdsaMPCv2Utils } from './bitgo/utils/tss/ecdsa/ecdsaMPCv2';
 export { EcdsaMPCv2Utils };
 import { EddsaMPCv2Utils } from './bitgo/utils/tss/eddsa/eddsaMPCv2';

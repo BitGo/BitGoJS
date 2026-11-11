@@ -28,6 +28,7 @@ import {
 
 import { Environments } from 'bitgo';
 import * as clientRoutes from './clientRoutes';
+import { isSameFilePath } from './consumedSharesRegistry';
 import { getBitGoTlsPolicy } from './tlsPolicy';
 
 /**
@@ -211,6 +212,7 @@ function checkPreconditions(config: Config) {
     externalSignerUrl,
     signerMode,
     signerFileSystemPath,
+    signerRegistryFilePath,
     lightningSignerFileSystemPath,
   } = config;
 
@@ -261,8 +263,21 @@ function checkPreconditions(config: Config) {
     );
   }
 
+  if (
+    signerFileSystemPath !== undefined &&
+    signerRegistryFilePath !== undefined &&
+    isSameFilePath(signerRegistryFilePath, signerFileSystemPath)
+  ) {
+    throw new ExternalSignerConfigError(
+      'signerRegistryFilePath must not equal signerFileSystemPath — the consumed-share registry would overwrite the encrypted private keys file.'
+    );
+  }
+
   if (signerFileSystemPath !== undefined) {
     checkJsonFilePath(signerFileSystemPath);
+    debug(
+      `consumed-share registry path: ${config.signerRegistryFilePath ?? `${signerFileSystemPath}.consumedShares.json`}`
+    );
   }
 
   if (lightningSignerFileSystemPath !== undefined) {

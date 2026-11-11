@@ -166,7 +166,13 @@ export interface CustomKShareGeneratingFunction {
 
 export interface CustomMuDeltaShareGeneratingFunction {
   (params: {
-    txRequest: TxRequest;
+    /** Bound signable context; enables adata validation. */
+    tssParams?: TSSParams | TSSParamsForMessage;
+    requestType?: RequestType;
+    /** Legacy relays pass txRequest at top level; still adata-validated. */
+    txRequest?: TxRequest;
+    /** Injected by the express signer route; enables modulus validation. */
+    prv?: string;
     aShareFromBitgo: Omit<AShare, 'ntilde' | 'h1' | 'h2'>;
     bitgoChallenge: TxRequestChallengeResponse;
     encryptedWShare: string;
