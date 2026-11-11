@@ -15,7 +15,6 @@ import {
   ShareKeyPosition,
   TxRequest,
   SignatureShareRecord,
-  BitgoMpcGpgPubKeys,
 } from '@bitgo/sdk-core';
 import { Hash, createPublicKey, randomBytes, verify as cryptoVerify } from 'crypto';
 import { logger } from '@bitgo/logger';

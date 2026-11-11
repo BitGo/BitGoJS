@@ -499,6 +499,8 @@ function markConsumedOfflineSessionClosure(
     throw new ApiResponseError('Invalid encrypted session envelope', 400);
   }
   return () => getConsumedShareRegistry(registryFilePath).markConsumed(computeConsumedShareKey(shareType, digest));
+}
+
 /** Share-round failures are caller-input failures; surface them as 400s,
  * passing through errors that already carry an HTTP status. */
 async function rejectInvalidShareRequest<T>(operation: () => Promise<T>): Promise<T> {

@@ -28,8 +28,8 @@ import {
 
 import { Environments } from 'bitgo';
 import { envRequiresBitgoPubGpgKeyConfig } from '@bitgo/sdk-core';
-import * as clientRoutes from './clientRoutes';
 import { isSameFilePath } from './consumedSharesRegistry';
+import * as clientRoutes from './clientRoutes';
 import { getBitGoTlsPolicy } from './tlsPolicy';
 
 /**
