@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## Unreleased
+
+* **sdk-core:** allow WalletConnect message and typed-data signing requests to carry `isWalletConnectTx: true` (DEFI-1069).
+
 # [40.6.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4040.5.1...%40bitgo%2Fsdk-core%4040.6.0) (2026-11-10)
 
 ### Bug Fixes
@@ -21,7 +25,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 * **sdk-core:** return key upgrade results ([34c92e0](https://github.com/BitGo/BitGoJS/commit/34c92e0c8038c475c2487305760ef664866447e8))
 * **sdk-core:** upgrade v1 user keys to v2 on sign ([ba831c2](https://github.com/BitGo/BitGoJS/commit/ba831c22d3e7e115ea48a7f299eb01bc7038605b))
 * sign and share ed25519 multisig safe wallets ([bb4fa6d](https://github.com/BitGo/BitGoJS/commit/bb4fa6d24ad7356a5bfa78248f3fabb6dc91fc42))
-
 
 ## [40.5.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4040.5.0...%40bitgo%2Fsdk-core%4040.5.1) (2026-11-05)
 
