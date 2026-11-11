@@ -267,6 +267,7 @@ export class Transaction extends BaseTransaction {
     // *requested* amount, not what was actually delivered — surface that via the flag so
     // consumers don't treat outputAmount as the settled value.
     const partialPayment = utils.isPartialPayment(tx.Flags as number);
+    const spendLimits = utils.getPaymentSpendLimits(tx);
 
     return {
       displayOrder: [
@@ -277,6 +278,7 @@ export class Transaction extends BaseTransaction {
         'changeOutputs',
         'fee',
         ...(partialPayment ? ['partialPayment'] : []),
+        ...Object.keys(spendLimits),
       ],
       id: this._id as string,
       changeOutputs: [],
@@ -293,6 +295,7 @@ export class Transaction extends BaseTransaction {
         feeRate: undefined,
       },
       ...(partialPayment ? { partialPayment: true } : {}),
+      ...spendLimits,
     };
   }
 

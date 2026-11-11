@@ -353,6 +353,7 @@ export class Xrp extends BaseCoin {
       const partialPayment = utils.isPartialPayment(transaction.Flags as number);
       const deliveredValue = partialPayment ? utils.getDeliveredAmountValue(params.meta) : undefined;
       const outputAmount = deliveredValue !== undefined ? deliveredValue : transaction.Amount;
+      const spendLimits = utils.getPaymentSpendLimits(transaction);
       return {
         displayOrder: [
           'id',
@@ -362,6 +363,7 @@ export class Xrp extends BaseCoin {
           'changeOutputs',
           'fee',
           ...(partialPayment ? ['partialPayment'] : []),
+          ...Object.keys(spendLimits),
         ],
         id: id,
         changeOutputs: [],
@@ -379,6 +381,7 @@ export class Xrp extends BaseCoin {
           size: txHex.length / 2,
         },
         ...(partialPayment ? { partialPayment: true } : {}),
+        ...spendLimits,
       };
     }
 

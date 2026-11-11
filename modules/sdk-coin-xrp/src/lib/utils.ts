@@ -12,7 +12,7 @@ import * as url from 'url';
 import * as xrpl from 'xrpl';
 import { Amount, IssuedCurrencyAmount, isMPTAmount, MPTAmount } from 'xrpl';
 import { TF_PARTIAL_PAYMENT, VALID_ACCOUNT_SET_FLAGS } from './constants';
-import { Address, SignerDetails } from './iface';
+import { Address, PaymentSpendLimits, SignerDetails } from './iface';
 import { KeyPair as XrpKeyPair } from './keyPair';
 import assert from 'assert';
 
@@ -240,6 +240,14 @@ class Utils implements BaseUtils {
    */
   public isPartialPayment(flags: number | undefined): boolean {
     return (Number(flags) & TF_PARTIAL_PAYMENT) !== 0;
+  }
+
+  public getPaymentSpendLimits(tx: xrpl.Payment): PaymentSpendLimits {
+    return {
+      ...(tx.SendMax !== undefined ? { sendMax: tx.SendMax } : {}),
+      ...(tx.Paths !== undefined ? { hasPaths: true } : {}),
+      ...(tx.DeliverMin !== undefined ? { deliverMin: tx.DeliverMin } : {}),
+    };
   }
 
   /**

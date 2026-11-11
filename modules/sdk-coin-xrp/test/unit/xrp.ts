@@ -12,7 +12,8 @@ import * as nock from 'nock';
 import * as rippleBinaryCodec from 'ripple-binary-codec';
 import sinon from 'sinon';
 import * as xrpl from 'xrpl';
-import { XrpToken } from '../../src';
+import { Transaction, XrpToken } from '../../src';
+import { coins } from '@bitgo/statics';
 import * as testData from '../resources/xrp';
 import { SIGNER_BACKUP, SIGNER_BITGO, SIGNER_USER } from '../resources/xrp';
 import { getMptBuilderFactory } from './getBuilderFactory';
@@ -482,6 +483,54 @@ describe('XRP:', function () {
     });
     explanation.partialPayment.should.equal(true);
     explanation.outputAmount.should.equal('0.005');
+  });
+
+  describe('Payment spend limits (SendMax, Paths, DeliverMin)', function () {
+    const crossCurrencyPayment = {
+      TransactionType: 'Payment',
+      Account: 'rBSpCz8PafXTJHppDcNnex7dYnbe3tSuFG',
+      Destination: 'rfjub8A4dpSD5nnszUFTsLprxu1W398jwc',
+      Amount: '1',
+      SendMax: {
+        currency: '524C555344000000000000000000000000000000',
+        issuer: 'rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV',
+        value: '100000',
+      },
+      Paths: [[{ currency: 'USD', issuer: 'rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV', type: 48 }]],
+      DeliverMin: '1',
+      Flags: 2147483648,
+      Fee: '45',
+      Sequence: 7,
+    };
+
+    it('should surface SendMax, Paths and DeliverMin in the explanation', async function () {
+      const explanation = await basecoin.explainTransaction({ txHex: JSON.stringify(crossCurrencyPayment) });
+      explanation.sendMax.should.deepEqual(crossCurrencyPayment.SendMax);
+      explanation.hasPaths.should.equal(true);
+      explanation.deliverMin.should.equal('1');
+      explanation.displayOrder.should.containEql('sendMax');
+      explanation.displayOrder.should.containEql('hasPaths');
+      explanation.displayOrder.should.containEql('deliverMin');
+    });
+
+    it('should surface the same fields from the lib-level transaction explainer', async function () {
+      // xrpl rejects DeliverMin without tfPartialPayment, so this payload omits it.
+      const paymentWithoutDeliverMin = _.omit(crossCurrencyPayment, 'DeliverMin');
+      const txHex = xrpl.encode(paymentWithoutDeliverMin as xrpl.Payment);
+      const transaction = new Transaction(coins.get('txrp'));
+      transaction.fromRawTransaction(txHex);
+      const explanation = transaction.explainTransaction();
+      explanation.sendMax.should.deepEqual(crossCurrencyPayment.SendMax);
+      explanation.hasPaths.should.equal(true);
+    });
+
+    it('should not add spend-limit fields to a plain payment', async function () {
+      const plainPayment = _.omit(crossCurrencyPayment, ['SendMax', 'Paths', 'DeliverMin']);
+      const explanation = await basecoin.explainTransaction({ txHex: JSON.stringify(plainPayment) });
+      explanation.should.not.have.property('sendMax');
+      explanation.should.not.have.property('hasPaths');
+      explanation.should.not.have.property('deliverMin');
+    });
   });
 
   describe('Fee Management', () => {
