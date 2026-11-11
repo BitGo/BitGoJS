@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.30.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fstatics%4059.29.0...%40bitgo%2Fstatics%4059.30.0) (2026-11-10)
+
+### Bug Fixes
+
+* **statics:** change chiliz:og token name to OG Token ([c4f7bb3](https://github.com/BitGo/BitGoJS/commit/c4f7bb3143c2c592ce4418c220a909a4a2c1a4f3))
+* **statics:** correct FLRP transaction explorer URL ([709af9f](https://github.com/BitGo/BitGoJS/commit/709af9f09928959cd184f2d062bee61a873cf795))
+* **statics:** disable pearl and tpearl custody in BitGo Korea ([447f529](https://github.com/BitGo/BitGoJS/commit/447f529d16f268402104dc69eaa0a96e08a07ad3))
+* **statics:** pre-populate networkFeatureMapForTokens for EVM families ([e29efe1](https://github.com/BitGo/BitGoJS/commit/e29efe1371af984fad0e7e93ec854828ad86df9e))
+* **statics:** update hsdt display names ([79b874c](https://github.com/BitGo/BitGoJS/commit/79b874c415014cb8dace411313a90175796f29e0))
+
+### Features
+
+* onboard txlm:yGHS testnet asset (CSHLD-2208) ([bfacbd7](https://github.com/BitGo/BitGoJS/commit/bfacbd75b74ddaad0dbf6c5c69a999c69fcf53a4))
+* **statics:** onboard LINK, AAVE, and UNI testnet tokens on Sepolia ([2c4072c](https://github.com/BitGo/BitGoJS/commit/2c4072cce008f45288b8d46a344634b89f5764a8))
+
+
 ## Unreleased
 
 ### Bug Fixes

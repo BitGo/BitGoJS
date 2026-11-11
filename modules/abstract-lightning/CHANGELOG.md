@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [8.7.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fabstract-lightning%408.6.6...%40bitgo%2Fabstract-lightning%408.7.0) (2026-11-10)
+
+### Features
+
+* **sdk-core:** gate sign-time key upgrades ([70601bd](https://github.com/BitGo/BitGoJS/commit/70601bd717cc6152d5c2536ca865c5a59f42c9b5))
+* **sdk-core:** return key upgrade results ([34c92e0](https://github.com/BitGo/BitGoJS/commit/34c92e0c8038c475c2487305760ef664866447e8))
+* **sdk-core:** upgrade v1 user keys to v2 on sign ([ba831c2](https://github.com/BitGo/BitGoJS/commit/ba831c22d3e7e115ea48a7f299eb01bc7038605b))
+
+
 ## [8.6.6](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fabstract-lightning%408.6.5...%40bitgo%2Fabstract-lightning%408.6.6) (2026-11-05)
 
 **Note:** Version bump only for package @bitgo/abstract-lightning

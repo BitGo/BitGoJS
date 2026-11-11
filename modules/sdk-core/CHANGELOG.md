@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [40.6.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4040.5.1...%40bitgo%2Fsdk-core%4040.6.0) (2026-11-10)
+
+### Bug Fixes
+
+* **sdk-core:** cap iter and mode in EdDSA v1 recovery decrypt ([622de58](https://github.com/BitGo/BitGoJS/commit/622de58e35f08d29bfaf779ccb3c6f2c91428f9c))
+* **sdk-core:** preserve token identity in MPCv1 approvals ([8518720](https://github.com/BitGo/BitGoJS/commit/85187208b0f96c655a590d0de576656a85953e91))
+* **sdk-core:** preserve token identity in MPCv2 approvals ([d4235db](https://github.com/BitGo/BitGoJS/commit/d4235dbbba0bf1556446f21dd97e308d3bef22ec))
+* **sdk-core:** screen the envelope SJCL actually decodes ([154d18a](https://github.com/BitGo/BitGoJS/commit/154d18a0dc46214c26a7cbb3f0f3646460a6f5bb))
+* **sdk-core:** share v1 envelope screening with sdk-api ([c58ce64](https://github.com/BitGo/BitGoJS/commit/c58ce6485872f14dcf517eed1393a5784614f8a2))
+
+### Features
+
+* **sdk-api:** add upgradeEncryptionOnSign option ([ab6d04a](https://github.com/BitGo/BitGoJS/commit/ab6d04a62ea16a4fadc0d7d1fe6566fc0cf7a2cd))
+* **sdk-core:** forward attestation through signAndSendTxRequest ([b560574](https://github.com/BitGo/BitGoJS/commit/b5605742a17f465f27729ae132dfdc975dda2936))
+* **sdk-core:** gate sign-time key upgrades ([70601bd](https://github.com/BitGo/BitGoJS/commit/70601bd717cc6152d5c2536ca865c5a59f42c9b5))
+* **sdk-core:** return key upgrade results ([34c92e0](https://github.com/BitGo/BitGoJS/commit/34c92e0c8038c475c2487305760ef664866447e8))
+* **sdk-core:** upgrade v1 user keys to v2 on sign ([ba831c2](https://github.com/BitGo/BitGoJS/commit/ba831c22d3e7e115ea48a7f299eb01bc7038605b))
+* sign and share ed25519 multisig safe wallets ([bb4fa6d](https://github.com/BitGo/BitGoJS/commit/bb4fa6d24ad7356a5bfa78248f3fabb6dc91fc42))
+
+
 ## [40.5.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4040.5.0...%40bitgo%2Fsdk-core%4040.5.1) (2026-11-05)
 
 ### Bug Fixes

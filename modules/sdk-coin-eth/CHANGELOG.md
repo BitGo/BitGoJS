@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [26.8.2](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-eth%4026.8.1...%40bitgo%2Fsdk-coin-eth%4026.8.2) (2026-11-10)
+
+### Bug Fixes
+
+* **abstract-eth:** harden EVM TSS payment and consolidation checks ([d52cc25](https://github.com/BitGo/BitGoJS/commit/d52cc25654e72fc8fddefd46b26764488a7db69a))
+* **sdk-core:** preserve token identity in MPCv1 approvals ([8518720](https://github.com/BitGo/BitGoJS/commit/85187208b0f96c655a590d0de576656a85953e91))
+* **sdk-core:** preserve token identity in MPCv2 approvals ([d4235db](https://github.com/BitGo/BitGoJS/commit/d4235dbbba0bf1556446f21dd97e308d3bef22ec))
+
+
 ## [26.8.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-eth%4026.8.0...%40bitgo%2Fsdk-coin-eth%4026.8.1) (2026-11-05)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-eth

@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.3.9](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fabstract-substrate%402.3.8...%40bitgo%2Fabstract-substrate%402.3.9) (2026-11-10)
+
+**Note:** Version bump only for package @bitgo/abstract-substrate
+
+
+
+
+
 ## [2.3.8](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fabstract-substrate%402.3.7...%40bitgo%2Fabstract-substrate%402.3.8) (2026-11-05)
 
 **Note:** Version bump only for package @bitgo/abstract-substrate

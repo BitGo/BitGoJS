@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.10.9](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-rune%401.10.8...%40bitgo%2Fsdk-coin-rune%401.10.9) (2026-11-10)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-rune
+
+
+
+
+
 ## [1.10.8](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-rune%401.10.7...%40bitgo%2Fsdk-coin-rune%401.10.8) (2026-11-05)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-rune
