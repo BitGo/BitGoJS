@@ -41,6 +41,11 @@ import {
 import { auditEcdsaPrivateKey } from '@bitgo/sdk-lib-mpc';
 import { Enum, Interface, Utils, WrappedBuilder, KeyPair as TronKeyPair } from './lib';
 import { ValueFields, TransactionReceipt, RawData } from './lib/iface';
+
+/** Narrow wallet shape needed by consolidation destination validation. */
+interface WalletWithCoinSpecific {
+  coinSpecific?(): { baseAddress?: string; rootAddress?: string } | undefined;
+}
 import { getBuilder } from './lib/builder';
 import { isInteger, isUndefined } from 'lodash';
 
@@ -394,7 +399,7 @@ export class Trx extends BaseCoin {
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    const { txParams, txPrebuild, walletType } = params;
+    const { txParams, txPrebuild, walletType, wallet } = params;
 
     if (!txParams) {
       throw new Error('missing txParams');
@@ -425,7 +430,7 @@ export class Trx extends BaseCoin {
         if (!Array.isArray(decodedTx.contract) || decodedTx.contract.length !== 1) {
           throw new Error('Invalid Transfer contract structure.');
         }
-        return this.validateTransferContract(decodedTx.contract[0], txParams, true);
+        return this.validateTransferContract(decodedTx.contract[0], txParams, wallet, true);
       }
 
       if (decodedTx.contractType === Enum.ContractType.TriggerSmartContract) {
@@ -434,7 +439,7 @@ export class Trx extends BaseCoin {
         // trx:<token> wallet), which routes their verification here, so validate the recipient
         // and amount instead of throwing (CECHO-2248). This is the same validation performed by
         // TrxToken.verifyTransaction and still fails closed on any mismatch.
-        return this.validateTriggerSmartContract(decodedTx, txParams, txPrebuild);
+        return this.validateTriggerSmartContract(decodedTx, txParams, txPrebuild, wallet);
       }
 
       return true;
@@ -454,7 +459,7 @@ export class Trx extends BaseCoin {
     const contract = txJson.raw_data.contract[0];
 
     if (contract.type === 'TransferContract') {
-      return this.validateTransferContract(contract, txParams);
+      return this.validateTransferContract(contract, txParams, wallet);
     } else {
       return true;
     }
@@ -484,10 +489,16 @@ export class Trx extends BaseCoin {
    *
    * @param contract The contract object from the transaction
    * @param txParams The original transaction parameters
+   * @param wallet The wallet object, used to verify consolidation destinations
    * @param addressesInBase58 When true, addresses are already in base58 format (TSS path via protobuf decoding).
    *   When false (default), addresses are in hex and need conversion (on-chain multisig path via builder JSON).
    */
-  private validateTransferContract(contract: any, txParams: any, addressesInBase58 = false): boolean {
+  private validateTransferContract(
+    contract: any,
+    txParams: any,
+    wallet: WalletWithCoinSpecific | undefined,
+    addressesInBase58 = false
+  ): boolean {
     if (!('parameter' in contract) || !contract.parameter?.value) {
       throw new Error('Invalid Transfer contract structure');
     }
@@ -499,16 +510,17 @@ export class Trx extends BaseCoin {
       throw new Error('Invalid transfer amount');
     }
 
-    // If txParams has recipients, validate against expected values
+    const actualDestination = addressesInBase58
+      ? Utils.getBase58AddressFromHexAddress(value.to_address)
+      : Utils.getBase58AddressFromHex(value.to_address);
+
     if (txParams.recipients && txParams.recipients.length === 1) {
+      // Client-supplied recipients: validate destination and amount match exactly
       const recipient = txParams.recipients[0];
       const expectedAmount = recipient.amount.toString();
       // Canonicalize client-supplied address (base58 / 0x... / 41...) before comparing (COINS-1575).
       const expectedDestination = Utils.getBase58AddressFromHexAddress(recipient.address);
       const actualAmount = value.amount.toString();
-      const actualDestination = addressesInBase58
-        ? Utils.getBase58AddressFromHexAddress(value.to_address)
-        : Utils.getBase58AddressFromHex(value.to_address);
 
       if (expectedAmount !== actualAmount) {
         throw new Error('transaction amount in txPrebuild does not match the value given by client');
@@ -517,9 +529,43 @@ export class Trx extends BaseCoin {
       if (expectedDestination.toLowerCase() !== actualDestination.toLowerCase()) {
         throw new Error('destination address does not match with the recipient address');
       }
+    } else if (txParams.recipients && txParams.recipients.length > 1) {
+      // Bulk withdrawal (sendMany): the platform builds one TransferContract per recipient,
+      // so txParams.recipients has all entries but this prebuild matches only one.
+      // Verify the prebuild's destination + amount matches at least one recipient.
+      const actualAmount = value.amount.toString();
+      const matched = txParams.recipients.some((recipient: Recipient) => {
+        const expectedDestination = Utils.getBase58AddressFromHexAddress(recipient.address);
+        const expectedAmount = recipient.amount.toString();
+        return expectedAmount === actualAmount && expectedDestination.toLowerCase() === actualDestination.toLowerCase();
+      });
+      if (!matched) {
+        throw new Error('transaction in txPrebuild does not match any recipient in txParams');
+      }
+    } else {
+      // No recipients (consolidation flow): destination must be a wallet-owned address (CHALO-2125)
+      this.validateConsolidationDestination(wallet, actualDestination);
     }
 
     return true;
+  }
+
+  /**
+   * Validate that a consolidation destination is the wallet's own base address.
+   * Shared by both native TRX and TRC20 validation paths (CHALO-2125).
+   */
+  private validateConsolidationDestination(
+    wallet: WalletWithCoinSpecific | undefined,
+    actualDestination: string
+  ): void {
+    const coinSpecific = wallet?.coinSpecific?.();
+    const baseAddress = coinSpecific?.baseAddress || coinSpecific?.rootAddress;
+    if (!baseAddress) {
+      throw new Error('missing wallet base address for consolidation destination validation');
+    }
+    if (Utils.getBase58AddressFromHexAddress(baseAddress).toLowerCase() !== actualDestination.toLowerCase()) {
+      throw new Error('consolidation destination address does not match wallet base address');
+    }
   }
 
   /**
@@ -527,14 +573,15 @@ export class Trx extends BaseCoin {
    * Shared by native Trx.verifyTransaction (which receives token transfers whose verification
    * was routed through the native coin) and TrxToken.verifyTransaction.
    *
-   * Always verifies contract structure and ABI decodability. Intent validation (address + amount
-   * comparison) is performed only when recipients are present — absent recipients indicates a
-   * server-determined transfer (e.g. consolidation) where the server owns the intent.
+   * Always verifies contract structure and ABI decodability. When recipients are present,
+   * validates destination and amount against client intent. When absent (consolidation),
+   * validates the destination is the wallet's base address (CHALO-2125).
    */
   protected validateTriggerSmartContract(
     decodedTx: RawData,
     txParams: TransactionParams,
-    txPrebuild: BaseTransactionPrebuild
+    txPrebuild: BaseTransactionPrebuild,
+    wallet?: WalletWithCoinSpecific
   ): boolean {
     if (!Array.isArray(decodedTx.contract) || decodedTx.contract.length !== 1) {
       throw new Error('Invalid TriggerSmartContract structure');
@@ -555,19 +602,21 @@ export class Trx extends BaseCoin {
       throw new Error(`Failed to decode TRC20 transfer ABI data: ${e instanceof Error ? e.message : String(e)}`);
     }
 
+    // recipientHex has '41' hex prefix; convert to base58 for comparison.
+    const actualDestination = Utils.getBase58AddressFromHex(recipientHex);
+
     const recipients =
       txParams.recipients || (txPrebuild.txInfo as { recipients?: Recipient[] } | undefined)?.recipients;
     if (!recipients || recipients.length === 0) {
-      // No recipients — server-determined transfer (e.g. consolidation); structural check above is sufficient.
+      // No recipients (consolidation flow): destination must be a wallet-owned address (CHALO-2125)
+      this.validateConsolidationDestination(wallet, actualDestination);
       return true;
     }
     if (recipients.length !== 1) {
       throw new Error('invalid required property recipients');
     }
 
-    // recipientHex has '41' hex prefix; convert to base58 for comparison.
     // Canonicalize the client-supplied address too so 0x... / 41... match base58 outputs (COINS-1575).
-    const actualDestination = Utils.getBase58AddressFromHex(recipientHex);
     const actualAmount = transferAmount.toString();
     const expectedDestination = Utils.getBase58AddressFromHexAddress(recipients[0].address);
     const expectedAmount = recipients[0].amount.toString();

@@ -105,13 +105,27 @@ describe('TrxToken verifyTransaction:', function () {
       );
     });
 
-    it('should return true when recipients is empty array (consolidation path)', async function () {
+    it('should return true when recipients is empty and destination matches wallet base address (consolidation path)', async function () {
+      const recipientBase58 = Utils.getBase58AddressFromHex(TRC20_RECIPIENT_HEX);
       const result = await tokenCoin.verifyTransaction({
         txPrebuild: { txHex: TRC20_RAW_DATA_HEX },
         txParams: { recipients: [] },
+        wallet: { coinSpecific: () => ({ baseAddress: recipientBase58 }) },
         walletType: 'tss',
       } as any);
       assert.strictEqual(result, true);
+    });
+
+    it('should fail consolidation when destination does not match wallet base address', async function () {
+      await assert.rejects(
+        tokenCoin.verifyTransaction({
+          txPrebuild: { txHex: TRC20_RAW_DATA_HEX },
+          txParams: { recipients: [] },
+          wallet: { coinSpecific: () => ({ baseAddress: 'TLWh67P93KgtnZNCtGnEHM1H33Nhq2uvvN' }) },
+          walletType: 'tss',
+        } as any),
+        { message: 'consolidation destination address does not match wallet base address' }
+      );
     });
 
     it('should throw when contract type is not TriggerSmartContract', async function () {

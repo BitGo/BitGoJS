@@ -474,6 +474,337 @@ describe('TRON Verify Transaction:', function () {
           message: 'destination address does not match with the recipient address',
         });
       });
+
+      it('should validate consolidation when destination matches wallet base address', async function () {
+        const timestamp = Date.now();
+        const toAddressHex = '41d6cd6a2c0ff35a319e6abb5b9503ba0278679882';
+        const toAddressBase58 = Utils.getBase58AddressFromHex(toAddressHex);
+        const transferContract = {
+          parameter: {
+            value: {
+              amount: 1000000,
+              owner_address: '4173a5993cd182ae152adad8203163f780c65a8aa5',
+              to_address: toAddressHex,
+            },
+            type_url: 'type.googleapis.com/protocol.TransferContract',
+          },
+          type: 'TransferContract',
+        };
+
+        const rawData = {
+          contract: [transferContract],
+          ref_block_bytes: 'c8cf',
+          ref_block_hash: '89177fd84c5d9196',
+          expiration: timestamp + 3600000,
+          timestamp: timestamp,
+          fee_limit: 150000000,
+        };
+
+        const transformedRawData = {
+          contract: rawData.contract as any,
+          refBlockBytes: rawData.ref_block_bytes,
+          refBlockHash: rawData.ref_block_hash,
+          expiration: rawData.expiration,
+          timestamp: rawData.timestamp,
+          feeLimit: rawData.fee_limit,
+        };
+
+        const rawDataHex = Utils.generateRawDataHex(transformedRawData);
+        const txID = createHash('sha256').update(Buffer.from(rawDataHex, 'hex')).digest('hex');
+
+        const params = {
+          txParams: {},
+          txPrebuild: {
+            txHex: JSON.stringify({
+              txID,
+              raw_data: rawData,
+              raw_data_hex: rawDataHex,
+            }),
+          },
+          wallet: { coinSpecific: () => ({ baseAddress: toAddressBase58 }) },
+        };
+
+        const result = await basecoin.verifyTransaction(params);
+        assert.strictEqual(result, true);
+      });
+
+      it('should fail consolidation when destination does not match wallet base address', async function () {
+        const timestamp = Date.now();
+        const toAddressHex = '41d6cd6a2c0ff35a319e6abb5b9503ba0278679882';
+        const transferContract = {
+          parameter: {
+            value: {
+              amount: 1000000,
+              owner_address: '4173a5993cd182ae152adad8203163f780c65a8aa5',
+              to_address: toAddressHex,
+            },
+            type_url: 'type.googleapis.com/protocol.TransferContract',
+          },
+          type: 'TransferContract',
+        };
+
+        const rawData = {
+          contract: [transferContract],
+          ref_block_bytes: 'c8cf',
+          ref_block_hash: '89177fd84c5d9196',
+          expiration: timestamp + 3600000,
+          timestamp: timestamp,
+          fee_limit: 150000000,
+        };
+
+        const transformedRawData = {
+          contract: rawData.contract as any,
+          refBlockBytes: rawData.ref_block_bytes,
+          refBlockHash: rawData.ref_block_hash,
+          expiration: rawData.expiration,
+          timestamp: rawData.timestamp,
+          feeLimit: rawData.fee_limit,
+        };
+
+        const rawDataHex = Utils.generateRawDataHex(transformedRawData);
+        const txID = createHash('sha256').update(Buffer.from(rawDataHex, 'hex')).digest('hex');
+
+        const params = {
+          txParams: {},
+          txPrebuild: {
+            txHex: JSON.stringify({
+              txID,
+              raw_data: rawData,
+              raw_data_hex: rawDataHex,
+            }),
+          },
+          wallet: { coinSpecific: () => ({ baseAddress: 'TLWh67P93KgtnZNCtGnEHM1H33Nhq2uvvN' }) },
+        };
+
+        await assert.rejects(basecoin.verifyTransaction(params), {
+          message: 'consolidation destination address does not match wallet base address',
+        });
+      });
+
+      it('should validate consolidation using rootAddress fallback', async function () {
+        const timestamp = Date.now();
+        const toAddressHex = '41d6cd6a2c0ff35a319e6abb5b9503ba0278679882';
+        const toAddressBase58 = Utils.getBase58AddressFromHex(toAddressHex);
+        const transferContract = {
+          parameter: {
+            value: {
+              amount: 1000000,
+              owner_address: '4173a5993cd182ae152adad8203163f780c65a8aa5',
+              to_address: toAddressHex,
+            },
+            type_url: 'type.googleapis.com/protocol.TransferContract',
+          },
+          type: 'TransferContract',
+        };
+
+        const rawData = {
+          contract: [transferContract],
+          ref_block_bytes: 'c8cf',
+          ref_block_hash: '89177fd84c5d9196',
+          expiration: timestamp + 3600000,
+          timestamp: timestamp,
+          fee_limit: 150000000,
+        };
+
+        const transformedRawData = {
+          contract: rawData.contract as any,
+          refBlockBytes: rawData.ref_block_bytes,
+          refBlockHash: rawData.ref_block_hash,
+          expiration: rawData.expiration,
+          timestamp: rawData.timestamp,
+          feeLimit: rawData.fee_limit,
+        };
+
+        const rawDataHex = Utils.generateRawDataHex(transformedRawData);
+        const txID = createHash('sha256').update(Buffer.from(rawDataHex, 'hex')).digest('hex');
+
+        const params = {
+          txParams: {},
+          txPrebuild: {
+            txHex: JSON.stringify({
+              txID,
+              raw_data: rawData,
+              raw_data_hex: rawDataHex,
+            }),
+          },
+          wallet: { coinSpecific: () => ({ rootAddress: toAddressBase58 }) },
+        };
+
+        const result = await basecoin.verifyTransaction(params);
+        assert.strictEqual(result, true);
+      });
+
+      it('should fail consolidation when wallet base address is missing', async function () {
+        const timestamp = Date.now();
+        const toAddressHex = '41d6cd6a2c0ff35a319e6abb5b9503ba0278679882';
+        const transferContract = {
+          parameter: {
+            value: {
+              amount: 1000000,
+              owner_address: '4173a5993cd182ae152adad8203163f780c65a8aa5',
+              to_address: toAddressHex,
+            },
+            type_url: 'type.googleapis.com/protocol.TransferContract',
+          },
+          type: 'TransferContract',
+        };
+
+        const rawData = {
+          contract: [transferContract],
+          ref_block_bytes: 'c8cf',
+          ref_block_hash: '89177fd84c5d9196',
+          expiration: timestamp + 3600000,
+          timestamp: timestamp,
+          fee_limit: 150000000,
+        };
+
+        const transformedRawData = {
+          contract: rawData.contract as any,
+          refBlockBytes: rawData.ref_block_bytes,
+          refBlockHash: rawData.ref_block_hash,
+          expiration: rawData.expiration,
+          timestamp: rawData.timestamp,
+          feeLimit: rawData.fee_limit,
+        };
+
+        const rawDataHex = Utils.generateRawDataHex(transformedRawData);
+        const txID = createHash('sha256').update(Buffer.from(rawDataHex, 'hex')).digest('hex');
+
+        const params = {
+          txParams: {},
+          txPrebuild: {
+            txHex: JSON.stringify({
+              txID,
+              raw_data: rawData,
+              raw_data_hex: rawDataHex,
+            }),
+          },
+          wallet: { coinSpecific: () => ({}) },
+        };
+
+        await assert.rejects(basecoin.verifyTransaction(params), {
+          message: 'missing wallet base address for consolidation destination validation',
+        });
+      });
+
+      it('should validate when prebuild matches one of multiple recipients (sendMany)', async function () {
+        const timestamp = Date.now();
+        const toAddressHex = '41d6cd6a2c0ff35a319e6abb5b9503ba0278679882';
+        const toAddressBase58 = Utils.getBase58AddressFromHex(toAddressHex);
+        const transferContract = {
+          parameter: {
+            value: {
+              amount: 1000000,
+              owner_address: '4173a5993cd182ae152adad8203163f780c65a8aa5',
+              to_address: toAddressHex,
+            },
+            type_url: 'type.googleapis.com/protocol.TransferContract',
+          },
+          type: 'TransferContract',
+        };
+
+        const rawData = {
+          contract: [transferContract],
+          ref_block_bytes: 'c8cf',
+          ref_block_hash: '89177fd84c5d9196',
+          expiration: timestamp + 3600000,
+          timestamp: timestamp,
+          fee_limit: 150000000,
+        };
+
+        const transformedRawData = {
+          contract: rawData.contract as any,
+          refBlockBytes: rawData.ref_block_bytes,
+          refBlockHash: rawData.ref_block_hash,
+          expiration: rawData.expiration,
+          timestamp: rawData.timestamp,
+          feeLimit: rawData.fee_limit,
+        };
+
+        const rawDataHex = Utils.generateRawDataHex(transformedRawData);
+        const txID = createHash('sha256').update(Buffer.from(rawDataHex, 'hex')).digest('hex');
+
+        const params = {
+          txParams: {
+            recipients: [
+              { address: toAddressBase58, amount: '1000000' },
+              { address: 'TQFxDSoXy2yXRE5HtKwAwrNRXGxYxkeSGk', amount: '500000' },
+            ],
+          },
+          txPrebuild: {
+            txHex: JSON.stringify({
+              txID,
+              raw_data: rawData,
+              raw_data_hex: rawDataHex,
+            }),
+          },
+          wallet: {},
+        };
+
+        const result = await basecoin.verifyTransaction(params);
+        assert.strictEqual(result, true);
+      });
+
+      it('should fail when prebuild does not match any of multiple recipients', async function () {
+        const timestamp = Date.now();
+        const toAddressHex = '41d6cd6a2c0ff35a319e6abb5b9503ba0278679882';
+        // Use different hex addresses that don't match the prebuild destination
+        const otherAddress1 = '4173a5993cd182ae152adad8203163f780c65a8aa5';
+        const otherAddress2 = '41c25420255c2c5a2dd54ef69f92ef261e6bd4216a';
+        const transferContract = {
+          parameter: {
+            value: {
+              amount: 1000000,
+              owner_address: '4173a5993cd182ae152adad8203163f780c65a8aa5',
+              to_address: toAddressHex,
+            },
+            type_url: 'type.googleapis.com/protocol.TransferContract',
+          },
+          type: 'TransferContract',
+        };
+
+        const rawData = {
+          contract: [transferContract],
+          ref_block_bytes: 'c8cf',
+          ref_block_hash: '89177fd84c5d9196',
+          expiration: timestamp + 3600000,
+          timestamp: timestamp,
+          fee_limit: 150000000,
+        };
+
+        const transformedRawData = {
+          contract: rawData.contract as any,
+          refBlockBytes: rawData.ref_block_bytes,
+          refBlockHash: rawData.ref_block_hash,
+          expiration: rawData.expiration,
+          timestamp: rawData.timestamp,
+          feeLimit: rawData.fee_limit,
+        };
+
+        const rawDataHex = Utils.generateRawDataHex(transformedRawData);
+        const txID = createHash('sha256').update(Buffer.from(rawDataHex, 'hex')).digest('hex');
+
+        const params = {
+          txParams: {
+            recipients: [
+              { address: otherAddress1, amount: '500000' },
+              { address: otherAddress2, amount: '500000' },
+            ],
+          },
+          txPrebuild: {
+            txHex: JSON.stringify({
+              txID,
+              raw_data: rawData,
+              raw_data_hex: rawDataHex,
+            }),
+          },
+          wallet: {},
+        };
+
+        await assert.rejects(basecoin.verifyTransaction(params), {
+          message: 'transaction in txPrebuild does not match any recipient in txParams',
+        });
+      });
     });
   });
 
@@ -597,6 +928,145 @@ describe('TRON Verify Transaction:', function () {
           message: 'destination address does not match with the recipient address',
         });
       });
+
+      it('should validate TSS consolidation when destination matches wallet base address', async function () {
+        const ownerHex = '4173a5993cd182ae152adad8203163f780c65a8aa5';
+        const toHex = '41d6cd6a2c0ff35a319e6abb5b9503ba0278679882';
+        const toBase58 = Utils.getBase58AddressFromHex(toHex);
+        const amount = 1000000;
+
+        const rawDataHex = buildTssTransferTxHex({ ownerAddress: ownerHex, toAddress: toHex, amount });
+
+        const params = {
+          txParams: {},
+          txPrebuild: {
+            txHex: rawDataHex,
+          },
+          wallet: { coinSpecific: () => ({ baseAddress: toBase58 }) },
+          walletType: 'tss',
+        };
+
+        const result = await basecoin.verifyTransaction(params);
+        assert.strictEqual(result, true);
+      });
+
+      it('should fail TSS consolidation when destination does not match wallet base address', async function () {
+        const ownerHex = '4173a5993cd182ae152adad8203163f780c65a8aa5';
+        const toHex = '41d6cd6a2c0ff35a319e6abb5b9503ba0278679882';
+        const amount = 1000000;
+
+        const rawDataHex = buildTssTransferTxHex({ ownerAddress: ownerHex, toAddress: toHex, amount });
+
+        const params = {
+          txParams: {},
+          txPrebuild: {
+            txHex: rawDataHex,
+          },
+          wallet: { coinSpecific: () => ({ baseAddress: 'TTsGwnTLQ4eryFJpDvJSfuGQxPXRCjXvZz' }) },
+          walletType: 'tss',
+        };
+
+        await assert.rejects(basecoin.verifyTransaction(params), {
+          message: 'consolidation destination address does not match wallet base address',
+        });
+      });
+
+      it('should validate TSS consolidation using rootAddress fallback', async function () {
+        const ownerHex = '4173a5993cd182ae152adad8203163f780c65a8aa5';
+        const toHex = '41d6cd6a2c0ff35a319e6abb5b9503ba0278679882';
+        const toBase58 = Utils.getBase58AddressFromHex(toHex);
+        const amount = 1000000;
+
+        const rawDataHex = buildTssTransferTxHex({ ownerAddress: ownerHex, toAddress: toHex, amount });
+
+        const params = {
+          txParams: {},
+          txPrebuild: {
+            txHex: rawDataHex,
+          },
+          wallet: { coinSpecific: () => ({ rootAddress: toBase58 }) },
+          walletType: 'tss',
+        };
+
+        const result = await basecoin.verifyTransaction(params);
+        assert.strictEqual(result, true);
+      });
+
+      it('should fail TSS consolidation when wallet base address is missing', async function () {
+        const ownerHex = '4173a5993cd182ae152adad8203163f780c65a8aa5';
+        const toHex = '41d6cd6a2c0ff35a319e6abb5b9503ba0278679882';
+        const amount = 1000000;
+
+        const rawDataHex = buildTssTransferTxHex({ ownerAddress: ownerHex, toAddress: toHex, amount });
+
+        const params = {
+          txParams: {},
+          txPrebuild: {
+            txHex: rawDataHex,
+          },
+          wallet: { coinSpecific: () => ({}) },
+          walletType: 'tss',
+        };
+
+        await assert.rejects(basecoin.verifyTransaction(params), {
+          message: 'missing wallet base address for consolidation destination validation',
+        });
+      });
+
+      it('should validate TSS sendMany when prebuild matches one of multiple recipients', async function () {
+        const ownerHex = '4173a5993cd182ae152adad8203163f780c65a8aa5';
+        const toHex = '41d6cd6a2c0ff35a319e6abb5b9503ba0278679882';
+        const toBase58 = Utils.getBase58AddressFromHex(toHex);
+        const amount = 1000000;
+
+        const rawDataHex = buildTssTransferTxHex({ ownerAddress: ownerHex, toAddress: toHex, amount });
+
+        const params = {
+          txParams: {
+            recipients: [
+              { address: toBase58, amount: amount.toString() },
+              { address: 'TQFxDSoXy2yXRE5HtKwAwrNRXGxYxkeSGk', amount: '500000' },
+            ],
+          },
+          txPrebuild: {
+            txHex: rawDataHex,
+          },
+          wallet: {},
+          walletType: 'tss',
+        };
+
+        const result = await basecoin.verifyTransaction(params);
+        assert.strictEqual(result, true);
+      });
+
+      it('should fail TSS sendMany when prebuild does not match any recipient', async function () {
+        const ownerHex = '4173a5993cd182ae152adad8203163f780c65a8aa5';
+        const toHex = '41d6cd6a2c0ff35a319e6abb5b9503ba0278679882';
+        const amount = 1000000;
+        // Use different valid base58 addresses that don't match the prebuild destination
+        const otherAddress1 = Utils.getBase58AddressFromHex('4173a5993cd182ae152adad8203163f780c65a8aa5');
+        const otherAddress2 = Utils.getBase58AddressFromHex('41c25420255c2c5a2dd54ef69f92ef261e6bd4216a');
+
+        const rawDataHex = buildTssTransferTxHex({ ownerAddress: ownerHex, toAddress: toHex, amount });
+
+        const params = {
+          txParams: {
+            recipients: [
+              { address: otherAddress1, amount: '500000' },
+              { address: otherAddress2, amount: '500000' },
+            ],
+          },
+          txPrebuild: {
+            txHex: rawDataHex,
+          },
+          wallet: {},
+          walletType: 'tss',
+        };
+
+        await assert.rejects(basecoin.verifyTransaction(params), {
+          message: 'transaction in txPrebuild does not match any recipient in txParams',
+        });
+      });
     });
 
     it('should return true for non-Transfer, non-TriggerSmartContract types in TSS', async function () {
@@ -682,7 +1152,7 @@ describe('TRON Verify Transaction:', function () {
         });
       });
 
-      it('should return true when no recipients are provided (consolidation path)', async function () {
+      it('should return true when no recipients and destination is wallet base address (consolidation path)', async function () {
         const params = {
           txParams: {
             recipients: [],
@@ -690,12 +1160,46 @@ describe('TRON Verify Transaction:', function () {
           txPrebuild: {
             txHex: trc20RawDataHex,
           },
-          wallet: {},
+          wallet: { coinSpecific: () => ({ baseAddress: trc20RecipientBase58 }) },
           walletType: 'tss',
         };
 
         const result = await basecoin.verifyTransaction(params);
         assert.strictEqual(result, true);
+      });
+
+      it('should fail consolidation when TRC20 destination does not match wallet base address', async function () {
+        const params = {
+          txParams: {
+            recipients: [],
+          },
+          txPrebuild: {
+            txHex: trc20RawDataHex,
+          },
+          wallet: { coinSpecific: () => ({ baseAddress: 'TLWh67P93KgtnZNCtGnEHM1H33Nhq2uvvN' }) },
+          walletType: 'tss',
+        };
+
+        await assert.rejects(basecoin.verifyTransaction(params), {
+          message: 'consolidation destination address does not match wallet base address',
+        });
+      });
+
+      it('should fail consolidation when wallet base address is missing', async function () {
+        const params = {
+          txParams: {
+            recipients: [],
+          },
+          txPrebuild: {
+            txHex: trc20RawDataHex,
+          },
+          wallet: { coinSpecific: () => ({}) },
+          walletType: 'tss',
+        };
+
+        await assert.rejects(basecoin.verifyTransaction(params), {
+          message: 'missing wallet base address for consolidation destination validation',
+        });
       });
     });
 
