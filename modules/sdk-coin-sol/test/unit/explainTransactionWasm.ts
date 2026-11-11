@@ -3,8 +3,63 @@
  */
 import 'should';
 import { explainSolTransaction } from '../../src/lib/explainTransactionWasm';
+import { TransactionType } from '@bitgo/sdk-core';
+import { KeyPair } from '../../src';
+import * as testData from '../resources/sol';
+import { getBuilderFactory } from './getBuilderFactory';
 
 describe('explainTransactionWasm', function () {
+  describe('PrepareForRevoke memo', function () {
+    const factory = getBuilderFactory('tsol');
+    const sender = new KeyPair(testData.authAccount).getKeys().pub;
+    const attacker = 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S';
+    const marinadeOrder = 'opNS8ENpEMWdXcJUgJCsJTDp7arTXayoBEeBUg6UezP';
+    const blockhash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
+    const validMemo = `{"PrepareForRevoke":{"user":"${sender}","amount":"500000000000"}}`;
+
+    const buildTransfer = async (to: string, amount: string, memo: string) => {
+      const builder = factory.getTransferBuilder();
+      builder.sender(sender).nonce(blockhash).send({ address: to, amount });
+      builder.memo(memo);
+      return (await builder.build()).toBroadcastFormat();
+    };
+
+    // The legacy path derives the type when parsing a raw tx, so rebuild it from raw like verifyTransaction does.
+    const explainBoth = async (rawTx: string) => {
+      const wasm = explainSolTransaction({ txBase64: rawTx, feeInfo: { fee: '5000' }, coinName: 'tsol' });
+      const legacyTx = await factory.from(rawTx).build();
+      return { wasm, legacy: legacyTx.explainTransaction(), legacyType: legacyTx.type };
+    };
+
+    it('should classify a memo-tagged transfer to an arbitrary address as Send and keep its output', async function () {
+      const { wasm, legacy, legacyType } = await explainBoth(await buildTransfer(attacker, '1000', validMemo));
+      wasm.type.should.equal('Send');
+      wasm.outputs.should.deepEqual([{ address: attacker, amount: '1000' }]);
+      legacyType.should.equal(TransactionType.Send);
+      legacy.outputs.should.deepEqual([{ address: attacker, amount: '1000' }]);
+    });
+
+    it('should classify a Marinade-address transfer with the wrong amount as Send', async function () {
+      const { wasm, legacyType } = await explainBoth(await buildTransfer(marinadeOrder, '3000000', validMemo));
+      wasm.type.should.equal('Send');
+      legacyType.should.equal(TransactionType.Send);
+    });
+
+    it('should classify a Marinade-address transfer with a malformed PrepareForRevoke memo as Send', async function () {
+      const { wasm, legacyType } = await explainBoth(await buildTransfer(marinadeOrder, '2300000', 'PrepareForRevoke'));
+      wasm.type.should.equal('Send');
+      legacyType.should.equal(TransactionType.Send);
+    });
+
+    it('should still classify a genuine Marinade unstake as StakingDeactivate with no outputs', async function () {
+      const { wasm, legacy, legacyType } = await explainBoth(testData.MARINADE_STAKING_DEACTIVATE_SIGNED_TX);
+      wasm.type.should.equal('StakingDeactivate');
+      wasm.outputs.length.should.equal(0);
+      legacyType.should.equal(TransactionType.StakingDeactivate);
+      legacy.outputs.length.should.equal(0);
+    });
+  });
+
   describe('deriveTransactionType', function () {
     it('should classify boilerplate-only transaction as CustomTx', function () {
       // Transaction with only NonceAdvance + Memo instructions (no Transfer or TokenTransfer).

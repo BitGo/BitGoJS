@@ -822,6 +822,74 @@ describe('SOL:', function () {
         .should.be.rejectedWith(/does not match the declared sponsored fee payer/);
     });
 
+    describe('PrepareForRevoke memo', () => {
+      const attacker = 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S';
+      const marinadeOrder = 'opNS8ENpEMWdXcJUgJCsJTDp7arTXayoBEeBUg6UezP';
+      const memoFor = (user: string) => `{"PrepareForRevoke":{"user":"${user}","amount":"500000000000"}}`;
+
+      const buildRaw = async (from: string, to: string, amount: string, memoText: string) => {
+        const txBuilder = factory.getTransferBuilder();
+        txBuilder.sender(from);
+        txBuilder.nonce(blockHash);
+        txBuilder.send({ address: to, amount });
+        txBuilder.memo(memoText);
+        return (await txBuilder.build()).toBroadcastFormat();
+      };
+
+      it('should reject a consolidation prebuild that drains to an attacker behind the memo', async function () {
+        const txBase64 = await buildRaw(wallet.pub, attacker, '1000000000', memoFor(wallet.pub));
+        await basecoin
+          .verifyTransaction({
+            txParams: {},
+            txPrebuild: { txBase64, consolidateId: 'consolidateId' },
+            verification: { consolidationToBaseAddress: true },
+            feePayer: wallet.pub,
+            blockhash: blockHash,
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith('tx outputs does not match with expected address');
+      });
+
+      it('should reject a payment whose recipients do not match once the memo no longer hides the output', async function () {
+        const txBase64 = await buildRaw(wallet.pub, attacker, '1000', memoFor(wallet.pub));
+        await basecoin
+          .verifyTransaction({
+            txParams: { recipients: [] },
+            txPrebuild: { txBase64 },
+            feePayer: wallet.pub,
+            blockhash: blockHash,
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith('Number of tx outputs does not match with number of txParams recipients');
+      });
+
+      it('should reject a Marinade unstake whose transfer is not sent from the wallet root', async function () {
+        const otherSender = stakeAccount.pub;
+        const txBase64 = await buildRaw(otherSender, marinadeOrder, '2300000', memoFor(otherSender));
+        await basecoin
+          .verifyTransaction({
+            txParams: {},
+            txPrebuild: { txBase64 },
+            feePayer: otherSender,
+            blockhash: blockHash,
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith('Marinade unstake transfer must be sent from the wallet root address');
+      });
+
+      it('should accept a genuine Marinade unstake sent from the wallet root', async function () {
+        const txBase64 = await buildRaw(wallet.pub, marinadeOrder, '2300000', memoFor(wallet.pub));
+        const result = await basecoin.verifyTransaction({
+          txParams: {},
+          txPrebuild: { txBase64 },
+          feePayer: wallet.pub,
+          blockhash: blockHash,
+          wallet: walletObj,
+        } as any);
+        result.should.equal(true);
+      });
+    });
+
     it('should verify a builder-produced transaction end-to-end with a sponsored fee payer', async function () {
       // Build a real transaction with the fee payer set to a different address,
       // serialize it, and verify it passes through verifyTransaction with the

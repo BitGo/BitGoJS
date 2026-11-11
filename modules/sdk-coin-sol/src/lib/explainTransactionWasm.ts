@@ -9,6 +9,7 @@ import {
 } from './constants';
 import { StakingAuthorizeParams, TransactionExplanation as SolLibTransactionExplanation } from './iface';
 import { findTokenName } from './instructionParamsFactory';
+import { isMarinadeUnstakeTransfer, isPrepareForRevokeMemo } from './utils';
 
 export interface ExplainTransactionWasmOptions {
   txBase64: string;
@@ -129,15 +130,31 @@ function isWasmTokenAclThawInstruction(instr: InstructionParams): boolean {
   return instr.type === 'Unknown' && instr.programId === TOKEN_ACL_PROGRAM_ID;
 }
 
-function deriveTransactionType(
-  instructions: InstructionParams[],
-  combined: CombinedPattern | null,
-  memo: string | undefined
-): TransactionType {
+/**
+ * True only for a genuine Marinade unstake: exactly one Transfer to a Marinade order address for the
+ * pinned amount, one well-formed PrepareForRevoke memo, and only nonce-advance / compute-budget besides.
+ * Mirrors getMarinadeUnstakeTransfer in utils.ts; the memo alone is attacker-controlled.
+ */
+function isWasmMarinadeUnstake(instructions: InstructionParams[]): boolean {
+  const transfers = instructions.filter((i) => i.type === 'Transfer');
+  const memos = instructions.filter((i) => i.type === 'Memo');
+  const others = instructions.filter((i) => !BOILERPLATE_TYPES.has(i.type) && i.type !== 'Transfer');
+  if (transfers.length !== 1 || memos.length !== 1 || others.length > 0) return false;
+  const transfer = transfers[0];
+  const memo = memos[0];
+  return (
+    transfer.type === 'Transfer' &&
+    memo.type === 'Memo' &&
+    isPrepareForRevokeMemo(memo.memo) &&
+    isMarinadeUnstakeTransfer(transfer.toAddress, transfer.amount)
+  );
+}
+
+function deriveTransactionType(instructions: InstructionParams[], combined: CombinedPattern | null): TransactionType {
   if (combined) return TransactionType[combined.kind];
 
-  // Marinade deactivate: Transfer + memo containing "PrepareForRevoke"
-  if (memo?.includes('PrepareForRevoke')) return TransactionType.StakingDeactivate;
+  // Marinade deactivate: validated by transfer destination/amount, never by the memo alone
+  if (isWasmMarinadeUnstake(instructions)) return TransactionType.StakingDeactivate;
 
   // Jito pool operations
   if (instructions.some((i) => i.type === 'StakePoolDepositSol')) return TransactionType.StakingActivate;
@@ -255,12 +272,10 @@ export function explainSolTransaction(params: ExplainTransactionWasmOptions): So
 
   // --- Detect combined patterns and derive type ---
   const combined = detectCombinedPattern(parsed.instructionsData);
-  const txType = deriveTransactionType(parsed.instructionsData, combined, memo);
+  const txType = deriveTransactionType(parsed.instructionsData, combined);
 
-  // Marinade deactivate: Transfer + PrepareForRevoke memo.
-  // The Transfer is a contract interaction, not real value transfer — skip from outputs.
-  const isMarinadeDeactivate =
-    txType === TransactionType.StakingDeactivate && memo !== undefined && memo.includes('PrepareForRevoke');
+  // Genuine Marinade deactivate: the Transfer is a contract interaction, not a real value transfer.
+  const isMarinadeDeactivate = isWasmMarinadeUnstake(parsed.instructionsData);
 
   // --- Extract outputs and inputs ---
   const outputs: { address: string; amount: bigint; tokenName?: string }[] = [];

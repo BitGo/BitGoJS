@@ -95,6 +95,7 @@ import {
 } from './lib/token2022Resolve';
 import {
   getAssociatedTokenAccountAddress,
+  getMarinadeUnstakeTransfer,
   getSolTokenFromAddress,
   getSolTokenFromTokenName,
   isValidAddress,
@@ -609,6 +610,15 @@ export class Sol extends BaseCoin {
     transaction.fromRawTransaction(rawTxBase64);
     const explainedTx = transaction.explainTransaction();
     const isCloseAssociatedTokenAccountTx = transaction.type === TransactionType.CloseAssociatedTokenAccount;
+
+    // A Marinade unstake produces no explained outputs, so the only thing tying its transfer to this wallet
+    // is the source. The source is the wallet root, not the fee payer, since sponsored fee payers exist.
+    if (transaction.type === TransactionType.StakingDeactivate) {
+      const marinadeTransfer = getMarinadeUnstakeTransfer(transaction.solTransaction.instructions);
+      if (marinadeTransfer && marinadeTransfer.fromPubkey.toString() !== walletRootAddress) {
+        throw new Error('Marinade unstake transfer must be sent from the wallet root address');
+      }
+    }
 
     if (txParams.type === 'enabletoken' && verificationOptions?.verifyTokenEnablement) {
       this.verifyTxType(txParams.type, explainedTx.type);
