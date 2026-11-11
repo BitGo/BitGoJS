@@ -710,12 +710,17 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
       throw new Error('missing required param keychains');
     }
 
+    // A missing derivationPrefix means the legacy scheme. A present one is only accepted if it equals the canonical
+    // prefix recomputed from the three keys and this coin's bip44 coin type; this is enforced in generateAddress
+    // and cannot be skipped (an undefined coin type throws).
     assertFixedScriptWalletAddress(this.wasmName, {
       address,
       keychains,
       format: params.format ?? 'base58',
       chain,
       index,
+      derivationPrefix: params.coinSpecific?.derivationPrefix,
+      bip44CoinType: this.getConfig().bip44CoinType,
     });
 
     return true;
@@ -745,6 +750,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin implements Musig2Partici
       chain,
       index,
       format,
+      // coin type is resolved from the coin instance: `this.wasmName` is not a statics name (e.g. `tbtcreg`)
+      derivationPrefix: params.coinSpecific?.derivationPrefix,
+      bip44CoinType: this.getConfig().bip44CoinType,
     });
 
     return { address, chain, index };
