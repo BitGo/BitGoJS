@@ -6,6 +6,7 @@ import { TransactionType } from '@bitgo/sdk-core';
 import { InstructionParams, Nonce, StakingActivate, StakingDeactivate, StakingWithdraw } from '../../src/lib/iface';
 import { InstructionBuilderTypes, MEMO_PROGRAM_PK, STAKE_ACCOUNT_RENT_EXEMPT_AMOUNT } from '../../src/lib/constants';
 import {
+  ComputeBudgetProgram,
   Keypair as SolKeypair,
   Lockup,
   PublicKey,
@@ -1078,6 +1079,7 @@ describe('Instruction Parser Staking Tests: ', function () {
           fromAddress: fromAccount.toString(),
           stakingAddress: stakingAccount.toString(),
           amount,
+          toAddress: fromAccount.toString(),
         },
       };
 
@@ -1130,6 +1132,7 @@ describe('Instruction Parser Staking Tests: ', function () {
           fromAddress: fromAccount.toString(),
           stakingAddress: stakingAccount.toString(),
           amount,
+          toAddress: fromAccount.toString(),
         },
       };
 
@@ -1164,6 +1167,7 @@ describe('Instruction Parser Staking Tests: ', function () {
           fromAddress: fromAccount.toString(),
           stakingAddress: stakingAccount.toString(),
           amount,
+          toAddress: fromAccount.toString(),
         },
       };
 
@@ -1171,6 +1175,83 @@ describe('Instruction Parser Staking Tests: ', function () {
       const instructionsData = [withdrawStakeParams];
       const result = instructionParamsFactory(TransactionType.StakingWithdraw, instructions);
       should.deepEqual(result, instructionsData);
+    });
+
+    it('Should keep the withdraw destination when it differs from the withdraw authority', () => {
+      const fromAccount = new PublicKey(testData.authAccount.pub);
+      const destination = new PublicKey(testData.authAccount2.pub);
+      const stakingAccount = new PublicKey(testData.stakeAccount.pub);
+      const amount = '100000';
+
+      // The Stake Withdraw instruction pays lamports to `toPubkey`, which is not required to be
+      // the withdraw authority signing the transaction.
+      const withdrawStakeInstructions = StakeProgram.withdraw({
+        authorizedPubkey: fromAccount,
+        stakePubkey: stakingAccount,
+        toPubkey: destination,
+        lamports: new BigNumber(amount).toNumber(),
+      }).instructions;
+
+      const expectedParams: StakingWithdraw = {
+        type: InstructionBuilderTypes.StakingWithdraw,
+        params: {
+          fromAddress: fromAccount.toString(),
+          stakingAddress: stakingAccount.toString(),
+          amount,
+          toAddress: destination.toString(),
+        },
+      };
+
+      const result = instructionParamsFactory(TransactionType.StakingWithdraw, withdrawStakeInstructions);
+      should.deepEqual(result, [expectedParams]);
+    });
+
+    it('Should parse withdraw stake tx instructions with nonce advance, compute-budget and memo instructions', () => {
+      const fromAccount = new PublicKey(testData.authAccount.pub);
+      const nonceAccount = new PublicKey(testData.nonceAccount.pub);
+      const stakingAccount = new PublicKey(testData.stakeAccount.pub);
+      const memo = 'claim memo';
+      const amount = '100000';
+      const units = 300000;
+      const fee = 5000;
+
+      const instructions = [
+        SystemProgram.nonceAdvance({ noncePubkey: nonceAccount, authorizedPubkey: fromAccount }),
+        ComputeBudgetProgram.setComputeUnitLimit({ units }),
+        ComputeBudgetProgram.setComputeUnitPrice({ microLamports: fee }),
+        ...StakeProgram.withdraw({
+          authorizedPubkey: fromAccount,
+          stakePubkey: stakingAccount,
+          toPubkey: fromAccount,
+          lamports: new BigNumber(amount).toNumber(),
+        }).instructions,
+        new TransactionInstruction({
+          keys: [],
+          programId: new PublicKey(MEMO_PROGRAM_PK),
+          data: Buffer.from(memo),
+        }),
+      ];
+
+      const expectedParams: InstructionParams[] = [
+        {
+          type: InstructionBuilderTypes.NonceAdvance,
+          params: { walletNonceAddress: nonceAccount.toString(), authWalletAddress: fromAccount.toString() },
+        },
+        { type: InstructionBuilderTypes.SetComputeUnitLimit, params: { units } },
+        { type: InstructionBuilderTypes.SetPriorityFee, params: { fee: BigInt(fee) } },
+        {
+          type: InstructionBuilderTypes.StakingWithdraw,
+          params: {
+            fromAddress: fromAccount.toString(),
+            stakingAddress: stakingAccount.toString(),
+            amount,
+            toAddress: fromAccount.toString(),
+          },
+        },
+        { type: InstructionBuilderTypes.Memo, params: { memo } },
+      ];
+
+      should.deepEqual(instructionParamsFactory(TransactionType.StakingWithdraw, instructions), expectedParams);
     });
 
     it('Should reject withdraw stake tx instructions if there are unexpected instructions', () => {

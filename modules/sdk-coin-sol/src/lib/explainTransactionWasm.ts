@@ -1,5 +1,13 @@
 import { ITokenEnablement } from '@bitgo/sdk-core';
-import { Transaction, parseTransaction, type ParsedTransaction, type InstructionParams } from '@bitgo/wasm-solana';
+import {
+  stakeProgramId,
+  Transaction,
+  parseTransaction,
+  type Instruction,
+  type ParsedTransaction,
+  type InstructionParams,
+  type StakingWithdrawParams,
+} from '@bitgo/wasm-solana';
 import {
   UNAVAILABLE_TEXT,
   ZK_ELGAMAL_PROOF_PROGRAM_ID,
@@ -231,6 +239,87 @@ function mapStakingAuthorize(instr: {
 }
 
 // =============================================================================
+// Staking withdraw destination recovery
+// =============================================================================
+
+/**
+ * `@bitgo/wasm-solana` decodes the Stake Withdraw instruction without its destination
+ * (`toPubkey`), which is the account the withdrawn lamports are paid to. Recover it from the
+ * instruction accounts of the same transaction bytes instead of assuming it is the withdraw
+ * authority, and fail closed when it cannot be determined.
+ */
+const STAKE_WITHDRAW_INSTRUCTION_INDEX = 4; // Stake program instruction index, u32 LE prefix
+const STAKE_WITHDRAW_STAKE_ACCOUNT_INDEX = 0;
+const STAKE_WITHDRAW_DESTINATION_ACCOUNT_INDEX = 1; // `toPubkey`
+const STAKE_WITHDRAW_AUTHORITY_ACCOUNT_INDEX = 4; // account order: stake, to, clock, stakeHistory, authority, [custodian]
+const STAKE_WITHDRAW_DATA_LENGTH = 4 + 8; // instruction index (u32) + lamports (u64)
+const STAKE_WITHDRAW_LAMPORTS_OFFSET = 4;
+
+interface DecodedStakeWithdraw {
+  stakeAddress: string;
+  destination: string;
+  authority: string;
+  lamports: bigint;
+}
+
+/**
+ * Returns the destination (`toPubkey`) of every Stake Withdraw instruction, in transaction order,
+ * and checks that they pair one-to-one with the WASM parser's StakingWithdraw instructions.
+ *
+ * @throws when the destination cannot be resolved from the transaction bytes, or when the two
+ * decoders disagree, so a fabricated destination is never reported.
+ */
+function resolveStakingWithdrawDestinations(
+  instructions: Instruction[],
+  parsedWithdraws: StakingWithdrawParams[]
+): string[] {
+  const decoded = instructions.flatMap((instruction, instructionIndex): DecodedStakeWithdraw[] => {
+    if (instruction.programId !== stakeProgramId() || instruction.data.length !== STAKE_WITHDRAW_DATA_LENGTH) {
+      return [];
+    }
+    const data = Buffer.from(instruction.data);
+    if (data.readUInt32LE(0) !== STAKE_WITHDRAW_INSTRUCTION_INDEX) {
+      return [];
+    }
+    const accountKeys = instruction.accounts.map((account) => account.pubkey);
+    const stakeAddress = accountKeys[STAKE_WITHDRAW_STAKE_ACCOUNT_INDEX];
+    const destination = accountKeys[STAKE_WITHDRAW_DESTINATION_ACCOUNT_INDEX];
+    // The withdraw authority sits at a fixed index (the destination may sign too, e.g. as the fee payer, so
+    // "the signer" is ambiguous). Pairing with the WASM parse below is by order on purpose: the stake
+    // address, authority and amount cross-check enforces that the two decoders saw the same instructions.
+    const authority = accountKeys[STAKE_WITHDRAW_AUTHORITY_ACCOUNT_INDEX];
+    if (!stakeAddress || !destination || !authority) {
+      // Versioned transactions may reference accounts through address lookup tables, whose keys are
+      // not part of the transaction bytes.
+      throw new Error(
+        `Unable to determine the destination (toPubkey) of staking withdraw instruction ${instructionIndex}: its account keys are not resolvable from the transaction bytes`
+      );
+    }
+    return [{ stakeAddress, destination, authority, lamports: data.readBigUInt64LE(STAKE_WITHDRAW_LAMPORTS_OFFSET) }];
+  });
+
+  if (decoded.length !== parsedWithdraws.length) {
+    throw new Error(
+      `Unable to determine the destination (toPubkey) of the staking withdraw instruction: ${decoded.length} Stake Withdraw instruction(s) in the transaction bytes but ${parsedWithdraws.length} parsed by the WASM parser`
+    );
+  }
+
+  return decoded.map((withdraw, index) => {
+    const parsedWithdraw = parsedWithdraws[index];
+    if (
+      parsedWithdraw.stakingAddress !== withdraw.stakeAddress ||
+      parsedWithdraw.fromAddress !== withdraw.authority ||
+      parsedWithdraw.amount !== withdraw.lamports
+    ) {
+      throw new Error(
+        `Unable to match staking withdraw instruction ${index} between the transaction bytes and the WASM parser output`
+      );
+    }
+    return withdraw.destination;
+  });
+}
+
+// =============================================================================
 // Main explain function
 // =============================================================================
 
@@ -248,6 +337,13 @@ export function explainSolTransaction(params: ExplainTransactionWasmOptions): So
   const txBytes = Buffer.from(params.txBase64, 'base64');
   const tx = Transaction.fromBytes(txBytes);
   const parsed: ParsedTransaction = parseTransaction(tx);
+
+  // --- Staking withdraw destinations (not exposed by the WASM parser) ---
+  const parsedWithdraws = parsed.instructionsData.filter(
+    (instruction): instruction is StakingWithdrawParams => instruction.type === 'StakingWithdraw'
+  );
+  const withdrawDestinations =
+    parsedWithdraws.length > 0 ? resolveStakingWithdrawDestinations(tx.instructions, parsedWithdraws) : [];
 
   // --- Transaction ID ---
   const id = extractTransactionId(parsed.signatures);
@@ -280,6 +376,7 @@ export function explainSolTransaction(params: ExplainTransactionWasmOptions): So
   // --- Extract outputs and inputs ---
   const outputs: { address: string; amount: bigint; tokenName?: string }[] = [];
   const inputs: { address: string; value: bigint }[] = [];
+  let withdrawIndex = 0;
 
   if (combined?.kind === 'StakingActivate') {
     outputs.push({ address: combined.stakingAddress, amount: combined.amount });
@@ -304,8 +401,8 @@ export function explainSolTransaction(params: ExplainTransactionWasmOptions): So
           inputs.push({ address: instr.fromAddress, value: instr.amount });
           break;
         case 'StakingWithdraw':
-          // Withdraw: SOL flows FROM staking address TO the recipient (fromAddress)
-          outputs.push({ address: instr.fromAddress, amount: instr.amount });
+          // Withdraw: SOL flows FROM the staking address TO the instruction's `toPubkey` recipient.
+          outputs.push({ address: withdrawDestinations[withdrawIndex++], amount: instr.amount });
           inputs.push({ address: instr.stakingAddress, value: instr.amount });
           break;
         case 'StakePoolDepositSol':

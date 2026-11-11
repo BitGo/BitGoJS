@@ -1,9 +1,18 @@
 import assert from 'assert';
 import should from 'should';
+import { TransactionType } from '@bitgo/sdk-core';
 import { coins } from '@bitgo/statics';
 import { KeyPair, Transaction } from '../../src/lib';
+import { MEMO_PROGRAM_PK } from '../../src/lib/constants';
+import { getTransactionType } from '../../src/lib/utils';
 import * as testData from '../resources/sol';
-import { PublicKey, Transaction as SolTransaction } from '@solana/web3.js';
+import {
+  PublicKey,
+  StakeProgram,
+  SystemProgram,
+  Transaction as SolTransaction,
+  TransactionInstruction,
+} from '@solana/web3.js';
 import { getBuilderFactory } from './getBuilderFactory';
 
 describe('Sol Transaction', () => {
@@ -953,6 +962,177 @@ describe('Sol Transaction', () => {
         tokenEnablements: [],
         ataOwnerMap: {},
       });
+    });
+
+    it('should explain the withdraw destination instead of the withdraw authority', function () {
+      const destination = testData.authAccount2.pub;
+      const withdrawInstructions = StakeProgram.withdraw({
+        stakePubkey: new PublicKey(stakeAccount.pub),
+        authorizedPubkey: new PublicKey(wallet.pub),
+        toPubkey: new PublicKey(destination),
+        lamports: Number(amount),
+      }).instructions;
+
+      const rawTx = new SolTransaction().add(...withdrawInstructions);
+      rawTx.feePayer = new PublicKey(wallet.pub);
+      rawTx.recentBlockhash = blockHash;
+
+      const tx = new Transaction(coins.get('sol'));
+      tx.fromRawTransaction(
+        rawTx.serialize({ requireAllSignatures: false, verifySignatures: false }).toString('base64')
+      );
+
+      const explainedTransaction = tx.explainTransaction();
+      explainedTransaction.type.should.equal('StakingWithdraw');
+      explainedTransaction.inputs?.should.deepEqual([{ address: stakeAccount.pub, value: amount }]);
+      explainedTransaction.outputs.should.deepEqual([{ address: destination, amount }]);
+      explainedTransaction.outputAmount.should.equal(amount);
+    });
+
+    // A staking withdraw is only explained if every instruction in it is accounted for. These
+    // shapes are typed StakingWithdraw by getTransactionType (a present Deactivate, or a
+    // PrepareForRevoke memo, bypasses the Send shortcut), so they must not be explained with the
+    // extra instructions missing from the outputs.
+    const expectWithdrawRiderRejected = (instructions: TransactionInstruction[], coin: string) => {
+      const rawTx = new SolTransaction().add(...instructions);
+      rawTx.feePayer = new PublicKey(wallet.pub);
+      rawTx.recentBlockhash = blockHash;
+      // getTransactionType still classifies the transaction as a staking withdraw, so it must be
+      // rejected rather than explained with the rider instruction missing from the outputs.
+      getTransactionType(rawTx).should.equal(TransactionType.StakingWithdraw);
+      should(() =>
+        new Transaction(coins.get(coin)).fromRawTransaction(
+          rawTx.serialize({ requireAllSignatures: false, verifySignatures: false }).toString('base64')
+        )
+      ).throwError(/Invalid withdraw stake transaction, instruction type not supported/);
+    };
+    const withdrawInstructions = () =>
+      StakeProgram.withdraw({
+        stakePubkey: new PublicKey(stakeAccount.pub),
+        authorizedPubkey: new PublicKey(wallet.pub),
+        toPubkey: new PublicKey(wallet.pub),
+        lamports: Number(amount),
+      }).instructions;
+    const deactivateInstructions = () =>
+      StakeProgram.deactivate({
+        stakePubkey: new PublicKey(stakeAccount.pub),
+        authorizedPubkey: new PublicKey(wallet.pub),
+      }).instructions;
+    const transferToDestination = () =>
+      SystemProgram.transfer({
+        fromPubkey: new PublicKey(wallet.pub),
+        toPubkey: new PublicKey(testData.authAccount2.pub),
+        lamports: Number(amount),
+      });
+    const memoInstruction = (memo: string) =>
+      new TransactionInstruction({ keys: [], programId: new PublicKey(MEMO_PROGRAM_PK), data: Buffer.from(memo) });
+
+    it('should reject a withdraw tx hiding a system transfer behind a deactivate instruction', () => {
+      expectWithdrawRiderRejected(
+        [...withdrawInstructions(), ...deactivateInstructions(), transferToDestination()],
+        'sol'
+      );
+    });
+
+    it('should not treat a withdraw with a transfer rider behind a bare PrepareForRevoke memo as a clean staking withdraw (typed Send, explain fails closed)', () => {
+      const rawTx = new SolTransaction().add(
+        ...withdrawInstructions(),
+        transferToDestination(),
+        memoInstruction('PrepareForRevoke')
+      );
+      rawTx.feePayer = new PublicKey(wallet.pub);
+      rawTx.recentBlockhash = blockHash;
+      // A bare memo no longer bypasses the Send classification; only a well-formed Marinade unstake does.
+      getTransactionType(rawTx).should.equal(TransactionType.Send);
+      should(() =>
+        new Transaction(coins.get('sol')).fromRawTransaction(
+          rawTx.serialize({ requireAllSignatures: false, verifySignatures: false }).toString('base64')
+        )
+      ).throwError('Invalid transaction, instruction type not supported: Withdraw');
+    });
+
+    it('should reject a withdraw tx carrying a non-transfer rider instruction', () => {
+      expectWithdrawRiderRejected([...withdrawInstructions(), ...deactivateInstructions()], 'sol');
+    });
+
+    it('should reject the same withdraw-with-transfer shape on the tsol path', () => {
+      // tsol explains through WASM, but the withdraw instruction params are parsed by the same
+      // code first, so the rider is rejected there instead of being dropped from the outputs.
+      expectWithdrawRiderRejected(
+        [...withdrawInstructions(), ...deactivateInstructions(), transferToDestination()],
+        'tsol'
+      );
+    });
+
+    it('should explain the withdraw destination on the tsol (WASM) path', function () {
+      const destination = testData.authAccount2.pub;
+      const withdrawInstructions = StakeProgram.withdraw({
+        stakePubkey: new PublicKey(stakeAccount.pub),
+        authorizedPubkey: new PublicKey(wallet.pub),
+        toPubkey: new PublicKey(destination),
+        lamports: Number(amount),
+      }).instructions;
+
+      const rawTx = new SolTransaction().add(...withdrawInstructions);
+      rawTx.feePayer = new PublicKey(wallet.pub);
+      rawTx.recentBlockhash = blockHash;
+
+      const tx = new Transaction(coins.get('tsol'));
+      tx.fromRawTransaction(
+        rawTx.serialize({ requireAllSignatures: false, verifySignatures: false }).toString('base64')
+      );
+
+      const explainedTransaction = tx.explainTransaction();
+      explainedTransaction.type.should.equal('StakingWithdraw');
+      explainedTransaction.inputs?.should.deepEqual([{ address: stakeAccount.pub, value: amount }]);
+      explainedTransaction.outputs.should.deepEqual([{ address: destination, amount }]);
+      explainedTransaction.outputAmount.should.equal(amount);
+    });
+
+    it('should keep explaining a self-withdraw to the authority on the tsol (WASM) path', function () {
+      const withdrawInstructions = StakeProgram.withdraw({
+        stakePubkey: new PublicKey(stakeAccount.pub),
+        authorizedPubkey: new PublicKey(wallet.pub),
+        toPubkey: new PublicKey(wallet.pub),
+        lamports: Number(amount),
+      }).instructions;
+
+      const rawTx = new SolTransaction().add(...withdrawInstructions);
+      rawTx.feePayer = new PublicKey(wallet.pub);
+      rawTx.recentBlockhash = blockHash;
+
+      const tx = new Transaction(coins.get('tsol'));
+      tx.fromRawTransaction(
+        rawTx.serialize({ requireAllSignatures: false, verifySignatures: false }).toString('base64')
+      );
+
+      const explainedTransaction = tx.explainTransaction();
+      explainedTransaction.outputs.should.deepEqual([{ address: wallet.pub, amount }]);
+    });
+
+    it('should explain a withdraw whose destination also signs as the fee payer on the tsol (WASM) path', function () {
+      const destination = testData.authAccount2.pub;
+      const withdrawInstructions = StakeProgram.withdraw({
+        stakePubkey: new PublicKey(stakeAccount.pub),
+        authorizedPubkey: new PublicKey(wallet.pub),
+        toPubkey: new PublicKey(destination),
+        lamports: Number(amount),
+      }).instructions;
+
+      // The destination is the fee payer, so it signs the transaction and is flagged as a signer on the
+      // withdraw instruction too, ahead of the withdraw authority in the account order.
+      const rawTx = new SolTransaction().add(...withdrawInstructions);
+      rawTx.feePayer = new PublicKey(destination);
+      rawTx.recentBlockhash = blockHash;
+
+      const tx = new Transaction(coins.get('tsol'));
+      tx.fromRawTransaction(
+        rawTx.serialize({ requireAllSignatures: false, verifySignatures: false }).toString('base64')
+      );
+
+      const explainedTransaction = tx.explainTransaction();
+      explainedTransaction.type.should.equal('StakingWithdraw');
+      explainedTransaction.outputs.should.deepEqual([{ address: destination, amount }]);
     });
 
     it('should explain single token transfer transaction', async function () {

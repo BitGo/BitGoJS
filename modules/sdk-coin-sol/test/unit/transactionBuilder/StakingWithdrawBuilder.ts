@@ -1,4 +1,5 @@
 import should from 'should';
+import { StakeInstruction, StakeProgram, Transaction as SolTransaction } from '@solana/web3.js';
 
 import { getBuilderFactory } from '../getBuilderFactory';
 import { KeyPair, Utils } from '../../../src';
@@ -37,6 +38,7 @@ describe('Sol Staking Withdraw Builder', () => {
             fromAddress: wallet.pub,
             stakingAddress: stakeAccount.pub,
             amount: amount,
+            toAddress: wallet.pub,
           },
         },
       ]);
@@ -63,6 +65,7 @@ describe('Sol Staking Withdraw Builder', () => {
             fromAddress: wallet.pub,
             stakingAddress: stakeAccount.pub,
             amount: amount,
+            toAddress: wallet.pub,
           },
         },
         {
@@ -73,6 +76,40 @@ describe('Sol Staking Withdraw Builder', () => {
         },
       ]);
       should.equal(rawTx, testData.STAKING_WITHDRAW_SIGNED_TX_WITH_MEMO);
+    });
+
+    it('building a staking withdraw tx to an explicit destination', async () => {
+      const destination = testData.authAccount2.pub;
+      const txBuilder = factory.getStakingWithdrawBuilder();
+      txBuilder
+        .sender(wallet.pub)
+        .stakingAddress(stakeAccount.pub)
+        .amount(amount)
+        .toAddress(destination)
+        .nonce(recentBlockHash);
+      const tx = await txBuilder.build();
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(Utils.isValidRawTransaction(rawTx), true);
+
+      // The destination must be the on-chain `toPubkey` of the Stake Withdraw instruction.
+      const solTx = SolTransaction.from(Buffer.from(rawTx, 'base64'));
+      const withdrawInstruction = solTx.instructions.find((instruction) =>
+        instruction.programId.equals(StakeProgram.programId)
+      );
+      should.exist(withdrawInstruction);
+      StakeInstruction.decodeWithdraw(withdrawInstruction!).toPubkey.toBase58().should.equal(destination);
+
+      tx.toJson().instructionsData.should.deepEqual([
+        {
+          type: 'Withdraw',
+          params: {
+            fromAddress: wallet.pub,
+            stakingAddress: stakeAccount.pub,
+            amount: amount,
+            toAddress: destination,
+          },
+        },
+      ]);
     });
 
     it('building a staking withdraw unsigned tx', async () => {
@@ -89,6 +126,7 @@ describe('Sol Staking Withdraw Builder', () => {
             fromAddress: wallet.pub,
             stakingAddress: stakeAccount.pub,
             amount: amount,
+            toAddress: wallet.pub,
           },
         },
       ]);
@@ -114,6 +152,7 @@ describe('Sol Staking Withdraw Builder', () => {
             fromAddress: wallet.pub,
             stakingAddress: stakeAccount.pub,
             amount: amount,
+            toAddress: wallet.pub,
           },
         },
         {

@@ -11,6 +11,7 @@ import { isValidStakingAmount, validateAddress } from './utils';
 export class StakingWithdrawBuilder extends TransactionBuilder {
   protected _stakingAddress: string;
   protected _amount: string;
+  protected _toAddress?: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -29,6 +30,9 @@ export class StakingWithdrawBuilder extends TransactionBuilder {
         this.sender(withdrawInstruction.params.fromAddress);
         this.stakingAddress(withdrawInstruction.params.stakingAddress);
         this.amount(withdrawInstruction.params.amount);
+        if (withdrawInstruction.params.toAddress) {
+          this.toAddress(withdrawInstruction.params.toAddress);
+        }
       }
     }
   }
@@ -61,6 +65,19 @@ export class StakingWithdrawBuilder extends TransactionBuilder {
     return this;
   }
 
+  /**
+   * The address that receives the withdrawn lamports (the Stake Withdraw instruction's `toPubkey`).
+   * Defaults to the sender when not set.
+   *
+   * @param {string} toAddress public address of the destination account
+   * @returns {StakingWithdrawBuilder} This staking withdraw builder.
+   */
+  toAddress(toAddress: string): this {
+    validateAddress(toAddress, 'toAddress');
+    this._toAddress = toAddress;
+    return this;
+  }
+
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     assert(this._sender, 'Sender must be set before building the transaction');
@@ -77,6 +94,7 @@ export class StakingWithdrawBuilder extends TransactionBuilder {
         fromAddress: this._sender,
         stakingAddress: this._stakingAddress,
         amount: this._amount,
+        ...(this._toAddress ? { toAddress: this._toAddress } : {}),
       },
     };
     this._instructionsData =

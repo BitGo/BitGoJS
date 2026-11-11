@@ -646,7 +646,7 @@ export class Transaction extends BaseTransaction {
             coin: this._coinConfig.name,
           });
           outputs.push({
-            address: instruction.params.fromAddress,
+            address: instruction.params.toAddress ?? instruction.params.fromAddress,
             value: instruction.params.amount,
             coin: this._coinConfig.name,
           });
@@ -754,7 +754,7 @@ export class Transaction extends BaseTransaction {
         case InstructionBuilderTypes.StakingWithdraw:
           const stakingWithdrawInstruction = instruction as StakingWithdraw;
           outputs.push({
-            address: stakingWithdrawInstruction.params.fromAddress,
+            address: stakingWithdrawInstruction.params.toAddress ?? stakingWithdrawInstruction.params.fromAddress,
             amount: stakingWithdrawInstruction.params.amount,
           });
           outputAmount = outputAmount.plus(stakingWithdrawInstruction.params.amount);
