@@ -108,6 +108,47 @@ describe('BitGoAPI HMAC Strategy Injection', function () {
       scope.isDone().should.be.true();
     });
 
+    it('should sign with method binding and send x-bitgo-hmac-method when hmacMethodBinding is enabled', async function () {
+      const strategy = new MockHmacAuthStrategy();
+      const bitgo = new BitGoAPI({
+        env: 'custom',
+        customRootURI: TEST_URI,
+        accessToken: TEST_TOKEN,
+        hmacAuthStrategy: strategy,
+        hmacMethodBinding: true,
+      });
+
+      const scope = nock(TEST_URI)
+        .get('/api/v2/wallet')
+        .matchHeader('x-bitgo-hmac-method', 'true')
+        .reply(200, { wallets: [] }, { hmac: 'response-hmac', timestamp: Date.now().toString() });
+
+      await bitgo.get(bitgo.url('/wallet', 2)).result();
+
+      assert.strictEqual(strategy.calculateRequestHeadersCalls[0].methodBinding, true);
+      scope.isDone().should.be.true();
+    });
+
+    it('should not send x-bitgo-hmac-method by default', async function () {
+      const strategy = new MockHmacAuthStrategy();
+      const bitgo = new BitGoAPI({
+        env: 'custom',
+        customRootURI: TEST_URI,
+        accessToken: TEST_TOKEN,
+        hmacAuthStrategy: strategy,
+      });
+
+      const scope = nock(TEST_URI)
+        .get('/api/v2/wallet')
+        .matchHeader('x-bitgo-hmac-method', (value) => value === undefined)
+        .reply(200, { wallets: [] }, { hmac: 'response-hmac', timestamp: Date.now().toString() });
+
+      await bitgo.get(bitgo.url('/wallet', 2)).result();
+
+      assert.strictEqual(strategy.calculateRequestHeadersCalls[0].methodBinding, false);
+      scope.isDone().should.be.true();
+    });
+
     it('should use the custom strategy for response verification', async function () {
       const strategy = new MockHmacAuthStrategy();
       const bitgo = new BitGoAPI({
