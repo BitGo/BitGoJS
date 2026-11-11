@@ -20,6 +20,7 @@ export interface TxData {
   genesisID: string;
   genesisHash: string | Buffer;
   closeRemainderTo?: string;
+  reKeyTo?: string;
   nonParticipation?: boolean;
   txType?: string;
   tokenName?: string;

@@ -143,7 +143,8 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
       undefined, // voteFirst param
       undefined, // voteLast param
       undefined, // voteKeyDilution param
-      this.suggestedParams
+      this.suggestedParams,
+      this._reKeyTo
     );
   }
 
@@ -157,7 +158,7 @@ export class KeyRegistrationBuilder extends TransactionBuilder {
       this._voteLast,
       this._voteKeyDilution,
       this.suggestedParams,
-      undefined, // reKeyTo param
+      this._reKeyTo,
       undefined, // nonParticipation param
       this._stateProofKey
     );
