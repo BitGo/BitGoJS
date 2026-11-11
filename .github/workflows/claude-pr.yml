@@ -42,7 +42,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           role-to-assume: arn:aws:iam::168000258654:role/BedrockInferenceRole
-          role-session-name: claude-inference-session
+          role-session-name: bitgojs-claude-inference-session
           role-chaining: true
           role-skip-session-tagging: true
           aws-region: us-west-2
