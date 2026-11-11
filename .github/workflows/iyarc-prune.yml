@@ -18,6 +18,7 @@ concurrency:
 
 jobs:
   prune:
+    environment: ai-inference
     runs-on: ubuntu-latest
     timeout-minutes: 60
     defaults:
@@ -30,7 +31,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ "$GITHUB_REF" != 'refs/heads/master' ]; then
-            echo '::error::Run iyarc-prune from master. The AWS role trusts the workflow ref, not the checkout ref. Merge workflow changes before dispatching them.'
+            echo '::error::Run iyarc-prune from master. Merge workflow changes before dispatching them.'
             exit 1
           fi
 
@@ -55,14 +56,19 @@ jobs:
         run: node scripts/iyarc-prune.js install-scanner
 
       - name: Authenticate workflow with AWS
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
-          role-to-assume: arn:aws:iam::199765120567:role/${{ github.event.repository.name }}-iam-protected
+          role-to-assume: arn:aws:iam::199765120567:role/${{ github.event.repository.name }}-iam-unprotected
           aws-region: us-west-2
 
       - name: Obtain credentials for the Bedrock model service
-        id: inference-role
-        run: node scripts/iyarc-prune.js assume-inference-role
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: arn:aws:iam::168000258654:role/BedrockInferenceRole
+          role-session-name: iyarc-prune-session
+          role-chaining: true
+          role-skip-session-tagging: true
+          aws-region: us-west-2
 
       - name: Load iyarc-prune agent instructions
         id: agent
@@ -82,9 +88,6 @@ jobs:
           # Bedrock: replaying a tool-call turn requires a leading thinking block; disable to avoid 400.
           MAX_THINKING_TOKENS: '0'
           AWS_REGION: us-west-2
-          AWS_ACCESS_KEY_ID: ${{ steps.inference-role.outputs.aws-access-key-id }}
-          AWS_SECRET_ACCESS_KEY: ${{ steps.inference-role.outputs.aws-secret-access-key }}
-          AWS_SESSION_TOKEN: ${{ steps.inference-role.outputs.aws-session-token }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Load trusted workflow helper from the original checkout

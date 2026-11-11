@@ -23,8 +23,8 @@ over an unsafe or unverified bump.
 ## Environment notes
 
 - For a manual run of [the workflow](../../.github/workflows/iyarc-prune.yml#L29-L42),
-  select `master` in **Use workflow from**. The AWS login uses the
-  [workflow's branch identity](https://docs.github.com/en/actions/reference/security/oidc#filtering-for-a-specific-branch),
+  select `master` in **Use workflow from**. The AWS login uses the `ai-inference`
+  [environment identity](https://docs.github.com/en/actions/reference/security/oidc#filtering-for-a-specific-environment),
   not the checkout ref. Merge workflow changes before a live run; local agent
   invocations are unaffected.
 - This is a Lerna + Yarn (v1, `1.22.22`) workspaces monorepo with ~116 packages
