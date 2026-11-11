@@ -112,6 +112,10 @@ parser.addArgument(['--signerFileSystemPath'], {
   help: 'Local path specifying where an Express signer machine keeps encrypted user private keys.',
 });
 
+parser.addArgument(['--signerRegistryFilePath'], {
+  help: 'Optional path for the consumed-share registry file (defaults to <signerFileSystemPath>.consumedShares.json). Useful when the key-file directory is read-only.',
+});
+
 parser.addArgument(['--lightningSignerFileSystemPath'], {
   help: 'Local path specifying where an Express machine keeps lightning signer urls.',
 });
