@@ -32,7 +32,7 @@ import {
   multisigTypes,
   Safes,
   ShareType,
-  SignShare,
+  UserToBitgoRShareReveal,
   SShare,
   TssEcdsaStep1ReturnMessage,
   TssEcdsaStep2ReturnMessage,
@@ -472,6 +472,19 @@ function markConsumedShareClosure(
     getConsumedShareRegistry(registryFilePath).markConsumed(computeConsumedShareKey(shareType, adata));
 }
 
+/** Share-round failures are caller-input failures; surface them as 400s,
+ * passing through errors that already carry an HTTP status. */
+async function rejectInvalidShareRequest<T>(operation: () => Promise<T>): Promise<T> {
+  try {
+    return await operation();
+  } catch (e) {
+    if (typeof e === 'object' && e !== null && 'status' in e && typeof e.status === 'number') {
+      throw e;
+    }
+    throw new ApiResponseError(e instanceof Error ? e.message : String(e), 400);
+  }
+}
+
 async function decryptPrivKey(bg: BitGo, encryptedPrivKey: string, walletPw: string): Promise<string> {
   try {
     return await bg.decrypt({ password: walletPw, input: encryptedPrivKey });
@@ -540,11 +553,19 @@ export async function handleV2GenerateShareTSS(
         const eddsaUtils = new EddsaUtils(bitgo, coin);
         switch (req.decoded.sharetype) {
           case ShareType.Commitment:
-            return await eddsaUtils.createCommitmentShareFromTxRequest(req.body);
+            return await rejectInvalidShareRequest(() => eddsaUtils.createCommitmentShareFromTxRequest(req.body));
           case ShareType.R:
-            return await eddsaUtils.createRShareFromTxRequest(req.body);
-          case ShareType.G:
-            return await eddsaUtils.createGShareFromTxRequest(req.body);
+            return await rejectInvalidShareRequest(() => eddsaUtils.createRShareFromTxRequest(req.body));
+          case ShareType.G: {
+            // Each R-share envelope may be used exactly once; a replayed envelope is
+            // rejected before the share is used (fail-closed).
+            req.body.markConsumed = markConsumedShareClosure(
+              registryFilePath,
+              req.decoded.sharetype,
+              req.body.encryptedUserToBitgoRShare?.share
+            );
+            return await rejectInvalidShareRequest(() => eddsaUtils.createGShareFromTxRequest(req.body));
+          }
           default:
             throw new Error(
               `Share type ${req.decoded.sharetype} not supported, only commitment, G and R share generation is supported.`
@@ -2124,7 +2145,7 @@ export function createCustomCommitmentGenerator(
 }
 
 export function createCustomRShareGenerator(externalSignerUrl: string, coin: string): CustomRShareGeneratingFunction {
-  return async function (params): Promise<{ rShare: SignShare }> {
+  return async function (params): Promise<{ rShare: UserToBitgoRShareReveal }> {
     const { body: rShare } = await retryPromise(
       () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/R`).type('json').send(params),
       (err, tryCount) => {

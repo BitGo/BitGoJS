@@ -2,7 +2,7 @@ import assert from 'assert';
 import { Buffer } from 'buffer';
 import * as openpgp from 'openpgp';
 import { Key, SerializedKeyPair } from 'openpgp';
-import { Hash, createHash } from 'crypto';
+import { Hash } from 'crypto';
 import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes, hexToBigInt, minModulusBitLength } from '@bitgo/sdk-lib-mpc';
 import { bip32 } from '@bitgo/utxo-lib';
 
@@ -33,7 +33,6 @@ import {
   TssSignTxRequestParamsWithPrv,
   TssTxRecipientSource,
   TxRequest,
-  UnsignedTransactionTss,
 } from '../baseTypes';
 import { getTxRequest } from '../../../tss';
 import { AShare, DShare, EncryptedNShare, SendShareType, SShare, WShare, OShare } from '../../../tss/ecdsa/types';
@@ -53,11 +52,16 @@ import { BaseEcdsaUtils } from './base';
 import { EncryptionVersion, IRequestTracer } from '../../../../api';
 import { resolveEffectiveTxParams } from '../recipientUtils';
 import { shouldVerifyWithSerializedTxHex } from '../serializedTxHexVerify';
+import {
+  formatOfflineSigningAdata,
+  getOfflineSigningAdata,
+  OFFLINE_SIGNING_SHARE_MAX_AGE_MS,
+  validateOfflineSigningAdata,
+} from '../offlineSigningAdata';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 
-/** Encrypted signing-share envelopes older than this are rejected along with their registry entries. */
-export const OFFLINE_SIGNING_SHARE_MAX_AGE_MS = 30 * 24 * 3600 * 1000; // 30 days
+export { OFFLINE_SIGNING_SHARE_MAX_AGE_MS };
 
 /** @inheritdoc */
 export class EcdsaUtils extends BaseEcdsaUtils {
@@ -535,7 +539,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
             password: params.walletPassphrase,
             encryptionVersion: params.encryptionVersion,
             adata: params.signableAdata
-              ? this.formatOfflineSigningAdata(EcdsaUtils.GG18_SIGNING_WSHARE_STATE, params.signableAdata)
+              ? formatOfflineSigningAdata(EcdsaUtils.GG18_SIGNING_WSHARE_STATE, params.signableAdata)
               : undefined,
           })
         : userSignShare.wShare,
@@ -574,7 +578,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
             password: params.walletPassphrase,
             encryptionVersion: params.encryptionVersion,
             adata: params.signableAdata
-              ? this.formatOfflineSigningAdata(EcdsaUtils.GG18_SIGNING_OSHARE_STATE, params.signableAdata)
+              ? formatOfflineSigningAdata(EcdsaUtils.GG18_SIGNING_OSHARE_STATE, params.signableAdata)
               : undefined,
           })
         : userOmicronAndDeltaShare.oShare,
@@ -588,57 +592,6 @@ export class EcdsaUtils extends BaseEcdsaUtils {
   }
 
   /**
-   * Computes the adata binding string for offline (external-signer) signing: the
-   * sha256 of the signable payload, plus the derivation path (empty for message
-   * signing). Encrypted share envelopes created from the signer's own key
-   * material carry this adata and later rounds validate it, so an envelope can
-   * only be replayed against the exact signable it was created for.
-   */
-  private getOfflineSigningAdata(
-    txRequest: TxRequest,
-    requestType: RequestType,
-    params: { bufferToSign?: unknown } = {}
-  ): string {
-    let signablePayload: Buffer;
-    let derivationPath: string;
-    if (requestType === RequestType.tx) {
-      let unsignedTx: UnsignedTransactionTss | undefined;
-      if (txRequest.apiVersion === 'full') {
-        assert(txRequest.transactions && txRequest.transactions.length > 0, 'Missing transactions in txRequest');
-        unsignedTx = txRequest.transactions[0].unsignedTx;
-      } else {
-        assert(txRequest.unsignedTxs && txRequest.unsignedTxs.length > 0, 'Missing unsignedTxs in txRequest');
-        unsignedTx = txRequest.unsignedTxs[0];
-      }
-      assert(unsignedTx, 'Missing unsignedTx in txRequest');
-      assert(unsignedTx.signableHex, 'Missing signableHex in txRequest');
-      signablePayload = Buffer.from(unsignedTx.signableHex, 'hex');
-      derivationPath = unsignedTx.derivationPath ?? '';
-    } else if (requestType === RequestType.message) {
-      // Declared as Buffer, but over HTTP it may arrive as the JSON round-trip form `{ type: 'Buffer', data: number[] }`
-      const bufferToSign: unknown = params.bufferToSign;
-      assert(bufferToSign, 'Missing bufferToSign for message signing');
-      if (Buffer.isBuffer(bufferToSign)) {
-        signablePayload = bufferToSign;
-      } else if (
-        typeof bufferToSign === 'object' &&
-        bufferToSign !== null &&
-        'data' in bufferToSign &&
-        Array.isArray(bufferToSign.data)
-      ) {
-        // JSON round-trip of a Buffer arrives as `{ type: 'Buffer', data: number[] }`
-        signablePayload = Buffer.from(bufferToSign.data);
-      } else {
-        throw new Error('Invalid bufferToSign type');
-      }
-      derivationPath = '';
-    } else {
-      throw new Error(`Invalid requestType: ${requestType}`);
-    }
-    return `${createHash('sha256').update(signablePayload).digest('hex')}:${derivationPath}`;
-  }
-
-  /**
    * Returns the Paillier modulus BitGo used at keygen time, as recorded in the
    * signer's own signing material. Counterparty inputs (challenges, A-shares)
    * must carry the same modulus.
@@ -647,53 +600,6 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     const userSigningMaterial: ECDSAMethodTypes.SigningMaterial = JSON.parse(prv);
     assert(userSigningMaterial.bitgoNShare?.n, 'Signer signing material is missing the BitGo Paillier modulus');
     return userSigningMaterial.bitgoNShare.n;
-  }
-
-  /** Envelope adata format: `<STATE>:<createdEpochMs>:<sha256(signable)>:<derivationPath>`. */
-  private formatOfflineSigningAdata(state: string, core: string): string {
-    return `${state}:${Date.now()}:${core}`;
-  }
-
-  /**
-   * Validates an encrypted share envelope's adata against the expected signable binding.
-   * adata is AEAD-authenticated (v1 CCM / v2 GCM), so it cannot be stripped or altered
-   * without breaking decryption. The creation timestamp is checked separately from the
-   * binding, so the two concerns stay independent.
-   */
-  private validateOfflineSigningAdata(cyphertext: string, state: string, expectedCore: string): string {
-    let stored: string | undefined;
-    try {
-      const raw = JSON.parse(cyphertext).adata;
-      // v1 (SJCL) envelopes escape() the adata (':' -> '%3A'); decode before parsing,
-      // matching baseTSSUtils.validateAdata.
-      stored = typeof raw === 'string' ? decodeURIComponent(raw) : undefined;
-    } catch {
-      throw new Error('Failed to parse cyphertext to JSON');
-    }
-    if (typeof stored !== 'string') {
-      throw new Error('Missing adata on encrypted share envelope; restart the signing session');
-    }
-    if (!stored.startsWith(`${state}:`)) {
-      throw new Error('Adata does not match cyphertext adata');
-    }
-    const remainder = stored.slice(state.length + 1);
-    const separator = remainder.indexOf(':');
-    assert(separator > 0, 'Adata does not match cyphertext adata');
-    const created = Number(remainder.slice(0, separator));
-    const core = remainder.slice(separator + 1);
-    if (core !== expectedCore) {
-      throw new Error('Adata does not match cyphertext adata');
-    }
-    const now = Date.now();
-    assert(
-      Number.isFinite(created) && created <= now,
-      'Encrypted share envelope has a future timestamp; restart the signing session'
-    );
-    assert(
-      now - created <= OFFLINE_SIGNING_SHARE_MAX_AGE_MS,
-      'Encrypted share envelope has expired; restart the signing session'
-    );
-    return stored;
   }
 
   async createOfflineKShare(params: {
@@ -739,7 +645,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
       derivationPath: derivationPath,
       walletPassphrase: params.walletPassphrase,
       encryptionVersion: params.encryptionVersion,
-      signableAdata: this.getOfflineSigningAdata(txRequest, requestType, { bufferToSign }),
+      signableAdata: getOfflineSigningAdata(txRequest, requestType, { bufferToSign }),
     });
   }
 
@@ -778,10 +684,10 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     // this path does not itself check the signable — the S round enforces that binding
     // (re-prefixed for the oShare), so the S round still validates strictly. adata is
     // AEAD-authenticated, so a captured envelope's binding cannot be stripped or altered.
-    const expectedCore = txRequest ? this.getOfflineSigningAdata(txRequest, requestType, { bufferToSign }) : undefined;
+    const expectedCore = txRequest ? getOfflineSigningAdata(txRequest, requestType, { bufferToSign }) : undefined;
     let signableAdata: string;
     if (expectedCore) {
-      validatedAdata = this.validateOfflineSigningAdata(
+      validatedAdata = validateOfflineSigningAdata(
         params.encryptedWShare,
         EcdsaUtils.GG18_SIGNING_WSHARE_STATE,
         expectedCore
@@ -875,10 +781,10 @@ export class EcdsaUtils extends BaseEcdsaUtils {
     }
     const bufferToSign =
       params.tssParams && 'bufferToSign' in params.tssParams ? params.tssParams.bufferToSign : undefined;
-    const validatedAdata = this.validateOfflineSigningAdata(
+    const validatedAdata = validateOfflineSigningAdata(
       encryptedOShare,
       EcdsaUtils.GG18_SIGNING_OSHARE_STATE,
-      this.getOfflineSigningAdata(txRequest, requestType, { bufferToSign })
+      getOfflineSigningAdata(txRequest, requestType, { bufferToSign })
     );
     let hash: Hash | undefined;
     try {

@@ -215,23 +215,13 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
       it('should validate EDDSA R share response', function () {
         const validResponse = {
           rShare: {
-            i: 1,
-            rShares: {
-              2: {
-                i: 1,
-                j: 2,
-                u: 'u-value',
-                v: 'v-value',
-                r: 'r-value',
-                R: 'R-value',
-                commitment: 'commitment-value',
-              },
-            },
+            r: 'r-value',
+            R: 'R-value',
           },
         };
         const decoded = assertDecode(EddsaRShareResponse, validResponse);
-        assert.strictEqual(decoded.rShare.i, 1);
-        assert.ok(decoded.rShare.rShares);
+        assert.strictEqual(decoded.rShare.r, 'r-value');
+        assert.strictEqual(decoded.rShare.R, 'R-value');
       });
 
       it('should validate EDDSA G share response', function () {
@@ -514,18 +504,8 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
 
         const mockRShareResponse = {
           rShare: {
-            i: 1,
-            rShares: {
-              2: {
-                i: 1,
-                j: 2,
-                u: 'u-value',
-                v: 'v-value',
-                r: 'r-value',
-                R: 'R-value',
-                commitment: 'commitment-value',
-              },
-            },
+            r: 'r-value',
+            R: 'R-value',
           },
         };
 
@@ -559,8 +539,8 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
 
         // Validate response type
         const decodedResponse = assertDecode(EddsaRShareResponse, result.body);
-        assert.strictEqual(decodedResponse.rShare.i, 1);
-        assert.ok(decodedResponse.rShare.rShares);
+        assert.strictEqual(decodedResponse.rShare.r, 'r-value');
+        assert.strictEqual(decodedResponse.rShare.R, 'R-value');
       });
 
       it('should successfully generate EDDSA G share via API', async function () {
@@ -576,19 +556,18 @@ describe('GenerateShareTSS codec tests (External Signer Mode)', function () {
             to: 'user',
             share: 'bitgo-r-share',
           },
-          userToBitgoRShare: {
-            i: 1,
-            rShares: {
-              2: {
-                i: 1,
-                j: 2,
-                u: 'u-value',
-                v: 'v-value',
-                r: 'r-value',
-                R: 'R-value',
-                commitment: 'commitment-value',
-              },
-            },
+          encryptedUserToBitgoRShare: {
+            from: 'user',
+            to: 'bitgo',
+            // The G round registers the R-share envelope for single-use consumption,
+            // so the mock must carry a parseable v1 envelope with iv/ct.
+            share: JSON.stringify({
+              v: 1,
+              iv: Buffer.alloc(16, 3).toString('base64'),
+              ct: Buffer.alloc(32, 4).toString('base64'),
+              ts: 64,
+            }),
+            type: 'encryptedRShare',
           },
           bitgoToUserCommitment: {
             from: 'bitgo',
