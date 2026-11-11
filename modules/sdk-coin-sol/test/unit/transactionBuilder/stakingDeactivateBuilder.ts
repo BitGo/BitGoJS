@@ -244,7 +244,7 @@ describe('Sol Staking Deactivate Builder', () => {
         amount: '2300000',
       });
 
-      const marinadeMemo = `{\\"PrepareForRevoke\\":{\\"user\\":\\"${wallet.pub}}\\",\\"amount\\":\\"500000000000\\"}`;
+      const marinadeMemo = `{"PrepareForRevoke":{"user":"${wallet.pub}","amount":"500000000000"}}`;
 
       it('Marinade: build and sign a staking deactivate tx', async () => {
         await performTest({

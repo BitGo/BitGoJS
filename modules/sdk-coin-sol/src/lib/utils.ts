@@ -62,6 +62,8 @@ import {
   ZK_ELGAMAL_PROOF_PROGRAM_ID,
   CT_EXT_DISCRIMINATOR,
   CT_SUB_DISCRIMINATORS,
+  MARINADE_ORDER_ADDRESSES,
+  MARINADE_UNSTAKE_TRANSFER_LAMPORTS,
 } from './constants';
 import { ValidInstructionTypes } from './iface';
 import { STAKE_POOL_INSTRUCTION_LAYOUTS, STAKE_POOL_PROGRAM_ID } from '@solana/spl-stake-pool';
@@ -363,6 +365,57 @@ function isConfidentialTransferRawInstruction(instruction: TransactionInstructio
   return false;
 }
 
+/** True if the memo is a well-formed Marinade unstake memo: {"PrepareForRevoke":{"user":..,"amount":..}} */
+export function isPrepareForRevokeMemo(memo: string | undefined): boolean {
+  if (!memo) return false;
+  try {
+    const body = JSON.parse(memo)?.PrepareForRevoke;
+    return (
+      typeof body === 'object' && body !== null && typeof body.user === 'string' && /^\d+$/.test(body.amount ?? '')
+    );
+  } catch {
+    return false;
+  }
+}
+
+/** True if a SOL transfer matches the single transfer BitGo sends to Marinade's order address per unstake. */
+export function isMarinadeUnstakeTransfer(toAddress: string, lamports: bigint | number | string): boolean {
+  return MARINADE_ORDER_ADDRESSES.includes(toAddress) && BigInt(lamports) === MARINADE_UNSTAKE_TRANSFER_LAMPORTS;
+}
+
+/**
+ * Returns the decoded transfer if the instructions are a genuine Marinade unstake, otherwise undefined.
+ * Genuine means exactly one SOL Transfer to a Marinade order address for the pinned amount, one well-formed
+ * PrepareForRevoke memo, and nothing else except nonce-advance / compute-budget. The memo alone is
+ * attacker-controlled, so it must never decide the type by itself.
+ */
+export function getMarinadeUnstakeTransfer(
+  instructions: TransactionInstruction[]
+): ReturnType<typeof SystemInstruction.decodeTransfer> | undefined {
+  const transfers: TransactionInstruction[] = [];
+  const memos: TransactionInstruction[] = [];
+  for (const instruction of instructions) {
+    switch (getInstructionType(instruction)) {
+      case ValidInstructionTypesEnum.AdvanceNonceAccount:
+      case ValidInstructionTypesEnum.SetComputeUnitLimit:
+      case ValidInstructionTypesEnum.SetPriorityFee:
+        break;
+      case ValidInstructionTypesEnum.Memo:
+        memos.push(instruction);
+        break;
+      case ValidInstructionTypesEnum.Transfer:
+        transfers.push(instruction);
+        break;
+      default:
+        return undefined;
+    }
+  }
+  if (transfers.length !== 1 || memos.length !== 1) return undefined;
+  if (!isPrepareForRevokeMemo(memos[0].data.toString('utf-8'))) return undefined;
+  const transfer = SystemInstruction.decodeTransfer(transfers[0]);
+  return isMarinadeUnstakeTransfer(transfer.toPubkey.toString(), transfer.lamports) ? transfer : undefined;
+}
+
 /**
  * Returns the transaction Type based on the  transaction instructions.
  * Wallet initialization, Transfer and Staking transactions are supported.
@@ -395,11 +448,12 @@ export function getTransactionType(transaction: SolTransaction): TransactionType
   }
 
   if (instructions.filter((instruction) => getInstructionType(instruction) === 'Deactivate').length === 0) {
+    // A Transfer is a Send unless the whole transaction is a genuine Marinade unstake (see getMarinadeUnstakeTransfer)
+    const isMarinadeUnstake = getMarinadeUnstakeTransfer(instructions) !== undefined;
     for (const instruction of instructions) {
       const instructionType = getInstructionType(instruction);
-      // Check if memo instruction is there and if it contains 'PrepareForRevoke' because Marinade staking deactivate transaction will have this
       if (
-        (instructionType === ValidInstructionTypesEnum.Transfer && !memoData?.includes('PrepareForRevoke')) ||
+        (instructionType === ValidInstructionTypesEnum.Transfer && !isMarinadeUnstake) ||
         instructionType === ValidInstructionTypesEnum.TokenTransfer
       ) {
         return TransactionType.Send;

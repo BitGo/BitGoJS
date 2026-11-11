@@ -788,6 +788,10 @@ function parseStakingDeactivateInstructions(
 ): Array<Nonce | StakingDeactivate | Memo | SetComputeUnitLimit | SetPriorityFee> {
   const instructionData: Array<Nonce | StakingDeactivate | Memo | SetComputeUnitLimit | SetPriorityFee> = [];
   const unstakingInstructions: UnstakingInstructions[] = [];
+  // Jito unstake legitimately carries Approve + Create alongside WithdrawStake
+  const isJitoUnstake = instructions.some(
+    (instruction) => getInstructionType(instruction) === ValidInstructionTypesEnum.WithdrawStake
+  );
   for (const instruction of instructions) {
     const type = getInstructionType(instruction);
     switch (type) {
@@ -896,6 +900,16 @@ function parseStakingDeactivateInstructions(
           });
         }
         break;
+
+      case ValidInstructionTypesEnum.Approve:
+      case ValidInstructionTypesEnum.Create:
+        if (!isJitoUnstake) {
+          throw new NotSupported('Invalid deactivate stake transaction, instruction type not supported: ' + type);
+        }
+        break;
+
+      default:
+        throw new NotSupported('Invalid deactivate stake transaction, instruction type not supported: ' + type);
     }
   }
 
@@ -1099,6 +1113,9 @@ function parseStakingWithdrawInstructions(
         };
         instructionData.push(stakingWithdraw);
         break;
+
+      default:
+        throw new NotSupported('Invalid withdraw stake transaction, instruction type not supported: ' + type);
     }
   }
 

@@ -268,6 +268,18 @@ export const marinadeStakingDeactivateInstructionsIndexes = {
   Memo: 1,
 } as const;
 
+/**
+ * Marinade native-staking unstake has no on-chain program instruction: it is a single SystemProgram
+ * Transfer to one of Marinade's order addresses plus a PrepareForRevoke memo, acted on off-chain.
+ * The destination and amount are therefore the only server-independent signal that it is genuine.
+ */
+export const MARINADE_ORDER_ADDRESSES: readonly string[] = [
+  'opNS8ENpEMWdXcJUgJCsJTDp7arTXayoBEeBUg6UezP', // native
+  'opiNSvKm1aPkbuSjnZfY5vyJUmaVxuQyTJt6jnNTW1L', // select
+];
+/** Lamports BitGo sends per Marinade unstake order (marinade.unstakeTransferAmount in staking-service) */
+export const MARINADE_UNSTAKE_TRANSFER_LAMPORTS = BigInt(2300000);
+
 /** Const to check the order of the Partial Staking Deactivate instructions when decoded */
 export const stakingPartialDeactivateInstructionsIndexes = {
   Transfer: 0,

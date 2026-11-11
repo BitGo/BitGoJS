@@ -417,7 +417,7 @@ describe('Instruction Parser Staking Tests: ', function () {
       should.deepEqual(result, instructionsData);
     });
 
-    it('Should parse deactivate stake tx instructions if there are unexpected instructions', () => {
+    it('Should reject deactivate stake tx instructions if there are unexpected instructions', () => {
       const fromAccount = new PublicKey(testData.authAccount.pub);
       const stakingAccount = new PublicKey(testData.stakeAccount.pub);
       const validator = new PublicKey(testData.validator.pub);
@@ -446,26 +446,14 @@ describe('Instruction Parser Staking Tests: ', function () {
         stakePubkey: stakingAccount,
       }).instructions;
 
-      // Params
-      const stakingActivateParams: StakingDeactivate = {
-        type: InstructionBuilderTypes.StakingDeactivate,
-        params: {
-          fromAddress: fromAccount.toString(),
-          stakingAddress: stakingAccount.toString(),
-          amount: undefined,
-          unstakingAddress: undefined,
-          stakingType: SolStakingTypeEnum.NATIVE,
-        },
-      };
-
       const instructions = [
         ...stakingActivateInstructions,
         ...stakingDelegateInstructions,
         ...stakingDeactivateInstructions,
       ];
-      const instructionsData = [stakingActivateParams];
-      const result = instructionParamsFactory(TransactionType.StakingDeactivate, instructions);
-      should.deepEqual(result, instructionsData);
+      should(() => instructionParamsFactory(TransactionType.StakingDeactivate, instructions)).throw(
+        'Invalid deactivate stake transaction, instruction type not supported: Create'
+      );
     });
 
     describe('Partially deactivate stake instructions', function () {
@@ -512,7 +500,7 @@ describe('Instruction Parser Staking Tests: ', function () {
           const instructions = [
             nonceAdvanceInstruction,
             assignInstruction,
-            ...splitInstructions,
+            splitInstructions[1],
             ...stakingDeactivateInstructions,
             memoInstruction,
           ];
@@ -563,7 +551,7 @@ describe('Instruction Parser Staking Tests: ', function () {
           const instructions = [
             nonceAdvanceInstruction,
             allocateInstruction,
-            ...splitInstructions,
+            splitInstructions[1],
             ...stakingDeactivateInstructions,
             memoInstruction,
           ];
@@ -664,7 +652,7 @@ describe('Instruction Parser Staking Tests: ', function () {
             nonceAdvanceInstruction,
             allocateInstruction,
             assignInstruction,
-            ...splitInstructions,
+            splitInstructions[1],
             ...stakingDeactivateInstructions,
             memoInstruction,
           ];
@@ -721,7 +709,7 @@ describe('Instruction Parser Staking Tests: ', function () {
             nonceAdvanceInstruction,
             allocateInstruction,
             assignInstruction,
-            ...splitInstructions,
+            splitInstructions[1],
             ...stakingDeactivateInstructions,
             memoInstruction,
           ];
@@ -779,7 +767,7 @@ describe('Instruction Parser Staking Tests: ', function () {
               nonceAdvanceInstruction,
               allocateInstruction,
               assignInstruction,
-              ...splitInstructions,
+              splitInstructions[1],
               ...stakingDeactivateInstructions,
               memoInstruction,
             ];
@@ -837,7 +825,7 @@ describe('Instruction Parser Staking Tests: ', function () {
             nonceAdvanceInstruction,
             allocateInstruction,
             assignInstruction,
-            ...splitInstructions,
+            splitInstructions[1],
             ...stakingDeactivateInstructions,
             memoInstruction,
           ];
@@ -895,7 +883,7 @@ describe('Instruction Parser Staking Tests: ', function () {
             nonceAdvanceInstruction,
             allocateInstruction,
             assignInstruction,
-            ...splitInstructions,
+            splitInstructions[1],
             ...stakingDeactivateInstructions,
             memoInstruction,
           ];
@@ -952,7 +940,7 @@ describe('Instruction Parser Staking Tests: ', function () {
             nonceAdvanceInstruction,
             allocateInstruction,
             assignInstruction,
-            ...splitInstructions,
+            splitInstructions[1],
             ...stakingDeactivateInstructions,
             memoInstruction,
           ];
@@ -1040,7 +1028,7 @@ describe('Instruction Parser Staking Tests: ', function () {
           transferInstruction,
           allocateInstruction,
           assignInstruction,
-          ...splitInstructions,
+          splitInstructions[1],
           ...stakingDeactivateInstructions,
           memoInstruction,
         ];
@@ -1185,7 +1173,7 @@ describe('Instruction Parser Staking Tests: ', function () {
       should.deepEqual(result, instructionsData);
     });
 
-    it('Should parse withdraw stake tx instructions if there are unexpected instructions', () => {
+    it('Should reject withdraw stake tx instructions if there are unexpected instructions', () => {
       const fromAccount = new PublicKey(testData.authAccount.pub);
       const stakingAccount = new PublicKey(testData.stakeAccount.pub);
       const validator = new PublicKey(testData.validator.pub);
@@ -1216,24 +1204,14 @@ describe('Instruction Parser Staking Tests: ', function () {
         lamports: new BigNumber(amount).toNumber(),
       }).instructions;
 
-      // Params
-      const withdrawStakeParams: StakingWithdraw = {
-        type: InstructionBuilderTypes.StakingWithdraw,
-        params: {
-          fromAddress: fromAccount.toString(),
-          stakingAddress: stakingAccount.toString(),
-          amount,
-        },
-      };
-
       const instructions = [
         ...stakingActivateInstructions,
         ...stakingDelegateInstructions,
         ...withdrawStakeInstructions,
       ];
-      const instructionsData = [withdrawStakeParams];
-      const result = instructionParamsFactory(TransactionType.StakingWithdraw, instructions);
-      should.deepEqual(result, instructionsData);
+      should(() => instructionParamsFactory(TransactionType.StakingWithdraw, instructions)).throw(
+        'Invalid withdraw stake transaction, instruction type not supported: Create'
+      );
     });
   });
 });

@@ -95,6 +95,7 @@ import {
 } from './lib/token2022Resolve';
 import {
   getAssociatedTokenAccountAddress,
+  getMarinadeUnstakeTransfer,
   getSolTokenFromAddress,
   getSolTokenFromTokenName,
   isValidAddress,
@@ -610,9 +611,13 @@ export class Sol extends BaseCoin {
     const explainedTx = transaction.explainTransaction();
     const isCloseAssociatedTokenAccountTx = transaction.type === TransactionType.CloseAssociatedTokenAccount;
 
-    // The memo is attacker-controlled, so a payment intent must never decode as a staking deactivate.
-    if (txParams.type === 'transfer' && transaction.type === TransactionType.StakingDeactivate) {
-      throw new Error('Invalid transaction type: transfer intent decoded as staking deactivate');
+    // A Marinade unstake produces no explained outputs, so the only thing tying its transfer to this wallet
+    // is the source. The source is the wallet root, not the fee payer, since sponsored fee payers exist.
+    if (transaction.type === TransactionType.StakingDeactivate) {
+      const marinadeTransfer = getMarinadeUnstakeTransfer(transaction.solTransaction.instructions);
+      if (marinadeTransfer && marinadeTransfer.fromPubkey.toString() !== walletRootAddress) {
+        throw new Error('Marinade unstake transfer must be sent from the wallet root address');
+      }
     }
 
     if (txParams.type === 'enabletoken' && verificationOptions?.verifyTokenEnablement) {
