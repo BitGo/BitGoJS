@@ -5,6 +5,7 @@ import express from 'express';
 import * as path from 'path';
 import * as _ from 'lodash';
 import debugLib from 'debug';
+import { logger } from '@bitgo/logger';
 import * as https from 'https';
 import * as http from 'http';
 import morgan, { token as morganToken } from 'morgan';
@@ -27,8 +28,10 @@ import {
 } from './errors';
 
 import { Environments } from 'bitgo';
-import * as clientRoutes from './clientRoutes';
+
 import { isSameFilePath } from './consumedSharesRegistry';
+import * as clientRoutes from './clientRoutes';
+import { BitgoMpcGpgPubKeys } from '@bitgo/sdk-core';
 import { getBitGoTlsPolicy } from './tlsPolicy';
 
 /**
@@ -254,6 +257,13 @@ function checkPreconditions(config: Config) {
   if ((signerMode !== undefined || signerFileSystemPath !== undefined) && !(signerMode && signerFileSystemPath)) {
     throw new ExternalSignerConfigError(
       'signerMode and signerFileSystemPath must both be set in order to run in external signing mode.'
+    );
+  }
+
+  if (signerMode && !BitgoMpcGpgPubKeys.envRequiresBitgoPubGpgKeyConfig(env)) {
+    logger.warn(
+      `External signer mode is running in env '${env}', which does not enforce the ` +
+        'BitGo GPG public key pin; share encryption will accept any supplied GPG public key.'
     );
   }
 
