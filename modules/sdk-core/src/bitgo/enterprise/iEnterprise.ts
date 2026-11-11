@@ -28,10 +28,22 @@ export interface IEnterprise {
     userPassword: string,
     bitgoInstChallengeProofSignature: Buffer,
     bitgoNitroChallengeProofSignature: Buffer,
+    openSSLBytes: Uint8Array
+  ): Promise<void>;
+  /**
+   * @deprecated Passing `challenge` signs it without provenance verification. Omit it to generate a fresh
+   * challenge locally, or use resignTssEcdsaChallenge to re-sign the enterprise's existing challenge.
+   */
+  uploadAndEnableTssEcdsaSigning(
+    userPassword: string,
+    bitgoInstChallengeProofSignature: Buffer,
+    bitgoNitroChallengeProofSignature: Buffer,
     openSSLBytes: Uint8Array,
     challenge?: EcdsaTypes.DeserializedNtildeWithProofs
   ): Promise<void>;
+  /** @deprecated Use resignTssEcdsaChallenge. Returns an unverified challenge. */
   getExistingTssEcdsaChallenge(): Promise<EcdsaTypes.DeserializedNtildeWithProofs>;
+  resignTssEcdsaChallenge(userPassword: string): Promise<void>;
   resignEnterpriseChallenges(
     oldEcdhKeypair: EcdhDerivedKeypair,
     newEcdhKeypair: EcdhDerivedKeypair,

@@ -2359,6 +2359,169 @@ describe('TSS Ecdsa Utils:', async function () {
     });
   });
 
+  describe('verifyEnterpriseChallengeForResign', function () {
+    const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+    const admin = bitgo.keychains().create();
+    const other = bitgo.keychains().create();
+    const path = 'm/0/0';
+    // `derivedPubKey` deliberately points at the wrong key: the verification anchor must be the xprv, not this field
+    const keypair = {
+      xprv: admin.xprv,
+      derivationPath: path,
+      derivedPubKey: bip32.fromBase58(other.xpub).derivePath(path).publicKey.toString('hex'),
+    };
+    const bitgoChallenges = {
+      bitgoInstitutionalHsm: mockChallengeA,
+      bitgoNitroHsm: mockChallengeB,
+    };
+
+    const sign = (challenge: EcdsaTypes.SerializedNtilde, key: { xprv: string }) =>
+      ECDSAUtils.EcdsaUtils.signChallenge(challenge, key.xprv, path).toString('hex');
+    const tamper = (hex: string) => hex.slice(0, -1) + (hex.endsWith('0') ? '1' : '0');
+
+    const notSignedMessage =
+      'Cannot re-sign. The existing enterprise ECDSA challenge was not signed by your ECDH key. Generate a new challenge instead.';
+    const hsmMessage = 'Cannot re-sign. The existing enterprise ECDSA challenge matches a BitGo HSM challenge.';
+    const proofsMessage = 'Cannot re-sign. The existing enterprise ECDSA challenge has invalid ntilde proofs.';
+
+    it('accepts a challenge signed by the admin keypair derived from the xprv', async function () {
+      const challenge = { ...mockChallengeC, verifiers: { adminSignature: sign(mockChallengeC, admin) } };
+      await ECDSAUtils.EcdsaUtils.verifyEnterpriseChallengeForResign(
+        challenge,
+        keypair,
+        bitgoChallenges
+      ).should.not.be.rejected();
+    });
+
+    // bip32 sign/verify consume only the first 32 bytes of the ntilde+h1+h2 message, so only an ntilde-head
+    // tamper invalidates the signature; tampering h1/h2 (past that prefix) keeps the signature valid and is
+    // caught by the proof check instead. See follow-up on domain-separated signature messages.
+    it('rejects a challenge whose ntilde head was tampered with', async function () {
+      const challenge = {
+        ...mockChallengeC,
+        ntilde: (mockChallengeC.ntilde.startsWith('0') ? '1' : '0') + mockChallengeC.ntilde.slice(1),
+        verifiers: { adminSignature: sign(mockChallengeC, admin) },
+      };
+      await ECDSAUtils.EcdsaUtils.verifyEnterpriseChallengeForResign(
+        challenge,
+        keypair,
+        bitgoChallenges
+      ).should.be.rejectedWith(notSignedMessage);
+    });
+
+    for (const field of ['h1', 'h2'] as const) {
+      it(`rejects a challenge whose ${field} was tampered with`, async function () {
+        const challenge = {
+          ...mockChallengeC,
+          [field]: tamper(mockChallengeC[field]),
+          verifiers: { adminSignature: sign(mockChallengeC, admin) },
+        };
+        await ECDSAUtils.EcdsaUtils.verifyEnterpriseChallengeForResign(
+          challenge,
+          keypair,
+          bitgoChallenges
+        ).should.be.rejectedWith(proofsMessage);
+      });
+    }
+
+    it('rejects a challenge signed by another key, even with a WP-supplied matching derivedPubKey', async function () {
+      const challenge = { ...mockChallengeC, verifiers: { adminSignature: sign(mockChallengeC, other) } };
+      await ECDSAUtils.EcdsaUtils.verifyEnterpriseChallengeForResign(
+        challenge,
+        keypair,
+        bitgoChallenges
+      ).should.be.rejectedWith(notSignedMessage);
+    });
+
+    it('rejects a challenge with no verifiers', async function () {
+      const challenge = { ...mockChallengeC, verifiers: undefined };
+      await ECDSAUtils.EcdsaUtils.verifyEnterpriseChallengeForResign(
+        challenge,
+        keypair,
+        bitgoChallenges
+      ).should.be.rejectedWith(notSignedMessage);
+    });
+
+    it('rejects a challenge with an empty adminSignature', async function () {
+      const challenge = { ...mockChallengeC, verifiers: { adminSignature: '' } };
+      await ECDSAUtils.EcdsaUtils.verifyEnterpriseChallengeForResign(
+        challenge,
+        keypair,
+        bitgoChallenges
+      ).should.be.rejectedWith(notSignedMessage);
+    });
+
+    it('rejects a challenge with a garbage adminSignature', async function () {
+      const challenge = { ...mockChallengeC, verifiers: { adminSignature: 'deadbeef' } };
+      await ECDSAUtils.EcdsaUtils.verifyEnterpriseChallengeForResign(
+        challenge,
+        keypair,
+        bitgoChallenges
+      ).should.be.rejectedWith(notSignedMessage);
+    });
+
+    it('rejects a challenge that matches the BitGo institutional HSM challenge', async function () {
+      const challenge = { ...mockChallengeA, verifiers: { adminSignature: sign(mockChallengeA, admin) } };
+      await ECDSAUtils.EcdsaUtils.verifyEnterpriseChallengeForResign(
+        challenge,
+        keypair,
+        bitgoChallenges
+      ).should.be.rejectedWith(hsmMessage);
+    });
+
+    it('rejects a challenge that matches the BitGo nitro HSM challenge', async function () {
+      const challenge = { ...mockChallengeB, verifiers: { adminSignature: sign(mockChallengeB, admin) } };
+      await ECDSAUtils.EcdsaUtils.verifyEnterpriseChallengeForResign(
+        challenge,
+        keypair,
+        bitgoChallenges
+      ).should.be.rejectedWith(hsmMessage);
+    });
+
+    it('rejects a challenge whose proofs do not match its ntilde', async function () {
+      const challenge = {
+        ...mockChallengeC,
+        ntildeProof: mockChallengeA.ntildeProof,
+        verifiers: { adminSignature: sign(mockChallengeC, admin) },
+      };
+      await ECDSAUtils.EcdsaUtils.verifyEnterpriseChallengeForResign(
+        challenge,
+        keypair,
+        bitgoChallenges
+      ).should.be.rejectedWith(proofsMessage);
+    });
+
+    it('rejects a challenge with malformed proof hex', async function () {
+      const challenge = {
+        ...mockChallengeC,
+        ntildeProof: {
+          h1WrtH2: { alpha: ['zz'], t: ['zz'] },
+          h2WrtH1: { alpha: ['zz'], t: ['zz'] },
+        },
+        verifiers: { adminSignature: sign(mockChallengeC, admin) },
+      };
+      await ECDSAUtils.EcdsaUtils.verifyEnterpriseChallengeForResign(
+        challenge,
+        keypair,
+        bitgoChallenges
+      ).should.be.rejectedWith(proofsMessage);
+    });
+
+    it('rejects a challenge without a proof', async function () {
+      // omits the required ntildeProof on purpose; cast keeps the literal assignable
+      const challenge = {
+        ...mockChallengeC,
+        ntildeProof: undefined,
+        verifiers: { adminSignature: sign(mockChallengeC, admin) },
+      } as unknown as EcdsaTypes.SerializedNtildeWithProofs & { verifiers?: { adminSignature?: string } };
+      await ECDSAUtils.EcdsaUtils.verifyEnterpriseChallengeForResign(
+        challenge,
+        keypair,
+        bitgoChallenges
+      ).should.be.rejectedWith(proofsMessage);
+    });
+  });
+
   it('getMessageToSignFromChallenge concatenates the challenge values only', function () {
     const challenge = mockChallengeA;
     const expectedMessageToSign = challenge.ntilde.concat(challenge.h1).concat(challenge.h2);
