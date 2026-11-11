@@ -104,7 +104,13 @@ export class TokenTransaction extends Transaction {
   explainTransaction(): TransactionExplanation {
     const displayOrder = ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'withdrawAmount'];
 
-    const outputs: TransactionRecipient[] = [this.recipient];
+    // `message` is the jetton forward comment — the memo exchanges use to credit token deposits
+    const outputs: TransactionRecipient[] = [
+      {
+        ...this.recipient,
+        ...(this.message ? { memo: this.message } : {}),
+      },
+    ];
     const outputAmount = this.recipient.amount;
     const withdrawAmount = this.withdrawAmount;
     return {

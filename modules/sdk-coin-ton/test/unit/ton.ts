@@ -194,6 +194,193 @@ describe('TON:', function () {
       } as any);
       isTransactionVerified.should.equal(true);
     });
+
+    it('should fail to verify transaction when the prebuild is missing the memo comment', async function () {
+      // sends to the same address and amount the memoId recipient expects, but carries no comment
+      const txParams = {
+        recipients: [
+          {
+            address: 'EQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBXwtG?memoId=1234',
+            amount: '10000000',
+          },
+        ],
+      };
+      const txPrebuild = {
+        txHex: Buffer.from(testData.signedSendTransaction.tx, 'base64').toString('hex'),
+        txInfo: {},
+      };
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, verification: {} } as any)
+        .should.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should fail to verify transaction when the memo comment differs from the memoId', async function () {
+      const txParams = {
+        recipients: [
+          {
+            address: 'EQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBXwtG?memoId=9999',
+            amount: '10000000',
+          },
+        ],
+      };
+      const txPrebuild = {
+        txHex: Buffer.from(testData.signedSendTransactionForMemoId.tx, 'base64').toString('hex'),
+        txInfo: {},
+      };
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, verification: {} } as any)
+        .should.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should fail to verify transaction when the prebuild carries an undeclared comment', async function () {
+      const txParams = {
+        recipients: [
+          {
+            address: 'EQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBXwtG',
+            amount: '10000000',
+          },
+        ],
+      };
+      const txPrebuild = {
+        txHex: Buffer.from(testData.signedSendTransactionForMemoId.tx, 'base64').toString('hex'),
+        txInfo: {},
+      };
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, verification: {} } as any)
+        .should.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+  });
+
+  describe('Verify transaction (mainnet TonWeb path): ', () => {
+    const mainnetCoin = bitgo.coin('ton');
+    const txHex = Buffer.from(testData.signedSendTransactionForMemoId.tx, 'base64').toString('hex');
+
+    it('should succeed to verify a memoId recipient when the comment matches', async function () {
+      const isVerified = await mainnetCoin.verifyTransaction({
+        txParams: { recipients: [testData.signedSendTransactionForMemoId.recipient] },
+        txPrebuild: { txHex, txInfo: {} },
+        verification: {},
+      } as any);
+      isVerified.should.equal(true);
+    });
+
+    it('should succeed to verify a plain send without a comment', async function () {
+      const isVerified = await mainnetCoin.verifyTransaction({
+        txParams: { recipients: [testData.signedSendTransaction.recipient] },
+        txPrebuild: {
+          txHex: Buffer.from(testData.signedSendTransaction.tx, 'base64').toString('hex'),
+          txInfo: {},
+        },
+        verification: {},
+      } as any);
+      isVerified.should.equal(true);
+    });
+
+    it('should fail to verify when the prebuild carries an undeclared comment', async function () {
+      await mainnetCoin
+        .verifyTransaction({
+          txParams: {
+            recipients: [
+              {
+                address: 'EQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBXwtG',
+                amount: '10000000',
+              },
+            ],
+          },
+          txPrebuild: { txHex, txInfo: {} },
+          verification: {},
+        } as any)
+        .should.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should expose the full snake-format comment as the memo', async function () {
+      const explainedTransaction = (await mainnetCoin.explainTransaction({
+        txHex: Buffer.from(testData.signedSendTransactionWithSnakeComment.tx, 'base64').toString('hex'),
+      })) as TransactionExplanation;
+      explainedTransaction.outputs[0]!.memo!.should.equal('12345678');
+    });
+
+    it('should fail to verify a memoId recipient when the comment carries a snake-format continuation', async function () {
+      await mainnetCoin
+        .verifyTransaction({
+          txParams: { recipients: [testData.signedSendTransactionWithSnakeComment.recipient] },
+          txPrebuild: {
+            txHex: Buffer.from(testData.signedSendTransactionWithSnakeComment.tx, 'base64').toString('hex'),
+            txInfo: {},
+          },
+          verification: {},
+        } as any)
+        .should.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should fail to verify an undeclared snake-format comment when the recipient declares no memo', async function () {
+      await mainnetCoin
+        .verifyTransaction({
+          txParams: {
+            recipients: [
+              {
+                address: 'EQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBXwtG',
+                amount: '10000000',
+              },
+            ],
+          },
+          txPrebuild: {
+            txHex: Buffer.from(testData.signedSendTransactionWithSnakeComment.tx, 'base64').toString('hex'),
+            txInfo: {},
+          },
+          verification: {},
+        } as any)
+        .should.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should fail closed on a malformed snake-format comment continuation', async function () {
+      const txHex = Buffer.from(testData.signedSendTransactionWithMalformedComment.tx, 'base64').toString('hex');
+      await mainnetCoin.explainTransaction({ txHex }).should.rejectedWith('Invalid transaction');
+      await mainnetCoin
+        .verifyTransaction({
+          txParams: { recipients: [testData.signedSendTransactionWithMalformedComment.recipient] },
+          txPrebuild: { txHex, txInfo: {} },
+          verification: {},
+        } as any)
+        .should.rejectedWith('invalid raw transaction');
+    });
+
+    it('should explain a whales deposit opcode without exposing its payload as memo', async function () {
+      const explainedTransaction = (await mainnetCoin.explainTransaction({
+        txHex: Buffer.from(testData.signedTonWhalesDepositTransaction.tx, 'base64').toString('hex'),
+      })) as TransactionExplanation;
+      should.equal(explainedTransaction.outputs[0]!.memo, undefined);
+    });
+
+    it('should classify a plain Deposit comment as a whales deposit and not expose it as memo', async function () {
+      const explainedTransaction = (await mainnetCoin.explainTransaction({
+        txHex: Buffer.from(testData.signedSendTransactionWithDepositComment.tx, 'base64').toString('hex'),
+      })) as TransactionExplanation;
+      should.equal(explainedTransaction.outputs[0]!.memo, undefined);
+    });
+
+    // Accepted limitation (both paths): a comment that is exactly 'Deposit', 'Withdraw', or
+    // the single-nominator withdraw-all text classifies as a staking protocol comment, so a
+    // plain send whose intended memo happens to be one of those strings cannot verify.
+    it('should not verify a plain Deposit comment even when Deposit is the declared memo', async function () {
+      await mainnetCoin
+        .verifyTransaction({
+          txParams: {
+            recipients: [
+              {
+                address: `${testData.signedSendTransactionWithDepositComment.recipient.address}?memoId=Deposit`,
+                amount: testData.signedSendTransactionWithDepositComment.recipient.amount,
+              },
+            ],
+          },
+          txPrebuild: {
+            txHex: Buffer.from(testData.signedSendTransactionWithDepositComment.tx, 'base64').toString('hex'),
+            txInfo: {},
+          },
+          verification: {},
+        } as any)
+        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
   });
 
   describe('Explain Transaction: ', () => {
@@ -217,6 +404,13 @@ describe('TON:', function () {
         fee: { fee: 'UNKNOWN' },
         withdrawAmount: undefined,
       });
+    });
+
+    it('should explain the transfer comment as the output memo', async function () {
+      const explainedTransaction = (await basecoin.explainTransaction({
+        txHex: Buffer.from(testData.signedSendTransactionForMemoId.tx, 'base64').toString('hex'),
+      })) as TransactionExplanation;
+      explainedTransaction.outputs[0]!.memo!.should.equal('1234');
     });
 
     it('should explain a non-bounceable transfer transaction', async function () {

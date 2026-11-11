@@ -188,6 +188,150 @@ describe('Jetton Tokens', function () {
       } as any);
       isTransactionVerified.should.equal(true);
     });
+    it('should fail to verify transaction when the prebuild is missing the memo comment', async function () {
+      const txParams = {
+        recipients: [
+          {
+            address: `${testData.signedTokenSendTransaction.recipientBounceable.address}?memoId=1234`,
+            amount: testData.signedTokenSendTransaction.recipientBounceable.amount,
+          },
+        ],
+      };
+      const txPrebuild = {
+        txHex: Buffer.from(testData.signedTokenSendTransaction.tx, 'base64').toString('hex'),
+        txInfo: {},
+      };
+      await testnetJettonToken
+        .verifyTransaction({ txParams, txPrebuild, verification: {} } as any)
+        .should.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should fail to verify transaction when the memo comment differs from the memoId', async function () {
+      const txParams = {
+        recipients: [
+          {
+            address: 'UQB-CM6DF-jpq9XVdiSdefAMU5KC1gpZuYBFp-Q65aUhn0OP?memoId=9999',
+            amount: testData.signedTokenSendTransactionForMemoId.recipient.amount,
+          },
+        ],
+      };
+      const txPrebuild = {
+        txHex: Buffer.from(testData.signedTokenSendTransactionForMemoId.tx, 'base64').toString('hex'),
+        txInfo: {},
+      };
+      await testnetJettonToken
+        .verifyTransaction({ txParams, txPrebuild, verification: {} } as any)
+        .should.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should fail to verify transaction when the prebuild carries an undeclared comment', async function () {
+      const txParams = {
+        recipients: [testData.signedTokenSendTransactionWithComment.recipient],
+      };
+      const txPrebuild = {
+        txHex: Buffer.from(testData.signedTokenSendTransactionWithComment.tx, 'base64').toString('hex'),
+        txInfo: {},
+      };
+      await testnetJettonToken
+        .verifyTransaction({ txParams, txPrebuild, verification: {} } as any)
+        .should.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should expose the full snake-format forward comment as the memo (mainnet)', async function () {
+      const explainedTransaction = (await mainnetJettonToken.explainTransaction({
+        txHex: Buffer.from(testData.signedTokenSendTransactionWithSnakeComment.tx, 'base64').toString('hex'),
+      })) as TransactionExplanation;
+      explainedTransaction.outputs[0]!.memo!.should.equal('12345678');
+    });
+
+    it('should fail to verify a memoId recipient when the forward comment carries a snake-format continuation (mainnet)', async function () {
+      await mainnetJettonToken
+        .verifyTransaction({
+          txParams: { recipients: [testData.signedTokenSendTransactionWithSnakeComment.recipient] },
+          txPrebuild: {
+            txHex: Buffer.from(testData.signedTokenSendTransactionWithSnakeComment.tx, 'base64').toString('hex'),
+            txInfo: {},
+          },
+          verification: {},
+        } as any)
+        .should.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should fail to verify an undeclared snake-format forward comment when the recipient declares no memo (mainnet)', async function () {
+      await mainnetJettonToken
+        .verifyTransaction({
+          txParams: {
+            recipients: [
+              {
+                address: 'UQB-CM6DF-jpq9XVdiSdefAMU5KC1gpZuYBFp-Q65aUhn0OP',
+                amount: '1000000000',
+              },
+            ],
+          },
+          txPrebuild: {
+            txHex: Buffer.from(testData.signedTokenSendTransactionWithSnakeComment.tx, 'base64').toString('hex'),
+            txInfo: {},
+          },
+          verification: {},
+        } as any)
+        .should.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should read the forward payload comment, not the custom_payload, when both are present (mainnet)', async function () {
+      const explainedTransaction = (await mainnetJettonToken.explainTransaction({
+        txHex: Buffer.from(testData.signedTokenSendTransactionWithCustomPayload.tx, 'base64').toString('hex'),
+      })) as TransactionExplanation;
+      explainedTransaction.outputs[0]!.memo!.should.equal('5678');
+    });
+
+    it('should verify a custom_payload transfer against the forward payload memoId (mainnet)', async function () {
+      await mainnetJettonToken.verifyTransaction({
+        txParams: { recipients: [testData.signedTokenSendTransactionWithCustomPayload.recipient] },
+        txPrebuild: {
+          txHex: Buffer.from(testData.signedTokenSendTransactionWithCustomPayload.tx, 'base64').toString('hex'),
+          txInfo: {},
+        },
+        verification: {},
+      } as any);
+    });
+
+    it('should fail to verify a custom_payload transfer against the decoy custom_payload memoId (mainnet)', async function () {
+      await mainnetJettonToken
+        .verifyTransaction({
+          txParams: {
+            recipients: [
+              {
+                address: 'UQB-CM6DF-jpq9XVdiSdefAMU5KC1gpZuYBFp-Q65aUhn0OP?memoId=1234',
+                amount: '1000000000',
+              },
+            ],
+          },
+          txPrebuild: {
+            txHex: Buffer.from(testData.signedTokenSendTransactionWithCustomPayload.tx, 'base64').toString('hex'),
+            txInfo: {},
+          },
+          verification: {},
+        } as any)
+        .should.rejectedWith('Tx outputs does not match with expected txParams recipients');
+    });
+
+    it('should expose an inline forward payload comment as the memo (mainnet)', async function () {
+      const explainedTransaction = (await mainnetJettonToken.explainTransaction({
+        txHex: Buffer.from(testData.signedTokenSendTransactionWithInlinePayload.tx, 'base64').toString('hex'),
+      })) as TransactionExplanation;
+      explainedTransaction.outputs[0]!.memo!.should.equal('5678');
+    });
+
+    it('should verify an inline forward payload transfer against its memoId (mainnet)', async function () {
+      await mainnetJettonToken.verifyTransaction({
+        txParams: { recipients: [testData.signedTokenSendTransactionWithInlinePayload.recipient] },
+        txPrebuild: {
+          txHex: Buffer.from(testData.signedTokenSendTransactionWithInlinePayload.tx, 'base64').toString('hex'),
+          txInfo: {},
+        },
+        verification: {},
+      } as any);
+    });
   });
 
   describe('Explain Jetton Transaction: ', () => {
@@ -233,6 +377,13 @@ describe('Jetton Tokens', function () {
         fee: { fee: 'UNKNOWN' },
         withdrawAmount: undefined,
       });
+    });
+
+    it('should explain the jetton forward comment as the output memo', async function () {
+      const explainedTransaction = (await testnetJettonToken.explainTransaction({
+        txHex: Buffer.from(testData.signedTokenSendTransactionWithComment.tx, 'base64').toString('hex'),
+      })) as TransactionExplanation;
+      explainedTransaction.outputs[0]!.memo!.should.equal('jetton testing');
     });
 
     it('should fail to explain transaction with missing params', async function () {

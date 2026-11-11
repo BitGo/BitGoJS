@@ -58,6 +58,21 @@ describe('TON WASM explainTransaction', function () {
       bounceable.outputs[0].address.should.equal(testData.signedSendTransaction.recipient.address);
       nonBounceable.outputs[0].address.should.equal(testData.signedSendTransaction.recipientBounceable.address);
     });
+
+    it('should explain the transfer comment as the output memo', async function () {
+      const explained = await explainTonTransaction({ txBase64: testData.signedSendTransactionForMemoId.tx });
+      explained.outputs[0]!.memo!.should.equal('1234');
+    });
+
+    it('should not expose the whales vesting Deposit comment as memo', async function () {
+      const explained = await explainTonTransaction({ txBase64: testData.signedSendTransactionWithDepositComment.tx });
+      should.equal(explained.outputs[0]!.memo, undefined);
+    });
+
+    it('should explain the jetton forward comment as the output memo', async function () {
+      const explained = await explainTonTransaction({ txBase64: testData.signedTokenSendTransactionForMemoId.tx });
+      explained.outputs[0]!.memo!.should.equal('1234');
+    });
   });
 
   describe('WASM Transaction signing flow', function () {

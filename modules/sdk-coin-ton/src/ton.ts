@@ -119,6 +119,16 @@ export class Ton extends BaseCoin {
     }
   }
 
+  /**
+   * Verifies that the prebuilt transaction matches the user's intent.
+   *
+   * Compares (bounceable address, amount, memo) per output against txParams.recipients, plus the
+   * total amount. TON custodial deposits are credited by the transfer's text comment (or the
+   * jetton forward comment for token transfers), which BitGo models as a `?memoId=` suffix on
+   * the recipient address. The parsed comment is bound to the intended memoId: a prebuild whose
+   * comment differs from, is missing from, or is extra to the declared memo fails verification
+   * on both the tton WASM and the mainnet TonWeb paths.
+   */
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     const { txPrebuild: txPrebuild, txParams: txParams } = params;
     const rawTx = txPrebuild.txHex;
@@ -132,15 +142,21 @@ export class Ton extends BaseCoin {
       const explainedTx = await explainTonTransaction({ txBase64 });
       if (txParams.recipients !== undefined) {
         const filteredRecipients = await Promise.all(
-          txParams.recipients.map(async (recipient) => ({
-            address: await toBounceable(recipient.address),
-            amount: BigInt(recipient.amount),
-          }))
+          txParams.recipients.map(async (recipient) => {
+            const { address, memoId } = this.getAddressDetails(recipient.address);
+            const memo = this.resolveExpectedMemo(memoId, recipient.memo);
+            return {
+              address: await toBounceable(address),
+              amount: BigInt(recipient.amount),
+              ...(memo !== undefined ? { memo } : {}),
+            };
+          })
         );
         const filteredOutputs = await Promise.all(
           explainedTx.outputs.map(async (output) => ({
             address: await toBounceable(output.address),
             amount: BigInt(output.amount),
+            ...(output.memo !== undefined && output.memo !== '' ? { memo: output.memo } : {}),
           }))
         );
         if (!_.isEqual(filteredOutputs, filteredRecipients)) {
@@ -163,16 +179,19 @@ export class Ton extends BaseCoin {
     const explainedTx = transaction.explainTransaction();
     if (txParams.recipients !== undefined) {
       const filteredRecipients = txParams.recipients?.map((recipient) => {
-        const destination = this.getAddressDetails(recipient.address);
+        const { address, memoId } = this.getAddressDetails(recipient.address);
+        const memo = this.resolveExpectedMemo(memoId, recipient.memo);
         return {
-          address: new TonWeb.Address(destination.address).toString(true, true, true),
+          address: new TonWeb.Address(address).toString(true, true, true),
           amount: BigInt(recipient.amount),
+          ...(memo !== undefined ? { memo } : {}),
         };
       });
       const filteredOutputs = explainedTx.outputs.map((output) => {
         return {
           address: new TonWeb.Address(output.address).toString(true, true, true),
           amount: BigInt(output.amount),
+          ...(output.memo !== undefined && output.memo !== '' ? { memo: output.memo } : {}),
         };
       });
       if (!_.isEqual(filteredOutputs, filteredRecipients)) {
@@ -187,6 +206,20 @@ export class Ton extends BaseCoin {
       }
     }
     return true;
+  }
+
+  /**
+   * Resolve the memo a recipient's intent declares. Declared sources are the `?memoId=` suffix
+   * of the recipient address (see getAddressDetails) and `recipient.memo`; empty strings mean
+   * "no memo", and conflicting distinct declarations are rejected as ambiguous intent.
+   * Returns undefined when no memo is declared anywhere.
+   */
+  private resolveExpectedMemo(memoId: string | undefined, recipientMemo: string | undefined): string | undefined {
+    const declaredMemos = [memoId, recipientMemo].filter((memo): memo is string => memo !== undefined && memo !== '');
+    if (declaredMemos.some((memo) => memo !== declaredMemos[0])) {
+      throw new Error('Tx outputs does not match with expected txParams recipients');
+    }
+    return declaredMemos[0];
   }
 
   async isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
