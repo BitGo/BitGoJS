@@ -1,11 +1,12 @@
 import { isValidXpub, SigningError } from '@bitgo/sdk-core';
 import { InMemorySigner } from '@taquito/signer';
+import { packData } from '@taquito/michel-codec';
 import * as base58check from 'bs58check';
 import { secp256k1 } from '@noble/curves/secp256k1';
 import sodium from 'libsodium-wrappers';
-import { HashType, SignResponse } from './iface';
+import { HashType, SignResponse, TransactionOp } from './iface';
 import { KeyPair } from './keyPair';
-import { genericMultisigDataToSign } from './multisigUtils';
+import { genericMultisigDataToSign, getMultisigTransferDataFromOperation } from './multisigUtils';
 
 // By default, use the transactions prefix
 export const DEFAULT_WATERMARK = new Uint8Array([3]);
@@ -139,6 +140,56 @@ export function generateDataToSign(
     throw new Error('Invalid destination address ' + destinationAddress);
   }
   return genericMultisigDataToSign(contractAddress, destinationAddress, amount, contractCounter);
+}
+
+/**
+ * Pack the multisig transfer payload locally, producing the same bytes the Tezos node returns from
+ * /helpers/scripts/pack_data. This avoids trusting a node or the platform for the bytes that the
+ * wallet contract verifies signatures against.
+ *
+ * @param {string} contractAddress The wallet contract address with the funds to withdraw
+ * @param {string} destinationAddress The address to transfer the funds to
+ * @param {string} amount Number of mutez to transfer
+ * @param {string} contractCounter Wallet counter to use in the transaction
+ * @returns {string} The packed data to sign in hexadecimal format
+ */
+export function packGenericMultisigDataToSign(
+  contractAddress: string,
+  destinationAddress: string,
+  amount: string,
+  contractCounter: string
+): string {
+  const { data, type } = generateDataToSign(contractAddress, destinationAddress, amount, contractCounter);
+  return Buffer.from(packData(data, type)).toString('hex');
+}
+
+/**
+ * Fail unless the data to sign is exactly the payload authorizing the multisig transfer encoded in
+ * the given transaction operation. The signature over dataToSign is a standalone spend
+ * authorization for the wallet contract, so it must never be produced for bytes that are not
+ * derived from the transfer the user verified.
+ *
+ * @param {TransactionOp} transferOperation The multisig transfer operation decoded from the txHex
+ * @param {string} dataToSign The packed data to sign supplied alongside the txHex, in hexadecimal
+ * @throws {Error} if the operation is not a multisig transfer or the data to sign does not match it
+ */
+export function assertDataToSignMatchesTransfer(transferOperation: TransactionOp, dataToSign: string): void {
+  if (!transferOperation.parameters) {
+    throw new Error('Cannot validate dataToSign: the transaction is not a multisig transfer');
+  }
+  const transfer = getMultisigTransferDataFromOperation(transferOperation);
+  if (transfer.counter === undefined) {
+    throw new Error('Cannot validate dataToSign: the multisig transfer has no counter');
+  }
+  const expectedDataToSign = packGenericMultisigDataToSign(
+    transfer.from,
+    transfer.to,
+    transfer.amount,
+    transfer.counter
+  );
+  if (dataToSign.toLowerCase() !== expectedDataToSign) {
+    throw new Error('dataToSign does not match the transfer encoded in the transaction');
+  }
 }
 
 /**

@@ -10,7 +10,7 @@ import {
   unsignedHex,
   unsignedTransactionWithTwoTransfersHex,
 } from '../fixtures';
-import { Wallet } from '@bitgo/sdk-core';
+import { VerifyTransactionOptions, Wallet } from '@bitgo/sdk-core';
 
 const bitgo: TestBitGoAPI = TestBitGo.decorate(BitGoAPI, { env: 'test' });
 bitgo.safeRegister('xtz', Xtz.createInstance);
@@ -23,6 +23,14 @@ describe('Tezos:', function () {
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('txtz');
   });
+  // Test key derived from the seed published in the 'should generate a keypair from a seed' test
+  // below; the fixtures in ../fixtures are signed with this same key so the dataToSign binding
+  // check and the expected signature bytes stay mutually consistent without any secret resolver.
+  const testSeed = Buffer.from(
+    '80350b4208d381fbfe2276a326603049fe500731c46d3c9936b5ce036b51377f24bab7dd0c2af7f107416ef858ff79b0670c72406dad064e72bb17fc0a9038bb',
+    'hex'
+  );
+  const testPrv = new XtzLib.KeyPair({ seed: testSeed }).getKeys().prv as string;
 
   it('should instantiate the coin', function () {
     const basecoin = bitgo.coin('xtz');
@@ -69,7 +77,7 @@ describe('Tezos:', function () {
 
   it('should sign an unsigned transaction with a Tezos private key', async function () {
     const signTxOptions = {
-      prv: 'xprv9s21ZrQH143K2vpv9Z5GppJtVsT6nBFWDRnA2PKTHaJobNGbhC9MR7shQCQ79jJNZvcxw6YzFTEiwxg3E6Tjo5RR7nKb2dp8r1zdKDG3w1o',
+      prv: testPrv,
       txPrebuild: {
         txHex: unsignedHex,
         source: 'tz2HGMx8YxPSLguVP6usgf1D8UALPLchLoSX',
@@ -87,7 +95,7 @@ describe('Tezos:', function () {
 
   it('should sign with a half signed transaction with a Tezos private key', async function () {
     const signTxOptions = {
-      prv: 'xprv9s21ZrQH143K2EHDvGaG86MLjU9bW52eEoqMKakkEYc7rM8KDC28FPMcbiwDYX3jjh2mDjFE4Bm37QqMvm4icdW7CAH7LH8jKDF3LXNbRbz',
+      prv: testPrv,
       txPrebuild: {
         txHex: oneSignatureHex,
         source: 'tz28XZQ1dRm17RLKM9ayhhp2dVvCGvpPhVyB',
@@ -105,12 +113,12 @@ describe('Tezos:', function () {
 
   it('should sign with a fee account a fully signed transaction', async function () {
     const signTxOptions = {
-      prv: 'xprv9s21ZrQH143K2dseae8JccdEANb1jSfx7Pr8zpKq9uW1Nyh8LD8Uizn6CttWNwJ9S9xJtP3nWda2RoQjTp75HdSyTPnUgdANo2sgpPrcMwm',
+      prv: testPrv,
       txPrebuild: {
         txHex: twoSignatureHex,
-        source: 'tz2SsfYjnEmm6E6eb6BxHNqsbGk4i9EsKSTE',
+        source: 'tz2XdjzgMRhMN52LpYBeKXND8n7TEKuHv4Ky',
         addressInfo: {
-          address: 'tz2SsfYjnEmm6E6eb6BxHNqsbGk4i9EsKSTE',
+          address: 'tz2XdjzgMRhMN52LpYBeKXND8n7TEKuHv4Ky',
           chain: 0,
           index: 0,
         },
@@ -118,6 +126,28 @@ describe('Tezos:', function () {
     };
     const tx = await basecoin.signTransaction(signTxOptions);
     tx.halfSigned.txHex.should.equal(fullySignedHex);
+  });
+
+  it('should reject signing when dataToSign does not match the transaction', async function () {
+    // The signature over dataToSign is a standalone spend authorization, so a payload that does
+    // not correspond to the transfer in txHex must never reach the user key.
+    const tamperedDataToSign = dataToSign.slice(0, -4) + 'beef';
+    const signTxOptions = {
+      prv: testPrv,
+      txPrebuild: {
+        txHex: unsignedHex,
+        source: 'tz2HGMx8YxPSLguVP6usgf1D8UALPLchLoSX',
+        dataToSign: tamperedDataToSign,
+        addressInfo: {
+          address: 'tz2HGMx8YxPSLguVP6usgf1D8UALPLchLoSX',
+          chain: 0,
+          index: 0,
+        },
+      },
+    };
+    await basecoin
+      .signTransaction(signTxOptions)
+      .should.be.rejectedWith('dataToSign does not match the transfer encoded in the transaction');
   });
 
   it('should check valid addresses', function () {
@@ -278,6 +308,35 @@ describe('Tezos:', function () {
       await basecoin
         .verifyTransaction({ txParams, txPrebuild } as any)
         .should.be.rejectedWith(`Tezos prebuild amount mismatch: expected 99999999 but got ${prebuildAmount}`);
+    });
+
+    it('should reject verification when dataToSign does not match the transaction', async function () {
+      const txParams = {
+        recipients: [{ address: prebuildDestination, amount: prebuildAmount }],
+      };
+      const tamperedDataToSign = dataToSign.slice(0, -4) + 'beef';
+      const txPrebuild = { txHex: unsignedHex, dataToSign: tamperedDataToSign };
+
+      // The xtz prebuild carries coin-specific dataToSign that the base VerifyTransactionOptions
+      // type does not declare, so the options are cast at this library boundary.
+      const options = { txParams, txPrebuild } as unknown as VerifyTransactionOptions;
+      await basecoin
+        .verifyTransaction(options)
+        .should.be.rejectedWith(
+          'Tezos prebuild dataToSign verification failed: dataToSign does not match the transfer encoded in the transaction'
+        );
+    });
+
+    it('should verify when dataToSign matches the transaction', async function () {
+      const txParams = {
+        recipients: [{ address: prebuildDestination, amount: prebuildAmount }],
+      };
+      const txPrebuild = { txHex: unsignedHex, dataToSign };
+
+      // Same boundary cast as above: dataToSign is coin-specific and absent from the base type.
+      const options = { txParams, txPrebuild } as unknown as VerifyTransactionOptions;
+      const result = await basecoin.verifyTransaction(options);
+      result.should.equal(true);
     });
 
     it('should reject when the prebuild contains an unexpected number of outputs', async function () {

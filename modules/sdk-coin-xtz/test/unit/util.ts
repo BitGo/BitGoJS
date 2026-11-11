@@ -10,6 +10,8 @@ import {
 } from '../resources';
 import { XtzLib } from '../../src';
 import { HashType } from '../../src/lib/iface';
+import { localForger } from '@taquito/local-forging';
+import { dataToSign, unsignedHex } from '../fixtures';
 
 describe('XTZ util library', function () {
   describe('address', function () {
@@ -234,6 +236,77 @@ describe('XTZ util library', function () {
       assert.throws(
         () => XtzLib.Utils.generateDataToSign('KT1NH2M23xovhw7uwWVuoGTYxykeCcVfSqhL', 'abc', '0', '0'),
         new RegExp('Invalid destination address')
+      );
+    });
+  });
+
+  describe('packGenericMultisigDataToSign', function () {
+    it('should pack locally to the same bytes the node packs', function () {
+      // The fixture dataToSign is the /pack_data RPC output for these exact parameters, so a local
+      // match proves packGenericMultisigDataToSign is byte-identical to the node.
+      const packed = XtzLib.Utils.packGenericMultisigDataToSign(
+        'KT18eKxkx71uMp28oZHjCiEj7QvFUaGzXtrZ',
+        'tz2PtJ9zgEgFVTRqy6GXsst54tH3ksEnYvvS',
+        '11800000',
+        '0'
+      );
+      packed.should.equal(dataToSign);
+    });
+  });
+
+  describe('assertDataToSignMatchesTransfer', function () {
+    // The operation under test is decoded from the unsignedHex fixture with the same local forger
+    // the transaction uses, so the multisig parameter shape is the production one.
+    const getTransferOperation = async () => {
+      const parsed = await localForger.parse(unsignedHex);
+      const operation = parsed.contents.find((content) => content.kind === 'transaction' && 'parameters' in content);
+      if (!operation) {
+        throw new Error('fixture has no multisig transaction operation');
+      }
+      return operation as Parameters<typeof XtzLib.Utils.assertDataToSignMatchesTransfer>[0];
+    };
+
+    it('should accept the locally packed payload for the transfer', async function () {
+      XtzLib.Utils.assertDataToSignMatchesTransfer(await getTransferOperation(), dataToSign);
+    });
+
+    it('should reject a payload that authorizes a different transfer', async function () {
+      // Flipping bytes yields a payload that is not derived from this transfer; accepting it would
+      // let a tampered prebuild be signed with the user key.
+      const tampered = dataToSign.slice(0, -4) + 'beef';
+      const operation = await getTransferOperation();
+      assert.throws(
+        () => XtzLib.Utils.assertDataToSignMatchesTransfer(operation, tampered),
+        new RegExp('dataToSign does not match the transfer encoded in the transaction')
+      );
+    });
+
+    it('should reject a non-multisig operation', async function () {
+      const parsed = await localForger.parse(unsignedHex);
+      const singlesigOperation = parsed.contents.find(
+        (content) => content.kind === 'transaction' && !('parameters' in content)
+      );
+      if (singlesigOperation === undefined) {
+        // unsignedHex has no singlesig op; pass an operation without parameters directly to
+        // exercise the same guard.
+        const emptyOperation = { kind: 'transaction', source: 'tz2HGMx8YxPSLguVP6usgf1D8UALPLchLoSX' };
+        assert.throws(
+          () =>
+            XtzLib.Utils.assertDataToSignMatchesTransfer(
+              emptyOperation as unknown as Parameters<typeof XtzLib.Utils.assertDataToSignMatchesTransfer>[0],
+              dataToSign
+            ),
+          new RegExp('not a multisig transfer')
+        );
+        return;
+      }
+      assert.throws(
+        () =>
+          XtzLib.Utils.assertDataToSignMatchesTransfer(
+            singlesigOperation as unknown as Parameters<typeof XtzLib.Utils.assertDataToSignMatchesTransfer>[0],
+            dataToSign
+          ),
+        new RegExp('not a multisig transfer')
       );
     });
   });

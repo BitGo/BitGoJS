@@ -30,6 +30,7 @@ import { Interface, KeyPair, TransactionBuilder, Utils } from './lib';
 import { extractContractStorage, type ContractStorage } from './lib/multisigUtils';
 import { RecoverOptions } from './lib/iface';
 import {
+  assertDataToSignMatchesTransfer,
   generateDataToSign,
   isValidOriginatedAddress,
   TRANSACTION_FEE,
@@ -157,6 +158,15 @@ export class Xtz extends BaseCoin {
       throw new Error(`Tezos prebuild contains ${txOutputs.length} output(s) but expected exactly 1`);
     }
 
+    const prebuildDataToSign = (txPrebuild as Interface.TransactionPrebuild).dataToSign;
+    if (prebuildDataToSign) {
+      try {
+        await this.assertDataToSignBoundToTxHex(rawTx, prebuildDataToSign);
+      } catch (e) {
+        throw new Error(`Tezos prebuild dataToSign verification failed: ${e.message}`);
+      }
+    }
+
     const { address: prebuildAddress, value: prebuildAmount } = txOutputs[0];
 
     // Validate recipients if provided (normal send). Consolidation builds omit recipients.
@@ -201,6 +211,22 @@ export class Xtz extends BaseCoin {
   }
 
   /**
+   * Ensure a supplied dataToSign is derived from the transfer in txHex. The platform prebuild carries
+   * both artifacts independently, but only txHex is shown to the user for verification.
+   *
+   * @param {string} txHex The prebuilt transaction
+   * @param {string} dataToSign The packed multisig payload that would be signed
+   */
+  private async assertDataToSignBoundToTxHex(txHex: string, dataToSign: string): Promise<void> {
+    const txBuilder = new TransactionBuilder(coins.get(this.getChain()));
+    txBuilder.from(txHex);
+    const transaction = await txBuilder.build();
+    // The builder signs overridden dataToSign for the first operation, so that is the one it must match
+    const transferOperation = transaction.toJson().contents[0] as Interface.TransactionOp;
+    assertDataToSignMatchesTransfer(transferOperation, dataToSign);
+  }
+
+  /**
    * Assemble keychain and half-sign prebuilt transaction
    *
    * @param params
@@ -209,6 +235,9 @@ export class Xtz extends BaseCoin {
    * @returns Bluebird<SignedTransaction>
    */
   async signTransaction(params: Interface.XtzSignTransactionOptions): Promise<SignedTransaction> {
+    if (params.txPrebuild.dataToSign) {
+      await this.assertDataToSignBoundToTxHex(params.txPrebuild.txHex, params.txPrebuild.dataToSign);
+    }
     const txBuilder = new TransactionBuilder(coins.get(this.getChain()));
     txBuilder.from(params.txPrebuild.txHex);
     txBuilder.source(params.txPrebuild.source);
