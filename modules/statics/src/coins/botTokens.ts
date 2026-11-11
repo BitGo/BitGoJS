@@ -7678,6 +7678,25 @@ export const botTokens = [
     undefined,
     Networks.test.hoodi
   ),
+  AccountCtors.tcantonToken(
+    '861a96fa-f641-4062-ba7f-f8b2bb1da174',
+    'tcanton:nxtp03',
+    'NXTP03',
+    10,
+    'https://api.utilities.digitalasset-staging.com/api/token-standard/v0/registrars/',
+    'provider-test02-dtip-party::1220d7244198c1e6c25e062e47fe3cd6e54d52ed05de5e3ec863aa1e9d08eed2aad6:NXTP03',
+    'tcanton:nxtp03' as unknown as UnderlyingAsset,
+    getTokenFeatures('canton', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-switzerland' as CoinFeature,
+      'custody-bitgo-sister-trust-one' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    Networks.test.canton
+  ),
   AccountCtors.erc20(
     '4161ed06-c331-4e21-8791-eaca5151e869',
     'eth:abtx',
@@ -12091,7 +12110,7 @@ export const botTokens = [
   AccountCtors.solToken(
     'da2fed8a-81f3-4979-a47b-d5ca5a3da371',
     'sol:hsdt',
-    'Solana Company',
+    'Solana Company Class A Common Stock',
     6,
     'HZBEgyBzXBTiJ9B3uaUmNWXmkNhZz5jzwwA6Et4L326J',
     'HZBEgyBzXBTiJ9B3uaUmNWXmkNhZz5jzwwA6Et4L326J',
@@ -17295,6 +17314,22 @@ export const botTokens = [
     18,
     '0x83d7d1df01c698b4379077af4bceb2d4af113bff',
     'chiliz:vcf' as unknown as UnderlyingAsset,
+    Networks.main.chiliz,
+    getTokenFeatures('chiliz', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-switzerland' as CoinFeature,
+      'custody-bitgo-sister-trust-one' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ])
+  ),
+  AccountCtors.erc20Token(
+    '20e73943-f984-41d8-a3fb-66b8ebfe8b57',
+    'chiliz:om',
+    'Olympique de Marseille',
+    18,
+    '0x08cde3ab71adc228332cb774c4ecca4d664ab807',
+    'chiliz:om' as unknown as UnderlyingAsset,
     Networks.main.chiliz,
     getTokenFeatures('chiliz', [
       'custody-bitgo-new-york' as CoinFeature,

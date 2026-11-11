@@ -494,7 +494,7 @@ export const botOfcTokens = [
   AccountCtors.tofcsolToken(
     '69bd4b34-2e6d-4477-8ccb-4cc0d6eab771',
     'ofctsol:wtgxx',
-    'WisdomTree Government Money Market Digital Fund',
+    'ofcWisdomTree Government Money Market Digital Fund',
     9,
     'tsol:wtgxx' as unknown as UnderlyingAsset,
     undefined,
@@ -534,7 +534,7 @@ export const botOfcTokens = [
   AccountCtors.tofcsolToken(
     'd0f1f369-a307-4f16-80bc-9f8b1da4f614',
     'ofctsol:001nbrkdf1',
-    'Digital National Bank Notes No 1',
+    'ofcDigital National Bank Notes No 1',
     0,
     'tsol:001nbrkdf1' as unknown as UnderlyingAsset,
     undefined,
@@ -664,6 +664,18 @@ export const botOfcTokens = [
     undefined,
     undefined,
     'hteth'
+  ),
+  AccountCtors.tofcCantonToken(
+    '6bd6d25a-5c96-421a-ba4a-12a5d8b4c1e6',
+    'ofctcanton:nxtp03',
+    'NXTP03',
+    10,
+    'tcanton:nxtp03' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
   ),
   AccountCtors.ofcerc20(
     '26f46d44-700d-4e32-8845-fb181e6d8027',
@@ -3760,7 +3772,7 @@ export const botOfcTokens = [
   AccountCtors.ofcsolToken(
     'becf513a-f605-4276-80c4-091ecb284a3f',
     'ofcsol:hsdt',
-    'ofcSolana Company',
+    'ofcSolana Company Class A Common Stock',
     6,
     'sol:hsdt' as unknown as UnderlyingAsset,
     undefined,
@@ -6662,7 +6674,7 @@ export const botOfcTokens = [
   AccountCtors.ofcsolToken(
     '6d2f385b-b100-4d71-be3a-86fc35c46f9d',
     'ofcsol:ore',
-    'ORE',
+    'ofcORE',
     11,
     'sol:ore' as unknown as UnderlyingAsset,
     undefined,
@@ -6744,7 +6756,7 @@ export const botOfcTokens = [
   AccountCtors.ofcsolToken(
     '8589eeed-7186-4b91-9a9e-389158b93243',
     'ofcsol:zcat',
-    'Anonymous Cat',
+    'ofcAnonymous Cat',
     9,
     'sol:zcat' as unknown as UnderlyingAsset,
     undefined,
@@ -6840,7 +6852,7 @@ export const botOfcTokens = [
   AccountCtors.ofcsolToken(
     '104bb175-1866-4e80-b463-11daca564733',
     'ofcsol:ddc',
-    'DDC Enterprise Limited Class A Ordinary Shares',
+    'ofcDDC Enterprise Limited Class A Ordinary Shares',
     6,
     'sol:ddc' as unknown as UnderlyingAsset,
     undefined,
@@ -6852,7 +6864,7 @@ export const botOfcTokens = [
   AccountCtors.ofcsolToken(
     'f33c27f8-f0b4-4c83-a2a6-056947070894',
     'ofcsol:stqn',
-    'Strategic Acquisitions Inc Common Stock',
+    'ofcStrategic Acquisitions Inc Common Stock',
     6,
     'sol:stqn' as unknown as UnderlyingAsset,
     undefined,
@@ -6864,7 +6876,7 @@ export const botOfcTokens = [
   AccountCtors.ofcsolToken(
     '751d5e7d-22ac-47c6-8f14-07db99b07ff7',
     'ofcsol:001nbrkdf1',
-    'Digital National Bank Notes No 1',
+    'ofcDigital National Bank Notes No 1',
     0,
     'sol:001nbrkdf1' as unknown as UnderlyingAsset,
     undefined,
@@ -6876,7 +6888,7 @@ export const botOfcTokens = [
   AccountCtors.ofcsolToken(
     '92004193-6e26-4a3e-aebe-911ed86c2f4a',
     'ofcsol:usyc',
-    'Circle USYC',
+    'ofcCircle USYC',
     6,
     'sol:usyc' as unknown as UnderlyingAsset,
     undefined,
@@ -7003,6 +7015,20 @@ export const botOfcTokens = [
     'Valencia CF Fan Token',
     18,
     'chiliz:vcf' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'chiliz'
+  ),
+  AccountCtors.ofcerc20(
+    'f216db14-0853-4169-8a5d-6c831093b0ee',
+    'ofcchiliz:om',
+    'Olympique de Marseille',
+    18,
+    'chiliz:om' as unknown as UnderlyingAsset,
     undefined,
     undefined,
     undefined,
