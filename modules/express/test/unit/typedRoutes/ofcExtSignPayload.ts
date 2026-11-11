@@ -9,7 +9,7 @@ import * as sinon from 'sinon';
 import { BitGo } from 'bitgo';
 import { promises as fs } from 'fs';
 import * as fsSync from 'fs';
-import { setupAgent } from '../../lib/testutil';
+import { SIGNER_AUTH_SECRET, setupAgent } from '../../lib/testutil';
 
 describe('OfcExtSignPayload External Signer Mode Tests', function () {
   describe('ofcExtSignPayload', function () {
@@ -85,6 +85,7 @@ describe('OfcExtSignPayload External Signer Mode Tests', function () {
       const result = await agent
         .post('/api/v2/ofc/signPayload')
         .set('Authorization', 'Bearer test_access_token_12345')
+        .set('X-Auth-Signer', SIGNER_AUTH_SECRET)
         .set('Content-Type', 'application/json')
         .send(requestBody);
 
@@ -129,6 +130,7 @@ describe('OfcExtSignPayload External Signer Mode Tests', function () {
       const result = await agent
         .post('/api/v2/ofc/signPayload')
         .set('Authorization', 'Bearer test_access_token_12345')
+        .set('X-Auth-Signer', SIGNER_AUTH_SECRET)
         .set('Content-Type', 'application/json')
         .send(requestBody);
 
@@ -164,6 +166,7 @@ describe('OfcExtSignPayload External Signer Mode Tests', function () {
       const result = await agent
         .post('/api/v2/ofc/signPayload')
         .set('Authorization', 'Bearer test_access_token_12345')
+        .set('X-Auth-Signer', SIGNER_AUTH_SECRET)
         .set('Content-Type', 'application/json')
         .send(requestBody);
 
@@ -189,10 +192,11 @@ describe('OfcExtSignPayload External Signer Mode Tests', function () {
         const result = await agent
           .post('/api/v2/ofc/signPayload')
           .set('Authorization', 'Bearer test_access_token_12345')
+          .set('X-Auth-Signer', SIGNER_AUTH_SECRET)
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
-        assert.strictEqual(result.status, 500);
+        assert.strictEqual(result.status, 400);
         result.body.should.have.property('error');
       });
 
@@ -216,10 +220,11 @@ describe('OfcExtSignPayload External Signer Mode Tests', function () {
         const result = await agent
           .post('/api/v2/ofc/signPayload')
           .set('Authorization', 'Bearer test_access_token_12345')
+          .set('X-Auth-Signer', SIGNER_AUTH_SECRET)
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
-        assert.strictEqual(result.status, 500);
+        assert.strictEqual(result.status, 400);
         result.body.should.have.property('error');
 
         delete process.env[`WALLET_${differentWalletId}_PASSPHRASE`];
@@ -236,10 +241,11 @@ describe('OfcExtSignPayload External Signer Mode Tests', function () {
         const result = await agent
           .post('/api/v2/ofc/signPayload')
           .set('Authorization', 'Bearer test_access_token_12345')
+          .set('X-Auth-Signer', SIGNER_AUTH_SECRET)
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
-        assert.strictEqual(result.status, 500);
+        assert.strictEqual(result.status, 400);
         assert.ok(result.body);
       });
 
@@ -261,10 +267,11 @@ describe('OfcExtSignPayload External Signer Mode Tests', function () {
         const result = await agent
           .post('/api/v2/ofc/signPayload')
           .set('Authorization', 'Bearer test_access_token_12345')
+          .set('X-Auth-Signer', SIGNER_AUTH_SECRET)
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
-        assert.strictEqual(result.status, 401);
+        assert.strictEqual(result.status, 400);
         result.body.should.have.property('error');
       });
 
@@ -291,6 +298,7 @@ describe('OfcExtSignPayload External Signer Mode Tests', function () {
         const result = await agent
           .post('/api/v2/ofc/signPayload')
           .set('Authorization', 'Bearer test_access_token_12345')
+          .set('X-Auth-Signer', SIGNER_AUTH_SECRET)
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
@@ -307,6 +315,7 @@ describe('OfcExtSignPayload External Signer Mode Tests', function () {
         const result = await agent
           .post('/api/v2/ofc/signPayload')
           .set('Authorization', 'Bearer test_access_token_12345')
+          .set('X-Auth-Signer', SIGNER_AUTH_SECRET)
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
@@ -322,6 +331,7 @@ describe('OfcExtSignPayload External Signer Mode Tests', function () {
         const result = await agent
           .post('/api/v2/ofc/signPayload')
           .set('Authorization', 'Bearer test_access_token_12345')
+          .set('X-Auth-Signer', SIGNER_AUTH_SECRET)
           .set('Content-Type', 'application/json')
           .send(requestBody);
 

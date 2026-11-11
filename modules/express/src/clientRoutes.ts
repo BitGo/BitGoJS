@@ -47,6 +47,7 @@ import type { ParamsDictionary } from 'express-serve-static-core';
 import * as _ from 'lodash';
 import * as url from 'url';
 import * as superagent from 'superagent';
+import * as crypto from 'crypto';
 
 // RequestTracer should be extracted into a separate npm package (along with
 // the rest of the BitGoJS HTTP request machinery)
@@ -55,6 +56,7 @@ import { RequestTracer } from 'bitgo/dist/src/v2/internal/util';
 import { Config } from './config';
 import { ApiResponseError, BitGoExpressError } from './errors';
 import { promises as fs } from 'fs';
+import * as fsSync from 'fs';
 import { retryPromise } from './retryPromise';
 import { SENSITIVE_REQUEST_KEYS } from './sensitiveRequestKeys';
 import {
@@ -84,6 +86,100 @@ const BITGOEXPRESS_USER_AGENT = `BitGoExpress/${pjson.version} BitGoJS/${version
  * Header names must be lowercase (Express normalizes incoming headers to lowercase).
  */
 const FORWARDED_HEADERS = ['x-bitgo-otp'];
+
+/**
+ * Header used to authenticate requests between an online Express instance and
+ * a signer-mode Express instance. Deliberately not `Authorization`:
+ * `prepareBitGo` copies the `Authorization` header's token into the upstream
+ * BitGo object, so the signer secret must travel on its own header.
+ */
+const SIGNER_AUTH_HEADER = 'x-auth-signer';
+
+/**
+ * Uniform error message for signer-mode wallet failures. Must not reveal
+ * whether a walletId is known to this signer, whether a passphrase is
+ * configured, or whether decryption failed - otherwise the signer routes
+ * become a wallet enumeration and passphrase guessing oracle.
+ */
+const WALLET_SIGN_FAILURE_MESSAGE = 'unable to sign for the specified wallet';
+
+/** Consecutive wallet lookup/decrypt failures before a walletId is locked out. */
+const WALLET_SIGN_FAILURE_LOCKOUT_THRESHOLD = 5;
+
+/**
+ * How long a locked-out walletId is refused for, and after which a walletId
+ * without recent failures becomes prunable.
+ */
+const WALLET_SIGN_FAILURE_LOCKOUT_MS = 15 * 60 * 1000;
+
+/**
+ * Maximum number of walletIds tracked for failures. walletIds are attacker
+ * influenced (any client of the online instance can make the signer track
+ * arbitrary strings), so the map must not grow without limit: stale entries
+ * are pruned on access and the oldest entry is evicted once the map is full.
+ */
+const MAX_WALLET_FAILURE_ENTRIES = 1024;
+
+/** WalletIds longer than this are never real wallets and are not tracked. */
+const MAX_TRACKED_WALLET_ID_LENGTH = 512;
+
+/** Connection options for requests from an online instance to a signer-mode instance. */
+export interface SignerClientOptions {
+  /** Shared secret sent in the X-Auth-Signer header. */
+  signerAuthSecret?: string;
+  /** Path to the PEM key presented to the signer for TLS client authentication. */
+  signerClientKeyPath?: string;
+  /** Path to the PEM certificate presented to the signer for TLS client authentication. */
+  signerClientCertPath?: string;
+  /** Path to the CA certificate the signer's server certificate is verified against. */
+  signerClientCaPath?: string;
+}
+
+/**
+ * Contents of signer TLS material by file path, cached so that repeated
+ * requests do not re-read the files.
+ */
+const signerTlsFileContents = new Map<string, string>();
+
+function readSignerTlsFile(path: string): string {
+  const cached = signerTlsFileContents.get(path);
+  if (cached !== undefined) {
+    return cached;
+  }
+  const contents = fsSync.readFileSync(path, 'utf8');
+  signerTlsFileContents.set(path, contents);
+  return contents;
+}
+
+/**
+ * Attach the signer authentication header and TLS client material to an
+ * outbound request to a signer-mode Express instance, for whatever is
+ * configured.
+ */
+function withSignerAuth(request: superagent.Request, options?: SignerClientOptions): superagent.Request {
+  let result = request;
+  if (options?.signerAuthSecret) {
+    result = result.set(SIGNER_AUTH_HEADER, options.signerAuthSecret);
+  }
+  if (options?.signerClientKeyPath && options?.signerClientCertPath) {
+    result = result
+      .key(readSignerTlsFile(options.signerClientKeyPath))
+      .cert(readSignerTlsFile(options.signerClientCertPath));
+  }
+  if (options?.signerClientCaPath) {
+    result = result.ca(readSignerTlsFile(options.signerClientCaPath));
+  }
+  return result;
+}
+
+function signerClientOptionsFromConfig(config?: Config): SignerClientOptions {
+  return {
+    signerAuthSecret: config?.signerAuthSecret,
+    signerClientKeyPath: config?.signerClientKeyPath,
+    signerClientCertPath: config?.signerClientCertPath,
+    signerClientCaPath: config?.signerClientCaPath,
+  };
+}
 
 function handlePing(
   req: ExpressApiRouteRequest<'express.v1.ping' | 'express.ping', 'get'>,
@@ -451,6 +547,86 @@ async function decryptPrivKey(bg: BitGo, encryptedPrivKey: string, walletPw: str
   }
 }
 
+interface WalletSignFailureEntry {
+  count: number;
+  lockedUntil: number;
+  lastFailureAt: number;
+}
+
+const walletSignFailures = new Map<string, WalletSignFailureEntry>();
+
+/**
+ * Drop entries whose lockout has expired and whose most recent failure is
+ * older than the lockout window, so walletIds that never succeed (attacker
+ * chosen) age out instead of accumulating forever.
+ */
+function pruneExpiredWalletSignFailures(now: number): void {
+  for (const [walletId, entry] of walletSignFailures) {
+    if (entry.lockedUntil <= now && now - entry.lastFailureAt >= WALLET_SIGN_FAILURE_LOCKOUT_MS) {
+      walletSignFailures.delete(walletId);
+    }
+  }
+}
+
+function assertWalletNotLocked(walletId: string): void {
+  const now = Date.now();
+  pruneExpiredWalletSignFailures(now);
+  const entry = walletSignFailures.get(walletId);
+  if (entry && entry.lockedUntil > now) {
+    throw new ApiResponseError(WALLET_SIGN_FAILURE_MESSAGE, 400);
+  }
+}
+
+function recordWalletSignFailure(walletId: string): void {
+  // walletIds of absurd length are never real wallets: do not let them
+  // consume the bounded map
+  if (walletId.length > MAX_TRACKED_WALLET_ID_LENGTH) {
+    return;
+  }
+  const now = Date.now();
+  pruneExpiredWalletSignFailures(now);
+  const entry = walletSignFailures.get(walletId) ?? { count: 0, lockedUntil: 0, lastFailureAt: 0 };
+  entry.count += 1;
+  entry.lastFailureAt = now;
+  if (entry.count >= WALLET_SIGN_FAILURE_LOCKOUT_THRESHOLD) {
+    entry.lockedUntil = now + WALLET_SIGN_FAILURE_LOCKOUT_MS;
+    entry.count = 0;
+  }
+  if (!walletSignFailures.has(walletId) && walletSignFailures.size >= MAX_WALLET_FAILURE_ENTRIES) {
+    // the map is full after pruning: evict the oldest tracked entry to keep
+    // memory bounded, and continue throttling best-effort
+    const oldest = walletSignFailures.keys().next().value;
+    if (oldest !== undefined) {
+      walletSignFailures.delete(oldest);
+    }
+  }
+  walletSignFailures.set(walletId, entry);
+}
+
+/**
+ * Look up the wallet passphrase and encrypted private key for a signer-mode
+ * wallet and decrypt it, with per-walletId failure lockout and uniform errors:
+ * unknown walletId, missing passphrase, unreadable key file and failed
+ * decryption are all indistinguishable to the caller.
+ */
+async function getSignerWalletCredentials(
+  bitgo: BitGo,
+  signerFileSystemPath: string,
+  walletId: string
+): Promise<{ privKey: string; walletPassphrase: string }> {
+  assertWalletNotLocked(walletId);
+  try {
+    const walletPassphrase = getWalletPwFromEnv(walletId);
+    const encryptedPrivKey = await getEncryptedPrivKey(signerFileSystemPath, walletId);
+    const privKey = await decryptPrivKey(bitgo, encryptedPrivKey, walletPassphrase);
+    walletSignFailures.delete(walletId);
+    return { privKey, walletPassphrase };
+  } catch (e) {
+    recordWalletSignFailure(walletId);
+    throw new ApiResponseError(WALLET_SIGN_FAILURE_MESSAGE, 400);
+  }
+}
+
 export async function handleV2GenerateShareTSS(
   req: ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>
 ): Promise<any> {
@@ -461,16 +637,18 @@ export async function handleV2GenerateShareTSS(
     throw new ApiResponseError('Missing required field: walletId', 400);
   }
 
-  const walletPw = getWalletPwFromEnv(walletId);
   const { signerFileSystemPath } = req.config;
 
   if (!signerFileSystemPath) {
     throw new Error('Missing required configuration: signerFileSystemPath');
   }
 
-  const encryptedPrivKey = await getEncryptedPrivKey(signerFileSystemPath, walletId);
   const bitgo = req.bitgo;
-  const privKey = await decryptPrivKey(bitgo, encryptedPrivKey, walletPw);
+  const { privKey, walletPassphrase: walletPw } = await getSignerWalletCredentials(
+    bitgo,
+    signerFileSystemPath,
+    walletId
+  );
   const coin = bitgo.coin(req.decoded.coin);
   req.body.prv = privKey;
   req.body.walletPassphrase = walletPw;
@@ -583,16 +761,14 @@ export async function handleV2Sign(req: ExpressApiRouteRequest<'express.v2.coin.
     throw new Error('Missing required field: walletId');
   }
 
-  const walletPw = getWalletPwFromEnv(walletId);
   const { signerFileSystemPath } = req.config;
 
   if (!signerFileSystemPath) {
     throw new Error('Missing required configuration: signerFileSystemPath');
   }
 
-  const encryptedPrivKey = await getEncryptedPrivKey(signerFileSystemPath, walletId);
   const bitgo = req.bitgo;
-  let privKey = await decryptPrivKey(bitgo, encryptedPrivKey, walletPw);
+  let { privKey } = await getSignerWalletCredentials(bitgo, signerFileSystemPath, walletId);
   const coin = bitgo.coin(req.decoded.coin);
   if (req.body.derivationSeed) {
     privKey = coin.deriveKeyWithSeed({ key: privKey, seed: req.body.derivationSeed }).key;
@@ -610,7 +786,6 @@ export async function handleV2OFCSignPayloadInExtSigningMode(
 ): Promise<{ payload: string; signature: string }> {
   const walletId = req.body.walletId;
   const payload = req.body.payload;
-  const bodyWalletPassphrase = req.body.walletPassphrase;
   const ofcCoinName = 'ofc';
 
   if (!payload) {
@@ -621,20 +796,17 @@ export async function handleV2OFCSignPayloadInExtSigningMode(
     throw new ApiResponseError('Missing required field: walletId', 400);
   }
 
-  // fetch the password for the given walletId from the body or the env. This is required for decrypting the private key that belongs to that wallet.
-  const walletPw = bodyWalletPassphrase || getWalletPwFromEnv(walletId);
-
   const { signerFileSystemPath } = req.config;
   if (!signerFileSystemPath) {
     throw new ApiResponseError('Missing required configuration: signerFileSystemPath', 500);
   }
-  // get the encrypted private key from the local JSON file (encryptedPrivKeys.json) (populated using fetchEncryptedPrivateKeys.ts)
-  const encryptedPrivKey = await getEncryptedPrivKey(signerFileSystemPath, walletId);
 
   const bitgo = req.bitgo;
 
-  // decrypt the encrypted private key using the wallet pwd
-  const privKey = await decryptPrivKey(bitgo, encryptedPrivKey, walletPw);
+  // The wallet passphrase always comes from the signer's environment
+  // (WALLET_<walletId>_PASSPHRASE). Accepting a passphrase from the request
+  // body would let callers probe for the correct wallet passphrase.
+  const { privKey } = await getSignerWalletCredentials(bitgo, signerFileSystemPath, walletId);
 
   // create a BaseCoin instance for 'ofc'
   const coin = bitgo.coin(ofcCoinName);
@@ -666,8 +838,10 @@ export async function handleV2OFCSignPayload(
   if (externalSignerUrl) {
     const { body: payloadWithSignature } = await retryPromise(
       () =>
-        superagent
-          .post(`${externalSignerUrl}/api/v2/ofc/signPayload`)
+        withSignerAuth(
+          superagent.post(`${externalSignerUrl}/api/v2/ofc/signPayload`),
+          signerClientOptionsFromConfig(req.config)
+        )
           .type('json')
           .send({ walletId: walletId, payload: payload }),
       (err, tryCount) => {
@@ -1174,7 +1348,10 @@ function createSendParams(req: express.Request) {
   if (req.config?.externalSignerUrl !== undefined) {
     return {
       ...req.body,
-      customSigningFunction: createCustomSigningFunction(req.config.externalSignerUrl),
+      customSigningFunction: createCustomSigningFunction(
+        req.config.externalSignerUrl,
+        signerClientOptionsFromConfig(req.config)
+      ),
     };
   } else {
     return cloneRequestBody(req);
@@ -1190,15 +1367,18 @@ function createTSSSendParams(req: express.Request, wallet: Wallet) {
           ...req.body,
           customEddsaMPCv2SigningRound1GenerationFunction: createCustomEddsaMPCv2SigningRound1Generator(
             req.config.externalSignerUrl,
-            req.params.coin
+            req.params.coin,
+            signerClientOptionsFromConfig(req.config)
           ),
           customEddsaMPCv2SigningRound2GenerationFunction: createCustomEddsaMPCv2SigningRound2Generator(
             req.config.externalSignerUrl,
-            req.params.coin
+            req.params.coin,
+            signerClientOptionsFromConfig(req.config)
           ),
           customEddsaMPCv2SigningRound3GenerationFunction: createCustomEddsaMPCv2SigningRound3Generator(
             req.config.externalSignerUrl,
-            req.params.coin
+            req.params.coin,
+            signerClientOptionsFromConfig(req.config)
           ),
         };
       } else {
@@ -1206,10 +1386,19 @@ function createTSSSendParams(req: express.Request, wallet: Wallet) {
           ...req.body,
           customCommitmentGeneratingFunction: createCustomCommitmentGenerator(
             req.config.externalSignerUrl,
-            req.params.coin
+            req.params.coin,
+            signerClientOptionsFromConfig(req.config)
           ),
-          customRShareGeneratingFunction: createCustomRShareGenerator(req.config.externalSignerUrl, req.params.coin),
-          customGShareGeneratingFunction: createCustomGShareGenerator(req.config.externalSignerUrl, req.params.coin),
+          customRShareGeneratingFunction: createCustomRShareGenerator(
+            req.config.externalSignerUrl,
+            req.params.coin,
+            signerClientOptionsFromConfig(req.config)
+          ),
+          customGShareGeneratingFunction: createCustomGShareGenerator(
+            req.config.externalSignerUrl,
+            req.params.coin,
+            signerClientOptionsFromConfig(req.config)
+          ),
         };
       }
     } else if (coin.getMPCAlgorithm() === MPCType.ECDSA) {
@@ -1218,15 +1407,18 @@ function createTSSSendParams(req: express.Request, wallet: Wallet) {
           ...req.body,
           customMPCv2SigningRound1GenerationFunction: createCustomMPCv2SigningRound1Generator(
             req.config.externalSignerUrl,
-            req.params.coin
+            req.params.coin,
+            signerClientOptionsFromConfig(req.config)
           ),
           customMPCv2SigningRound2GenerationFunction: createCustomMPCv2SigningRound2Generator(
             req.config.externalSignerUrl,
-            req.params.coin
+            req.params.coin,
+            signerClientOptionsFromConfig(req.config)
           ),
           customMPCv2SigningRound3GenerationFunction: createCustomMPCv2SigningRound3Generator(
             req.config.externalSignerUrl,
-            req.params.coin
+            req.params.coin,
+            signerClientOptionsFromConfig(req.config)
           ),
         };
       } else {
@@ -1234,14 +1426,24 @@ function createTSSSendParams(req: express.Request, wallet: Wallet) {
           ...req.body,
           customPaillierModulusGeneratingFunction: createCustomPaillierModulusGetter(
             req.config.externalSignerUrl,
-            req.params.coin
+            req.params.coin,
+            signerClientOptionsFromConfig(req.config)
           ),
-          customKShareGeneratingFunction: createCustomKShareGenerator(req.config.externalSignerUrl, req.params.coin),
+          customKShareGeneratingFunction: createCustomKShareGenerator(
+            req.config.externalSignerUrl,
+            req.params.coin,
+            signerClientOptionsFromConfig(req.config)
+          ),
           customMuDeltaShareGeneratingFunction: createCustomMuDeltaShareGenerator(
             req.config.externalSignerUrl,
-            req.params.coin
+            req.params.coin,
+            signerClientOptionsFromConfig(req.config)
           ),
-          customSShareGeneratingFunction: createCustomSShareGenerator(req.config.externalSignerUrl, req.params.coin),
+          customSShareGeneratingFunction: createCustomSShareGenerator(
+            req.config.externalSignerUrl,
+            req.params.coin,
+            signerClientOptionsFromConfig(req.config)
+          ),
         };
       }
     } else {
@@ -1805,6 +2007,42 @@ function parseBody(req: express.Request, res: express.Response, next: express.Ne
 }
 
 /**
+ * Middleware which requires callers of signer-mode routes to present the
+ * deployment's shared secret via the X-Auth-Signer header. Runs before
+ * prepareBitGo and before any handler, so unauthenticated requests never
+ * reach wallet key material.
+ *
+ * The secret deliberately does not travel in the Authorization header:
+ * prepareBitGo copies that header's token into the upstream BitGo object.
+ */
+export function requireSignerAuth(config: Config): express.RequestHandler {
+  const { signerAuthSecret } = config;
+  const secretDigest = signerAuthSecret ? crypto.createHash('sha256').update(signerAuthSecret).digest() : undefined;
+
+  return function requireSignerAuthMiddleware(req: express.Request, res: express.Response, next: express.NextFunction) {
+    // Fail closed: without a configured secret no request is authorized.
+    // (checkPreconditions refuses signerMode startup without one; this only
+    // guards against configuration mistakes.)
+    if (!secretDigest) {
+      res.status(401).send({ error: 'unauthorized' });
+      return;
+    }
+    const headerValue = req.headers[SIGNER_AUTH_HEADER];
+    const header = Array.isArray(headerValue) ? headerValue[0] : headerValue;
+    if (typeof header !== 'string' || header.length === 0) {
+      res.status(401).send({ error: 'unauthorized' });
+      return;
+    }
+    const headerDigest = crypto.createHash('sha256').update(header).digest();
+    if (!crypto.timingSafeEqual(secretDigest, headerDigest)) {
+      res.status(401).send({ error: 'unauthorized' });
+      return;
+    }
+    next();
+  };
+}
+
+/**
  * Create the bitgo object in the request
  * @param config
  */
@@ -1980,16 +2218,24 @@ export function typedPromiseWrapper(promiseRequestHandler: TypedRequestHandler) 
   };
 }
 
-export function createCustomSigningFunction(externalSignerUrl: string): CustomSigningFunction {
+export function createCustomSigningFunction(
+  externalSignerUrl: string,
+  signerClientOptions?: SignerClientOptions
+): CustomSigningFunction {
   return async function (params): Promise<SignedTransaction> {
     const { body: signedTx } = await retryPromise(
       () =>
-        superagent.post(`${externalSignerUrl}/api/v2/${params.coin.getChain()}/sign`).type('json').send({
-          txPrebuild: params.txPrebuild,
-          pubs: params.pubs,
-          derivationSeed: params.derivationSeed,
-          signingStep: params.signingStep,
-        }),
+        withSignerAuth(
+          superagent.post(`${externalSignerUrl}/api/v2/${params.coin.getChain()}/sign`),
+          signerClientOptions
+        )
+          .type('json')
+          .send({
+            txPrebuild: params.txPrebuild,
+            pubs: params.pubs,
+            derivationSeed: params.derivationSeed,
+            signingStep: params.signingStep,
+          }),
       (err, tryCount) => {
         debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
       }
@@ -1999,13 +2245,20 @@ export function createCustomSigningFunction(externalSignerUrl: string): CustomSi
 }
 export function createCustomPaillierModulusGetter(
   externalSignerUrl: string,
-  coin: string
+  coin: string,
+  signerClientOptions?: SignerClientOptions
 ): CustomPaillierModulusGetterFunction {
   return async function (params): Promise<{
     userPaillierModulus: string;
   }> {
     const { body: result } = await retryPromise(
-      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/PaillierModulus`).type('json').send(params),
+      () =>
+        withSignerAuth(
+          superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/PaillierModulus`),
+          signerClientOptions
+        )
+          .type('json')
+          .send(params),
       (err, tryCount) => {
         debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
       }
@@ -2014,10 +2267,17 @@ export function createCustomPaillierModulusGetter(
   };
 }
 
-export function createCustomKShareGenerator(externalSignerUrl: string, coin: string): CustomKShareGeneratingFunction {
+export function createCustomKShareGenerator(
+  externalSignerUrl: string,
+  coin: string,
+  signerClientOptions?: SignerClientOptions
+): CustomKShareGeneratingFunction {
   return async function (params): Promise<TssEcdsaStep1ReturnMessage> {
     const { body: result } = await retryPromise(
-      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/K`).type('json').send(params),
+      () =>
+        withSignerAuth(superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/K`), signerClientOptions)
+          .type('json')
+          .send(params),
       (err, tryCount) => {
         debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
       }
@@ -2028,11 +2288,15 @@ export function createCustomKShareGenerator(externalSignerUrl: string, coin: str
 
 export function createCustomMuDeltaShareGenerator(
   externalSignerUrl: string,
-  coin: string
+  coin: string,
+  signerClientOptions?: SignerClientOptions
 ): CustomMuDeltaShareGeneratingFunction {
   return async function (params): Promise<TssEcdsaStep2ReturnMessage> {
     const { body: result } = await retryPromise(
-      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/MuDelta`).type('json').send(params),
+      () =>
+        withSignerAuth(superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/MuDelta`), signerClientOptions)
+          .type('json')
+          .send(params),
       (err, tryCount) => {
         debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
       }
@@ -2041,10 +2305,17 @@ export function createCustomMuDeltaShareGenerator(
   };
 }
 
-export function createCustomSShareGenerator(externalSignerUrl: string, coin: string): CustomSShareGeneratingFunction {
+export function createCustomSShareGenerator(
+  externalSignerUrl: string,
+  coin: string,
+  signerClientOptions?: SignerClientOptions
+): CustomSShareGeneratingFunction {
   return async function (params): Promise<SShare> {
     const { body: result } = await retryPromise(
-      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/S`).type('json').send(params),
+      () =>
+        withSignerAuth(superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/S`), signerClientOptions)
+          .type('json')
+          .send(params),
       (err, tryCount) => {
         debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
       }
@@ -2055,7 +2326,8 @@ export function createCustomSShareGenerator(externalSignerUrl: string, coin: str
 
 export function createCustomCommitmentGenerator(
   externalSignerUrl: string,
-  coin: string
+  coin: string,
+  signerClientOptions?: SignerClientOptions
 ): CustomCommitmentGeneratingFunction {
   return async function (params): Promise<{
     userToBitgoCommitment: CommitmentShareRecord;
@@ -2063,7 +2335,10 @@ export function createCustomCommitmentGenerator(
     encryptedUserToBitgoRShare: EncryptedSignerShareRecord;
   }> {
     const { body: result } = await retryPromise(
-      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/commitment`).type('json').send(params),
+      () =>
+        withSignerAuth(superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/commitment`), signerClientOptions)
+          .type('json')
+          .send(params),
       (err, tryCount) => {
         debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
       }
@@ -2072,10 +2347,17 @@ export function createCustomCommitmentGenerator(
   };
 }
 
-export function createCustomRShareGenerator(externalSignerUrl: string, coin: string): CustomRShareGeneratingFunction {
+export function createCustomRShareGenerator(
+  externalSignerUrl: string,
+  coin: string,
+  signerClientOptions?: SignerClientOptions
+): CustomRShareGeneratingFunction {
   return async function (params): Promise<{ rShare: SignShare }> {
     const { body: rShare } = await retryPromise(
-      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/R`).type('json').send(params),
+      () =>
+        withSignerAuth(superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/R`), signerClientOptions)
+          .type('json')
+          .send(params),
       (err, tryCount) => {
         debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
       }
@@ -2084,10 +2366,17 @@ export function createCustomRShareGenerator(externalSignerUrl: string, coin: str
   };
 }
 
-export function createCustomGShareGenerator(externalSignerUrl: string, coin: string): CustomGShareGeneratingFunction {
+export function createCustomGShareGenerator(
+  externalSignerUrl: string,
+  coin: string,
+  signerClientOptions?: SignerClientOptions
+): CustomGShareGeneratingFunction {
   return async function (params): Promise<GShare> {
     const { body: signedTx } = await retryPromise(
-      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/G`).type('json').send(params),
+      () =>
+        withSignerAuth(superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/G`), signerClientOptions)
+          .type('json')
+          .send(params),
       (err, tryCount) => {
         debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
       }
@@ -2098,11 +2387,15 @@ export function createCustomGShareGenerator(externalSignerUrl: string, coin: str
 
 export function createCustomMPCv2SigningRound1Generator(
   externalSignerUrl: string,
-  coin: string
+  coin: string,
+  signerClientOptions?: SignerClientOptions
 ): CustomMPCv2SigningRound1GeneratingFunction {
   return async function (params) {
     const { body: result } = await retryPromise(
-      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/MPCv2Round1`).type('json').send(params),
+      () =>
+        withSignerAuth(superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/MPCv2Round1`), signerClientOptions)
+          .type('json')
+          .send(params),
       (err, tryCount) => {
         debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
       }
@@ -2113,11 +2406,15 @@ export function createCustomMPCv2SigningRound1Generator(
 
 export function createCustomMPCv2SigningRound2Generator(
   externalSignerUrl: string,
-  coin: string
+  coin: string,
+  signerClientOptions?: SignerClientOptions
 ): CustomMPCv2SigningRound2GeneratingFunction {
   return async function (params) {
     const { body: result } = await retryPromise(
-      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/MPCv2Round2`).type('json').send(params),
+      () =>
+        withSignerAuth(superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/MPCv2Round2`), signerClientOptions)
+          .type('json')
+          .send(params),
       (err, tryCount) => {
         debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
       }
@@ -2128,11 +2425,15 @@ export function createCustomMPCv2SigningRound2Generator(
 
 export function createCustomMPCv2SigningRound3Generator(
   externalSignerUrl: string,
-  coin: string
+  coin: string,
+  signerClientOptions?: SignerClientOptions
 ): CustomMPCv2SigningRound3GeneratingFunction {
   return async function (params) {
     const { body: result } = await retryPromise(
-      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/MPCv2Round3`).type('json').send(params),
+      () =>
+        withSignerAuth(superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/MPCv2Round3`), signerClientOptions)
+          .type('json')
+          .send(params),
       (err, tryCount) => {
         debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
       }
@@ -2143,11 +2444,18 @@ export function createCustomMPCv2SigningRound3Generator(
 
 export function createCustomEddsaMPCv2SigningRound1Generator(
   externalSignerUrl: string,
-  coin: string
+  coin: string,
+  signerClientOptions?: SignerClientOptions
 ): CustomEddsaMPCv2SigningRound1GeneratingFunction {
   return async function (params) {
     const { body: result } = await retryPromise(
-      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/EddsaMPCv2Round1`).type('json').send(params),
+      () =>
+        withSignerAuth(
+          superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/EddsaMPCv2Round1`),
+          signerClientOptions
+        )
+          .type('json')
+          .send(params),
       (err, tryCount) => {
         debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
       }
@@ -2158,11 +2466,18 @@ export function createCustomEddsaMPCv2SigningRound1Generator(
 
 export function createCustomEddsaMPCv2SigningRound2Generator(
   externalSignerUrl: string,
-  coin: string
+  coin: string,
+  signerClientOptions?: SignerClientOptions
 ): CustomEddsaMPCv2SigningRound2GeneratingFunction {
   return async function (params) {
     const { body: result } = await retryPromise(
-      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/EddsaMPCv2Round2`).type('json').send(params),
+      () =>
+        withSignerAuth(
+          superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/EddsaMPCv2Round2`),
+          signerClientOptions
+        )
+          .type('json')
+          .send(params),
       (err, tryCount) => {
         debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
       }
@@ -2173,11 +2488,18 @@ export function createCustomEddsaMPCv2SigningRound2Generator(
 
 export function createCustomEddsaMPCv2SigningRound3Generator(
   externalSignerUrl: string,
-  coin: string
+  coin: string,
+  signerClientOptions?: SignerClientOptions
 ): CustomEddsaMPCv2SigningRound3GeneratingFunction {
   return async function (params) {
     const { body: result } = await retryPromise(
-      () => superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/EddsaMPCv2Round3`).type('json').send(params),
+      () =>
+        withSignerAuth(
+          superagent.post(`${externalSignerUrl}/api/v2/${coin}/tssshare/EddsaMPCv2Round3`),
+          signerClientOptions
+        )
+          .type('json')
+          .send(params),
       (err, tryCount) => {
         debug(`failed to connect to external signer (attempt ${tryCount}, error: ${err.message})`);
       }
@@ -2403,9 +2725,18 @@ export function setupSigningRoutes(app: express.Application, config: Config): vo
   const router = createExpressRouter();
   app.use(router);
 
-  router.post('express.v2.coin.sign', [prepareBitGo(config), typedPromiseWrapper(handleV2Sign)]);
-  router.post('express.v2.tssshare.generate', [prepareBitGo(config), typedPromiseWrapper(handleV2GenerateShareTSS)]);
+  router.post('express.v2.coin.sign', [
+    requireSignerAuth(config),
+    prepareBitGo(config),
+    typedPromiseWrapper(handleV2Sign),
+  ]);
+  router.post('express.v2.tssshare.generate', [
+    requireSignerAuth(config),
+    prepareBitGo(config),
+    typedPromiseWrapper(handleV2GenerateShareTSS),
+  ]);
   router.post('express.v2.ofc.extSignPayload', [
+    requireSignerAuth(config),
     prepareBitGo(config),
     typedPromiseWrapper(handleV2OFCSignPayloadInExtSigningMode),
   ]);

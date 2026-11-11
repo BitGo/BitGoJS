@@ -30,6 +30,32 @@ import { Environments } from 'bitgo';
 import * as clientRoutes from './clientRoutes';
 import { getBitGoTlsPolicy } from './tlsPolicy';
 
+/** Minimum length of the shared secret used to authenticate signer-mode requests. */
+const MIN_SIGNER_AUTH_SECRET_LENGTH = 16;
+
+/**
+ * A signer auth secret must be a valid X-Auth-Signer header value on both sides
+ * of the connection: printable, non-whitespace ASCII only. A trailing newline
+ * makes Node refuse to send the header, and surrounding whitespace is silently
+ * stripped by header parsing on the signer, so in either case every request
+ * would fail authentication at runtime. Invalid secrets are rejected at startup
+ * instead, on both the signer and the online instance.
+ */
+const SIGNER_AUTH_SECRET_PATTERN = /^[\x21-\x7e]+$/;
+
+function isValidSignerAuthSecret(secret: string | undefined): boolean {
+  return (
+    secret !== undefined && secret.length >= MIN_SIGNER_AUTH_SECRET_LENGTH && SIGNER_AUTH_SECRET_PATTERN.test(secret)
+  );
+}
+
+/** Bind addresses considered loopback; signer mode may listen there without client-auth TLS. */
+const LOOPBACK_BIND_ADDRESSES: Record<string, true> = {
+  localhost: true,
+  '127.0.0.1': true,
+  '::1': true,
+};
+
 /**
  * Set up the logging middleware provided by morgan
  *
@@ -81,7 +107,7 @@ function configureEnvironment(config: Config): void {
  * @return {Server}
  */
 async function createHttpsServer(app: express.Application, config: Config): Promise<https.Server> {
-  const { keyPath, crtPath, sslKey, sslCert } = config;
+  const { keyPath, crtPath, sslKey, sslCert, sslCa } = config;
   let key: string;
   let cert: string;
   if (sslKey && sslCert) {
@@ -96,7 +122,15 @@ async function createHttpsServer(app: express.Application, config: Config): Prom
     throw new Error('Failed to get ssl key and certificate');
   }
 
-  return https.createServer({ secureOptions: SSL_OP_NO_TLSv1, key, cert }, app);
+  const serverOptions: https.ServerOptions = { secureOptions: SSL_OP_NO_TLSv1, key, cert };
+  if (sslCa) {
+    // Require clients to present a certificate signed by the configured CA.
+    // Required for signer-mode instances listening on external interfaces.
+    serverOptions.ca = await fs.promises.readFile(sslCa, 'utf8');
+    serverOptions.requestCert = true;
+    serverOptions.rejectUnauthorized = true;
+  }
+  return https.createServer(serverOptions, app);
 }
 
 /**
@@ -211,6 +245,11 @@ function checkPreconditions(config: Config) {
     externalSignerUrl,
     signerMode,
     signerFileSystemPath,
+    signerAuthSecret,
+    sslCa,
+    signerClientKeyPath,
+    signerClientCertPath,
+    signerClientCaPath,
     lightningSignerFileSystemPath,
   } = config;
 
@@ -259,6 +298,63 @@ function checkPreconditions(config: Config) {
     throw new LightningSignerConfigError(
       'signerMode and lightningSignerFileSystemPath cannot be set at the same time.'
     );
+  }
+
+  // A signer-mode instance holds wallet keys and must not accept unauthenticated requests:
+  // it requires a shared secret, and (unless listening on loopback/IPC) TLS with client
+  // authentication so the secret cannot be intercepted on the network.
+  if (signerMode !== undefined && !isValidSignerAuthSecret(signerAuthSecret)) {
+    throw new ExternalSignerConfigError(
+      `signerMode requires a signer auth secret of at least ${MIN_SIGNER_AUTH_SECRET_LENGTH} ` +
+        'printable non-whitespace ASCII characters (--signerauthsecret / BITGO_SIGNER_AUTH_SECRET).'
+    );
+  }
+
+  // An instance using an external signer must be able to authenticate to it.
+  if (externalSignerUrl !== undefined && !isValidSignerAuthSecret(signerAuthSecret)) {
+    throw new ExternalSignerConfigError(
+      `externalSignerUrl requires a signer auth secret of at least ${MIN_SIGNER_AUTH_SECRET_LENGTH} ` +
+        'printable non-whitespace ASCII characters (--signerauthsecret / BITGO_SIGNER_AUTH_SECRET) ' +
+        'so requests to the signer can be authenticated.'
+    );
+  }
+
+  if (signerMode !== undefined) {
+    const isLoopbackListener = Boolean(ipc) || LOOPBACK_BIND_ADDRESSES[bind] === true;
+    const hasTlsMaterial = Boolean((keyPath && crtPath) || (sslKey && sslCert));
+    if (!isLoopbackListener && !(sslCa && hasTlsMaterial)) {
+      throw new TlsConfigurationError(
+        'signerMode listening on external interfaces requires TLS with client authentication: ' +
+          'configure --sslca together with --keypath/--crtpath (or --sslkey/--sslcert), ' +
+          'or bind to localhost (--bind localhost) or an IPC socket (--ipc).'
+      );
+    }
+  }
+
+  if (sslCa !== undefined && !Boolean((keyPath && crtPath) || (sslKey && sslCert))) {
+    throw new TlsConfigurationError('sslCa requires TLS to be enabled (--keypath/--crtpath or --sslkey/--sslcert).');
+  }
+
+  // The online instance presents a client certificate to signers that require
+  // TLS client authentication. The key and certificate must come as a pair,
+  // and all configured files must be readable.
+  if (Boolean(signerClientKeyPath) !== Boolean(signerClientCertPath)) {
+    throw new TlsConfigurationError(
+      'signerclientkey and signerclientcert must be provided together for TLS client authentication.'
+    );
+  }
+  for (const { name, path } of [
+    { name: 'signerclientkey', path: signerClientKeyPath },
+    { name: 'signerclientcert', path: signerClientCertPath },
+    { name: 'signerclientca', path: signerClientCaPath },
+  ]) {
+    if (path !== undefined) {
+      try {
+        fs.readFileSync(path, 'utf8');
+      } catch (e) {
+        throw new TlsConfigurationError(`Failed to read ${name} file at ${path}`);
+      }
+    }
   }
 
   if (signerFileSystemPath !== undefined) {
