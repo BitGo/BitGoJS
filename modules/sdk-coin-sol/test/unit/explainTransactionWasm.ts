@@ -3,8 +3,46 @@
  */
 import 'should';
 import { explainSolTransaction } from '../../src/lib/explainTransactionWasm';
+import { KeyPair } from '../../src';
+import * as testData from '../resources/sol';
+import { getBuilderFactory } from './getBuilderFactory';
 
 describe('explainTransactionWasm', function () {
+  describe('PrepareForRevoke memo', function () {
+    const sender = new KeyPair(testData.authAccount).getKeys().pub;
+    const recipient = 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S';
+    const blockhash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
+
+    it('should not hide the transfer recipient and amount for a memo-tagged transfer', async function () {
+      const builder = getBuilderFactory('tsol').getTransferBuilder();
+      builder.sender(sender).nonce(blockhash).send({ address: recipient, amount: '1000' });
+      builder.memo('{"PrepareForRevoke":{"user":"attacker","amount":"1"}}');
+      const tx = await builder.build();
+
+      const wasm = explainSolTransaction({
+        txBase64: tx.toBroadcastFormat(),
+        feeInfo: { fee: '5000' },
+        coinName: 'tsol',
+      });
+      wasm.outputs.should.deepEqual([{ address: recipient, amount: '1000' }]);
+      wasm.outputAmount.should.equal('1000');
+
+      const legacy = tx.explainTransaction();
+      legacy.outputs.should.deepEqual([{ address: recipient, amount: '1000' }]);
+      legacy.outputAmount.should.equal('1000');
+    });
+
+    it('should still surface the transfer for a real Marinade deactivate', function () {
+      const explained = explainSolTransaction({
+        txBase64: testData.MARINADE_STAKING_DEACTIVATE_SIGNED_TX,
+        feeInfo: { fee: '5000' },
+        coinName: 'tsol',
+      });
+      explained.type.should.equal('StakingDeactivate');
+      explained.outputs.length.should.equal(1);
+    });
+  });
+
   describe('deriveTransactionType', function () {
     it('should classify boilerplate-only transaction as CustomTx', function () {
       // Transaction with only NonceAdvance + Memo instructions (no Transfer or TokenTransfer).

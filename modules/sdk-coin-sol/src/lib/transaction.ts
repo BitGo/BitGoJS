@@ -36,6 +36,7 @@ import {
   Nonce,
   StakingActivate,
   StakingAuthorizeParams,
+  StakingDeactivate,
   StakingWithdraw,
   TokenTransfer,
   TransactionExplanation,
@@ -750,6 +751,16 @@ export class Transaction extends BaseTransaction {
             amount: stakingActivateInstruction.params.amount,
           });
           outputAmount = outputAmount.plus(stakingActivateInstruction.params.amount);
+          break;
+        case InstructionBuilderTypes.StakingDeactivate:
+          // A Marinade deactivate is a real SOL transfer; never hide it from the explained outputs.
+          const stakingDeactivateInstruction = instruction as StakingDeactivate;
+          if (stakingDeactivateInstruction.params.stakingType === SolStakingTypeEnum.MARINADE) {
+            for (const recipient of stakingDeactivateInstruction.params.recipients ?? []) {
+              outputs.push({ address: recipient.address, amount: recipient.amount });
+              outputAmount = outputAmount.plus(recipient.amount);
+            }
+          }
           break;
         case InstructionBuilderTypes.StakingWithdraw:
           const stakingWithdrawInstruction = instruction as StakingWithdraw;

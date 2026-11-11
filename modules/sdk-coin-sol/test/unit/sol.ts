@@ -822,6 +822,29 @@ describe('SOL:', function () {
         .should.be.rejectedWith(/does not match the declared sponsored fee payer/);
     });
 
+    it('should reject a transfer intent whose tx carries a PrepareForRevoke memo', async function () {
+      const recipientAddress = 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S';
+      const prepareForRevokeMemo = '{"PrepareForRevoke":{"user":"attacker","amount":"1"}}';
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.sender(wallet.pub);
+      txBuilder.nonce(blockHash);
+      txBuilder.send({ address: recipientAddress, amount: '1000' });
+      txBuilder.memo(prepareForRevokeMemo);
+      const tx = await txBuilder.build();
+
+      await basecoin
+        .verifyTransaction({
+          txParams: { type: 'transfer', recipients: [{ address: recipientAddress, amount: '1000' }] },
+          txPrebuild: { txBase64: tx.toBroadcastFormat() },
+          memo: { value: prepareForRevokeMemo },
+          feePayer: wallet.pub,
+          blockhash: blockHash,
+          wallet: walletObj,
+        } as any)
+        .should.be.rejectedWith('Invalid transaction type: transfer intent decoded as staking deactivate');
+    });
+
     it('should verify a builder-produced transaction end-to-end with a sponsored fee payer', async function () {
       // Build a real transaction with the fee payer set to a different address,
       // serialize it, and verify it passes through verifyTransaction with the

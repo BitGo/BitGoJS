@@ -610,6 +610,11 @@ export class Sol extends BaseCoin {
     const explainedTx = transaction.explainTransaction();
     const isCloseAssociatedTokenAccountTx = transaction.type === TransactionType.CloseAssociatedTokenAccount;
 
+    // The memo is attacker-controlled, so a payment intent must never decode as a staking deactivate.
+    if (txParams.type === 'transfer' && transaction.type === TransactionType.StakingDeactivate) {
+      throw new Error('Invalid transaction type: transfer intent decoded as staking deactivate');
+    }
+
     if (txParams.type === 'enabletoken' && verificationOptions?.verifyTokenEnablement) {
       this.verifyTxType(txParams.type, explainedTx.type);
       const tokenEnablementsPrebuild = this.throwIfMissingTokenEnablementsOrReturn(explainedTx);

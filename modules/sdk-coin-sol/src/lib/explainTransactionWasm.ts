@@ -257,11 +257,6 @@ export function explainSolTransaction(params: ExplainTransactionWasmOptions): So
   const combined = detectCombinedPattern(parsed.instructionsData);
   const txType = deriveTransactionType(parsed.instructionsData, combined, memo);
 
-  // Marinade deactivate: Transfer + PrepareForRevoke memo.
-  // The Transfer is a contract interaction, not real value transfer — skip from outputs.
-  const isMarinadeDeactivate =
-    txType === TransactionType.StakingDeactivate && memo !== undefined && memo.includes('PrepareForRevoke');
-
   // --- Extract outputs and inputs ---
   const outputs: { address: string; amount: bigint; tokenName?: string }[] = [];
   const inputs: { address: string; value: bigint }[] = [];
@@ -276,7 +271,6 @@ export function explainSolTransaction(params: ExplainTransactionWasmOptions): So
     for (const instr of parsed.instructionsData) {
       switch (instr.type) {
         case 'Transfer':
-          if (isMarinadeDeactivate) break;
           outputs.push({ address: instr.toAddress, amount: instr.amount });
           inputs.push({ address: instr.fromAddress, value: instr.amount });
           break;
