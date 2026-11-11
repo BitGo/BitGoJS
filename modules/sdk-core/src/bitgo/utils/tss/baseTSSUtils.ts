@@ -462,6 +462,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
       isTss: params.isTss,
       messageRaw: params.messageRaw,
       messageEncoded: params.messageEncoded ?? '',
+      ...(params.isWalletConnectTx !== undefined && { isWalletConnectTx: params.isWalletConnectTx }),
     };
 
     return this.createTxRequestBase(intentOptions, apiVersion, preview, params.reqId);
@@ -498,6 +499,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
       messageEncoded: params.messageEncoded ?? '',
       signerAddress: params.signerAddress,
       preparedTransaction: params.preparedTransaction,
+      ...(params.isWalletConnectTx !== undefined && { isWalletConnectTx: params.isWalletConnectTx }),
     };
 
     return this.buildSignMessageRequestBase(intent, apiVersion, params.reqId);
@@ -524,6 +526,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
       isTss: params.isTss,
       messageRaw: params.typedDataRaw,
       messageEncoded: params.typedDataEncoded ?? '',
+      ...(params.isWalletConnectTx !== undefined && { isWalletConnectTx: params.isWalletConnectTx }),
     };
 
     return this.createTxRequestBase(intentOptions, apiVersion, preview, params.reqId);
