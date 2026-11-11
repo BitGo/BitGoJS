@@ -32,7 +32,7 @@ export function calculateHMAC(key: string | BinaryLike | KeyObject, message: str
  * @returns {string | Buffer}
  */
 export function calculateHMACSubject<T extends string | Buffer = string>(
-  { urlPath, text, timestamp, statusCode, method, authVersion }: CalculateHmacSubjectOptions<T>,
+  { urlPath, text, timestamp, statusCode, method, authVersion, methodBinding }: CalculateHmacSubjectOptions<T>,
   useOriginalPath = false
 ): T {
   /* Normalize legacy 'del' to 'delete' for backward compatibility */
@@ -52,11 +52,12 @@ export function calculateHMACSubject<T extends string | Buffer = string>(
       authVersion === 3
         ? [method.toUpperCase(), timestamp, queryPath, statusCode].join('|')
         : [timestamp, queryPath, statusCode].join('|');
+  } else if (authVersion === 3) {
+    prefixedText = [method.toUpperCase(), timestamp, '3.0', queryPath].join('|');
+  } else if (methodBinding) {
+    prefixedText = [timestamp, method.toUpperCase(), queryPath].join('|');
   } else {
-    prefixedText =
-      authVersion === 3
-        ? [method.toUpperCase(), timestamp, '3.0', queryPath].join('|')
-        : [timestamp, queryPath].join('|');
+    prefixedText = [timestamp, queryPath].join('|');
   }
 
   const isBuffer = Buffer.isBuffer(text);
@@ -70,10 +71,13 @@ export function calculateHMACSubject<T extends string | Buffer = string>(
  * Calculate the HMAC for an HTTP request
  */
 export function calculateRequestHMAC<T extends string | Buffer = string>(
-  { url: urlPath, text, timestamp, token, method, authVersion }: CalculateRequestHmacOptions<T>,
+  { url: urlPath, text, timestamp, token, method, authVersion, methodBinding }: CalculateRequestHmacOptions<T>,
   useOriginalPath = false
 ): string {
-  const signatureSubject = calculateHMACSubject({ urlPath, text, timestamp, method, authVersion }, useOriginalPath);
+  const signatureSubject = calculateHMACSubject(
+    { urlPath, text, timestamp, method, authVersion, methodBinding },
+    useOriginalPath
+  );
 
   // calculate the HMAC
   return calculateHMAC(token, signatureSubject);
@@ -83,11 +87,14 @@ export function calculateRequestHMAC<T extends string | Buffer = string>(
  * Calculate request headers with HMAC
  */
 export function calculateRequestHeaders<T extends string | Buffer = string>(
-  { url, text, token, method, authVersion }: CalculateRequestHeadersOptions<T>,
+  { url, text, token, method, authVersion, methodBinding }: CalculateRequestHeadersOptions<T>,
   useOriginalPath = false
 ): RequestHeaders {
   const timestamp = Date.now();
-  const hmac = calculateRequestHMAC({ url, text, timestamp, token, method, authVersion }, useOriginalPath);
+  const hmac = calculateRequestHMAC(
+    { url, text, timestamp, token, method, authVersion, methodBinding },
+    useOriginalPath
+  );
 
   // calculate the SHA256 hash of the token
   const tokenHash = createHash('sha256').update(token).digest('hex');

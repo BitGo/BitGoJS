@@ -148,6 +148,7 @@ export class WebCryptoHmacStrategy implements IHmacAuthStrategy {
       timestamp,
       method: params.method,
       authVersion: params.authVersion,
+      methodBinding: params.methodBinding,
     });
     const hmac = await webCryptoHmacSign(this.cryptoKey, subject);
     return { hmac, timestamp, tokenHash: this.tokenHashHex };
@@ -199,18 +200,25 @@ export class WebCryptoHmacStrategy implements IHmacAuthStrategy {
    * const response = await fetch(url, { headers });
    * ```
    */
-  async getAuthHeaders(params: { url: string; method: string; body?: string }): Promise<Record<string, string>> {
+  async getAuthHeaders(params: {
+    url: string;
+    method: string;
+    body?: string;
+    methodBinding?: boolean;
+  }): Promise<Record<string, string>> {
     const requestHeaders = await this.calculateRequestHeaders({
       url: params.url,
       method: params.method as CalculateRequestHeadersWebCryptoOptions['method'],
       text: params.body ?? '',
       authVersion: this.authVersion,
+      methodBinding: params.methodBinding,
     });
     return {
       'Auth-Timestamp': requestHeaders.timestamp.toString(),
       Authorization: 'Bearer ' + requestHeaders.tokenHash,
       HMAC: requestHeaders.hmac,
       'BitGo-Auth-Version': this.authVersion === 3 ? '3.0' : '2.0',
+      ...(params.methodBinding ? { 'x-bitgo-hmac-method': 'true' } : {}),
     };
   }
 

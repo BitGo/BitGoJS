@@ -175,6 +175,55 @@ describe('HMAC Utility Functions', () => {
       const expectedBuffer = Buffer.concat([prefixBuffer, buffer]);
       expect(result).to.deep.equal(expectedBuffer);
     });
+
+    it('should bind the HTTP method into a v2 request subject when methodBinding is true', () => {
+      expect(
+        calculateHMACSubject({
+          urlPath: '/api/test?query=123',
+          text: 'body-content',
+          timestamp: MOCK_TIMESTAMP,
+          method: 'get',
+          authVersion: 2,
+          methodBinding: true,
+        })
+      ).to.equal('1672531200000|GET|/api/test?query=123|body-content');
+    });
+
+    it('should keep the legacy v2 request subject when methodBinding is not set', () => {
+      expect(
+        calculateHMACSubject({
+          urlPath: '/api/test?query=123',
+          text: 'body-content',
+          timestamp: MOCK_TIMESTAMP,
+          method: 'get',
+          authVersion: 2,
+        })
+      ).to.equal('1672531200000|/api/test?query=123|body-content');
+    });
+
+    it('should ignore methodBinding for v3 requests and for v2 responses', () => {
+      expect(
+        calculateHMACSubject({
+          urlPath: '/api/test',
+          text: 'body-content',
+          timestamp: MOCK_TIMESTAMP,
+          method: 'get',
+          authVersion: 3,
+          methodBinding: true,
+        })
+      ).to.equal('GET|1672531200000|3.0|/api/test|body-content');
+      expect(
+        calculateHMACSubject({
+          urlPath: '/api/test',
+          text: 'response-body',
+          timestamp: MOCK_TIMESTAMP,
+          statusCode: 200,
+          method: 'get',
+          authVersion: 2,
+          methodBinding: true,
+        })
+      ).to.equal('1672531200000|/api/test|200|response-body');
+    });
   });
 
   describe('calculateRequestHMAC', () => {
@@ -190,6 +239,21 @@ describe('HMAC Utility Functions', () => {
           authVersion: 3,
         })
       ).to.equal(expectedHmac);
+    });
+
+    it('should produce a different HMAC for a bound v2 request when the method differs', () => {
+      const shared = {
+        url: '/api/test?query=123',
+        text: 'body-content',
+        timestamp: MOCK_TIMESTAMP,
+        token: 'test-key',
+        authVersion: 2 as const,
+      };
+      const getHmac = calculateRequestHMAC({ ...shared, method: 'get', methodBinding: true });
+      const deleteHmac = calculateRequestHMAC({ ...shared, method: 'delete', methodBinding: true });
+      const legacyHmac = calculateRequestHMAC({ ...shared, method: 'get' });
+      expect(getHmac).to.not.equal(deleteHmac);
+      expect(getHmac).to.not.equal(legacyHmac);
     });
   });
 
