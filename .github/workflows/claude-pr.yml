@@ -14,6 +14,7 @@ on:
 
 jobs:
   claude-pr:
+    environment: ai-inference
     if: |
       (
         (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
@@ -27,34 +28,24 @@ jobs:
     timeout-minutes: 10
     env:
       AWS_REGION: us-west-2
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
 
       - name: Configure AWS Credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
-          role-to-assume: arn:aws:iam::199765120567:role/${{ github.event.repository.name }}-iam-protected
+          role-to-assume: arn:aws:iam::199765120567:role/${{ github.event.repository.name }}-iam-unprotected
           aws-region: us-west-2
 
       - name: Assume inference role
-        id: inference-role
-        run: |
-          CREDS="$(aws sts assume-role \
-            --role-arn arn:aws:iam::168000258654:role/BedrockInferenceRole \
-            --role-session-name claude-inference-session \
-            --query 'Credentials' \
-            --output json)"
-
-          AWS_ACCESS_KEY_ID="$(echo "$CREDS" | jq -r '.AccessKeyId')"
-          AWS_SECRET_ACCESS_KEY="$(echo "$CREDS" | jq -r '.SecretAccessKey')"
-          AWS_SESSION_TOKEN="$(echo "$CREDS" | jq -r '.SessionToken')"
-
-          echo "::add-mask::$AWS_SECRET_ACCESS_KEY"
-          { echo "aws-access-key-id=$AWS_ACCESS_KEY_ID"; echo "aws-secret-access-key=$AWS_SECRET_ACCESS_KEY"; echo "aws-session-token=$AWS_SESSION_TOKEN"; } >> "$GITHUB_OUTPUT"
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: arn:aws:iam::168000258654:role/BedrockInferenceRole
+          role-session-name: claude-inference-session
+          role-chaining: true
+          role-skip-session-tagging: true
+          aws-region: us-west-2
 
       - name: Determine prompt to use
         id: determine-prompt
@@ -86,9 +77,6 @@ jobs:
         env:
           ANTHROPIC_MODEL: arn:aws:bedrock:us-west-2:168000258654:inference-profile/global.anthropic.claude-sonnet-5-5
           AWS_REGION: us-west-2
-          AWS_ACCESS_KEY_ID: ${{ steps.inference-role.outputs.aws-access-key-id }}
-          AWS_SECRET_ACCESS_KEY: ${{ steps.inference-role.outputs.aws-secret-access-key }}
-          AWS_SESSION_TOKEN: ${{ steps.inference-role.outputs.aws-session-token }}
           MAX_THINKING_TOKENS: '0'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -109,9 +97,6 @@ jobs:
         env:
           ANTHROPIC_MODEL: arn:aws:bedrock:us-west-2:168000258654:inference-profile/global.anthropic.claude-sonnet-5-5
           AWS_REGION: us-west-2
-          AWS_ACCESS_KEY_ID: ${{ steps.inference-role.outputs.aws-access-key-id }}
-          AWS_SECRET_ACCESS_KEY: ${{ steps.inference-role.outputs.aws-secret-access-key }}
-          AWS_SESSION_TOKEN: ${{ steps.inference-role.outputs.aws-session-token }}
           MAX_THINKING_TOKENS: '0'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

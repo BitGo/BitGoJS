@@ -47,28 +47,6 @@ function installScanner() {
   fs.appendFileSync(env.GITHUB_PATH, `${directory}\n`);
 }
 
-function assumeInferenceRole() {
-  const credentials = JSON.parse(
-    run('aws', [
-      'sts',
-      'assume-role',
-      '--role-arn',
-      'arn:aws:iam::168000258654:role/BedrockInferenceRole',
-      '--role-session-name',
-      'iyarc-prune-session',
-      '--query',
-      'Credentials',
-      '--output',
-      'json',
-    ])
-  );
-  console.log(`::add-mask::${credentials.SecretAccessKey}`);
-  console.log(`::add-mask::${credentials.SessionToken}`);
-  setOutput('aws-access-key-id', credentials.AccessKeyId);
-  setOutput('aws-secret-access-key', credentials.SecretAccessKey);
-  setOutput('aws-session-token', credentials.SessionToken);
-}
-
 function loadInstructions() {
   const instructions = fs.readFileSync('.claude/agents/iyarc-prune.md', 'utf8');
   const endOfFrontmatter = instructions.indexOf('\n---\n');
@@ -242,7 +220,6 @@ function reportPullRequest() {
 
 const operations = {
   'install-scanner': installScanner,
-  'assume-inference-role': assumeInferenceRole,
   'load-instructions': loadInstructions,
   'write-agent-summary': writeAgentSummary,
   'require-successful-completion': requireSuccessfulCompletion,
