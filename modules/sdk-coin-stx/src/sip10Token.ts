@@ -7,7 +7,7 @@ import { BaseCoin as StaticsBaseCoin, coins, Sip10TokenConfig, tokens } from '@b
 import { Stx } from './stx';
 import { TransactionBuilderFactory } from './lib';
 import { TransactionBuilder } from './lib/transactionBuilder';
-import { getMemoIdAndBaseAddressFromAddress } from './lib/utils';
+import { getContractIdFromAssetId, getMemoIdAndBaseAddressFromAddress } from './lib/utils';
 
 export class Sip10Token extends Stx {
   public readonly tokenConfig: Sip10TokenConfig;
@@ -75,6 +75,33 @@ export class Sip10Token extends Stx {
     return new TransactionBuilderFactory(coinConfig).getFungibleTokenTransferBuilder();
   }
 
+  /**
+   * Throws unless the transaction is a transfer of this token. A token coin only moves its own
+   * token, so it refuses native STX transfers, other tokens' transfers, and every other payload
+   * (send-many, staking, sBTC withdrawal and other contract calls).
+   * @param txHex
+   */
+  protected assertTransferredAssetMatchesCoin(txHex: string): void {
+    const asset = this.getTransferredAsset(txHex);
+    const ownContractId = getContractIdFromAssetId(this.assetId);
+    if (asset?.type === 'sip10' && asset.contractId === ownContractId) {
+      return;
+    }
+    if (asset?.type === 'native') {
+      throw new Error(`${this.getChain()} cannot sign or explain a native STX transfer`);
+    }
+    if (asset?.type === 'sip10') {
+      throw new Error(
+        `${this.getChain()} cannot sign or explain a transfer of SIP-10 token ${
+          asset.contractId
+        }, expected ${ownContractId}`
+      );
+    }
+    throw new Error(
+      `${this.getChain()} cannot sign or explain a transaction that is not a transfer of ${ownContractId}`
+    );
+  }
+
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     const { txPrebuild: txPrebuild, txParams: txParams } = params;
     const { memo } = txParams;
@@ -87,6 +114,9 @@ export class Sip10Token extends Stx {
     if (!rawTx) {
       throw new Error('missing required tx prebuild property txHex');
     }
+    // explainTransaction below runs this check too; it is repeated here so a mismatched asset is
+    // refused with a clear error before transaction.from() fails on a non-token payload.
+    this.assertTransferredAssetMatchesCoin(rawTx);
     const coinConfig = coins.get(this.getChain());
     const transaction = this.getTransaction(coinConfig);
     transaction.from(rawTx);

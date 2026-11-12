@@ -673,6 +673,29 @@ export function findContractTokenNameUsingContract(contractAddress: string, cont
 }
 
 /**
+ * Contract id (`<contract address>.<contract name>`) of a SIP-10 asset id (`<contract id>::<token name>`).
+ *
+ * @param {String} assetId
+ * @returns {String}
+ */
+export function getContractIdFromAssetId(assetId: string): string {
+  return assetId.split('::')[0];
+}
+
+/**
+ * Function to get the coin name of the SIP-10 token whose contract id matches exactly
+ *
+ * @param {String} contractId - `<contract address>.<contract name>`
+ * @returns {String|Undefined}
+ */
+export function findTokenNameByContractId(contractId: string): string | undefined {
+  const tokenNames = coins
+    .filter((coin) => coin instanceof Sip10Token && getContractIdFromAssetId(coin.assetId) === contractId)
+    .map((coin) => coin.name);
+  return tokenNames.length > 0 ? tokenNames[0] : undefined;
+}
+
+/**
  * Function to get address and memo details from address input
  *
  * @param address

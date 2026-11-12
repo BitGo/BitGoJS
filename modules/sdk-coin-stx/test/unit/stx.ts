@@ -10,7 +10,7 @@ import { cvToString, deserializeCV, privateKeyToPublic, publicKeyToHex } from '@
 import * as testData from '../fixtures';
 import * as resources from './resources';
 import { pox5RegisterForBondArgsHex } from './registerForBondRealArgs';
-import { Stx, StxLib, Tstx } from '../../src';
+import { Sip10Token, Stx, StxLib, Tstx } from '../../src';
 import { RecoveryInfo, RecoveryOptions, RecoveryTransaction } from '../../src/lib/iface';
 
 const { KeyPair } = StxLib;
@@ -45,6 +45,9 @@ describe('STX:', function () {
     bitgo.initializeTestVars();
     bitgo.safeRegister('stx', Stx.createInstance);
     bitgo.safeRegister('tstx', Tstx.createInstance);
+    Sip10Token.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+      bitgo.safeRegister(name, coinConstructor);
+    });
     basecoin = bitgo.coin(coinNameTest);
   });
 
@@ -222,26 +225,37 @@ describe('STX:', function () {
     assert.doesNotThrow(() => JSON.stringify(explain.contractFunctionArgs));
   });
 
+  it('should refuse to explain a fungible token transfer transaction with the native coin', async function () {
+    await assert.rejects(
+      basecoin.explainTransaction({ txHex: testData.txForExplainFungibleTokenTransfer, feeInfo: { fee: '' } }),
+      /cannot sign or explain a transfer of SIP-10 token/
+    );
+  });
+
   it('should explain a fungible token transfer transaction with memo', async function () {
-    const explain = await basecoin.explainTransaction({
+    const tokenCoin = bitgo.coin(testData.fungibleTokenTransferTx.tokenName) as Sip10Token;
+    const explain = await tokenCoin.explainTransaction({
       txHex: testData.txForExplainFungibleTokenTransfer,
       feeInfo: { fee: '' },
     });
+    assert.ok(explain);
     explain.id.should.equal(testData.fungibleTokenTransferTx.id);
     explain.fee.should.equal(testData.fungibleTokenTransferTx.fee);
-    explain.memo.should.equal('1');
+    assert.strictEqual(explain.memo, '1');
     explain.outputAmount.should.equal(testData.fungibleTokenTransferTx.functionArgs[2].value);
     explain.outputs[0].amount.should.equal(testData.fungibleTokenTransferTx.functionArgs[2].value);
     explain.outputs[0].address.should.equal(cvToString(testData.fungibleTokenTransferTx.functionArgs[1]));
-    explain.outputs[0].memo.should.equal('1');
-    explain.outputs[0].tokenName.should.equal(testData.fungibleTokenTransferTx.tokenName);
+    assert.strictEqual(explain.outputs[0].memo, '1');
+    assert.strictEqual(explain.outputs[0].tokenName, testData.fungibleTokenTransferTx.tokenName);
   });
 
   it('should explain a fungible token transfer transaction without memo', async function () {
-    const explain = await basecoin.explainTransaction({
+    const tokenCoin = bitgo.coin(testData.fungibleTokenTransferTx.tokenName) as Sip10Token;
+    const explain = await tokenCoin.explainTransaction({
       txHex: testData.txForExplainFungibleTokenTransferWithoutMemo,
       feeInfo: { fee: '' },
     });
+    assert.ok(explain);
     explain.id.should.equal(testData.hexWithoutMemoTransferId);
     explain.fee.should.equal(testData.fungibleTokenTransferTx.fee);
     assert.deepEqual(explain.memo, undefined, 'memo should be undefined');
@@ -249,7 +263,7 @@ describe('STX:', function () {
     explain.outputs[0].amount.should.equal(testData.fungibleTokenTransferTx.functionArgs[2].value);
     explain.outputs[0].address.should.equal(cvToString(testData.fungibleTokenTransferTx.functionArgs[1]));
     assert.deepEqual(explain.outputs[0].memo, undefined, 'memo should be undefined');
-    explain.outputs[0].tokenName.should.equal(testData.fungibleTokenTransferTx.tokenName);
+    assert.strictEqual(explain.outputs[0].tokenName, testData.fungibleTokenTransferTx.tokenName);
   });
 
   describe('Keypairs:', () => {

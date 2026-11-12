@@ -22,13 +22,16 @@ import {
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import {
+  addressToString,
   bufferCVFromString,
+  BytesReader,
   ClarityType,
   ClarityValue,
   cvToString,
   cvToValue,
   deserializeTransaction,
   noneCV,
+  PayloadType,
   privateKeyToHex,
   publicKeyToHex,
   serializePayload,
@@ -45,8 +48,10 @@ import { TransactionBuilder } from './lib/transactionBuilder';
 import {
   findContractTokenNameUsingContract,
   findTokenNameByContract,
+  findTokenNameByContractId,
   getAddressDetails,
   getMemoIdAndBaseAddressFromAddress,
+  removeHexPrefix,
 } from './lib/utils';
 import {
   AddressDetails,
@@ -61,6 +66,12 @@ import {
 } from './lib/iface';
 import { TransferBuilder } from './lib/transferBuilder';
 import { FungibleTokenTransferBuilder } from './lib/fungibleTokenTransferBuilder';
+
+/**
+ * The asset a transfer moves: native STX, or a SIP-10 token identified by its contract id
+ * (`<contract address>.<contract name>`).
+ */
+export type TransferredAsset = { type: 'native' } | { type: 'sip10'; contractId: string };
 
 export class Stx extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -81,6 +92,13 @@ export class Stx extends BaseCoin {
 
   getChain(): string {
     return this._staticsCoin.name;
+  }
+
+  /**
+   * The native coin of this chain. Sip10Token overrides this to return its parent coin.
+   */
+  getBaseChain(): string {
+    return this.getChain();
   }
 
   getFamily(): CoinFamily {
@@ -279,10 +297,70 @@ export class Stx extends BaseCoin {
   }
 
   /**
+   * The asset a transaction transfers, decoded from its bytes: native STX for a token-transfer
+   * payload, or the SIP-10 contract id for a fungible-token `transfer` call. Undefined for other
+   * payloads (staking, send-many, sBTC withdrawal and other contract calls).
+   * @param txHex
+   */
+  protected getTransferredAsset(txHex: string): TransferredAsset | undefined {
+    // Validate first so malformed input keeps failing with the factory's errors
+    // (InvalidTransactionError / ParseTransactionError) rather than raw decoder errors.
+    new StxLib.TransactionBuilderFactory(coins.get(this.getChain())).validateRawTransaction(txHex);
+    const { payload } = deserializeTransaction(new BytesReader(removeHexPrefix(txHex)));
+    if (payload.payloadType === PayloadType.TokenTransfer) {
+      return { type: 'native' };
+    }
+    if (
+      payload.payloadType === PayloadType.ContractCall &&
+      FungibleTokenTransferBuilder.isFungibleTokenTransferContractCall(payload)
+    ) {
+      return {
+        type: 'sip10',
+        contractId: `${addressToString(payload.contractAddress)}.${payload.contractName.content}`,
+      };
+    }
+    return undefined;
+  }
+
+  /**
+   * Throws if the transaction transfers an asset other than this coin. The native coin only
+   * transfers STX, so it refuses SIP-10 token transfers.
+   * @param txHex
+   */
+  protected assertTransferredAssetMatchesCoin(txHex: string): void {
+    const asset = this.getTransferredAsset(txHex);
+    if (asset?.type === 'sip10') {
+      throw new Error(`${this.getChain()} cannot sign or explain a transfer of SIP-10 token ${asset.contractId}`);
+    }
+  }
+
+  /**
+   * The coin whose label matches the asset the transaction transfers: the SIP-10 token's coin
+   * for a token transfer, the base coin for a native STX transfer, otherwise this coin.
+   * @param txHex
+   */
+  protected getCoinForTransferredAsset(txHex: string): Stx {
+    const asset = this.getTransferredAsset(txHex);
+    if (asset?.type === 'native') {
+      // A token coin can build a native sweep (recover without contractId); label it as STX.
+      return this.getBaseChain() === this.getChain() ? this : (this.bitgo.coin(this.getBaseChain()) as Stx);
+    }
+    if (asset?.type !== 'sip10') {
+      return this;
+    }
+    const tokenName = findTokenNameByContractId(asset.contractId);
+    if (!tokenName) {
+      throw new Error(`unsupported SIP-10 token contract ${asset.contractId}`);
+    }
+    return this.bitgo.coin(tokenName) as Stx;
+  }
+
+  /**
    * Signs stacks transaction
    * @param params
    */
   async signTransaction(params: StxSignTransactionOptions): Promise<SignedTransaction> {
+    this.assertTransferredAssetMatchesCoin(params.txPrebuild.txHex);
     const factory = new StxLib.TransactionBuilderFactory(coins.get(this.getChain()));
     const txBuilder = factory.from(params.txPrebuild.txHex, {
       allowedStakingContracts: params.allowedStakingContracts,
@@ -317,6 +395,7 @@ export class Stx extends BaseCoin {
     if (!txHex || !params.feeInfo) {
       throw new Error('missing explain tx parameters');
     }
+    this.assertTransferredAssetMatchesCoin(txHex);
 
     const factory = new StxLib.TransactionBuilderFactory(coins.get(this.getChain()));
     const txBuilder = factory.from(txHex, { allowedStakingContracts: params.allowedStakingContracts });
@@ -515,13 +594,17 @@ export class Stx extends BaseCoin {
    */
   protected async formatForOfflineVault(tx: BaseTransaction): Promise<RecoveryInfo> {
     const txJson: TxData = tx.toJson();
-    const transactionExplanation: RecoveryInfo = (await this.explainTransaction({
-      txHex: tx.toBroadcastFormat(),
+    const txHex = tx.toBroadcastFormat();
+    // Label the file with the asset the transaction actually moves, so a token sweep built from
+    // the native coin is explained and signed as that token.
+    const coin = this.getCoinForTransferredAsset(txHex);
+    const transactionExplanation: RecoveryInfo = (await coin.explainTransaction({
+      txHex,
       feeInfo: { fee: txJson.fee },
     })) as RecoveryInfo;
-    transactionExplanation.coin = this.getChain();
+    transactionExplanation.coin = coin.getChain();
     transactionExplanation.feeInfo = { fee: txJson.fee };
-    transactionExplanation.txHex = tx.toBroadcastFormat();
+    transactionExplanation.txHex = txHex;
     return transactionExplanation;
   }
 
