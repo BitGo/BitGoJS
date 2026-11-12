@@ -46,7 +46,6 @@ import debugLib from 'debug';
 import express from 'express';
 import type { ParamsDictionary } from 'express-serve-static-core';
 import * as _ from 'lodash';
-import * as url from 'url';
 import * as superagent from 'superagent';
 
 // RequestTracer should be extracted into a separate npm package (along with
@@ -335,11 +334,14 @@ function handleCalculateMinerFeeInfo(req: ExpressApiRouteRequest<'express.calcul
 function createAPIPath(req: express.Request) {
   let apiPath = '/' + req.params[0];
   if (!_.isEmpty(req.query)) {
-    // req.params does not contain the querystring, so we manually add them here
-    const urlDetails = url.parse(req.url);
-    if (urlDetails.search) {
-      // "search" is the properly URL encoded query params, prefixed with "?"
-      apiPath += urlDetails.search;
+    // req.params does not contain the querystring, so we take it from the raw req.url.
+    // Slice instead of URL parsing to preserve the query bytes exactly as the client sent
+    // them (e.g. WHATWG URL would re-encode a raw "'"). The fragment part cannot be
+    // forwarded, matching legacy url.parse().search behavior.
+    const queryStart = req.url.indexOf('?');
+    if (queryStart !== -1) {
+      const fragmentStart = req.url.indexOf('#', queryStart);
+      apiPath += fragmentStart === -1 ? req.url.slice(queryStart) : req.url.slice(queryStart, fragmentStart);
     }
   }
   return apiPath;
