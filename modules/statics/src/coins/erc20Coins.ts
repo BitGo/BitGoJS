@@ -13807,7 +13807,7 @@ export const erc20Coins = [
   erc20(
     '48efa2ef-1cea-40e1-a130-561976d1bb8e',
     'eth:itoton',
-    'iShares Core S&amp;P Total US Stock Market ETF (Ondo Tokenized)',
+    'iShares Core S&P Total US Stock Market ETF (Ondo Tokenized)',
     18,
     '0x0692481c369e2bdc728a69ae31b848343a4567be',
     UnderlyingAsset['eth:itoton'],
@@ -14022,7 +14022,7 @@ export const erc20Coins = [
   erc20(
     'd9beb283-2672-474c-be26-efa5732c1fc8',
     'eth:himson',
-    'Hims &amp; Hers Health (Ondo Tokenized)',
+    'Hims & Hers Health (Ondo Tokenized)',
     18,
     '0xca468554e5c0423ee858fe3942c9568c51fcaa79',
     UnderlyingAsset['eth:himson'],
@@ -14247,7 +14247,7 @@ export const erc20Coins = [
   erc20(
     '380318d1-1796-4bc2-a6f8-18f04ae308b6',
     'eth:pgon',
-    'Procter &amp; Gamble (Ondo Tokenized)',
+    'Procter & Gamble (Ondo Tokenized)',
     18,
     '0x339ce23a355ed6d513dd3e1462975c4ecd86823a',
     UnderlyingAsset['eth:pgon'],
@@ -14328,7 +14328,7 @@ export const erc20Coins = [
   erc20(
     '70145616-c086-4cbf-bc1e-0264584e5f7a',
     'eth:ijhon',
-    'iShares Core S&amp;P MidCap ETF (Ondo Tokenized)',
+    'iShares Core S&P MidCap ETF (Ondo Tokenized)',
     18,
     '0xfd50fc4e3686a8da814c5c3d6121d8ab98a537f0',
     UnderlyingAsset['eth:ijhon'],
@@ -14373,7 +14373,7 @@ export const erc20Coins = [
   erc20(
     '875cbb70-0458-4ea2-9062-9449b56d6d01',
     'eth:mcdon',
-    'McDonald&#39;s (Ondo Tokenized)',
+    "McDonald's (Ondo Tokenized)",
     18,
     '0x4c82c8cd9a218612dce60b156b73a36705645e3b',
     UnderlyingAsset['eth:mcdon'],
