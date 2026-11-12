@@ -27,6 +27,7 @@ import {
 } from './errors';
 
 import { Environments } from 'bitgo';
+import { envRequiresBitgoPubGpgKeyConfig } from '@bitgo/sdk-core';
 import * as clientRoutes from './clientRoutes';
 import { isSameFilePath } from './consumedSharesRegistry';
 import { getBitGoTlsPolicy } from './tlsPolicy';
@@ -260,6 +261,13 @@ function checkPreconditions(config: Config) {
   if (signerMode !== undefined && lightningSignerFileSystemPath !== undefined) {
     throw new LightningSignerConfigError(
       'signerMode and lightningSignerFileSystemPath cannot be set at the same time.'
+    );
+  }
+
+  if (signerMode !== undefined && !envRequiresBitgoPubGpgKeyConfig(env)) {
+    console.warn(
+      `warning: environment '${env}' does not enforce a pinned BitGo GPG public key for EdDSA MPCv2 offline ` +
+        'signing; run against prod, test, staging, adminProd or adminTest to enforce it.'
     );
   }
 

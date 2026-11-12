@@ -14,9 +14,9 @@ import {
   ShareKeyPosition,
   TxRequest,
   SignatureShareRecord,
-  generateGPGKeyPair,
+  BitgoMpcGpgPubKeys,
 } from '@bitgo/sdk-core';
-import { Hash, createPublicKey, verify as cryptoVerify } from 'crypto';
+import { Hash, createPublicKey, randomBytes, verify as cryptoVerify } from 'crypto';
 import { logger } from '@bitgo/logger';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import * as should from 'should';
@@ -901,6 +901,18 @@ describe('External signer', () => {
     const round1Stub = sinon.stub(EddsaMPCv2Utils.prototype, 'createOfflineRound1Share').resolves(round1Response);
     const round2Stub = sinon.stub(EddsaMPCv2Utils.prototype, 'createOfflineRound2Share').resolves(round2Response);
     const round3Stub = sinon.stub(EddsaMPCv2Utils.prototype, 'createOfflineRound3Share').resolves(round3Response);
+    // Round 2/3 now durably mark the encrypted session consumed before the generator runs;
+    // supply parseable fake envelopes and a throwaway registry path.
+    const stubTestSignerPath = path.join(
+      os.tmpdir(),
+      `bitgojs-test-eddsa-routing-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}`
+    );
+    resetConsumedShareRegistriesForTesting();
+    // The digest requires a v1 iv at least as long as the CCM nonce (13 bytes).
+    const fakeEncryptedSession = JSON.stringify({
+      iv: randomBytes(16).toString('base64'),
+      ct: Buffer.from('ct').toString('base64'),
+    });
 
     try {
       const round1Result = await handleV2GenerateShareTSS(
@@ -912,13 +924,29 @@ describe('External signer', () => {
       round1Stub.firstCall.args[0].walletPassphrase.should.equal(walletPassword);
 
       const round2Result = await handleV2GenerateShareTSS(
-        createEddsaMPCv2GenerateShareRequest(bgTest, walletId, ShareType.EddsaMPCv2Round2)
+        createEddsaMPCv2GenerateShareRequest(
+          bgTest,
+          walletId,
+          ShareType.EddsaMPCv2Round2,
+          {
+            encryptedRound1Session: fakeEncryptedSession,
+          },
+          stubTestSignerPath
+        )
       );
       round2Result.should.eql(round2Response);
       round2Stub.calledOnce.should.be.true();
 
       const round3Result = await handleV2GenerateShareTSS(
-        createEddsaMPCv2GenerateShareRequest(bgTest, walletId, ShareType.EddsaMPCv2Round3)
+        createEddsaMPCv2GenerateShareRequest(
+          bgTest,
+          walletId,
+          ShareType.EddsaMPCv2Round3,
+          {
+            encryptedRound2Session: fakeEncryptedSession,
+          },
+          stubTestSignerPath
+        )
       );
       round3Result.should.eql(round3Response);
       round3Stub.calledOnce.should.be.true();
@@ -928,6 +956,7 @@ describe('External signer', () => {
       round1Stub.restore();
       round2Stub.restore();
       round3Stub.restore();
+      fs.promises.unlink(`${stubTestSignerPath}.consumedShares.json`).catch(() => undefined);
     }
   });
 
@@ -1304,11 +1333,19 @@ describe('External signer', () => {
     const validPrvEdDSA = await bgTest.encrypt({ input: userKeyShareB64, password: walletPassphrase });
     const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify({ [walletID]: validPrvEdDSA }));
     const envStub = sinon.stub(process, 'env').value({ ['WALLET_' + walletID + '_PASSPHRASE']: walletPassphrase });
+    // Unique temp path so the durable consumed-session registry writes to a throwaway file
+    const eddsaSignerTmpPath = path.join(
+      os.tmpdir(),
+      `bitgojs-test-eddsa-signer-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}`
+    );
+    resetConsumedShareRegistriesForTesting();
 
     // EdDSA MPCv2 requires ed25519 GPG keys (not secp256k1) for PGP-authenticated message exchange.
     // GPG auth is tested by the sdk-core unit tests; here we stub the comms layer so the test
     // exercises only the WASM DSG protocol without needing openpgp as a direct express dep.
-    const bitgoEddsaGpgKey = await generateGPGKeyPair('ed25519');
+    // Round 2/3 pin the BitGo GPG key in envs that require BitGo pub key config ('test' here),
+    // so the request must carry the hardcoded BitGo onprem EdDSA MPCv2 public key.
+    const pinnedBitgoGpgKey = BitgoMpcGpgPubKeys.getBitgoMpcGpgPubKey('test', 'onprem', 'eddsaMpcv2');
     const detachSignStub = sinon
       .stub(MPSComms, 'detachSignMpsMessage')
       .callsFake(async (rawBytes) => ({ message: Buffer.from(rawBytes).toString('base64'), signature: '' }));
@@ -1339,7 +1376,7 @@ describe('External signer', () => {
       body: { txRequest: baseTxRequest },
       decoded: { coin: 'tsol', sharetype: 'EddsaMPCv2Round1', txRequest: baseTxRequest },
       params: { coin: 'tsol', sharetype: 'EddsaMPCv2Round1' },
-      config: { signerFileSystemPath: 'signerFileSystemPath' },
+      config: { signerFileSystemPath: eddsaSignerTmpPath },
     } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>;
 
     const round1Result = await handleV2GenerateShareTSS(reqEdDSARound1);
@@ -1368,7 +1405,7 @@ describe('External signer', () => {
         txRequest: txRequestRound1,
         encryptedRound1Session: round1Result.encryptedRound1Session,
         encryptedUserGpgPrvKey: round1Result.encryptedUserGpgPrvKey,
-        bitgoPublicGpgKey: bitgoEddsaGpgKey.publicKey,
+        bitgoPublicGpgKey: pinnedBitgoGpgKey,
       },
       decoded: {
         coin: 'tsol',
@@ -1376,10 +1413,10 @@ describe('External signer', () => {
         txRequest: txRequestRound1,
         encryptedRound1Session: round1Result.encryptedRound1Session,
         encryptedUserGpgPrvKey: round1Result.encryptedUserGpgPrvKey,
-        bitgoPublicGpgKey: bitgoEddsaGpgKey.publicKey,
+        bitgoPublicGpgKey: pinnedBitgoGpgKey,
       },
       params: { coin: 'tsol', sharetype: 'EddsaMPCv2Round2' },
-      config: { signerFileSystemPath: 'signerFileSystemPath' },
+      config: { signerFileSystemPath: eddsaSignerTmpPath },
     } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>;
 
     const round2Result = await handleV2GenerateShareTSS(reqEdDSARound2);
@@ -1407,7 +1444,7 @@ describe('External signer', () => {
         txRequest: txRequestRound2,
         encryptedRound2Session: round2Result.encryptedRound2Session,
         encryptedUserGpgPrvKey: round1Result.encryptedUserGpgPrvKey,
-        bitgoPublicGpgKey: bitgoEddsaGpgKey.publicKey,
+        bitgoPublicGpgKey: pinnedBitgoGpgKey,
       },
       decoded: {
         coin: 'tsol',
@@ -1415,10 +1452,10 @@ describe('External signer', () => {
         txRequest: txRequestRound2,
         encryptedRound2Session: round2Result.encryptedRound2Session,
         encryptedUserGpgPrvKey: round1Result.encryptedUserGpgPrvKey,
-        bitgoPublicGpgKey: bitgoEddsaGpgKey.publicKey,
+        bitgoPublicGpgKey: pinnedBitgoGpgKey,
       },
       params: { coin: 'tsol', sharetype: 'EddsaMPCv2Round3' },
-      config: { signerFileSystemPath: 'signerFileSystemPath' },
+      config: { signerFileSystemPath: eddsaSignerTmpPath },
     } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>;
 
     const round3Result = await handleV2GenerateShareTSS(reqEdDSARound3);
@@ -1440,6 +1477,15 @@ describe('External signer', () => {
       'Ed25519 signature must verify under the derived public key'
     );
 
+    // Session blobs are single-use: replaying the same encryptedRound2Session must be rejected.
+    // In-process the sdk-core early check fires first; across signer restarts the
+    // durable route-level registry (file-backed, keyed on the canonical digest) rejects.
+    await assert.rejects(
+      () => handleV2GenerateShareTSS(reqEdDSARound3),
+      /Session state has already been used; replay is not allowed/
+    );
+
+    fs.promises.unlink(`${eddsaSignerTmpPath}.consumedShares.json`).catch(() => undefined);
     detachSignStub.restore();
     verifyMsgStub.restore();
     readFileStub.restore();
@@ -1481,11 +1527,14 @@ describe('External signer', () => {
 function createEddsaMPCv2GenerateShareRequest(
   bitgo: BitGo,
   walletId: string,
-  sharetype: string
+  sharetype: string,
+  extraBody: Record<string, unknown> = {},
+  signerFileSystemPath = 'signerFileSystemPath'
 ): ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'> {
   return {
     bitgo,
     body: {
+      ...extraBody,
       txRequest: {
         txRequestId: '123456',
         apiVersion: 'full',
@@ -1510,7 +1559,7 @@ function createEddsaMPCv2GenerateShareRequest(
       sharetype,
     },
     config: {
-      signerFileSystemPath: 'signerFileSystemPath',
+      signerFileSystemPath,
     },
   } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>;
 }

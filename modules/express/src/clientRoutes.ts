@@ -34,6 +34,7 @@ import {
   ShareType,
   SignShare,
   SShare,
+  computeEncryptedSessionDigest,
   TssEcdsaStep1ReturnMessage,
   TssEcdsaStep2ReturnMessage,
   UnsupportedCoinError,
@@ -472,6 +473,32 @@ function markConsumedShareClosure(
     getConsumedShareRegistry(registryFilePath).markConsumed(computeConsumedShareKey(shareType, adata));
 }
 
+/**
+ * Durable single-use consumption of an encrypted offline-signing session blob
+ * (EdDSA MPCv2 rounds 2/3). Keys the file-backed ConsumedShareRegistry on the
+ * sdk-core canonical session digest so JSON reformulation of the same
+ * ciphertext is still rejected, and consumption survives signer restarts.
+ * Returns a lazy closure that the sdk-core helper invokes only after the
+ * session has decrypted and authenticated (as the MuDelta/S closures do), so
+ * junk requests never reach the registry.
+ */
+function markConsumedEddsaSessionClosure(
+  registryFilePath: string,
+  shareType: string,
+  encryptedSession: unknown
+): () => void {
+  if (typeof encryptedSession !== 'string' || !encryptedSession) {
+    throw new ApiResponseError('Missing encrypted session state in request', 400);
+  }
+  let digest: string;
+  try {
+    digest = computeEncryptedSessionDigest(encryptedSession);
+  } catch {
+    throw new ApiResponseError('Invalid encrypted session envelope', 400);
+  }
+  return () => getConsumedShareRegistry(registryFilePath).markConsumed(computeConsumedShareKey(shareType, digest));
+}
+
 async function decryptPrivKey(bg: BitGo, encryptedPrivKey: string, walletPw: string): Promise<string> {
   try {
     return await bg.decrypt({ password: walletPw, input: encryptedPrivKey });
@@ -528,9 +555,23 @@ export async function handleV2GenerateShareTSS(
           case ShareType.EddsaMPCv2Round1:
             return await eddsaMPCv2Utils.createOfflineRound1Share(req.body);
           case ShareType.EddsaMPCv2Round2:
-            return await eddsaMPCv2Utils.createOfflineRound2Share(req.body);
+            return await eddsaMPCv2Utils.createOfflineRound2Share({
+              ...req.body,
+              markSessionConsumed: markConsumedEddsaSessionClosure(
+                registryFilePath,
+                req.decoded.sharetype,
+                req.body.encryptedRound1Session
+              ),
+            });
           case ShareType.EddsaMPCv2Round3:
-            return await eddsaMPCv2Utils.createOfflineRound3Share(req.body);
+            return await eddsaMPCv2Utils.createOfflineRound3Share({
+              ...req.body,
+              markSessionConsumed: markConsumedEddsaSessionClosure(
+                registryFilePath,
+                req.decoded.sharetype,
+                req.body.encryptedRound2Session
+              ),
+            });
           default:
             throw new Error(
               `Share type ${req.decoded.sharetype} not supported for EdDSA MPCv2, only EddsaMPCv2Round1, EddsaMPCv2Round2 and EddsaMPCv2Round3 is supported.`
