@@ -111,7 +111,7 @@ export class TrxToken extends Trx {
         );
       }
 
-      return this.validateTriggerSmartContract(decodedTx, txParams, txPrebuild);
+      return this.validateTriggerSmartContract(decodedTx, txParams, txPrebuild, params.wallet);
     }
 
     const rawTx = txPrebuild.txHex;
