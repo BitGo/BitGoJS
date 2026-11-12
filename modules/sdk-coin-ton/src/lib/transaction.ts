@@ -15,6 +15,18 @@ import {
   SINGLE_NOMINATOR_WITHDRAW_ALL_COMMENT,
 } from './constants';
 
+/**
+ * The subset of the tonweb Slice API the comment decoders rely on. tonweb ships no
+ * type definitions for Slice, so this structural type documents the access pattern.
+ */
+interface CommentSlice {
+  refs: unknown[];
+  refCursor: number;
+  getFreeBits(): number;
+  loadBits(bits: number): Uint8Array;
+  loadRef(): CommentSlice;
+}
+
 export class Transaction extends BaseTransaction {
   public recipient: Recipient;
   public bounceable: boolean;
@@ -235,7 +247,14 @@ export class Transaction extends BaseTransaction {
   explainTransaction(): TransactionExplanation {
     const displayOrder = ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'withdrawAmount'];
 
-    const outputs: TransactionRecipient[] = [this.recipient];
+    // Only a plain send's body comment is a user memo; the other transaction types carry
+    // protocol payloads (e.g. withdraw opcodes) in `message`, which must not be exposed as memo.
+    const outputs: TransactionRecipient[] = [
+      {
+        ...this.recipient,
+        ...(this.type === TransactionType.Send && this.message ? { memo: this.message } : {}),
+      },
+    ];
     const outputAmount = this.recipient.amount;
     const withdrawAmount = this.withdrawAmount;
     return {
@@ -293,6 +312,29 @@ export class Transaction extends BaseTransaction {
       publicKey,
       ...this.parseTransactionBody(bodySlice),
     };
+  }
+
+  /**
+   * Decode a comment cell chain per the TON snake format (TL-B SnakeData: raw bytes
+   * per cell, refs chain to continuations with no length prefix), mirroring the
+   * standard reader (@ton/core readBuffer) exactly: byte-aligned cells, at most one
+   * ref per cell, whole-cell text concatenated across the chain. Binding the memo to
+   * the full text means a prebuild cannot carry the declared memoId in its first
+   * cell while chain readers credit a longer, different comment, nor smuggle an
+   * undeclared comment past verification as no comment. Violations fail closed
+   * (throw) exactly where the standard reader throws.
+   */
+  private loadComment(slice: CommentSlice): string {
+    const freeBits = slice.getFreeBits();
+    const remainingRefs = slice.refs.length - slice.refCursor;
+    if (freeBits % 8 !== 0 || (remainingRefs !== 0 && remainingRefs !== 1)) {
+      throw new Error('invalid snake-format comment');
+    }
+    let text = new TextDecoder().decode(slice.loadBits(freeBits));
+    if (remainingRefs === 1) {
+      text += this.loadComment(slice.loadRef());
+    }
+    return text;
   }
 
   private parseTransactionBody(slice: any): any {
@@ -354,8 +396,7 @@ export class Transaction extends BaseTransaction {
       if (order.getFreeBits() > 32) {
         const opcode = order.loadUint(32).toNumber();
         if (opcode === 0) {
-          const payloadBytes = order.loadBits(order.getFreeBits());
-          payload = new TextDecoder().decode(payloadBytes);
+          payload = this.loadComment(order);
           if (payload === 'Deposit') {
             this.transactionType = TransactionType.TonWhalesVestingDeposit;
           } else if (payload === 'Withdraw') {
@@ -382,7 +423,13 @@ export class Transaction extends BaseTransaction {
           const forwarderAddress = order.loadAddress();
           if (!forwarderAddress) throw new Error('invalid forwarderAddress');
 
-          order.loadBit(); // skip bit
+          const hasCustomPayload = order.loadBit();
+          if (hasCustomPayload) {
+            // consume the custom_payload ref (TEP-74): BitGo builders never write one,
+            // but a prebuild that sets it shifts the ref cursor so the forward payload
+            // would otherwise be decoded from the wrong cell
+            order.loadRef();
+          }
 
           const forwardTonAmount = order.loadCoins();
           if (!forwardTonAmount.gt(new BN(0))) throw new Error('invalid forwardTonAmount');
@@ -390,10 +437,18 @@ export class Transaction extends BaseTransaction {
           let message = '';
           if (order.loadBit()) {
             order = order.loadRef();
+            // the ref may be an empty cell — TokenTransferBuilder always writes a forward
+            // payload ref, empty when the transfer carries no comment
+            if (order.getFreeBits() > 0) {
+              const messageOpcode = order.loadUint(32).toNumber();
+              if (messageOpcode !== 0) throw new Error('invalid message opcode');
+              message = this.loadComment(order);
+            }
+          } else if (order.getFreeBits() > 32) {
+            // Either bit 0: the forward payload is inline in the remaining bits
             const messageOpcode = order.loadUint(32).toNumber();
             if (messageOpcode !== 0) throw new Error('invalid message opcode');
-            const messageBytes = order.loadBits(order.getFreeBits());
-            message = new TextDecoder().decode(messageBytes);
+            message = this.loadComment(order);
           }
 
           payload = {

@@ -5,6 +5,7 @@ import { coins } from '@bitgo/statics';
 import { TransactionBuilderFactory, KeyPair } from '../../src';
 import * as testData from '../resources/ton';
 import * as utils from '../../src/lib/utils';
+import { explainTonTransaction } from '../../src/lib/explainTransactionWasm';
 
 describe('Ton Token Transfer Builder', () => {
   const tokenName = 'tton:ukwny-us';
@@ -21,7 +22,6 @@ describe('Ton Token Transfer Builder', () => {
     txBuilder.setSenderJettonWalletAddress(testData.tokenSender.jettonAddress);
     txBuilder.setTonAmount(testData.tokenSender.tonAmount); // amount of TON to send to the sender's jetton wallet
     txBuilder.setForwardTonAmount(testData.tokenSender.forwardTonAmount); // amount of TON to cover forward fees in case of notify transfer
-    txBuilder.setMessage(testData.tokenSender.message);
     const tx = await txBuilder.build();
     should.equal(tx.type, TransactionType.SendToken);
     should.equal(tx.toJson().bounceable, false);
@@ -53,7 +53,6 @@ describe('Ton Token Transfer Builder', () => {
     txBuilder.setSenderJettonWalletAddress(testData.tokenSender.jettonAddress);
     txBuilder.setTonAmount(testData.tokenSender.tonAmount); // amount of TON to send to the sender's jetton wallet
     txBuilder.setForwardTonAmount(testData.tokenSender.forwardTonAmount); // amount of TON to cover forward fees in case of notify transfer
-    txBuilder.setMessage(testData.tokenSender.message);
     txBuilder.bounceable(true);
 
     const tx = await txBuilder.build();
@@ -74,6 +73,23 @@ describe('Ton Token Transfer Builder', () => {
     tx.id.should.equal(txId);
     const rawTx = tx.toBroadcastFormat();
     rawTx.should.equal(testData.signedTokenSendTransaction.txBounceable);
+  });
+
+  it('should encode setMessage as the forward payload comment', async function () {
+    const txBuilder = factory.getTokenTransferBuilder();
+    txBuilder.sender(testData.tokenSender.address);
+    txBuilder.sequenceNumber(0);
+    txBuilder.publicKey(testData.tokenSender.publicKey);
+    txBuilder.expireTime(testData.tokenSender.expireTime);
+    txBuilder.send(testData.tokenRecipients[0]);
+    txBuilder.setSenderJettonWalletAddress(testData.tokenSender.jettonAddress);
+    txBuilder.setTonAmount(testData.tokenSender.tonAmount);
+    txBuilder.setForwardTonAmount(testData.tokenSender.forwardTonAmount);
+    txBuilder.setMessage(testData.tokenSender.message);
+
+    const tx = await txBuilder.build();
+    const explained = await explainTonTransaction({ txBase64: tx.toBroadcastFormat() });
+    explained.outputs[0]!.memo!.should.equal(testData.tokenSender.message);
   });
 
   it('should build a send from rawTx', async function () {

@@ -8,6 +8,7 @@
 
 import type { ParsedTransaction as WasmParsedTransaction } from '@bitgo/wasm-ton';
 import { TransactionExplanation } from './iface';
+import { SINGLE_NOMINATOR_WITHDRAW_ALL_COMMENT } from './constants';
 
 /**
  * @bitgo/wasm-ton is loaded lazily (not via a static top-level import) so this
@@ -39,11 +40,11 @@ function extractOutputs(
   parsed: WasmParsedTransaction,
   toAddressBounceable: boolean
 ): {
-  outputs: { address: string; amount: string }[];
+  outputs: { address: string; amount: string; memo?: string }[];
   outputAmount: string;
   withdrawAmount: string | undefined;
 } {
-  const outputs: { address: string; amount: string }[] = [];
+  const outputs: { address: string; amount: string; memo?: string }[] = [];
   let withdrawAmount: string | undefined;
 
   for (const action of parsed.sendActions) {
@@ -51,13 +52,27 @@ function extractOutputs(
       outputs.push({
         address: action.jettonTransfer.destination,
         amount: String(action.jettonTransfer.amount),
+        // the jetton forward comment — the memo exchanges use to credit token deposits
+        ...(action.memo !== undefined && action.memo !== '' ? { memo: action.memo } : {}),
       });
     } else {
       // destinationBounceable is always EQ... (bounceable)
       // destination respects the original bounce flag (UQ... when bounce=false)
+      // The comment is exposed as memo only for plain sends, mirroring the TonWeb
+      // parser: op-0 comments that are whales/single-nominator protocol text
+      // classify the transaction as a staking type, not a user memo.
+      const memo =
+        action.memo !== undefined &&
+        action.memo !== '' &&
+        action.memo !== 'Deposit' &&
+        action.memo !== 'Withdraw' &&
+        action.memo !== SINGLE_NOMINATOR_WITHDRAW_ALL_COMMENT
+          ? action.memo
+          : undefined;
       outputs.push({
         address: toAddressBounceable ? action.destinationBounceable : action.destination,
         amount: String(action.amount),
+        ...(memo !== undefined ? { memo } : {}),
       });
     }
 
