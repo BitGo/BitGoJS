@@ -6079,6 +6079,16 @@ export const allCoinsAndTokens = [
     '0.0.5894751',
     AccountCoin.DEFAULT_FEATURES
   ),
+  hederaToken(
+    'dd1ad2cb-c23e-41d8-bc7a-80f7945d2326',
+    'thbar:fly',
+    'Fluency',
+    Networks.test.hedera,
+    18,
+    UnderlyingAsset['thbar:fly'],
+    '0.0.11346442',
+    AccountCoin.DEFAULT_FEATURES
+  ),
   // End FTX missing ERC20 tokens
   celoToken(
     '1a9935a6-54d2-4988-97ff-d871338e29b5',
@@ -6425,6 +6435,17 @@ export const allCoinsAndTokens = [
     ACCOUNT_COIN_DEFAULT_FEATURES_TRUST_ONLY,
     '',
     'XLM:WTSIX'
+  ),
+  stellarToken(
+    '32679491-7198-44f1-b299-14034274d392',
+    'xlm:SPXU-GDJBVX3QA5HJPBSAU5VIX2W6MC37NU4UFXPKEGK42SJCYN6AEQ4Z6COM',
+    'WisdomTree 500 Digital Fund',
+    7,
+    UnderlyingAsset['xlm:SPXU-GDJBVX3QA5HJPBSAU5VIX2W6MC37NU4UFXPKEGK42SJCYN6AEQ4Z6COM'],
+    'stellar.wisdomtree.com',
+    ACCOUNT_COIN_DEFAULT_FEATURES_TRUST_ONLY,
+    '',
+    'XLM:SPXUX'
   ),
   tronToken(
     '5f3266f8-252c-492a-90d7-bb6d3bf550fb',
