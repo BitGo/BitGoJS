@@ -46,6 +46,7 @@
     "@bitgo/statics": "^59.30.0",
     "@noble/curves": "1.8.1",
     "@taquito/local-forging": "^23.0.2",
+    "@taquito/michel-codec": "^23.0.3",
     "@taquito/rpc": "^23.0.2",
     "@taquito/signer": "^23.0.2",
     "bignumber.js": "^9.0.0",
