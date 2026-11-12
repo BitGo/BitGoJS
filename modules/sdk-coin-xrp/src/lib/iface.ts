@@ -139,6 +139,15 @@ export interface PaymentTransactionExplanation extends BaseTransactionExplanatio
    * this flag is still set so consumers can distinguish partial from full delivery.
    */
   partialPayment?: boolean;
+  sendMax?: Amount | MPTAmount;
+  hasPaths?: boolean;
+  deliverMin?: Amount | MPTAmount;
+}
+
+export interface PaymentSpendLimits {
+  sendMax?: Amount | MPTAmount;
+  hasPaths?: boolean;
+  deliverMin?: Amount | MPTAmount;
 }
 
 export interface AccountSetTransactionExplanation extends BaseTransactionExplanation {
