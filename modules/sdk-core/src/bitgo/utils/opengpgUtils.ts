@@ -84,6 +84,42 @@ export async function verifyPrimaryUserWrapper(
   }
 }
 
+type CertificateVerifier = (cert: pgp.SignaturePacket, keys: Key[], date: Date | null) => Promise<true | null>;
+
+/**
+ * Returns the primary user's third-party certifications that were issued and validly signed by certifierPub, or null
+ * if any certification carrying notations does not verify against certifierPub. Certifications without notations
+ * carry no readable data and are tolerated regardless of issuer. openpgp 5.11.3 exposes User.verifyCertificate at
+ * runtime but not in its TypeScript typings, hence the cast.
+ * @param primaryUser primary user of the key whose certifications are checked.
+ * @param certifierPub public key every certification carrying notations must be signed by.
+ * @return the certifications that verify against certifierPub, or null on any unverified notation-bearing
+ * certification; empty when the key carries no third-party certifications.
+ */
+export async function getVerifiedCertifications(
+  primaryUser: { user: pgp.User },
+  certifierPub: Key
+): Promise<pgp.SignaturePacket[] | null> {
+  // User.verifyCertificate exists at runtime but not in openpgp's typings
+  const userWithVerify = primaryUser.user as unknown as { verifyCertificate: CertificateVerifier };
+  const verifyCertificate = userWithVerify.verifyCertificate.bind(primaryUser.user);
+  const certifications = primaryUser.user.otherCertifications ?? [];
+  const verified: pgp.SignaturePacket[] = [];
+  for (const certification of certifications) {
+    const result = await verifyCertificate(certification, [certifierPub], null).catch(() => null);
+    if (result !== true) {
+      if (!certification.rawNotations?.length) {
+        continue;
+      }
+      return null;
+    }
+    if (certification.rawNotations?.length) {
+      verified.push(certification);
+    }
+  }
+  return verified;
+}
+
 /**
  * Verify an Eddsa or Ecdsa KeyShare Proof.
  *
@@ -105,6 +141,14 @@ export async function verifyShareProof(
     return false;
   }
   const proofSubkeys = decodedProof.getSubkeys()[1];
+  // The Q below is only trusted if the subkey binding signature is valid for the primary key;
+  // otherwise an attacker could attach an arbitrary subkey to the sender's public key packets.
+  try {
+    // Date checks are skipped: creator and verifier clocks may be skewed.
+    await proofSubkeys.verify(null as unknown as undefined);
+  } catch {
+    return false;
+  }
   if (algo === 'eddsa') {
     const decodedUValueProof = Buffer.from(proofSubkeys.keyPacket.publicParams['Q'].slice(1)).toString('hex');
     const rawUValueProof = Buffer.from(
@@ -135,17 +179,13 @@ export async function verifySharedDataProof(
 ): Promise<boolean> {
   const senderPubKey = await pgp.readKey({ armoredKey: senderPubKeyArm });
   const signedKey = await pgp.readKey({ armoredKey: keyWithNotation });
-  if (
-    !(await verifyPrimaryUserWrapper(signedKey, senderPubKey, false).then((values) =>
-      _.some(values, (value) => value.valid)
-    ))
-  ) {
+  const primaryUser = await signedKey.getPrimaryUser(null as unknown as undefined);
+  const verifiedCertifications = await getVerifiedCertifications(primaryUser, senderPubKey);
+  if (!verifiedCertifications || verifiedCertifications.length === 0) {
     return false;
   }
-  const primaryUser = await signedKey.getPrimaryUser(null as unknown as undefined);
   const anyInvalidProof = _.some(
-    // @ts-ignore
-    primaryUser.user.otherCertifications[0].rawNotations,
+    verifiedCertifications[0].rawNotations,
     (notation) => dataToVerify.find((i) => i.name === notation.name)?.value !== Buffer.from(notation.value).toString()
   );
   return !anyInvalidProof;

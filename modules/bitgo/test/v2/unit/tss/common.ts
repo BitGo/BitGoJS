@@ -165,4 +165,63 @@ describe('commonVerifyWalletSignature', function () {
       Buffer.from(returnedRawNotations[i].value).toString().should.equal(rawNotations[i].value);
     }
   });
+
+  it('throws error when a foreign certification is applied after the genuine one', async function () {
+    const rawNotations = [
+      { name: '', value: '1234' },
+      { name: '', value: gpgKey2Id },
+      { name: '', value: gpgKey2Id },
+      { name: '', value: '5678' },
+      { name: '', value: '9012' },
+    ];
+    const certified = await createSharedDataProof(gpgKey1.privateKey, gpgKey2.publicKey, rawNotations);
+    const attacked = await createSharedDataProof(gpgKey3.privateKey, certified, rawNotations);
+    const signature = await openpgp.readKey({ armoredKey: attacked });
+
+    await commonTssMethods
+      .commonVerifyWalletSignature({
+        walletSignature: signature,
+        bitgoPub: key1Actual,
+        commonKeychain: '1234',
+        userKeyId: gpgKey2Id,
+        backupKeyId: gpgKey2Id,
+      })
+      .should.be.rejectedWith('Invalid HSM GPG signature');
+  });
+
+  it('throws error when the wallet key has no third-party certification', async function () {
+    const signature = await openpgp.readKey({ armoredKey: gpgKey2.publicKey });
+
+    await commonTssMethods
+      .commonVerifyWalletSignature({
+        walletSignature: signature,
+        bitgoPub: key1Actual,
+        commonKeychain: '',
+        userKeyId: '',
+        backupKeyId: '',
+      })
+      .should.be.rejectedWith('Invalid HSM GPG signature');
+  });
+
+  it('succeeds when a foreign certification without notations is applied after the genuine one', async function () {
+    const rawNotations = [
+      { name: '', value: '1234' },
+      { name: '', value: gpgKey2Id },
+      { name: '', value: gpgKey2Id },
+      { name: '', value: '5678' },
+      { name: '', value: '9012' },
+    ];
+    const certified = await createSharedDataProof(gpgKey1.privateKey, gpgKey2.publicKey, rawNotations);
+    const peerCertified = await createSharedDataProof(gpgKey3.privateKey, certified, []);
+    const signature = await openpgp.readKey({ armoredKey: peerCertified });
+
+    const returnedRawNotations = await commonTssMethods.commonVerifyWalletSignature({
+      walletSignature: signature,
+      bitgoPub: key1Actual,
+      commonKeychain: '1234',
+      userKeyId: gpgKey2Id,
+      backupKeyId: gpgKey2Id,
+    });
+    Buffer.from(returnedRawNotations[0].value).toString().should.equal('1234');
+  });
 });
