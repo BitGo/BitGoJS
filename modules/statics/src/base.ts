@@ -2341,6 +2341,7 @@ export enum UnderlyingAsset {
   'hoodeth:pipedog' = 'hoodeth:pipedog',
   'hoodeth:tteq' = 'hoodeth:tteq',
   'hoodeth:orbio' = 'hoodeth:orbio', // CECHO-2426
+  'hoodeth:rlusd' = 'hoodeth:rlusd', // CECHO-2732
   'hemieth:hemi' = 'hemieth:hemi',
   'hemieth:hemibtc' = 'hemieth:hemibtc',
   'usdt0:stable' = 'usdt0:stable',
@@ -3069,6 +3070,7 @@ export enum UnderlyingAsset {
   'xlm:WTGX-GDMBNMFJ3TRFLASJ6UGETFME3PJPNKPU24C7KFDBEBPQFG2CI6UC3JG6' = 'xlm:WTGX-GDMBNMFJ3TRFLASJ6UGETFME3PJPNKPU24C7KFDBEBPQFG2CI6UC3JG6',
   'xlm:FLTT-GBTZKH3RNKW46XEZNCGZEBAGJISKDZKQXKSQ2N5G5SFX36TLWKKR6QJ6' = 'xlm:FLTT-GBTZKH3RNKW46XEZNCGZEBAGJISKDZKQXKSQ2N5G5SFX36TLWKKR6QJ6',
   'xlm:WTSI-GAD22PDBRFEMXAKPFDP4JGDFWKKD6VPXWUWEAXBS6ZYJYFFQDUN7HAFG' = 'xlm:WTSI-GAD22PDBRFEMXAKPFDP4JGDFWKKD6VPXWUWEAXBS6ZYJYFFQDUN7HAFG',
+  'xlm:SPXU-GDJBVX3QA5HJPBSAU5VIX2W6MC37NU4UFXPKEGK42SJCYN6AEQ4Z6COM' = 'xlm:SPXU-GDJBVX3QA5HJPBSAU5VIX2W6MC37NU4UFXPKEGK42SJCYN6AEQ4Z6COM', // CECHO-2732
 
   // Eth NFTs
   // generic NFTs
@@ -4490,6 +4492,7 @@ export enum UnderlyingAsset {
 
   // Hbar Testnet tokens
   'thbar:txsgd' = 'thbar:txsgd',
+  'thbar:fly' = 'thbar:fly', // CECHO-2732
 
   // Hbarevm TEstnet Tokens
   'thbarevm:hbarnativetoken' = 'thbarevm:hbarnativetoken',
@@ -4753,6 +4756,10 @@ export enum UnderlyingAsset {
   'canton:91282ckf7' = 'canton:91282ckf7',
   'canton:91282clw9' = 'canton:91282clw9',
   'canton:912810rc4' = 'canton:912810rc4',
+  'canton:beth' = 'canton:beth', // CECHO-2732
+  'canton:usty' = 'canton:usty', // CECHO-2732
+  'canton:exau' = 'canton:exau', // CECHO-2732
+  'canton:exag' = 'canton:exag', // CECHO-2732
 
   // Tempo mainnet tokens
   'tempo:pathusd' = 'tempo:pathusd',

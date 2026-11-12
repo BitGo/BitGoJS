@@ -244,6 +244,46 @@ export const cantonTokens = [
     UnderlyingAsset['canton:usdm1'],
     CANTON_TOKEN_FEATURES
   ),
+  cantonToken(
+    '73816685-eee6-43ef-851e-316860d8f8a3',
+    'canton:beth',
+    'BitSafe Ethereum',
+    10,
+    'https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/',
+    'beth-network::1220704c3cebc23916785557ebe79a5c7f68d034890a5b15690ea7ce050c7d463075:BETH',
+    UnderlyingAsset['canton:beth'],
+    CANTON_TOKEN_FEATURES
+  ),
+  cantonToken(
+    '6a211b6d-20a5-4bfe-a02d-945732e845b5',
+    'canton:usty',
+    'US Treasury Bill',
+    10,
+    'https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/',
+    'ember-usty::1220ad9c097ae75192b4716854fa413aa8582c86a62b16714663cdab55e025cc79c4:USTY',
+    UnderlyingAsset['canton:usty'],
+    CANTON_TOKEN_FEATURES
+  ),
+  cantonToken(
+    '72251972-90ab-41fd-b347-e63af3c066dd',
+    'canton:exau',
+    'Ember Gold',
+    10,
+    'https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/',
+    'ember-gold::1220ad9c097ae75192b4716854fa413aa8582c86a62b16714663cdab55e025cc79c4:eXAU',
+    UnderlyingAsset['canton:exau'],
+    CANTON_TOKEN_FEATURES
+  ),
+  cantonToken(
+    'bc534ce6-ed13-4a20-b933-43b52ed6b87c',
+    'canton:exag',
+    'Ember Silver',
+    10,
+    'https://api.utilities.digitalasset.com/api/token-standard/v0/registrars/',
+    'ember-silver::1220ad9c097ae75192b4716854fa413aa8582c86a62b16714663cdab55e025cc79c4:eXAG',
+    UnderlyingAsset['canton:exag'],
+    CANTON_TOKEN_FEATURES
+  ),
   // testnet tokens
   tcantonToken(
     '46356790-0ac4-4c3b-8b70-39094106d772',

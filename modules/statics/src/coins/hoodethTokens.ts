@@ -1,5 +1,5 @@
 import { erc20Token } from '../account';
-import { UnderlyingAsset } from '../base';
+import { CoinFeature, UnderlyingAsset } from '../base';
 import { EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE } from '../coinFeatures';
 import { Networks } from '../networks';
 
@@ -3063,6 +3063,16 @@ export const hoodethTokens = [
     UnderlyingAsset['hoodeth:orbio'],
     Networks.main.hoodeth,
     EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  erc20Token(
+    '6bf06fc1-6f8e-44fe-b995-817978dcfbb2',
+    'hoodeth:rlusd',
+    'Ripple USD',
+    18,
+    '0x8d58c0c60b8d6b88fa98b291a646db34d0f98258',
+    UnderlyingAsset['hoodeth:rlusd'],
+    Networks.main.hoodeth,
+    [...EVM_ERC20_TOKEN_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.STABLECOIN]
   ),
   erc20Token(
     '3493d608-fd3e-45dc-926d-783d54a8fe4d',

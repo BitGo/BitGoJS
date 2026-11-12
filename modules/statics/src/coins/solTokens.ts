@@ -837,10 +837,10 @@ export const solTokens = [
   solToken(
     '3be4fde1-cbb0-48e8-ad0b-18ff1d3b4b0b',
     'sol:cash',
-    'Cashio Dollar',
+    'Cash',
     6,
-    'CASHVDm2wsJXfhj6VWxb7GiMdoLc17Du7paH4bNr5woT',
-    'CASHVDm2wsJXfhj6VWxb7GiMdoLc17Du7paH4bNr5woT',
+    'CASHx9KJUStyftLFWGvEVf59SGeG9sh5FfcnZMVPCASH',
+    'CASHx9KJUStyftLFWGvEVf59SGeG9sh5FfcnZMVPCASH',
     UnderlyingAsset.CASH,
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
