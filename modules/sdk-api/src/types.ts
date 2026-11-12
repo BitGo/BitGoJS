@@ -61,6 +61,13 @@ export interface BitGoAPIOptions {
   somniaExplorerApiToken?: string;
   soneiumExplorerApiToken?: string;
   hmacVerification?: boolean;
+  /**
+   * Sign every authenticated v2 request with the HTTP method included in the HMAC
+   * subject and send `x-bitgo-hmac-method: true`, so a captured signature cannot be
+   * replayed under a different HTTP method. Only send this to servers that support
+   * v2 method binding. Defaults to false.
+   */
+  hmacMethodBinding?: boolean;
   customProxyAgent?: Agent;
   /**
    * Restricts the CAs accepted for BitGo hostnames. Cannot be combined with `customProxyAgent`,

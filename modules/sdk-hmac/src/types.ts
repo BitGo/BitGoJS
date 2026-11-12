@@ -8,7 +8,12 @@ export interface CalculateHmacSubjectOptions<T> {
   timestamp: number;
   method: (typeof supportedRequestMethods)[number];
   statusCode?: number;
+  /**
+   * Include the HTTP method in the v2 request subject (`timestamp|METHOD|urlPath`).
+   * Only affects v2 request subjects; v3 subjects and response subjects are unchanged.
+   */
   authVersion: AuthVersion;
+  methodBinding?: boolean;
 }
 
 export interface CalculateRequestHmacOptions<T extends string | Buffer = string> {
@@ -18,6 +23,7 @@ export interface CalculateRequestHmacOptions<T extends string | Buffer = string>
   token: string;
   method: (typeof supportedRequestMethods)[number];
   authVersion: AuthVersion;
+  methodBinding?: boolean;
 }
 
 export interface CalculateRequestHeadersOptions<T extends string | Buffer = string> {
@@ -25,7 +31,12 @@ export interface CalculateRequestHeadersOptions<T extends string | Buffer = stri
   text: T;
   token: string;
   method: (typeof supportedRequestMethods)[number];
+  /**
+   * Sign the request with the HTTP method included in the v2 subject. The caller
+   * must also send `x-bitgo-hmac-method: true` so the server verifies the same subject.
+   */
   authVersion: AuthVersion;
+  methodBinding?: boolean;
 }
 
 export type CalculateRequestHeadersWebCryptoOptions<T extends string | Buffer = string> = Omit<

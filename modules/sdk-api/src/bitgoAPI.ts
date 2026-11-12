@@ -265,6 +265,7 @@ export class BitGoAPI implements BitGoBase {
   protected readonly _env: EnvironmentName;
   protected readonly _authVersion: Exclude<BitGoAPIOptions['authVersion'], undefined> = 2;
   protected _hmacVerification = true;
+  protected readonly _hmacMethodBinding: boolean;
   protected readonly _upgradeEncryptionOnSign: boolean;
   protected readonly _proxy?: string;
   protected _user?: User;
@@ -455,6 +456,8 @@ export class BitGoAPI implements BitGoBase {
       this._hmacVerification = params.hmacVerification;
     }
 
+    this._hmacMethodBinding = params.hmacMethodBinding ?? false;
+
     if ((process as any).browser && params.customProxyAgent) {
       throw new Error('should not use https proxy while in browser');
     }
@@ -604,6 +607,7 @@ export class BitGoAPI implements BitGoBase {
         method,
         text: data || '',
         authVersion: this._authVersion,
+        methodBinding: this._hmacMethodBinding,
       });
       req.set('Auth-Timestamp', requestProperties.timestamp.toString());
 
@@ -617,6 +621,11 @@ export class BitGoAPI implements BitGoBase {
       );
 
       req.set('HMAC', requestProperties.hmac);
+
+      if (this._hmacMethodBinding) {
+        // the server requires the exact string 'true'; any other value does not opt in
+        req.set('x-bitgo-hmac-method', 'true');
+      }
     }
 
     if (this.getAdditionalHeadersCb) {
