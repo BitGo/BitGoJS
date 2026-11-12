@@ -252,6 +252,9 @@ export class Transaction extends BaseTransaction {
     if (this._algoTransaction.closeRemainderTo) {
       result.closeRemainderTo = algosdk.encodeAddress(this._algoTransaction.closeRemainderTo.publicKey);
     }
+    if (this._algoTransaction.reKeyTo) {
+      result.reKeyTo = algosdk.encodeAddress(this._algoTransaction.reKeyTo.publicKey);
+    }
     if (this.type === TransactionType.Send) {
       result.to = algosdk.encodeAddress(this._algoTransaction.to.publicKey);
       result.amount = this._algoTransaction.amount.toString();

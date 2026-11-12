@@ -29,6 +29,7 @@ import {
   TransactionExplanation,
   TransactionRecipient,
   TransactionType,
+  InvalidTransactionError,
   UnexpectedAddressError,
   VerifyAddressOptions,
   VerifyTransactionOptions,
@@ -74,6 +75,7 @@ export interface VerifyAlgoAddressOptions extends VerifyAddressOptions {
 export interface AlgoTransactionExplanation extends TransactionExplanation {
   memo?: string;
   type?: string | number;
+  reKeyTo?: string;
   voteKey?: string;
   selectionKey?: string;
   voteFirst?: number;
@@ -91,6 +93,13 @@ export interface TransactionOperation {
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;
   prv: string;
+  /**
+   * Explicit opt-in required to sign a transaction that sets `reKeyTo`: the exact rekey
+   * address that was shown to and approved by the operator. A rekey hands spending
+   * authority of the account to another address, so signing throws if the decoded
+   * transaction rekeys to any other address.
+   */
+  allowReKeyTo?: string;
 }
 
 export interface TransactionPrebuild {
@@ -357,7 +366,7 @@ export class Algo extends BaseCoin {
    * @param params
    */
   async explainTransaction(params: ExplainTransactionOptions): Promise<AlgoTransactionExplanation | undefined> {
-    const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
+    const txHex = (params.halfSigned && params.halfSigned.txHex) || params.txHex;
     if (!txHex || !params.feeInfo) {
       throw new Error('missing explain tx parameters');
     }
@@ -412,6 +421,13 @@ export class Algo extends BaseCoin {
         operations,
       };
 
+      // A rekey silently reassigns spending authority of the account, so it must never
+      // be hidden from the explanation shown for approval.
+      if (txJson.reKeyTo) {
+        displayOrder.push('reKeyTo');
+        explanationResult.reKeyTo = txJson.reKeyTo;
+      }
+
       if (txJson.tokenId) {
         explanationResult.tokenId = txJson.tokenId;
       }
@@ -432,7 +448,7 @@ export class Algo extends BaseCoin {
         'voteKeyDilution',
       ];
 
-      return {
+      const explanationResult: AlgoTransactionExplanation = {
         displayOrder,
         id: txJson.id,
         outputAmount: '0',
@@ -448,6 +464,14 @@ export class Algo extends BaseCoin {
         voteLast: txJson.voteLast,
         voteKeyDilution: txJson.voteKeyDilution,
       };
+
+      // A keyreg transaction can also carry a rekey; surface it like in the send case.
+      if (txJson.reKeyTo) {
+        displayOrder.push('reKeyTo');
+        explanationResult.reKeyTo = txJson.reKeyTo;
+      }
+
+      return explanationResult;
     }
   }
 
@@ -550,6 +574,20 @@ export class Algo extends BaseCoin {
    */
   async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
     const { txHex, signers, prv, isHalfSigned, numberSigners } = this.verifySignTransactionParams(params);
+    // A rekey reassigns spending authority of the account; refuse to sign it unless the
+    // caller passes the exact rekey address the operator approved. A bare opt-in would
+    // also approve a different rekey target hidden in the bytes being signed.
+    // Note: this guards Algo.signTransaction only; other signing entry points (e.g.
+    // callers driving TransactionBuilder.sign directly) are not covered.
+    const { txn } = Utils.decodeAlgoTxn(txHex);
+    if (txn.reKeyTo) {
+      const reKeyAddress = algosdk.encodeAddress(txn.reKeyTo.publicKey);
+      if (params.allowReKeyTo !== reKeyAddress) {
+        throw new InvalidTransactionError(
+          `transaction rekeys the account to ${reKeyAddress}: refusing to sign unless the rekey is confirmed intentional (pass allowReKeyTo with the approved rekey address)`
+        );
+      }
+    }
     const factory = this.getBuilder();
     const txBuilder = factory.from(txHex);
     txBuilder.numberOfRequiredSigners(numberSigners);

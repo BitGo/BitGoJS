@@ -233,6 +233,52 @@ describe('ALGO:', function () {
       explain.outputs[0].amount.should.equal(amount.toString());
       explain.outputs[0].address.should.equal(destination);
     });
+
+    it('should surface the rekey target when explaining a transfer transaction that rekeys the account', async function () {
+      const sender = AlgoResources.accounts.account1.address;
+      const destination = AlgoResources.accounts.account2.address;
+      const rekeyAddress = AlgoResources.accounts.account3.address;
+      const txBuilder = buildBaseTransferTransaction({ sender, destination, amount: 10000 });
+      txBuilder.reKeyTo({ address: rekeyAddress });
+      const unsignedTransaction = await txBuilder.build();
+      const unsignedHex = Buffer.from(unsignedTransaction.toBroadcastFormat()).toString('hex');
+      const explain = await basecoin.explainTransaction({
+        txHex: unsignedHex,
+        feeInfo: { fee: '1000' },
+      });
+      explain.reKeyTo.should.equal(rekeyAddress);
+      explain.displayOrder.should.containEql('reKeyTo');
+      explain.outputs[0].address.should.equal(destination);
+    });
+
+    it('should explain the halfSigned transaction when both txHex and halfSigned txHex are provided', async function () {
+      const sender = AlgoResources.accounts.account1.address;
+      const destination = AlgoResources.accounts.account2.address;
+      const rekeyAddress = AlgoResources.accounts.account3.address;
+
+      // plain unsigned payment without a rekey, used as the misleading txHex
+      const plainHex = Buffer.from(
+        (await buildBaseTransferTransaction({ sender, destination, amount: 10000 }).build()).toBroadcastFormat()
+      ).toString('hex');
+
+      // half-signed payment that rekeys the account, used as the halfSigned txHex
+      const rekeyedBuilder = buildBaseTransferTransaction({ sender, destination, amount: 10000 });
+      rekeyedBuilder.reKeyTo({ address: rekeyAddress });
+      rekeyedBuilder.numberOfSigners(2);
+      rekeyedBuilder.setSigners([AlgoResources.accounts.account1.address, AlgoResources.accounts.account3.address]);
+      rekeyedBuilder.sign({ key: AlgoResources.accounts.account1.prvKey });
+      const halfSignedHex = Buffer.from((await rekeyedBuilder.build()).toBroadcastFormat()).toString('hex');
+
+      // signTransaction signs the halfSigned hex when both are present, so the
+      // explanation must come from the same bytes, not from txHex
+      const explain = await basecoin.explainTransaction({
+        txHex: plainHex,
+        halfSigned: { txHex: halfSignedHex },
+        feeInfo: { fee: '1000' },
+      });
+      explain.reKeyTo.should.equal(rekeyAddress);
+      explain.displayOrder.should.containEql('reKeyTo');
+    });
   });
 
   describe('Asset Transfer Builder: ', () => {
@@ -348,6 +394,23 @@ describe('ALGO:', function () {
       explain.outputs[0].amount.should.equal(amount.toString());
       explain.outputs[0].address.should.equal(destination);
       explain.tokenId.should.equal(1);
+    });
+
+    it('should surface the rekey target when explaining an asset transfer transaction that rekeys the account', async function () {
+      const sender = AlgoResources.accounts.account1.address;
+      const destination = AlgoResources.accounts.account2.address;
+      const rekeyAddress = AlgoResources.accounts.account3.address;
+      const txBuilder = buildBaseAssetTransferTransaction({ sender, destination, amount: 10000, tokenId: 1 });
+      txBuilder.reKeyTo({ address: rekeyAddress });
+      const unsignedTransaction = await txBuilder.build();
+      const unsignedHex = Buffer.from(unsignedTransaction.toBroadcastFormat()).toString('hex');
+      const explain = await basecoin.explainTransaction({
+        txHex: unsignedHex,
+        feeInfo: { fee: '1000' },
+      });
+      explain.reKeyTo.should.equal(rekeyAddress);
+      explain.displayOrder.should.containEql('reKeyTo');
+      explain.outputs[0].address.should.equal(destination);
     });
   });
 
@@ -538,6 +601,21 @@ describe('ALGO:', function () {
       explain.voteLast.should.equal(100);
       explain.voteKeyDilution.should.equal(9);
     });
+
+    it('should surface the rekey target when explaining a keyreg transaction that rekeys the account', async function () {
+      const sender = AlgoResources.accounts.account1;
+      const rekeyAddress = AlgoResources.accounts.account3.address;
+      const txBuilder = buildBaseKeyRegTransaction({ sender });
+      txBuilder.reKeyTo({ address: rekeyAddress });
+      const unsignedTransaction = await txBuilder.build();
+      const unsignedHex = Buffer.from(unsignedTransaction.toBroadcastFormat()).toString('hex');
+      const explain = await basecoin.explainTransaction({
+        txHex: unsignedHex,
+        feeInfo: { fee: '1000' },
+      });
+      explain.reKeyTo.should.equal(rekeyAddress);
+      explain.displayOrder.should.containEql('reKeyTo');
+    });
   });
   describe('Sign transaction', () => {
     it('should sign transaction', async function () {
@@ -647,6 +725,99 @@ describe('ALGO:', function () {
         prv: AlgoResources.accounts.account3.prvKey,
       });
       signed.txHex.should.equal(AlgoResources.rawTx.transfer.multisig);
+    });
+
+    it('should refuse to sign a transaction that rekeys the account', async function () {
+      const factory = new TransactionBuilderFactory(coins.get('algo'));
+      const txBuilder = factory
+        .getTransferBuilder()
+        .sender({ address: AlgoResources.accounts.account1.address })
+        .to({ address: AlgoResources.accounts.account2.address })
+        .amount(10000)
+        .isFlatFee(true)
+        .fee({ fee: '1000' })
+        .firstRound(1)
+        .lastRound(100)
+        .testnet();
+      txBuilder.reKeyTo({ address: AlgoResources.accounts.account3.address });
+      const unsignedTx = await txBuilder.build();
+      const unsignedHex = Buffer.from(unsignedTx.toBroadcastFormat()).toString('hex');
+
+      await basecoin
+        .signTransaction({
+          txPrebuild: {
+            txHex: unsignedHex,
+            keys: [AlgoResources.accounts.account1.pubKey.toString('hex')],
+            addressVersion: 1,
+          },
+          prv: AlgoResources.accounts.account1.prvKey,
+        })
+        .should.be.rejectedWith(
+          new RegExp(
+            `transaction rekeys the account to ${AlgoResources.accounts.account3.address}: refusing to sign unless the rekey is confirmed intentional`
+          )
+        );
+    });
+
+    it('should sign a transaction that rekeys the account when the rekey is explicitly allowed', async function () {
+      const factory = new TransactionBuilderFactory(coins.get('algo'));
+      const txBuilder = factory
+        .getTransferBuilder()
+        .sender({ address: AlgoResources.accounts.account1.address })
+        .to({ address: AlgoResources.accounts.account2.address })
+        .amount(10000)
+        .isFlatFee(true)
+        .fee({ fee: '1000' })
+        .firstRound(1)
+        .lastRound(100)
+        .testnet();
+      txBuilder.reKeyTo({ address: AlgoResources.accounts.account3.address });
+      const unsignedTx = await txBuilder.build();
+      const unsignedHex = Buffer.from(unsignedTx.toBroadcastFormat()).toString('hex');
+
+      const signed = await basecoin.signTransaction({
+        txPrebuild: {
+          txHex: unsignedHex,
+          keys: [AlgoResources.accounts.account1.pubKey.toString('hex')],
+          addressVersion: 1,
+        },
+        prv: AlgoResources.accounts.account1.prvKey,
+        allowReKeyTo: AlgoResources.accounts.account3.address,
+      });
+      assert.strictEqual(typeof signed.txHex, 'string');
+    });
+
+    it('should refuse to sign a rekeyed transaction when the approved rekey address does not match', async function () {
+      const factory = new TransactionBuilderFactory(coins.get('algo'));
+      const txBuilder = factory
+        .getTransferBuilder()
+        .sender({ address: AlgoResources.accounts.account1.address })
+        .to({ address: AlgoResources.accounts.account2.address })
+        .amount(10000)
+        .isFlatFee(true)
+        .fee({ fee: '1000' })
+        .firstRound(1)
+        .lastRound(100)
+        .testnet();
+      txBuilder.reKeyTo({ address: AlgoResources.accounts.account3.address });
+      const unsignedTx = await txBuilder.build();
+      const unsignedHex = Buffer.from(unsignedTx.toBroadcastFormat()).toString('hex');
+
+      await basecoin
+        .signTransaction({
+          txPrebuild: {
+            txHex: unsignedHex,
+            keys: [AlgoResources.accounts.account1.pubKey.toString('hex')],
+            addressVersion: 1,
+          },
+          prv: AlgoResources.accounts.account1.prvKey,
+          allowReKeyTo: AlgoResources.accounts.account2.address,
+        })
+        .should.be.rejectedWith(
+          new RegExp(
+            `transaction rekeys the account to ${AlgoResources.accounts.account3.address}: refusing to sign unless the rekey is confirmed intentional`
+          )
+        );
     });
   });
 
