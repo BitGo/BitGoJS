@@ -49,6 +49,35 @@ interface WalletWithCoinSpecific {
 import { getBuilder } from './lib/builder';
 import { isInteger, isUndefined } from 'lodash';
 
+/**
+ * Contract types that are validated by checking owner_address against the wallet's base address.
+ * These are kept in sync: OWNER_VALIDATED_CONTRACT_TYPES (TSS/numeric enum) and
+ * OWNER_VALIDATED_MULTISIG_CONTRACT_TYPES (multisig/string) cover the same set.
+ */
+const OWNER_VALIDATED_CONTRACT_TYPES: Enum.ContractType[] = [
+  Enum.ContractType.FreezeBalanceV2,
+  Enum.ContractType.UnfreezeBalanceV2,
+  Enum.ContractType.WithdrawExpireUnfreeze,
+  Enum.ContractType.VoteWitness,
+  Enum.ContractType.WithdrawBalance,
+  Enum.ContractType.DelegateResourceContract,
+  Enum.ContractType.UnDelegateResourceContract,
+  Enum.ContractType.AccountCreate,
+  Enum.ContractType.AccountPermissionUpdate,
+];
+
+const OWNER_VALIDATED_MULTISIG_CONTRACT_TYPES: string[] = [
+  'FreezeBalanceV2Contract',
+  'UnfreezeBalanceV2Contract',
+  'WithdrawExpireUnfreezeContract',
+  'VoteWitnessContract',
+  'WithdrawBalanceContract',
+  'DelegateResourceContract',
+  'UnDelegateResourceContract',
+  'AccountCreateContract',
+  'AccountPermissionUpdateContract',
+];
+
 export const MINIMUM_TRON_MSIG_TRANSACTION_FEE = 1e6;
 export const SAFE_TRON_TRANSACTION_FEE = 2.1 * 1e6; // TRON foundation recommends 2.1 TRX as fees for guaranteed transaction
 export const SAFE_TRON_TOKEN_TRANSACTION_FEE = 100 * 1e6; // TRON foundation recommends 100 TRX as fees for guaranteed transaction
@@ -442,7 +471,20 @@ export class Trx extends BaseCoin {
         return this.validateTriggerSmartContract(decodedTx, txParams, txPrebuild, wallet);
       }
 
-      return true;
+      // Staking, voting, resource management, account setup, and permission update contracts:
+      // These do not transfer funds to external recipients, but we must verify the owner_address
+      // belongs to this wallet to prevent signing transactions for other accounts (CHALO-2126).
+      // Note: only owner_address is validated here. Fields like receiver_address (DelegateResource),
+      // votes (VoteWitness), or new permission keys (AccountPermissionUpdate) are not checked because
+      // txParams does not yet carry structured intent for these operations. This is intentional and
+      // matches the current SDK contract — a follow-up may add deeper intent validation.
+      if (decodedTx.contractType !== undefined && OWNER_VALIDATED_CONTRACT_TYPES.includes(decodedTx.contractType)) {
+        return this.validateDecodedContractOwnerAddress(decodedTx, wallet);
+      }
+
+      // Fail closed: unknown contract types must not be signed (CHALO-2126).
+      const typeName = decodedTx.contractType !== undefined ? Enum.ContractType[decodedTx.contractType] : 'undefined';
+      throw new Error(`Unsupported contract type for TSS verification: ${typeName} (${decodedTx.contractType})`);
     }
 
     // On-chain multisig path: txHex is a full transaction JSON string (with txID, raw_data, raw_data_hex).
@@ -460,9 +502,24 @@ export class Trx extends BaseCoin {
 
     if (contract.type === 'TransferContract') {
       return this.validateTransferContract(contract, txParams, wallet);
-    } else {
-      return true;
     }
+
+    if (contract.type === 'TriggerSmartContract') {
+      // TRC20 token transfer on multisig path: decode and validate like the TSS path (CHALO-2126).
+      const rawDataHex = this.extractRawDataHex(rawTx);
+      const decodedTx = Utils.decodeTransaction(rawDataHex);
+      return this.validateTriggerSmartContract(decodedTx, txParams, txPrebuild, wallet);
+    }
+
+    // Staking, voting, resource management, account setup, and permission update contracts:
+    // Validate owner_address belongs to this wallet (CHALO-2126).
+    // See OWNER_VALIDATED_CONTRACT_TYPES comment for why only owner_address is checked.
+    if (OWNER_VALIDATED_MULTISIG_CONTRACT_TYPES.includes(contract.type)) {
+      return this.validateMultisigContractOwnerAddress(contract, wallet);
+    }
+
+    // Fail closed: unknown contract types must not be signed (CHALO-2126).
+    throw new Error(`Unsupported contract type for verification: ${contract.type}`);
   }
 
   /**
@@ -551,6 +608,25 @@ export class Trx extends BaseCoin {
   }
 
   /**
+   * Validate that a given address matches the wallet's own base address.
+   * @param context Describes what is being validated (e.g. 'consolidation destination', 'contract owner')
+   */
+  private validateAddressMatchesWallet(
+    wallet: WalletWithCoinSpecific | undefined,
+    actualAddress: string,
+    context: string
+  ): void {
+    const coinSpecific = wallet?.coinSpecific?.();
+    const baseAddress = coinSpecific?.baseAddress || coinSpecific?.rootAddress;
+    if (!baseAddress) {
+      throw new Error(`missing wallet base address for ${context} validation`);
+    }
+    if (Utils.getBase58AddressFromHexAddress(baseAddress).toLowerCase() !== actualAddress.toLowerCase()) {
+      throw new Error(`${context} does not match wallet base address`);
+    }
+  }
+
+  /**
    * Validate that a consolidation destination is the wallet's own base address.
    * Shared by both native TRX and TRC20 validation paths (CHALO-2125).
    */
@@ -558,14 +634,54 @@ export class Trx extends BaseCoin {
     wallet: WalletWithCoinSpecific | undefined,
     actualDestination: string
   ): void {
-    const coinSpecific = wallet?.coinSpecific?.();
-    const baseAddress = coinSpecific?.baseAddress || coinSpecific?.rootAddress;
-    if (!baseAddress) {
-      throw new Error('missing wallet base address for consolidation destination validation');
+    this.validateAddressMatchesWallet(wallet, actualDestination, 'consolidation destination');
+  }
+
+  /**
+   * Validate that the owner_address of a decoded (TSS path) contract belongs to this wallet.
+   * Used for staking, voting, resource management, account setup, and permission update contracts
+   * that do not transfer funds to external recipients (CHALO-2126).
+   */
+  private validateDecodedContractOwnerAddress(decodedTx: RawData, wallet: WalletWithCoinSpecific | undefined): boolean {
+    let ownerAddress: string | undefined;
+
+    if (decodedTx.contractType === Enum.ContractType.AccountPermissionUpdate) {
+      // AccountPermissionUpdate decoded contract is a single object (not array-wrapped)
+      ownerAddress = (decodedTx.contract as unknown as Interface.AccountPermissionUpdateContract).ownerAddress;
+    } else {
+      // All other decoded contracts are arrays with parameter.value.owner_address
+      const contracts = decodedTx.contract as Array<{ parameter?: { value?: { owner_address?: string } } }>;
+      ownerAddress = contracts[0]?.parameter?.value?.owner_address;
     }
-    if (Utils.getBase58AddressFromHexAddress(baseAddress).toLowerCase() !== actualDestination.toLowerCase()) {
-      throw new Error('consolidation destination address does not match wallet base address');
+
+    if (!ownerAddress) {
+      throw new Error('Missing owner_address in contract');
     }
+
+    // Decoded addresses are already in base58 format; canonicalize for comparison.
+    const ownerBase58 = Utils.getBase58AddressFromHexAddress(ownerAddress);
+    this.validateAddressMatchesWallet(wallet, ownerBase58, 'contract owner_address');
+    return true;
+  }
+
+  /**
+   * Validate that the owner_address of a multisig-path (JSON) contract belongs to this wallet.
+   * Used for staking, voting, resource management, account setup, and permission update contracts
+   * on the on-chain multisig path (CHALO-2126).
+   */
+  private validateMultisigContractOwnerAddress(
+    contract: { parameter?: { value?: { owner_address?: string } } },
+    wallet: WalletWithCoinSpecific | undefined
+  ): boolean {
+    const ownerAddressHex = contract?.parameter?.value?.owner_address;
+    if (!ownerAddressHex) {
+      throw new Error('Missing owner_address in contract');
+    }
+
+    // Multisig path addresses are in hex format (41-prefixed); convert to base58.
+    const ownerBase58 = Utils.getBase58AddressFromHex(ownerAddressHex);
+    this.validateAddressMatchesWallet(wallet, ownerBase58, 'contract owner_address');
+    return true;
   }
 
   /**

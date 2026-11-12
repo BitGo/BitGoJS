@@ -124,7 +124,7 @@ describe('TrxToken verifyTransaction:', function () {
           wallet: { coinSpecific: () => ({ baseAddress: 'TLWh67P93KgtnZNCtGnEHM1H33Nhq2uvvN' }) },
           walletType: 'tss',
         } as any),
-        { message: 'consolidation destination address does not match wallet base address' }
+        { message: 'consolidation destination does not match wallet base address' }
       );
     });
 
