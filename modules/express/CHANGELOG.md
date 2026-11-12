@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [17.8.2](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fexpress%4017.8.1...%40bitgo%2Fexpress%4017.8.2) (2026-11-12)
+
+### Bug Fixes
+
+* **express:** forward query strings without deprecated url.parse ([ce85490](https://github.com/BitGo/BitGoJS/commit/ce85490fabeb6d945273537ec00ff527c68c3c0e))
+* **sdk-core:** bind GG18 offline shares to signable, enforce single use ([a1a6510](https://github.com/BitGo/BitGoJS/commit/a1a65106a1ec085955b0c44695fa6b84a306cade))
+* validate BitGo GPG key and session state in EdDSA MPCv2 offline signing ([90596a4](https://github.com/BitGo/BitGoJS/commit/90596a422975ba4c5f1a22afc28f05cade13cdb1))
+
+
 ## [17.8.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fexpress%4017.8.0...%40bitgo%2Fexpress%4017.8.1) (2026-11-10)
 
 **Note:** Version bump only for package @bitgo/express

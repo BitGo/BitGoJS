@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.5](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-canton%401.38.4...%40bitgo%2Fsdk-coin-canton%401.38.5) (2026-11-12)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-canton
+
+
+
+
+
 ## [1.38.4](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-canton%401.38.3...%40bitgo%2Fsdk-coin-canton%401.38.4) (2026-11-10)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-canton

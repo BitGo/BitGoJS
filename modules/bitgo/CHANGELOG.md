@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [54.4.1](https://github.com/BitGo/BitGoJS/compare/bitgo%4054.4.0...bitgo%4054.4.1) (2026-11-12)
+
+### Bug Fixes
+
+* **sdk-core:** bind attestation notations to verified certification ([21bcd49](https://github.com/BitGo/BitGoJS/commit/21bcd49d2b060f2b160ba6946409e419cb827dcc))
+* **sdk-core:** bind GG18 offline shares to signable, enforce single use ([a1a6510](https://github.com/BitGo/BitGoJS/commit/a1a65106a1ec085955b0c44695fa6b84a306cade))
+* **sdk-core:** harden ECDSA challenge re-sign verification ([d7cdb73](https://github.com/BitGo/BitGoJS/commit/d7cdb73678ea34e4c2b137c8747b98cde9a5194d))
+
+
 # [54.4.0](https://github.com/BitGo/BitGoJS/compare/bitgo%4054.3.2...bitgo%4054.4.0) (2026-11-10)
 
 ### Features

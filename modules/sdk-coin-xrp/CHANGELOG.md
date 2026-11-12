@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.2.8](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-xrp%404.2.7...%40bitgo%2Fsdk-coin-xrp%404.2.8) (2026-11-12)
+
+### Bug Fixes
+
+* **sdk-coin-xrp:** include SendMax, Paths and DeliverMin in Payment explanation ([05c7e45](https://github.com/BitGo/BitGoJS/commit/05c7e45615897f4caffa1e0a736997eb12e28406))
+
+
 ## [4.2.7](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-xrp%404.2.6...%40bitgo%2Fsdk-coin-xrp%404.2.7) (2026-11-10)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xrp

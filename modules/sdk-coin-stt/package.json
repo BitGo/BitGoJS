@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-stt",
-  "version": "1.6.59",
+  "version": "1.6.60",
   "description": "BitGo SDK coin library for Somnia",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,14 +40,14 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-eth": "^25.6.2",
-    "@bitgo/sdk-core": "^40.6.0",
-    "@bitgo/statics": "^59.30.0",
+    "@bitgo/abstract-eth": "^25.6.3",
+    "@bitgo/sdk-core": "^40.7.0",
+    "@bitgo/statics": "^59.31.0",
     "@ethereumjs/common": "^2.6.5"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^3.3.0",
-    "@bitgo/sdk-test": "^9.1.94"
+    "@bitgo/sdk-api": "^3.4.0",
+    "@bitgo/sdk-test": "^9.1.95"
   },
   "files": [
     "dist"

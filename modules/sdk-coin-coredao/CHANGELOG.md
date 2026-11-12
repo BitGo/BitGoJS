@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.9.10](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-coredao%402.9.9...%40bitgo%2Fsdk-coin-coredao%402.9.10) (2026-11-12)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-coredao
+
+
+
+
+
 ## [2.9.9](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-coredao%402.9.8...%40bitgo%2Fsdk-coin-coredao%402.9.9) (2026-11-10)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-coredao

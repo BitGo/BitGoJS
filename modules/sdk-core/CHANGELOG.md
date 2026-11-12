@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [40.7.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4040.6.0...%40bitgo%2Fsdk-core%4040.7.0) (2026-11-12)
+
+### Bug Fixes
+
+* **sdk-core:** bind attestation notations to verified certification ([21bcd49](https://github.com/BitGo/BitGoJS/commit/21bcd49d2b060f2b160ba6946409e419cb827dcc))
+* **sdk-core:** bind GG18 offline shares to signable, enforce single use ([a1a6510](https://github.com/BitGo/BitGoJS/commit/a1a65106a1ec085955b0c44695fa6b84a306cade))
+* **sdk-core:** harden ECDSA challenge re-sign verification ([d7cdb73](https://github.com/BitGo/BitGoJS/commit/d7cdb73678ea34e4c2b137c8747b98cde9a5194d))
+* validate BitGo GPG key and session state in EdDSA MPCv2 offline signing ([90596a4](https://github.com/BitGo/BitGoJS/commit/90596a422975ba4c5f1a22afc28f05cade13cdb1))
+
+### Features
+
+* **sdk-core:** forward WalletConnect message origin ([4ebad0e](https://github.com/BitGo/BitGoJS/commit/4ebad0eaf6873d4c9e4067f7c6b2182a1b72bd6b))
+
+
 ## Unreleased
 
 * **sdk-core:** allow WalletConnect message and typed-data signing requests to carry `isWalletConnectTx: true` (DEFI-1069).
