@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.2.4](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-xtz%403.2.3...%40bitgo%2Fsdk-coin-xtz%403.2.4) (2026-11-12)
+
+### Bug Fixes
+
+* bind Xtz dataToSign to verified txHex before signing ([321e911](https://github.com/BitGo/BitGoJS/commit/321e911ec4400995e07014e9a693db7a6f327d01))
+
+
 ## [3.2.3](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-xtz%403.2.2...%40bitgo%2Fsdk-coin-xtz%403.2.3) (2026-11-10)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xtz

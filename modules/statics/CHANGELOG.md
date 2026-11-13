@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.31.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fstatics%4059.30.0...%40bitgo%2Fstatics%4059.31.0) (2026-11-12)
+
+### Bug Fixes
+
+* **statics:** decode HTML entities in Ondo token names ([c7e7bf6](https://github.com/BitGo/BitGoJS/commit/c7e7bf6adf0c24cb4a2b92eec96a151dc846160e)), closes [#39](https://github.com/BitGo/BitGoJS/issues/39)
+
+### Features
+
+* **statics:** onboard CECHO-2732 client requested tokens batch (11/12) ([c53a53a](https://github.com/BitGo/BitGoJS/commit/c53a53ae38b64afcfc438559aeb94bb5b959d551))
+
+
 # [59.30.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fstatics%4059.29.0...%40bitgo%2Fstatics%4059.30.0) (2026-11-10)
 
 ### Bug Fixes

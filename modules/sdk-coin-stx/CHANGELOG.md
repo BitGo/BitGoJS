@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.0.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-stx%405.2.2...%40bitgo%2Fsdk-coin-stx%406.0.0) (2026-11-12)
+
+### Bug Fixes
+
+* **sdk-coin-stx:** only handle transfers of the coin's own asset ([b758951](https://github.com/BitGo/BitGoJS/commit/b758951f703ad142771f8f26bae4899e0ab5e45e))
+
+### BREAKING CHANGES
+
+* **sdk-coin-stx:** native stx/tstx no longer explains, signs or verifies
+  SIP-10 token transfers, and a Sip10Token coin no longer handles
+  transactions other than a transfer of its own token. Token transfers
+  must be explained and signed through the token's coin (for example
+  stx:sbtc). Offline vault files for token transfers that are labelled
+  only stx must be regenerated.
+
+
 ## [5.2.2](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-stx%405.2.1...%40bitgo%2Fsdk-coin-stx%405.2.2) (2026-11-10)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-stx

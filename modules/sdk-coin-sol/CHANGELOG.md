@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [8.21.3](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-sol%408.21.2...%40bitgo%2Fsdk-coin-sol%408.21.3) (2026-11-12)
+
+### Bug Fixes
+
+* **sdk-coin-sol:** stop PrepareForRevoke memo from hiding transfer outputs ([e54be1b](https://github.com/BitGo/BitGoJS/commit/e54be1b6638c6034880231951b6c797392eaaf02))
+* **sdk-coin-sol:** validate Marinade unstake by transfer, not memo ([7bad8d4](https://github.com/BitGo/BitGoJS/commit/7bad8d43ab119f82ddc8703234854e9645ddab86))
+
+
 ## [8.21.2](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-sol%408.21.1...%40bitgo%2Fsdk-coin-sol%408.21.2) (2026-11-10)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.10.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-hmac%401.9.2...%40bitgo%2Fsdk-hmac%401.10.0) (2026-11-12)
+
+### Features
+
+* **sdk-hmac:** add v2 method binding opt-in to request signing ([ac332ac](https://github.com/BitGo/BitGoJS/commit/ac332aca4ee5ecb3c71c9ae9b5533d0c5ad6bc40))
+
+
 ## [1.9.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-hmac@1.9.1...@bitgo/sdk-hmac@1.9.2) (2026-09-29)
 
 

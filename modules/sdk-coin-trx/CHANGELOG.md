@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.2.10](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-trx%404.2.9...%40bitgo%2Fsdk-coin-trx%404.2.10) (2026-11-12)
+
+### Bug Fixes
+
+* **sdk-coin-trx:** fail closed on unvalidated contract types in verifyTransaction ([a6b637a](https://github.com/BitGo/BitGoJS/commit/a6b637ae978353542e30fe4b04a891064eb23a8e))
+* **sdk-coin-trx:** validate consolidation destination in TransferContract and TriggerSmartContract ([eb88e31](https://github.com/BitGo/BitGoJS/commit/eb88e3123d57613e5f74dfcc949a1bd20a835f35))
+
+
 ## [4.2.9](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-trx%404.2.8...%40bitgo%2Fsdk-coin-trx%404.2.9) (2026-11-10)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-trx

@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.5.60](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-rbtc%402.5.59...%40bitgo%2Fsdk-coin-rbtc%402.5.60) (2026-11-12)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-rbtc
+
+
+
+
+
 ## [2.5.59](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-rbtc%402.5.58...%40bitgo%2Fsdk-coin-rbtc%402.5.59) (2026-11-10)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-rbtc

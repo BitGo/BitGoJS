@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.4.5](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-algo%403.4.4...%40bitgo%2Fsdk-coin-algo%403.4.5) (2026-11-12)
+
+### Bug Fixes
+
+* **sdk-coin-algo:** surface rekey and block blind signing of rekeyed txs ([1220edf](https://github.com/BitGo/BitGoJS/commit/1220edf61e43b95da45b619dffcc175cef75bfc4))
+
+
 ## [3.4.4](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-algo%403.4.3...%40bitgo%2Fsdk-coin-algo%403.4.4) (2026-11-10)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-algo

@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.4.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-api%403.3.0...%40bitgo%2Fsdk-api%403.4.0) (2026-11-12)
+
+### Features
+
+* **sdk-api:** wire hmacMethodBinding option into BitGoAPI ([3586b6a](https://github.com/BitGo/BitGoJS/commit/3586b6acc4106c2a04ee90ed90791e076962a946))
+
+
 # [3.3.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-api%403.2.0...%40bitgo%2Fsdk-api%403.3.0) (2026-11-10)
 
 ### Bug Fixes
