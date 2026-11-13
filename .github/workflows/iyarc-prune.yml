@@ -41,6 +41,7 @@ jobs:
         with:
           ref: ${{ github.sha }}
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -76,7 +77,7 @@ jobs:
 
       - name: Run agent to validate dependency edits and write pull request body
         id: claude
-        uses: anthropics/claude-code-action@8d70a0dd265122bd65b8e09d3d959e65373ae2a1 # v1.0.260
+        uses: anthropics/claude-code-action@61a9c274fa7110a66dfafc1bbbced03833eb25fe # v1.0.269
         with:
           prompt: ${{ steps.agent.outputs.content }}
           claude_args: --allowed-tools 'Edit,MultiEdit,Write,Read,Glob,Grep,LS,Bash'
@@ -89,6 +90,11 @@ jobs:
           MAX_THINKING_TOKENS: '0'
           AWS_REGION: us-west-2
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_CONFIG_COUNT: 2
+          GIT_CONFIG_KEY_0: credential.helper
+          GIT_CONFIG_VALUE_0: ""
+          GIT_CONFIG_KEY_1: credential.helper
+          GIT_CONFIG_VALUE_1: "!gh auth git-credential"
 
       - name: Load trusted workflow helper from the original checkout
         id: trusted-helper
