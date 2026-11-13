@@ -3,7 +3,7 @@
  */
 
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import { AccountInfo, Connection, PublicKey as SolPublicKey } from '@solana/web3.js';
+import { AccountInfo, Connection, PublicKey as SolPublicKey, SystemInstruction, SystemProgram } from '@solana/web3.js';
 import BigNumber from 'bignumber.js';
 import * as base58 from 'bs58';
 import * as _ from 'lodash';
@@ -52,6 +52,7 @@ import {
   RecoveryTxRequest,
   SignedTransaction,
   SignTransactionOptions,
+  SolInstruction,
   SolVersionedTransactionData,
   TokenEnablement,
   TokenEnablementConfig,
@@ -85,7 +86,7 @@ import {
   ExtraAccountMeta,
   TransactionExplanation as SolLibTransactionExplanation,
 } from './lib/iface';
-import { InstructionBuilderTypes } from './lib/constants';
+import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from './lib/constants';
 import {
   ResolvePermissionlessThawResult,
   SolAccountFetcher,
@@ -99,6 +100,8 @@ import {
   getSolTokenFromAddress,
   getSolTokenFromTokenName,
   isValidAddress,
+  isValidBase64,
+  isValidHex,
   isValidPrivateKey,
   isValidPublicKey,
   validateRawTransaction,
@@ -509,6 +512,116 @@ export class Sol extends BaseCoin {
     return 'solVersionedTransactionData' in txParams && txParams.solVersionedTransactionData !== undefined;
   }
 
+  private hasSolInstructions(
+    txParams: TransactionParams
+  ): txParams is TransactionParams & { solInstructions: SolInstruction[] } {
+    const p = txParams as unknown as { solInstructions?: unknown };
+    return Array.isArray(p.solInstructions) && (p.solInstructions as unknown[]).length > 0;
+  }
+
+  /**
+   * Compare the user-supplied solInstructions against the actual instructions in a CustomTx prebuild.
+   * Exactly two server-added wrapper instructions are stripped by position before comparison:
+   *   - Index 0: AdvanceNonceAccount (nonce infrastructure, never user-supplied). Only stripped
+   *     if it is the very first instruction; any further AdvanceNonceAccount instructions are
+   *     treated as user-supplied and must appear in solInstructions.
+   *   - Last index: the 'WalletConnectDefiCustomTx' memo (CustomTx classification marker added
+   *     by the server). Only stripped when it is the last instruction; a user-supplied memo at
+   *     any other position is left in place and verified against solInstructions.
+   * All other instructions — including ComputeBudget — are treated as user-supplied and must
+   * appear in txParams.solInstructions exactly and in order.
+   *
+   * Note: the server never auto-adds ComputeBudget instructions for CustomTx. If ComputeBudget
+   * instructions are present, the user included them in solInstructions.
+   *
+   * Throws if the instructions differ in count, programId, keys, or data.
+   */
+  private verifyCustomTxInstructions(transaction: Transaction, expectedInstructions: SolInstruction[]): void {
+    const SYSTEM_PROGRAM_ID = SystemProgram.programId.toString();
+    const MEMO_PROGRAM_ID = new SolPublicKey(MEMO_PROGRAM_PK).toString();
+    const allInstructions = transaction.solTransaction.instructions;
+
+    // Strip only index 0 if it is an AdvanceNonceAccount (server-added nonce infra).
+    // A second AdvanceNonceAccount at any other position is NOT stripped and causes a
+    // count mismatch, preventing a rogue injected nonce advance from being silently ignored.
+    let startIdx = 0;
+    if (allInstructions.length > 0) {
+      const first = allInstructions[0];
+      if (first.programId.toString() === SYSTEM_PROGRAM_ID) {
+        try {
+          if (SystemInstruction.decodeInstructionType(first) === 'AdvanceNonceAccount') {
+            startIdx = 1;
+          }
+        } catch {
+          // Not a recognised system instruction; treat as user-supplied
+        }
+      }
+    }
+
+    // Strip only the last instruction if it is the WalletConnectDefiCustomTx marker memo
+    // (server-added CustomTx classifier). A user-supplied memo at any other position is NOT
+    // stripped, so it must appear in solInstructions and will be verified byte-for-byte.
+    let endIdx = allInstructions.length;
+    if (endIdx > startIdx) {
+      const last = allInstructions[endIdx - 1];
+      if (
+        last.programId.toString() === MEMO_PROGRAM_ID &&
+        last.data.toString('utf-8').includes('WalletConnectDefiCustomTx')
+      ) {
+        endIdx--;
+      }
+    }
+
+    const userInstructions = allInstructions.slice(startIdx, endIdx);
+
+    if (userInstructions.length !== expectedInstructions.length) {
+      throw new Error(
+        `CustomTx prebuild instruction count mismatch: expected ${expectedInstructions.length}, got ${userInstructions.length}`
+      );
+    }
+
+    for (let i = 0; i < expectedInstructions.length; i++) {
+      const expected = expectedInstructions[i];
+      const actual = userInstructions[i];
+
+      if (actual.programId.toString() !== expected.programId) {
+        throw new Error(
+          `CustomTx prebuild instruction ${i} programId mismatch: expected ${
+            expected.programId
+          }, got ${actual.programId.toString()}`
+        );
+      }
+
+      if (actual.keys.length !== expected.keys.length) {
+        throw new Error(
+          `CustomTx prebuild instruction ${i} key count mismatch: expected ${expected.keys.length}, got ${actual.keys.length}`
+        );
+      }
+
+      for (let j = 0; j < expected.keys.length; j++) {
+        const ak = actual.keys[j];
+        const ek = expected.keys[j];
+        if (ak.pubkey.toString() !== ek.pubkey || ak.isSigner !== ek.isSigner || ak.isWritable !== ek.isWritable) {
+          throw new Error(`CustomTx prebuild instruction ${i} key ${j} mismatch`);
+        }
+      }
+
+      // Normalize expected.data to Buffer using the same encoding logic as the builder
+      let expectedData: Buffer;
+      if (isValidBase64(expected.data)) {
+        expectedData = Buffer.from(expected.data, 'base64');
+      } else if (isValidHex(expected.data)) {
+        expectedData = Buffer.from(expected.data, 'hex');
+      } else {
+        expectedData = Buffer.from(expected.data, 'utf8');
+      }
+
+      if (!actual.data.equals(expectedData)) {
+        throw new Error(`CustomTx prebuild instruction ${i} data mismatch`);
+      }
+    }
+  }
+
   /**
    * Verify a versioned Solana transaction with basic structural validation
    * @param params - verification parameters
@@ -610,6 +723,24 @@ export class Sol extends BaseCoin {
     transaction.fromRawTransaction(rawTxBase64);
     const explainedTx = transaction.explainTransaction();
     const isCloseAssociatedTokenAccountTx = transaction.type === TransactionType.CloseAssociatedTokenAccount;
+
+    // CustomTx-specific verification (CHALO-2055):
+    //
+    // Exploit 2: A malicious prebuild can use the 'WalletConnectDefiCustomTx' memo to launder
+    // Transfer/TokenTransfer instructions into CustomTx classification, bypassing the consolidation
+    // output check (which loops over zero outputs for CustomTx). Reject any CustomTx consolidation.
+    //
+    // Exploit 1: When the user supplied solInstructions, compare them byte-for-byte against the
+    // prebuild to prevent an attacker from substituting arbitrary instructions (drain, Approve, etc.)
+    // while the wallet signs without noticing.
+    if (transaction.type === TransactionType.CustomTx) {
+      if (consolidateId !== undefined) {
+        throw new Error('CustomTx transactions are not valid for consolidation');
+      }
+      if (this.hasSolInstructions(txParams)) {
+        this.verifyCustomTxInstructions(transaction, txParams.solInstructions);
+      }
+    }
 
     // A Marinade unstake produces no explained outputs, so the only thing tying its transfer to this wallet
     // is the source. The source is the wallet root, not the fee payer, since sponsored fee payers exist.
