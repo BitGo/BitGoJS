@@ -346,7 +346,21 @@ jobs:
 
       - name: Publish siblings (pass 1)
         if: inputs.dry-run == false
-        run: yarn lerna publish from-package --yes
+        run: |
+          # from-package skips versions already on npm, so a retry only publishes
+          # what a failed attempt left behind (what a recovery-mode rerun does).
+          # A failed run leaves lerna's rewritten manifests uncommitted and the
+          # next run would die with EUNCOMMIT, so restore them before retrying.
+          for attempt in 1 2 3; do
+            if yarn lerna publish from-package --yes; then exit 0; fi
+            echo "::warning::lerna publish attempt ${attempt}/3 failed"
+            if [ "$attempt" -lt 3 ]; then
+              git checkout -- package.json 'modules/*/package.json'
+              sleep 60
+            fi
+          done
+          echo "::error::lerna publish failed all 3 attempts"
+          exit 1
         env:
           NPM_CONFIG_PROVENANCE: true
 
@@ -399,25 +413,29 @@ jobs:
           NPM_CONFIG_PROVENANCE: true
           BITGO_GENERATE_SHRINKWRAP: true
 
-      - name: Verify recovery published the missing versions
-        if: ${{ inputs.dry-run == false && inputs.recovery-mode }}
+      # A successful publish can stay invisible on npm (exact-version URL 404s)
+      # for a few minutes, so poll with one shared deadline, like beta's
+      # Verify Publish (scripts/verify-release.ts).
+      - name: Verify published versions are on npm
+        if: ${{ inputs.dry-run == false }}
         run: |
-          # Walk every non-private package and confirm the version on
-          # rel/latest is now reachable on the npm registry. Catches the
-          # case where lerna reports success but a package didn't land
-          # (e.g., another transient registry error).
+          deadline=$((SECONDS + 600))
           missing=()
           for f in modules/*/package.json; do
             if [ "$(jq -r '.private // false' "$f")" = "true" ] && [ "$f" != "modules/bitgo/package.json" ]; then continue; fi
             name=$(jq -r '.name' "$f")
             version=$(jq -r '.version' "$f")
-            code=$(curl -sL -o /dev/null -w "%{http_code}" -- "https://registry.npmjs.org/${name}/${version}")
+            while :; do
+              code=$(curl -sL -o /dev/null -w "%{http_code}" -- "https://registry.npmjs.org/${name}/${version}" || true)
+              if [ "$code" = "200" ] || [ "$SECONDS" -ge "$deadline" ]; then break; fi
+              sleep 15
+            done
             if [ "$code" != "200" ]; then
               missing+=("${name}@${version} (HTTP ${code})")
             fi
           done
           if [ "${#missing[@]}" -ne 0 ]; then
-            echo "::error::Recovery left versions still missing from npm:"
+            echo "::error::Versions still missing from npm:"
             printf '  - %s\n' "${missing[@]}"
             exit 1
           fi
