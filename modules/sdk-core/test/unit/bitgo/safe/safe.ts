@@ -430,6 +430,30 @@ describe('Safe', function () {
       mintSend.notCalled.should.be.true();
     });
 
+    it('rejects a tzec TSS wallet before any derivation-index call', async function () {
+      stubCoin('tzec', { getDefaultMultisigType: 'tss' });
+
+      await safe
+        .createWallet({ coin: 'tzec', label: 'zec desk', passphrase: 'pw', multisigType: 'tss' })
+        .should.be.rejectedWith("Coin 'tzec' is not supported for safe wallet minting");
+      mockBitGo.get.notCalled.should.be.true();
+      keychainsGet.notCalled.should.be.true();
+      mintSend.notCalled.should.be.true();
+    });
+
+    it('still mints a tzec onchain wallet from slot 1', async function () {
+      stubCoin('tzec');
+      derivationQuery.returns({
+        result: sinon.stub().resolves({ slot: 'secp256k1Multisig', coinType: 133, account: 0 }),
+      });
+
+      await safe.createWallet({ coin: 'tzec', label: 'zec desk', passphrase: 'pw' });
+
+      derivationQuery.calledOnceWithExactly({ slot: 'secp256k1Multisig', coin: 'tzec' }).should.be.true();
+      keychainsAdd.firstCall.args[0].derivedFromParentWithPath.should.equal("m/44'/133'/1'/0'");
+      mintSend.firstCall.args[0].should.containEql({ coin: 'tzec', multisigType: 'onchain' });
+    });
+
     it('rejects a peeked derivation account for the wrong slot', async function () {
       derivationQuery.returns({
         result: sinon.stub().resolves({ slot: 'ecdsaMpc', coinType: 0, account: 0 }),
