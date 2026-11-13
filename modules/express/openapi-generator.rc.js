@@ -13,7 +13,9 @@ module.exports = (E) => {
       Json: () => E.right({ type: 'object', properties: {}, required: [] }),
       NonEmptyString: () => E.right({ type: 'string', minLength: 1 }),
       DateFromISOString: () => E.right({ type: 'string', format: 'date-time' }),
-      BigIntFromString: () => E.right({ type: 'string' }),
+      // Matches the generator's built-in io-ts-types handler (used by wallet-platform) so that
+      // components shared with wallet-platform.yaml are emitted identically.
+      BigIntFromString: () => E.right({ type: 'string', format: 'number', decodedType: 'bigint' }),
       BooleanFromString: () => E.right({ type: 'boolean' }),
       NumberFromString: () => E.right({ type: 'string' }),
     },
