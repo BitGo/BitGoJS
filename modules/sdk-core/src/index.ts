@@ -33,7 +33,7 @@ export { EcdsaMPCv2Utils };
 import { EddsaMPCv2Utils } from './bitgo/utils/tss/eddsa/eddsaMPCv2';
 export { EddsaMPCv2Utils };
 export type { EddsaSigningMaterial } from './bitgo/utils/tss/eddsa/eddsaMPCv2';
-export { computeEncryptedSessionDigest } from './bitgo/utils/tss/eddsa/eddsaMPCv2';
+export { computeEncryptedSessionDigest } from './bitgo/utils/tss/encryptedSessionSingleUse';
 export { envRequiresBitgoPubGpgKeyConfig } from './bitgo/tss/bitgoPubKeys';
 export {
   getEddsaSigningMaterial,

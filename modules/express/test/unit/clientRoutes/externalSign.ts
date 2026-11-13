@@ -1129,11 +1129,19 @@ describe('External signer', () => {
     const [userShare, backupShare, bitgoShare] = await DklsUtils.generateDKGKeyShares();
     assert.ok(backupShare, 'backupShare is not defined');
 
-    const bgTest = new BitGo({ env: 'test' });
+    const bgTest = new BitGo({ env: 'dev' });
     const userKeyShare = userShare.getKeyShare().toString('base64');
     const validPrv = await bgTest.encrypt({ input: userKeyShare, password: walletPassphrase });
     const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify({ [walletID]: validPrv }));
     const envStub = sinon.stub(process, 'env').value({ ['WALLET_' + walletID + '_PASSPHRASE']: walletPassphrase });
+    // Unique temp path so the durable consumed-session registry writes to a throwaway file;
+    // the round 2/3 marking closures only fire inside the helper once the session has
+    // authenticated, and 'dev' is not a BitGo-pub-key-pinned env, so the locally generated BitGo GPG key is accepted here.
+    const ecdsaSignerTmpPath = path.join(
+      os.tmpdir(),
+      `bitgojs-test-ecdsa-signer-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}`
+    );
+    resetConsumedShareRegistriesForTesting();
 
     // round 1
     const reqMPCv2Round1 = {
@@ -1177,7 +1185,7 @@ describe('External signer', () => {
         sharetype: 'MPCv2Round1',
       },
       config: {
-        signerFileSystemPath: 'signerFileSystemPath',
+        signerFileSystemPath: ecdsaSignerTmpPath,
       },
     } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>;
     const round1Result = await handleV2GenerateShareTSS(reqMPCv2Round1);
@@ -1225,7 +1233,7 @@ describe('External signer', () => {
         sharetype: 'MPCv2Round2',
       },
       config: {
-        signerFileSystemPath: 'signerFileSystemPath',
+        signerFileSystemPath: ecdsaSignerTmpPath,
       },
     } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>;
     const round2Result = await handleV2GenerateShareTSS(reqMPCv2Round2);
@@ -1267,7 +1275,7 @@ describe('External signer', () => {
         sharetype: 'MPCv2Round3',
       },
       config: {
-        signerFileSystemPath: 'signerFileSystemPath',
+        signerFileSystemPath: ecdsaSignerTmpPath,
       },
     } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>;
     const round3Result = await handleV2GenerateShareTSS(reqMPCv2Round3);
@@ -1311,6 +1319,16 @@ describe('External signer', () => {
     );
     assert.ok(convertedSignature, 'Signature is not valid');
     assert.ok(convertedSignature.split(':').length === 4, 'Signature is not valid');
+
+    // Session blobs are single-use: replaying the same encryptedRound2Session must be rejected.
+    // In-process the sdk-core early check fires first; across signer restarts the
+    // durable route-level registry (file-backed, keyed on the canonical digest) rejects.
+    await assert.rejects(
+      () => handleV2GenerateShareTSS(reqMPCv2Round3),
+      /Session state has already been used; replay is not allowed/
+    );
+
+    fs.promises.unlink(`${ecdsaSignerTmpPath}.consumedShares.json`).catch(() => undefined);
     readFileStub.restore();
     envStub.restore();
   });
