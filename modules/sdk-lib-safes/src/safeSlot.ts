@@ -10,7 +10,7 @@
  * The multisigType-vs-coin validation stays in sdk-core (it needs IBaseCoin); these
  * functions take only the chain so this leaf never imports sdk-core.
  */
-import { coins, CoinFeature, KeyCurve } from '@bitgo/statics';
+import { BaseCoin, coins, CoinFeature, KeyCurve } from '@bitgo/statics';
 import type { RootKeyType } from '@bitgo/public-types';
 
 type OnchainSafeRootKeySlot = Extract<RootKeyType, 'secp256k1Multisig' | 'ed25519Multisig'>;
@@ -26,6 +26,14 @@ const CURVE_TO_SLOTS: Record<KeyCurve, { onchain?: OnchainSafeRootKeySlot; tss?:
   [KeyCurve.Pallas]: {},
 };
 
+/**
+ * Coins that also support the Pallas curve (zec, tzec) are not minted under the `ecdsaMpc`
+ * slot, even though statics lists the `TSS` feature for them.
+ */
+function hasTssSlot(coin: Readonly<BaseCoin>): boolean {
+  return !coin.otherSupportedKeyCurves?.includes(KeyCurve.Pallas);
+}
+
 export function onchainSlotForCoin(chain: string): OnchainSafeRootKeySlot {
   const slot = CURVE_TO_SLOTS[coins.get(chain).primaryKeyCurve].onchain;
   if (!slot) {
@@ -35,7 +43,8 @@ export function onchainSlotForCoin(chain: string): OnchainSafeRootKeySlot {
 }
 
 export function tssSlotForCoin(chain: string): TssSafeRootKeySlot {
-  const slot = CURVE_TO_SLOTS[coins.get(chain).primaryKeyCurve].tss;
+  const coin = coins.get(chain);
+  const slot = hasTssSlot(coin) ? CURVE_TO_SLOTS[coin.primaryKeyCurve].tss : undefined;
   if (!slot) {
     throw new Error(`Coin '${chain}' is not supported for safe wallet minting`);
   }
@@ -44,9 +53,9 @@ export function tssSlotForCoin(chain: string): TssSafeRootKeySlot {
 
 /**
  * Every safe root slot a coin can be minted under, in deterministic order (onchain first,
- * then tss). Mirrors wallet-platform's mint truth: the onchain slot is included iff the coin
- * carries {@link CoinFeature.MULTISIG}, the tss slot iff it carries {@link CoinFeature.TSS}.
- * A coin that mints under neither (e.g. a Pallas coin) yields `[]`.
+ * then tss). The onchain slot is included iff the coin carries {@link CoinFeature.MULTISIG},
+ * the tss slot iff it carries {@link CoinFeature.TSS} and is not Pallas-capable (zec, tzec),
+ * so those are onchain-only. A coin that mints under neither yields `[]`.
  */
 export function safeSlotsForCoin(chain: string): RootKeyType[] {
   const coin = coins.get(chain);
@@ -55,7 +64,7 @@ export function safeSlotsForCoin(chain: string): RootKeyType[] {
   if (onchain && coin.features.includes(CoinFeature.MULTISIG)) {
     slots.push(onchain);
   }
-  if (tss && coin.features.includes(CoinFeature.TSS)) {
+  if (tss && coin.features.includes(CoinFeature.TSS) && hasTssSlot(coin)) {
     slots.push(tss);
   }
   return slots;

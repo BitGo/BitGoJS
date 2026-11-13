@@ -1,4 +1,5 @@
 import 'should';
+import { coins, KeyCurve } from '@bitgo/statics';
 import { onchainSlotForCoin, safeSlotsForCoin, tssSlotForCoin } from '../../src';
 
 describe('safeSlot', function () {
@@ -29,6 +30,11 @@ describe('safeSlot', function () {
       tssSlotForCoin('tsol').should.equal('eddsaMpc');
     });
 
+    it('rejects Pallas-capable coins', function () {
+      (() => tssSlotForCoin('zec')).should.throw("Coin 'zec' is not supported for safe wallet minting");
+      (() => tssSlotForCoin('tzec')).should.throw("Coin 'tzec' is not supported for safe wallet minting");
+    });
+
     it('rejects unknown chains', function () {
       (() => tssSlotForCoin('definitely-not-a-coin')).should.throw();
     });
@@ -51,7 +57,24 @@ describe('safeSlot', function () {
     });
 
     it('returns both slots in order for a coin with both features', function () {
-      safeSlotsForCoin('zec').should.deepEqual(['secp256k1Multisig', 'ecdsaMpc']);
+      safeSlotsForCoin('trx').should.deepEqual(['secp256k1Multisig', 'ecdsaMpc']);
+      safeSlotsForCoin('arbeth').should.deepEqual(['secp256k1Multisig', 'ecdsaMpc']);
+    });
+
+    it('omits the tss slot for Pallas-capable coins', function () {
+      safeSlotsForCoin('zec').should.deepEqual(['secp256k1Multisig']);
+      safeSlotsForCoin('tzec').should.deepEqual(['secp256k1Multisig']);
+    });
+
+    // Pins the Pallas set: a new Pallas coin needs a safe slot decision before it is added here.
+    it('statics carry Pallas only on zec and tzec', function () {
+      const pallasCoins: string[] = [];
+      coins.forEach((coin, name) => {
+        if (coin.primaryKeyCurve === KeyCurve.Pallas || coin.otherSupportedKeyCurves?.includes(KeyCurve.Pallas)) {
+          pallasCoins.push(name);
+        }
+      });
+      pallasCoins.sort().should.deepEqual(['tzec', 'zec']);
     });
 
     it('returns [] for a coin that mints under no safe slot', function () {
