@@ -51,22 +51,37 @@ export async function generateLightningKeycard(
   keycard.save(`BitGo Keycard for ${label}.pdf`);
 }
 
-/**
- * Generates a safe keycard using the existing 4-box layout: boxes A/B/C each carry a JSON
- * object of the four roots (see {@link generateSafeQrData}), rendered through the same
- * {@link drawKeycard} path as a wallet. Generated as part of safe creation, once all four
- * root triplets exist.
- */
-export async function generateSafeKeycard(params: GenerateQrDataBaseParams & GenerateSafeQrDataParams): Promise<void> {
+/** Draws the safe keycard PDF; shared by the saving and blob-returning entry points. */
+async function drawSafeKeycard(params: GenerateQrDataBaseParams & GenerateSafeQrDataParams) {
   const questions = generateFaq(params.coin.fullName);
   const qrData = await generateSafeQrData(params);
-  const keycard = await drawKeycard({
+  return drawKeycard({
     ...params,
     questions,
     qrData,
     pageBreakBeforeIndices: [1, 2],
     useQrPartHeaders: true,
   });
+}
+
+/**
+ * Generates a safe keycard using the existing 4-box layout: boxes A/B/C each carry a JSON
+ * object of the safe's root slots (see {@link generateSafeQrData}), rendered through the same
+ * {@link drawKeycard} path as a wallet. Generated as part of safe creation, once the safe's
+ * root triplets exist.
+ */
+export async function generateSafeKeycard(params: GenerateQrDataBaseParams & GenerateSafeQrDataParams): Promise<void> {
+  const keycard = await drawSafeKeycard(params);
   const label = params.walletLabel || params.coin.fullName;
   keycard.save(`BitGo Keycard for ${label}.pdf`);
+}
+
+/**
+ * Same as {@link generateSafeKeycard} but returns the PDF as a {@link Blob} instead of saving
+ * it to disk, for callers (e.g. mobile) that stream the bytes themselves.
+ */
+export async function generateSafeKeycardBlob(
+  params: GenerateQrDataBaseParams & GenerateSafeQrDataParams
+): Promise<Blob> {
+  return (await drawSafeKeycard(params)).output('blob');
 }

@@ -10,7 +10,6 @@ import {
   InitializeSafeBody,
   InitializeSafeResponse,
   RootKeysByType,
-  RootKeyTriplet,
   RootKeyType,
   SafeData,
 } from '@bitgo/public-types';
@@ -20,9 +19,19 @@ import { decodeWithCodec } from '../utils/codecs';
 import { isDerivableEd25519Pub } from '@bitgo/sdk-lib-safes';
 import { postWithCodec } from '../utils/postWithCodec';
 import { FinalizeSafeOptions, InitializeSafeOptions } from './iSafe';
-import { CreateSafeOptions, GetSafeOptions, ISafes, ListSafesOptions, SafeCreationHandle, SafeKeys } from './iSafes';
+import {
+  CreateSafeOptions,
+  GetSafeOptions,
+  ISafes,
+  ListSafesOptions,
+  SafeCreationHandle,
+  SafeCreationResult,
+  SafeKeys,
+} from './iSafes';
 import { coinForRoot, SAFE_ROOT_SLOTS } from './rootCoin';
 import { Safe } from './safe';
+import type { KeychainsTriplet } from '../baseCoin';
+import type { SafeKeychainRoots } from './keycard';
 
 /**
  * Wire shape of the paginated `GET /enterprise/:eId/safes` response. WP paginates with the v2
@@ -62,20 +71,22 @@ export class Safes implements ISafes {
   /**
    * One-call convenience wrapper chaining the three creation phases:
    * initialize (Phase 1) → createSafeKeys (Phase 2, enabled-slot ceremonies) →
-   * finalize (Phase 3). HOT custody only in v1.
+   * finalize (Phase 3). HOT custody only in v1. Returns the finalized safe plus
+   * the root keychain triplets the caller needs to generate the safe keycard.
    *
    * If a key ceremony fails, `createSafeKeys` archives the safe before throwing, so a failed run
    * leaves no half-created safe behind — create a new safe and retry.
    * @experimental
    */
-  async generateSafe(params: CreateSafeOptions): Promise<Safe> {
+  async generateSafe(params: CreateSafeOptions): Promise<SafeCreationResult> {
     const safe = await this.initializeSafe({ label: params.label });
-    const rootKeys = await this.createSafeKeys({
+    const created = await this.createSafeKeys({
       ...params,
       safeId: safe.id,
       enabledRootSlots: safe.enabledRootSlots,
     });
-    return await this.finalizeSafe(safe.id, rootKeys);
+    const finalized = await this.finalizeSafe(safe.id, { rootKeys: created.rootKeys });
+    return { safe: finalized, rootKeychains: created.rootKeychains };
   }
 
   /**
@@ -90,8 +101,11 @@ export class Safes implements ISafes {
   }
 
   /**
-   * Phase 2 — run the enabled root key ceremonies tagged with `safeId`; returns ordered
-   * [user, backup, bitgo] triplets for those slots. HOT custody only in v1.
+   * Phase 2 — run the enabled root key ceremonies tagged with `safeId`; returns the ordered
+   * [user, backup, bitgo] id triplets `finalizeSafe` consumes, plus the full keychain triplets
+   * for those slots (including `encryptedPrv` / `reducedEncryptedPrv`, and the stored
+   * `originalPasscodeEncryptionCode` when `params.passcodeEncryptionCode` is set).
+   * HOT custody only in v1.
    *
    * Absent `enabledRootSlots` (older WP, pre-gating) runs all 4 slots. Enabled ceremonies
    * (2.1 multisig ①④, 2.2 MPC ②③) run in parallel. If any of them fail, the
@@ -104,30 +118,34 @@ export class Safes implements ISafes {
    * @experimental
    */
   async createSafeKeys(params: CreateSafeOptions & SafeCreationHandle): Promise<SafeKeys> {
-    const { safeId, passphrase, enabledRootSlots } = params;
+    const { safeId, passphrase, passcodeEncryptionCode, enabledRootSlots } = params;
     const enterprise = this.enterpriseId;
 
     // Absent `enabledRootSlots` (older WP, pre-gating) ⇒ all 4, preserving current behavior.
     // Ordered by scheme: the two multisig roots first, then the two MPC roots.
     const enabled = new Set(enabledRootSlots ?? SAFE_ROOT_SLOTS);
     const slots = SAFE_ROOT_SLOTS.filter((slot) => enabled.has(slot));
-    const ceremonies: Record<RootKeyType, () => Promise<RootKeyTriplet>> = {
+    const ceremonies: Record<RootKeyType, () => Promise<KeychainsTriplet>> = {
       // Phase 2.1 — multisig roots (①④): local user/backup keypairs + BitGo key, all safeId-tagged.
-      secp256k1Multisig: () => this.createMultisigRoot('secp256k1Multisig', safeId, passphrase, enterprise),
-      ed25519Multisig: () => this.createMultisigRoot('ed25519Multisig', safeId, passphrase, enterprise),
+      secp256k1Multisig: () =>
+        this.createMultisigRoot('secp256k1Multisig', safeId, passphrase, enterprise, passcodeEncryptionCode),
+      ed25519Multisig: () =>
+        this.createMultisigRoot('ed25519Multisig', safeId, passphrase, enterprise, passcodeEncryptionCode),
       // Phase 2.2 — MPC roots (②③): the existing DKLS (②) and EdDSA (③) ceremonies, safeId threaded.
-      ecdsaMpc: () => this.createMpcRoot('ecdsaMpc', safeId, passphrase, enterprise),
-      eddsaMpc: () => this.createMpcRoot('eddsaMpc', safeId, passphrase, enterprise),
+      ecdsaMpc: () => this.createMpcRoot('ecdsaMpc', safeId, passphrase, enterprise, passcodeEncryptionCode),
+      eddsaMpc: () => this.createMpcRoot('eddsaMpc', safeId, passphrase, enterprise, passcodeEncryptionCode),
     };
     const results = await Promise.allSettled(slots.map((slot) => ceremonies[slot]()));
 
     // Single pass over the settled results: `status === 'fulfilled'` narrows `.value` to a
-    // RootKeyTriplet, and rejections are collected per-slot for the error below.
+    // KeychainsTriplet, and rejections are collected per-slot for the error below.
     const hot: RootKeysByType = {};
+    const rootKeychains: SafeKeychainRoots = {};
     const failures: string[] = [];
     results.forEach((result, i) => {
       if (result.status === 'fulfilled') {
-        hot[slots[i]] = result.value;
+        hot[slots[i]] = [result.value.userKeychain.id, result.value.backupKeychain.id, result.value.bitgoKeychain.id];
+        rootKeychains[slots[i]] = result.value;
       } else {
         const reason = result.reason instanceof Error ? result.reason.message : String(result.reason);
         // ApiResponseError carries the server-echoed `Request-ID` header — include it (when
@@ -155,11 +173,11 @@ export class Safes implements ISafes {
       throw new Error(message);
     }
 
-    return { rootKeys: { hot } };
+    return { rootKeys: { hot }, rootKeychains };
   }
 
   /**
-   * Archive a safe. Also the abandonment path for a stuck `initializing` safe (used by
+   * Archive a safe. Also the abandonment path for a stuck 'initializing' safe (used by
    * `createSafeKeys` to clean up after a failed ceremony).
    * POST /api/v2/enterprise/:eId/safes/:safeId/archive
    * @experimental
@@ -194,15 +212,16 @@ export class Safes implements ISafes {
    * Phase 2.1 helper — mint one onchain-multisig root (cold model, as wallet creation does today):
    * generate user/backup keypairs locally, encrypt with `passphrase`, register via POST /:coin/key
    * with `safeId`; the BitGo key is created through the same route's `source:'bitgo'` path.
-   * Returns the [user, backup, bitgo] key id triplet.
+   * Returns the [user, backup, bitgo] keychain triplet.
    * @experimental
    */
   private async createMultisigRoot(
     slot: 'secp256k1Multisig' | 'ed25519Multisig',
     safeId: string,
     passphrase: string,
-    enterprise: string
-  ): Promise<RootKeyTriplet> {
+    enterprise: string,
+    passcodeEncryptionCode?: string
+  ): Promise<KeychainsTriplet> {
     const keychains = coinForRoot(this.bitgo, slot).keychains();
 
     const userKeyPair = keychains.create();
@@ -211,8 +230,13 @@ export class Safes implements ISafes {
       encryptedPrv: await this.bitgo.encrypt({ input: userKeyPair.prv, password: passphrase }),
       source: 'user',
       safeId,
+      originalPasscodeEncryptionCode: passcodeEncryptionCode,
     });
-    const backupKeychainPromise = keychains.createBackup({ passphrase, safeId });
+    const backupKeychainPromise = keychains.createBackup({
+      passphrase,
+      safeId,
+      originalPasscodeEncryptionCode: passcodeEncryptionCode,
+    });
     const bitgoKeychainPromise = keychains.createBitGo({ enterprise, safeId });
 
     const [userKeychain, backupKeychain, bitgoKeychain] = await Promise.all([
@@ -234,25 +258,35 @@ export class Safes implements ISafes {
       throw new Error('Safe ed25519Multisig roots are not derivable: expected 64-byte canonical base32 material');
     }
 
-    return [userKeychain.id, backupKeychain.id, bitgoKeychain.id];
+    // createBackup echoes the locally generated plaintext `prv`; the keycard needs only the
+    // encryptedPrv, so drop the plaintext before it escapes into the returned triplets.
+    const sanitizedBackupKeychain = { ...backupKeychain };
+    delete sanitizedBackupKeychain.prv;
+
+    return { userKeychain, backupKeychain: sanitizedBackupKeychain, bitgoKeychain };
   }
 
   /**
    * Phase 2.2 helper — run one MPC ceremony (DKLS for ecdsaMpc, EdDSA for eddsaMpc) via the
    * existing `createMpc` flow with `safeId` threaded through, so the resulting user/backup/bitgo
-   * keys land tagged. Returns the [user, backup, bitgo] key id triplet.
+   * keys land tagged. Returns the [user, backup, bitgo] keychain triplet.
    * @experimental
    */
   private async createMpcRoot(
     slot: 'ecdsaMpc' | 'eddsaMpc',
     safeId: string,
     passphrase: string,
-    enterprise: string
-  ): Promise<RootKeyTriplet> {
-    const { userKeychain, backupKeychain, bitgoKeychain } = await coinForRoot(this.bitgo, slot)
-      .keychains()
-      .createMpc({ multisigType: 'tss', passphrase, enterprise, safeId });
-    return [userKeychain.id, backupKeychain.id, bitgoKeychain.id];
+    enterprise: string,
+    passcodeEncryptionCode?: string
+  ): Promise<KeychainsTriplet> {
+    const { userKeychain, backupKeychain, bitgoKeychain } = await coinForRoot(this.bitgo, slot).keychains().createMpc({
+      multisigType: 'tss',
+      passphrase,
+      enterprise,
+      safeId,
+      originalPasscodeEncryptionCode: passcodeEncryptionCode,
+    });
+    return { userKeychain, backupKeychain, bitgoKeychain };
   }
 
   /**

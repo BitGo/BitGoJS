@@ -100,19 +100,59 @@ describe('Safes', function () {
       });
     });
 
-    it('runs the 4 root ceremonies and returns 12 ids as ordered triplets', async function () {
+    it('runs the 4 root ceremonies and returns 12 ids plus the keychain triplets', async function () {
       const result = await safes.createSafeKeys({ label: 'my safe', passphrase: 'pw', safeId: 'safe-1' });
 
-      result.should.deepEqual({
-        rootKeys: {
-          hot: {
-            secp256k1Multisig: ['tbtc-user', 'tbtc-backup', 'tbtc-bitgo'],
-            ecdsaMpc: ['hteth-user', 'hteth-backup', 'hteth-bitgo'],
-            eddsaMpc: ['tsol-user', 'tsol-backup', 'tsol-bitgo'],
-            ed25519Multisig: ['txlm-user', 'txlm-backup', 'txlm-bitgo'],
-          },
+      result.rootKeys.should.deepEqual({
+        hot: {
+          secp256k1Multisig: ['tbtc-user', 'tbtc-backup', 'tbtc-bitgo'],
+          ecdsaMpc: ['hteth-user', 'hteth-backup', 'hteth-bitgo'],
+          eddsaMpc: ['tsol-user', 'tsol-backup', 'tsol-bitgo'],
+          ed25519Multisig: ['txlm-user', 'txlm-backup', 'txlm-bitgo'],
         },
       });
+      result.rootKeychains.should.deepEqual({
+        secp256k1Multisig: {
+          userKeychain: { id: 'tbtc-user' },
+          backupKeychain: { id: 'tbtc-backup' },
+          bitgoKeychain: { id: 'tbtc-bitgo' },
+        },
+        ecdsaMpc: {
+          userKeychain: { id: 'hteth-user' },
+          backupKeychain: { id: 'hteth-backup' },
+          bitgoKeychain: { id: 'hteth-bitgo' },
+        },
+        eddsaMpc: {
+          userKeychain: { id: 'tsol-user' },
+          backupKeychain: { id: 'tsol-backup' },
+          bitgoKeychain: { id: 'tsol-bitgo' },
+        },
+        ed25519Multisig: {
+          userKeychain: { id: 'txlm-user' },
+          backupKeychain: { id: 'txlm-backup', pub: COMPOSITE_BACKUP_PUB },
+          bitgoKeychain: { id: 'txlm-bitgo', pub: COMPOSITE_BACKUP_PUB },
+        },
+      });
+    });
+
+    it('never returns the plaintext multisig backup prv that createBackup echoes', async function () {
+      mockBitGo.coin('tbtc');
+      keychainsByCoin.tbtc.createBackup.resolves({
+        id: 'tbtc-backup',
+        prv: 'xprv-plaintext-backup',
+        encryptedPrv: 'encrypted-backup-prv',
+      });
+
+      const result = await safes.createSafeKeys({
+        label: 'my safe',
+        passphrase: 'pw',
+        safeId: 'safe-1',
+        enabledRootSlots: ['secp256k1Multisig'],
+      });
+
+      const backup = result.rootKeychains.secp256k1Multisig!.backupKeychain;
+      backup.should.not.have.property('prv');
+      backup.encryptedPrv!.should.equal('encrypted-backup-prv');
     });
 
     it('rejects an ed25519Multisig backup root that came back non-derivable', async function () {
@@ -236,16 +276,40 @@ describe('Safes', function () {
         enabledRootSlots: ['ecdsaMpc', 'eddsaMpc'],
       });
 
-      result.should.deepEqual({
-        rootKeys: {
-          hot: {
-            ecdsaMpc: ['hteth-user', 'hteth-backup', 'hteth-bitgo'],
-            eddsaMpc: ['tsol-user', 'tsol-backup', 'tsol-bitgo'],
-          },
+      result.rootKeys.should.deepEqual({
+        hot: {
+          ecdsaMpc: ['hteth-user', 'hteth-backup', 'hteth-bitgo'],
+          eddsaMpc: ['tsol-user', 'tsol-backup', 'tsol-bitgo'],
         },
       });
+      Object.keys(result.rootKeychains).should.deepEqual(['ecdsaMpc', 'eddsaMpc']);
       keychainsByCoin.should.not.have.property('tbtc');
       keychainsByCoin.should.not.have.property('txlm');
+    });
+
+    it('threads passcodeEncryptionCode to every root registration, and omits it when absent', async function () {
+      const registrations = () =>
+        [
+          keychainsByCoin['tbtc'].add,
+          keychainsByCoin['tbtc'].createBackup,
+          keychainsByCoin['txlm'].createBackup,
+          keychainsByCoin['hteth'].createMpc,
+          keychainsByCoin['tsol'].createMpc,
+        ] as sinon.SinonStub[];
+      await safes.createSafeKeys({
+        label: 'my safe',
+        passphrase: 'pw',
+        safeId: 'safe-1',
+        passcodeEncryptionCode: '123456',
+      });
+      for (const stub of registrations()) {
+        sinon.assert.calledWithMatch(stub, { safeId: 'safe-1', originalPasscodeEncryptionCode: '123456' });
+        stub.resetHistory();
+      }
+      await safes.createSafeKeys({ label: 'my safe', passphrase: 'pw', safeId: 'safe-1' });
+      for (const stub of registrations()) {
+        sinon.assert.calledWithMatch(stub, { originalPasscodeEncryptionCode: undefined });
+      }
     });
 
     it('archives the safe and throws listing every failed ceremony', async function () {
@@ -320,15 +384,22 @@ describe('Safes', function () {
   });
 
   describe('generateSafe', function () {
-    it('chains initialize → createSafeKeys → finalize, threading the safeId and enabledRootSlots', async function () {
+    it('chains initialize → createSafeKeys → finalize, returning the safe and the root triplets', async function () {
       const initializing: InitializeSafeResponse = {
         id: 'test-safe-id',
         status: 'initializing',
         enabledRootSlots: ['ecdsaMpc', 'eddsaMpc'],
       };
-      const rootKeys: SafeKeys = { rootKeys: { hot: {} } };
+      const rootKeychains = {
+        ecdsaMpc: {
+          userKeychain: { id: 'hteth-user', type: 'tss' as const, reducedEncryptedPrv: 'reduced-enc' },
+          backupKeychain: { id: 'hteth-backup', type: 'tss' as const, reducedEncryptedPrv: 'reduced-enc-b' },
+          bitgoKeychain: { id: 'hteth-bitgo', type: 'tss' as const },
+        },
+      };
+      const created: SafeKeys = { rootKeys: { hot: { ecdsaMpc: ['u', 'b', 'g'] } }, rootKeychains };
       const initStub = sinon.stub(safes, 'initializeSafe').resolves(initializing);
-      const keysStub = sinon.stub(safes, 'createSafeKeys').resolves(rootKeys);
+      const keysStub = sinon.stub(safes, 'createSafeKeys').resolves(created);
       const finalizeStub = sinon.stub(safes, 'finalizeSafe').resolves(new Safe(mockBitGo, safeDataWire as any));
 
       const result = await safes.generateSafe({ label: 'my safe', passphrase: 'pw' });
@@ -340,9 +411,11 @@ describe('Safes', function () {
         safeId: 'test-safe-id',
         enabledRootSlots: ['ecdsaMpc', 'eddsaMpc'],
       });
-      sinon.assert.calledWith(finalizeStub, 'test-safe-id', rootKeys);
+      sinon.assert.calledWith(finalizeStub, 'test-safe-id', { rootKeys: created.rootKeys });
       sinon.assert.callOrder(initStub, keysStub, finalizeStub);
-      result.status().should.equal('active');
+      result.safe.should.be.instanceof(Safe);
+      result.safe.status().should.equal('active');
+      result.rootKeychains.should.deepEqual(rootKeychains);
     });
   });
 

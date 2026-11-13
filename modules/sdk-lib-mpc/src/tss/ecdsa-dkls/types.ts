@@ -1,6 +1,6 @@
 import assert from 'assert';
 import { createHash } from 'crypto';
-import { decode } from 'cbor-x';
+import { decode, encode } from 'cbor-x';
 import * as t from 'io-ts';
 import { XShare } from '../ecdsa/types';
 import { Secp256k1Curve } from '../../curves';
@@ -196,6 +196,50 @@ export function getDecodedReducedKeyShare(reducedKeyShare: Buffer | Uint8Array):
     throw new Error(`Unable to parse reducedKeyShare: ${decoded.left}`);
   }
   return decoded.right;
+}
+
+const isByteArray = (value: number[], length: number): boolean =>
+  value.length === length && value.every((b) => Number.isInteger(b) && b >= 0 && b <= 255);
+
+/**
+ * Checks a reduced DKLS share before it is encoded: a share that is not a DKLS key share (or a
+ * truncated one) would otherwise produce a keycard root that looks valid but cannot sign.
+ * Sizes: 32-byte scalars and chain code, 33-byte compressed secp256k1 points.
+ */
+function assertReducedKeyShareShape(share: unknown): asserts share is ReducedKeyShare {
+  const valid =
+    ReducedKeyShareType.is(share) &&
+    isByteArray(share.rootChainCode, 32) &&
+    isByteArray(share.prv, 32) &&
+    isByteArray(share.pub, 33) &&
+    share.bigSList.length > 0 &&
+    share.bigSList.length === share.xList.length &&
+    share.bigSList.every((point) => isByteArray(point, 33)) &&
+    share.xList.every((x) => isByteArray(x, 32));
+  if (!valid) {
+    throw new Error('reduceDklsKeyShare: input is not a well-formed DKLS key share');
+  }
+}
+
+/**
+ * Reduces a full CBOR-encoded DKLS key share to a CBOR-encoded ReducedKeyShare
+ * (the key-card subset: big S commitments, evaluation points, root chain code,
+ * the party's private scalar and its public key). The result is private key
+ * material; the caller encrypts it and stores it as `reducedEncryptedPrv`.
+ * @param fullKeyShare - CBOR-encoded full DKLS key share
+ * @returns CBOR-encoded ReducedKeyShare
+ */
+export function reduceDklsKeyShare(fullKeyShare: Buffer): Buffer {
+  const decoded = decode(fullKeyShare);
+  const reducedKeyShare = {
+    bigSList: decoded?.big_s_list,
+    xList: decoded?.x_i_list,
+    rootChainCode: decoded?.root_chain_code,
+    prv: decoded?.s_i,
+    pub: decoded?.public_key,
+  };
+  assertReducedKeyShareShape(reducedKeyShare);
+  return Buffer.from(encode(reducedKeyShare));
 }
 
 /**

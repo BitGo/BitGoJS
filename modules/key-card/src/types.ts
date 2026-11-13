@@ -78,8 +78,9 @@ export const SAFE_ROOT_ORDER = Object.keys(slotsInRenderOrder) as SafeRootKeyTyp
 export type KeycardEntity = 'wallet' | 'safe';
 
 export interface GenerateSafeQrDataParams extends GenerateQrDataCoinParams {
-  // The four root triplets (user/backup/bitgo keychains), keyed by rootKeyType.
-  roots: Record<SafeRootKeyType, KeychainsTriplet>;
+  // The safe's root triplets (user/backup/bitgo keychains), keyed by rootKeyType. Any non-empty
+  // subset of the four slots is valid; the keycard carries exactly the slots present here.
+  roots: Partial<Record<SafeRootKeyType, KeychainsTriplet>>;
 }
 
 export type GenerateKeycardParams = GenerateQrDataBaseParams &

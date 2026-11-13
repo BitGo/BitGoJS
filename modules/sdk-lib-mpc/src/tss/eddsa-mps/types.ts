@@ -1,4 +1,4 @@
-import { decode } from 'cbor-x';
+import { decode, encode } from 'cbor-x';
 import { isLeft } from 'fp-ts/Either';
 import * as t from 'io-ts';
 
@@ -23,6 +23,29 @@ export const ReducedKeyShareType = t.type({
 });
 
 export type EddsaReducedKeyShare = t.TypeOf<typeof ReducedKeyShareType>;
+
+/**
+ * Reduces a full MPS key share to a CBOR-encoded EddsaReducedKeyShare (the
+ * key-card subset: the party's opaque signing share, the aggregate public key
+ * and the root chain code, both split from `commonKeychain`). The result is
+ * private key material; the caller encrypts it and stores it as `reducedEncryptedPrv`.
+ * @param fullKeyShare - the party's opaque DKG key share
+ * @param commonKeychain - 128-char hex: 64-char aggregate public key + 64-char root chain code
+ * @returns CBOR-encoded EddsaReducedKeyShare
+ */
+export function reduceMpsKeyShare(fullKeyShare: Buffer, commonKeychain: string): Buffer {
+  // Buffer.from(hex) silently truncates at the first non-hex character, so a malformed value
+  // would otherwise yield a wrong-length pub/rootChainCode and a keycard root that cannot sign.
+  if (!/^[0-9a-f]{128}$/i.test(commonKeychain)) {
+    throw new Error('reduceMpsKeyShare: commonKeychain must be 128 hex characters');
+  }
+  const reducedKeyShare: EddsaReducedKeyShare = {
+    keyShare: Array.from(fullKeyShare),
+    pub: Array.from(Buffer.from(commonKeychain.slice(0, 64), 'hex')),
+    rootChainCode: Array.from(Buffer.from(commonKeychain.slice(64), 'hex')),
+  };
+  return Buffer.from(encode(reducedKeyShare));
+}
 
 /**
  * Represents the state of a DKG (Distributed Key Generation) session

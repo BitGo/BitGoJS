@@ -7,7 +7,7 @@ import {
   DeserializedBroadcastMessage,
   DeserializedMessages,
   DkgState,
-  ReducedKeyShare,
+  reduceDklsKeyShare,
   RetrofitData,
 } from './types';
 
@@ -214,16 +214,7 @@ export class Dkg {
     if (!this.keyShareBuff) {
       throw Error('Can not get key share, DKG is not complete yet.');
     }
-    const decodedKeyshare = decode(this.keyShareBuff);
-    const reducedKeyShare: ReducedKeyShare = {
-      bigSList: decodedKeyshare.big_s_list,
-      xList: decodedKeyshare.x_i_list,
-      rootChainCode: decodedKeyshare.root_chain_code,
-      prv: decodedKeyshare.s_i,
-      pub: decodedKeyshare.public_key,
-    };
-    const encodedKeyShare = encode(reducedKeyShare);
-    return encodedKeyShare;
+    return reduceDklsKeyShare(this.keyShareBuff);
   }
 
   handleIncomingMessages(messagesForIthRound: DeserializedMessages): DeserializedMessages {

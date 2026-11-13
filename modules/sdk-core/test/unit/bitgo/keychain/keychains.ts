@@ -265,6 +265,35 @@ describe('Keychains.updatePassword (safe mode)', function () {
     sinon.assert.calledOnce(sessionDestroy);
   });
 
+  it('skips a safe backup root whose encryptedPrv is redacted (WCN-3920), never touching reducedEncryptedPrv', async function () {
+    // WCN-3920 redacts a safe backup root's encryptedPrv on every key read (only the keycard
+    // claim route returns it), so rotation sees the backup with no envelope and must emit no
+    // update for it — only for the user roots that do carry one. reducedEncryptedPrv is
+    // client-only and never stored in WP; it is set here solely to prove rotation ignores it.
+    const backupRoot = key('root-ecdsa-backup', {
+      type: 'tss',
+      encryptedPrv: undefined,
+      reducedEncryptedPrv: 'enc:reduced-root-ecdsa-backup',
+    });
+    stubListPages([[key('root-ecdsa-user'), backupRoot, key('root-eddsa-user')]]);
+
+    const response = await keychains.updatePassword({
+      oldPassword: OLD_PASSWORD,
+      newPassword: NEW_PASSWORD,
+      safeId: SAFE_ID,
+    });
+
+    const bodies = sentBodies();
+    bodies.length.should.equal(1);
+    bodies[0].updates.map((u) => u.keyId).should.deepEqual(['root-ecdsa-user', 'root-eddsa-user']);
+    response.updates.should.deepEqual([]);
+    for (const call of decryptStub.getCalls()) {
+      // sinon records untyped args; decrypt is only ever called with an { input, password } shape.
+      const decryptParams = call.args[0] as { input: string };
+      decryptParams.input.should.not.equal('enc:reduced-root-ecdsa-backup');
+    }
+  });
+
   it('fails fast on the first undecryptable envelope with zero writes', async function () {
     stubListPages([[key('good-1'), key('stale', { encryptedPrv: 'corrupt-envelope' }), key('good-2')]]);
 

@@ -1,9 +1,8 @@
 import type { MsgState, Share } from '@bitgo/wasm-mps';
 import type { VrfKeygenSession as EddsaVrfKeygenSession } from '@silencelaboratories/eddsa-wasm-node';
 import type { VrfKeygenSession as EddsaVrfWebKeygenSession } from '@silencelaboratories/eddsa-wasm-web';
-import { encode } from 'cbor-x';
 import crypto from 'crypto';
-import { DeserializedMessage, DeserializedMessages, DkgState, EddsaReducedKeyShare, EddsaRetrofitData } from './types';
+import { DeserializedMessage, DeserializedMessages, DkgState, EddsaRetrofitData, reduceMpsKeyShare } from './types';
 
 type NodeWasmer = typeof import('@bitgo/wasm-mps');
 type WebWasmer = typeof import('@bitgo/wasm-mps/web');
@@ -261,12 +260,7 @@ export class DKG {
     if (!this.keyShare || !this.sharePk || !this.shareChaincode) {
       throw Error('DKG session not initialized');
     }
-    const reducedKeyShare: EddsaReducedKeyShare = {
-      keyShare: Array.from(this.keyShare),
-      pub: Array.from(this.sharePk),
-      rootChainCode: Array.from(this.shareChaincode),
-    };
-    return Buffer.from(encode(reducedKeyShare));
+    return reduceMpsKeyShare(this.keyShare, this.getCommonKeychain());
   }
 
   /**
