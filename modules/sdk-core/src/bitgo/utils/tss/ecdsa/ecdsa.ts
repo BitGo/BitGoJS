@@ -59,6 +59,7 @@ import { BaseEcdsaUtils } from './base';
 import { EncryptionVersion, IRequestTracer } from '../../../../api';
 import { resolveEffectiveTxParams } from '../recipientUtils';
 import { shouldVerifyWithSerializedTxHex } from '../serializedTxHexVerify';
+import { isCoinWithSignableConsistency } from '../signableConsistency';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
 
@@ -1075,6 +1076,9 @@ export class EcdsaUtils extends BaseEcdsaUtils {
           wallet: this.wallet,
           walletType: this.wallet.multisigType(),
         });
+        if (shouldVerifyWithSerializedTxHex(this.baseCoin) && isCoinWithSignableConsistency(this.baseCoin)) {
+          this.baseCoin.assertSignableConsistency(unsignedTx.serializedTxHex, unsignedTx.signableHex);
+        }
       } else {
         await this.baseCoin.verifyTransaction({
           txPrebuild: { txHex: unsignedTx.signableHex },
