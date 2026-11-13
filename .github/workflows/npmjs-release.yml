@@ -25,6 +25,13 @@ on:
         type: boolean
         required: false
         default: false
+      disable-sigstore-patch:
+        description: |
+          Skip the sigstore fetchOnConflict patch step, keeping upstream
+          behavior: a retried Rekor entry conflict (409) fails the publish.
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write
@@ -312,6 +319,30 @@ jobs:
           PUBLISH_SHA=$(git rev-parse HEAD)
           echo "Publish SHA: $PUBLISH_SHA"
           echo "sha=$PUBLISH_SHA" >> "$GITHUB_OUTPUT"
+
+      # The sigstore dependency resolved by lerna's publish (project
+      # node_modules, loaded by libnpmpublish) defaults fetchOnConflict to
+      # false, so when Rekor commits a provenance entry but the POST response
+      # is lost or slow (>5s timeout), the client's own retry gets "409
+      # equivalent entry already exists" and the publish dies before the
+      # tarball uploads. Normalize any default-false to true so the client
+      # fetches the entry it already created and continues. Interim fix until
+      # npm opts into fetchOnConflict (sigstore-js#1791); remove once that
+      # ships.
+      - name: Patch sigstore to recover from Rekor entry conflicts
+        if: inputs.dry-run == false && !inputs.disable-sigstore-patch
+        run: |
+          sigstore_dist="$PWD/node_modules/sigstore/dist"
+          if ! grep -rq 'fetchOnConflict' "$sigstore_dist" 2>/dev/null; then
+            echo "::warning::fetchOnConflict not found in $sigstore_dist — sigstore layout changed. Verify recovery still works and remove/update this step."
+            exit 0
+          fi
+          sed -i -E 's/(fetchOnConflict[[:space:]]*(:|\?\?)[[:space:]]*)(false|!1)/\1true/g' "$sigstore_dist"/*.js
+          if grep -rqE 'fetchOnConflict[[:space:]]*(:|\?\?)[[:space:]]*(false|!1)' "$sigstore_dist" 2>/dev/null; then
+            echo "::error::Failed to patch fetchOnConflict in $sigstore_dist"
+            exit 1
+          fi
+          echo "✅ fetchOnConflict defaults to true in $sigstore_dist"
 
       - name: Publish siblings (pass 1)
         if: inputs.dry-run == false
