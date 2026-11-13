@@ -7133,4 +7133,32 @@ export const botOfcTokens = [
     undefined,
     'baseeth'
   ),
+  AccountCtors.ofcerc20(
+    '3c6ab545-4344-4a2e-848d-79238fdcf9e5',
+    'ofcmon:usdt0',
+    'USDT0',
+    6,
+    'mon:usdt0' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'mon'
+  ),
+  AccountCtors.ofcerc20(
+    '3c1ca7ff-c8da-4528-ac56-337fab290905',
+    'ofceth:stampx',
+    'STAMPx',
+    18,
+    'eth:stampx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
 ];
