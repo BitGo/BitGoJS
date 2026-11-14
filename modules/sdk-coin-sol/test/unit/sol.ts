@@ -1393,6 +1393,262 @@ describe('SOL:', function () {
       } as any);
       validTransaction.should.equal(true);
     });
+
+    describe('CustomTx verification (CHALO-2055)', function () {
+      // Build a simple raw CustomTx using the factory, with a WalletConnectDefiCustomTx memo.
+      // The user instruction is a "dummy" instruction with an arbitrary program ID.
+      const dummyProgramId = stakeAccount.pub; // any valid base58 pubkey used as program ID
+      const dummyInstructionData = Buffer.from('deadbeef', 'hex');
+
+      async function buildCustomTx(
+        solInstructions: {
+          programId: string;
+          keys: { pubkey: string; isSigner: boolean; isWritable: boolean }[];
+          data: string;
+        }[]
+      ): Promise<string> {
+        const txBuilder = factory.getCustomInstructionBuilder();
+        txBuilder.sender(wallet.pub);
+        txBuilder.nonce(blockHash);
+        txBuilder.memo('WalletConnectDefiCustomTx');
+        for (const ix of solInstructions) {
+          txBuilder.addCustomInstruction(ix);
+        }
+        const tx = await txBuilder.build();
+        return tx.toBroadcastFormat();
+      }
+
+      const userInstruction = {
+        programId: dummyProgramId,
+        keys: [{ pubkey: wallet.pub, isSigner: true, isWritable: true }],
+        data: dummyInstructionData.toString('hex'),
+      };
+
+      it('should pass when solInstructions match the prebuild exactly', async function () {
+        const txBase64 = await buildCustomTx([userInstruction]);
+        const result = await basecoin.verifyTransaction({
+          txParams: { solInstructions: [userInstruction] },
+          txPrebuild: { txBase64 },
+          wallet: walletObj,
+        } as any);
+        result.should.equal(true);
+      });
+
+      it('should fail when the prebuild contains a substituted instruction (Exploit 1)', async function () {
+        // Attacker replaces the user instruction with a transfer to themselves
+        const maliciousInstruction = {
+          programId: dummyProgramId,
+          keys: [{ pubkey: stakeAccount.pub, isSigner: false, isWritable: true }], // different key
+          data: dummyInstructionData.toString('hex'),
+        };
+        const txBase64 = await buildCustomTx([maliciousInstruction]);
+        await basecoin
+          .verifyTransaction({
+            txParams: { solInstructions: [userInstruction] },
+            txPrebuild: { txBase64 },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith('CustomTx prebuild instruction 0 key 0 mismatch');
+      });
+
+      it('should fail when the prebuild has more instructions than solInstructions (extra injected instruction)', async function () {
+        const extraInstruction = {
+          programId: dummyProgramId,
+          keys: [{ pubkey: stakeAccount.pub, isSigner: false, isWritable: true }],
+          data: Buffer.from('extra').toString('hex'),
+        };
+        const txBase64 = await buildCustomTx([userInstruction, extraInstruction]);
+        await basecoin
+          .verifyTransaction({
+            txParams: { solInstructions: [userInstruction] },
+            txPrebuild: { txBase64 },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith('CustomTx prebuild instruction count mismatch: expected 1, got 2');
+      });
+
+      it('should fail when the prebuild instruction data is tampered', async function () {
+        const tamperedInstruction = {
+          programId: dummyProgramId,
+          keys: [{ pubkey: wallet.pub, isSigner: true, isWritable: true }],
+          data: Buffer.from('cafebabe', 'hex').toString('hex'), // different data
+        };
+        const txBase64 = await buildCustomTx([tamperedInstruction]);
+        await basecoin
+          .verifyTransaction({
+            txParams: { solInstructions: [userInstruction] },
+            txPrebuild: { txBase64 },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith('CustomTx prebuild instruction 0 data mismatch');
+      });
+
+      it('should reject a CustomTx consolidation (Exploit 2)', async function () {
+        const txBase64 = await buildCustomTx([userInstruction]);
+        await basecoin
+          .verifyTransaction({
+            txParams: { solInstructions: [userInstruction] },
+            txPrebuild: { txBase64, consolidateId: 'consolidate-123' },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith('CustomTx transactions are not valid for consolidation');
+      });
+
+      it('should pass when no solInstructions are provided (non-customtx-intent path)', async function () {
+        // Some transactions may fall through to CustomTx classification without solInstructions.
+        // Without solInstructions there is nothing to compare, so the check is skipped.
+        // Gap is deliberate: Exploit 2 (consolidation hijack) is blocked above. Exploit 1 only
+        // applies when the user provided solInstructions to verify against.
+        const txBase64 = await buildCustomTx([userInstruction]);
+        const result = await basecoin.verifyTransaction({
+          txParams: {},
+          txPrebuild: { txBase64 },
+          wallet: walletObj,
+        } as any);
+        result.should.equal(true);
+      });
+
+      it('should pass when prebuild has durable nonce advance and WalletConnectDefiCustomTx memo (both stripped by position)', async function () {
+        // Builds a durable-nonce CustomTx: [AdvanceNonce(0), UserIx(1), Memo(last)]
+        // Verifier strips index 0 and last → compares [UserIx] against solInstructions
+        async function buildCustomTxWithDurableNonce(
+          solInstructions: {
+            programId: string;
+            keys: { pubkey: string; isSigner: boolean; isWritable: boolean }[];
+            data: string;
+          }[]
+        ): Promise<string> {
+          const txBuilder = factory.getCustomInstructionBuilder();
+          txBuilder.sender(wallet.pub);
+          txBuilder.nonce(blockHash, durableNonce);
+          txBuilder.memo('WalletConnectDefiCustomTx');
+          for (const ix of solInstructions) {
+            txBuilder.addCustomInstruction(ix);
+          }
+          const tx = await txBuilder.build();
+          return tx.toBroadcastFormat();
+        }
+        const txBase64 = await buildCustomTxWithDurableNonce([userInstruction]);
+        const result = await basecoin.verifyTransaction({
+          txParams: { solInstructions: [userInstruction] },
+          txPrebuild: { txBase64 },
+          wallet: walletObj,
+        } as any);
+        result.should.equal(true);
+      });
+
+      it('should fail when a second AdvanceNonceAccount is injected (position-based stripping only removes index 0)', async function () {
+        // Old filter-based code would silently drop ALL AdvanceNonceAccount instructions,
+        // allowing an attacker to inject an extra one without detection.
+        // Position-based fix only removes index 0; the injected second one causes a count mismatch.
+        async function buildCustomTxWithDurableNonce(
+          solInstructions: {
+            programId: string;
+            keys: { pubkey: string; isSigner: boolean; isWritable: boolean }[];
+            data: string;
+          }[]
+        ): Promise<string> {
+          const txBuilder = factory.getCustomInstructionBuilder();
+          txBuilder.sender(wallet.pub);
+          txBuilder.nonce(blockHash, durableNonce);
+          txBuilder.memo('WalletConnectDefiCustomTx');
+          for (const ix of solInstructions) {
+            txBuilder.addCustomInstruction(ix);
+          }
+          const tx = await txBuilder.build();
+          return tx.toBroadcastFormat();
+        }
+        // Construct a rogue nonce advance instruction to inject into the transaction
+        const rogueNonceWeb3Ix = SystemProgram.nonceAdvance({
+          noncePubkey: new PublicKey(durableNonce.walletNonceAddress),
+          authorizedPubkey: new PublicKey(durableNonce.authWalletAddress),
+        });
+        const rogueNonceInstruction = {
+          programId: rogueNonceWeb3Ix.programId.toString(),
+          keys: rogueNonceWeb3Ix.keys.map((k) => ({
+            pubkey: k.pubkey.toString(),
+            isSigner: k.isSigner,
+            isWritable: k.isWritable,
+          })),
+          data: Buffer.from(rogueNonceWeb3Ix.data).toString('base64'),
+        };
+        // Tx: [AdvanceNonce(0, legit), RogueNonce(1, injected), UserIx(2), Memo(last)]
+        // After position-based strip: [RogueNonce, UserIx] → count=2, expected=1 → mismatch
+        const txBase64 = await buildCustomTxWithDurableNonce([rogueNonceInstruction, userInstruction]);
+        await basecoin
+          .verifyTransaction({
+            txParams: { solInstructions: [userInstruction] },
+            txPrebuild: { txBase64 },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith('CustomTx prebuild instruction count mismatch: expected 1, got 2');
+      });
+
+      it('should NOT strip a user-supplied memo at a non-last position', async function () {
+        // A memo supplied by the user inside solInstructions is at a non-last position
+        // (the WalletConnectDefiCustomTx marker is last). It must NOT be stripped and
+        // must appear in solInstructions for verification to pass.
+        const userMemoInstruction = {
+          programId: 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr',
+          keys: [],
+          data: Buffer.from('user memo text').toString('base64'),
+        };
+        // Tx: [UserIx(0), UserMemo(1), WalletConnectMemo(last)]
+        const txBase64 = await buildCustomTx([userInstruction, userMemoInstruction]);
+        const result = await basecoin.verifyTransaction({
+          txParams: { solInstructions: [userInstruction, userMemoInstruction] },
+          txPrebuild: { txBase64 },
+          wallet: walletObj,
+        } as any);
+        result.should.equal(true);
+      });
+
+      it('should fail when a key isSigner flag is tampered', async function () {
+        // Use a non-sender account (stakeAccount) so web3.js does not override isSigner.
+        // The prebuild lists stakeAccount as a signer; the user expects it as non-signer.
+        const prebuildInstruction = {
+          programId: dummyProgramId,
+          keys: [{ pubkey: stakeAccount.pub, isSigner: true, isWritable: false }], // server promoted to signer
+          data: dummyInstructionData.toString('hex'),
+        };
+        const expectedInstruction = {
+          programId: dummyProgramId,
+          keys: [{ pubkey: stakeAccount.pub, isSigner: false, isWritable: false }], // user expects non-signer
+          data: dummyInstructionData.toString('hex'),
+        };
+        const txBase64 = await buildCustomTx([prebuildInstruction]);
+        await basecoin
+          .verifyTransaction({
+            txParams: { solInstructions: [expectedInstruction] },
+            txPrebuild: { txBase64 },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith('CustomTx prebuild instruction 0 key 0 mismatch');
+      });
+
+      it('should fail when a key isWritable flag is tampered', async function () {
+        // Use a non-sender account (stakeAccount) so web3.js does not override isWritable.
+        // The prebuild lists stakeAccount as writable; the user expects it as read-only.
+        const prebuildInstruction = {
+          programId: dummyProgramId,
+          keys: [{ pubkey: stakeAccount.pub, isSigner: false, isWritable: true }], // server made writable
+          data: dummyInstructionData.toString('hex'),
+        };
+        const expectedInstruction = {
+          programId: dummyProgramId,
+          keys: [{ pubkey: stakeAccount.pub, isSigner: false, isWritable: false }], // user expects read-only
+          data: dummyInstructionData.toString('hex'),
+        };
+        const txBase64 = await buildCustomTx([prebuildInstruction]);
+        await basecoin
+          .verifyTransaction({
+            txParams: { solInstructions: [expectedInstruction] },
+            txPrebuild: { txBase64 },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith('CustomTx prebuild instruction 0 key 0 mismatch');
+      });
+    });
   });
 
   describe('getAmountBasedOnEndianness', () => {
