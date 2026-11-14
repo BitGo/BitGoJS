@@ -124,6 +124,9 @@ export interface AccountNetwork extends BaseNetwork {
   readonly blockExplorerUrl?: string;
   // bech32 HRP for chains that use one (e.g. Cosmos-family coins)
   readonly addressPrefix?: string;
+  // Literal prefix shared by every address on the network, with no checksum or encoding
+  // (e.g. Hedera account IDs `0.0.<num>`: shard.realm). NOT a bech32 HRP, see addressPrefix.
+  readonly constantAddressPrefix?: string;
 }
 
 export interface CosmosNetwork extends AccountNetwork {
@@ -950,12 +953,14 @@ class Hedera extends Mainnet implements AccountNetwork {
   name = 'Hedera';
   family = CoinFamily.HBAR;
   explorerUrl = 'https://hashscan.io/mainnet/transaction/';
+  constantAddressPrefix = '0.0.';
 }
 
 class HederaTestnet extends Testnet implements AccountNetwork {
   name = 'HederaTestnet';
   family = CoinFamily.HBAR;
   explorerUrl = 'https://testnet.dragonglass.me/hedera/search?q=';
+  constantAddressPrefix = '0.0.';
 }
 
 class Litecoin extends Mainnet implements UtxoNetwork {
