@@ -54,6 +54,7 @@ import {
   SOL_OFC_TOKEN_FEATURES,
   APT_OFC_TOKEN_FEATURES,
   ACCOUNT_COIN_DEFAULT_FEATURES,
+  ACCOUNT_COIN_DEFAULT_FEATURES_TRUST_ONLY,
 } from '../coinFeatures';
 
 export const ofcCoins = [
@@ -4997,6 +4998,13 @@ export const ofcCoins = [
     undefined,
     [CoinFeature.STABLECOIN]
   ),
+  tofcHederaToken(
+    '2341e390-b6a2-4b04-a2ad-ca5d0bd1b10c', // CECHO-2732
+    'ofcthbar:fly',
+    'Fluency (Testnet)',
+    18,
+    UnderlyingAsset['thbar:fly']
+  ),
 
   ofcStellarToken(
     'fd90a80b-d615-434e-9821-1ef179a06071',
@@ -5054,6 +5062,15 @@ export const ofcCoins = [
     'BTGO',
     7,
     UnderlyingAsset['xlm:BTGO-GAXTPUVP2XINTMEN57FPJ34DAPZXDMMGX7TB7ASIBWHWT6ARC3IOGA2W']
+  ),
+  ofcStellarToken(
+    '8ad91a65-6cc9-443f-8e88-23afc0404b03', // CECHO-2732
+    'ofcxlm:SPXU-GDJBVX3QA5HJPBSAU5VIX2W6MC37NU4UFXPKEGK42SJCYN6AEQ4Z6COM',
+    'WisdomTree 500 Digital Fund',
+    7,
+    UnderlyingAsset['xlm:SPXU-GDJBVX3QA5HJPBSAU5VIX2W6MC37NU4UFXPKEGK42SJCYN6AEQ4Z6COM'],
+    undefined,
+    ACCOUNT_COIN_DEFAULT_FEATURES_TRUST_ONLY
   ),
   ofcStellarToken(
     '66c55a71-3352-407b-945a-ceed3fdc7487',
@@ -6653,6 +6670,34 @@ export const ofcCoins = [
     UnderlyingAsset['canton:ibenji']
   ),
   ofcCantonToken(
+    '8b1dcf20-aa1f-4348-a4c0-e0df61e45b42', // CECHO-2732
+    'ofccanton:beth',
+    'BitSafe Ethereum',
+    10,
+    UnderlyingAsset['canton:beth']
+  ),
+  ofcCantonToken(
+    'e01c1955-98ae-445e-9858-765dce7a6d20', // CECHO-2732
+    'ofccanton:usty',
+    'US Treasury Bill',
+    10,
+    UnderlyingAsset['canton:usty']
+  ),
+  ofcCantonToken(
+    '4f1e118b-afc3-4c32-af2a-acc81be89442', // CECHO-2732
+    'ofccanton:exau',
+    'Ember Gold',
+    10,
+    UnderlyingAsset['canton:exau']
+  ),
+  ofcCantonToken(
+    '154d2cca-4970-4445-aac7-58b995ff4f9e', // CECHO-2732
+    'ofccanton:exag',
+    'Ember Silver',
+    10,
+    UnderlyingAsset['canton:exag']
+  ),
+  ofcCantonToken(
     '784c76fb-59c6-4826-b72e-20e996a35739',
     'ofccanton:ceth',
     'Canton Ethereum',
@@ -7033,6 +7078,14 @@ export const ofcCoins = [
   ),
   ofcsolToken('7826627c-7358-47ff-ac6f-03a2e9eff95c', 'ofcsol:jlp', 'Jupiter Perps LP', 6, UnderlyingAsset['sol:jlp']),
   ofcsolToken('00f31d2d-6946-43f6-bde1-7fda6887750d', 'ofcsol:grass', 'Grass', 9, UnderlyingAsset['sol:grass']),
+  ofcsolToken(
+    '99924682-e24d-4e94-8479-0d34ffbe4b90', // CECHO-2732
+    'ofcsol:cash',
+    'Cash',
+    6,
+    UnderlyingAsset.CASH,
+    [...SOL_OFC_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
   ofcBscToken('3a9daeda-7e08-494d-a47c-d2c89dd1c735', 'ofcbsc:godl', 'GODL', 18, UnderlyingAsset['bsc:godl']),
   ofcBscToken('93a459bc-c661-4001-be26-9175046c9a36', 'ofcbsc:gdl', 'GDL', 18, UnderlyingAsset['bsc:gdl']),
   ofcBscToken('9febc919-85af-48eb-9821-e9d18e4cd98e', 'ofcbsc:usgd', 'USGD', 18, UnderlyingAsset['bsc:usgd']),

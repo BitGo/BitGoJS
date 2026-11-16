@@ -10887,6 +10887,14 @@ export const erc20Coins = [
     UnderlyingAsset['eth:spxux']
   ),
   erc20(
+    '19f73ddf-723e-4eec-9deb-279794bca9f6', // CECHO-2732
+    'eth:stampx',
+    'STAMPx',
+    18,
+    '0xc0aca7acdd9adeed3177a4b299caebe816842f52', // https://etherscan.io/token/0xc0aca7acdd9adeed3177a4b299caebe816842f52
+    UnderlyingAsset['eth:stampx']
+  ),
+  erc20(
     'cd21be23-a0f4-4706-8b00-cee136e1188a',
     'eth:aleo',
     'Aleo',

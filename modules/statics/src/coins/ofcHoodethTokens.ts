@@ -4316,4 +4316,18 @@ export const ofcHoodethTokens = [
     true,
     'hoodeth'
   ),
+  ofcerc20(
+    'ab7828c0-d5f8-493c-9933-da17f92b20cc', // CECHO-2732
+    'ofchoodeth:rlusd',
+    'Ripple USD • Robinhood',
+    18,
+    UnderlyingAsset['hoodeth:rlusd'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'hoodeth'
+  ),
 ];
