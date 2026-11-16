@@ -65,7 +65,7 @@
     "@bitgo/utxo-descriptors": "^2.3.1",
     "@bitgo/utxo-lib": "^11.25.0",
     "@bitgo/wasm-utxo": "^5.15.0",
-    "bip174": "npm:@bitgo-forks/bip174@3.1.0-master.4",
+    "bip174": "npm:@bitgo-forks/bip174@3.1.0-master.5",
     "bip322-js": "^2.0.0",
     "bitcoinjs-lib": "^6.1.7",
     "fp-ts": "^2.16.2",
