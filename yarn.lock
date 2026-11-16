@@ -8005,6 +8005,11 @@ bip174@=2.1.1, bip174@^2.1.1:
   resolved "https://registry.npmjs.org/@bitgo-forks/bip174/-/bip174-3.1.0-master.4.tgz"
   integrity sha512-WDRNzPSdJGDqQNqfN+L5KHNHFDmNOPYnUnT7NkEkfHWn5m1jSOfcf8Swaslt5P0xcSDiERdN2gZxFc6XtOqRYg==
 
+"bip174@npm:@bitgo-forks/bip174@3.1.0-master.5":
+  version "3.1.0-master.5"
+  resolved "https://registry.npmjs.org/@bitgo-forks/bip174/-/bip174-3.1.0-master.5.tgz#5c8cb3bfff2a516a0cf2c267d3dbf7534f024ef2"
+  integrity sha512-feUwCtsN3X0NritGX3QlisuCTYvV/XsxNm+B5ER7LB0ROt/XaUMsMRKeY8D6BUcU0BD99334LY41kRIVqUJdtA==
+
 bip322-js@^2.0.0:
   version "2.0.0"
   resolved "https://registry.npmjs.org/bip322-js/-/bip322-js-2.0.0.tgz"
