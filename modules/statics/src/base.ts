@@ -2626,6 +2626,7 @@ export enum UnderlyingAsset {
   ZUSD = 'zusd',
   'eth:usdg' = 'eth:usdg',
   'eth:spxux' = 'eth:spxux',
+  'eth:stampx' = 'eth:stampx', // CECHO-2732
   'eth:aleo' = 'eth:aleo',
   'eth:dbusd' = 'eth:dbusd',
   'eth:edu' = 'eth:edu',
@@ -3918,6 +3919,7 @@ export enum UnderlyingAsset {
   'mon:usdc' = 'mon:usdc',
   'mon:wmon' = 'mon:wmon',
   'mon:sofid' = 'mon:sofid',
+  'mon:usdt0' = 'mon:usdt0', // CECHO-2732
 
   // Monad testnet tokens
   'tmon:tmt' = 'tmon:tmt',

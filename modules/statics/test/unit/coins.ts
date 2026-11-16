@@ -1130,6 +1130,7 @@ describe('WTGXX Trust-only custody', () => {
     'sepeth:wtgxx',
     'sol:wtgxx',
     'ofcwtgxx',
+    'ofcxlm:SPXU-GDJBVX3QA5HJPBSAU5VIX2W6MC37NU4UFXPKEGK42SJCYN6AEQ4Z6COM',
     'ofcarbeth:wtgxx',
     'ofcopeth:wtgxx',
     'ofcsol:wtgxx',

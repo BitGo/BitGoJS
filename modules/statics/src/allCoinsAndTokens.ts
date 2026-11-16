@@ -5528,6 +5528,14 @@ export const allCoinsAndTokens = [
     '0x0cb6d03b0ac88a463f67b7ad99f9f3ec4678092e',
     UnderlyingAsset['mon:sofid']
   ),
+  monErc20(
+    '6c615ca8-2bbd-4713-a162-e4b2e1b49407', // CECHO-2732
+    'mon:usdt0',
+    'USDT0',
+    6,
+    '0xe7cd86e13ac4309349f30b3435a9d337750fc82d', // https://monadexplorer.com/token/0xe7cd86e13ac4309349f30b3435a9d337750fc82d
+    UnderlyingAsset['mon:usdt0']
+  ),
 
   // MON testnet tokens
   tmonErc20(

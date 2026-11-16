@@ -3358,6 +3358,13 @@ export const ofcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:spxux')
   ),
+  ofcerc20(
+    'e8e161f1-b3d7-411e-851e-d3c987c42bc0', // CECHO-2732
+    'ofceth:stampx',
+    'STAMPx',
+    18,
+    underlyingAssetForSymbol('eth:stampx')
+  ),
   ofcerc20('830c6c0f-b601-406b-a853-3a88ff85533d', 'ofceth:aleo', 'Aleo', 3, underlyingAssetForSymbol('eth:aleo')),
   ofcerc20(
     'c35c457f-2741-41aa-9c33-3a41f5ce6b1b',
@@ -6634,6 +6641,20 @@ export const tOfcErc20Coins = [
     underlyingAssetForSymbol('mon:wmon'),
     undefined,
     undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'mon'
+  ),
+  ofcerc20(
+    'f2cd10f8-a5eb-4fe3-b070-af7804667319', // CECHO-2732
+    'ofcmon:usdt0',
+    'MON:USDT0',
+    6,
+    underlyingAssetForSymbol('mon:usdt0'),
+    undefined,
+    [...OfcCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     '',
     undefined,
     undefined,
