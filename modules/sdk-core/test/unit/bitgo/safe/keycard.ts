@@ -369,6 +369,27 @@ describe('safe keycard regeneration (keycard.ts)', function (this: Mocha.Suite) 
       decryptStub.callCount.should.equal(3);
     });
 
+    it('passes a pub-only BYOK backup keychain through and verifies the passphrase on the user envelope', async function () {
+      const { material, entries } = makeMaterial(KEYCARD_PW, KEYCARD_PW);
+      // BYOK shape: the backup keychain was registered via keychains.add — pub only, no envelope.
+      const byokBackup = makeKeychain({ id: 'backup-byok', pub: 'xpub-byok' });
+      material.roots.secp256k1Multisig!.backupKeychain = byokBackup;
+      const { bitgo, createSession } = makeMockBitGo(entries);
+
+      const roots = await buildSafeKeycardRoots({
+        bitgo,
+        material,
+        currentPassphrase: KEYCARD_PW,
+        keycardPassphrase: KEYCARD_PW,
+      });
+
+      roots.secp256k1Multisig!.backupKeychain.should.equal(byokBackup);
+      // With no backup envelope, the keycard passphrase is verified on the user envelope instead.
+      roots.secp256k1Multisig!.userKeychain.encryptedPrv!.should.equal('SESSION[xprv-user]');
+      sinon.assert.calledOnce(createSession);
+      sinon.assert.calledWithMatch(createSession, KEYCARD_PW);
+    });
+
     it('throws a named error when a root is missing its envelope, and when roots is empty', async function () {
       const { material, entries } = makeMaterial(KEYCARD_PW, KEYCARD_PW);
       const { bitgo } = makeMockBitGo(entries);
@@ -380,7 +401,7 @@ describe('safe keycard regeneration (keycard.ts)', function (this: Mocha.Suite) 
         material: missingEnvelope,
         currentPassphrase: KEYCARD_PW,
         keycardPassphrase: KEYCARD_PW,
-      }).should.be.rejectedWith(/secp256k1Multisig user\/backup root is missing encryptedPrv/);
+      }).should.be.rejectedWith(/secp256k1Multisig user root is missing encryptedPrv/);
       await buildSafeKeycardRoots({
         bitgo,
         material: { roots: {} },

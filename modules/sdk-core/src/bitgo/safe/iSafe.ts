@@ -8,6 +8,7 @@
 // re-exporting from sdk-core.
 import type {
   FreezeSafeBody,
+  MultisigRootKeyType,
   SafeData,
   SafePermission,
   SafeRootKeys,
@@ -24,6 +25,11 @@ import type { RequestKeycardAccessResult, SafeKeycardMaterial } from './keycard'
 /** @experimental */
 export interface InitializeSafeOptions {
   label: string;
+  /**
+   * Multisig slots whose backup root is external, i.e. not generated and encrypted by the SDK.
+   * Omit when every backup root is local.
+   */
+  externalBackupSlots?: MultisigRootKeyType[];
 }
 
 /** @experimental */
