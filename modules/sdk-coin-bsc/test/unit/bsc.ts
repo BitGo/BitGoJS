@@ -1,8 +1,9 @@
 import 'should';
 
+import * as sinon from 'sinon';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { TransactionType, Wallet } from '@bitgo/sdk-core';
+import { EcdsaUtils, IWallet, TransactionType, TssSignTxRequestParamsWithPrv, Wallet } from '@bitgo/sdk-core';
 import { FeeMarketEIP1559Transaction, Transaction as LegacyTransaction } from '@ethereumjs/tx';
 import { RLP } from '@ethereumjs/rlp';
 import { bufArrToArr } from 'ethereumjs-util';
@@ -282,6 +283,73 @@ describe('Native BNB', function () {
         (() => coin.assertSignableConsistency(stripHex(typedTx.serialize().toString('hex')), '')).should.throw(
           /EIP-1559 not enabled on Common/
         );
+      });
+
+      it('MPCv1 signRequestBase rejects a tampered signableHex end-to-end (WCI-2239)', async function () {
+        const coin = bitgo.coin('tbsc') as Tbsc;
+        sinon.stub(coin, 'verifyTransaction').resolves(undefined);
+        const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: recipientAddress } });
+        const utils = new EcdsaUtils(bitgo, coin, wallet as unknown as IWallet);
+        const benignSerializedTxHex = await buildSerializedTxHex(recipientAddress);
+        const tamperedSignableHex = deriveSignableHex(await buildSerializedTxHex(wrongAddress), coin);
+        const txRequest = {
+          txRequestId: 'wci-2239-test',
+          apiVersion: 'full',
+          walletId: wallet.id(),
+          transactions: [
+            {
+              unsignedTx: {
+                derivationPath: 'm/0',
+                serializedTxHex: benignSerializedTxHex,
+                signableHex: tamperedSignableHex,
+              },
+            },
+          ],
+        };
+        const params = {
+          txRequest,
+          txParams: { recipients: [{ address: recipientAddress, amount: transferAmount }] },
+          prv: JSON.stringify({ pShare: { i: 1 }, backupNShare: 'fake' }),
+          reqId: { inc: sinon.stub(), toString: () => 'req' } as any,
+        } as unknown as TssSignTxRequestParamsWithPrv;
+        await utils
+          .signTxRequest(params)
+          .should.be.rejectedWith('signableHex is inconsistent with serializedTxHex: possible server tampering');
+      });
+
+      it('MPCv1 signRequestBase passes a consistent signableHex end-to-end (WCI-2239)', async function () {
+        const coin = bitgo.coin('tbsc') as Tbsc;
+        sinon.stub(coin, 'verifyTransaction').resolves(undefined);
+        const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: recipientAddress } });
+        const utils = new EcdsaUtils(bitgo, coin, wallet as unknown as IWallet);
+        const benignSerializedTxHex = await buildSerializedTxHex(recipientAddress);
+        const signableHex = deriveSignableHex(benignSerializedTxHex, coin);
+        sinon.stub(utils, 'getOfflineSignerPaillierModulus').throws(new Error('SENTINEL_PAST_CONSISTENCY'));
+        const txRequest = {
+          txRequestId: 'wci-2239-test',
+          apiVersion: 'full',
+          walletId: wallet.id(),
+          transactions: [
+            {
+              unsignedTx: {
+                derivationPath: 'm/0',
+                serializedTxHex: benignSerializedTxHex,
+                signableHex,
+              },
+            },
+          ],
+        };
+        const params = {
+          txRequest,
+          txParams: { recipients: [{ address: recipientAddress, amount: transferAmount }] },
+          prv: JSON.stringify({ pShare: { i: 1 }, backupNShare: 'fake' }),
+          reqId: { inc: sinon.stub(), toString: () => 'req' } as any,
+        } as unknown as TssSignTxRequestParamsWithPrv;
+        await utils.signTxRequest(params).should.be.rejectedWith(/SENTINEL_PAST_CONSISTENCY/);
+      });
+
+      after(function () {
+        sinon.restore();
       });
     });
   });
