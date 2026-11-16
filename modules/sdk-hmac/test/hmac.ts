@@ -259,22 +259,36 @@ describe('HMAC Utility Functions', () => {
 
   describe('calculateRequestHeaders', () => {
     it('should calculate the correct headers with HMAC', () => {
-      const headers = calculateRequestHeaders({
+      const params = {
         url: '/api/test',
         text: 'request-body',
         token: 'test-token',
-        method: 'post',
-        authVersion: 3,
-      });
+        method: 'post' as const,
+        authVersion: 3 as const,
+      };
+      const headers = calculateRequestHeaders(params);
       // sha256('test-token'), asserted against a fixed known-good value so the
       // test is independent of the implementation under test.
       const tokenHash = '4c5dc9b7708905f77f5e5d16316b5dfb425e68cb326dcd55a860e90a7707031e';
 
-      expect(headers).to.include({
-        hmac: headers.hmac, // Verify hmac exists
-        timestamp: MOCK_TIMESTAMP,
-        tokenHash,
-      });
+      expect(headers.timestamp).to.be.within(MOCK_TIMESTAMP, MOCK_TIMESTAMP + 1000);
+      expect(headers.hmac).to.equal(calculateRequestHMAC({ ...params, timestamp: headers.timestamp }));
+      expect(headers.tokenHash).to.equal(tokenHash);
+    });
+
+    it('should sign identical same-millisecond requests with distinct timestamps and HMACs', function () {
+      const params = {
+        url: '/api/test',
+        text: '',
+        token: 'test-token',
+        method: 'get' as const,
+        authVersion: 2 as const,
+      };
+      const results = Array.from({ length: 5 }, () => calculateRequestHeaders(params));
+
+      expect(new Set(results.map((r) => r.timestamp)).size).to.equal(results.length);
+      expect(new Set(results.map((r) => r.hmac)).size).to.equal(results.length);
+      results.forEach((r) => expect(r.timestamp).to.be.within(MOCK_TIMESTAMP, MOCK_TIMESTAMP + 1000));
     });
   });
 

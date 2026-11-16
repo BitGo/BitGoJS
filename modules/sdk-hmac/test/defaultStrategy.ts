@@ -22,7 +22,7 @@ describe('DefaultHmacAuthStrategy', () => {
   });
 
   describe('calculateRequestHeaders', () => {
-    it('should produce the same result as the sync calculateRequestHeaders', async () => {
+    it('should produce a valid HMAC and token hash matching the sync calculateRequestHeaders', async () => {
       const params = {
         url: 'https://app.bitgo.com/api/v2/wallet',
         token: 'v2x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdefab',
@@ -34,8 +34,7 @@ describe('DefaultHmacAuthStrategy', () => {
       const syncResult = hmac.calculateRequestHeaders(params);
       const asyncResult = await strategy.calculateRequestHeaders(params);
 
-      expect(asyncResult.hmac).to.equal(syncResult.hmac);
-      expect(asyncResult.timestamp).to.equal(syncResult.timestamp);
+      expect(asyncResult.hmac).to.equal(hmac.calculateRequestHMAC({ ...params, timestamp: asyncResult.timestamp }));
       expect(asyncResult.tokenHash).to.equal(syncResult.tokenHash);
     });
 
@@ -51,7 +50,7 @@ describe('DefaultHmacAuthStrategy', () => {
       const syncResult = hmac.calculateRequestHeaders(params);
       const asyncResult = await strategy.calculateRequestHeaders(params);
 
-      expect(asyncResult.hmac).to.equal(syncResult.hmac);
+      expect(asyncResult.hmac).to.equal(hmac.calculateRequestHMAC({ ...params, timestamp: asyncResult.timestamp }));
       expect(asyncResult.tokenHash).to.equal(syncResult.tokenHash);
     });
   });

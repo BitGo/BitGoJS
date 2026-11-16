@@ -80,3 +80,21 @@ export function extractPathWithQuery(urlPath: string): string {
 export function getTimestampSec(): number {
   return Math.floor(Date.now() / 1000);
 }
+
+/** Furthest a request timestamp may run ahead of the clock. */
+const MAX_FORWARD_DRIFT_MS = 1000;
+let lastRequestTimestamp = 0;
+
+/**
+ * Millisecond timestamp for signing a request. Calls within the same millisecond get increasing
+ * values, so identical requests sign differently. Never runs more than MAX_FORWARD_DRIFT_MS ahead
+ * of the clock.
+ */
+export function getRequestTimestampMs(): number {
+  const now = Date.now();
+  if (now <= lastRequestTimestamp && lastRequestTimestamp - now < MAX_FORWARD_DRIFT_MS) {
+    return ++lastRequestTimestamp;
+  }
+  lastRequestTimestamp = now;
+  return now;
+}
