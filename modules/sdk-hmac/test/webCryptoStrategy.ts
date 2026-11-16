@@ -109,10 +109,10 @@ describe('WebCryptoHmacStrategy', () => {
         authVersion,
       });
 
-      // Timestamps may differ slightly, so we verify structure and token hash
+      // Timestamps differ (each signing gets a unique one), so verify structure and token hash
       expect(webCryptoResult.tokenHash).to.equal(nodeResult.tokenHash);
       expect(webCryptoResult.hmac).to.be.a('string').with.length.greaterThan(0);
-      expect(webCryptoResult.timestamp).to.equal(MOCK_TIMESTAMP);
+      expect(webCryptoResult.timestamp).to.be.within(MOCK_TIMESTAMP, MOCK_TIMESTAMP + 1000);
     });
 
     it('should produce matching HMAC for v3 auth with body', async () => {
@@ -132,16 +132,28 @@ describe('WebCryptoHmacStrategy', () => {
         authVersion,
       });
 
-      const nodeResult = hmac.calculateRequestHeaders({
-        url,
-        token: TEST_TOKEN,
-        method,
-        text,
-        authVersion,
-      });
+      const params = { url, token: TEST_TOKEN, method, text, authVersion };
+      const nodeResult = hmac.calculateRequestHeaders(params);
 
       expect(webCryptoResult.tokenHash).to.equal(nodeResult.tokenHash);
-      expect(webCryptoResult.hmac).to.equal(nodeResult.hmac);
+      expect(webCryptoResult.hmac).to.equal(
+        hmac.calculateRequestHMAC({ ...params, timestamp: webCryptoResult.timestamp })
+      );
+    });
+
+    it('should sign identical same-millisecond requests with distinct timestamps and HMACs', async function () {
+      const params = {
+        url: 'https://app.bitgo.com/api/v2/tss/settings',
+        token: TEST_TOKEN,
+        method: 'get' as const,
+        text: '',
+        authVersion: 2 as const,
+      };
+      const results = await Promise.all(Array.from({ length: 5 }, () => strategy.calculateRequestHeaders(params)));
+
+      expect(new Set(results.map((r) => r.timestamp)).size).to.equal(results.length);
+      expect(new Set(results.map((r) => r.hmac)).size).to.equal(results.length);
+      results.forEach((r) => expect(r.timestamp).to.be.within(MOCK_TIMESTAMP, MOCK_TIMESTAMP + 1000));
     });
 
     it('should throw if no token is set', async () => {

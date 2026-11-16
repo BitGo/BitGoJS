@@ -8,7 +8,7 @@ import {
   VerifyResponseInfo,
   VerifyResponseOptions,
 } from './types';
-import { createHmacWithSha256 } from './util';
+import { createHmacWithSha256, getRequestTimestampMs } from './util';
 
 /**
  * Calculate the HMAC for the given key and message
@@ -90,7 +90,7 @@ export function calculateRequestHeaders<T extends string | Buffer = string>(
   { url, text, token, method, authVersion, methodBinding }: CalculateRequestHeadersOptions<T>,
   useOriginalPath = false
 ): RequestHeaders {
-  const timestamp = Date.now();
+  const timestamp = getRequestTimestampMs();
   const hmac = calculateRequestHMAC(
     { url, text, timestamp, token, method, authVersion, methodBinding },
     useOriginalPath

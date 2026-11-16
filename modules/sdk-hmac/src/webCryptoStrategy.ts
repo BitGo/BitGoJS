@@ -16,6 +16,7 @@ import type {
 } from './types';
 import { calculateHMACSubject } from './hmac';
 import { IndexedDbTokenStore } from './indexedDbTokenStore';
+import { getRequestTimestampMs } from './util';
 
 function arrayBufToHex(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
@@ -141,7 +142,7 @@ export class WebCryptoHmacStrategy implements IHmacAuthStrategy {
     if (!this.cryptoKey || !this.tokenHashHex) {
       throw new Error('No token available. Call setToken() or restoreToken() first.');
     }
-    const timestamp = Date.now();
+    const timestamp = getRequestTimestampMs();
     const subject = calculateHMACSubject({
       urlPath: params.url,
       text: params.text,
