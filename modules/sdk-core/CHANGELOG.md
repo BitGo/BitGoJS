@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [40.8.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4040.7.0...%40bitgo%2Fsdk-core%4040.8.0) (2026-11-17)
+
+### Bug Fixes
+
+* **sdk-core:** assert signableHex consistency in ECDSA MPCv1 signing ([57d6ffd](https://github.com/BitGo/BitGoJS/commit/57d6ffda25da5d348d75fd4f097e2d032b69369e))
+* **sdk-core:** forward unstakingParams on custodial tx/initiate ([c37461f](https://github.com/BitGo/BitGoJS/commit/c37461fbbed998d95501752dc74633d2ec742137))
+* **sdk-lib-safes:** omit ecdsaMpc safe slot for zec and tzec ([364a63d](https://github.com/BitGo/BitGoJS/commit/364a63dcdb5ad863f232b46d56d5b3ce76f77d39))
+* validate BitGo GPG key and session state in ECDSA MPCv2 offline signing ([7495f3b](https://github.com/BitGo/BitGoJS/commit/7495f3b8cd013f63bada381f6dec1dced0ace9ec))
+
+### Features
+
+* safe keycard regeneration SDK support ([542c765](https://github.com/BitGo/BitGoJS/commit/542c765879d9349073918cc370e71abce26ddc2a))
+
+
 # [40.7.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4040.6.0...%40bitgo%2Fsdk-core%4040.7.0) (2026-11-12)
 
 ### Bug Fixes

@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [54.4.2](https://github.com/BitGo/BitGoJS/compare/bitgo%4054.4.1...bitgo%4054.4.2) (2026-11-17)
+
+**Note:** Version bump only for package bitgo
+
+
+
+
+
 ## [54.4.1](https://github.com/BitGo/BitGoJS/compare/bitgo%4054.4.0...bitgo%4054.4.1) (2026-11-12)
 
 ### Bug Fixes

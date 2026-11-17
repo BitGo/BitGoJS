@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.16.4](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-tempo%401.16.3...%40bitgo%2Fsdk-coin-tempo%401.16.4) (2026-11-17)
+
+### Bug Fixes
+
+* **sdk-coin-tempo:** verify TIP-20 token contract and memo in verifyTransaction ([63773ee](https://github.com/BitGo/BitGoJS/commit/63773eeadec3bf169dd2ae2f17d067f17d227442))
+
+
 ## [1.16.3](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-tempo%401.16.2...%40bitgo%2Fsdk-coin-tempo%401.16.3) (2026-11-12)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-tempo

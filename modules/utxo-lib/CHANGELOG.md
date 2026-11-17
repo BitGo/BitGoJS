@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [11.25.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Futxo-lib%4011.25.0...%40bitgo%2Futxo-lib%4011.25.1) (2026-11-17)
+
+**Note:** Version bump only for package @bitgo/utxo-lib
+
+
+
+
+
 # [11.25.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Futxo-lib%4011.24.4...%40bitgo%2Futxo-lib%4011.25.0) (2026-10-22)
 
 ### Features

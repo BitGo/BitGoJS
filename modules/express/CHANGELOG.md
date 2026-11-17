@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [17.9.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fexpress%4017.8.2...%40bitgo%2Fexpress%4017.9.0) (2026-11-17)
+
+### Bug Fixes
+
+* **express:** emit format number for BigIntFromString in OpenAPI spec ([b06c00a](https://github.com/BitGo/BitGoJS/commit/b06c00aeb633bb754349fd1f43d8c85330b901e9))
+* validate BitGo GPG key and session state in ECDSA MPCv2 offline signing ([7495f3b](https://github.com/BitGo/BitGoJS/commit/7495f3b8cd013f63bada381f6dec1dced0ace9ec))
+
+### Features
+
+* safe keycard regeneration SDK support ([542c765](https://github.com/BitGo/BitGoJS/commit/542c765879d9349073918cc370e71abce26ddc2a))
+
+
 ## [17.8.2](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fexpress%4017.8.1...%40bitgo%2Fexpress%4017.8.2) (2026-11-12)
 
 ### Bug Fixes

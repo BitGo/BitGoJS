@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [22.13.4](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-bsc%4022.13.3...%40bitgo%2Fsdk-coin-bsc%4022.13.4) (2026-11-17)
+
+### Bug Fixes
+
+* **sdk-core:** assert signableHex consistency in ECDSA MPCv1 signing ([57d6ffd](https://github.com/BitGo/BitGoJS/commit/57d6ffda25da5d348d75fd4f097e2d032b69369e))
+
+
 ## [22.13.3](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-bsc%4022.13.2...%40bitgo%2Fsdk-coin-bsc%4022.13.3) (2026-11-12)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-bsc

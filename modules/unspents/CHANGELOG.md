@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.51.12](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Funspents%400.51.11...%40bitgo%2Funspents%400.51.12) (2026-11-17)
+
+**Note:** Version bump only for package @bitgo/unspents
+
+
+
+
+
 ## [0.51.11](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Funspents%400.51.10...%40bitgo%2Funspents%400.51.11) (2026-10-22)
 
 **Note:** Version bump only for package @bitgo/unspents

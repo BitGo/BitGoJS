@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.4](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-avaxc%407.2.3...%40bitgo%2Fsdk-coin-avaxc%407.2.4) (2026-11-17)
+
+### Bug Fixes
+
+* **sdk-coin-avaxc:** inherit isWalletAddress verification from AbstractEthLikeNewCoins ([c1338fa](https://github.com/BitGo/BitGoJS/commit/c1338fad3c2cb35c274f10a479852c19dca05a79))
+
+
 ## [7.2.3](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-avaxc%407.2.2...%40bitgo%2Fsdk-coin-avaxc%407.2.3) (2026-11-12)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxc
