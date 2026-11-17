@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.2.2](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Futxo-staking%402.2.1...%40bitgo%2Futxo-staking%402.2.2) (2026-11-17)
+
+**Note:** Version bump only for package @bitgo/utxo-staking
+
+
+
+
+
 ## [2.2.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Futxo-staking%402.2.0...%40bitgo%2Futxo-staking%402.2.1) (2026-10-29)
 
 **Note:** Version bump only for package @bitgo/utxo-staking

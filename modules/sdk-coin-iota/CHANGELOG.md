@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.4.11](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-iota%402.4.10...%40bitgo%2Fsdk-coin-iota%402.4.11) (2026-11-17)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-iota
+
+
+
+
+
 ## [2.4.10](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-iota%402.4.9...%40bitgo%2Fsdk-coin-iota%402.4.10) (2026-11-12)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-iota

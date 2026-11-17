@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.32.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fstatics%4059.31.0...%40bitgo%2Fstatics%4059.32.0) (2026-11-17)
+
+### Bug Fixes
+
+* **statics:** add default token features for the mon family ([9d19582](https://github.com/BitGo/BitGoJS/commit/9d19582c193d38c0da37a82015bedf58596a23d4))
+
+### Features
+
+* **statics:** onboard CECHO-2732 mon:usdt0 and eth:stampx with OFC counterparts ([d676f7d](https://github.com/BitGo/BitGoJS/commit/d676f7dd9da0a9c82931eec155d2edb0ae83f58f))
+
+
 # [59.31.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fstatics%4059.30.0...%40bitgo%2Fstatics%4059.31.0) (2026-11-12)
 
 ### Bug Fixes

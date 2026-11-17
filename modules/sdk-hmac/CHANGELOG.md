@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.10.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-hmac%401.10.0...%40bitgo%2Fsdk-hmac%401.10.1) (2026-11-17)
+
+### Bug Fixes
+
+* **sdk-hmac:** make request timestamps unique per signing ([7849844](https://github.com/BitGo/BitGoJS/commit/78498446623df310c368ffde9584624ae2efcf01))
+
+
 # [1.10.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-hmac%401.9.2...%40bitgo%2Fsdk-hmac%401.10.0) (2026-11-12)
 
 ### Features

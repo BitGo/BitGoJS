@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [8.21.4](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-sol%408.21.3...%40bitgo%2Fsdk-coin-sol%408.21.4) (2026-11-17)
+
+### Bug Fixes
+
+* **sdk-coin-sol:** add CustomTx instruction verification in verifyTransaction ([146fafb](https://github.com/BitGo/BitGoJS/commit/146fafb06cf5bedcd0f2930238888f18d08655ad))
+* **sdk-coin-sol:** report the real staking withdraw destination ([d48e7bf](https://github.com/BitGo/BitGoJS/commit/d48e7bf03689e67f2a0eac82d698798494000a13))
+
+
 ## [8.21.3](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-sol%408.21.2...%40bitgo%2Fsdk-coin-sol%408.21.3) (2026-11-12)
 
 ### Bug Fixes

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.37.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fkey-card%400.36.9...%40bitgo%2Fkey-card%400.37.0) (2026-11-17)
+
+### Bug Fixes
+
+* **key-card:** bump @bitgo/sdk-lib-mpc devDependency to ^11.6.1 ([c6a9b9b](https://github.com/BitGo/BitGoJS/commit/c6a9b9b4f15afcf0531720608b1ab30984b4d03b))
+
+### Features
+
+* safe keycard regeneration SDK support ([542c765](https://github.com/BitGo/BitGoJS/commit/542c765879d9349073918cc370e71abce26ddc2a))
+
+
 ## [0.36.9](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fkey-card%400.36.8...%40bitgo%2Fkey-card%400.36.9) (2026-11-12)
 
 **Note:** Version bump only for package @bitgo/key-card

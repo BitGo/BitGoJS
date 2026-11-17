@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.2.11](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-trx%404.2.10...%40bitgo%2Fsdk-coin-trx%404.2.11) (2026-11-17)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-trx
+
+
+
+
+
 ## [4.2.10](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-trx%404.2.9...%40bitgo%2Fsdk-coin-trx%404.2.10) (2026-11-12)
 
 ### Bug Fixes

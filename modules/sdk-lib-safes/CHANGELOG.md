@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.10.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-lib-safes%401.9.1...%40bitgo%2Fsdk-lib-safes%401.10.0) (2026-11-17)
+
+### Bug Fixes
+
+* **sdk-lib-safes:** omit ecdsaMpc safe slot for zec and tzec ([364a63d](https://github.com/BitGo/BitGoJS/commit/364a63dcdb5ad863f232b46d56d5b3ce76f77d39))
+
+### Features
+
+* safe keycard regeneration SDK support ([542c765](https://github.com/BitGo/BitGoJS/commit/542c765879d9349073918cc370e71abce26ddc2a))
+
+
 ## [1.9.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-lib-safes%401.9.0...%40bitgo%2Fsdk-lib-safes%401.9.1) (2026-11-12)
 
 **Note:** Version bump only for package @bitgo/sdk-lib-safes
