@@ -17229,6 +17229,7 @@ export const botTokens = [
       'custody-bitgo-india' as CoinFeature,
       'custody-bitgo-mena-fze' as CoinFeature,
       'account-model' as CoinFeature,
+      'custody' as CoinFeature,
     ])
   ),
   AccountCtors.erc20(
