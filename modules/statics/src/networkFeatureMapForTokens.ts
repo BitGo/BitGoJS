@@ -115,6 +115,11 @@ export const networkFeatureMapForTokens: Partial<Record<CoinFamily, CoinFeature[
   lineaeth: EVM_TOKEN_FEATURES,
   mantle: EVM_TOKEN_FEATURES,
   megaeth: EVM_TOKEN_FEATURES,
+  // Monad tokens are AccountCoin-derived (MonERC20Token) and require account-model, which
+  // EVM_TOKEN_FEATURES does not carry. Mirrors the default feature set of monErc20(). Without
+  // this entry getTokenFeatures('mon') resolves to [] and a dynamically onboarded token is
+  // built with only its supplied features, failing with MissingRequiredCoinFeatureError.
+  mon: [...AccountCoin.DEFAULT_FEATURES, CoinFeature.EIP1559],
   morph: EVM_TOKEN_FEATURES,
   morpheth: EVM_TOKEN_FEATURES,
   og: EVM_TOKEN_FEATURES,
