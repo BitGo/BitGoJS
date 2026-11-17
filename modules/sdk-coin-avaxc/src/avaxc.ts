@@ -1230,11 +1230,6 @@ export class AvaxC extends AbstractEthLikeNewCoins {
     return hash.digest();
   }
 
-  async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
-    // TODO: Fix this later
-    return true;
-  }
-
   /**
    * Ensure either enterprise or newFeeAddress is passed, to know whether to create new key or use enterprise key
    * @param params

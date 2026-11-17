@@ -5,9 +5,10 @@ import { getBuilder } from './getBuilder';
 import * as secp256k1 from 'secp256k1';
 import { bip32 } from '@bitgo/secp256k1';
 import * as nock from 'nock';
-import { common, RecoveryProviderError, TransactionType, Wallet } from '@bitgo/sdk-core';
-import { Eth, optionalDeps } from '@bitgo/sdk-coin-eth';
+import { InvalidAddressError, common, RecoveryProviderError, TransactionType, Wallet } from '@bitgo/sdk-core';
+import { Eth, optionalDeps, TssVerifyEthAddressOptions, VerifyEthAddressOptions } from '@bitgo/sdk-coin-eth';
 import { AvaxSignTransactionOptions } from '../../src/iface';
+import * as assert from 'node:assert';
 import * as should from 'should';
 import { EXPORT_C, IMPORT_C, endpointResponses, recoveryUsers } from '../resources/avaxc';
 import { TavaxP } from '@bitgo/sdk-coin-avaxp';
@@ -1485,6 +1486,107 @@ describe('Avalanche C-Chain', function () {
         recoveryTxn.should.have.property('expireTime');
         recoveryTxn.should.have.property('contractSequenceId');
         recoveryTxn.should.have.property('nextContractSequenceId');
+      });
+    });
+  });
+
+  describe('Address Verification', function () {
+    describe('isWalletAddress', function () {
+      // Vector shared with the AbstractEthLikeNewCoins MPC tests:
+      // commonKeychain @ index 0 -> 0x01153f3adfe454a72589ca9ef74f013c19e54961
+      // (secp256k1 + keccak derivation is chain-agnostic, so it holds for avaxc)
+      const commonKeychain =
+        '03f9c2fb2e5a8b78a44f5d1e4f906f8e3d7a0e6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9e8d7c6b5a4' +
+        '93827160594857463728190a0b0c0d0e0f101112131415161718191a1b1c1d1e1f';
+      const keychains = [
+        { pub: 'user_pub', commonKeychain },
+        { pub: 'backup_pub', commonKeychain },
+        { pub: 'bitgo_pub', commonKeychain },
+      ];
+
+      it('should verify an MPC (TSS v3) wallet receive address', async function () {
+        const params = {
+          address: '0x01153f3adfe454a72589ca9ef74f013c19e54961',
+          coinSpecific: { forwarderVersion: 3 },
+          keychains,
+          index: 0,
+          walletVersion: 3,
+        } as unknown as TssVerifyEthAddressOptions;
+
+        (await avaxCoin.isWalletAddress(params)).should.equal(true);
+      });
+
+      it('should reject a well-formed address derived at the wrong index (CECHO-2723)', async function () {
+        // Same keychain derived at index 1 (m/1 -> 0x9b017d...e374), presented as index 0:
+        // a legitimate-looking address that does not match the requested derivation.
+        const params = {
+          address: '0x9b017d8c641f02c68bcf22bba4d9125d2cdee374',
+          coinSpecific: { forwarderVersion: 3 },
+          keychains,
+          index: 0,
+          walletVersion: 3,
+        } as unknown as TssVerifyEthAddressOptions;
+
+        (await avaxCoin.isWalletAddress(params)).should.equal(false);
+      });
+
+      it('should throw for an invalid address format instead of returning true', async function () {
+        const params = {
+          address: '0xinvalid',
+          coinSpecific: { forwarderVersion: 3 },
+          keychains,
+          index: 0,
+          walletVersion: 3,
+        } as unknown as TssVerifyEthAddressOptions;
+
+        await assert.rejects(async () => avaxCoin.isWalletAddress(params), InvalidAddressError);
+      });
+
+      it('should reject MPC verification when commonKeychain is missing', async function () {
+        const invalidKeychains = [
+          { pub: 'user_pub' },
+          { pub: 'backup_pub', commonKeychain },
+          { pub: 'bitgo_pub', commonKeychain },
+        ];
+        const params = {
+          address: '0x01153f3adfe454a72589ca9ef74f013c19e54961',
+          coinSpecific: { forwarderVersion: 3 },
+          keychains: invalidKeychains,
+          index: 0,
+          walletVersion: 3,
+        } as unknown as TssVerifyEthAddressOptions;
+
+        await assert.rejects(async () => avaxCoin.isWalletAddress(params), /missing required param commonKeychain/);
+      });
+
+      it('should return true for forwarder version 0 addresses (unverifiable by design)', async function () {
+        // Production AVAXC wallets are walletVersion 0 / forwarderVersion 0 (on-chain multisig);
+        // the base class documents v0 as unverifiable because the deployment nonce is not stored.
+        const params = {
+          address: '0xd5f90cc9ba0109521c7c75b8713a5f308930f43e',
+          baseAddress: '0x4a61abc3a4315cc517efde422c3b2aa8412f27ef',
+          coinSpecific: { forwarderVersion: 0 },
+          index: 78328,
+          walletVersion: 0,
+        } as unknown as VerifyEthAddressOptions;
+
+        (await avaxCoin.isWalletAddress(params)).should.equal(true);
+      });
+
+      it('should fail closed for forwarder versions with no deployed factory on avaxc', async function () {
+        // The AvalancheC network in @bitgo/statics has no forwarder factory addresses configured,
+        // so a v1 forwarder deposit address cannot be recomputed and must not verify.
+        const params = {
+          address: '0x0000000000000000000000000000000000000001',
+          baseAddress: '0x4a61abc3a4315cc517efde422c3b2aa8412f27ef',
+          coinSpecific: { forwarderVersion: 1, salt: '78328' },
+          index: 78328,
+          walletVersion: 0,
+        } as unknown as VerifyEthAddressOptions;
+        await assert.rejects(
+          async () => avaxCoin.isWalletAddress(params),
+          /Forwarder factory addresses not configured for this network/
+        );
       });
     });
   });
