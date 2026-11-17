@@ -535,6 +535,106 @@ export function decodeTokenAddressesFromDelegationCalldata(calldata: string): st
 }
 
 /**
+ * A single decoded ACL.delegateForUserDecryption(delegate, tokenAddress, expiry) call.
+ */
+export interface DecodedDelegationCall {
+  /** Address receiving decryption rights over the token contract (lowercase). */
+  delegate: string;
+  /** Token contract address being delegated (lowercase). */
+  tokenAddress: string;
+  /** Delegation expiry as a Unix timestamp (seconds). */
+  expiry: bigint;
+}
+
+/**
+ * Full, fail-closed decode of an ERC-7984 delegation calldata (CECHO-2720).
+ *
+ * Handles the same two calldata shapes as decodeTokenAddressesFromDelegationCalldata
+ * (direct ACL.multicall, or ForwarderV4.callFromParent wrapping a multicall) but
+ * surfaces every security-relevant field the legacy decoder discards:
+ *   - the delegate and expiry of every inner delegateForUserDecryption call
+ *   - the callFromParent target and native value in the forwarder shape
+ *
+ * Unlike the legacy decoder, this fails closed: any inner multicall entry that is
+ * not a well-formed delegateForUserDecryption call (unknown selector or trailing
+ * bytes) is rejected instead of silently skipped, so no additional calls can be
+ * smuggled into the verified transaction.
+ */
+export interface DecodedDelegation {
+  /** Calldata shape: direct ACL.multicall or ForwarderV4.callFromParent wrapping a multicall. */
+  shape: 'aclMulticall' | 'callFromParent';
+  /** Present when shape is 'callFromParent': the contract the forwarder is told to call (lowercase). */
+  callFromParentTarget?: string;
+  /** Present when shape is 'callFromParent': the native value attached to the forwarder call. */
+  callFromParentValue?: bigint;
+  /** Inner delegation calls, one per decoded delegateForUserDecryption entry. */
+  calls: DecodedDelegationCall[];
+}
+
+/**
+ * Decodes an ERC-7984 delegation calldata, binding every security-relevant field.
+ *
+ * @param calldata  ABI-encoded delegation calldata (0x-prefixed or raw hex)
+ * @returns the delegation shape, the callFromParent target/value when wrapped,
+ *          and the full (delegate, tokenAddress, expiry) record of every inner call
+ * @throws {Error} if the calldata is not a recognised delegation shape, or if any
+ *         inner multicall entry is not a well-formed delegateForUserDecryption call
+ */
+export function decodeDelegationCallsFromCalldata(calldata: string): DecodedDelegation {
+  const data = calldata.startsWith('0x') ? calldata : '0x' + calldata;
+  const methodId = data.slice(0, 10);
+  const abiCoder = new ethers.utils.AbiCoder();
+
+  const delegation: DecodedDelegation = { shape: 'aclMulticall', calls: [] };
+  let multicallHex: string;
+
+  if (methodId === callFromParentMethodId) {
+    // Decode callFromParent(address, uint256, bytes) — keep the target and value
+    // the legacy decoder discards; the inner bytes is the full multicall calldata.
+    const outerDecoded = abiCoder.decode([...callFromParentTypes], '0x' + data.slice(10));
+    delegation.shape = 'callFromParent';
+    delegation.callFromParentTarget = (outerDecoded[0] as string).toLowerCase();
+    delegation.callFromParentValue = BigInt(outerDecoded[1].toString());
+    multicallHex = ethers.utils.hexlify(outerDecoded[2]);
+  } else if (methodId === aclMulticallMethodId) {
+    multicallHex = data;
+  } else {
+    throw new Error('Not a valid delegation calldata');
+  }
+
+  if (multicallHex.slice(0, 10) !== aclMulticallMethodId) {
+    throw new Error('Not a valid delegation calldata');
+  }
+
+  // Decode multicall(bytes[]) — every element must be a well-formed
+  // delegateForUserDecryption call; anything else fails closed.
+  const outerDecoded = abiCoder.decode(['bytes[]'], '0x' + multicallHex.slice(10));
+  const innerCalls: unknown[] = outerDecoded[0];
+
+  for (const innerCall of innerCalls) {
+    const innerHex = ethers.utils.hexlify(innerCall as ethers.utils.BytesLike).slice(2); // strip 0x
+    const innerMethodId = '0x' + innerHex.slice(0, 8);
+    if (innerMethodId !== delegateForUserDecryptionMethodId) {
+      throw new Error(
+        `Unexpected delegation calldata: inner multicall entry has unrecognised method ID ${innerMethodId}`
+      );
+    }
+    // Fail closed: selector + exactly three 32-byte words; reject trailing bytes.
+    if (innerHex.length !== 8 + 3 * 64) {
+      throw new Error('Unexpected delegation calldata: malformed delegateForUserDecryption entry');
+    }
+    const innerDecoded = abiCoder.decode([...delegateForUserDecryptionTypes], '0x' + innerHex.slice(8));
+    delegation.calls.push({
+      delegate: (innerDecoded[0] as string).toLowerCase(),
+      tokenAddress: (innerDecoded[1] as string).toLowerCase(),
+      expiry: BigInt(innerDecoded[2].toString()),
+    });
+  }
+
+  return delegation;
+}
+
+/**
  * Encodes confidentialTransfer(address to, bytes32 encryptedHandle) calldata.
  * Uses the no-proof variant (selector 0x5bebed7e) — valid when the caller (forwarder)
  * is already ACL-allowed on the handle from when it received the tokens.

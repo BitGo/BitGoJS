@@ -16,6 +16,7 @@ import {
   CoinNames,
   DecryptionDelegationBuilder,
   decodeTokenAddressesFromDelegationCalldata,
+  decodeDelegationCallsFromCalldata,
   decodeConfidentialTransferData,
   decodeDirectConfidentialTransferCalldata,
   decodeFlushERC7984ForwarderTokenCalldata,
@@ -815,6 +816,14 @@ export class Erc7984Token extends Eth {
         }
       }
 
+      // CECHO-2720 rollout gate: strict delegation verification is enforced on test and
+      // staging environments first; prod keeps the legacy checks above for one release
+      // cycle while staging/testnet validation proves there are no false positives.
+      // This gate must be removed (enforcing everywhere) in the next release.
+      if (this.bitgo.env === 'test' || this.bitgo.env === 'staging') {
+        this.verifyStrictEnableTokenCalldata(txJson, aclContractAddress, requestedAddresses);
+      }
+
       return true;
     } else {
       // Multisig path: buildParams-level check
@@ -858,6 +867,94 @@ export class Erc7984Token extends Eth {
       }
 
       return true;
+    }
+  }
+
+  /**
+   * Strict CECHO-2720 checks on the delegation calldata, enforced on test/staging
+   * environments during the staged rollout. Binds every security-relevant field:
+   *   1. every inner multicall entry is a well-formed delegateForUserDecryption call
+   *      (fail-closed decoding — no smuggled calls)
+   *   2. the decoded token set exactly matches the (deduplicated) requested token set
+   *   3. all delegations grant the same delegate, which must equal the pinned
+   *      BitGo enterprise viewing key — fail closed when the network pins none
+   *   4. every delegation expiry is in the future
+   *   5. callFromParent shape: the forwarder must call the ACL contract with zero
+   *      native value (blocks forwarder fund exfiltration to an attacker contract)
+   *
+   * The wallet-owned-forwarder (txJson.to) check of the callFromParent shape is not
+   * statically verifiable here; the on-chain onlyParent modifier plus the enforced
+   * target/value checks close the fund-theft vector regardless of which forwarder
+   * the transaction targets.
+   */
+  private verifyStrictEnableTokenCalldata(
+    txJson: { to?: string; data: string; value: string },
+    aclContractAddress: string,
+    requestedAddresses: string[]
+  ): void {
+    const delegation = decodeDelegationCallsFromCalldata(txJson.data);
+
+    // Exact token-set match (CECHO-2720 review: compare as deduplicated sets): every
+    // requested token is delegated, nothing unrequested is, and no token twice.
+    const requestedTokens = [...new Set(requestedAddresses)];
+    const decodedTokens = delegation.calls.map((call) => call.tokenAddress);
+    const decodedTokenSet = new Set(decodedTokens);
+    for (const requested of requestedTokens) {
+      if (!decodedTokenSet.has(requested)) {
+        throw new Error(`verifyEnableTokenTransaction: requested token ${requested} not found in delegation calldata`);
+      }
+    }
+    if (decodedTokens.length !== decodedTokenSet.size) {
+      throw new Error(
+        'verifyEnableTokenTransaction: delegation calldata contains duplicate delegations for the same token'
+      );
+    }
+    if (decodedTokenSet.size !== requestedTokens.length) {
+      throw new Error(
+        `verifyEnableTokenTransaction: delegation calldata must contain exactly ${requestedTokens.length} distinct token delegation(s) but found ${decodedTokenSet.size}`
+      );
+    }
+
+    // Delegate binding: all delegations must grant the same delegate, and it must be
+    // the pinned BitGo enterprise viewing key. Fail closed when the network pins
+    // nothing: without the pin, WHO receives decryption rights cannot be verified.
+    const delegates = new Set(delegation.calls.map((call) => call.delegate));
+    if (delegates.size !== 1) {
+      throw new Error('verifyEnableTokenTransaction: delegation calldata grants inconsistent delegates');
+    }
+    const expectedDelegate = (this.getNetwork() as EthereumNetwork)?.zamaViewingKeyAddress?.toLowerCase();
+    if (expectedDelegate === undefined) {
+      throw new Error(
+        'verifyEnableTokenTransaction: zamaViewingKeyAddress is not pinned for this network — cannot verify the delegation delegate (fail closed)'
+      );
+    }
+    const [delegate] = [...delegates];
+    if (delegate !== expectedDelegate) {
+      throw new Error(
+        `verifyEnableTokenTransaction: delegation delegate ${delegate} does not match the expected enterprise viewing key ${expectedDelegate}`
+      );
+    }
+
+    // Expiry sanity: a delegation that is already expired is never legitimate.
+    const nowSeconds = BigInt(Math.floor(Date.now() / 1000));
+    for (const call of delegation.calls) {
+      if (call.expiry <= nowSeconds) {
+        throw new Error(`verifyEnableTokenTransaction: delegation for token ${call.tokenAddress} has already expired`);
+      }
+    }
+
+    // Forwarder shape: the forwarder must call the ACL contract with no native value.
+    if (delegation.shape === 'callFromParent') {
+      if (delegation.callFromParentTarget !== aclContractAddress.toLowerCase()) {
+        throw new Error(
+          `verifyEnableTokenTransaction: callFromParent target ${delegation.callFromParentTarget} does not match ACL contract ${aclContractAddress}`
+        );
+      }
+      if (delegation.callFromParentValue !== 0n) {
+        throw new Error(
+          `verifyEnableTokenTransaction: callFromParent must carry value 0 but got ${delegation.callFromParentValue}`
+        );
+      }
     }
   }
 
