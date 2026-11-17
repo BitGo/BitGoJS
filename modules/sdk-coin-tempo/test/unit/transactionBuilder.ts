@@ -11,11 +11,13 @@ import {
   isValidTip20Amount,
 } from '../../src/lib/utils';
 import { TIP20_DECIMALS, AA_TRANSACTION_TYPE } from '../../src/lib/constants';
-import { coins } from '@bitgo/statics';
+import { coins, tokens } from '@bitgo/statics';
 import { Ttempo } from '../../src/ttempo';
+import { Tip20Token } from '../../src/tip20Token';
+import { VerifyEthTransactionOptions } from '@bitgo/abstract-eth';
 import { BitGoAPI } from '@bitgo/sdk-api';
+import { BaseCoin, BitGoBase, InvalidMemoIdError } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoBase } from '@bitgo/sdk-core';
 import {
   TESTNET_TOKENS,
   TX_PARAMS,
@@ -772,6 +774,373 @@ describe('Tempo coin - parseTransaction / verifyTransaction', () => {
         txPrebuild: { txHex },
         txParams: {},
       });
+      assert.strictEqual(result, true);
+    });
+  });
+
+  describe('verifyTransaction token and memo verification (CECHO-2718)', () => {
+    const alphaUsdToken = ethers.utils.getAddress(TESTNET_TOKENS.alphaUSD.address);
+    const betaUsdToken = ethers.utils.getAddress(TESTNET_TOKENS.betaUSD.address);
+
+    // A TIP-20 token coin whose wallet the user sends from — user intent for the token.
+    let tokenCoin: BaseCoin;
+
+    before(function () {
+      const alphaUsdConfig = tokens.testnet.tempo.tokens.find((t) => t.type === 'ttempo:alphausd');
+      assert.ok(alphaUsdConfig, 'ttempo:alphausd config must exist in statics');
+      bitgo.safeRegister('ttempo:alphausd', Tip20Token.createTokenConstructor(alphaUsdConfig));
+      tokenCoin = bitgo.coin('ttempo:alphausd');
+    });
+
+    // Tempo.verifyTransaction only reads txPrebuild.txHex and txParams; the sdk-core
+    // VerifyTransactionOptions `wallet` field is unused in unit fixtures, so fixtures
+    // are cast once here to satisfy the strict signature.
+    function toVerifyOptions(txHex: string, txParams: unknown): VerifyEthTransactionOptions {
+      return { txPrebuild: { txHex }, txParams } as unknown as VerifyEthTransactionOptions;
+    }
+
+    it('should verify a Tip20Token transaction transferring its own contract', async () => {
+      const txHex = await buildSerializedTx([{ token: alphaUsdToken, to: mockRecipient, amount: '100' }]);
+      const result = await tokenCoin.verifyTransaction(
+        toVerifyOptions(txHex, { recipients: [{ address: mockRecipient, amount: '100000000' }] })
+      );
+      assert.strictEqual(result, true);
+    });
+
+    it('should reject a Tip20Token prebuild transferring a different token contract (CECHO-2718)', async () => {
+      // Same recipient and amount, but the transfer executes against betaUSD instead of alphaUSD
+      const txHex = await buildSerializedTx([{ token: betaUsdToken, to: mockRecipient, amount: '100' }]);
+      await assert.rejects(
+        () =>
+          tokenCoin.verifyTransaction(
+            toVerifyOptions(txHex, { recipients: [{ address: mockRecipient, amount: '100000000' }] })
+          ),
+        /token contract mismatch/
+      );
+    });
+
+    it('should enforce the Tip20Token contract check even when no recipients are specified', async () => {
+      const txHex = await buildSerializedTx([{ token: betaUsdToken, to: mockRecipient, amount: '100' }]);
+      await assert.rejects(() => tokenCoin.verifyTransaction(toVerifyOptions(txHex, {})), /token contract mismatch/);
+    });
+
+    it('should verify the token contract against txParams.tokenName on the base coin', async () => {
+      const txHex = await buildSerializedTx([{ token: alphaUsdToken, to: mockRecipient, amount: '100' }]);
+      const result = await coin.verifyTransaction({
+        txPrebuild: { txHex },
+        txParams: { tokenName: 'ttempo:alphausd', recipients: [{ address: mockRecipient, amount: '100000000' }] },
+      });
+      assert.strictEqual(result, true);
+    });
+
+    it('should reject a base-coin prebuild whose token differs from txParams.tokenName', async () => {
+      const txHex = await buildSerializedTx([{ token: betaUsdToken, to: mockRecipient, amount: '100' }]);
+      await assert.rejects(
+        () =>
+          coin.verifyTransaction({
+            txPrebuild: { txHex },
+            txParams: { tokenName: 'ttempo:alphausd', recipients: [{ address: mockRecipient, amount: '100000000' }] },
+          }),
+        /token contract mismatch/
+      );
+    });
+
+    it('should verify a memoId requested via the ?memoId= address suffix', async () => {
+      const txHex = await buildSerializedTx([{ token: mockToken, to: mockRecipient, amount: '10', memo: '123' }]);
+      const result = await coin.verifyTransaction({
+        txPrebuild: { txHex },
+        txParams: { recipients: [{ address: `${mockRecipient}?memoId=123`, amount: '10000000' }] },
+      });
+      assert.strictEqual(result, true);
+    });
+
+    it('should reject a substituted memo (CECHO-2718)', async () => {
+      // The on-chain recipient and amount are exactly as requested, but the memo
+      // routes the deposit to the attacker's sub-account instead of the user's.
+      const txHex = await buildSerializedTx([{ token: mockToken, to: mockRecipient, amount: '10', memo: '456' }]);
+      await assert.rejects(
+        () =>
+          coin.verifyTransaction({
+            txPrebuild: { txHex },
+            txParams: { recipients: [{ address: `${mockRecipient}?memoId=123`, amount: '10000000' }] },
+          }),
+        /memo mismatch/
+      );
+    });
+
+    it('should reject an added memo when none was requested', async () => {
+      const txHex = await buildSerializedTx([{ token: mockToken, to: mockRecipient, amount: '10', memo: '123' }]);
+      await assert.rejects(
+        () =>
+          coin.verifyTransaction({
+            txPrebuild: { txHex },
+            txParams: { recipients: [{ address: mockRecipient, amount: '10000000' }] },
+          }),
+        /memo mismatch/
+      );
+    });
+
+    it('should reject a missing memo when one was requested', async () => {
+      const txHex = await buildSerializedTx([{ token: mockToken, to: mockRecipient, amount: '10' }]);
+      await assert.rejects(
+        () =>
+          coin.verifyTransaction({
+            txPrebuild: { txHex },
+            txParams: { recipients: [{ address: `${mockRecipient}?memoId=123`, amount: '10000000' }] },
+          }),
+        /memo mismatch/
+      );
+    });
+
+    it('should verify a memo requested via the recipient memo field', async () => {
+      const txHex = await buildSerializedTx([{ token: mockToken, to: mockRecipient, amount: '10', memo: '789' }]);
+      const recipientWithMemo = { address: mockRecipient, amount: '10000000', memo: '789' };
+      const result = await coin.verifyTransaction({
+        txPrebuild: { txHex },
+        txParams: {
+          recipients: [recipientWithMemo],
+        },
+      });
+      assert.strictEqual(result, true);
+    });
+
+    it('should throw on a malformed memoId suffix instead of accepting the recipient', async () => {
+      const txHex = await buildSerializedTx([{ token: mockToken, to: mockRecipient, amount: '10', memo: '123' }]);
+      await assert.rejects(
+        () =>
+          coin.verifyTransaction({
+            txPrebuild: { txHex },
+            txParams: { recipients: [{ address: `${mockRecipient}?memoId=not-a-number`, amount: '10000000' }] },
+          }),
+        Error
+      );
+    });
+
+    it('should reject a transaction mixing token operations with raw contract calls', async () => {
+      const builder = new Tip20TransactionBuilder(coins.get('ttempo'));
+      builder
+        .addOperation({ token: mockToken, to: mockRecipient, amount: '10' })
+        .addRawCall({ to: mockRecipient, data: '0xdeadbeef' })
+        .nonce(0)
+        .gas(100000n)
+        .maxFeePerGas(TX_PARAMS.defaultMaxFeePerGas)
+        .maxPriorityFeePerGas(TX_PARAMS.defaultMaxPriorityFeePerGas);
+      const tx = (await builder.build()) as Tip20Transaction;
+      const txHex = await tx.serialize();
+
+      await assert.rejects(
+        () =>
+          coin.verifyTransaction({
+            txPrebuild: { txHex },
+            txParams: { recipients: [{ address: mockRecipient, amount: '10000000' }] },
+          }),
+        /not a supported send shape/
+      );
+    });
+
+    it('should throw when txParams.tokenName cannot be resolved (fail closed, not silent skip)', async () => {
+      const txHex = await buildSerializedTx([{ token: alphaUsdToken, to: mockRecipient, amount: '100' }]);
+      await assert.rejects(
+        () =>
+          coin.verifyTransaction({
+            txPrebuild: { txHex },
+            txParams: {
+              tokenName: 'ttempo:doesnotexist',
+              recipients: [{ address: mockRecipient, amount: '100000000' }],
+            },
+          }),
+        /refusing to verify a token transfer whose intended token cannot be identified/
+      );
+    });
+
+    it('should throw when txParams.tokenName resolves to a coin without a token contract', async () => {
+      const txHex = await buildSerializedTx([{ token: alphaUsdToken, to: mockRecipient, amount: '100' }]);
+      await assert.rejects(
+        () =>
+          coin.verifyTransaction({
+            txPrebuild: { txHex },
+            txParams: { tokenName: 'ttempo', recipients: [{ address: mockRecipient, amount: '100000000' }] },
+          }),
+        /refusing to verify a token transfer whose intended token cannot be identified/
+      );
+    });
+
+    it('should verify the token against per-recipient tokenName (TSS intent form)', async () => {
+      const txHex = await buildSerializedTx([{ token: alphaUsdToken, to: mockRecipient, amount: '100' }]);
+      const result = await coin.verifyTransaction({
+        txPrebuild: { txHex },
+        txParams: {
+          recipients: [{ address: mockRecipient, amount: '100000000', tokenName: 'ttempo:alphausd' }],
+        },
+      });
+      assert.strictEqual(result, true);
+    });
+
+    it('should reject when per-recipient tokenName differs from the transferred contract', async () => {
+      const txHex = await buildSerializedTx([{ token: betaUsdToken, to: mockRecipient, amount: '100' }]);
+      await assert.rejects(
+        () =>
+          coin.verifyTransaction({
+            txPrebuild: { txHex },
+            txParams: {
+              recipients: [{ address: mockRecipient, amount: '100000000', tokenName: 'ttempo:alphausd' }],
+            },
+          }),
+        /token contract mismatch/
+      );
+    });
+
+    it('should treat an empty-string memo field as no memo (matches encoder)', async () => {
+      // encodeTip20TransferWithMemo encodes '' as a zero bytes32, which decodes as undefined,
+      // so an empty requested memo must compare equal to an absent encoded memo.
+      const txHex = await buildSerializedTx([{ token: mockToken, to: mockRecipient, amount: '10' }]);
+      const recipientWithEmptyMemo = { address: mockRecipient, amount: '10000000', memo: '' };
+      const result = await coin.verifyTransaction({
+        txPrebuild: { txHex },
+        txParams: { recipients: [recipientWithEmptyMemo] },
+      });
+      assert.strictEqual(result, true);
+    });
+
+    it('should verify when memoId suffix and memo field agree', async () => {
+      const txHex = await buildSerializedTx([{ token: mockToken, to: mockRecipient, amount: '10', memo: '123' }]);
+      const recipientWithBothMemos = { address: `${mockRecipient}?memoId=123`, amount: '10000000', memo: '123' };
+      const result = await coin.verifyTransaction({
+        txPrebuild: { txHex },
+        txParams: { recipients: [recipientWithBothMemos] },
+      });
+      assert.strictEqual(result, true);
+    });
+
+    it('should throw when memoId suffix and memo field disagree (ambiguous request)', async () => {
+      const txHex = await buildSerializedTx([{ token: mockToken, to: mockRecipient, amount: '10', memo: '123' }]);
+      const recipientWithConflictingMemos = { address: `${mockRecipient}?memoId=123`, amount: '10000000', memo: '456' };
+      await assert.rejects(
+        () =>
+          coin.verifyTransaction({
+            txPrebuild: { txHex },
+            txParams: { recipients: [recipientWithConflictingMemos] },
+          }),
+        /ambiguous memo request/
+      );
+    });
+
+    it('should reject a memoId with leading zeros as malformed', async () => {
+      // isValidMemoId only allows 0 or digits without a leading zero, so ?memoId=0123
+      // never reaches comparison — getAddressDetails fails closed on it.
+      const txHex = await buildSerializedTx([{ token: mockToken, to: mockRecipient, amount: '10', memo: '123' }]);
+      await assert.rejects(
+        () =>
+          coin.verifyTransaction({
+            txPrebuild: { txHex },
+            txParams: { recipients: [{ address: `${mockRecipient}?memoId=0123`, amount: '10000000' }] },
+          }),
+        InvalidMemoIdError
+      );
+    });
+
+    it('should round-trip a large numeric memoId (2^64-1) through encode/decode', async () => {
+      // Pins the memo decode format (hexZeroPad/stripZeros symmetry) for values far
+      // beyond typical memoIds; a normalization change would break this test.
+      const largeMemoId = '18446744073709551615';
+      const txHex = await buildSerializedTx([{ token: mockToken, to: mockRecipient, amount: '10', memo: largeMemoId }]);
+      const result = await coin.verifyTransaction({
+        txPrebuild: { txHex },
+        txParams: { recipients: [{ address: `${mockRecipient}?memoId=${largeMemoId}`, amount: '10000000' }] },
+      });
+      assert.strictEqual(result, true);
+    });
+
+    it('should reject a large memoId that does not match the encoded memo', async () => {
+      const txHex = await buildSerializedTx([{ token: mockToken, to: mockRecipient, amount: '10', memo: '1' }]);
+      await assert.rejects(
+        () =>
+          coin.verifyTransaction({
+            txPrebuild: { txHex },
+            txParams: {
+              recipients: [{ address: `${mockRecipient}?memoId=18446744073709551615`, amount: '10000000' }],
+            },
+          }),
+        /memo mismatch/
+      );
+    });
+
+    it('should reject a Tip20Token raw call to another contract when no recipients are given', async () => {
+      // A raw call does not decode as an operation (e.g. plain transfer() calldata), so
+      // without recipients it could previously target any contract unverified.
+      const builder = new Tip20TransactionBuilder(coins.get('ttempo'));
+      builder
+        .addRawCall({ to: betaUsdToken, data: '0xdeadbeef' })
+        .nonce(0)
+        .gas(100000n)
+        .maxFeePerGas(TX_PARAMS.defaultMaxFeePerGas)
+        .maxPriorityFeePerGas(TX_PARAMS.defaultMaxPriorityFeePerGas);
+      const tx = (await builder.build()) as Tip20Transaction;
+      const txHex = await tx.serialize();
+
+      await assert.rejects(
+        () => tokenCoin.verifyTransaction(toVerifyOptions(txHex, {})),
+        /refusing to verify a call to an unexpected contract/
+      );
+    });
+
+    it('should verify a Tip20Token raw call targeting its own contract when no recipients are given', async () => {
+      const builder = new Tip20TransactionBuilder(coins.get('ttempo'));
+      builder
+        .addRawCall({ to: alphaUsdToken, data: '0xdeadbeef' })
+        .nonce(0)
+        .gas(100000n)
+        .maxFeePerGas(TX_PARAMS.defaultMaxFeePerGas)
+        .maxPriorityFeePerGas(TX_PARAMS.defaultMaxPriorityFeePerGas);
+      const tx = (await builder.build()) as Tip20Transaction;
+      const txHex = await tx.serialize();
+
+      const result = await tokenCoin.verifyTransaction(toVerifyOptions(txHex, {}));
+      assert.strictEqual(result, true);
+    });
+
+    it('should allow consolidation-flagged raw calls to other contracts (platform-driven builds)', async () => {
+      // wallet.consolidate() passes verification.consolidationToBaseAddress; those builds are
+      // platform-driven and not user send requests, so the raw-call target check opts out.
+      const builder = new Tip20TransactionBuilder(coins.get('ttempo'));
+      builder
+        .addRawCall({ to: betaUsdToken, data: '0xdeadbeef' })
+        .nonce(0)
+        .gas(100000n)
+        .maxFeePerGas(TX_PARAMS.defaultMaxFeePerGas)
+        .maxPriorityFeePerGas(TX_PARAMS.defaultMaxPriorityFeePerGas);
+      const tx = (await builder.build()) as Tip20Transaction;
+      const txHex = await tx.serialize();
+
+      const result = await tokenCoin.verifyTransaction({
+        ...toVerifyOptions(txHex, {}),
+        verification: { consolidationToBaseAddress: true },
+      });
+      assert.strictEqual(result, true);
+    });
+
+    it('should reject a Tip20Token txParams.tokenName conflicting with the wallet contract', async () => {
+      const txHex = await buildSerializedTx([{ token: alphaUsdToken, to: mockRecipient, amount: '100' }]);
+      await assert.rejects(
+        () =>
+          tokenCoin.verifyTransaction(
+            toVerifyOptions(txHex, {
+              tokenName: 'ttempo:betausd',
+              recipients: [{ address: mockRecipient, amount: '100000000' }],
+            })
+          ),
+        /conflicts with this token wallet's contract/
+      );
+    });
+
+    it('should verify a Tip20Token send whose txParams.tokenName matches the wallet contract', async () => {
+      const txHex = await buildSerializedTx([{ token: alphaUsdToken, to: mockRecipient, amount: '100' }]);
+      const result = await tokenCoin.verifyTransaction(
+        toVerifyOptions(txHex, {
+          tokenName: 'ttempo:alphausd',
+          recipients: [{ address: mockRecipient, amount: '100000000' }],
+        })
+      );
       assert.strictEqual(result, true);
     });
   });
