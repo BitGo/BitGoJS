@@ -32,7 +32,7 @@ import {
   getIsUnsignedSweep,
 } from '@bitgo/sdk-core';
 import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
-import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, coins, ContractAddressDefinedToken } from '@bitgo/statics';
 import { ethers } from 'ethers';
 import { Tip20Transaction, Tip20TransactionBuilder } from './lib';
 import {
@@ -272,9 +272,56 @@ export class Tempo extends AbstractEthLikeNewCoins {
     const operations = tx.getOperations();
     const rawCalls = tx.getRawCalls();
 
-    // If the caller specified explicit recipients, verify they match the transaction.
-    // A transaction is either all token transfer operations OR a single raw contract call — never mixed.
+    // A TIP-20 transaction is either all token transfer operations OR raw contract calls — never mixed.
+    // A mixed payload would let unverified value movement ride along next to the verified part, so fail closed.
+    if (operations.length > 0 && rawCalls.length > 0) {
+      throw new Error(
+        `Transaction mixes ${operations.length} token operation(s) with ${rawCalls.length} raw call(s); ` +
+          `this is not a supported send shape`
+      );
+    }
+
+    // Token-substitution check (CECHO-2718): the contract the prebuild executes against must
+    // match the token implied by user intent — the coin's own contract address for TIP-20
+    // token wallets, or an explicit tokenName in txParams. Applies even when the caller
+    // specified no explicit recipients.
+    const expectedTokenContractAddress = this.getExpectedTokenContractAddress(txParams);
+    if (expectedTokenContractAddress) {
+      for (let i = 0; i < operations.length; i++) {
+        const op = operations[i];
+        if (op.token.toLowerCase() !== expectedTokenContractAddress.toLowerCase()) {
+          throw new Error(
+            `Operation ${i} token contract mismatch: expected ${expectedTokenContractAddress}, got ${op.token}`
+          );
+        }
+      }
+    }
+
     const recipients = txParams?.recipients;
+
+    // With no explicit recipients there is no calldata to match raw calls against, so a
+    // token-substituted raw call (e.g. a plain transfer() on another token contract, or a
+    // transferWithMemo whose memo is not valid UTF-8 and therefore does not decode as an
+    // operation) would otherwise ride through unverified. Fail closed: any raw call must at
+    // least target the intended token contract. Consolidation opts out via its verification
+    // flag — those builds are platform-driven and not user send requests.
+    if (
+      expectedTokenContractAddress &&
+      (!recipients || recipients.length === 0) &&
+      rawCalls.length > 0 &&
+      !params.verification?.consolidationToBaseAddress
+    ) {
+      for (let i = 0; i < rawCalls.length; i++) {
+        if (rawCalls[i].to.toLowerCase() !== expectedTokenContractAddress.toLowerCase()) {
+          throw new Error(
+            `Raw call ${i} targets ${rawCalls[i].to} instead of the expected token contract ` +
+              `${expectedTokenContractAddress}; refusing to verify a call to an unexpected contract`
+          );
+        }
+      }
+    }
+
+    // If the caller specified explicit recipients, verify they match the transaction.
     if (recipients && recipients.length > 0) {
       if (rawCalls.length > 0) {
         // Contract call transaction — single raw call, single recipient with data
@@ -311,6 +358,31 @@ export class Tempo extends AbstractEthLikeNewCoins {
           if (opAmountBaseUnits !== recipient.amount.toString()) {
             throw new Error(`Operation ${i} amount mismatch: expected ${recipient.amount}, got ${opAmountBaseUnits}`);
           }
+
+          // Per-recipient token identity (CECHO-2718): TSS signing flows populate
+          // tokenName on each recipient from the persisted intent. An explicit
+          // per-recipient intent must resolve — unknown names throw rather than skip.
+          if (recipient.tokenName) {
+            const expectedRecipientToken = this.resolveTokenContractAddress(recipient.tokenName);
+            if (op.token.toLowerCase() !== expectedRecipientToken.toLowerCase()) {
+              throw new Error(
+                `Operation ${i} token contract mismatch: expected ${expectedRecipientToken}, got ${op.token}`
+              );
+            }
+          }
+
+          // Memo-substitution check (CECHO-2718): the memo actually encoded in the
+          // transferWithMemo calldata must equal the memo the user requested — via the
+          // ?memoId= suffix of the recipient address or the recipient's memo field.
+          // An added, removed, or substituted memo must fail verification. Memo is
+          // only checkable here: without explicit recipients there is no requested
+          // memo to compare against.
+          const requestedMemo = this.getRequestedMemo(recipient);
+          if ((op.memo ?? undefined) !== requestedMemo) {
+            throw new Error(
+              `Operation ${i} memo mismatch: expected ${requestedMemo ?? 'no memo'}, got ${op.memo ?? 'no memo'}`
+            );
+          }
         }
       }
     }
@@ -324,6 +396,79 @@ export class Tempo extends AbstractEthLikeNewCoins {
     }
 
     return true;
+  }
+
+  /**
+   * The TIP-20 token contract address the transaction must transfer against,
+   * as implied by user intent. TIP-20 token coins (Tip20Token) override this
+   * with their own contract address. For the base Tempo coin, an explicit
+   * txParams.tokenName is resolved through statics and must resolve — an
+   * unresolvable name means intent cannot be verified, so this throws.
+   *
+   * Returns undefined when the request carries no token identity at the coin
+   * or txParams level. Verification then falls back to per-recipient tokenName
+   * (set on recipients by the TSS signing flow from the persisted intent) inside
+   * the recipients loop. The residual gap — a base-coin prebuild with token
+   * operations and no token identity anywhere — is accepted: consolidation and
+   * other platform-driven flows legitimately call verifyTransaction without a
+   * user-chosen token, and they cannot be verified without breaking.
+   */
+  protected getExpectedTokenContractAddress(txParams?: VerifyEthTransactionOptions['txParams']): string | undefined {
+    if (!txParams?.tokenName) {
+      return undefined;
+    }
+    return this.resolveTokenContractAddress(txParams.tokenName);
+  }
+
+  /**
+   * Resolve a user-supplied tokenName to its TIP-20 contract address.
+   * @throws Error if the name is unknown in statics or does not define a token
+   * contract — explicit token intent must be verifiable, never silently skipped.
+   */
+  protected resolveTokenContractAddress(tokenName: string): string {
+    let token: Readonly<StaticsBaseCoin>;
+    try {
+      token = coins.get(tokenName);
+    } catch {
+      throw new Error(
+        `tokenName '${tokenName}' is unknown; refusing to verify a token transfer whose intended token cannot be identified`
+      );
+    }
+    if (!(token instanceof ContractAddressDefinedToken)) {
+      throw new Error(
+        `tokenName '${tokenName}' does not define a token contract address; refusing to verify a token transfer whose intended token cannot be identified`
+      );
+    }
+    return token.contractAddress.toString();
+  }
+
+  /**
+   * Extract the memo the user requested for a recipient: either the memoId
+   * suffix of the recipient address (`0x...?memoId=N`) or the recipient's memo
+   * field. An empty-string memo field counts as no memo, matching the encoder
+   * (an empty memo is encoded as a zero bytes32 and decodes back as undefined).
+   * If both forms are present they must agree — an ambiguous memo request fails
+   * closed rather than silently preferring one.
+   * Returns undefined when no memo was requested.
+   * @throws Error if the recipient address carries a malformed query string or
+   * the two memo forms disagree
+   */
+  protected getRequestedMemo(
+    recipient: NonNullable<VerifyEthTransactionOptions['txParams']['recipients']>[number]
+  ): string | undefined {
+    let memoId: string | undefined;
+    if (recipient.address.includes('?')) {
+      // getAddressDetails validates the full format: only a single, valid memoId allowed
+      memoId = this.getAddressDetails(recipient.address).memoId ?? undefined;
+    }
+    const memoField =
+      'memo' in recipient && typeof recipient.memo === 'string' && recipient.memo !== '' ? recipient.memo : undefined;
+    if (memoId !== undefined && memoField !== undefined && memoId !== memoField) {
+      throw new Error(
+        `Recipient '${recipient.address}' carries both ?memoId=${memoId} and memo '${memoField}'; ambiguous memo request`
+      );
+    }
+    return memoId ?? memoField;
   }
 
   /**

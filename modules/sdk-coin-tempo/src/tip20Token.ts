@@ -3,7 +3,7 @@
  */
 import { BitGoBase, CoinConstructor, MPCAlgorithm, NamedCoinConstructor } from '@bitgo/sdk-core';
 import { coins, tokens, Tip20TokenConfig } from '@bitgo/statics';
-import { GetSendMethodArgsOptions, SendMethodArgs } from '@bitgo/abstract-eth';
+import { GetSendMethodArgsOptions, SendMethodArgs, VerifyEthTransactionOptions } from '@bitgo/abstract-eth';
 import { Address } from './lib/types';
 import { Tempo } from './tempo';
 import { encodeTip20TransferWithMemo, amountToTip20Units, isValidAddress, isValidTip20Amount } from './lib/utils';
@@ -114,6 +114,26 @@ export class Tip20Token extends Tempo {
   /** @inheritDoc */
   supportsTss(): boolean {
     return true;
+  }
+
+  /**
+   * Token wallets must only transfer their own contract: the user's token choice
+   * is the wallet they send from, so any other token contract in the prebuild is
+   * a token-substitution attack (CECHO-2718) and fails verification. An explicit
+   * txParams.tokenName is honored as intent and must not conflict with the wallet's
+   * own contract — a disagreeing name is rejected rather than ignored.
+   * @inheritDoc
+   */
+  protected getExpectedTokenContractAddress(txParams?: VerifyEthTransactionOptions['txParams']): string {
+    if (txParams?.tokenName) {
+      const namedToken = this.resolveTokenContractAddress(txParams.tokenName);
+      if (namedToken.toLowerCase() !== this.contractAddress.toLowerCase()) {
+        throw new Error(
+          `txParams.tokenName '${txParams.tokenName}' conflicts with this token wallet's contract ${this.contractAddress}`
+        );
+      }
+    }
+    return this.contractAddress;
   }
 
   /** @inheritDoc */
