@@ -24,7 +24,7 @@ id = "GHSA-w4pp-8pjf-rmxw"
 reason = "pacote DoS via addGitSha on malicious spec.rawSpec (CVE-2026-9496); transitive via lerna (pinned pacote@21.0.1), @npmcli/arborist, and yeoman-generator (dev-time only); fix only in pacote 21.5.1+/22.0.0 which lerna does not yet support; all specs processed come from our own package.json/yarn.lock, never untrusted input"
 
 [[IgnoredVulns]]
-id = "GHSA-vfj7-8cjw-p6xm"
-reason = "braces stack-overflow DoS (CVE-2026-93687) via deeply nested brace patterns in the recursive AST walker; no upstream fix available (last_affected: 3.0.3, latest release); transitive via chokidar, karma, and lint-staged/micromatch — dev-time tooling only; all brace patterns we feed in are code-controlled globs (watcher roots, lint globs, test patterns), never user-supplied. Re-evaluate on 2026-12-03: drop this exclusion if braces ships a patched release"
+id = "GHSA-fc5q-39xc-vjpf"
+reason = "picomatch ReDoS via single-branch repeated extglobs (CVE-2026-112366); no upstream fix available (last_affected: 4.0.7, latest release); transitive via anymatch, micromatch, readdirp, and tinyglobby — dev-time tooling only (jest/chokidar/vite glob chains), no published @bitgo/* package depends on picomatch; all glob patterns fed in are code-controlled build/test globs, never user-supplied. Re-evaluate on 2026-12-17: drop this exclusion if picomatch ships a patched release"
 
 
