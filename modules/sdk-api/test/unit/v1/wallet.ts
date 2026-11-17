@@ -22,6 +22,21 @@ nock.disableNetConnect();
 const TestBitGo = {
   TEST_WALLET1_PASSCODE: 'iVWeATjqLS1jJShrPpETti0b',
 };
+
+/**
+ * Give a test unspent a real previous transaction: one that pays `value` to the unspent's script at
+ * output `tx_output_n`. The unspent's txid is set to that transaction's txid and the hex is attached as `prevTx`.
+ */
+function attachPrevTx(unspent: any, value: number = unspent.value): void {
+  const prevTx = new utxolib.Transaction();
+  prevTx.addInput(Buffer.alloc(32, 1), 0);
+  for (let i = 0; i < unspent.tx_output_n; i++) {
+    prevTx.addOutput(Buffer.from('6a', 'hex'), 0);
+  }
+  prevTx.addOutput(Buffer.from(unspent.script, 'hex'), value);
+  unspent.txid = unspent.tx_hash = prevTx.getId();
+  unspent.prevTx = prevTx.toHex();
+}
 describe('Wallet Prototype Methods', function () {
   const fixtures = getFixtures();
 
@@ -315,6 +330,7 @@ describe('Wallet Prototype Methods', function () {
       unspent.tx_hash = unspent.txid;
       unspent.tx_output_n = unspent.n;
       unspent.script = unspent.outputScript;
+      attachPrevTx(unspent);
 
       const txParams = {
         changeAddress: p2shAddress.address,
@@ -433,6 +449,7 @@ describe('Wallet Prototype Methods', function () {
       unspent.tx_hash = unspent.txid;
       unspent.tx_output_n = unspent.n;
       unspent.script = unspent.outputScript;
+      attachPrevTx(unspent);
 
       nock(bgUrl).post('/api/v1/billing/address').reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
 
@@ -461,9 +478,11 @@ describe('Wallet Prototype Methods', function () {
       psbt.data.inputs.length.should.equal(1);
       psbt.data.outputs.length.should.equal(2); // OP_RETURN + change
 
-      // Verify input has required PSBT metadata
+      // Verify input has required PSBT metadata. A p2sh input carries the full previous transaction,
+      // because the legacy sighash does not commit to the input value.
       const input = psbt.data.inputs[0];
-      should.exist(input.witnessUtxo);
+      should.exist(input.nonWitnessUtxo);
+      should.not.exist(input.witnessUtxo);
       should.exist(input.redeemScript);
       should.exist(input.bip32Derivation);
       input.bip32Derivation!.length.should.equal(3); // user, backup, bitgo
@@ -483,6 +502,130 @@ describe('Wallet Prototype Methods', function () {
       // Parse signed PSBT and verify signature
       const signedPsbt = utxolib.bitgo.createPsbtFromHex(signedResult.tx, utxolib.networks.bitcoin);
       should.ok(signedPsbt.validateSignaturesOfInputHD(0, utxolib.bip32.fromBase58(userKeypair.xpub)));
+    });
+
+    describe('p2sh PSBT previous transactions', function () {
+      function nockPrevTx(txid: string) {
+        return nock(bgUrl).get(`/api/v1/tx/${txid}`);
+      }
+
+      function p2shUnspent(): any {
+        const p2shAddress = fakeProdWallet.generateAddress({ path: '/0/13', segwit: false });
+        const unspent: any = { value: 504422, tx_output_n: 1, confirmations: 9 };
+        _.extend(unspent, p2shAddress);
+        unspent.script = unspent.outputScript;
+        return unspent;
+      }
+
+      async function createPsbtTransaction(unspent: any): Promise<any> {
+        nock(bgUrl).post('/api/v1/billing/address').reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
+        return fakeProdWallet.createTransaction({
+          changeAddress: unspent.address,
+          unspents: [unspent],
+          recipients: {},
+          noSplitChange: true,
+          forceChangeAtEnd: true,
+          feeRate: 10000,
+          bitgoFee: { amount: 0, address: '' },
+          opReturns: { 'BitGo p2sh test': 1000 },
+          usePsbt: true,
+        });
+      }
+
+      afterEach(function () {
+        nock.cleanAll();
+      });
+
+      it('fetches the previous transaction from the BitGo v1 tx endpoint when it is not provided', async function () {
+        const unspent = p2shUnspent();
+        attachPrevTx(unspent);
+        const prevTxHex = unspent.prevTx;
+        delete unspent.prevTx;
+        const txEndpoint = nockPrevTx(unspent.tx_hash).reply(200, { id: unspent.tx_hash, hex: prevTxHex });
+
+        const transaction = await createPsbtTransaction(unspent);
+
+        txEndpoint.done();
+        transaction.psbtAttempt.success.should.be.true();
+        const psbt = utxolib.bitgo.createPsbtFromHex(transaction.transactionHex, utxolib.networks.bitcoin);
+        psbt.data.inputs[0].nonWitnessUtxo!.toString('hex').should.equal(prevTxHex);
+      });
+
+      it('falls back to the legacy format when the previous transaction cannot be fetched', async function () {
+        const unspent = p2shUnspent();
+        attachPrevTx(unspent);
+        delete unspent.prevTx;
+        nockPrevTx(unspent.tx_hash).reply(500);
+
+        const transaction = await createPsbtTransaction(unspent);
+
+        transaction.psbtAttempt.success.should.be.false();
+        utxolib.bitgo.isPsbt(transaction.transactionHex).should.be.false();
+      });
+
+      it('falls back to the legacy format when the tx endpoint returns no hex', async function () {
+        const unspent = p2shUnspent();
+        attachPrevTx(unspent);
+        delete unspent.prevTx;
+        nockPrevTx(unspent.tx_hash).reply(200, { id: unspent.tx_hash });
+
+        const transaction = await createPsbtTransaction(unspent);
+
+        transaction.psbtAttempt.success.should.be.false();
+        utxolib.bitgo.isPsbt(transaction.transactionHex).should.be.false();
+      });
+
+      it('does not request the tx endpoint for an invalid txid', async function () {
+        const unspent = p2shUnspent();
+        attachPrevTx(unspent);
+        delete unspent.prevTx;
+        unspent.tx_hash = '../wallet/' + unspent.tx_hash;
+        const anyGet = nock(bgUrl).get(/.*/).reply(200, {});
+
+        await createPsbtTransaction(unspent).catch(() => undefined);
+
+        anyGet.isDone().should.be.false();
+      });
+
+      it('refuses to build any transaction when the claimed input value differs from the previous transaction', async function () {
+        const unspent = p2shUnspent();
+        // The previous transaction holds 10 BTC, but the unspent claims 0.00504422 BTC
+        attachPrevTx(unspent, 1e9);
+
+        await createPsbtTransaction(unspent).should.be.rejectedWith({
+          name: 'PrevTxMismatchError',
+          message: /value of input .* is 1000000000 in the previous transaction, expected 504422/,
+        });
+      });
+
+      it('refuses to build any transaction when the tx endpoint returns a different transaction', async function () {
+        const unspent = p2shUnspent();
+        attachPrevTx(unspent);
+        const otherUnspent = p2shUnspent();
+        attachPrevTx(otherUnspent, 1e9);
+        delete unspent.prevTx;
+        nockPrevTx(unspent.tx_hash).reply(200, { id: unspent.tx_hash, hex: otherUnspent.prevTx });
+
+        await createPsbtTransaction(unspent).should.be.rejectedWith({
+          name: 'PrevTxMismatchError',
+          message: /previous transaction for input .* has txid/,
+        });
+      });
+
+      it('refuses to build any transaction when the previous transaction pays a different script', async function () {
+        const unspent = p2shUnspent();
+        const segwitAddress = fakeProdWallet.generateAddress({ path: '/10/13', segwit: true });
+        // Same value, but the output pays another address
+        const forged = { ...unspent, script: segwitAddress.outputScript };
+        attachPrevTx(forged);
+        unspent.tx_hash = unspent.txid = forged.tx_hash;
+        unspent.prevTx = forged.prevTx;
+
+        await createPsbtTransaction(unspent).should.be.rejectedWith({
+          name: 'PrevTxMismatchError',
+          message: /script of input .* does not match address/,
+        });
+      });
     });
 
     it('segwit with PSBT format', async function () {
