@@ -42,10 +42,28 @@ import {
   decodeTransferData,
 } from '@bitgo/abstract-eth';
 import { bip32 } from '@bitgo/secp256k1';
+import { ethers } from 'ethers';
+import { addHexPrefix } from 'ethereumjs-util';
 import * as _ from 'lodash';
 
 import { Eth } from './eth';
 import { TransactionBuilder } from './lib';
+
+// CECHO-2719 strict consolidation verification: upper bound on the CREATE2 derivation
+// indices scanned when checking whether a consolidation destination is a wallet-owned
+// forwarder. BitGo EVM forwarders use the derivation index as the CREATE2 salt, so every
+// wallet-owned forwarder is reproducible from (baseAddress, index). The scan early-exits
+// on the first match, so legitimate (low-index) forwarders verify cheaply; only
+// rejections and very-high-index matches pay the full bound. Measured cost is ~15µs per
+// derivation, so a full miss costs ~450ms across the three fee-less version layouts
+// (~30k derivations) or ~600ms with the wallet fee address present (4 × 10000);
+// recoverConsolidations caps its own address scan at 10 * DEFAULT_SCAN_FACTOR = 200,
+// and 10000 covers exchange-scale deposit wallets. A destination derived beyond this
+// bound is rejected with an error naming
+// the scanned range — diagnosable during the staging validation window, which exists
+// to de-risk exactly this class of false positive.
+const STRICT_CONSOLIDATION_MAX_DERIVATION_INDEX = 10000;
+const STRICT_CONSOLIDATION_FORWARDER_VERSIONS = [1, 2, 4, 5] as const;
 
 export { Erc7984TokenConfig };
 
@@ -495,6 +513,15 @@ export class Erc7984Token extends Eth {
     const { txParams, txPrebuild, wallet } = params;
 
     if (!txPrebuild?.txHex) {
+      // CECHO-2719 rollout gate: strict consolidation verification requires inspecting the
+      // material that will be signed — a consolidateId alone proves nothing about the
+      // transaction, so a txHex-less prebuild is rejected outright on test/staging.
+      // This gate must be removed (enforcing everywhere) in the next release.
+      if (this.bitgo.env === 'test' || this.bitgo.env === 'staging') {
+        throw new Error(
+          'verifyConfidentialConsolidation: txPrebuild.txHex is required to verify a consolidation on test/staging'
+        );
+      }
       if (!txPrebuild?.consolidateId && !txParams?.prebuildTx?.consolidateId) {
         throw new Error('verifyConfidentialConsolidation: missing consolidateId');
       }
@@ -533,6 +560,11 @@ export class Erc7984Token extends Eth {
       );
     }
 
+    // Note: in strict mode the checks below run first on this builder round-trip
+    // decode, and verifyStrictConsolidationCalldata then re-verifies every field from
+    // the original signed bytes; both must pass, so if the two decodes disagree, the
+    // legacy error surfaces first and the strict tier never runs.
+
     if (tokenContractAddress.toLowerCase() !== this.tokenContractAddress.toLowerCase()) {
       throw new Error(
         `verifyConfidentialConsolidation: token contract address mismatch — ` +
@@ -567,7 +599,267 @@ export class Erc7984Token extends Eth {
       }
     }
 
+    // CECHO-2719 rollout gate: strict consolidation verification is enforced on test and
+    // staging environments first; prod keeps the legacy checks above for one release
+    // cycle while staging/testnet validation proves there are no false positives.
+    // Release N+1 removes this gate everywhere.
+    if (this.bitgo.env === 'test' || this.bitgo.env === 'staging') {
+      this.verifyStrictConsolidationCalldata(wallet, baseAddress, txPrebuild.txHex);
+    }
+
     return true;
+  }
+
+  /**
+   * Strict CECHO-2719 checks on a consolidation (flush) prebuild, enforced on test and
+   * staging environments during the staged rollout.
+   *
+   * Every bound field — outer value, outer `to`, token contract, parent, handle,
+   * sendMultiSig amount, callFromParent value, and the flushed forwarder — is decoded
+   * from the ORIGINAL signed bytes (ethers parseTransaction), never from the
+   * TransactionBuilder from()/build() round trip: the round trip re-encodes
+   * FlushERC7984ForwarderToken calldata through buildFlushERC7984ForwarderTokenCalldata,
+   * which hardcodes value 0 and would silently normalize a hostile non-zero value word
+   * out of the inspected transaction — while the wallet signs the original bytes.
+   * Verifying the original bytes closes that whole class of builder-normalization
+   * blind spots, not just the value word.
+   *
+   * Checks:
+   *   1. the calldata decodes as one of the two consolidation shapes with the expected
+   *      token contract, the wallet base address as parent, and a non-empty handle
+   *   2. the outer transaction value is 0 (every sibling verifier —
+   *      verifyWrapTransaction / verifyUnwrapTransaction / verifyFinalizeUnwrapTransaction —
+   *      already enforces this on the round-tripped form)
+   *   3. the sendMultiSig amount (multisig shape) and the callFromParent value (both
+   *      shapes) are 0
+   *   4. multisig shape: the outer call targets the wallet contract (base address)
+   *   5. the flushed forwarder is a wallet-owned address derived locally from wallet
+   *      data — never from txPrebuild.recipients, which comes from the same untrusted
+   *      server response as txHex. Unlike the enable-token verifier (CECHO-2720) there
+   *      is no structural backstop: `to = attacker` with a zero value still executes an
+   *      arbitrary call as the wallet, so the destination binding cannot be skipped.
+   *      Fails closed when no wallet-owned forwarder can be derived.
+   *
+   * These checks depend only on the decoded transaction content and local wallet data,
+   * so they apply identically no matter which (server-controlled) flag routed the
+   * prebuild into this verifier.
+   */
+  private verifyStrictConsolidationCalldata(
+    wallet: VerifyEthTransactionOptions['wallet'],
+    baseAddress: string,
+    originalTxHex: string
+  ): void {
+    let originalTo: string | undefined;
+    let originalValue: ethers.BigNumber;
+    let tokenContractAddress: string;
+    let parentAddress: string;
+    let encryptedHandle: string;
+    let forwarderAddress: string;
+    let sendMultiSigAmount: string | undefined;
+    let callFromParentValue: bigint | undefined;
+
+    try {
+      // addHexPrefix: TransactionBuilder.from() accepts unprefixed serialized txHex
+      // (RAW_TX_HEX_REGEX), so a producer (e.g. a TSS serializedTxHex) may send it;
+      // ethers v5 parseTransaction requires the 0x prefix. addHexPrefix is idempotent.
+      const originalTx: { to?: string; value: ethers.BigNumber; data?: string } = ethers.utils.parseTransaction(
+        addHexPrefix(originalTxHex)
+      );
+      originalTo = originalTx.to;
+      originalValue = originalTx.value;
+      const originalData: string = originalTx.data ?? '0x';
+      if (originalData.startsWith(sendMultisigMethodId)) {
+        const decoded = decodeSendMultiSigFlushERC7984Data(originalData);
+        forwarderAddress = decoded.forwarderAddress;
+        sendMultiSigAmount = decoded.amount;
+        callFromParentValue = decoded.callFromParentValue;
+        tokenContractAddress = decoded.tokenContractAddress;
+        parentAddress = decoded.parentAddress;
+        encryptedHandle = decoded.encryptedHandle;
+      } else if (originalData.startsWith(callFromParentMethodId)) {
+        if (!originalTo) {
+          throw new Error('consolidation transaction has no destination');
+        }
+        const decoded = decodeFlushERC7984ForwarderTokenCalldata(originalData);
+        tokenContractAddress = decoded.tokenContractAddress;
+        callFromParentValue = decoded.callFromParentValue;
+        parentAddress = decoded.parentAddress;
+        encryptedHandle = decoded.encryptedHandle;
+        forwarderAddress = originalTo;
+      } else {
+        throw new Error(`unexpected method ID ${originalData.slice(0, 10)}`);
+      }
+    } catch (e) {
+      throw new Error(
+        `verifyConfidentialConsolidation: failed to decode original consolidation calldata — ${(e as Error).message}`
+      );
+    }
+    const isMultisigShape = sendMultiSigAmount !== undefined;
+
+    // 1. Bind the calldata to the token contract, the wallet base address, and a handle.
+    if (tokenContractAddress.toLowerCase() !== this.tokenContractAddress.toLowerCase()) {
+      throw new Error(
+        `verifyConfidentialConsolidation: token contract address mismatch — ` +
+          `expected ${this.tokenContractAddress}, got ${tokenContractAddress}`
+      );
+    }
+    if (parentAddress.toLowerCase() !== baseAddress.toLowerCase()) {
+      throw new Error(
+        `verifyConfidentialConsolidation: parent address mismatch — expected ${baseAddress}, got ${parentAddress}`
+      );
+    }
+    if (!encryptedHandle || encryptedHandle === '0x') {
+      throw new Error('verifyConfidentialConsolidation: encryptedHandle is missing or empty in transaction calldata');
+    }
+
+    // 2. A consolidation moves confidential balances via calldata only; a non-zero outer
+    //    value sends native funds to whatever address the transaction targets.
+    if (!originalValue.isZero()) {
+      throw new Error(
+        `verifyConfidentialConsolidation: expected transaction value 0 but got ${originalValue.toString()}`
+      );
+    }
+
+    // 3. Inner value words must both be zero.
+    if (isMultisigShape && sendMultiSigAmount !== '0') {
+      throw new Error(`verifyConfidentialConsolidation: sendMultiSig amount must be 0 but got ${sendMultiSigAmount}`);
+    }
+    if (callFromParentValue !== undefined && callFromParentValue !== 0n) {
+      throw new Error(
+        `verifyConfidentialConsolidation: callFromParent must carry value 0 but got ${callFromParentValue}`
+      );
+    }
+
+    // The remaining sendMultiSig parameters (expireTime, sequenceId, signature) are
+    // deliberately not bound here: they are enforced by the on-chain wallet contract
+    // and the platform co-signature, and are not client-verifiable.
+
+    // 4. Multisig shape: the outer call targets the wallet contract itself, not any
+    //    other contract the platform picked.
+    if (isMultisigShape) {
+      if (!originalTo || originalTo.toLowerCase() !== baseAddress.toLowerCase()) {
+        throw new Error(
+          `verifyConfidentialConsolidation: multisig consolidation must call the wallet contract ` +
+            `(${baseAddress}) but got ${originalTo}`
+        );
+      }
+    }
+
+    // 5. The flushed forwarder must be a wallet-owned address derived locally from the
+    //    wallet's own data (fails closed when it cannot be derived). Any wallet-owned
+    //    forwarder is acceptable by design: which forwarder to flush is the platform's
+    //    choice (consolidations sweep whichever forwarder holds balances), and safety
+    //    comes from the parent binding — the flush returns funds to this wallet's base
+    //    address (checked above), never elsewhere.
+    if (!this.isWalletOwnedForwarderAddress(forwarderAddress, baseAddress, wallet)) {
+      throw new Error(
+        `verifyConfidentialConsolidation: consolidation destination ${forwarderAddress} is not a ` +
+          `wallet-owned forwarder address (verified CREATE2 derivation indices ` +
+          `0..${STRICT_CONSOLIDATION_MAX_DERIVATION_INDEX - 1} across forwarder versions ` +
+          `${STRICT_CONSOLIDATION_FORWARDER_VERSIONS.join('/')})`
+      );
+    }
+  }
+
+  /**
+   * Whether an address is a wallet-owned destination for a consolidation (flush): a
+   * forwarder the wallet owns, derived locally from wallet data only — never from the
+   * prebuild response (CECHO-2719).
+   *
+   * BitGo EVM forwarders are deployed via CREATE2 from the wallet's base address with
+   * the derivation index as the salt, so every wallet-owned forwarder is reproducible
+   * locally from (baseAddress, index) plus the network factory/implementation constants
+   * — the same math AbstractEthLikeNewCoins.deriveAddress and isWalletAddress use. All
+   * known forwarder versions are scanned (v4 only when the wallet carries its fee
+   * address, because the fee is part of the v4 CREATE2 salt — see
+   * getCreateForwarderParamsAndTypes / verifyForwarderAddress), so the result does not
+   * depend on wallet version metadata; an attacker-chosen address can never verify
+   * without controlling the wallet's own base address.
+   *
+   * The wallet's base address is deliberately NOT accepted as a flush destination: a
+   * legitimate consolidation always targets a forwarder contract holding confidential
+   * balances, never the wallet's own contract or EOA (which has no callFromParent and
+   * holds no balances to flush). The multisig shape's outer `to == base` requirement
+   * is enforced separately in verifyStrictConsolidationCalldata.
+   *
+   * The scan starts at index 0 and returns on the first match, so legitimate
+   * (low-index) forwarders verify cheaply; only rejections pay the full scan. Indices
+   * are bounded by STRICT_CONSOLIDATION_MAX_DERIVATION_INDEX (see its comment).
+   * Throws (fails closed) when the network configures no forwarder factory at all, or —
+   * naming the missing fee address — when v4 derivations were impossible and the
+   * destination matched nothing.
+   */
+  private isWalletOwnedForwarderAddress(
+    destination: string,
+    baseAddress: string,
+    wallet: VerifyEthTransactionOptions['wallet']
+  ): boolean {
+    const destinationLower = destination.toLowerCase();
+
+    const coinSpecific = typeof wallet?.coinSpecific === 'function' ? wallet.coinSpecific() : wallet?.coinSpecific;
+    const feeAddress = (coinSpecific as { feeAddress?: string } | undefined)?.feeAddress;
+    let anyFactoryConfigured = false;
+    let v4SkippedForMissingFee = false;
+
+    for (const forwarderVersion of STRICT_CONSOLIDATION_FORWARDER_VERSIONS) {
+      let factoryAddresses: { forwarderFactoryAddress: string; forwarderImplementationAddress: string };
+      try {
+        factoryAddresses = this.getForwarderFactoryAddressesAndForwarderImplementationAddress(forwarderVersion);
+      } catch {
+        // This network does not configure the factory for this forwarder version; skip it.
+        continue;
+      }
+      anyFactoryConfigured = true;
+      // Only the v4 CREATE2 salt layout includes the enterprise fee address; every
+      // other version derives with an empty fee address, and v4 cannot be derived
+      // without one.
+      const versionFeeAddress: string = forwarderVersion === 4 ? feeAddress ?? '' : '';
+      if (forwarderVersion === 4 && !versionFeeAddress) {
+        // Not silently: without the wallet's fee address the v4 salt layout is not
+        // reproducible offline; the rejection after the scan names the missing data.
+        v4SkippedForMissingFee = true;
+        continue;
+      }
+      for (let index = 0; index < STRICT_CONSOLIDATION_MAX_DERIVATION_INDEX; index++) {
+        let forwarder: string;
+        try {
+          forwarder = this.generateForwarderAddress(
+            baseAddress,
+            versionFeeAddress,
+            factoryAddresses.forwarderFactoryAddress,
+            factoryAddresses.forwarderImplementationAddress,
+            index
+          );
+        } catch {
+          // Derivation for this index failed; keep scanning the remaining indices.
+          // Fee-less v4 is already skipped before the loop, so a catch here can only be
+          // a malformed derivation input (e.g. an invalid base address), and the
+          // destination comparison below fails closed on it regardless.
+          continue;
+        }
+        if (forwarder.toLowerCase() === destinationLower) {
+          return true;
+        }
+      }
+    }
+
+    if (!anyFactoryConfigured) {
+      throw new Error(
+        'verifyConfidentialConsolidation: unable to derive any wallet-owned forwarder address — ' +
+          'no forwarder factory addresses are configured for this network'
+      );
+    }
+    if (v4SkippedForMissingFee) {
+      throw new Error(
+        `verifyConfidentialConsolidation: consolidation destination ${destination} is not a wallet-owned ` +
+          `forwarder address (verified CREATE2 derivation indices ` +
+          `0..${STRICT_CONSOLIDATION_MAX_DERIVATION_INDEX - 1} across forwarder versions 1/2/5). ` +
+          'v4-salted forwarders were NOT verifiable because the wallet record carries no feeAddress, ' +
+          'and the fee address is part of the v4 CREATE2 salt — if the flush targets a v4/v5-wallet ' +
+          'forwarder, the wallet data must carry its feeAddress'
+      );
+    }
+    return false;
   }
 
   /**
