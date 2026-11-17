@@ -25,6 +25,8 @@ import {
   callFromParentMethodId,
 } from '../../src/lib/zamaUtils';
 import { confidentialTransferNoProofMethodId } from '../../src/lib/walletUtil';
+import { decodeSendMultiSigFlushERC7984Data, sendMultiSigData } from '../../src/lib/utils';
+import { addHexPrefix } from 'ethereumjs-util';
 
 describe('Zama Utils', () => {
   const ACL_ADDRESS = '0xf0Ffdc93b7E186bC2f8CB3dAA75D86d1930A433D';
@@ -777,6 +779,66 @@ describe('Zama Utils', () => {
       const decoded = decodeFlushERC7984ForwarderTokenCalldata(encoded);
       should.exist(decoded.tokenContractAddress);
       decoded.tokenContractAddress.should.be.a.String();
+    });
+
+    it('should surface the callFromParent native value as 0n for builder output', () => {
+      const encoded = buildFlushERC7984ForwarderTokenCalldata(TOKEN_ADDRESS, PARENT_ADDRESS, HANDLE);
+      const decoded = decodeFlushERC7984ForwarderTokenCalldata(encoded);
+      decoded.callFromParentValue.should.equal(0n);
+    });
+
+    it('should surface a non-zero callFromParent native value', () => {
+      // Hand-encode callFromParent with a non-zero value, unlike wrapInCallFromParent
+      // which hardcodes 0 — the exact hostile shape from CECHO-2719.
+      const inner = buildConfidentialTransferByHandleCalldata(PARENT_ADDRESS, HANDLE);
+      const method = EthereumAbi.methodID('callFromParent', ['address', 'uint256', 'bytes']);
+      const args = EthereumAbi.rawEncode(
+        ['address', 'uint256', 'bytes'],
+        [TOKEN_ADDRESS, 123, Buffer.from(inner.slice(2), 'hex')]
+      );
+      const encoded = addHexPrefix(Buffer.concat([method, args]).toString('hex'));
+      const decoded = decodeFlushERC7984ForwarderTokenCalldata(encoded);
+      decoded.callFromParentValue.should.equal(123n);
+      decoded.tokenContractAddress.toLowerCase().should.equal(TOKEN_ADDRESS.toLowerCase());
+      decoded.parentAddress.toLowerCase().should.equal(PARENT_ADDRESS.toLowerCase());
+    });
+  });
+  // -------------------------------------------------------------------------
+  describe('decodeSendMultiSigFlushERC7984Data (CECHO-2719 value surfacing)', () => {
+    const FORWARDER = '0xAbC1234567890123456789012345678901234567';
+    const PARENT = '0x2222222222222222222222222222222222222222';
+    const HANDLE = '0x' + 'ef'.repeat(32);
+    const SEQUENCE_ID = 14;
+    const EXPIRE_TIME = Math.floor(Date.now() / 1000) + 3600;
+    const SIGNATURE = '0x' + '00'.repeat(65);
+
+    it('should surface the sendMultiSig amount and callFromParent value as zero for a standard flush', () => {
+      const flushCalldata = buildFlushERC7984ForwarderTokenCalldata(TOKEN_ADDRESS, PARENT, HANDLE);
+      const sendData = sendMultiSigData(FORWARDER, '0', flushCalldata, EXPIRE_TIME, SEQUENCE_ID, SIGNATURE);
+      const decoded = decodeSendMultiSigFlushERC7984Data(sendData);
+      decoded.forwarderAddress.toLowerCase().should.equal(FORWARDER.toLowerCase());
+      decoded.amount.should.equal('0');
+      decoded.callFromParentValue.should.equal(0n);
+      decoded.tokenContractAddress.toLowerCase().should.equal(TOKEN_ADDRESS.toLowerCase());
+      decoded.parentAddress.toLowerCase().should.equal(PARENT.toLowerCase());
+      decoded.encryptedHandle.should.equal(HANDLE);
+    });
+
+    it('should surface a non-zero sendMultiSig amount', () => {
+      // sendMultiSig(attacker, balance, flush) — the multisig theft prebuild from
+      // CECHO-2719: the amount word was previously dropped and never checked.
+      const flushCalldata = buildFlushERC7984ForwarderTokenCalldata(TOKEN_ADDRESS, PARENT, HANDLE);
+      const sendData = sendMultiSigData(
+        FORWARDER,
+        '1000000000000000000',
+        flushCalldata,
+        EXPIRE_TIME,
+        SEQUENCE_ID,
+        SIGNATURE
+      );
+      const decoded = decodeSendMultiSigFlushERC7984Data(sendData);
+      decoded.amount.should.equal('1000000000000000000');
+      decoded.callFromParentValue.should.equal(0n);
     });
   });
 });

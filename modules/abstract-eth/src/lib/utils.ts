@@ -754,7 +754,11 @@ export function decodeConfidentialTransferData(data: string): ConfidentialTransf
 
 export interface SendMultiSigFlushERC7984Data {
   forwarderAddress: string;
+  /** Native value carried by the sendMultiSig call; must be '0' for a legitimate consolidation. */
+  amount: string;
   tokenContractAddress: string;
+  /** Native value attached to the inner callFromParent call; must be 0n for a legitimate consolidation. */
+  callFromParentValue: bigint;
   parentAddress: string;
   encryptedHandle: string;
 }
@@ -765,6 +769,9 @@ export interface SendMultiSigFlushERC7984Data {
  * Multisig consolidation shape:
  *   sendMultiSig(forwarder, 0, callFromParent(token, 0, confidentialTransferNoProof(parent, handle)), ...)
  *
+ * The sendMultiSig amount and the callFromParent native value are both surfaced so
+ * verifiers can enforce they are zero (CECHO-2719).
+ *
  * @param data The full calldata hex string starting with sendMultiSigMethodId
  */
 export function decodeSendMultiSigFlushERC7984Data(data: string): SendMultiSigFlushERC7984Data {
@@ -772,18 +779,20 @@ export function decodeSendMultiSigFlushERC7984Data(data: string): SendMultiSigFl
     throw new BuildTransactionError(`Invalid multisig flush bytecode: unexpected method ID ${data.slice(0, 10)}`);
   }
 
-  const [forwarderAddress, , internalData] = getRawDecoded(
+  const [forwarderAddress, amount, internalData] = getRawDecoded(
     sendMultiSigTypes,
     getBufferedByteCode(sendMultisigMethodId, data)
   );
 
   const internalDataHex = bufferToHex(internalData as Buffer);
-  const { tokenContractAddress, parentAddress, encryptedHandle } =
+  const { tokenContractAddress, callFromParentValue, parentAddress, encryptedHandle } =
     decodeFlushERC7984ForwarderTokenCalldata(internalDataHex);
 
   return {
     forwarderAddress: addHexPrefix(forwarderAddress as string),
+    amount: new BigNumber(bufferToHex(amount as Buffer)).toFixed(),
     tokenContractAddress,
+    callFromParentValue,
     parentAddress,
     encryptedHandle,
   };

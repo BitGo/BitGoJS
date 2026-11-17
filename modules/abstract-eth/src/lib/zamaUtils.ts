@@ -672,13 +672,18 @@ export function buildFlushERC7984ForwarderTokenCalldata(
 /**
  * Decodes a FlushERC7984ForwarderToken calldata.
  * Strips the outer callFromParent wrapper and the inner confidentialTransfer.
- * Returns { tokenContractAddress, parentAddress, encryptedHandle }.
+ * Returns { tokenContractAddress, callFromParentValue, parentAddress, encryptedHandle }.
+ *
+ * The callFromParent native value is surfaced so verifiers can enforce that it is 0
+ * (a legitimate flush moves confidential balances via calldata only; a non-zero value
+ * lets the forwarder forward native funds to an arbitrary target — CECHO-2719).
  *
  * @param data  ABI-encoded flush calldata (0x-prefixed)
- * @returns Decoded fields
+ * @returns Decoded fields, including the native value attached to the callFromParent call
  */
 export function decodeFlushERC7984ForwarderTokenCalldata(data: string): {
   tokenContractAddress: string;
+  callFromParentValue: bigint;
   parentAddress: string;
   encryptedHandle: string;
 } {
@@ -691,6 +696,7 @@ export function decodeFlushERC7984ForwarderTokenCalldata(data: string): {
   const abiCoder = new ethers.utils.AbiCoder();
   const outerDecoded = abiCoder.decode([...callFromParentTypes], '0x' + data.slice(10));
   const tokenContractAddress: string = outerDecoded[0];
+  const callFromParentValue = BigInt(outerDecoded[1].toString());
   const innerCalldata: string = ethers.utils.hexlify(outerDecoded[2]);
 
   if (!innerCalldata.startsWith(confidentialTransferNoProofMethodId)) {
@@ -708,6 +714,7 @@ export function decodeFlushERC7984ForwarderTokenCalldata(data: string): {
 
   return {
     tokenContractAddress,
+    callFromParentValue,
     parentAddress,
     encryptedHandle,
   };
