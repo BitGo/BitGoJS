@@ -1923,6 +1923,10 @@ describe('getNetworkFeatures EVM fallback (drift guard)', () => {
     getNetworkFeatures('baseeth')?.should.deepEqual(EVM_TOKEN_FEATURES);
     getNetworkFeatures('chiliz')?.should.deepEqual(EVM_TOKEN_FEATURES);
     getNetworkFeatures('prividiumeth')?.should.deepEqual(EVM_TOKEN_FEATURES_NON_EIP1559);
+    // Monad tokens are AccountCoin-derived and need account-model, which EVM_TOKEN_FEATURES lacks.
+    const monFeatures = getNetworkFeatures('mon');
+    should.exist(monFeatures, 'expected mon to be listed in networkFeatureMapForTokens');
+    monFeatures?.should.deepEqual([...AccountCoin.DEFAULT_FEATURES, CoinFeature.EIP1559]);
   });
 });
 
@@ -1973,6 +1977,21 @@ describe('AMS token feature composition for EVM fallback families (drift guard)'
     expectedFeatures.forEach((feature) => token?.features.should.containEql(feature));
     token?.features.should.not.containEql(CoinFeature.EIP1559);
     token?.features.should.not.containEql(CoinFeature.SHARED_EVM_SDK);
+  });
+
+  it('should build a dynamically onboarded mon token with the account-model default (CECHO-2793)', () => {
+    // Before the mon entry existed, getNetworkFeatures('mon') was undefined, so this call
+    // silently returned undefined and any consumer deriving features from statics produced a
+    // token without account-model (MissingRequiredCoinFeatureError at injection time).
+    const token = createTokenUsingTrimmedConfigDetails(trimmedConfigFor('mon', 'MonadTestnet'));
+    should.exist(token, 'expected createTokenUsingTrimmedConfigDetails to build a mon token');
+
+    const features = token ? token.features : [];
+    token?.family.should.equal('mon');
+    features.should.containEql(CoinFeature.ACCOUNT_MODEL);
+    features.should.containEql(CoinFeature.EIP1559);
+    features.should.containEql(CoinFeature.STAKING);
+    features.should.not.containEql(CoinFeature.SHARED_EVM_SDK);
   });
 });
 
