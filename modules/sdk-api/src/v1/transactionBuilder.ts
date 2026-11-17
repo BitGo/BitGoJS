@@ -20,6 +20,7 @@ const debug = debugLib('bitgo:v1:txb');
 import { common, getAddressP2PKH, getNetwork, sanitizeLegacyPath } from '@bitgo/sdk-core';
 import { verifyAddress } from './verifyAddress';
 import { tryPromise } from '../util';
+const request = require('superagent');
 
 type Triple<T> = [T, T, T];
 
@@ -38,6 +39,31 @@ function parseChainPath(chainPath: string): { chain: number; index: number } {
     throw new Error(`Invalid chainPath: ${chainPath}`);
   }
   return { chain: parseInt(parts[0], 10), index: parseInt(parts[1], 10) };
+}
+
+/**
+ * A previous transaction does not match the unspent it should fund. The transaction must not be built in
+ * any format, so callers must not fall back to the legacy transaction format on this error.
+ */
+class PrevTxMismatchError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'PrevTxMismatchError';
+  }
+}
+exports.PrevTxMismatchError = PrevTxMismatchError;
+
+/**
+ * Fetch the hex of a previous transaction from the block explorer. The caller verifies the txid,
+ * so the explorer does not need to be trusted.
+ */
+async function getPrevTxHex(bitgo: { getEnv(): string }, txid: string): Promise<string> {
+  const explorerBaseUrl = common.Environments[bitgo.getEnv()].btcExplorerBaseUrl;
+  const result = await request.get(`${explorerBaseUrl}/tx/${txid}/hex`);
+  if (typeof result.text !== 'string' || !/^([a-f0-9]{2})+$/.test(result.text.trim())) {
+    throw new Error(`could not fetch previous transaction ${txid}`);
+  }
+  return result.text.trim();
 }
 
 /**
@@ -789,6 +815,55 @@ exports.createTransaction = function (params) {
     });
   };
 
+  // Previous transactions for non-segwit inputs, keyed by txid. The legacy sighash does not commit to the
+  // input value, so the signer needs the full previous transaction to verify the value it is spending.
+  const prevTxs = new Map<string, Buffer>();
+
+  // Fetch and verify the previous transaction of every non-segwit input. A previous transaction is only
+  // accepted if it hashes to the input's txid and the spent output has the unspent's script and value,
+  // so the value used for fee calculation is the value the signature commits to.
+  const getPrevTxsForPsbt = async function (): Promise<void> {
+    if (params.usePsbt !== true) {
+      return;
+    }
+    for (const unspent of unspents) {
+      const { chain } = parseChainPath(unspent.chainPath) as { chain: utxolib.bitgo.ChainCode };
+      if (utxolib.bitgo.isSegwit(chain) || prevTxs.has(unspent.tx_hash)) {
+        continue;
+      }
+      const prevTxHex =
+        typeof unspent.prevTx === 'string' ? unspent.prevTx : await getPrevTxHex(bitgo, unspent.tx_hash);
+      const prevTxBuffer = Buffer.from(prevTxHex, 'hex');
+      const prevTx = utxolib.bitgo.createTransactionFromBuffer(prevTxBuffer, network, { amountType: 'bigint' });
+      if (prevTx.getId() !== unspent.tx_hash) {
+        throw new PrevTxMismatchError(`previous transaction for input ${unspent.tx_hash} has txid ${prevTx.getId()}`);
+      }
+      prevTxs.set(unspent.tx_hash, prevTxBuffer);
+    }
+    for (const unspent of unspents) {
+      const prevTxBuffer = prevTxs.get(unspent.tx_hash);
+      if (!prevTxBuffer) {
+        continue;
+      }
+      const prevTx = utxolib.bitgo.createTransactionFromBuffer(prevTxBuffer, network, { amountType: 'bigint' });
+      const output = prevTx.outs[unspent.tx_output_n];
+      const id = `${unspent.tx_hash}:${unspent.tx_output_n}`;
+      if (!output) {
+        throw new PrevTxMismatchError(`previous transaction has no output for input ${id}`);
+      }
+      if (output.value !== BigInt(unspent.value)) {
+        throw new PrevTxMismatchError(
+          `value of input ${id} is ${output.value} in the previous transaction, expected ${unspent.value}`
+        );
+      }
+      if (!output.script.equals(utxolib.address.toOutputScript(unspent.address, network))) {
+        throw new PrevTxMismatchError(
+          `script of input ${id} in the previous transaction does not match address ${unspent.address}`
+        );
+      }
+    }
+  };
+
   // Build PSBT with all signing metadata embedded
   const buildPsbt = function (): utxolib.bitgo.UtxoPsbt {
     const psbt = utxolib.bitgo.createPsbtForNetwork({ network });
@@ -806,17 +881,18 @@ exports.createTransaction = function (params) {
     for (const unspent of unspents) {
       const { chain, index } = parseChainPath(unspent.chainPath) as { chain: utxolib.bitgo.ChainCode; index: number };
 
+      const prevTx = prevTxs.get(unspent.tx_hash);
       const walletUnspent: utxolib.bitgo.WalletUnspent<bigint> = {
         id: `${unspent.tx_hash}:${unspent.tx_output_n}`,
         address: unspent.address,
         chain,
         index,
         value: BigInt(unspent.value),
+        ...(prevTx ? { prevTx } : {}),
       };
 
-      utxolib.bitgo.addWalletUnspentToPsbt(psbt, walletUnspent, rootWalletKeys, 'user', 'backup', {
-        skipNonWitnessUtxo: true,
-      });
+      // Non-segwit inputs get nonWitnessUtxo (the verified previous transaction), segwit inputs get witnessUtxo.
+      utxolib.bitgo.addWalletUnspentToPsbt(psbt, walletUnspent, rootWalletKeys, 'user', 'backup');
     }
 
     // Fee single key inputs are not supported with PSBT yet - throw to trigger fallback to legacy
@@ -899,6 +975,7 @@ exports.createTransaction = function (params) {
     })
     .then(collectInputs)
     .then(collectOutputs)
+    .then(getPrevTxsForPsbt)
     .then(serialize);
 };
 
