@@ -248,7 +248,18 @@ export interface StakingDeactivate {
 
 export interface StakingWithdraw {
   type: InstructionBuilderTypes.StakingWithdraw;
-  params: { fromAddress: string; stakingAddress: string; amount: string };
+  params: {
+    fromAddress: string;
+    stakingAddress: string;
+    amount: string;
+    /**
+     * Account that receives the withdrawn lamports, i.e. the Stake Withdraw instruction's `toPubkey`.
+     * It is not required to be the withdraw authority (`fromAddress`) that signs the transaction.
+     * Optional only for backwards compatibility with params produced by older versions; when it is
+     * absent the destination is assumed to be `fromAddress`.
+     */
+    toAddress?: string;
+  };
 }
 
 export interface StakingAuthorize {
