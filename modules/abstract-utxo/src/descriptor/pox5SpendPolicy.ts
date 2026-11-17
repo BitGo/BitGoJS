@@ -10,13 +10,23 @@ function getPox5InputMatches(psbt: Psbt, descriptorMap: descriptorWallet.Descrip
 /** WP builds early exits with a zero nLockTime; the early-exit branch does not evaluate the CLTV. */
 const POX5_EARLY_EXIT_LOCKTIME = 0;
 
+/**
+ * The early-exit checks beyond what the shared `pox5.assertPox5EarlyExitSpend` does (it only checks that the
+ * input matches the descriptor): nLockTime 0 and exactly one principal preimage that the descriptor commits to.
+ * `classifyPox5Spend` has already checked the descriptor match by the time this runs.
+ */
 function assertPox5EarlyExitPolicy(psbt: Psbt, match: pox5.Pox5InputMatch): void {
-  pox5.assertPox5EarlyExitSpend(psbt, match);
   const lockTime = psbt.lockTime();
   if (lockTime !== POX5_EARLY_EXIT_LOCKTIME) {
     throw new Error(`PoX-5 early exit nLockTime must be ${POX5_EARLY_EXIT_LOCKTIME}, got ${lockTime}`);
   }
-  // throws unless exactly one PSBT_IN_SHA256 record carries the descriptor's commitment and its preimage
+  const sha256Records = psbt
+    .getInputKeyValues(match.inputIndex)
+    .filter((record) => record.type === 'known' && record.key === 'PSBT_IN_SHA256');
+  if (sha256Records.length !== 1) {
+    throw new Error(`PoX-5 early exit requires exactly one PSBT_IN_SHA256 record, found ${sha256Records.length}`);
+  }
+  // throws unless the record carries the descriptor's commitment and its preimage
   pox5.getPox5PrincipalPreimage(psbt, match.inputIndex, match.info);
 }
 
@@ -37,6 +47,8 @@ export function assertPox5SpendPolicy(psbt: Psbt, descriptorMap: descriptorWalle
     throw new Error(`expected exactly one PoX-5 lockup input, found ${matches.length}`);
   }
   const [match] = matches;
+  // Any PSBT_IN_SHA256 record makes this an early exit, even one the descriptor does not commit to: a stray
+  // record is then refused by the early-exit checks instead of being carried along in a late exit.
   const branch = pox5.classifyPox5Spend(psbt, match);
   switch (branch) {
     case 'locktime':
@@ -45,7 +57,9 @@ export function assertPox5SpendPolicy(psbt: Psbt, descriptorMap: descriptorWalle
     case 'early-exit':
       assertPox5EarlyExitPolicy(psbt, match);
       return;
-    default:
-      throw new Error(`unsupported PoX-5 spend branch: ${branch}`);
+    default: {
+      const unsupported: never = branch;
+      throw new Error(`unsupported PoX-5 spend branch: ${String(unsupported)}`);
+    }
   }
 }
