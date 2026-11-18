@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.5.62](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-rpc-wrapper%402.5.61...%40bitgo%2Fsdk-rpc-wrapper%402.5.62) (2026-11-18)
+
+**Note:** Version bump only for package @bitgo/sdk-rpc-wrapper
+
+
+
+
+
 ## [2.5.61](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-rpc-wrapper%402.5.60...%40bitgo%2Fsdk-rpc-wrapper%402.5.61) (2026-11-17)
 
 **Note:** Version bump only for package @bitgo/sdk-rpc-wrapper

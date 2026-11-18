@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [59.32.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fstatics%4059.32.0...%40bitgo%2Fstatics%4059.32.1) (2026-11-18)
+
+### Bug Fixes
+
+* **sdk-coin-eth:** enforce strict ERC-7984 delegation verification on test/staging (CECHO-2720) ([fe6c02f](https://github.com/BitGo/BitGoJS/commit/fe6c02f3f00d15e509ce1028d2a6e4718e03c60f))
+
+
 # [59.32.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fstatics%4059.31.0...%40bitgo%2Fstatics%4059.32.0) (2026-11-17)
 
 ### Bug Fixes
