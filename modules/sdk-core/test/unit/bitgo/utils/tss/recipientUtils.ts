@@ -109,6 +109,45 @@ describe('recipientUtils', function () {
       assert.strictEqual(result.recipients?.[0].amount, '500');
     });
 
+    it('falls back to intent.recipients when the intent stores the address as a plain string', function () {
+      const txRequest = makeTxRequest({
+        intent: {
+          intentType: 'payment',
+          recipients: [{ address: '0xabc', amount: { value: '500', symbol: 'eth' } }],
+        } as any,
+      });
+      const result = resolveEffectiveTxParams(txRequest, {});
+      assert.strictEqual(result.recipients?.[0].address, '0xabc');
+    });
+
+    describe('split count propagation (Canton fanout)', function () {
+      const splitIntent = {
+        intentType: 'payment',
+        numberOfSplits: 2,
+        recipients: [{ address: '0xabc', amount: { value: '500', symbol: 'eth' } }],
+      } as any;
+
+      it('derives numberOfSplits from the intent when txParams is undefined (signAndSendTxRequest path)', function () {
+        const result = resolveEffectiveTxParams(makeTxRequest({ intent: splitIntent }), undefined);
+        assert.strictEqual(result.numberOfSplits, 2);
+      });
+
+      it('does not overwrite numberOfSplits supplied by the caller', function () {
+        const result = resolveEffectiveTxParams(makeTxRequest({ intent: splitIntent }), { numberOfSplits: 5 });
+        assert.strictEqual(result.numberOfSplits, 5);
+      });
+
+      it('leaves numberOfSplits undefined when the intent has none or a non-numeric one', function () {
+        const noSplits = { intentType: 'payment', recipients: splitIntent.recipients } as any;
+        assert.strictEqual(resolveEffectiveTxParams(makeTxRequest({ intent: noSplits }), {}).numberOfSplits, undefined);
+        const stringSplits = { ...splitIntent, numberOfSplits: '2' };
+        assert.strictEqual(
+          resolveEffectiveTxParams(makeTxRequest({ intent: stringSplits }), {}).numberOfSplits,
+          undefined
+        );
+      });
+    });
+
     it('resolves txType from intent.intentType when txParams.type is absent', function () {
       const txRequest = makeTxRequest({ intent: { intentType: 'consolidate' } as any });
       const result = resolveEffectiveTxParams(txRequest, {});

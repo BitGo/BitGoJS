@@ -55,6 +55,15 @@ export interface PreparedTxnParsedInfo {
   broadridgeSettlementAuthorizationData?: BroadridgeSettlementAuthorizationData;
 }
 
+export interface PreparedTransferInfo {
+  sender: string;
+  receiver: string;
+  /** Amount in the lowest unit of the asset. */
+  amount: string;
+  /** Token name; absent for native Canton Coin. */
+  token?: string;
+}
+
 export interface BroadridgeSettlementIdentity {
   executor?: string;
   executors?: string[];

@@ -106,6 +106,14 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
 ]);
 
 /**
+ * The SDK persists intent recipient addresses as `{ address }`, but txRequests created by other clients
+ * (e.g. the retail UI's Canton split) store a plain string. Accept both.
+ */
+function getIntentRecipientAddress(address: string | { address: string } | undefined): string {
+  return (typeof address === 'string' ? address : address?.address) as string;
+}
+
+/**
  * Resolves the effective txParams for TSS signing recipient verification.
  *
  * For smart contract interactions, recipients live in txRequest.intent.recipients
@@ -145,7 +153,7 @@ export function resolveEffectiveTxParams(
       intentRecipient.tokenData?.tokenName ||
       (chainName !== undefined && symbol && symbol !== chainName ? symbol : undefined);
     return {
-      address: intentRecipient.address.address,
+      address: getIntentRecipientAddress(intentRecipient.address),
       amount: intentRecipient.amount.value,
       data: intentRecipient.data,
       ...(tokenName && { tokenName }),
@@ -170,6 +178,12 @@ export function resolveEffectiveTxParams(
     typeof (txRequest.intent as PopulatedIntent)?.executorPartyId === 'string'
   ) {
     effectiveTxParams.executorPartyId = (txRequest.intent as PopulatedIntent).executorPartyId;
+  }
+
+  // Canton split (fanout) is verified against the intent's split count, which the prebuilt transaction alone cannot prove.
+  const intentNumberOfSplits = (txRequest.intent as PopulatedIntent)?.numberOfSplits;
+  if (effectiveTxParams.numberOfSplits === undefined && typeof intentNumberOfSplits === 'number') {
+    effectiveTxParams.numberOfSplits = intentNumberOfSplits;
   }
 
   // Propagate stakingRequestId from intent into effectiveTxParams so verifyTssTransaction

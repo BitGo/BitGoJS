@@ -488,6 +488,8 @@ export interface PopulatedIntentForTypedDataSigning extends PopulatedIntentBase 
 export interface PopulatedIntent extends PopulatedIntentBase, DefiIntentFields {
   stakingRequestId?: string;
   recipients?: IntentRecipient[];
+  /** Canton split (fanout): number of equal-value holdings the unspents are split into. */
+  numberOfSplits?: number;
   nonce?: string;
   token?: string;
   enableTokens?: TokenEnablement[];
