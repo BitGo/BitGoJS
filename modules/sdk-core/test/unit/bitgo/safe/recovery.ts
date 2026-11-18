@@ -504,6 +504,40 @@ describe('buildSafeRecoverKeyParams', () => {
     encrypt.callCount.should.equal(0);
   });
 
+  it('passes walletAddress through in both modes and omits it when absent', async function () {
+    const encrypt = sinon.stub().callsFake(async ({ input, password }) => `enc(${input}:${password})`);
+    const bitgo = { encrypt } as unknown as BitGoBase;
+
+    const signed = await buildSafeRecoverKeyParams({
+      bitgo,
+      coin: 'btc',
+      slot: 'secp256k1Multisig',
+      keys,
+      mode: 'signed',
+      walletAddress: 'bcrt1qanchor',
+    });
+    signed.walletAddress?.should.equal('bcrt1qanchor');
+
+    const unsigned = await buildSafeRecoverKeyParams({
+      bitgo,
+      coin: 'btc',
+      slot: 'secp256k1Multisig',
+      keys,
+      mode: 'unsigned',
+      walletAddress: 'bcrt1qanchor',
+    });
+    unsigned.walletAddress?.should.equal('bcrt1qanchor');
+
+    const noAnchor = await buildSafeRecoverKeyParams({
+      bitgo,
+      coin: 'btc',
+      slot: 'secp256k1Multisig',
+      keys,
+      mode: 'unsigned',
+    });
+    noAnchor.should.not.have.property('walletAddress');
+  });
+
   // WRW passes these requests over IPC, so the real untyped input is parsed JSON (`any`), which
   // type-checks without a suppression directive or cast.
   function untypedRequest(bitgo: BitGoBase, fields: Record<string, unknown>) {

@@ -6,6 +6,7 @@ import {
   getBip32Keys as getBip32KeysFromSdkCore,
   isTriple,
   krsProviders,
+  RecoveryKeyMismatchError,
   Triple,
 } from '@bitgo/sdk-core';
 import { BIP32, fixedScriptWallet, Transaction } from '@bitgo/wasm-utxo';
@@ -98,6 +99,12 @@ export interface RecoverParams {
   apiKey?: string;
   userKeyPath?: string;
   recoveryProvider?: RecoveryProvider;
+  /**
+   * An address recorded for the wallet; when set, the derived addresses must include it or
+   * recovery fails closed — without it, wrong keys fail quiet as an empty unspent scan. Pass an
+   * early receive address: only the first 20 per chain and script type are probed.
+   */
+  walletAddress?: string;
   /** Satoshi per byte */
   feeRate?: number;
   /** Block height used to select the Zcash consensus branch ID. */
@@ -135,6 +142,44 @@ function getFormattedAddress(
 
   // Blockchair uses cashaddr format when querying the API for address information. Strip the prefix for BCH/BCHA.
   return format === 'cashaddr' ? address.split(':')[1] : address;
+}
+
+/** Matches the scan's default address gap. */
+const WALLET_ADDRESS_PROBE_DEPTH = 20;
+
+/**
+ * Fails closed when the reconstructed wallet cannot produce the caller-provided wallet address.
+ * Recovery derives addresses from the key material alone, so without this check wrong key
+ * material yields an empty unspent scan and reports the wallet as empty.
+ */
+function assertWalletAddressMatches(
+  coin: AbstractUtxoCoin,
+  params: RecoverParams,
+  walletKeys: fixedScriptWallet.RootWalletKeys
+): void {
+  if (params.walletAddress === undefined) {
+    return;
+  }
+  const walletAddress = coin.canonicalAddress(params.walletAddress);
+  for (const addressType of fixedScriptWallet.outputScriptTypes) {
+    if (!fixedScriptWallet.supportsScriptType(coin.wasmName, addressType)) {
+      continue;
+    }
+    for (const chain of [
+      fixedScriptWallet.ChainCode.value(addressType, 'external'),
+      fixedScriptWallet.ChainCode.value(addressType, 'internal'),
+    ]) {
+      for (let addrIndex = 0; addrIndex < WALLET_ADDRESS_PROBE_DEPTH; addrIndex++) {
+        const derived = getFormattedAddress(coin, coin.wasmName, walletKeys, chain, addrIndex);
+        if (coin.canonicalAddress(derived) === walletAddress) {
+          return;
+        }
+      }
+    }
+  }
+  throw new RecoveryKeyMismatchError(
+    `derived wallet addresses do not include the given wallet address ${params.walletAddress}`
+  );
 }
 
 function hasWitnessData(scriptType: ScriptType2Of3): boolean {
@@ -495,6 +540,7 @@ export async function backupKeyRecovery(
     triple: keys,
     derivationPrefixes: [params.userKeyPath || 'm/0/0', 'm/0/0', 'm/0/0'],
   });
+  assertWalletAddressMatches(coin, params, walletKeys);
 
   const unspents: WalletUnspent<bigint>[] = (
     await Promise.all(
