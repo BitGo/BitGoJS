@@ -191,6 +191,9 @@ export interface EthereumNetwork extends AccountNetwork {
   readonly tokenOperationHashPrefix?: string;
   // Zama fhEVM ACL contract address — required for ERC-7984 confidential token delegation
   readonly zamaAclContractAddress?: string;
+  // BitGo enterprise viewing key address (the ERC-7984 decryption delegate). When pinned,
+  // enable-token verification binds every delegation's delegate to this address (CECHO-2720).
+  readonly zamaViewingKeyAddress?: string;
 }
 
 export interface TronNetwork extends AccountNetwork {

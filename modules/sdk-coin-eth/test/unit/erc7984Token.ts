@@ -14,8 +14,10 @@ import sinon from 'sinon';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { RecoveryKeyMismatchError, TransactionType, Wallet } from '@bitgo/sdk-core';
+import { EthereumNetwork } from '@bitgo/statics';
 import {
   buildMulticallDelegationCalldata,
+  buildDelegationCalldata,
   buildFlushERC7984ForwarderTokenCalldata,
   buildWrapCalldata,
   buildUnwrapCalldata,
@@ -23,9 +25,14 @@ import {
   sendMultiSigData,
   wrapInCallFromParent,
   decodeTokenAddressesFromDelegationCalldata,
+  decodeDelegationCallsFromCalldata,
   TransferBuilderERC7984,
   confidentialTransferNoProofMethodId,
+  approveMethodId,
 } from '@bitgo/abstract-eth';
+import EthereumAbi from 'ethereumjs-abi';
+import { addHexPrefix } from 'ethereumjs-util';
+import { ethers } from 'ethers';
 import { Erc7984Token } from '../../src/erc7984Token';
 import { TransactionBuilder } from '../../src/lib';
 import { getBuilder } from './getBuilder';
@@ -49,6 +56,10 @@ const WRONG_TOKEN_ADDRESS = '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef';
 const WRONG_ACL_ADDRESS = '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const FORWARDER_ADDRESS = '0x1234567890123456789012345678901234567890';
 
+// Hostile addresses for CECHO-2720 negative tests
+const ATTACKER_DELEGATE_ADDRESS = '0x2222222222222222222222222222222222222222';
+const ATTACKER_CONTRACT_ADDRESS = '0x3333333333333333333333333333333333333333';
+
 const EXPIRY = Math.floor(Date.now() / 1000) + 365 * 86400;
 
 // ---------------------------------------------------------------------------
@@ -58,13 +69,18 @@ const EXPIRY = Math.floor(Date.now() / 1000) + 365 * 86400;
 /**
  * Builds a root-wallet delegation tx hex (to = ACL, data = multicall).
  */
-async function buildDelegationTxHex(aclAddress: string, tokenAddresses: string[], value = '0'): Promise<string> {
+async function buildDelegationTxHex(
+  aclAddress: string,
+  tokenAddresses: string[],
+  value = '0',
+  delegateAddress = DELEGATE_ADDRESS
+): Promise<string> {
   const txBuilder = getBuilder('hteth') as TransactionBuilder;
   txBuilder.fee({ fee: '1000000000', gasLimit: '200000' });
   txBuilder.counter(1);
   txBuilder.type(TransactionType.ContractCall);
   txBuilder.contract(aclAddress);
-  const calldata = buildMulticallDelegationCalldata(DELEGATE_ADDRESS, tokenAddresses, EXPIRY);
+  const calldata = buildMulticallDelegationCalldata(delegateAddress, tokenAddresses, EXPIRY);
   txBuilder.data(calldata);
   if (value !== '0') {
     txBuilder.value(value);
@@ -80,16 +96,58 @@ async function buildDelegationTxHex(aclAddress: string, tokenAddresses: string[]
 async function buildForwarderDelegationTxHex(
   forwarderAddress: string,
   aclAddress: string,
-  tokenAddresses: string[]
+  tokenAddresses: string[],
+  delegateAddress = DELEGATE_ADDRESS
 ): Promise<string> {
   const txBuilder = getBuilder('hteth') as TransactionBuilder;
   txBuilder.fee({ fee: '1000000000', gasLimit: '200000' });
   txBuilder.counter(1);
   txBuilder.type(TransactionType.ContractCall);
   txBuilder.contract(forwarderAddress);
-  const innerCalldata = buildMulticallDelegationCalldata(DELEGATE_ADDRESS, tokenAddresses, EXPIRY);
+  const innerCalldata = buildMulticallDelegationCalldata(delegateAddress, tokenAddresses, EXPIRY);
   const outerCalldata = wrapInCallFromParent(aclAddress, innerCalldata);
   txBuilder.data(outerCalldata);
+  const tx = await txBuilder.build();
+  return tx.toBroadcastFormat();
+}
+
+/**
+ * Encodes ACL.multicall(bytes[]) from raw inner call hex strings.
+ * Used to build hostile calldata (e.g. mixed inner selectors) for CECHO-2720 negative tests.
+ */
+function encodeRawMulticall(innerCallsHex: string[]): string {
+  const method = EthereumAbi.methodID('multicall', ['bytes[]']);
+  const args = Buffer.from(new ethers.utils.AbiCoder().encode(['bytes[]'], [innerCallsHex]).slice(2), 'hex');
+  return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
+}
+
+/**
+ * Encodes ForwarderV4.callFromParent(target, value, data) with an arbitrary native value —
+ * unlike wrapInCallFromParent, which hardcodes value 0.
+ */
+function encodeRawCallFromParent(targetAddress: string, value: string | number, calldata: string): string {
+  const method = EthereumAbi.methodID('callFromParent', ['address', 'uint256', 'bytes']);
+  const args = EthereumAbi.rawEncode(
+    ['address', 'uint256', 'bytes'],
+    [targetAddress, value, Buffer.from(calldata.slice(2), 'hex')]
+  );
+  return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
+}
+
+/**
+ * Builds a ContractCall tx with arbitrary calldata — the hostile-prebuild primitive
+ * for CECHO-2720 tests (attacker-controlled prebuild simulations).
+ */
+async function buildRawContractCallTxHex(contractAddress: string, calldata: string, value = '0'): Promise<string> {
+  const txBuilder = getBuilder('hteth') as TransactionBuilder;
+  txBuilder.fee({ fee: '1000000000', gasLimit: '200000' });
+  txBuilder.counter(1);
+  txBuilder.type(TransactionType.ContractCall);
+  txBuilder.contract(contractAddress);
+  txBuilder.data(calldata);
+  if (value !== '0') {
+    txBuilder.value(value);
+  }
   const tx = await txBuilder.build();
   return tx.toBroadcastFormat();
 }
@@ -107,6 +165,21 @@ describe('Erc7984Token', function () {
     bitgo.initializeTestVars();
     register(bitgo);
     coin = bitgo.coin('hteth:ctest1') as Erc7984Token;
+  });
+
+  let getNetworkStub: sinon.SinonStub;
+
+  beforeEach(function () {
+    // Test seam: statics network configs are frozen, so stub getNetwork to return a copy
+    // pinned with the enterprise viewing key; strict mode fails closed when no pin exists.
+    const originalNetwork = coin.getNetwork() as EthereumNetwork;
+    getNetworkStub = sinon
+      .stub(coin, 'getNetwork')
+      .returns({ ...originalNetwork, zamaViewingKeyAddress: DELEGATE_ADDRESS });
+  });
+
+  afterEach(function () {
+    getNetworkStub.restore();
   });
 
   // -------------------------------------------------------------------------
@@ -310,6 +383,330 @@ describe('Erc7984Token', function () {
           walletType: 'tss',
         })
         .should.be.rejectedWith(/missing txHex/);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  describe('verifyTransaction – strict delegation verification (CECHO-2720)', function () {
+    it('should reject a delegate substitution when the network pins an enterprise viewing key', async function () {
+      // The root beforeEach pins DELEGATE_ADDRESS as the enterprise viewing key.
+      const txHex = await buildDelegationTxHex(
+        ZAMA_ACL_ADDRESS,
+        [CTEST1_TOKEN_ADDRESS],
+        '0',
+        ATTACKER_DELEGATE_ADDRESS
+      );
+      await coin
+        .verifyTransaction({
+          txParams: {
+            type: 'enabletoken',
+            enableTokens: [{ name: 'hteth:ctest1' }],
+          },
+          txPrebuild: { txHex } as any,
+          wallet: {} as any,
+          walletType: 'tss',
+        })
+        .should.be.rejectedWith(/does not match the expected enterprise viewing key/);
+    });
+
+    it('should verify a delegation whose delegate matches the pinned enterprise viewing key', async function () {
+      // The root beforeEach pins DELEGATE_ADDRESS as the enterprise viewing key.
+      const txHex = await buildDelegationTxHex(ZAMA_ACL_ADDRESS, [CTEST1_TOKEN_ADDRESS]);
+      const result = await coin.verifyTransaction({
+        txParams: {
+          type: 'enabletoken',
+          enableTokens: [{ name: 'hteth:ctest1' }],
+        },
+        txPrebuild: { txHex } as any,
+        wallet: {} as any,
+        walletType: 'tss',
+      });
+      result.should.equal(true);
+    });
+
+    it('should reject inconsistent delegates across inner delegation calls', async function () {
+      const innerCalls = [
+        buildDelegationCalldata(DELEGATE_ADDRESS, CTEST1_TOKEN_ADDRESS, EXPIRY),
+        buildDelegationCalldata(ATTACKER_DELEGATE_ADDRESS, CUSDT_TOKEN_ADDRESS, EXPIRY),
+      ];
+      const txHex = await buildRawContractCallTxHex(ZAMA_ACL_ADDRESS, encodeRawMulticall(innerCalls));
+      await coin
+        .verifyTransaction({
+          txParams: {
+            type: 'enabletoken',
+            enableTokens: [{ name: 'hteth:ctest1' }, { name: 'hteth:cusdt' }],
+          },
+          txPrebuild: { txHex } as any,
+          wallet: {} as any,
+          walletType: 'tss',
+        })
+        .should.be.rejectedWith(/inconsistent delegates/);
+    });
+
+    it('should reject smuggled non-delegation calls inside the multicall', async function () {
+      // Hostile inner entry: ACL.approve(attacker, 1) — a selector the legacy decoder silently skips.
+      const smuggledCall =
+        approveMethodId + EthereumAbi.rawEncode(['address', 'uint256'], [ATTACKER_CONTRACT_ADDRESS, 1]).toString('hex');
+      const innerCalls = [buildDelegationCalldata(DELEGATE_ADDRESS, CTEST1_TOKEN_ADDRESS, EXPIRY), smuggledCall];
+      const txHex = await buildRawContractCallTxHex(ZAMA_ACL_ADDRESS, encodeRawMulticall(innerCalls));
+      await coin
+        .verifyTransaction({
+          txParams: {
+            type: 'enabletoken',
+            enableTokens: [{ name: 'hteth:ctest1' }],
+          },
+          txPrebuild: { txHex } as any,
+          wallet: {} as any,
+          walletType: 'tss',
+        })
+        .should.be.rejectedWith(/unrecognised method ID/);
+    });
+
+    it('should reject the forwarder theft prebuild (callFromParent to attacker contract with the forwarder balance)', async function () {
+      const inner = buildMulticallDelegationCalldata(DELEGATE_ADDRESS, [CTEST1_TOKEN_ADDRESS], EXPIRY);
+      const calldata = encodeRawCallFromParent(ATTACKER_CONTRACT_ADDRESS, '1000000000000000000', inner);
+      const txHex = await buildRawContractCallTxHex(FORWARDER_ADDRESS, calldata);
+      await coin
+        .verifyTransaction({
+          txParams: {
+            type: 'enabletoken',
+            enableTokens: [{ name: 'hteth:ctest1' }],
+          },
+          txPrebuild: { txHex } as any,
+          wallet: {} as any,
+          walletType: 'tss',
+        })
+        .should.be.rejectedWith(/callFromParent target .* does not match ACL contract/);
+    });
+
+    it('should reject callFromParent with a non-zero native value', async function () {
+      const inner = buildMulticallDelegationCalldata(DELEGATE_ADDRESS, [CTEST1_TOKEN_ADDRESS], EXPIRY);
+      const calldata = encodeRawCallFromParent(ZAMA_ACL_ADDRESS, '1000000000000000000', inner);
+      const txHex = await buildRawContractCallTxHex(FORWARDER_ADDRESS, calldata);
+      await coin
+        .verifyTransaction({
+          txParams: {
+            type: 'enabletoken',
+            enableTokens: [{ name: 'hteth:ctest1' }],
+          },
+          txPrebuild: { txHex } as any,
+          wallet: {} as any,
+          walletType: 'tss',
+        })
+        .should.be.rejectedWith(/callFromParent must carry value 0/);
+    });
+
+    it('should reject extra delegation calls for tokens that were not requested', async function () {
+      const txHex = await buildDelegationTxHex(ZAMA_ACL_ADDRESS, [CTEST1_TOKEN_ADDRESS, CUSDT_TOKEN_ADDRESS]);
+      await coin
+        .verifyTransaction({
+          txParams: {
+            type: 'enabletoken',
+            enableTokens: [{ name: 'hteth:ctest1' }],
+          },
+          txPrebuild: { txHex } as any,
+          wallet: {} as any,
+          walletType: 'tss',
+        })
+        .should.be.rejectedWith(/must contain exactly 1 distinct token delegation.s. but found 2/);
+    });
+
+    it('should reject duplicate delegations for the same token', async function () {
+      const innerCalls = [
+        buildDelegationCalldata(DELEGATE_ADDRESS, CTEST1_TOKEN_ADDRESS, EXPIRY),
+        buildDelegationCalldata(DELEGATE_ADDRESS, CTEST1_TOKEN_ADDRESS, EXPIRY),
+      ];
+      const txHex = await buildRawContractCallTxHex(ZAMA_ACL_ADDRESS, encodeRawMulticall(innerCalls));
+      await coin
+        .verifyTransaction({
+          txParams: {
+            type: 'enabletoken',
+            enableTokens: [{ name: 'hteth:ctest1' }],
+          },
+          txPrebuild: { txHex } as any,
+          wallet: {} as any,
+          walletType: 'tss',
+        })
+        .should.be.rejectedWith(/duplicate delegations for the same token/);
+    });
+
+    it('should reject an unrequested token smuggled alongside a duplicate requested token', async function () {
+      // The pre-review length check let requested [A, A] with decoded [A, X] pass.
+      const txHex = await buildDelegationTxHex(ZAMA_ACL_ADDRESS, [CTEST1_TOKEN_ADDRESS, CUSDT_TOKEN_ADDRESS]);
+      await coin
+        .verifyTransaction({
+          txParams: {
+            type: 'enabletoken',
+            enableTokens: [{ name: 'hteth:ctest1' }, { name: 'hteth:ctest1' }],
+          },
+          txPrebuild: { txHex } as any,
+          wallet: {} as any,
+          walletType: 'tss',
+        })
+        .should.be.rejectedWith(/must contain exactly 1 distinct token delegation.s. but found 2/);
+    });
+
+    it('should accept a deduplicated prebuild when the caller requests the same token twice', async function () {
+      const txHex = await buildDelegationTxHex(ZAMA_ACL_ADDRESS, [CTEST1_TOKEN_ADDRESS]);
+      const result = await coin.verifyTransaction({
+        txParams: {
+          type: 'enabletoken',
+          enableTokens: [{ name: 'hteth:ctest1' }, { name: 'hteth:ctest1' }],
+        },
+        txPrebuild: { txHex } as any,
+        wallet: {} as any,
+        walletType: 'tss',
+      });
+      result.should.equal(true);
+    });
+
+    it('should reject already-expired delegations', async function () {
+      const expiredExpiry = Math.floor(Date.now() / 1000) - 3600;
+      const calldata = buildMulticallDelegationCalldata(DELEGATE_ADDRESS, [CTEST1_TOKEN_ADDRESS], expiredExpiry);
+      const txHex = await buildRawContractCallTxHex(ZAMA_ACL_ADDRESS, calldata);
+      await coin
+        .verifyTransaction({
+          txParams: {
+            type: 'enabletoken',
+            enableTokens: [{ name: 'hteth:ctest1' }],
+          },
+          txPrebuild: { txHex } as any,
+          wallet: {} as any,
+          walletType: 'tss',
+        })
+        .should.be.rejectedWith(/has already expired/);
+    });
+
+    it('should enforce the strict checks on the staging environment as well', async function () {
+      // Test seam: flip the readonly env property to exercise the staging branch of the rollout gate.
+      const mutableBitgo = bitgo as { env: string };
+      const originalEnv = mutableBitgo.env;
+      mutableBitgo.env = 'staging';
+      try {
+        const inner = buildMulticallDelegationCalldata(DELEGATE_ADDRESS, [CTEST1_TOKEN_ADDRESS], EXPIRY);
+        const calldata = encodeRawCallFromParent(ATTACKER_CONTRACT_ADDRESS, '1000000000000000000', inner);
+        const txHex = await buildRawContractCallTxHex(FORWARDER_ADDRESS, calldata);
+        await coin
+          .verifyTransaction({
+            txParams: {
+              type: 'enabletoken',
+              enableTokens: [{ name: 'hteth:ctest1' }],
+            },
+            txPrebuild: { txHex } as any,
+            wallet: {} as any,
+            walletType: 'tss',
+          })
+          .should.be.rejectedWith(/does not match ACL contract/);
+      } finally {
+        mutableBitgo.env = originalEnv;
+      }
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  describe('verifyTransaction – strict mode fails closed without a pinned viewing key (CECHO-2720)', function () {
+    beforeEach(function () {
+      // Drop the root-level pin: strict mode must fail closed when nothing is pinned.
+      getNetworkStub.restore();
+    });
+
+    it('should reject a valid delegation when the network pins no enterprise viewing key', async function () {
+      const txHex = await buildDelegationTxHex(ZAMA_ACL_ADDRESS, [CTEST1_TOKEN_ADDRESS]);
+      await coin
+        .verifyTransaction({
+          txParams: {
+            type: 'enabletoken',
+            enableTokens: [{ name: 'hteth:ctest1' }],
+          },
+          txPrebuild: { txHex } as any,
+          wallet: {} as any,
+          walletType: 'tss',
+        })
+        .should.be.rejectedWith(/zamaViewingKeyAddress is not pinned.*fail closed/);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  describe('verifyTransaction – CECHO-2720 rollout gate (prod keeps legacy behavior)', function () {
+    beforeEach(function () {
+      // Test seam: flip the readonly env property to simulate prod (legacy verification path).
+      const mutableBitgo = bitgo as { env: string };
+      mutableBitgo.env = 'prod';
+    });
+
+    afterEach(function () {
+      // Test seam: restore the test environment after each prod simulation.
+      const mutableBitgo = bitgo as { env: string };
+      mutableBitgo.env = 'test';
+    });
+
+    it('should still verify the forwarder theft prebuild on prod (strict checks not yet enforced there)', async function () {
+      const inner = buildMulticallDelegationCalldata(DELEGATE_ADDRESS, [CTEST1_TOKEN_ADDRESS], EXPIRY);
+      const calldata = encodeRawCallFromParent(ATTACKER_CONTRACT_ADDRESS, '1000000000000000000', inner);
+      const txHex = await buildRawContractCallTxHex(FORWARDER_ADDRESS, calldata);
+      const result = await coin.verifyTransaction({
+        txParams: {
+          type: 'enabletoken',
+          enableTokens: [{ name: 'hteth:ctest1' }],
+        },
+        txPrebuild: { txHex } as any,
+        wallet: {} as any,
+        walletType: 'tss',
+      });
+      result.should.equal(true);
+    });
+
+    it('should still verify a smuggled-call prebuild on prod', async function () {
+      // Hostile inner entry: ACL.approve(attacker, 1).
+      const smuggledCall =
+        approveMethodId + EthereumAbi.rawEncode(['address', 'uint256'], [ATTACKER_CONTRACT_ADDRESS, 1]).toString('hex');
+      const innerCalls = [buildDelegationCalldata(DELEGATE_ADDRESS, CTEST1_TOKEN_ADDRESS, EXPIRY), smuggledCall];
+      const txHex = await buildRawContractCallTxHex(ZAMA_ACL_ADDRESS, encodeRawMulticall(innerCalls));
+      const result = await coin.verifyTransaction({
+        txParams: {
+          type: 'enabletoken',
+          enableTokens: [{ name: 'hteth:ctest1' }],
+        },
+        txPrebuild: { txHex } as any,
+        wallet: {} as any,
+        walletType: 'tss',
+      });
+      result.should.equal(true);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  describe('decodeDelegationCallsFromCalldata', function () {
+    it('should decode delegate, token, and expiry from multicall calldata', function () {
+      const calldata = buildMulticallDelegationCalldata(DELEGATE_ADDRESS, [CTEST1_TOKEN_ADDRESS], EXPIRY);
+      const decoded = decodeDelegationCallsFromCalldata(calldata);
+      decoded.shape.should.equal('aclMulticall');
+      decoded.calls.length.should.equal(1);
+      decoded.calls[0].delegate.should.equal(DELEGATE_ADDRESS.toLowerCase());
+      decoded.calls[0].tokenAddress.should.equal(CTEST1_TOKEN_ADDRESS.toLowerCase());
+      decoded.calls[0].expiry.should.equal(BigInt(EXPIRY));
+    });
+
+    it('should decode the callFromParent target and native value', function () {
+      const inner = buildMulticallDelegationCalldata(DELEGATE_ADDRESS, [CTEST1_TOKEN_ADDRESS], EXPIRY);
+      const wrapped = encodeRawCallFromParent(ZAMA_ACL_ADDRESS, '123', inner);
+      const decoded = decodeDelegationCallsFromCalldata(wrapped);
+      decoded.shape.should.equal('callFromParent');
+      (decoded.callFromParentTarget as string).should.equal(ZAMA_ACL_ADDRESS.toLowerCase());
+      (decoded.callFromParentValue as bigint).should.equal(123n);
+      decoded.calls[0].delegate.should.equal(DELEGATE_ADDRESS.toLowerCase());
+    });
+
+    it('should throw on a non-delegation inner call', function () {
+      const smuggledCall =
+        approveMethodId + EthereumAbi.rawEncode(['address', 'uint256'], [ATTACKER_CONTRACT_ADDRESS, 1]).toString('hex');
+      const innerCalls = [buildDelegationCalldata(DELEGATE_ADDRESS, CTEST1_TOKEN_ADDRESS, EXPIRY), smuggledCall];
+      should.throws(() => decodeDelegationCallsFromCalldata(encodeRawMulticall(innerCalls)), /unrecognised method ID/);
+    });
+
+    it('should throw on trailing bytes in an inner call', function () {
+      const paddedCall = buildDelegationCalldata(DELEGATE_ADDRESS, CTEST1_TOKEN_ADDRESS, EXPIRY) + 'ff'.repeat(32);
+      should.throws(() => decodeDelegationCallsFromCalldata(encodeRawMulticall([paddedCall])), /malformed/);
     });
   });
 
