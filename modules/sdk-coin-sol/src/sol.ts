@@ -908,6 +908,14 @@ export class Sol extends BaseCoin {
     // or — when wallet-platform declares a sponsored fee payer — exactly that address.
     // The closed match only accepts the specific fee payer declared for this
     // transaction; every other non-root fee payer still throws. (CHALO-1749)
+    const solFeePayerPolicy = txPrebuild.coinSpecific?.solFeePayerPolicy;
+    const txRequestFeePayer =
+      typeof solFeePayerPolicy === 'object' &&
+      solFeePayerPolicy !== null &&
+      'feePayerAddress' in solFeePayerPolicy &&
+      typeof solFeePayerPolicy.feePayerAddress === 'string'
+        ? solFeePayerPolicy.feePayerAddress
+        : undefined;
     const declaredFeePayer =
       params.feePayer ??
       (typeof txParams === 'object' &&
@@ -915,7 +923,7 @@ export class Sol extends BaseCoin {
       'feePayer' in txParams &&
       typeof txParams.feePayer === 'string'
         ? txParams.feePayer
-        : undefined);
+        : txRequestFeePayer);
     if (consolidateId === undefined && !isCloseAssociatedTokenAccountTx) {
       if (declaredFeePayer) {
         // Sponsored: WP declared the fee payer for this transaction — strict match.
