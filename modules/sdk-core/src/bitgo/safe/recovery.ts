@@ -95,6 +95,11 @@ export type SecpSafeRecoverKeyParams = {
   backupKey: string;
   bitgoKey: string;
   walletPassphrase?: string;
+  /**
+   * An address recorded for the wallet, passed through to `coin.recover()`; coins that derive
+   * addresses from the keys (UTXO) use it to fail closed on wrong key material.
+   */
+  walletAddress?: string;
 };
 
 /**
@@ -377,7 +382,7 @@ export type SafeRecoverKeyParamsRequest = {
   coin: string;
   mode: 'signed' | 'unsigned';
 } & (
-  | { slot: 'secp256k1Multisig'; keys: Secp256k1MultisigChildKeys }
+  | { slot: 'secp256k1Multisig'; keys: Secp256k1MultisigChildKeys; walletAddress?: string }
   | { slot: 'ed25519Multisig'; keys: Ed25519MultisigChildKeys }
   | { slot: 'ecdsaMpc'; keys: EcdsaMpcChildKeys }
   | { slot: 'eddsaMpc'; keys: EddsaMpcChildKeys }
@@ -432,6 +437,7 @@ export async function buildSafeRecoverKeyParams(params: SafeRecoverKeyParamsRequ
   }
 
   const keys = params.keys;
+  const walletAddress = params.walletAddress !== undefined ? { walletAddress: params.walletAddress } : {};
 
   if (mode === 'unsigned') {
     return {
@@ -439,6 +445,7 @@ export async function buildSafeRecoverKeyParams(params: SafeRecoverKeyParamsRequ
       userKey: keys.user.pub,
       backupKey: keys.backup.pub,
       bitgoKey: keys.bitgo.pub,
+      ...walletAddress,
     };
   }
 
@@ -460,6 +467,7 @@ export async function buildSafeRecoverKeyParams(params: SafeRecoverKeyParamsRequ
     backupKey,
     bitgoKey: keys.bitgo.pub,
     walletPassphrase,
+    ...walletAddress,
   };
 }
 
