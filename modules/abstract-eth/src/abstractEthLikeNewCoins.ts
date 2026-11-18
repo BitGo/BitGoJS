@@ -4465,8 +4465,10 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
    * wrapParams/unwrapParams, and server-leg PA rebuilds re-derive everything from the journey
    * (the PA carries only the type and pendingApprovalId). Verification is therefore content-based
    * on the sendMultiSig args:
-   *   - unwrap: strict — inner target must be the registered pair's wrapper for unwrapParams.tokenName
-   *     and the unwrap args must be self-directed (wallet base address).
+   *   - unwrap: strict when unwrapParams is present — inner target must be the registered pair's
+   *     wrapper for unwrapParams.tokenName; bounded on a PA rebuild (no unwrapParams, pendingApprovalId
+   *     set) — inner target must be a registered ERC-7984 wrapper. Either way the unwrap args must be
+   *     self-directed (wallet base address) and carry a non-empty encryptedAmount and inputProof.
    *   - wrap: strict when wrapParams is present (target wrapper + amount); bounded otherwise —
    *     inner target must be a registered ERC-7984 wrapper and the mint recipient the wallet base.
    *   - finalizeUnwrap: bounded — registered wrapper target and well-formed request fields.
@@ -4484,7 +4486,11 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     if (!txPrebuild?.txHex) {
       throw new Error('missing txHex in txPrebuild');
     }
-    if (type === 'unwrap' && !intentParams?.tokenName) {
+    // CHALO-2023: the unwrap PA-rebuild carries only the type and the pendingApprovalId; the
+    // unwrapParams live in the journey. Same gate as wrapApprove (CHALO-2010): strict whenever
+    // unwrapParams names the pair; bounded only when unwrapParams is absent AND a pendingApprovalId
+    // is present (caller-supplied, so it grants no more than the bounded checks).
+    if (type === 'unwrap' && !intentParams?.tokenName && (intentParams || !txParams.pendingApprovalId)) {
       return throwRecipientMismatch('unwrap transaction requires unwrapParams with tokenName', []);
     }
 
@@ -4567,15 +4573,19 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
         break;
       }
       case 'unwrap': {
-        const wrapper = wrapperByTokenName.get(intentParams!.tokenName);
-        if (!wrapper) {
-          return throwRecipientMismatch(
-            `unwrap: '${intentParams!.tokenName}' is not a registered ERC-7984 shield pair`,
-            []
-          );
-        }
-        if (innerTo.toLowerCase() !== wrapper) {
-          await mismatch('unwrap transaction must target the registered wrapper contract');
+        if (intentParams?.tokenName) {
+          const wrapper = wrapperByTokenName.get(intentParams.tokenName);
+          if (!wrapper) {
+            return throwRecipientMismatch(
+              `unwrap: '${intentParams.tokenName}' is not a registered ERC-7984 shield pair`,
+              []
+            );
+          }
+          if (innerTo.toLowerCase() !== wrapper) {
+            await mismatch('unwrap transaction must target the registered wrapper contract');
+          }
+        } else if (!registeredWrappers.has(innerTo.toLowerCase())) {
+          await mismatch('unwrap transaction must target a registered ERC-7984 wrapper');
         }
         let decoded: { from: string; to: string; encryptedAmount: string; inputProof: string };
         try {
