@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.8.12](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-osmo%403.8.11...%40bitgo%2Fsdk-coin-osmo%403.8.12) (2026-11-18)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-osmo
+
+
+
+
+
 ## [3.8.11](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-osmo%403.8.10...%40bitgo%2Fsdk-coin-osmo%403.8.11) (2026-11-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-osmo

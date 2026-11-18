@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.9.62](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-cosmos%401.9.61...%40bitgo%2Fsdk-coin-cosmos%401.9.62) (2026-11-18)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-cosmos
+
+
+
+
+
 ## [1.9.61](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-cosmos%401.9.60...%40bitgo%2Fsdk-coin-cosmos%401.9.61) (2026-11-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-cosmos

@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.2.10](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-eos%404.2.9...%40bitgo%2Fsdk-coin-eos%404.2.10) (2026-11-18)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-eos
+
+
+
+
+
 ## [4.2.9](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-eos%404.2.8...%40bitgo%2Fsdk-coin-eos%404.2.9) (2026-11-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-eos

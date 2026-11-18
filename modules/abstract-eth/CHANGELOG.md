@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [25.6.5](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fabstract-eth%4025.6.4...%40bitgo%2Fabstract-eth%4025.6.5) (2026-11-18)
+
+### Bug Fixes
+
+* **sdk-coin-eth:** enforce strict ERC-7984 delegation verification on test/staging (CECHO-2720) ([fe6c02f](https://github.com/BitGo/BitGoJS/commit/fe6c02f3f00d15e509ce1028d2a6e4718e03c60f))
+
+
 ## [25.6.4](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fabstract-eth%4025.6.3...%40bitgo%2Fabstract-eth%4025.6.4) (2026-11-17)
 
 **Note:** Version bump only for package @bitgo/abstract-eth
