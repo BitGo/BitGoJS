@@ -3186,6 +3186,26 @@ describe('V2 Wallet:', function () {
           },
         });
       });
+      it('should propagate coin-specific txRequest metadata to the prebuild', async function () {
+        const feePayerPolicy = {
+          sponsorshipMode: 'enterprise',
+          feePayerAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+        };
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves({
+          ...txRequest,
+          unsignedTxs: [{ ...txRequest.unsignedTxs[0], coinSpecific: { solFeePayerPolicy: feePayerPolicy } }],
+        });
+
+        const txPrebuild = await tssSolWallet.prebuildTransaction({
+          reqId,
+          recipients: [],
+          type: 'transfer',
+        });
+
+        assert.deepStrictEqual(txPrebuild.coinSpecific, { solFeePayerPolicy: feePayerPolicy });
+        assert.strictEqual(txPrebuild.buildParams?.feePayer, feePayerPolicy.feePayerAddress);
+      });
 
       it('should build a single recipient transfer with pending approval id if transaction is having one', async function () {
         const recipients = [

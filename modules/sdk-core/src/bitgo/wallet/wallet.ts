@@ -3968,15 +3968,27 @@ export class Wallet implements IWallet {
     // we need to step over each prebuild now - should be in an array in the body
     const consolidations: PrebuildTransactionResult[] = [];
     for (const consolidateAccountBuild of buildResponse) {
+      const buildParams = { ...whitelistedParams, type: 'consolidate' as const };
       let prebuild: PrebuildTransactionResult = (await this.baseCoin.postProcessPrebuild(
         Object.assign(consolidateAccountBuild, {
           wallet: this,
-          buildParams: whitelistedParams,
+          buildParams,
         })
       )) as PrebuildTransactionResult;
 
       delete prebuild.wallet;
       delete prebuild.buildParams;
+      if (this._wallet.multisigType === 'tss') {
+        const solFeePayerPolicy = prebuild.coinSpecific?.solFeePayerPolicy;
+        const feePayer =
+          typeof solFeePayerPolicy === 'object' &&
+          solFeePayerPolicy !== null &&
+          'feePayerAddress' in solFeePayerPolicy &&
+          typeof solFeePayerPolicy.feePayerAddress === 'string'
+            ? solFeePayerPolicy.feePayerAddress
+            : undefined;
+        prebuild.buildParams = feePayer ? { ...buildParams, feePayer } : buildParams;
+      }
 
       prebuild = _.extend({}, prebuild, { walletId: this.id() });
       debug('final consolidation transaction prebuild: %O', prebuild);
@@ -5146,12 +5158,22 @@ export class Wallet implements IWallet {
     }
 
     const whitelistedParams = _.pick(params, this.prebuildWhitelistedParams());
+    const solFeePayerPolicy = unsignedTx.coinSpecific?.solFeePayerPolicy;
+    const feePayer =
+      typeof solFeePayerPolicy === 'object' &&
+      solFeePayerPolicy !== null &&
+      'feePayerAddress' in solFeePayerPolicy &&
+      typeof solFeePayerPolicy.feePayerAddress === 'string'
+        ? solFeePayerPolicy.feePayerAddress
+        : undefined;
+    const buildParams = feePayer ? { ...whitelistedParams, feePayer } : whitelistedParams;
     return {
       walletId: this.id(),
       wallet: this,
       txRequestId: txRequest.txRequestId,
       txHex: unsignedTx.serializedTxHex,
-      buildParams: whitelistedParams,
+      ...(unsignedTx.coinSpecific && { coinSpecific: unsignedTx.coinSpecific }),
+      buildParams,
       feeInfo: unsignedTx.feeInfo,
       ...(txRequest.pendingApprovalId && {
         pendingApprovalId: txRequest.pendingApprovalId,

@@ -667,6 +667,38 @@ describe('SOL:', function () {
       } as any);
       result.should.equal(true);
     });
+    it('should accept the fee payer from a persisted txRequest coinSpecific policy', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      const walletData = {
+        id: '5b34252f1bf349930e34020a00000000',
+        coin: 'tsol',
+        keys: [
+          '5b3424f91bf349930e34017500000000',
+          '5b3424f91bf349930e34017600000000',
+          '5b3424f91bf349930e34017700000000',
+        ],
+        coinSpecific: {
+          rootAddress: stakeAccount.pub,
+        },
+        multisigType: 'tss',
+      };
+      const walletWithDifferentRoot = new Wallet(bitgo, basecoin, walletData);
+      txPrebuild.coinSpecific = {
+        solFeePayerPolicy: {
+          sponsorshipMode: 'enterprise',
+          feePayerAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+        },
+      };
+
+      const result = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        memo,
+        wallet: walletWithDifferentRoot,
+      } as unknown as SolVerifyTransactionOptions);
+      result.should.equal(true);
+    });
 
     it('accepts a fee payer declared inside txParams by the wallet verification path', async function () {
       const txPrebuild = newTxPrebuild();
@@ -862,6 +894,67 @@ describe('SOL:', function () {
           } as any)
           .should.be.rejectedWith('Number of tx outputs does not match with number of txParams recipients');
       });
+      const buildConsolidationRaw = async (feePayer: string) => {
+        const txBuilder = factory.getTransferBuilder();
+        txBuilder.sender(wallet.pub);
+        txBuilder.feePayer(feePayer);
+        txBuilder.nonce(blockHash);
+        txBuilder.send({ address: wallet.pub, amount: '1000' });
+        return (await txBuilder.build()).toBroadcastFormat();
+      };
+
+      for (const consolidationMode of ['single-asset', 'legacy-multi-asset'] as const) {
+        it(`should verify ${consolidationMode} consolidation with a sponsored fee payer`, async function () {
+          const txBase64 = await buildConsolidationRaw(stakeAccount.pub);
+          const result = await basecoin.verifyTransaction({
+            txParams: { type: 'consolidate', consolidationMode, recipients: [] },
+            txPrebuild: { txBase64 },
+            wallet: walletObj,
+            feePayer: stakeAccount.pub,
+            blockhash: blockHash,
+          } as unknown as SolVerifyTransactionOptions);
+          result.should.equal(true);
+        });
+      }
+      it('should reject a consolidation with a mismatched declared sponsored fee payer', async function () {
+        const txBase64 = await buildConsolidationRaw(stakeAccount.pub);
+        await basecoin
+          .verifyTransaction({
+            txParams: { type: 'consolidate', recipients: [] },
+            txPrebuild: { txBase64 },
+            wallet: walletObj,
+            feePayer: wallet.pub,
+            blockhash: blockHash,
+          } as unknown as SolVerifyTransactionOptions)
+          .should.be.rejectedWith(/does not match the declared sponsored fee payer/);
+      });
+
+      it('should reject an undeclared non-root fee payer on consolidation', async function () {
+        const txBase64 = await buildConsolidationRaw(stakeAccount.pub);
+        await basecoin
+          .verifyTransaction({
+            txParams: { type: 'consolidate', recipients: [] },
+            txPrebuild: { txBase64 },
+            wallet: walletObj,
+            blockhash: blockHash,
+          } as unknown as SolVerifyTransactionOptions)
+          .should.be.rejectedWith('Tx fee payer is not the wallet root address');
+      });
+
+      for (const consolidationMode of ['single-asset', 'legacy-multi-asset'] as const) {
+        it(`should reject ${consolidationMode} consolidation outputs outside the wallet`, async function () {
+          const txBase64 = await buildRaw(wallet.pub, attacker, '1000', memoFor(wallet.pub));
+          await basecoin
+            .verifyTransaction({
+              txParams: { type: 'consolidate', consolidationMode, recipients: [] },
+              txPrebuild: { txBase64 },
+              wallet: walletObj,
+              feePayer: stakeAccount.pub,
+              blockhash: blockHash,
+            } as unknown as SolVerifyTransactionOptions)
+            .should.be.rejectedWith('tx outputs does not match with expected address');
+        });
+      }
 
       it('should reject a Marinade unstake whose transfer is not sent from the wallet root', async function () {
         const otherSender = stakeAccount.pub;
@@ -1491,6 +1584,16 @@ describe('SOL:', function () {
             txPrebuild: { txBase64, consolidateId: 'consolidate-123' },
             wallet: walletObj,
           } as any)
+          .should.be.rejectedWith('CustomTx transactions are not valid for consolidation');
+      });
+      it('should reject a CustomTx marked consolidate without a consolidateId', async function () {
+        const txBase64 = await buildCustomTx([userInstruction]);
+        await basecoin
+          .verifyTransaction({
+            txParams: { type: 'consolidate', solInstructions: [userInstruction] },
+            txPrebuild: { txBase64 },
+            wallet: walletObj,
+          } as unknown as SolVerifyTransactionOptions)
           .should.be.rejectedWith('CustomTx transactions are not valid for consolidation');
       });
 
