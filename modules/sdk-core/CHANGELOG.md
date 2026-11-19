@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [40.9.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4040.8.1...%40bitgo%2Fsdk-core%4040.9.0) (2026-11-19)
+
+### Bug Fixes
+
+* harden safe wallet recovery verification ([627ff45](https://github.com/BitGo/BitGoJS/commit/627ff4524bbe82e71b8fb8c4a5420dbfa2759e3d))
+* **sdk-coin-canton:** verify split transactions as a batch ([2ac6eaf](https://github.com/BitGo/BitGoJS/commit/2ac6eafed928a33f9fbcf364955b894efaf69a95))
+
+### Features
+
+* safes BYOK backup root support in SDK ([5cefee8](https://github.com/BitGo/BitGoJS/commit/5cefee857de7b1c352c2f0deb0711aab644b9e23))
+
+
 ## [40.8.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4040.8.0...%40bitgo%2Fsdk-core%4040.8.1) (2026-11-18)
 
 **Note:** Version bump only for package @bitgo/sdk-core

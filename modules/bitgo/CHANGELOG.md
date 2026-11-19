@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [54.4.4](https://github.com/BitGo/BitGoJS/compare/bitgo%4054.4.3...bitgo%4054.4.4) (2026-11-19)
+
+### Bug Fixes
+
+* harden safe wallet recovery verification ([627ff45](https://github.com/BitGo/BitGoJS/commit/627ff4524bbe82e71b8fb8c4a5420dbfa2759e3d))
+
+
 ## [54.4.3](https://github.com/BitGo/BitGoJS/compare/bitgo%4054.4.2...bitgo%4054.4.3) (2026-11-18)
 
 **Note:** Version bump only for package bitgo

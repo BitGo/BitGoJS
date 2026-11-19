@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [13.6.9](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fabstract-utxo%4013.6.8...%40bitgo%2Fabstract-utxo%4013.6.9) (2026-11-19)
+
+### Bug Fixes
+
+* harden safe wallet recovery verification ([627ff45](https://github.com/BitGo/BitGoJS/commit/627ff4524bbe82e71b8fb8c4a5420dbfa2759e3d))
+
+
 ## [13.6.8](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fabstract-utxo%4013.6.7...%40bitgo%2Fabstract-utxo%4013.6.8) (2026-11-18)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo
