@@ -1651,7 +1651,9 @@ describe('ETH:', function () {
 
       it('should not affect approvals of the underlying to other spenders', async function () {
         (await verifyAs('customTx', defiCalldata('approve(address,uint256)', [address2, amount]))).should.equal(true);
-        (await verifyAs('tokenApproval', defiCalldata('approve(address,uint256)', [address2, amount]))).should.equal(
+        // tokenApproval is now verified against the batcher/MAX shape, so an approval of an arbitrary
+        // spender is rejected there; an intent type with no verifier still passes untouched.
+        (await verifyAs('transferToken', defiCalldata('approve(address,uint256)', [address2, amount]))).should.equal(
           true
         );
       });
@@ -1691,8 +1693,8 @@ describe('ETH:', function () {
           ['customTx', defiCalldata('transfer(address,uint256)', [address2, amount]), underlying],
           ['customTx', defiCalldata('approve(address,uint256)', [address2, amount]), underlying],
           ['customTx', defiCalldata('approve(address,uint256)', [wrapper, amount]), address2],
-          ['tokenApproval', defiCalldata('approve(address,uint256)', [address2, amount]), underlying],
-          ['tokenApproval', defiCalldata('approve(address,uint256)', [wrapper, amount]), address2],
+          // tokenApproval is verified by its own handler (CECHO-2689) and is not part of this list.
+          ['transferToken', defiCalldata('approve(address,uint256)', [address2, amount]), underlying],
           ['acceleration', defiCalldata('transfer(address,uint256)', [address2, amount]), address2],
           ['fillNonce', '0x', address2],
           ['enabletoken', defiCalldata('transfer(address,uint256)', [address2, amount]), address2],

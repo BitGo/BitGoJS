@@ -824,12 +824,15 @@ async function buildConfidentialTransferTxHex(opts: {
   recipientAddress: string;
   encryptedHandle: string;
   inputProof: string;
+  /** Native value carried by the outer sendMultiSig transaction (must be 0 for a real transfer). */
+  value?: string;
 }): Promise<string> {
   const key = testData.KEYPAIR_PRV.getKeys().prv as string;
   const txBuilder = getBuilder('hteth') as TransactionBuilder;
   txBuilder.fee({ fee: '1000000000', gasLimit: '12100000' });
   txBuilder.counter(1);
   txBuilder.contract(opts.walletContractAddress);
+  txBuilder.value(opts.value ?? '0');
   txBuilder.type(TransactionType.SendERC7984);
 
   const transferBuilder = txBuilder.transfer() as TransferBuilderERC7984;
@@ -1158,6 +1161,25 @@ describe('verifyTransaction – confidential transfer (SendERC7984)', function (
       })
       .should.be.rejectedWith(/recipient address mismatch/);
   });
+
+  it('should throw when the sendMultiSig-wrapped confidential call carries native value', async function () {
+    const txHex = await buildConfidentialTransferTxHex({
+      walletContractAddress: WALLET_CONTRACT,
+      tokenContractAddress: CTEST1_TOKEN_ADDRESS,
+      recipientAddress: RECIPIENT,
+      encryptedHandle: HANDLE,
+      inputProof: PROOF,
+      value: '1',
+    });
+
+    await coin
+      .verifyTransaction({
+        txParams: { recipients: [{ address: RECIPIENT, amount: AMOUNT }] },
+        txPrebuild: { txHex } as any,
+        wallet: {} as any,
+      })
+      .should.be.rejectedWith(/must not carry native value/);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -1173,6 +1195,10 @@ async function buildDirectConfidentialTransferTxHex(opts: {
   recipientAddress: string;
   encryptedHandle: string;
   inputProof: string;
+  /** Native value carried by the call (must be 0 for a real transfer). */
+  value?: string;
+  /** Extra hex appended after the canonical calldata, to model trailing bytes an EVM would ignore. */
+  appendCalldata?: string;
 }): Promise<string> {
   const txBuilder = getBuilder('hteth') as TransactionBuilder;
   txBuilder.fee({ fee: '1000000000', gasLimit: '200000' });
@@ -1180,6 +1206,7 @@ async function buildDirectConfidentialTransferTxHex(opts: {
   txBuilder.type(TransactionType.ContractCall);
   // tx.to = token contract (EOA calls it directly)
   txBuilder.contract(opts.tokenContractAddress);
+  txBuilder.value(opts.value ?? '0');
   // Inner calldata: confidentialTransfer(address, bytes32, bytes) — no sendMultiSig wrapper
   const calldata = new TransferBuilderERC7984()
     .to(opts.recipientAddress)
@@ -1187,7 +1214,7 @@ async function buildDirectConfidentialTransferTxHex(opts: {
     .encryptedHandle(opts.encryptedHandle)
     .inputProof(opts.inputProof)
     .build();
-  txBuilder.data(calldata);
+  txBuilder.data(calldata + (opts.appendCalldata ?? ''));
   const tx = await txBuilder.build();
   return tx.toBroadcastFormat();
 }
@@ -1308,6 +1335,61 @@ describe('verifyTransaction – direct confidentialTransfer (hot/TSS EOA wallet)
         wallet: {} as any,
       })
       .should.be.rejectedWith(/amount mismatch/);
+  });
+
+  it('should throw when the direct confidential call carries native value', async function () {
+    const txHex = await buildDirectConfidentialTransferTxHex({
+      tokenContractAddress: CTEST1_TOKEN_ADDRESS,
+      recipientAddress: RECIPIENT,
+      encryptedHandle: HANDLE,
+      inputProof: PROOF,
+      value: '1',
+    });
+    await coin
+      .verifyTransaction({
+        txParams: { recipients: [{ address: RECIPIENT, amount: AMOUNT }] },
+        txPrebuild: { txHex } as any,
+        wallet: {} as any,
+      })
+      .should.be.rejectedWith(/must not carry native value/);
+  });
+
+  it('should throw when the direct confidential calldata has trailing bytes', async function () {
+    const txHex = await buildDirectConfidentialTransferTxHex({
+      tokenContractAddress: CTEST1_TOKEN_ADDRESS,
+      recipientAddress: RECIPIENT,
+      encryptedHandle: HANDLE,
+      inputProof: PROOF,
+      appendCalldata: '00'.repeat(32),
+    });
+    await coin
+      .verifyTransaction({
+        txParams: { recipients: [{ address: RECIPIENT, amount: AMOUNT }] },
+        txPrebuild: { txHex } as any,
+        wallet: {} as any,
+      })
+      .should.be.rejectedWith(/not canonical/);
+  });
+
+  it('should throw when more than one recipient is declared', async function () {
+    const txHex = await buildDirectConfidentialTransferTxHex({
+      tokenContractAddress: CTEST1_TOKEN_ADDRESS,
+      recipientAddress: RECIPIENT,
+      encryptedHandle: HANDLE,
+      inputProof: PROOF,
+    });
+    await coin
+      .verifyTransaction({
+        txParams: {
+          recipients: [
+            { address: RECIPIENT, amount: AMOUNT },
+            { address: WRONG_RECIPIENT, amount: AMOUNT },
+          ],
+        },
+        txPrebuild: { txHex } as any,
+        wallet: {} as any,
+      })
+      .should.be.rejectedWith(/exactly 1 recipient/);
   });
 });
 

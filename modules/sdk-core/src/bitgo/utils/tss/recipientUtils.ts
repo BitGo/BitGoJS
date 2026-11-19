@@ -207,6 +207,12 @@ export function resolveEffectiveTxParams(
     effectiveTxParams.wrapParams = { tokenName: intent.tokenName, amount: intent.amount };
   }
 
+  // Propagate the persisted top-level tokenName (e.g. `tokenApproval` intents store tokenName
+  // at the intent root with no recipients; pendingApproval/stored-intent signing carries no caller txParams).
+  if (!effectiveTxParams.tokenName && typeof intent?.tokenName === 'string' && intent.tokenName !== '') {
+    effectiveTxParams.tokenName = intent.tokenName;
+  }
+
   // Propagate the persisted tx-level memo from the intent. Signing paths that carry no txParams
   // (pendingApproval.approve() -> recreateTxRequest() -> signTxRequest()) would otherwise reach
   // the coin verifier with a memo-less txParams while the prebuilt transaction carries the memo
