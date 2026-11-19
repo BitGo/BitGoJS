@@ -40,14 +40,23 @@ import {
   finalizeUnwrapMethodId,
   UINT64_MAX,
   decodeTransferData,
+  TransactionPrebuild,
 } from '@bitgo/abstract-eth';
 import { bip32 } from '@bitgo/secp256k1';
 import * as _ from 'lodash';
+import { BigNumber } from 'bignumber.js';
 
 import { Eth } from './eth';
 import { TransactionBuilder } from './lib';
 
 export { Erc7984TokenConfig };
+
+/** The sendMultiSig operation an onchain-multisig user key signs; the operation-hash source. */
+interface MultisigSignedOperation {
+  address: string;
+  amount?: string | number;
+  data?: string;
+}
 
 export class Erc7984Token extends Eth {
   public readonly tokenConfig: Erc7984TokenConfig;
@@ -738,135 +747,277 @@ export class Erc7984Token extends Eth {
 
   /**
    * Verifies a token enablement transaction for ERC-7984 decryption delegation.
-   *
-   * TSS path: decodes the raw tx and verifies it calls the ACL contract with
-   * calldata that covers all requested token contract addresses.
-   *
-   * Multisig path: verifies the buildParams recipients carry the correct tokenNames
-   * and zero amounts.
+   * Routes by wallet type; on the multisig path the strict flow is the default and
+   * the platform-delivered flag state reverts it to the legacy flow.
    */
   private async verifyEnableTokenTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
-    const { txParams, txPrebuild, walletType } = params;
-
+    const { txPrebuild, walletType } = params;
     if (walletType === 'tss') {
-      // TSS path: full raw-tx decode
-      const enableTokens = txParams.enableTokens;
-      if (!enableTokens || enableTokens.length === 0) {
-        throw new Error('verifyEnableTokenTransaction: enableTokens must be non-empty for TSS path');
-      }
-      if (!txPrebuild.txHex) {
-        throw new Error('verifyEnableTokenTransaction: missing txHex in txPrebuild');
-      }
+      return this.verifyEnableTokenTransactionTss(params);
+    }
+    if (txPrebuild.multisigEnableTokenStrictVerification === false) {
+      return this.verifyEnableTokenTransactionLegacyMultisig(params);
+    }
+    return this.verifyEnableTokenTransactionStrictMultisig(params);
+  }
 
-      // Resolve requested token names → contract addresses
-      const requestedAddresses = enableTokens.map((t) => {
-        const tokenCoin = this.bitgo.coin(t.name) as Erc7984Token;
-        return tokenCoin.tokenContractAddress.toLowerCase();
-      });
+  /**
+   * TSS path: decodes the raw tx and verifies it calls the ACL contract with
+   * calldata that covers all requested token contract addresses.
+   */
+  private async verifyEnableTokenTransactionTss(params: VerifyEthTransactionOptions): Promise<boolean> {
+    const { txParams, txPrebuild } = params;
+    const enableTokens = txParams.enableTokens;
+    if (!enableTokens || enableTokens.length === 0) {
+      throw new Error('verifyEnableTokenTransaction: enableTokens must be non-empty for TSS path');
+    }
+    if (!txPrebuild.txHex) {
+      throw new Error('verifyEnableTokenTransaction: missing txHex in txPrebuild');
+    }
 
-      // Parse the raw transaction
-      const txBuilder = this.getTransactionBuilder();
-      txBuilder.from(txPrebuild.txHex);
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
+    // Resolve requested token names → contract addresses
+    const requestedAddresses = enableTokens.map((t) => {
+      const tokenCoin = this.bitgo.coin(t.name) as Erc7984Token;
+      return tokenCoin.tokenContractAddress.toLowerCase();
+    });
 
-      // Verify transaction targets the correct contract based on calldata shape
-      const network = this.getNetwork() as EthereumNetwork;
-      const aclContractAddress = network?.zamaAclContractAddress;
-      if (!aclContractAddress) {
-        throw new Error('verifyEnableTokenTransaction: zamaAclContractAddress not configured for this network');
-      }
-      if (!txJson.to) {
-        throw new Error('verifyEnableTokenTransaction: transaction is missing recipient address');
-      }
+    // Parse the raw transaction
+    const txBuilder = this.getTransactionBuilder();
+    txBuilder.from(txPrebuild.txHex);
+    const tx = await txBuilder.build();
+    const txJson = tx.toJson();
 
-      // Inspect calldata method ID to distinguish root wallet from forwarder wallet:
-      //   aclMulticallMethodId   → root wallet: to = ACL contract directly
-      //   callFromParentMethodId → forwarder wallet: to = forwarder, ACL address is inside calldata
-      const calldataMethodId = txJson.data.slice(0, 10);
-      if (calldataMethodId === aclMulticallMethodId) {
-        // Root wallet (base address): tx calls the ACL contract directly
-        if (txJson.to.toLowerCase() !== aclContractAddress.toLowerCase()) {
-          throw new Error(
-            `verifyEnableTokenTransaction: transaction target ${txJson.to} does not match ACL contract ${aclContractAddress}`
-          );
-        }
-      } else if (calldataMethodId === callFromParentMethodId) {
-        // Forwarder wallet: tx calls the forwarder, which calls the ACL via callFromParent.
-        // The forwarder address is wallet-specific and cannot be statically verified here;
-        // token address correctness is still verified below via calldata decoding.
-      } else {
+    // Verify transaction targets the correct contract based on calldata shape
+    const network = this.getNetwork() as EthereumNetwork;
+    const aclContractAddress = network?.zamaAclContractAddress;
+    if (!aclContractAddress) {
+      throw new Error('verifyEnableTokenTransaction: zamaAclContractAddress not configured for this network');
+    }
+    if (!txJson.to) {
+      throw new Error('verifyEnableTokenTransaction: transaction is missing recipient address');
+    }
+
+    // Inspect calldata method ID to distinguish root wallet from forwarder wallet:
+    //   aclMulticallMethodId   → root wallet: to = ACL contract directly
+    //   callFromParentMethodId → forwarder wallet: to = forwarder, ACL address is inside calldata
+    const calldataMethodId = txJson.data.slice(0, 10);
+    if (calldataMethodId === aclMulticallMethodId) {
+      // Root wallet (base address): tx calls the ACL contract directly
+      if (txJson.to.toLowerCase() !== aclContractAddress.toLowerCase()) {
         throw new Error(
-          `verifyEnableTokenTransaction: unrecognised calldata method ID ${calldataMethodId}; expected multicall or callFromParent`
+          `verifyEnableTokenTransaction: transaction target ${txJson.to} does not match ACL contract ${aclContractAddress}`
         );
       }
-
-      // Verify value is 0
-      if (txJson.value !== '0') {
-        throw new Error(`verifyEnableTokenTransaction: expected transaction value 0 but got ${txJson.value}`);
-      }
-
-      // Decode token addresses from calldata and verify all requested tokens are present
-      const decodedAddresses = decodeTokenAddressesFromDelegationCalldata(txJson.data);
-      for (const requested of requestedAddresses) {
-        if (!decodedAddresses.includes(requested)) {
-          throw new Error(
-            `verifyEnableTokenTransaction: requested token ${requested} not found in delegation calldata`
-          );
-        }
-      }
-
-      // CECHO-2720 rollout gate: strict delegation verification is enforced on test and
-      // staging environments first; prod keeps the legacy checks above for one release
-      // cycle while staging/testnet validation proves there are no false positives.
-      // This gate must be removed (enforcing everywhere) in the next release.
-      if (this.bitgo.env === 'test' || this.bitgo.env === 'staging') {
-        this.verifyStrictEnableTokenCalldata(txJson, aclContractAddress, requestedAddresses);
-      }
-
-      return true;
+    } else if (calldataMethodId === callFromParentMethodId) {
+      // Forwarder wallet: tx calls the forwarder, which calls the ACL via callFromParent.
+      // The forwarder address is wallet-specific and cannot be statically verified here;
+      // token address correctness is still verified below via calldata decoding.
     } else {
-      // Multisig path: buildParams-level check
-      const recipients = txPrebuild.buildParams?.recipients as
-        | Array<{ tokenName?: string; amount?: string }>
-        | undefined;
-      if (!recipients || recipients.length === 0) {
-        throw new Error('verifyEnableTokenTransaction: missing buildParams.recipients for multisig path');
-      }
+      throw new Error(
+        `verifyEnableTokenTransaction: unrecognised calldata method ID ${calldataMethodId}; expected multicall or callFromParent`
+      );
+    }
 
-      // Determine requested token names from txParams
-      const requestedTokenNames: string[] = [];
-      if (txParams.enableTokens && txParams.enableTokens.length > 0) {
-        requestedTokenNames.push(...txParams.enableTokens.map((t) => t.name));
-      } else if (txParams.recipients && txParams.recipients.length > 0) {
-        requestedTokenNames.push(...txParams.recipients.map((r: any) => r.tokenName).filter(Boolean));
-      }
+    // Verify value is 0
+    if (txJson.value !== '0') {
+      throw new Error(`verifyEnableTokenTransaction: expected transaction value 0 but got ${txJson.value}`);
+    }
 
-      // Verify all recipients have tokenName and amount = '0'
-      for (const recipient of recipients) {
-        if (!recipient.tokenName) {
-          throw new Error('verifyEnableTokenTransaction: recipient is missing tokenName in buildParams');
-        }
-        if (recipient.amount !== '0') {
+    // Decode token addresses from calldata and verify all requested tokens are present
+    const decodedAddresses = decodeTokenAddressesFromDelegationCalldata(txJson.data);
+    for (const requested of requestedAddresses) {
+      if (!decodedAddresses.includes(requested)) {
+        throw new Error(`verifyEnableTokenTransaction: requested token ${requested} not found in delegation calldata`);
+      }
+    }
+
+    // CECHO-2720 rollout gate: strict delegation verification is enforced on test and
+    // staging environments first; prod keeps the legacy checks above for one release
+    // cycle while staging/testnet validation proves there are no false positives.
+    // This gate must be removed (enforcing everywhere) in the next release.
+    if (this.bitgo.env === 'test' || this.bitgo.env === 'staging') {
+      this.verifyStrictEnableTokenCalldata(txJson, aclContractAddress, requestedAddresses);
+    }
+
+    return true;
+  }
+
+  /**
+   * Requested token names: enableTokens when present (prebuildAndSignTransaction
+   * merges the original params over the buildParams), else the client-built
+   * recipients' tokenNames. Empty when the caller supplied neither.
+   */
+  private resolveRequestedTokenNames(txParams: VerifyEthTransactionOptions['txParams']): string[] {
+    if (txParams.enableTokens && txParams.enableTokens.length > 0) {
+      return txParams.enableTokens.map((t) => t.name);
+    }
+    if (txParams.recipients && txParams.recipients.length > 0) {
+      return txParams.recipients.map((r) => r.tokenName).filter((name): name is string => Boolean(name));
+    }
+    return [];
+  }
+
+  private resolveRequestedTokenAddresses(txParams: VerifyEthTransactionOptions['txParams']): string[] {
+    const tokenNames = this.resolveRequestedTokenNames(txParams);
+    if (tokenNames.length === 0) {
+      throw new Error('verifyEnableTokenTransaction: requested tokens must be non-empty for the multisig strict path');
+    }
+    return tokenNames.map((name) => (this.bitgo.coin(name) as Erc7984Token).tokenContractAddress.toLowerCase());
+  }
+
+  /**
+   * The sendMultiSig operation that the multisig user key signs, resolved exactly as
+   * the signer does (Eth.signTransaction: txPrebuild.recipients || txPrebuild.txInfo?.recipients):
+   * exactly one recipient, and its address must be present.
+   */
+  private resolveSignedMultisigOperation(txPrebuild: TransactionPrebuild): MultisigSignedOperation {
+    const recipients = txPrebuild.recipients || txPrebuild.txInfo?.recipients;
+    const recipient = Array.isArray(recipients) && recipients.length === 1 ? recipients[0] : undefined;
+    if (!recipient?.address) {
+      throw new Error(
+        'verifyEnableTokenTransaction: multisig prebuild must carry exactly one recipient with an address — the sendMultiSig operation that gets signed'
+      );
+    }
+    const data = 'data' in recipient && typeof recipient.data === 'string' ? recipient.data : undefined;
+    return { address: recipient.address, amount: recipient.amount, data };
+  }
+
+  /**
+   * Legacy multisig enable-token verification, kept behaviorally identical to the
+   * pre-fix flow as the revert path when the Flipt flag disables the strict flow.
+   * Checks only txPrebuild.buildParams.recipients, which Wallet.buildTokenEnablements
+   * attaches client-side from the caller's own enableTokens — it validates the client's
+   * own request, not the prebuild the platform returned, and so provides no protection
+   * against a compromised platform. Do not extend this path; new checks belong in the
+   * strict flow.
+   */
+  private verifyEnableTokenTransactionLegacyMultisig(params: VerifyEthTransactionOptions): boolean {
+    const { txParams, txPrebuild } = params;
+    const recipients = txPrebuild.buildParams?.recipients as Array<{ tokenName?: string; amount?: string }> | undefined;
+    if (!recipients || recipients.length === 0) {
+      throw new Error('verifyEnableTokenTransaction: missing buildParams.recipients for multisig path');
+    }
+
+    for (const recipient of recipients) {
+      if (!recipient.tokenName) {
+        throw new Error('verifyEnableTokenTransaction: recipient is missing tokenName in buildParams');
+      }
+      if (recipient.amount !== '0') {
+        throw new Error(
+          `verifyEnableTokenTransaction: expected amount 0 for token enablement but got ${recipient.amount}`
+        );
+      }
+    }
+
+    const requestedTokenNames = this.resolveRequestedTokenNames(txParams);
+    if (requestedTokenNames.length > 0) {
+      const recipientTokenNames = recipients.map((r) => r.tokenName);
+      for (const requested of requestedTokenNames) {
+        if (!recipientTokenNames.includes(requested)) {
           throw new Error(
-            `verifyEnableTokenTransaction: expected amount 0 for token enablement but got ${recipient.amount}`
+            `verifyEnableTokenTransaction: requested token ${requested} not found in buildParams recipients`
           );
         }
       }
+    }
 
-      // Verify requested token names are present in recipients
-      if (requestedTokenNames.length > 0) {
-        const recipientTokenNames = recipients.map((r) => r.tokenName);
-        for (const requested of requestedTokenNames) {
-          if (!recipientTokenNames.includes(requested)) {
-            throw new Error(
-              `verifyEnableTokenTransaction: requested token ${requested} not found in buildParams recipients`
-            );
-          }
-        }
-      }
+    return true;
+  }
 
-      return true;
+  /**
+   * Strict multisig enable-token verification — the default flow.
+   *
+   * Onchain-multisig users sign the sendMultiSig operation hash over
+   * txPrebuild.recipients[0] = (address, amount, data): Eth.signTransaction resolves the
+   * recipients from the prebuild (never from client params) and hashes the data verbatim,
+   * halfSigned carries no txHex, and the MultiSigV3 contract enforces at execution that
+   * the broadcast args hash to the op the user signed. recipients[0] is therefore the
+   * single authoritative binding, and it is verified here in full:
+   *   1. amount == 0 — a non-zero sendMultiSig value moves native funds directly.
+   *   2. the data decodes fail-closed as a delegation calldata — rejects any other
+   *      selector (e.g. an ERC-20 approve theft prebuild) and smuggled inner calls.
+   *   3. aclMulticall shape: the target must be the ACL contract (root wallet).
+   *      callFromParent shape: the forwarder address is wallet-specific and not
+   *      statically verifiable (same decision as the TSS path); the on-chain
+   *      onlyParent modifier plus the enforced callFromParent target/value close
+   *      the fund-theft vector regardless of which forwarder is targeted.
+   *   4. verifyStrictEnableTokenCalldata binds the delegate to the pinned enterprise
+   *      viewing key (fail closed when unpinned), a future expiry, an exact
+   *      deduplicated match against the requested tokens, and — for the
+   *      callFromParent shape — target == ACL contract with zero native value.
+   *   5. When the prebuild carries a txHex, its sendMultiSig args must mirror
+   *      recipients[0] exactly: a diverging txHex (e.g. a decoy that passes
+   *      verification while different args get signed) is rejected.
+   */
+  private async verifyEnableTokenTransactionStrictMultisig(params: VerifyEthTransactionOptions): Promise<boolean> {
+    const { txParams, txPrebuild } = params;
+
+    const requestedAddresses = this.resolveRequestedTokenAddresses(txParams);
+    const aclContractAddress = (this.getNetwork() as EthereumNetwork)?.zamaAclContractAddress;
+    if (!aclContractAddress) {
+      throw new Error('verifyEnableTokenTransaction: zamaAclContractAddress not configured for this network');
+    }
+
+    const operation = this.resolveSignedMultisigOperation(txPrebuild);
+    if (new BigNumber(operation.amount ?? 0).comparedTo(0) !== 0) {
+      throw new Error(`verifyEnableTokenTransaction: expected sendMultiSig value 0 but got ${operation.amount}`);
+    }
+    if (!operation.data || operation.data === '0x') {
+      throw new Error('verifyEnableTokenTransaction: multisig prebuild recipient is missing delegation calldata');
+    }
+    const delegation = decodeDelegationCallsFromCalldata(operation.data);
+
+    if (delegation.shape === 'aclMulticall' && operation.address.toLowerCase() !== aclContractAddress.toLowerCase()) {
+      throw new Error(
+        `verifyEnableTokenTransaction: sendMultiSig target ${operation.address} does not match ACL contract ${aclContractAddress}`
+      );
+    }
+
+    this.verifyStrictEnableTokenCalldata(
+      { to: operation.address, data: operation.data, value: '0' },
+      aclContractAddress,
+      requestedAddresses
+    );
+
+    if (txPrebuild.txHex) {
+      await this.assertTxHexMirrorsSignedOperation(txPrebuild.txHex, operation);
+    }
+    return true;
+  }
+
+  /**
+   * The prebuild txHex, when present, must encode the same sendMultiSig operation that
+   * will be signed — a diverging txHex (e.g. a decoy that passes verification while
+   * different args get signed) is rejected.
+   */
+  private async assertTxHexMirrorsSignedOperation(txHex: string, operation: MultisigSignedOperation): Promise<void> {
+    const txBuilder = this.getTransactionBuilder();
+    txBuilder.from(txHex);
+    const txData = (await txBuilder.build()).toJson().data || '';
+    if (!txData.toLowerCase().startsWith(sendMultisigMethodId.toLowerCase())) {
+      throw new Error(
+        'verifyEnableTokenTransaction: multisig prebuild txHex must be a sendMultiSig call to the wallet contract'
+      );
+    }
+    const decoded = decodeTransferData(txData);
+    if (decoded.to.toLowerCase() !== operation.address.toLowerCase()) {
+      throw new Error(
+        `verifyEnableTokenTransaction: txHex sendMultiSig target ${decoded.to} does not match the recipient ${operation.address} that will be signed`
+      );
+    }
+    if (!new BigNumber(decoded.amount).isEqualTo(operation.amount ?? 0)) {
+      throw new Error(
+        `verifyEnableTokenTransaction: txHex sendMultiSig value ${decoded.amount} does not match the recipient amount ${operation.amount} that will be signed`
+      );
+    }
+    // TransferData.data is typed loosely (bytes); for a sendMultiSig envelope it is the
+    // hex-encoded calldata, matching the decode in verifyWrapTransaction.
+    const txHexCalldata = (decoded.data as string).replace(/^0x/, '').toLowerCase();
+    const signedCalldata = (operation.data ?? '').replace(/^0x/, '').toLowerCase();
+    if (txHexCalldata !== signedCalldata) {
+      throw new Error(
+        'verifyEnableTokenTransaction: txHex sendMultiSig calldata does not match the recipient calldata that will be signed'
+      );
     }
   }
 
