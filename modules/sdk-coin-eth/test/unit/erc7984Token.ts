@@ -18,6 +18,7 @@ import { EthereumNetwork } from '@bitgo/statics';
 import {
   buildMulticallDelegationCalldata,
   buildDelegationCalldata,
+  buildConfidentialTransferByHandleCalldata,
   buildFlushERC7984ForwarderTokenCalldata,
   buildWrapCalldata,
   buildUnwrapCalldata,
@@ -1369,20 +1370,37 @@ describe('decodeTokenAddressesFromDelegationCalldata', function () {
 // ---------------------------------------------------------------------------
 
 const MULTISIG_WALLET_CONTRACT = '0x3b58684525564b38a381e46a731703ed03f32122';
-const CONSOLIDATION_FORWARDER = '0xf4bcb366bb5e34ebbee51fae5de98cc876c0146f';
+// Wallet-owned flush forwarder for the fixture wallet, derived rather than arbitrary:
+// the strict consolidation verifier (CECHO-2719) only accepts destinations that are
+// locally derivable from the wallet's base address, so the fixture uses the real
+// CREATE2 forwarder of CONSOLIDATION_BASE_ADDRESS (assigned in before() below).
+let CONSOLIDATION_FORWARDER = '';
 const CONSOLIDATION_BASE_ADDRESS = '0x3b58684525564b38a381e46a731703ed03f32122';
 const CONSOLIDATION_HANDLE = '0x65df136b609ab395c1a99ae46f7939c7f8b20dff4bff0000000088bb0050';
 const DUMMY_MULTISIG_SIGNATURE = '0x' + '00'.repeat(65);
+// Hoodi enterprise fee address used in v4 forwarder CREATE2 salts (from the v5-wallet
+// address fixture in test/unit/eth.ts) — for the v4-salted forwarder regression tests.
+const V4_WALLET_FEE_ADDRESS = '0xb1e725186990b86ca8efed08a3ccda9c9f400f09';
 
-async function buildMultisigConsolidationTxHex(): Promise<string> {
+/**
+ * Builds a multisig consolidation tx: to = wallet contract, data = sendMultiSig
+ * wrapping callFromParent flush calldata. Parameters allow hostile prebuild variants
+ * (attacker forwarder, non-zero amount, wrong outer contract) for CECHO-2719 tests.
+ */
+async function buildMultisigConsolidationTxHex(
+  forwarderAddress: string = CONSOLIDATION_FORWARDER,
+  amount = '0',
+  contractAddress: string = MULTISIG_WALLET_CONTRACT,
+  outerValue = '0'
+): Promise<string> {
   const flushCalldata = buildFlushERC7984ForwarderTokenCalldata(
     CTEST1_TOKEN_ADDRESS,
     CONSOLIDATION_BASE_ADDRESS,
     CONSOLIDATION_HANDLE
   );
   const sendData = sendMultiSigData(
-    CONSOLIDATION_FORWARDER,
-    '0',
+    forwarderAddress,
+    amount,
     flushCalldata,
     Math.floor(Date.now() / 1000) + 3600,
     14,
@@ -1393,8 +1411,11 @@ async function buildMultisigConsolidationTxHex(): Promise<string> {
   txBuilder.fee({ fee: '1000000000', gasLimit: '12100000' });
   txBuilder.counter(1);
   txBuilder.type(TransactionType.ContractCall);
-  txBuilder.contract(MULTISIG_WALLET_CONTRACT);
+  txBuilder.contract(contractAddress);
   txBuilder.data(sendData);
+  if (outerValue !== '0') {
+    txBuilder.value(outerValue);
+  }
   const tx = await txBuilder.build();
   return tx.toBroadcastFormat();
 }
@@ -1422,6 +1443,16 @@ describe('verifyTransaction – confidential consolidation (FlushERC7984Forwarde
     bitgo.initializeTestVars();
     register(bitgo);
     coin = bitgo.coin('hteth:ctest1') as Erc7984Token;
+    // CECHO-2719: derive the fixture forwarder locally (Hoodi v1 forwarder factory,
+    // index 1) so it is a genuinely wallet-owned destination for strict verification.
+    const hoodiNetwork = coin.getNetwork() as EthereumNetwork;
+    CONSOLIDATION_FORWARDER = coin.generateForwarderAddress(
+      CONSOLIDATION_BASE_ADDRESS,
+      '',
+      hoodiNetwork.forwarderFactoryAddress as string,
+      hoodiNetwork.forwarderImplementationAddress as string,
+      1
+    );
   });
 
   it('should verify a valid multisig consolidation tx (sendMultiSig → callFromParent → confidentialTransferNoProof)', async function () {
@@ -1549,6 +1580,497 @@ describe('verifyTransaction – confidential consolidation (FlushERC7984Forwarde
         wallet,
       })
       .should.be.rejectedWith(/parent address mismatch/);
+  });
+  // -------------------------------------------------------------------------
+  describe('strict consolidation verification (CECHO-2719)', function () {
+    it('should reject a TSS direct theft prebuild (to = attacker, value = wallet balance)', async function () {
+      const flushCalldata = buildFlushERC7984ForwarderTokenCalldata(
+        CTEST1_TOKEN_ADDRESS,
+        CONSOLIDATION_BASE_ADDRESS,
+        CONSOLIDATION_HANDLE
+      );
+      const txHex = await buildRawContractCallTxHex(ATTACKER_CONTRACT_ADDRESS, flushCalldata, '1000000000000000000');
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: { baseAddress: CONSOLIDATION_BASE_ADDRESS },
+      });
+
+      await coin
+        .verifyTransaction({
+          txParams: { type: 'consolidate' } as any,
+          txPrebuild: { consolidateId: 'abc123', txHex } as any,
+          wallet,
+        })
+        .should.be.rejectedWith(/expected transaction value 0/);
+    });
+
+    it('should reject a TSS direct arbitrary-call prebuild (to = attacker, value = 0)', async function () {
+      // Zero value kills the native-balance theft, but without the enable-token
+      // verifier's structural backstop the wallet would still execute an arbitrary
+      // zero-value call at the attacker's contract, so the destination must be a
+      // locally derived wallet-owned forwarder.
+      const flushCalldata = buildFlushERC7984ForwarderTokenCalldata(
+        CTEST1_TOKEN_ADDRESS,
+        CONSOLIDATION_BASE_ADDRESS,
+        CONSOLIDATION_HANDLE
+      );
+      const txHex = await buildRawContractCallTxHex(ATTACKER_CONTRACT_ADDRESS, flushCalldata);
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: { baseAddress: CONSOLIDATION_BASE_ADDRESS },
+      });
+
+      await coin
+        .verifyTransaction({
+          txParams: { type: 'consolidate' } as any,
+          txPrebuild: { consolidateId: 'abc123', txHex } as any,
+          wallet,
+        })
+        .should.be.rejectedWith(/is not a wallet-owned forwarder address/);
+    });
+
+    it('should reject a multisig theft prebuild (sendMultiSig(attacker, balance, flush))', async function () {
+      const txHex = await buildMultisigConsolidationTxHex(ATTACKER_CONTRACT_ADDRESS, '1000000000000000000');
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: { baseAddress: CONSOLIDATION_BASE_ADDRESS },
+      });
+
+      await coin
+        .verifyTransaction({
+          txParams: { type: 'consolidate' } as any,
+          txPrebuild: { consolidateId: 'abc123', txHex } as any,
+          wallet,
+        })
+        .should.be.rejectedWith(/sendMultiSig amount must be 0/);
+    });
+
+    it('should reject a multisig arbitrary-call prebuild (sendMultiSig(attacker, 0, flush))', async function () {
+      const txHex = await buildMultisigConsolidationTxHex(ATTACKER_CONTRACT_ADDRESS);
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: { baseAddress: CONSOLIDATION_BASE_ADDRESS },
+      });
+
+      await coin
+        .verifyTransaction({
+          txParams: { type: 'consolidate' } as any,
+          txPrebuild: { consolidateId: 'abc123', txHex } as any,
+          wallet,
+        })
+        .should.be.rejectedWith(/is not a wallet-owned forwarder address/);
+    });
+
+    it('should reject a multisig prebuild whose outer to is not the wallet contract', async function () {
+      // sendMultiSig targets the fixture's derived forwarder, but the outer call goes
+      // to a contract that is not the wallet's base address.
+      const txHex = await buildMultisigConsolidationTxHex(undefined, '0', ATTACKER_CONTRACT_ADDRESS);
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: { baseAddress: CONSOLIDATION_BASE_ADDRESS },
+      });
+
+      await coin
+        .verifyTransaction({
+          txParams: { type: 'consolidate' } as any,
+          txPrebuild: { consolidateId: 'abc123', txHex } as any,
+          wallet,
+        })
+        .should.be.rejectedWith(/multisig consolidation must call the wallet contract/);
+    });
+
+    it('should reject a non-zero callFromParent value even when the destination is a derived forwarder', async function () {
+      const inner = buildConfidentialTransferByHandleCalldata(CONSOLIDATION_BASE_ADDRESS, CONSOLIDATION_HANDLE);
+      const calldata = encodeRawCallFromParent(CTEST1_TOKEN_ADDRESS, '123', inner);
+      const txHex = await buildRawContractCallTxHex(CONSOLIDATION_FORWARDER, calldata);
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: { baseAddress: CONSOLIDATION_BASE_ADDRESS },
+      });
+
+      await coin
+        .verifyTransaction({
+          txParams: { type: 'consolidate' } as any,
+          txPrebuild: { consolidateId: 'abc123', txHex } as any,
+          wallet,
+        })
+        .should.be.rejectedWith(/callFromParent must carry value 0/);
+    });
+
+    it('should reject a txHex-less prebuild carrying only a consolidateId', async function () {
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: { baseAddress: CONSOLIDATION_BASE_ADDRESS },
+      });
+
+      await coin
+        .verifyTransaction({
+          txParams: { type: 'consolidate' } as any,
+          txPrebuild: { consolidateId: '6a44ebc0326e1be45c1d797542c8c634' } as any,
+          wallet,
+        })
+        .should.be.rejectedWith(/txPrebuild\.txHex is required/);
+    });
+
+    it('should fail closed when no wallet-owned forwarder can be derived', async function () {
+      // Test seam: statics network configs are frozen, so stub getNetwork to return a
+      // copy with no forwarder factory addresses configured (original captured before
+      // stubbing, per the frozen-networks constraint).
+      const originalNetwork = coin.getNetwork() as EthereumNetwork;
+      const getNetworkStub = sinon.stub(coin, 'getNetwork').returns({
+        ...originalNetwork,
+        forwarderFactoryAddress: undefined,
+        walletV2ForwarderFactoryAddress: undefined,
+        walletV4ForwarderFactoryAddress: undefined,
+      });
+      try {
+        const flushCalldata = buildFlushERC7984ForwarderTokenCalldata(
+          CTEST1_TOKEN_ADDRESS,
+          CONSOLIDATION_BASE_ADDRESS,
+          CONSOLIDATION_HANDLE
+        );
+        const txHex = await buildRawContractCallTxHex(CONSOLIDATION_FORWARDER, flushCalldata);
+        const wallet = new Wallet(bitgo, coin, {
+          coinSpecific: { baseAddress: CONSOLIDATION_BASE_ADDRESS },
+        });
+
+        await coin
+          .verifyTransaction({
+            txParams: { type: 'consolidate' } as any,
+            txPrebuild: { consolidateId: 'abc123', txHex } as any,
+            wallet,
+          })
+          .should.be.rejectedWith(/unable to derive any wallet-owned forwarder address/);
+      } finally {
+        getNetworkStub.restore();
+      }
+    });
+
+    it('should enforce the strict checks on the staging environment as well', async function () {
+      // Test seam: flip the readonly env property to exercise the staging branch of the rollout gate.
+      const mutableBitgo = bitgo as { env: string };
+      const originalEnv = mutableBitgo.env;
+      mutableBitgo.env = 'staging';
+      try {
+        const flushCalldata = buildFlushERC7984ForwarderTokenCalldata(
+          CTEST1_TOKEN_ADDRESS,
+          CONSOLIDATION_BASE_ADDRESS,
+          CONSOLIDATION_HANDLE
+        );
+        const txHex = await buildRawContractCallTxHex(ATTACKER_CONTRACT_ADDRESS, flushCalldata, '1000000000000000000');
+        const wallet = new Wallet(bitgo, coin, {
+          coinSpecific: { baseAddress: CONSOLIDATION_BASE_ADDRESS },
+        });
+
+        await coin
+          .verifyTransaction({
+            txParams: { type: 'consolidate' } as any,
+            txPrebuild: { consolidateId: 'abc123', txHex } as any,
+            wallet,
+          })
+          .should.be.rejectedWith(/expected transaction value 0/);
+      } finally {
+        mutableBitgo.env = originalEnv;
+      }
+    });
+    it('should reject a multisig prebuild with a non-zero outer transaction value', async function () {
+      const txHex = await buildMultisigConsolidationTxHex(undefined, '0', undefined, '1000000000000000000');
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: { baseAddress: CONSOLIDATION_BASE_ADDRESS },
+      });
+
+      await coin
+        .verifyTransaction({
+          txParams: { type: 'consolidate' } as any,
+          txPrebuild: { consolidateId: 'abc123', txHex } as any,
+          wallet,
+        })
+        .should.be.rejectedWith(/expected transaction value 0/);
+    });
+
+    it('should verify a valid direct consolidation whose txHex is unprefixed', async function () {
+      // TransactionBuilder.from() accepts unprefixed serialized txHex (RAW_TX_HEX_REGEX),
+      // so a producer (e.g. a TSS serializedTxHex) may send it; strict verification must
+      // normalise with addHexPrefix before ethers parseTransaction, not reject the prebuild.
+      const txHex = await buildDirectConsolidationTxHex();
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: { baseAddress: CONSOLIDATION_BASE_ADDRESS },
+      });
+
+      const result = await coin.verifyTransaction({
+        txParams: { type: 'consolidate' } as any,
+        txPrebuild: { consolidateId: '6a44ebc0326e1be45c1d797542c8c634', txHex: txHex.slice(2) } as any,
+        wallet,
+      });
+      result.should.equal(true);
+    });
+
+    it('should verify a v1-derived forwarder for a wallet that carries a fee address', async function () {
+      // Regression (review): the derivation used to pass the wallet fee address for every
+      // forwarder version, which switched v1/v2/v5 to the v4 CREATE2 salt layout and
+      // rejected their legitimate forwarders. Only v4 encodes the fee address into its salt.
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: { baseAddress: CONSOLIDATION_BASE_ADDRESS, feeAddress: ATTACKER_CONTRACT_ADDRESS },
+      } as any);
+      const txHex = await buildDirectConsolidationTxHex();
+
+      const result = await coin.verifyTransaction({
+        txParams: { type: 'consolidate' } as any,
+        txPrebuild: { consolidateId: '6a44ebc0326e1be45c1d797542c8c634', txHex } as any,
+        wallet,
+      });
+      result.should.equal(true);
+    });
+
+    it('should reject a forwarder derived beyond the derivation index cap', async function () {
+      // Documents the STRICT_CONSOLIDATION_MAX_DERIVATION_INDEX trade-off: an index past
+      // the cap is not wallet-verifiable offline, and the rejection names the scanned
+      // range so the staging validation window can diagnose it.
+      const hoodiNetwork = coin.getNetwork() as EthereumNetwork;
+      const beyondCapForwarder = coin.generateForwarderAddress(
+        CONSOLIDATION_BASE_ADDRESS,
+        '',
+        hoodiNetwork.forwarderFactoryAddress as string,
+        hoodiNetwork.forwarderImplementationAddress as string,
+        10500
+      );
+      const inner = buildConfidentialTransferByHandleCalldata(CONSOLIDATION_BASE_ADDRESS, CONSOLIDATION_HANDLE);
+      const txHex = await buildRawContractCallTxHex(
+        beyondCapForwarder,
+        wrapInCallFromParent(CTEST1_TOKEN_ADDRESS, inner)
+      );
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: { baseAddress: CONSOLIDATION_BASE_ADDRESS },
+      });
+
+      await coin
+        .verifyTransaction({
+          txParams: { type: 'consolidate' } as any,
+          txPrebuild: { consolidateId: 'abc123', txHex } as any,
+          wallet,
+        })
+        .should.be.rejectedWith(/verified CREATE2 derivation indices 0\.\.9999/);
+    });
+
+    it('should reject a v4-salted forwarder when the wallet record carries no fee address', async function () {
+      // v4 forwarders encode the enterprise fee address into the CREATE2 salt; without the
+      // wallet's fee address they are not derivable offline, and the rejection must name
+      // the missing data instead of silently dropping the v4 layout (review finding).
+      const hoodiNetwork = coin.getNetwork() as EthereumNetwork;
+      const v4Forwarder = coin.generateForwarderAddress(
+        CONSOLIDATION_BASE_ADDRESS,
+        V4_WALLET_FEE_ADDRESS,
+        hoodiNetwork.walletV4ForwarderFactoryAddress as string,
+        hoodiNetwork.walletV4ForwarderImplementationAddress as string,
+        1
+      );
+      const flushCalldata = buildFlushERC7984ForwarderTokenCalldata(
+        CTEST1_TOKEN_ADDRESS,
+        CONSOLIDATION_BASE_ADDRESS,
+        CONSOLIDATION_HANDLE
+      );
+      const txHex = await buildRawContractCallTxHex(v4Forwarder, flushCalldata);
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: { baseAddress: CONSOLIDATION_BASE_ADDRESS },
+      });
+
+      await coin
+        .verifyTransaction({
+          txParams: { type: 'consolidate' } as any,
+          txPrebuild: { consolidateId: 'abc123', txHex } as any,
+          wallet,
+        })
+        .should.be.rejectedWith(
+          /v4-salted forwarders were NOT verifiable because the wallet record carries no feeAddress/
+        );
+    });
+
+    it('should verify a v4-salted forwarder when the wallet carries its fee address', async function () {
+      const hoodiNetwork = coin.getNetwork() as EthereumNetwork;
+      const v4Forwarder = coin.generateForwarderAddress(
+        CONSOLIDATION_BASE_ADDRESS,
+        V4_WALLET_FEE_ADDRESS,
+        hoodiNetwork.walletV4ForwarderFactoryAddress as string,
+        hoodiNetwork.walletV4ForwarderImplementationAddress as string,
+        1
+      );
+      const flushCalldata = buildFlushERC7984ForwarderTokenCalldata(
+        CTEST1_TOKEN_ADDRESS,
+        CONSOLIDATION_BASE_ADDRESS,
+        CONSOLIDATION_HANDLE
+      );
+      const txHex = await buildRawContractCallTxHex(v4Forwarder, flushCalldata);
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: { baseAddress: CONSOLIDATION_BASE_ADDRESS, feeAddress: V4_WALLET_FEE_ADDRESS },
+      } as any);
+
+      const result = await coin.verifyTransaction({
+        txParams: { type: 'consolidate' } as any,
+        txPrebuild: { consolidateId: 'abc123', txHex } as any,
+        wallet,
+      });
+      result.should.equal(true);
+    });
+    it('should reject the wallet base address as a flush destination', async function () {
+      // A legitimate consolidation always targets a forwarder contract; the wallet's own
+      // base address has no callFromParent and holds no balances to flush. The multisig
+      // outer `to == base` requirement is enforced separately (review follow-up).
+      const flushCalldata = buildFlushERC7984ForwarderTokenCalldata(
+        CTEST1_TOKEN_ADDRESS,
+        CONSOLIDATION_BASE_ADDRESS,
+        CONSOLIDATION_HANDLE
+      );
+      const txHex = await buildRawContractCallTxHex(CONSOLIDATION_BASE_ADDRESS, flushCalldata);
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: { baseAddress: CONSOLIDATION_BASE_ADDRESS, feeAddress: V4_WALLET_FEE_ADDRESS },
+      } as any);
+
+      await coin
+        .verifyTransaction({
+          txParams: { type: 'consolidate' } as any,
+          txPrebuild: { consolidateId: 'abc123', txHex } as any,
+          wallet,
+        })
+        .should.be.rejectedWith(/is not a wallet-owned forwarder address/);
+    });
+
+    it('should verify a multisig consolidation to a v4-salted forwarder for a fee-carrying wallet', async function () {
+      // The multisig shape is the other v4 consumer besides the TSS v5 wallet.
+      const hoodiNetwork = coin.getNetwork() as EthereumNetwork;
+      const v4Forwarder = coin.generateForwarderAddress(
+        CONSOLIDATION_BASE_ADDRESS,
+        V4_WALLET_FEE_ADDRESS,
+        hoodiNetwork.walletV4ForwarderFactoryAddress as string,
+        hoodiNetwork.walletV4ForwarderImplementationAddress as string,
+        1
+      );
+      const txHex = await buildMultisigConsolidationTxHex(v4Forwarder);
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: { baseAddress: CONSOLIDATION_BASE_ADDRESS, feeAddress: V4_WALLET_FEE_ADDRESS },
+      } as any);
+
+      const result = await coin.verifyTransaction({
+        txParams: { type: 'consolidate' } as any,
+        txPrebuild: { consolidateId: 'abc123', txHex } as any,
+        wallet,
+      });
+      result.should.equal(true);
+    });
+
+    it('should verify a consolidation whose txHex is an unsigned EIP-1559 signable (TSS signableHex form)', async function () {
+      // The TSS txRequest flow passes unsignedTx.signableHex as txHex; lock in that both
+      // the builder round trip and ethers parseTransaction accept the unsigned forms.
+      const inner = buildConfidentialTransferByHandleCalldata(CONSOLIDATION_BASE_ADDRESS, CONSOLIDATION_HANDLE);
+      const calldata = wrapInCallFromParent(CTEST1_TOKEN_ADDRESS, inner);
+      const unsignedTx = {
+        type: 2,
+        chainId: 560048, // Hoodi
+        nonce: 1,
+        gasLimit: 200000,
+        maxFeePerGas: 1000000000,
+        maxPriorityFeePerGas: 1000000,
+        to: CONSOLIDATION_FORWARDER,
+        value: 0,
+        data: calldata,
+      };
+      const txHex = ethers.utils.serializeTransaction(unsignedTx);
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: { baseAddress: CONSOLIDATION_BASE_ADDRESS },
+      });
+
+      const result = await coin.verifyTransaction({
+        txParams: { type: 'consolidate' } as any,
+        txPrebuild: { consolidateId: 'abc123', txHex } as any,
+        wallet,
+      });
+      result.should.equal(true);
+    });
+
+    it('should reject an unsigned legacy EIP-155 signable at the pre-existing builder round trip', async function () {
+      // The unsigned EIP-155 serialization (v = chainId, r = s = 0) is not parseable by
+      // the builder's @ethereumjs/tx round trip — on the base branch as well, in both
+      // envs, since the legacy decode always runs first. Coins whose signableHex takes
+      // that form (e.g. BSC/XDC) are exactly why TSS_VERIFY_USE_SERIALIZED_TX_HEX exists:
+      // their verification receives serializedTxHex, which is a parseable serialization.
+      // eth/Hoodi TSS flows produce EIP-1559, covered by the previous test.
+      const inner = buildConfidentialTransferByHandleCalldata(CONSOLIDATION_BASE_ADDRESS, CONSOLIDATION_HANDLE);
+      const calldata = wrapInCallFromParent(CTEST1_TOKEN_ADDRESS, inner);
+      const unsignedTx = {
+        chainId: 560048,
+        nonce: 1,
+        gasPrice: 1000000000,
+        gasLimit: 200000,
+        to: CONSOLIDATION_FORWARDER,
+        value: 0,
+        data: calldata,
+      };
+      const txHex = ethers.utils.serializeTransaction(unsignedTx);
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: { baseAddress: CONSOLIDATION_BASE_ADDRESS },
+      });
+
+      await coin
+        .verifyTransaction({
+          txParams: { type: 'consolidate' } as any,
+          txPrebuild: { consolidateId: 'abc123', txHex } as any,
+          wallet,
+        })
+        .should.be.rejected();
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  describe('CECHO-2719 rollout gate (prod keeps legacy behavior)', function () {
+    beforeEach(function () {
+      // Test seam: flip the readonly env property to simulate prod (legacy verification path).
+      const mutableBitgo = bitgo as { env: string };
+      mutableBitgo.env = 'prod';
+    });
+
+    afterEach(function () {
+      // Test seam: restore the test environment after each prod simulation.
+      const mutableBitgo = bitgo as { env: string };
+      mutableBitgo.env = 'test';
+    });
+
+    it('should still verify the TSS direct theft prebuild on prod (strict checks not yet enforced there)', async function () {
+      const flushCalldata = buildFlushERC7984ForwarderTokenCalldata(
+        CTEST1_TOKEN_ADDRESS,
+        CONSOLIDATION_BASE_ADDRESS,
+        CONSOLIDATION_HANDLE
+      );
+      const txHex = await buildRawContractCallTxHex(ATTACKER_CONTRACT_ADDRESS, flushCalldata, '1000000000000000000');
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: { baseAddress: CONSOLIDATION_BASE_ADDRESS },
+      });
+
+      const result = await coin.verifyTransaction({
+        txParams: { type: 'consolidate' } as any,
+        txPrebuild: { consolidateId: 'abc123', txHex } as any,
+        wallet,
+      });
+      result.should.equal(true);
+    });
+
+    it('should still verify the multisig theft prebuild on prod', async function () {
+      const txHex = await buildMultisigConsolidationTxHex(ATTACKER_CONTRACT_ADDRESS, '1000000000000000000');
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: { baseAddress: CONSOLIDATION_BASE_ADDRESS },
+      });
+
+      const result = await coin.verifyTransaction({
+        txParams: { type: 'consolidate' } as any,
+        txPrebuild: { consolidateId: 'abc123', txHex } as any,
+        wallet,
+      });
+      result.should.equal(true);
+    });
+
+    it('should still verify a txHex-less consolidateId-only prebuild on prod', async function () {
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: { baseAddress: CONSOLIDATION_BASE_ADDRESS },
+      });
+
+      const result = await coin.verifyTransaction({
+        txParams: { type: 'consolidate' } as any,
+        txPrebuild: { consolidateId: '6a44ebc0326e1be45c1d797542c8c634' } as any,
+        wallet,
+      });
+      result.should.equal(true);
+    });
   });
 });
 
