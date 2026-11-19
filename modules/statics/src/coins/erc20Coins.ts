@@ -15192,6 +15192,18 @@ export const erc20Coins = [
     Networks.test.hoodi
   ),
   terc20(
+    '010e9f1e-4654-41e9-872a-f49ff23fd257',
+    'sepeth:stgspcxgo',
+    'Test SpaceX',
+    18,
+    '0xb8e91131d281acc3c4ef7a1670553b43ab6c9a1a',
+    UnderlyingAsset['sepeth:stgspcxgo'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY],
+    undefined,
+    undefined,
+    Networks.test.sepolia
+  ),
+  terc20(
     '62705940-65f5-45c3-a5d6-9e043d5a5902',
     'sepeth:usdc',
     'Sepolia Testnet USD Coin',

@@ -90,6 +90,7 @@ describe('Token Naming Convention Tests', function () {
       'sepeth:link',
       'sepeth:aave',
       'sepeth:uni',
+      'sepeth:stgspcxgo',
       'fixed',
       'schz',
       'bgerch',
