@@ -7721,6 +7721,32 @@ export const botTokens = [
     undefined,
     Networks.test.hoodi
   ),
+  AccountCtors.terc20(
+    '6f4e4cec-a8e7-436c-ae90-09a90687a82a',
+    'hteth:amswp5',
+    'ams wp 5',
+    9,
+    '0xef63278dbce31e49159989cf71e72967cfd9f946',
+    'hteth:amswp5' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth'),
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  AccountCtors.tsolToken(
+    '8d0d7cb7-8f5e-46b3-a4cb-9a1ac2f971cd',
+    'tsol:amssolwp1',
+    'ams sol wp 1',
+    9,
+    '2nwf83GDaMDA2sKym1gaNQGwjgYZABSFm51Ci2ki2xDm',
+    '2nwf83GDaMDA2sKym1gaNQGwjgYZABSFm51Ci2ki2xDm',
+    'tsol:amssolwp1' as unknown as UnderlyingAsset,
+    getTokenFeatures('sol'),
+    AccountCtors.ProgramID.TokenProgramId,
+    undefined,
+    undefined,
+    Networks.test.sol
+  ),
   AccountCtors.erc20(
     '4161ed06-c331-4e21-8791-eaca5151e869',
     'eth:abtx',
