@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [26.8.6](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-eth%4026.8.5...%40bitgo%2Fsdk-coin-eth%4026.8.6) (2026-11-19)
+
+### Bug Fixes
+
+* **sdk-coin-eth:** enforce strict ERC-7984 consolidation verification on test/staging (CECHO-2719) ([213b29f](https://github.com/BitGo/BitGoJS/commit/213b29faa1cd52336e92bc55702f1d6ff7e0afdd))
+
+
 ## [26.8.5](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-eth%4026.8.4...%40bitgo%2Fsdk-coin-eth%4026.8.5) (2026-11-18)
 
 ### Bug Fixes

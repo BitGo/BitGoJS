@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.11.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-lib-safes%401.10.1...%40bitgo%2Fsdk-lib-safes%401.11.0) (2026-11-19)
+
+### Features
+
+* safes BYOK backup root support in SDK ([5cefee8](https://github.com/BitGo/BitGoJS/commit/5cefee857de7b1c352c2f0deb0711aab644b9e23))
+
+
 ## [1.10.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-lib-safes%401.10.0...%40bitgo%2Fsdk-lib-safes%401.10.1) (2026-11-18)
 
 **Note:** Version bump only for package @bitgo/sdk-lib-safes
