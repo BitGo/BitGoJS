@@ -8,11 +8,13 @@ import { Algo } from '../../src/algo';
 import { ed25519 } from '@noble/curves/ed25519';
 import {
   buildSafeRecoverKeyParams,
+  decodeEd25519StrKeySecretSeed,
   deriveSafeWalletKeys,
   encodeDerivableEd25519Pub,
   encodeEd25519ChainCode,
   RecoveryKeyMismatchError,
   type DecryptedSafeRoots,
+  type DecryptedSafeRootsWithExternal,
 } from '@bitgo/sdk-core';
 import algosdk from 'algosdk';
 
@@ -43,17 +45,18 @@ describe('Safe ALGO recovery end-to-end', function () {
 
   // The ed25519Multisig root fixture the sdk-core unit tests pin (with a distinct BitGo root, so the
   // backup child and the BitGo child are different keys and a slot swap changes every assertion).
+  const SAFE_SEED = 'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI';
+  const backupChainCode = Buffer.alloc(32, 0xab);
+
   function ed25519Roots(): DecryptedSafeRoots {
-    const seed = 'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI';
-    const chainCode = Buffer.alloc(32, 0xab);
     const bitgoSeed = Buffer.alloc(32, 0x22);
     const bitgoRootPub = Buffer.from(ed25519.getPublicKey(bitgoSeed));
     const bitgoChainCode = Buffer.alloc(32, 0xcd);
     return {
       secp256k1Multisig: { user: 'u', backup: 'b', bitgo: 'g' },
       ed25519Multisig: {
-        user: seed,
-        backup: { prv: seed, chainCode: encodeEd25519ChainCode(chainCode) },
+        user: SAFE_SEED,
+        backup: { prv: SAFE_SEED, chainCode: encodeEd25519ChainCode(backupChainCode) },
         bitgo: encodeDerivableEd25519Pub(bitgoRootPub, bitgoChainCode),
       },
       ecdsaMpc: {
@@ -65,6 +68,20 @@ describe('Safe ALGO recovery end-to-end', function () {
         user: { signing: Buffer.alloc(0), vrf: Buffer.alloc(0) },
         backup: { signing: Buffer.alloc(0), vrf: Buffer.alloc(0) },
         bitgo: 'g',
+      },
+    };
+  }
+
+  // External backup root: only the composite pub (root pub + chain code) is on the keycard.
+  function externalEd25519Roots(): DecryptedSafeRootsWithExternal {
+    const local = ed25519Roots();
+    const backupRootPub = Buffer.from(ed25519.getPublicKey(decodeEd25519StrKeySecretSeed(SAFE_SEED)));
+    return {
+      ...local,
+      ed25519Multisig: {
+        user: local.ed25519Multisig.user,
+        backup: { external: true, pub: encodeDerivableEd25519Pub(backupRootPub, backupChainCode) },
+        bitgo: local.ed25519Multisig.bitgo,
       },
     };
   }
@@ -141,6 +158,69 @@ describe('Safe ALGO recovery end-to-end', function () {
 
     const msigPk = algosdk.decodeAddress(expectedRoot).publicKey;
     algosdk.verifyMultisig(decoded.txn.bytesToSign(), decoded.msig!, msigPk).should.equal(true);
+  });
+
+  it('recovers a Safe ALGO wallet from the caller-supplied external backup root prv', async function () {
+    sandbox.stub(Algo.prototype, 'getAccountBalance').resolves(nativeBalance);
+
+    const roots = externalEd25519Roots();
+    const derived = await deriveSafeWalletKeys({
+      coin: 'algo',
+      slot: 'ed25519Multisig',
+      account: 0,
+      roots,
+      externalBackupRootPrv: SAFE_SEED,
+    });
+    if (derived.slot !== 'ed25519Multisig') {
+      throw new Error('expected ed25519Multisig slot');
+    }
+    derived.keys.backup.kind.should.equal('extended');
+
+    // No caller-built signer: the extended child becomes the signer inside buildSafeRecoverKeyParams.
+    const keyParams = await buildSafeRecoverKeyParams({
+      bitgo,
+      coin: 'algo',
+      slot: 'ed25519Multisig',
+      keys: derived.keys,
+      mode: 'signed',
+    });
+    if (keyParams.slot !== 'ed25519Multisig' || keyParams.mode !== 'signed') {
+      throw new Error('expected signed ed25519Multisig key params');
+    }
+
+    // The same keys as the local-root recovery for the same seed and chain code.
+    const local = await deriveSafeWalletKeys({
+      coin: 'algo',
+      slot: 'ed25519Multisig',
+      account: 0,
+      roots: ed25519Roots(),
+    });
+    if (local.slot !== 'ed25519Multisig') {
+      throw new Error('expected ed25519Multisig slot');
+    }
+    derived.keys.backup.pub.should.equal(local.keys.backup.pub);
+
+    const rootAddress = keyParams.rootAddress;
+    assert(rootAddress);
+    const recovery = await basecoin.recover({
+      userKey: keyParams.userKey,
+      rootAddress,
+      bitgoKey: keyParams.bitgoKey,
+      walletPassphrase: keyParams.walletPassphrase,
+      fee,
+      recoveryDestination,
+      firstRound: 5002596,
+      nodeParams,
+      externalBackupSigner: keyParams.externalBackupSigner,
+    });
+
+    assert('tx' in recovery);
+    assert.strictEqual(recovery.rootAddress, rootAddress);
+    const decoded = algosdk.decodeSignedTransaction(Buffer.from(recovery.tx as string, 'base64'));
+    should(decoded.msig).not.be.undefined();
+    algosdk
+      .verifyMultisig(decoded.txn.bytesToSign(), decoded.msig!, algosdk.decodeAddress(rootAddress).publicKey)
+      .should.equal(true);
   });
 
   it('returns the derived public keys for an unsigned Safe recovery without encrypting or decrypting', async function () {

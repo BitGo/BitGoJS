@@ -6,11 +6,13 @@ import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import {
   buildSafeRecoverKeyParams,
+  decodeEd25519StrKeySecretSeed,
   deriveSafeWalletKeys,
   encodeDerivableEd25519Pub,
   encodeEd25519ChainCode,
   RecoveryKeyMismatchError,
   type DecryptedSafeRoots,
+  type DecryptedSafeRootsWithExternal,
 } from '@bitgo/sdk-core';
 import { Txlm } from '../../src';
 
@@ -42,14 +44,16 @@ describe('Safe XLM recovery end-to-end', function () {
 
   // The ed25519Multisig root fixture the sdk-core unit tests pin (with a distinct BitGo root, so the
   // backup child and the BitGo child are different keys and a slot swap changes every assertion).
+  const SAFE_SEED = 'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI';
+  const backupChainCode = Buffer.alloc(32, 0xab);
+
   function ed25519Roots(): DecryptedSafeRoots {
-    const seed = 'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI';
     const bitgoRootPub = stellar.Keypair.fromRawEd25519Seed(Buffer.alloc(32, 0x22)).rawPublicKey();
     return {
       secp256k1Multisig: { user: 'u', backup: 'b', bitgo: 'g' },
       ed25519Multisig: {
-        user: seed,
-        backup: { prv: seed, chainCode: encodeEd25519ChainCode(Buffer.alloc(32, 0xab)) },
+        user: SAFE_SEED,
+        backup: { prv: SAFE_SEED, chainCode: encodeEd25519ChainCode(backupChainCode) },
         bitgo: encodeDerivableEd25519Pub(bitgoRootPub, Buffer.alloc(32, 0xcd)),
       },
       ecdsaMpc: {
@@ -65,12 +69,30 @@ describe('Safe XLM recovery end-to-end', function () {
     };
   }
 
-  async function deriveChildren() {
+  // External backup root: only the composite pub (root pub + chain code) is on the keycard.
+  function externalEd25519Roots(): DecryptedSafeRootsWithExternal {
+    const local = ed25519Roots();
+    const backupRootPub = stellar.Keypair.fromRawEd25519Seed(decodeEd25519StrKeySecretSeed(SAFE_SEED)).rawPublicKey();
+    return {
+      ...local,
+      ed25519Multisig: {
+        user: local.ed25519Multisig.user,
+        backup: { external: true, pub: encodeDerivableEd25519Pub(backupRootPub, backupChainCode) },
+        bitgo: local.ed25519Multisig.bitgo,
+      },
+    };
+  }
+
+  async function deriveChildren(
+    roots: DecryptedSafeRootsWithExternal = ed25519Roots(),
+    externalBackupRootPrv?: string
+  ) {
     const derived = await deriveSafeWalletKeys({
       coin: 'txlm',
       slot: 'ed25519Multisig',
       account: 0,
-      roots: ed25519Roots(),
+      roots,
+      externalBackupRootPrv,
     });
     assert(derived.slot === 'ed25519Multisig');
     const [userPub, backupPub] = [derived.keys.user.pub, derived.keys.backup.pub].map((pub) =>
@@ -125,6 +147,38 @@ describe('Safe XLM recovery end-to-end', function () {
     assert.ok(stellar.Keypair.fromPublicKey(userPub).verify(tx.hash(), tx.signatures[0].signature()));
     assert.ok(stellar.Keypair.fromPublicKey(backupPub).verify(tx.hash(), tx.signatures[1].signature()));
     assert.strictEqual(recovery.coin, 'txlm');
+  });
+
+  it('recovers a Safe XLM wallet from the caller-supplied external backup root prv', async function () {
+    const { derived, userPub, backupPub } = await deriveChildren(externalEd25519Roots(), SAFE_SEED);
+    assert(derived.keys.backup.kind === 'extended');
+    nockHorizon([userPub, backupPub]);
+
+    const keyParams = await buildSafeRecoverKeyParams({
+      bitgo,
+      coin: 'txlm',
+      slot: 'ed25519Multisig',
+      keys: derived.keys,
+      mode: 'signed',
+    });
+    assert(keyParams.mode === 'signed');
+
+    const recovery = await basecoin.recover({
+      userKey: keyParams.userKey,
+      walletPassphrase: keyParams.walletPassphrase,
+      externalBackupSigner: keyParams.externalBackupSigner,
+      rootAddress,
+      recoveryDestination,
+    });
+
+    const tx = new stellar.Transaction(recovery.txBase64, stellar.Networks.TESTNET);
+    assert.strictEqual(tx.signatures.length, 2);
+    assert.ok(stellar.Keypair.fromPublicKey(userPub).verify(tx.hash(), tx.signatures[0].signature()));
+    assert.ok(stellar.Keypair.fromPublicKey(backupPub).verify(tx.hash(), tx.signatures[1].signature()));
+
+    // The same keys as the local-root recovery for the same seed and chain code.
+    const local = await deriveChildren();
+    assert.strictEqual(derived.keys.backup.pub, local.derived.keys.backup.pub);
   });
 
   it('returns an unsigned sweep for the derived child pubs without encrypting or decrypting', async function () {

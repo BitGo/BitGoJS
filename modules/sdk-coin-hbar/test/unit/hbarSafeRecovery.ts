@@ -8,6 +8,7 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import {
   buildSafeRecoverKeyParams,
+  decodeEd25519StrKeySecretSeed,
   deriveSafeWalletKeys,
   encodeDerivableEd25519Pub,
   encodeEd25519ChainCode,
@@ -16,6 +17,7 @@ import {
   RecoveryKeyMismatchError,
   RecoveryProviderError,
   type DecryptedSafeRoots,
+  type DecryptedSafeRootsWithExternal,
   type Ed25519MultisigChildKeys,
 } from '@bitgo/sdk-core';
 import { Hbar, Thbar, Transaction } from '../../src';
@@ -36,19 +38,16 @@ describe('Safe HBAR recovery end-to-end', function () {
     maxFee: '10000000',
   };
 
-  before(async function () {
-    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
-    bitgo.safeRegister('thbar', Thbar.createInstance);
-    bitgo.initializeTestVars();
-    basecoin = bitgo.coin('thbar') as Hbar;
+  const SAFE_SEED = 'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI';
+  const backupChainCode = Buffer.alloc(32, 0xab);
 
-    const seed = 'SAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6NKI';
+  function ed25519Roots(): DecryptedSafeRoots {
     const bitgoRootPub = Buffer.from(nacl.sign.keyPair.fromSeed(Buffer.alloc(32, 0x22)).publicKey);
-    const roots: DecryptedSafeRoots = {
+    return {
       secp256k1Multisig: { user: 'u', backup: 'b', bitgo: 'g' },
       ed25519Multisig: {
-        user: seed,
-        backup: { prv: seed, chainCode: encodeEd25519ChainCode(Buffer.alloc(32, 0xab)) },
+        user: SAFE_SEED,
+        backup: { prv: SAFE_SEED, chainCode: encodeEd25519ChainCode(backupChainCode) },
         bitgo: encodeDerivableEd25519Pub(bitgoRootPub, Buffer.alloc(32, 0xcd)),
       },
       ecdsaMpc: {
@@ -62,7 +61,34 @@ describe('Safe HBAR recovery end-to-end', function () {
         bitgo: 'g',
       },
     };
-    const derived = await deriveSafeWalletKeys({ coin: 'thbar', slot: 'ed25519Multisig', account: 0, roots });
+  }
+
+  // External backup root: only the composite pub (root pub + chain code) is on the keycard.
+  function externalEd25519Roots(): DecryptedSafeRootsWithExternal {
+    const local = ed25519Roots();
+    const backupRootPub = Buffer.from(nacl.sign.keyPair.fromSeed(decodeEd25519StrKeySecretSeed(SAFE_SEED)).publicKey);
+    return {
+      ...local,
+      ed25519Multisig: {
+        user: local.ed25519Multisig.user,
+        backup: { external: true, pub: encodeDerivableEd25519Pub(backupRootPub, backupChainCode) },
+        bitgo: local.ed25519Multisig.bitgo,
+      },
+    };
+  }
+
+  before(async function () {
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
+    bitgo.safeRegister('thbar', Thbar.createInstance);
+    bitgo.initializeTestVars();
+    basecoin = bitgo.coin('thbar') as Hbar;
+
+    const derived = await deriveSafeWalletKeys({
+      coin: 'thbar',
+      slot: 'ed25519Multisig',
+      account: 0,
+      roots: ed25519Roots(),
+    });
     assert(derived.slot === 'ed25519Multisig');
     keys = derived.keys;
   });
@@ -147,6 +173,46 @@ describe('Safe HBAR recovery end-to-end', function () {
     assert.strictEqual(json.amount, '990000000');
     assert.strictEqual(json.startTime, recoveryParams.startTime);
     assert.strictEqual(json.fee, Number(recoveryParams.maxFee));
+  });
+
+  it('recovers a Safe HBAR wallet from the caller-supplied external backup root prv', async function () {
+    const derived = await deriveSafeWalletKeys({
+      coin: 'thbar',
+      slot: 'ed25519Multisig',
+      account: 0,
+      roots: externalEd25519Roots(),
+      externalBackupRootPrv: SAFE_SEED,
+    });
+    assert(derived.slot === 'ed25519Multisig');
+    assert(derived.keys.backup.kind === 'extended');
+    // The same keys as the local-root recovery for the same seed and chain code.
+    assert.strictEqual(derived.keys.backup.pub, keys.backup.pub);
+
+    const keyParams = await buildSafeRecoverKeyParams({
+      bitgo,
+      coin: 'thbar',
+      slot: 'ed25519Multisig',
+      keys: derived.keys,
+      mode: 'signed',
+    });
+    assert(keyParams.mode === 'signed');
+    assert(!('rootAddress' in keyParams));
+
+    const recovery = await basecoin.recover({ ...recoveryParams, ...keyParams });
+    assert('tx' in recovery);
+    assert.strictEqual(recovery.rootAddress, recoveryParams.rootAddress);
+
+    const { bodyBytes, sigMap } = proto.Transaction.decode(Buffer.from(recovery.tx, 'hex'));
+    assert(sigMap?.sigPair);
+    assert.deepStrictEqual(
+      sigMap.sigPair.map((pair) => Buffer.from(pair.pubKeyPrefix ?? []).toString('hex')).sort(),
+      [keys.user.pub, keys.backup.pub].sort()
+    );
+    for (const pair of sigMap.sigPair) {
+      assert(pair.ed25519);
+      assert(pair.pubKeyPrefix);
+      assert(nacl.sign.detached.verify(bodyBytes, pair.ed25519, pair.pubKeyPrefix));
+    }
   });
 
   it('returns public keys and an unsigned transaction without encrypting or decrypting', async function () {
