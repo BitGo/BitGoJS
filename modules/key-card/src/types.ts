@@ -81,6 +81,10 @@ export interface GenerateSafeQrDataParams extends GenerateQrDataCoinParams {
   // The safe's root triplets (user/backup/bitgo keychains), keyed by rootKeyType. Any non-empty
   // subset of the four slots is valid; the keycard carries exactly the slots present here.
   roots: Partial<Record<SafeRootKeyType, KeychainsTriplet>>;
+  // The safe's declared external backup slots (`SafeData.externalBackupSlots`). For these slots Box B
+  // carries the backup root public key instead of an encrypted private key. Omit for a safe whose
+  // backup roots are all local.
+  externalBackupSlots?: SafeRootKeyType[];
 }
 
 export type GenerateKeycardParams = GenerateQrDataBaseParams &

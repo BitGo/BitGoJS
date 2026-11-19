@@ -1,7 +1,8 @@
 import * as t from 'io-ts';
 import { httpRoute, httpRequest, optional } from '@api-ts/io-ts-http';
-import { RootKeyType } from '@bitgo/public-types';
+import { MultisigRootKeyType, RootKeyType } from '@bitgo/public-types';
 import { BitgoExpressError } from '../../schemas/error';
+import { SafeMultisigRoots } from './generateSafe';
 
 /**
  * Path parameters for Phase-2-only Safe key ceremonies.
@@ -23,6 +24,10 @@ export const GenerateSafeKeysBody = {
   passphrase: t.string,
   /** Slots to run. Omit to run all four (older WP / retry of a full ceremony set). */
   enabledRootSlots: optional(t.array(RootKeyType)),
+  /** Bring-your-own backup key per multisig slot. Must match `externalBackupSlots` exactly. */
+  multisigRoots: optional(SafeMultisigRoots),
+  /** The safe's external backup slots as returned by initialize. Omit when every backup root is local. */
+  externalBackupSlots: optional(t.array(MultisigRootKeyType)),
 } as const;
 
 /**

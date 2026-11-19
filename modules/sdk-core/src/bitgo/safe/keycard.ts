@@ -134,10 +134,15 @@ class SafeKeycardRootBuilder {
   /** Multisig: re-encrypt the user envelope; copy the backup envelope byte-identical. */
   async buildMultisigSlot(slot: RootKeyType, triplet: KeychainsTriplet): Promise<KeychainsTriplet> {
     const { userKeychain, backupKeychain, bitgoKeychain } = triplet;
-    if (!userKeychain.encryptedPrv || !backupKeychain.encryptedPrv) {
-      throw new Error(`safe ${slot} user/backup root is missing encryptedPrv`);
+    if (!userKeychain.encryptedPrv) {
+      throw new Error(`safe ${slot} user root is missing encryptedPrv`);
     }
-    await this.verifyKeycardPassphrase(backupKeychain.encryptedPrv, slot);
+    // A pub-only backup keychain is a caller-supplied (BYOK) root: there is no backup envelope to
+    // verify the keycard passphrase against, and nothing to re-encrypt — it passes through
+    // untouched. A local backup always carries its envelope.
+    if (backupKeychain.encryptedPrv) {
+      await this.verifyKeycardPassphrase(backupKeychain.encryptedPrv, slot);
+    }
     const userPrv = await this.decryptUser(userKeychain.encryptedPrv, slot);
     return {
       userKeychain: { ...userKeychain, encryptedPrv: await this.encrypt(userPrv) },
