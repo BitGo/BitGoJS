@@ -28,6 +28,7 @@ import {
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { auditEddsaPrivateKey } from '@bitgo/sdk-lib-mpc';
+import BigNumber from 'bignumber.js';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { TransactionBuilderFactory } from './lib';
 import { KeyPair as CantonKeyPair } from './lib/keyPair';
@@ -221,9 +222,15 @@ export class Canton extends BaseCoin {
         }
         return true;
       case TransactionType.Send:
+        if (txParams.numberOfSplits !== undefined && txParams.numberOfSplits > 1) {
+          return this.verifySplitTransaction(transaction, txParams, params.wallet);
+        }
         if (txParams.recipients !== undefined) {
           const filteredRecipients = txParams.recipients?.map((recipient) => {
             const { address, amount, tokenName } = recipient;
+            if (!address) {
+              throw new Error('Recipient address is required to verify a Canton transfer');
+            }
             const [addressPart, memoId] = address.split('?memoId=');
             return {
               address: addressPart,
@@ -251,6 +258,58 @@ export class Canton extends BaseCoin {
       }
     }
   }
+  /**
+   * A split (fanout) moves value from the wallet to itself: one batch of `numberOfSplits` self-transfers.
+   * The intent carries the full amount of the selected unspents, so the transaction is verified as a whole
+   * rather than against its first transfer.
+   */
+  private verifySplitTransaction(
+    transaction: BaseTransaction,
+    txParams: TransactionParams,
+    wallet: VerifyTransactionOptions['wallet']
+  ): boolean {
+    const numberOfSplits = txParams.numberOfSplits as number;
+    const rawPrepared = (transaction as Transaction).prepareCommand?.preparedTransaction;
+    if (!rawPrepared) {
+      throw new Error('Split verifyTransaction: missing preparedTransaction protobuf');
+    }
+    if (txParams.recipients?.length !== 1) {
+      throw new Error('Split verifyTransaction: expected exactly one recipient');
+    }
+    const { address, amount, tokenName } = txParams.recipients[0];
+    if (!address) {
+      throw new Error('Recipient address is required to verify a Canton split');
+    }
+    const [expectedParty] = address.split('?memoId=');
+    const walletRootAddress = wallet?.coinSpecific?.()?.rootAddress;
+    if (walletRootAddress && walletRootAddress.split('?memoId=')[0] !== expectedParty) {
+      throw new Error(`Split recipient '${expectedParty}' is not the wallet's own address`);
+    }
+    // A token coin instance resolves its token from the coin itself; native Canton Coin has none.
+    const expectedToken = tokenName ?? (coins.get(this.getChain()).isToken ? this.getChain() : undefined);
+
+    const transfers = utils.parseBatchTransfers(rawPrepared);
+    if (transfers.length !== numberOfSplits) {
+      throw new Error(`Split transaction has ${transfers.length} transfers, expected ${numberOfSplits}`);
+    }
+    let total = new BigNumber(0);
+    for (const transfer of transfers) {
+      if (transfer.sender !== expectedParty || transfer.receiver !== expectedParty) {
+        throw new Error('Split transaction transfers funds to a party other than the wallet itself');
+      }
+      if (transfer.token !== expectedToken) {
+        throw new Error(`Split transaction token '${transfer.token}' does not match expected '${expectedToken}'`);
+      }
+      total = total.plus(transfer.amount);
+    }
+    // Equal-value outputs may leave less than one atomic unit per split of rounding dust in the change holding.
+    const unsplit = new BigNumber(amount).minus(total);
+    if (unsplit.isNegative() || unsplit.gte(numberOfSplits)) {
+      throw new Error(`Split transaction total ${total.toFixed()} does not match expected amount ${amount}`);
+    }
+    return true;
+  }
+
   private verifyBroadridgeStandingDelegationTransaction(
     transaction: BaseTransaction,
     executorPartyId: string

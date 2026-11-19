@@ -13,6 +13,7 @@ import {
   BroadridgeSettlementAuthorizationData,
   CantonCommandInfo,
   PreparedTransaction as IPreparedTransaction,
+  PreparedTransferInfo,
   PreparedTxnParsedInfo,
 } from './iface';
 import {
@@ -679,6 +680,74 @@ export class Utils implements BaseUtils {
       parsedData.token = this.findTokenNameByContractAddress(`${instrumentAdmin}:${instrumentId}`);
     }
     return parsedData;
+  }
+
+  /**
+   * Returns every transfer of a split (fanout) transaction, which is a single root WalletUserProxy_BatchTransfer
+   * whose children are all TransferFactory_Transfer exercises. Throws on any other shape so a caller never
+   * verifies a partial view of what the transaction moves.
+   */
+  parseBatchTransfers(rawData: string): PreparedTransferInfo[] {
+    const decoded = this.decodePreparedTransaction(rawData);
+    const nodes = decoded.transaction?.nodes ?? [];
+    const roots = decoded.transaction?.roots ?? [];
+    const getField = (fields: RecordField[], label: string) => fields.find((f) => f.label === label)?.value?.sum;
+    const getExercise = (nodeId: string) => {
+      const versioned = nodes.find((n) => n.nodeId === nodeId)?.versionedNode;
+      if (!versioned || versioned.oneofKind !== 'v1') return undefined;
+      const nodeType = versioned.v1.nodeType;
+      return nodeType.oneofKind === 'exercise' ? nodeType.exercise : undefined;
+    };
+
+    if (roots.length !== 1) {
+      throw new Error(`invalid split transaction: expected a single root node, got ${roots.length}`);
+    }
+    const batch = getExercise(roots[0]);
+    if (batch?.choiceId !== 'WalletUserProxy_BatchTransfer') {
+      throw new Error('invalid split transaction: root node is not a batch transfer');
+    }
+
+    return batch.children.map((childId) => {
+      const child = getExercise(childId);
+      if (child?.choiceId !== 'TransferFactory_Transfer') {
+        throw new Error('invalid split transaction: batch contains a node that is not a transfer');
+      }
+      const argument = child.chosenValue?.sum;
+      const transferSum =
+        argument?.oneofKind === 'record' ? getField(argument.record?.fields ?? [], 'transfer') : undefined;
+      if (transferSum?.oneofKind !== 'record') {
+        throw new Error('invalid split transaction: transfer record is missing');
+      }
+      const transfer = transferSum.record?.fields ?? [];
+      const senderSum = getField(transfer, 'sender');
+      const receiverSum = getField(transfer, 'receiver');
+      const amountSum = getField(transfer, 'amount');
+      const instrumentSum = getField(transfer, 'instrumentId');
+      if (
+        senderSum?.oneofKind !== 'party' ||
+        receiverSum?.oneofKind !== 'party' ||
+        amountSum?.oneofKind !== 'numeric' ||
+        instrumentSum?.oneofKind !== 'record'
+      ) {
+        throw new Error('invalid split transaction: transfer is missing sender, receiver, amount or instrument');
+      }
+      const instrument = instrumentSum.record?.fields ?? [];
+      const adminSum = getField(instrument, 'admin');
+      const idSum = getField(instrument, 'id');
+      const info: PreparedTransferInfo = {
+        sender: senderSum.party,
+        receiver: receiverSum.party,
+        amount: this.convertAmountToLowestUnit(new BigNumber(amountSum.numeric)),
+      };
+      if (
+        adminSum?.oneofKind === 'party' &&
+        idSum?.oneofKind === 'text' &&
+        !this.isNativeInstrument(adminSum.party, idSum.text)
+      ) {
+        info.token = this.findTokenNameByContractAddress(`${adminSum.party}:${idSum.text}`);
+      }
+      return info;
+    });
   }
 
   /** Parses `"Pkg:Module:Entity"` into parts. */

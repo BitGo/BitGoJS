@@ -292,6 +292,8 @@ export interface TransactionParams {
   wrapParams?: { tokenName: string; amount: string };
   /** External settlement executor party ID for Canton standing delegation intents. */
   executorPartyId?: string;
+  /** Canton split (fanout): number of equal-value holdings the selected unspents are split into. */
+  numberOfSplits?: number;
 }
 
 export interface AddressVerificationData {
