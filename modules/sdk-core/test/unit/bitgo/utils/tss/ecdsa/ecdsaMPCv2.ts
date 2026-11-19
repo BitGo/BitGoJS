@@ -14,6 +14,7 @@ import {
 } from '@bitgo/public-types';
 import { DklsComms, DklsDsg, DklsTypes, DklsUtils } from '@bitgo/sdk-lib-mpc';
 import * as sjcl from '@bitgo/sjcl';
+import { CoinFeature } from '@bitgo/statics';
 import {
   BitGoBase,
   EcdsaMPCv2Utils,
@@ -753,6 +754,191 @@ describe('ECDSA MPC v2', async () => {
       1,
       'getHashFunction must be called for regular EVM tx (serializedTxHex does not start with 0000)'
     );
+  });
+
+  it('signRequestBase routes coin-detected legacy envelope to serializedTxHex and asserts consistency (CECHO-2681)', async () => {
+    const serializedTxHex = 'f86c808504a817c80082520894' + '00'.repeat(20) + '80808080';
+    const signableHex = 'f86c808504a817c80082520894' + '11'.repeat(20) + '80808080';
+    const derivationPath = 'm/0';
+
+    const mockBgWithPost = {
+      getEnv: sinon.stub().returns('test'),
+      setRequestTracer: sinon.stub(),
+    } as unknown as BitGoBase;
+
+    const verifyTransactionStub = sinon.stub().resolves(true);
+    const consistencySpy = sinon.spy();
+    const hashFunctionSpy = sinon.stub().returns({
+      update: () => {
+        throw new Error('SENTINEL_PAST_CONSISTENCY');
+      },
+    } as unknown as Hash);
+    const mockCoinForLegacyEnvelope = {
+      getHashFunction: hashFunctionSpy,
+      verifyTransaction: verifyTransactionStub,
+      shouldVerifyWithSerializedTxHex: sinon.stub().returns(true),
+      assertSignableConsistency: consistencySpy,
+      getMPCAlgorithm: sinon.stub().returns('ecdsa'),
+      getChain: sinon.stub().returns('hteth'),
+      getConfig: sinon.stub().returns({ family: 'eth', features: [CoinFeature.EIP1559] }),
+    } as unknown as IBaseCoin;
+
+    const mockWallet = {
+      id: sinon.stub().returns(walletID),
+      multisigType: sinon.stub().returns('tss'),
+      multisigTypeVersion: sinon.stub().returns('MPCv2'),
+    };
+
+    const utils = new EcdsaMPCv2Utils(mockBgWithPost, mockCoinForLegacyEnvelope, mockWallet as unknown as IWallet);
+    // pickBitgoPubGpgKeyForSigning is private; the cast is test-only.
+    sinon
+      .stub(utils as unknown as Record<string, (...args: unknown[]) => Promise<string>>, 'pickBitgoPubGpgKeyForSigning')
+      .resolves(bitgoGpgKey.public);
+
+    const txRequest = {
+      txRequestId: 'cecho-2681-mpcv2-legacy',
+      apiVersion: 'full',
+      walletId: walletID,
+      transactions: [{ unsignedTx: { derivationPath, signableHex, serializedTxHex }, signatureShares: [] }],
+    } as unknown as TxRequest;
+
+    await assert.rejects(
+      utils.signTxRequest({
+        txRequest,
+        txParams: { recipients: [{ address: '0x' + '00'.repeat(20), amount: '1000' }] },
+        prv: userShare.toString('base64'),
+        reqId: { inc: sinon.stub(), toString: sinon.stub().returns('test-req') } as unknown as RequestTracer,
+      }),
+      /SENTINEL_PAST_CONSISTENCY/
+    );
+
+    assert.strictEqual(verifyTransactionStub.callCount, 1);
+    assert.strictEqual(verifyTransactionStub.firstCall.args[0].txPrebuild.txHex, serializedTxHex);
+    assert.strictEqual(verifyTransactionStub.firstCall.args[0].txPrebuild.txInfo, signableHex);
+    assert.strictEqual(consistencySpy.callCount, 1);
+    assert.deepStrictEqual(consistencySpy.firstCall.args, [serializedTxHex, signableHex]);
+  });
+
+  it('signRequestBase fails closed before signing when serializedTxHex is missing on the legacy route (CECHO-2681)', async () => {
+    const signableHex = 'f86c808504a817c80082520894' + '11'.repeat(20) + '80808080';
+    const mockBgWithPost = {
+      getEnv: sinon.stub().returns('test'),
+      setRequestTracer: sinon.stub(),
+    } as unknown as BitGoBase;
+
+    const verifyTransactionStub = sinon.stub().resolves(true);
+    const consistencySpy = sinon.spy();
+    const hashFunctionSpy = sinon.stub().callsFake(() => createKeccakHash('keccak256') as Hash);
+    const mockCoinForLegacyEnvelope = {
+      getHashFunction: hashFunctionSpy,
+      verifyTransaction: verifyTransactionStub,
+      shouldVerifyWithSerializedTxHex: sinon.stub().returns(true),
+      assertSignableConsistency: consistencySpy,
+      getMPCAlgorithm: sinon.stub().returns('ecdsa'),
+      getChain: sinon.stub().returns('hteth'),
+      getConfig: sinon.stub().returns({ family: 'eth', features: [CoinFeature.EIP1559] }),
+    } as unknown as IBaseCoin;
+
+    const mockWallet = {
+      id: sinon.stub().returns(walletID),
+      multisigType: sinon.stub().returns('tss'),
+      multisigTypeVersion: sinon.stub().returns('MPCv2'),
+    };
+
+    const utils = new EcdsaMPCv2Utils(mockBgWithPost, mockCoinForLegacyEnvelope, mockWallet as unknown as IWallet);
+    // pickBitgoPubGpgKeyForSigning is private; the cast is test-only.
+    sinon
+      .stub(utils as unknown as Record<string, (...args: unknown[]) => Promise<string>>, 'pickBitgoPubGpgKeyForSigning')
+      .resolves(bitgoGpgKey.public);
+
+    for (const missingHex of ['', '   ', undefined]) {
+      const txRequest = {
+        txRequestId: 'cecho-2681-mpcv2-missing',
+        apiVersion: 'full',
+        walletId: walletID,
+        transactions: [
+          { unsignedTx: { derivationPath: 'm/0', signableHex, serializedTxHex: missingHex }, signatureShares: [] },
+        ],
+      } as unknown as TxRequest;
+
+      await assert.rejects(
+        utils.signTxRequest({
+          txRequest,
+          txParams: { recipients: [{ address: '0x' + '00'.repeat(20), amount: '1000' }] },
+          prv: userShare.toString('base64'),
+          reqId: { inc: sinon.stub(), toString: sinon.stub().returns('test-req') } as unknown as RequestTracer,
+        }),
+        /Missing serializedTxHex for transaction requiring serialized verification/
+      );
+    }
+
+    assert.strictEqual(verifyTransactionStub.callCount, 0);
+    assert.strictEqual(consistencySpy.callCount, 0);
+    assert.strictEqual(hashFunctionSpy.callCount, 0);
+  });
+
+  it('signRequestBase preserves pre-hashed Avalanche atomic route without running EVM assertSignableConsistency (CECHO-2681)', async () => {
+    const serializedTxHex = '0000000000010000007278db5c' + 'aa'.repeat(32);
+    const signableHex = createHash('sha256').update(Buffer.from(serializedTxHex, 'hex')).digest('hex');
+    const mockBgWithPost = {
+      getEnv: sinon.stub().returns('test'),
+      setRequestTracer: sinon.stub(),
+      url: sinon.stub().returns('https://mock.bitgo.test'),
+      post: sinon.stub().returns({
+        send: sinon.stub().returnsThis(),
+        set: sinon.stub().returnsThis(),
+        result: sinon.stub().rejects(new Error('SENTINEL_NETWORK')),
+      }),
+    } as unknown as BitGoBase;
+    const verifyTransactionStub = sinon.stub().resolves(true);
+    const consistencySpy = sinon.spy();
+    const envelopeSpy = sinon.stub().returns(true);
+    const hashFunctionSpy = sinon.stub().callsFake(() => createKeccakHash('keccak256') as Hash);
+    const mockFlrCoin = {
+      getHashFunction: hashFunctionSpy,
+      verifyTransaction: verifyTransactionStub,
+      shouldVerifyWithSerializedTxHex: envelopeSpy,
+      assertSignableConsistency: consistencySpy,
+      isSignablePreHashed: (u: { serializedTxHex?: string }) => u.serializedTxHex?.startsWith('0000') ?? false,
+      getMPCAlgorithm: sinon.stub().returns('ecdsa'),
+      getChain: sinon.stub().returns('flr'),
+      getConfig: sinon.stub().returns({ family: 'flr', features: [CoinFeature.EIP1559] }),
+    } as unknown as IBaseCoin;
+
+    const mockWallet = {
+      id: sinon.stub().returns(walletID),
+      multisigType: sinon.stub().returns('tss'),
+      multisigTypeVersion: sinon.stub().returns('MPCv2'),
+    };
+
+    const utils = new EcdsaMPCv2Utils(mockBgWithPost, mockFlrCoin, mockWallet as unknown as IWallet);
+    // pickBitgoPubGpgKeyForSigning is private; the cast is test-only.
+    sinon
+      .stub(utils as unknown as Record<string, (...args: unknown[]) => Promise<string>>, 'pickBitgoPubGpgKeyForSigning')
+      .resolves(bitgoGpgKey.public);
+
+    const txRequest = {
+      txRequestId: 'cecho-2681-flr-atomic',
+      apiVersion: 'full',
+      walletId: walletID,
+      transactions: [{ unsignedTx: { derivationPath: 'm/0', signableHex, serializedTxHex }, signatureShares: [] }],
+    } as unknown as TxRequest;
+
+    await assert.rejects(
+      utils.signTxRequest({
+        txRequest,
+        txParams: { recipients: [{ address: '0x' + '00'.repeat(20), amount: '1000' }] },
+        prv: userShare.toString('base64'),
+        reqId: { inc: sinon.stub(), toString: sinon.stub().returns('test-req') } as unknown as RequestTracer,
+      }),
+      /SENTINEL_NETWORK/
+    );
+
+    assert.strictEqual(verifyTransactionStub.callCount, 1);
+    assert.strictEqual(verifyTransactionStub.firstCall.args[0].txPrebuild.txHex, serializedTxHex);
+    assert.strictEqual(envelopeSpy.callCount, 0);
+    assert.strictEqual(consistencySpy.callCount, 0);
+    assert.strictEqual(hashFunctionSpy.callCount, 0);
   });
 
   // Regression test for CGD-1815 / DEFI-661: resolveEffectiveTxParams() special-cases wrap-native

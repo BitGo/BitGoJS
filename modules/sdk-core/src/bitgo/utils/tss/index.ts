@@ -21,3 +21,4 @@ export * from './preHashedSignable';
 export * from './recipientUtils';
 export * from './keyShareEnvelope';
 export * from './signableConsistency';
+export * from './serializedTxHexVerify';

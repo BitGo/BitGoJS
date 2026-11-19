@@ -54,7 +54,9 @@ import {
   DeriveAddressOptions,
   DeriveAddressResult,
   NO_RECIPIENT_TX_TYPES,
+  CoinWithSerializedTxHexVerification,
   CoinWithSignableConsistency,
+  SignableTransaction,
 } from '@bitgo/sdk-core';
 import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { bip32 } from '@bitgo/secp256k1';
@@ -641,7 +643,10 @@ function isCanonicalTssCalldata(data: string, types: string[]): boolean {
   }
 }
 
-export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implements CoinWithSignableConsistency {
+export abstract class AbstractEthLikeNewCoins
+  extends AbstractEthLikeCoin
+  implements CoinWithSignableConsistency, CoinWithSerializedTxHexVerification
+{
   static hopTransactionSalt = 'bitgoHopAddressRequestSalt';
   protected readonly sendMethodName: 'sendMultiSig' | 'sendMultiSigToken';
 
@@ -3431,8 +3436,44 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
   }
 
   /**
-   * Verify if a tss transaction is valid
+   * Returns true when `unsignedTx.signableHex` is a legacy (type-0) RLP envelope
+   * (a 6-element pre-EIP-155 or 9-element EIP-155 signing preimage list, as opposed
+   * to an EIP-2718 typed transaction like `0x02...` or a 32-byte pre-hashed digest).
    *
+   * Legacy EIP-155 signing preimages encode `v = chainId, r = 0, s = 0`, which is
+   * not a parseable serialized transaction under `@ethereumjs/tx`; routing them to
+   * `serializedTxHex` ensures full payment verification and `assertSignableConsistency`
+   * even on EIP-1559 chains.
+   */
+  shouldVerifyWithSerializedTxHex(unsignedTx: SignableTransaction): boolean {
+    const raw = stripHexPrefix(unsignedTx.signableHex?.trim() ?? '');
+    if (!raw || raw.length % 2 !== 0 || !/^[0-9a-fA-F]+$/.test(raw)) {
+      return false;
+    }
+    try {
+      const decoded = RLP.decode(Buffer.from(raw, 'hex'));
+      if (!Array.isArray(decoded)) {
+        return false;
+      }
+      // Pre-EIP-155 legacy signing preimage: [nonce, gasPrice, gasLimit, to, value, data] (6 items)
+      // EIP-155 legacy signing preimage / unsigned legacy tx: [..., chainId/0, 0, 0] (9 items)
+      if (decoded.length !== 6 && decoded.length !== 9) {
+        return false;
+      }
+      // Every legacy transaction field is a flat byte string (not a nested RLP list).
+      if (!decoded.every((item): item is Uint8Array => item instanceof Uint8Array)) {
+        return false;
+      }
+      // For 9-element legacy lists, unsigned EIP-155 preimages have empty r and s (encoded as 0x80 -> 0 bytes).
+      if (decoded.length === 9 && (decoded[7].length !== 0 || decoded[8].length !== 0)) {
+        return false;
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   /** @inheritdoc CoinWithSignableConsistency */
   assertSignableConsistency(serializedTxHex: string, signableHex: string): void {
     const common = AbstractEthLikeNewCoins.getCustomChainCommon(this.getChainId());

@@ -2,7 +2,8 @@ import 'should';
 import sinon from 'sinon';
 import { Hash } from 'crypto';
 import EthereumAbi from 'ethereumjs-abi';
-import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx';
+import { FeeMarketEIP1559Transaction, Transaction as LegacyTransaction, TransactionFactory } from '@ethereumjs/tx';
+import { addHexPrefix, bufArrToArr, rlp, stripHexPrefix, toBuffer } from 'ethereumjs-util';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import {
@@ -619,6 +620,309 @@ describe('TSS payment verification', function () {
         error.message.should.match(/not sent to the declared token contract/);
       });
     }
+  });
+
+  // CECHO-2681: a legacy (type-0) EVM transaction's signableHex is the EIP-155 signing
+  // preimage RLP([nonce, gasPrice, gasLimit, to, value, data, chainId, 0, 0]) — not a
+  // parseable serialized transaction. The envelope must route verification to
+  // serializedTxHex even on an EIP-1559 coin like hteth; type-2 keeps signableHex.
+  describe('legacy type-0 envelope routing', function () {
+    function deriveSignableHex(serializedTxHex: string): string {
+      const common = AbstractEthLikeNewCoins.getCustomChainCommon(coin.getChainId());
+      const ethTx = TransactionFactory.fromSerializedData(toBuffer(addHexPrefix(serializedTxHex)), { common });
+      if (ethTx instanceof LegacyTransaction) {
+        return Buffer.from(rlp.encode(bufArrToArr(ethTx.getMessageToSign(false)))).toString('hex');
+      }
+      return Buffer.from(ethTx.getMessageToSign(false)).toString('hex');
+    }
+    async function buildTypedTxBytes(
+      kind: 'legacy' | 'eip1559',
+      { to, value = '0', data }: { to: string; value?: string; data?: string }
+    ): Promise<{ serializedTxHex: string; signableHex: string }> {
+      const txBuilder = getBuilder('hteth') as TransactionBuilder;
+      txBuilder.type(data ? TransactionType.ContractCall : TransactionType.SingleSigSend);
+      txBuilder.counter(1);
+      txBuilder.contract(to);
+      txBuilder.value(value);
+      if (data) {
+        txBuilder.data(data);
+      }
+      if (kind === 'legacy') {
+        txBuilder.fee({ fee: '10', gasLimit: '100000' });
+      } else {
+        txBuilder.fee({ fee: '10', gasLimit: '100000', eip1559: { maxFeePerGas: '10', maxPriorityFeePerGas: '1' } });
+      }
+      const serializedTxHex = stripHexPrefix((await txBuilder.build()).toBroadcastFormat());
+      return { serializedTxHex, signableHex: deriveSignableHex(serializedTxHex) };
+    }
+
+    function storedRequest(
+      txBytes: { serializedTxHex: string; signableHex: string },
+      recipients: { address: string; amount: string }[],
+      opts: { serializedTxHex?: string | undefined } = {}
+    ): TxRequest {
+      return {
+        txRequestId: 'cecho-2681-legacy-envelope',
+        apiVersion: 'full',
+        walletId: 'cecho-2681-wallet',
+        intent: {
+          intentType: 'payment',
+          recipients: recipients.map((r) => ({
+            address: { address: r.address },
+            amount: { value: r.amount, symbol: 'hteth' },
+          })),
+        },
+        transactions: [
+          {
+            unsignedTx: {
+              derivationPath: 'm/0',
+              ...txBytes,
+              ...(opts.serializedTxHex !== undefined ? { serializedTxHex: opts.serializedTxHex } : {}),
+            },
+            signatureShares: [],
+          },
+        ],
+      } as unknown as TxRequest;
+    }
+
+    it('detects a type-0 envelope and keeps type-2 and pre-hashed signables on their own routes', async function () {
+      const legacy = await buildTypedTxBytes('legacy', { to: recipient, value: '1000' });
+      coin.shouldVerifyWithSerializedTxHex(legacy).should.be.true();
+
+      const eip1559 = await buildTypedTxBytes('eip1559', { to: recipient, value: '1000' });
+      eip1559.signableHex.startsWith('02').should.be.true();
+      coin.shouldVerifyWithSerializedTxHex(eip1559).should.be.false();
+
+      // Pre-EIP-155 6-element legacy signing preimage is also a legacy type-0 envelope.
+      const preEip155Signable = Buffer.from(
+        rlp.encode([
+          Buffer.from([1]),
+          Buffer.from([10]),
+          Buffer.from([0x52, 0x08]),
+          toBuffer(recipient),
+          Buffer.from([1]),
+          Buffer.from([]),
+        ])
+      ).toString('hex');
+      coin
+        .shouldVerifyWithSerializedTxHex({ serializedTxHex: legacy.serializedTxHex, signableHex: preEip155Signable })
+        .should.be.true();
+
+      // Signed 9-element legacy RLP (non-empty r/s) is not an unsigned signing preimage.
+      const signedLike = Buffer.from(
+        rlp.encode([
+          Buffer.from([1]),
+          Buffer.from([10]),
+          Buffer.from([0x52, 0x08]),
+          toBuffer(recipient),
+          Buffer.from([1]),
+          Buffer.from([]),
+          Buffer.from([27]),
+          Buffer.from([1]),
+          Buffer.from([2]),
+        ])
+      ).toString('hex');
+      coin
+        .shouldVerifyWithSerializedTxHex({ serializedTxHex: legacy.serializedTxHex, signableHex: signedLike })
+        .should.be.false();
+
+      // FLR/FLRP atomic shape (32-byte pre-hashed digest) and Tempo 0x76 envelope stay off the legacy route.
+      coin
+        .shouldVerifyWithSerializedTxHex({ serializedTxHex: '0000' + 'bb'.repeat(32), signableHex: 'a'.repeat(64) })
+        .should.be.false();
+      coin
+        .shouldVerifyWithSerializedTxHex({ serializedTxHex: '0x76f8308080', signableHex: '76f8308080' })
+        .should.be.false();
+    });
+    it('verifies a type-0 payment against its serialized bytes through the full payment verifier', async function () {
+      const txBytes = await buildTypedTxBytes('legacy', { to: recipient, value: '1000' });
+      (
+        await verify(
+          { type: 'transfer', recipients: [{ address: recipient, amount: '1000' }] },
+          txBytes.serializedTxHex
+        )
+      ).should.be.true();
+
+      const redirected = await buildTypedTxBytes('legacy', { to: otherRecipient, value: '1000' });
+      await expectMismatch(
+        verify({ type: 'transfer', recipients: [{ address: recipient, amount: '1000' }] }, redirected.serializedTxHex),
+        /destination address does not match/
+      );
+    });
+
+    it('cannot verify a type-0 payment from its signableHex preimage alone', async function () {
+      const txBytes = await buildTypedTxBytes('legacy', { to: recipient, value: '1000' });
+      try {
+        await verify({ type: 'transfer', recipients: [{ address: recipient, amount: '1000' }] }, txBytes.signableHex);
+      } catch (e) {
+        // The EIP-155 preimage (v = chainId, r = 0, s = 0) is not a parseable transaction;
+        // this is exactly why the envelope must route to serializedTxHex.
+        (e as Error).should.be.instanceOf(Error);
+        return;
+      }
+      throw new Error('expected signableHex preimage to be unparsable');
+    });
+
+    it('leaves a type-2 payment on the signableHex route', async function () {
+      const txBytes = await buildTypedTxBytes('eip1559', { to: recipient, value: '1000' });
+      (
+        await verify({ type: 'transfer', recipients: [{ address: recipient, amount: '1000' }] }, txBytes.signableHex)
+      ).should.be.true();
+
+      const redirected = await buildTypedTxBytes('eip1559', { to: otherRecipient, value: '1000' });
+      await expectMismatch(
+        verify({ type: 'transfer', recipients: [{ address: recipient, amount: '1000' }] }, redirected.signableHex),
+        /destination address does not match/
+      );
+    });
+
+    describe('MPCv1 signing entry point (EcdsaUtils)', function () {
+      const signingBoundaryMessage = 'signing boundary reached after recipient verification';
+      const signingMaterial = JSON.stringify({
+        pShare: { i: 1, n: 'stub-user-paillier-modulus' },
+        backupNShare: { i: 3, n: 'stub-backup-paillier-modulus' },
+      });
+
+      async function runMpcv1Signing(txRequest: TxRequest): Promise<{ error: Error; boundary: Error }> {
+        const signingWallet = new Wallet(bitgo, coin, {
+          id: 'cecho-2681-wallet',
+          multisigType: 'tss',
+          coinSpecific: { baseAddress },
+        });
+        const utils = new EcdsaUtils(bitgo, coin, signingWallet);
+        const boundary = new Error(signingBoundaryMessage);
+        sinon.stub(utils, 'getOfflineSignerPaillierModulus').throws(boundary);
+        try {
+          await utils.signTxRequest({ txRequest, prv: signingMaterial, reqId: new RequestTracer() });
+        } catch (e) {
+          return { error: e as Error, boundary };
+        }
+        throw new Error('expected signTxRequest to reject');
+      }
+
+      it('verifies a matching type-0 payment from serializedTxHex and reaches the signing boundary', async function () {
+        const txBytes = await buildTypedTxBytes('legacy', { to: recipient, value: '1000' });
+        const { error, boundary } = await runMpcv1Signing(
+          storedRequest(txBytes, [{ address: recipient, amount: '1000' }])
+        );
+        error.should.be.exactly(boundary);
+      });
+
+      it('rejects a mismatched type-0 payment before any signing share is produced', async function () {
+        const txBytes = await buildTypedTxBytes('legacy', { to: otherRecipient, value: '1000' });
+        const { error } = await runMpcv1Signing(storedRequest(txBytes, [{ address: recipient, amount: '1000' }]));
+        error.should.be.instanceOf(TxIntentMismatchRecipientError);
+      });
+
+      it('rejects a type-0 payment when signableHex is tampered relative to serializedTxHex', async function () {
+        const benign = await buildTypedTxBytes('legacy', { to: recipient, value: '1000' });
+        const malicious = await buildTypedTxBytes('legacy', { to: otherRecipient, value: '1000' });
+        const { error } = await runMpcv1Signing(
+          storedRequest({ serializedTxHex: benign.serializedTxHex, signableHex: malicious.signableHex }, [
+            { address: recipient, amount: '1000' },
+          ])
+        );
+        error.message.should.match(/signableHex is inconsistent with serializedTxHex/);
+      });
+
+      it('fails closed when serializedTxHex is missing on the legacy route', async function () {
+        const txBytes = await buildTypedTxBytes('legacy', { to: recipient, value: '1000' });
+        const { error } = await runMpcv1Signing(
+          storedRequest(txBytes, [{ address: recipient, amount: '1000' }], { serializedTxHex: '' })
+        );
+        error.message.should.match(/Missing serializedTxHex for transaction requiring serialized verification/);
+      });
+
+      it('keeps a matching type-2 payment on the direct signableHex route', async function () {
+        const txBytes = await buildTypedTxBytes('eip1559', { to: recipient, value: '1000' });
+        const verifySpy = sinon.spy(coin, 'verifyTransaction');
+        const consistencySpy = sinon.spy(coin, 'assertSignableConsistency');
+        const { error, boundary } = await runMpcv1Signing(
+          storedRequest(txBytes, [{ address: recipient, amount: '1000' }])
+        );
+        error.should.be.exactly(boundary);
+        verifySpy.callCount.should.eql(1);
+        (verifySpy.firstCall.args[0].txPrebuild.txHex ?? '').should.eql(txBytes.signableHex);
+        consistencySpy.callCount.should.eql(0);
+      });
+    });
+
+    describe('MPCv2 signing entry point (EcdsaMPCv2Utils)', function () {
+      const signingBoundaryMessage = 'signing boundary reached after recipient verification';
+
+      async function runMpcv2Signing(txRequest: TxRequest): Promise<{ error: Error; boundary: Error }> {
+        const signingWallet = new Wallet(bitgo, coin, {
+          id: 'cecho-2681-wallet',
+          multisigType: 'tss',
+          multisigTypeVersion: 'MPCv2',
+          coinSpecific: { baseAddress },
+        });
+        const utils = new EcdsaMPCv2Utils(bitgo, coin, signingWallet);
+        // Avoid the remote GPG lookup; verification does not consume this key.
+        const stubbableUtils = utils as unknown as Record<string, (...args: unknown[]) => Promise<string>>;
+        sinon.stub(stubbableUtils, 'pickBitgoPubGpgKeyForSigning').resolves('stub-bitgo-gpg-key');
+        // The MPCv2 flow hashes the verified bytes before exchanging any signature share.
+        // Throwing here proves verification ran on the routed bytes and accepted the intent.
+        const boundary = new Error(signingBoundaryMessage);
+        sinon.stub(coin, 'getHashFunction').returns({
+          update: () => {
+            throw boundary;
+          },
+        } as unknown as Hash);
+        try {
+          await utils.signTxRequest({ txRequest, prv: '', reqId: new RequestTracer() });
+        } catch (e) {
+          return { error: e as Error, boundary };
+        }
+        throw new Error('expected signTxRequest to reject');
+      }
+
+      it('verifies a matching type-0 payment from serializedTxHex and reaches the signing boundary', async function () {
+        const txBytes = await buildTypedTxBytes('legacy', { to: recipient, value: '1000' });
+        const { error, boundary } = await runMpcv2Signing(
+          storedRequest(txBytes, [{ address: recipient, amount: '1000' }])
+        );
+        error.should.be.exactly(boundary);
+      });
+
+      it('rejects a mismatched type-0 payment before any signing share is produced', async function () {
+        const txBytes = await buildTypedTxBytes('legacy', { to: otherRecipient, value: '1000' });
+        const { error } = await runMpcv2Signing(storedRequest(txBytes, [{ address: recipient, amount: '1000' }]));
+        error.should.be.instanceOf(TxIntentMismatchRecipientError);
+      });
+
+      it('rejects a type-0 payment when signableHex is tampered relative to serializedTxHex', async function () {
+        const benign = await buildTypedTxBytes('legacy', { to: recipient, value: '1000' });
+        const malicious = await buildTypedTxBytes('legacy', { to: otherRecipient, value: '1000' });
+        const { error } = await runMpcv2Signing(
+          storedRequest({ serializedTxHex: benign.serializedTxHex, signableHex: malicious.signableHex }, [
+            { address: recipient, amount: '1000' },
+          ])
+        );
+        error.message.should.match(/signableHex is inconsistent with serializedTxHex/);
+      });
+
+      it('fails closed when serializedTxHex is missing on the legacy route', async function () {
+        const txBytes = await buildTypedTxBytes('legacy', { to: recipient, value: '1000' });
+        const { error } = await runMpcv2Signing(
+          storedRequest(txBytes, [{ address: recipient, amount: '1000' }], { serializedTxHex: '' })
+        );
+        error.message.should.match(/Missing serializedTxHex for transaction requiring serialized verification/);
+      });
+
+      it('keeps a matching type-2 payment on the direct signableHex route', async function () {
+        const txBytes = await buildTypedTxBytes('eip1559', { to: recipient, value: '1000' });
+        const verifySpy = sinon.spy(coin, 'verifyTransaction');
+        const consistencySpy = sinon.spy(coin, 'assertSignableConsistency');
+        const { error, boundary } = await runMpcv2Signing(
+          storedRequest(txBytes, [{ address: recipient, amount: '1000' }])
+        );
+        error.should.be.exactly(boundary);
+        verifySpy.callCount.should.eql(1);
+        (verifySpy.firstCall.args[0].txPrebuild.txHex ?? '').should.eql(txBytes.signableHex);
+        consistencySpy.callCount.should.eql(0);
+      });
+    });
   });
 
   describe('consolidation to base address', function () {

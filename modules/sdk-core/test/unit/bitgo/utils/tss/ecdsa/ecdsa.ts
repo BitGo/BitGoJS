@@ -130,4 +130,55 @@ describe('EcdsaUtils.signRequestBase - signableHex consistency (WCI-2239)', func
 
     await assert.rejects(utils.signTxRequest(params), /SENTINEL_PAST_CONSISTENCY/);
   });
+
+  it('routes to serializedTxHex and calls assertSignableConsistency when coin envelope check returns true (CECHO-2681)', async function () {
+    const verifyTransactionStub = sinon.stub().resolves();
+    const consistencySpy = sinon.spy();
+    const mockCoin = {
+      getConfig: sinon.stub().returns({ features: [CoinFeature.EIP1559] }),
+      shouldVerifyWithSerializedTxHex: sinon.stub().returns(true),
+      verifyTransaction: verifyTransactionStub,
+      assertSignableConsistency: consistencySpy,
+      getChain: sinon.stub().returns('hteth'),
+    };
+    const utils = makeUtils(mockCoin);
+    sinon.stub(utils, 'getOfflineSignerPaillierModulus').throws(new Error('SENTINEL_PAST_CONSISTENCY'));
+
+    await assert.rejects(utils.signTxRequest(params), /SENTINEL_PAST_CONSISTENCY/);
+
+    assert.strictEqual(verifyTransactionStub.callCount, 1);
+    assert.strictEqual(verifyTransactionStub.firstCall.args[0].txPrebuild.txHex, serializedTxHex);
+    assert.strictEqual(verifyTransactionStub.firstCall.args[0].txPrebuild.txInfo, signableHex);
+    assert.strictEqual(consistencySpy.callCount, 1);
+    assert.deepStrictEqual(consistencySpy.firstCall.args, [serializedTxHex, signableHex]);
+  });
+
+  it('fails closed before signing when serializedTxHex is missing on the serialized route (CECHO-2681)', async function () {
+    const verifyTransactionStub = sinon.stub().resolves();
+    const consistencySpy = sinon.spy();
+    const mockCoin = {
+      getConfig: sinon.stub().returns({ features: [CoinFeature.EIP1559] }),
+      shouldVerifyWithSerializedTxHex: sinon.stub().returns(true),
+      verifyTransaction: verifyTransactionStub,
+      assertSignableConsistency: consistencySpy,
+      getChain: sinon.stub().returns('hteth'),
+    };
+    const utils = makeUtils(mockCoin);
+    const paillierSpy = sinon.spy(utils, 'getOfflineSignerPaillierModulus');
+
+    for (const missingHex of ['', '   ', undefined]) {
+      const missingTxRequest = {
+        ...txRequest,
+        transactions: [{ unsignedTx: { derivationPath: 'm/0', serializedTxHex: missingHex, signableHex } }],
+      } as unknown as TxRequest;
+      await assert.rejects(
+        utils.signTxRequest({ ...params, txRequest: missingTxRequest }),
+        /Missing serializedTxHex for transaction requiring serialized verification/
+      );
+    }
+
+    assert.strictEqual(verifyTransactionStub.callCount, 0);
+    assert.strictEqual(consistencySpy.callCount, 0);
+    assert.strictEqual(paillierSpy.callCount, 0);
+  });
 });

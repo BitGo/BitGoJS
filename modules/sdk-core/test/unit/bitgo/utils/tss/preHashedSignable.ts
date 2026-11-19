@@ -17,8 +17,14 @@ describe('preHashedSignable', function () {
       }),
       false
     );
+    assert.strictEqual(
+      isAvalancheAtomicTx({
+        serializedTxHex: undefined as unknown as string,
+        signableHex: 'abc',
+      }),
+      false
+    );
   });
-
   it('isCoinWithPreHashedSignable type guard', function () {
     assert.strictEqual(isCoinWithPreHashedSignable({ isSignablePreHashed: () => true }), true);
     assert.strictEqual(isCoinWithPreHashedSignable({}), false);
