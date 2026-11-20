@@ -3222,6 +3222,7 @@ export enum UnderlyingAsset {
   'avaxc:eurc' = 'avaxc:eurc',
   'avaxc:ausd' = 'avaxc:ausd',
   'avaxc:mxnd' = 'avaxc:mxnd',
+  'avaxc:ktc' = 'avaxc:ktc',
   // End FTX missing AVAXC tokens
 
   // polygon Token ERC-20
@@ -4095,6 +4096,13 @@ export enum UnderlyingAsset {
   'chiliz:psg' = 'chiliz:psg',
   'chiliz:spurs' = 'chiliz:spurs',
   'chiliz:tra' = 'chiliz:tra',
+  'chiliz:asm' = 'chiliz:asm',
+  'chiliz:belg' = 'chiliz:belg',
+  'chiliz:safa' = 'chiliz:safa',
+  'chiliz:sevilla' = 'chiliz:sevilla',
+  'chiliz:sfa' = 'chiliz:sfa',
+  'chiliz:spain' = 'chiliz:spain',
+  'chiliz:vcf' = 'chiliz:vcf',
 
   // Ink mainnet tokens
   'inketh:kbtc' = 'inketh:kbtc',
