@@ -454,6 +454,7 @@ export interface TransactionPrebuild extends BaseSignable {
   txBase64?: string;
   txHex?: string;
   txInfo?: unknown;
+  coinSpecific?: Record<string, unknown>;
 }
 
 export interface XpubWithDerivationPath {

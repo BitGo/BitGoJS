@@ -667,6 +667,38 @@ describe('SOL:', function () {
       } as any);
       result.should.equal(true);
     });
+    it('should accept the fee payer from a persisted txRequest coinSpecific policy', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      const walletData = {
+        id: '5b34252f1bf349930e34020a00000000',
+        coin: 'tsol',
+        keys: [
+          '5b3424f91bf349930e34017500000000',
+          '5b3424f91bf349930e34017600000000',
+          '5b3424f91bf349930e34017700000000',
+        ],
+        coinSpecific: {
+          rootAddress: stakeAccount.pub,
+        },
+        multisigType: 'tss',
+      };
+      const walletWithDifferentRoot = new Wallet(bitgo, basecoin, walletData);
+      txPrebuild.coinSpecific = {
+        solFeePayerPolicy: {
+          sponsorshipMode: 'enterprise',
+          feePayerAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+        },
+      };
+
+      const result = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        memo,
+        wallet: walletWithDifferentRoot,
+      } as unknown as SolVerifyTransactionOptions);
+      result.should.equal(true);
+    });
 
     it('accepts a fee payer declared inside txParams by the wallet verification path', async function () {
       const txPrebuild = newTxPrebuild();

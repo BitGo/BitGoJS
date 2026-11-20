@@ -5146,12 +5146,22 @@ export class Wallet implements IWallet {
     }
 
     const whitelistedParams = _.pick(params, this.prebuildWhitelistedParams());
+    const solFeePayerPolicy = unsignedTx.coinSpecific?.solFeePayerPolicy;
+    const feePayer =
+      typeof solFeePayerPolicy === 'object' &&
+      solFeePayerPolicy !== null &&
+      'feePayerAddress' in solFeePayerPolicy &&
+      typeof solFeePayerPolicy.feePayerAddress === 'string'
+        ? solFeePayerPolicy.feePayerAddress
+        : undefined;
+    const buildParams = feePayer ? { ...whitelistedParams, feePayer } : whitelistedParams;
     return {
       walletId: this.id(),
       wallet: this,
       txRequestId: txRequest.txRequestId,
       txHex: unsignedTx.serializedTxHex,
-      buildParams: whitelistedParams,
+      ...(unsignedTx.coinSpecific && { coinSpecific: unsignedTx.coinSpecific }),
+      buildParams,
       feeInfo: unsignedTx.feeInfo,
       ...(txRequest.pendingApprovalId && {
         pendingApprovalId: txRequest.pendingApprovalId,
