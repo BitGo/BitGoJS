@@ -5158,6 +5158,20 @@ export const tOfcErc20Coins = [
     'hteth'
   ),
   tofcerc20(
+    '680f7db5-338c-4368-b0da-4a1d7b608000',
+    'ofcsepeth:stgspcxgo',
+    'Test SpaceX',
+    18,
+    UnderlyingAsset['sepeth:stgspcxgo'],
+    undefined,
+    [CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'sepeth'
+  ),
+  tofcerc20(
     'ba7d610c-4aad-4347-bbd1-3a19ebf85901',
     'ofcsepeth:usdc',
     'Sepolia Testnet USD Coin',
