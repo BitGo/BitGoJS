@@ -4032,7 +4032,13 @@ export const allCoinsAndTokens = [
     'Canton',
     Networks.main.canton,
     UnderlyingAsset.CANTON,
-    [...CANTON_FEATURES, CoinFeature.UNSPENT_MODEL, CoinFeature.MERGE_UTXOS, CoinFeature.BYOV_VALIDATOR],
+    [
+      ...CANTON_FEATURES,
+      CoinFeature.UNSPENT_MODEL,
+      CoinFeature.MERGE_UTXOS,
+      CoinFeature.BYOV_VALIDATOR,
+      CoinFeature.CUSTODY_BITGO_KOREA,
+    ],
     KeyCurve.Ed25519
   ),
   canton(
@@ -4041,7 +4047,7 @@ export const allCoinsAndTokens = [
     'Testnet Canton',
     Networks.test.canton,
     UnderlyingAsset.CANTON,
-    TCANTON_FEATURES,
+    [...TCANTON_FEATURES, CoinFeature.CUSTODY_BITGO_KOREA],
     KeyCurve.Ed25519
   ),
   gasTankAccount(

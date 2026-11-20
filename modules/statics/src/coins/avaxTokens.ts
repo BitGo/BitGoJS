@@ -1,6 +1,7 @@
 import { AccountCoin, avaxErc20, tavaxErc20 } from '../account';
 import { CoinFeature, UnderlyingAsset } from '../base';
 import {
+  ACCOUNT_COIN_DEFAULT_FEATURES,
   ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_EUROPE,
   ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE,
 } from '../coinFeatures';
@@ -61,7 +62,8 @@ export const avaxTokens = [
     'Chainlink',
     18,
     '0x5947bb275c521040051d82396192181b413227a3',
-    UnderlyingAsset['avaxc:link']
+    UnderlyingAsset['avaxc:link'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_KOREA]
   ),
   avaxErc20(
     '47f2bdf9-05c8-4284-aa84-95dec73541f8',
@@ -771,7 +773,8 @@ export const avaxTokens = [
     'Test Chainlink',
     18,
     '0x0b9d5d9136855f6fec3c0993fee6e9ce8a297846',
-    UnderlyingAsset['avaxc:link']
+    UnderlyingAsset['avaxc:link'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_KOREA]
   ),
   tavaxErc20(
     'b44ff1b9-b4a8-4bd4-aa56-a663f3ee569e',

@@ -3764,7 +3764,7 @@ export const erc20Coins = [
     18,
     '0x514910771af9ca656af840dff83e8264ecf986ca',
     UnderlyingAsset.LINK,
-    ETH_FEATURES_WITH_FRANKFURT
+    [...ETH_FEATURES_WITH_FRANKFURT, CoinFeature.CUSTODY_BITGO_KOREA]
   ),
   erc20(
     'ca72e22a-8fd4-4f17-90f0-c44987be9dcd',
@@ -15270,7 +15270,7 @@ export const erc20Coins = [
     18,
     '0x779877a7b0d9e8603169ddbd7836e478b4624789',
     UnderlyingAsset['sepeth:link'],
-    ACCOUNT_COIN_DEFAULT_FEATURES,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_KOREA],
     undefined,
     undefined,
     Networks.test.sepolia
