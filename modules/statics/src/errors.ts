@@ -104,3 +104,19 @@ export class ChainIdNotFoundError extends BitGoStaticsError {
     Object.setPrototypeOf(this, CoinNotDefinedError.prototype);
   }
 }
+
+export class CoinClassMismatchError extends BitGoStaticsError {
+  public constructor(coinName: string, existingClass: string, newClass: string) {
+    super(
+      `cannot replace coin '${coinName}': existing class ${existingClass} differs from replacement class ${newClass}`
+    );
+    Object.setPrototypeOf(this, CoinClassMismatchError.prototype);
+  }
+}
+
+export class CoinImmutableFieldsMismatchError extends BitGoStaticsError {
+  public constructor(coinName: string, field: string) {
+    super(`cannot replace coin '${coinName}': immutable field mismatch — ${field}`);
+    Object.setPrototypeOf(this, CoinImmutableFieldsMismatchError.prototype);
+  }
+}

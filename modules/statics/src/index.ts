@@ -53,7 +53,7 @@ export {
   SUPPORTED_SOL_TOKEN_EXTENSION_NAMES,
   getUnsupportedSolTokenExtensions,
 } from './account';
-export { CoinMap } from './map';
+export { CoinMap, assertImmutableFieldsUnchanged } from './map';
 export {
   networkFeatureMapForTokens,
   registerNetworkFeatures,
