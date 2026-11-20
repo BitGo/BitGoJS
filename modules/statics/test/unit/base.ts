@@ -447,8 +447,10 @@ describe('Monad staking feature', function () {
     coin.features.should.containEql(CoinFeature.SHARED_EVM_SDK);
   });
 
-  it('mon should not expose STAKING', function () {
-    coins.get('mon').features.includes(CoinFeature.STAKING).should.be.false();
+  it('mon should expose STAKING without dropping its existing features', function () {
+    const coin = coins.get('mon');
+    coin.features.should.containEql(CoinFeature.STAKING);
+    coin.features.should.containEql(CoinFeature.SHARED_EVM_SIGNING);
   });
 });
 
