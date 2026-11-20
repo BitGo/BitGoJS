@@ -48,7 +48,7 @@ describe('serializedTxHexVerify', function () {
     assert.strictEqual(check.callCount, 1);
   });
 
-  it('short-circuits on CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX without calling coin hook', function () {
+  it('keeps the serialized route for feature coins but still validates through the coin hook', function () {
     const check = sinon.stub().returns(false);
     const coin = {
       getConfig: () => ({ features: [CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX] }),
@@ -56,7 +56,20 @@ describe('serializedTxHexVerify', function () {
     } as unknown as IBaseCoin;
 
     assert.strictEqual(shouldVerifyWithSerializedTxHex(coin, sampleTx), true);
-    assert.strictEqual(check.callCount, 0);
+    assert.strictEqual(check.callCount, 1);
+    assert.strictEqual(check.firstCall.args[0], sampleTx);
+    assert.strictEqual(shouldVerifyWithSerializedTxHex(coin), true);
+    assert.strictEqual(check.callCount, 1);
+  });
+
+  it('propagates coin-hook rejection of an unsupported envelope even for feature coins', function () {
+    const check = sinon.stub().throws(new Error('Unsupported legacy type-0 signing preimage'));
+    const coin = {
+      getConfig: () => ({ features: [CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX] }),
+      shouldVerifyWithSerializedTxHex: check,
+    } as unknown as IBaseCoin;
+
+    assert.throws(() => shouldVerifyWithSerializedTxHex(coin, sampleTx), /Unsupported legacy type-0 signing preimage/);
   });
 
   it('isCoinWithSerializedTxHexVerification type guard', function () {

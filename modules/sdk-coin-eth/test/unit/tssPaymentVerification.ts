@@ -9,6 +9,7 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 import {
   EcdsaMPCv2Utils,
   EcdsaUtils,
+  InvalidTransactionError,
   RequestTracer,
   TransactionType,
   TxIntentMismatchRecipientError,
@@ -685,7 +686,24 @@ describe('TSS payment verification', function () {
       } as unknown as TxRequest;
     }
 
-    it('detects a type-0 envelope and keeps type-2 and pre-hashed signables on their own routes', async function () {
+    function legacyFields(): Buffer[] {
+      return [
+        Buffer.from([1]),
+        Buffer.from([10]),
+        Buffer.from([0x52, 0x08]),
+        toBuffer(recipient),
+        Buffer.from([1]),
+        Buffer.from([]),
+      ];
+    }
+    // Pre-EIP-155 signing preimage (6 fields): no chain id, so no replay protection.
+    const preEip155Signable = Buffer.from(rlp.encode(legacyFields())).toString('hex');
+    // 9-field legacy list whose v is empty: not an EIP-155 signing preimage.
+    const chainIdLessSignable = Buffer.from(
+      rlp.encode([...legacyFields(), Buffer.from([]), Buffer.from([]), Buffer.from([])])
+    ).toString('hex');
+
+    it('detects an EIP-155 type-0 envelope and keeps type-2 and pre-hashed signables on their own routes', async function () {
       const legacy = await buildTypedTxBytes('legacy', { to: recipient, value: '1000' });
       coin.shouldVerifyWithSerializedTxHex(legacy).should.be.true();
 
@@ -693,34 +711,9 @@ describe('TSS payment verification', function () {
       eip1559.signableHex.startsWith('02').should.be.true();
       coin.shouldVerifyWithSerializedTxHex(eip1559).should.be.false();
 
-      // Pre-EIP-155 6-element legacy signing preimage is also a legacy type-0 envelope.
-      const preEip155Signable = Buffer.from(
-        rlp.encode([
-          Buffer.from([1]),
-          Buffer.from([10]),
-          Buffer.from([0x52, 0x08]),
-          toBuffer(recipient),
-          Buffer.from([1]),
-          Buffer.from([]),
-        ])
-      ).toString('hex');
-      coin
-        .shouldVerifyWithSerializedTxHex({ serializedTxHex: legacy.serializedTxHex, signableHex: preEip155Signable })
-        .should.be.true();
-
       // Signed 9-element legacy RLP (non-empty r/s) is not an unsigned signing preimage.
       const signedLike = Buffer.from(
-        rlp.encode([
-          Buffer.from([1]),
-          Buffer.from([10]),
-          Buffer.from([0x52, 0x08]),
-          toBuffer(recipient),
-          Buffer.from([1]),
-          Buffer.from([]),
-          Buffer.from([27]),
-          Buffer.from([1]),
-          Buffer.from([2]),
-        ])
+        rlp.encode([...legacyFields(), Buffer.from([27]), Buffer.from([1]), Buffer.from([2])])
       ).toString('hex');
       coin
         .shouldVerifyWithSerializedTxHex({ serializedTxHex: legacy.serializedTxHex, signableHex: signedLike })
@@ -733,6 +726,22 @@ describe('TSS payment verification', function () {
       coin
         .shouldVerifyWithSerializedTxHex({ serializedTxHex: '0x76f8308080', signableHex: '76f8308080' })
         .should.be.false();
+    });
+
+    it('rejects unsupported legacy type-0 forms instead of routing them to serializedTxHex', async function () {
+      const legacy = await buildTypedTxBytes('legacy', { to: recipient, value: '1000' });
+      // Pre-EIP-155 (6-field) preimages carry no chain id, so there is no replay protection.
+      (() =>
+        coin.shouldVerifyWithSerializedTxHex({
+          serializedTxHex: legacy.serializedTxHex,
+          signableHex: preEip155Signable,
+        })).should.throw(/pre-EIP-155/);
+      // A 9-field legacy list with an empty v has no chain id either.
+      (() =>
+        coin.shouldVerifyWithSerializedTxHex({
+          serializedTxHex: legacy.serializedTxHex,
+          signableHex: chainIdLessSignable,
+        })).should.throw(/missing the EIP-155 chain id/);
     });
     it('verifies a type-0 payment against its serialized bytes through the full payment verifier', async function () {
       const txBytes = await buildTypedTxBytes('legacy', { to: recipient, value: '1000' });
@@ -833,6 +842,23 @@ describe('TSS payment verification', function () {
         error.message.should.match(/Missing serializedTxHex for transaction requiring serialized verification/);
       });
 
+      it('rejects unsupported legacy preimages before signing', async function () {
+        const txBytes = await buildTypedTxBytes('legacy', { to: recipient, value: '1000' });
+        const recipients = [{ address: recipient, amount: '1000' }];
+
+        const preEip155 = await runMpcv1Signing(
+          storedRequest({ serializedTxHex: txBytes.serializedTxHex, signableHex: preEip155Signable }, recipients)
+        );
+        preEip155.error.should.be.instanceOf(InvalidTransactionError);
+        preEip155.error.message.should.match(/pre-EIP-155/);
+
+        const chainIdLess = await runMpcv1Signing(
+          storedRequest({ serializedTxHex: txBytes.serializedTxHex, signableHex: chainIdLessSignable }, recipients)
+        );
+        chainIdLess.error.should.be.instanceOf(InvalidTransactionError);
+        chainIdLess.error.message.should.match(/missing the EIP-155 chain id/);
+      });
+
       it('keeps a matching type-2 payment on the direct signableHex route', async function () {
         const txBytes = await buildTypedTxBytes('eip1559', { to: recipient, value: '1000' });
         const verifySpy = sinon.spy(coin, 'verifyTransaction');
@@ -908,6 +934,28 @@ describe('TSS payment verification', function () {
           storedRequest(txBytes, [{ address: recipient, amount: '1000' }], { serializedTxHex: '' })
         );
         error.message.should.match(/Missing serializedTxHex for transaction requiring serialized verification/);
+      });
+
+      it('rejects a pre-EIP-155 (6-field) legacy preimage before signing', async function () {
+        const txBytes = await buildTypedTxBytes('legacy', { to: recipient, value: '1000' });
+        const { error } = await runMpcv2Signing(
+          storedRequest({ serializedTxHex: txBytes.serializedTxHex, signableHex: preEip155Signable }, [
+            { address: recipient, amount: '1000' },
+          ])
+        );
+        error.should.be.instanceOf(InvalidTransactionError);
+        error.message.should.match(/pre-EIP-155/);
+      });
+
+      it('rejects a chain-id-less (empty v) legacy preimage before signing', async function () {
+        const txBytes = await buildTypedTxBytes('legacy', { to: recipient, value: '1000' });
+        const { error } = await runMpcv2Signing(
+          storedRequest({ serializedTxHex: txBytes.serializedTxHex, signableHex: chainIdLessSignable }, [
+            { address: recipient, amount: '1000' },
+          ])
+        );
+        error.should.be.instanceOf(InvalidTransactionError);
+        error.message.should.match(/missing the EIP-155 chain id/);
       });
 
       it('keeps a matching type-2 payment on the direct signableHex route', async function () {
