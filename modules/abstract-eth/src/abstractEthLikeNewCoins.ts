@@ -166,6 +166,11 @@ export interface TransactionPrebuild extends BaseTransactionPrebuild {
     eip1559?: EIP1559;
     isBatch?: boolean;
   };
+  /**
+   * Server-evaluated Flipt rollout state for the multisig enable-token verification:
+   * absent or true keeps the strict flow; an explicit false reverts it to the legacy flow.
+   */
+  multisigEnableTokenStrictVerification?: boolean;
 }
 
 export interface SignFinalOptions {

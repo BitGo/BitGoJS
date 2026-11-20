@@ -30,6 +30,7 @@ import {
   TransferBuilderERC7984,
   confidentialTransferNoProofMethodId,
   approveMethodId,
+  TransactionPrebuild,
 } from '@bitgo/abstract-eth';
 import EthereumAbi from 'ethereumjs-abi';
 import { addHexPrefix } from 'ethereumjs-util';
@@ -712,7 +713,9 @@ describe('Erc7984Token', function () {
   });
 
   // -------------------------------------------------------------------------
-  describe('verifyTransaction – multisig path', function () {
+  describe('verifyTransaction – multisig path (legacy flow, Flipt flag false)', function () {
+    const FLAG_OFF = { multisigEnableTokenStrictVerification: false };
+
     it('should verify valid buildParams recipients', async function () {
       const result = await coin.verifyTransaction({
         txParams: {
@@ -720,6 +723,7 @@ describe('Erc7984Token', function () {
           recipients: [{ tokenName: 'hteth:ctest1', address: '0xabc', amount: '0' }] as any,
         },
         txPrebuild: {
+          ...FLAG_OFF,
           buildParams: {
             type: 'enabletoken',
             recipients: [{ tokenName: 'hteth:ctest1', address: '0xabc', amount: '0' }],
@@ -741,6 +745,7 @@ describe('Erc7984Token', function () {
           ] as any,
         },
         txPrebuild: {
+          ...FLAG_OFF,
           buildParams: {
             type: 'enabletoken',
             recipients: [
@@ -763,6 +768,7 @@ describe('Erc7984Token', function () {
             recipients: [{ tokenName: 'hteth:ctest1', address: '0xabc', amount: '0' }] as any,
           },
           txPrebuild: {
+            ...FLAG_OFF,
             buildParams: {
               type: 'enabletoken',
               recipients: [{ tokenName: 'hteth:wrongtoken', address: '0xabc', amount: '0' }],
@@ -782,6 +788,7 @@ describe('Erc7984Token', function () {
             recipients: [{ tokenName: 'hteth:ctest1', address: '0xabc', amount: '0' }] as any,
           },
           txPrebuild: {
+            ...FLAG_OFF,
             buildParams: {
               type: 'enabletoken',
               recipients: [{ tokenName: 'hteth:ctest1', address: '0xabc', amount: '100' }],
@@ -800,12 +807,174 @@ describe('Erc7984Token', function () {
             type: 'enabletoken',
           },
           txPrebuild: {
+            ...FLAG_OFF,
             buildParams: {},
           } as any,
           wallet: {} as any,
           walletType: 'onchain',
         })
         .should.be.rejectedWith(/missing buildParams.recipients/);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  describe('verifyTransaction – multisig strict path (Flipt flag default true)', function () {
+    // Client-built recipients echo, as attached by Wallet.buildTokenEnablements.
+    const clientRecipients = [{ tokenName: 'hteth:ctest1', address: '0xabc', amount: '0' }];
+    const enableTokenParams = { type: 'enabletoken', enableTokens: [{ name: 'hteth:ctest1' }] };
+    const delegationData = buildMulticallDelegationCalldata(DELEGATE_ADDRESS, [CTEST1_TOKEN_ADDRESS], EXPIRY);
+    const forwarderDelegationData = wrapInCallFromParent(ZAMA_ACL_ADDRESS, delegationData);
+    // ERC-20 approve theft calldata: the wallet contract would call token.approve(attacker, 1).
+    const approveTheftCalldata =
+      approveMethodId + EthereumAbi.rawEncode(['address', 'uint256'], [ATTACKER_CONTRACT_ADDRESS, 1]).toString('hex');
+    const smuggledDelegationData = encodeRawMulticall([
+      buildDelegationCalldata(DELEGATE_ADDRESS, CTEST1_TOKEN_ADDRESS, EXPIRY),
+      approveTheftCalldata,
+    ]);
+    const forwarderTheftData = encodeRawCallFromParent(
+      ATTACKER_CONTRACT_ADDRESS,
+      '1000000000000000000',
+      delegationData
+    );
+    const walletContract = '0x8f977e912ef500548a0c3be6ddde9899f1199b81';
+    const expireTime = Math.floor(Date.now() / 1000) + 3600;
+
+    /**
+     * A realistic onchain-multisig enable-token prebuild: recipients[0] is the sendMultiSig
+     * operation that Eth.signTransaction hashes into the user's operation signature.
+     * One unchecked cast: the wire recipient carries a `data` field the
+     * TransactionRecipient type does not model.
+     */
+    function buildStrictPrebuild(opts: {
+      recipient?: { address: string; amount: string; data: string };
+      multisigEnableTokenStrictVerification?: boolean;
+      txHex?: string;
+    }): TransactionPrebuild {
+      return {
+        buildParams: { type: 'enabletoken', recipients: clientRecipients },
+        ...(opts.recipient ? { recipients: [opts.recipient] } : {}),
+        coin: 'hteth',
+        gasPrice: 1,
+        gasLimit: 1,
+        isBatch: false,
+        nextContractSequenceId: 1,
+        ...(opts.multisigEnableTokenStrictVerification !== undefined
+          ? { multisigEnableTokenStrictVerification: opts.multisigEnableTokenStrictVerification }
+          : {}),
+        ...(opts.txHex ? { txHex: opts.txHex } : {}),
+      } as unknown as TransactionPrebuild;
+    }
+
+    async function verifyMultisigEnable(prebuild: TransactionPrebuild): Promise<boolean> {
+      // Test seam: the multisig strict path never reads the wallet object.
+      return coin.verifyTransaction({
+        txParams: enableTokenParams,
+        txPrebuild: prebuild,
+        wallet: {} as unknown as Wallet,
+        walletType: 'onchain',
+      });
+    }
+
+    it('should verify a benign base-wallet enable (aclMulticall shape) with the flag absent — default true', async function () {
+      const result = await verifyMultisigEnable(
+        buildStrictPrebuild({ recipient: { address: ZAMA_ACL_ADDRESS, amount: '0', data: delegationData } })
+      );
+      result.should.equal(true);
+    });
+
+    it('should verify a benign forwarder enable (callFromParent shape)', async function () {
+      const result = await verifyMultisigEnable(
+        buildStrictPrebuild({
+          recipient: { address: FORWARDER_ADDRESS, amount: '0', data: forwarderDelegationData },
+        })
+      );
+      result.should.equal(true);
+    });
+
+    it('should verify a benign enable when the txHex sendMultiSig envelope mirrors the signed recipient', async function () {
+      const txHex = await buildRawContractCallTxHex(
+        walletContract,
+        sendMultiSigData(ZAMA_ACL_ADDRESS, '0', delegationData, expireTime, 1, '0x' + '00'.repeat(65))
+      );
+      const result = await verifyMultisigEnable(
+        buildStrictPrebuild({ recipient: { address: ZAMA_ACL_ADDRESS, amount: '0', data: delegationData }, txHex })
+      );
+      result.should.equal(true);
+    });
+
+    it('should reject a non-zero sendMultiSig value (native fund theft)', async function () {
+      await verifyMultisigEnable(
+        buildStrictPrebuild({ recipient: { address: ZAMA_ACL_ADDRESS, amount: '12345', data: delegationData } })
+      ).should.be.rejectedWith(/expected sendMultiSig value 0/);
+    });
+
+    it('should reject an ERC-20 approve theft prebuild (non-delegation calldata)', async function () {
+      await verifyMultisigEnable(
+        buildStrictPrebuild({
+          recipient: { address: ATTACKER_CONTRACT_ADDRESS, amount: '0', data: approveTheftCalldata },
+        })
+      ).should.be.rejectedWith(/Not a valid delegation calldata/);
+    });
+
+    it('should reject delegate substitution to an attacker viewing key', async function () {
+      await verifyMultisigEnable(
+        buildStrictPrebuild({
+          recipient: {
+            address: ZAMA_ACL_ADDRESS,
+            amount: '0',
+            data: buildMulticallDelegationCalldata(ATTACKER_DELEGATE_ADDRESS, [CTEST1_TOKEN_ADDRESS], EXPIRY),
+          },
+        })
+      ).should.be.rejectedWith(/does not match the expected enterprise viewing key/);
+    });
+
+    it('should reject a smuggled non-delegation inner call', async function () {
+      await verifyMultisigEnable(
+        buildStrictPrebuild({ recipient: { address: ZAMA_ACL_ADDRESS, amount: '0', data: smuggledDelegationData } })
+      ).should.be.rejectedWith(/unrecognised method ID/);
+    });
+
+    it('should reject an aclMulticall-shaped op targeted away from the ACL contract', async function () {
+      await verifyMultisigEnable(
+        buildStrictPrebuild({ recipient: { address: WRONG_ACL_ADDRESS, amount: '0', data: delegationData } })
+      ).should.be.rejectedWith(/does not match ACL contract/);
+    });
+
+    it('should reject the callFromParent theft shape (forwarder calling an attacker contract with funds)', async function () {
+      await verifyMultisigEnable(
+        buildStrictPrebuild({ recipient: { address: FORWARDER_ADDRESS, amount: '0', data: forwarderTheftData } })
+      ).should.be.rejectedWith(/callFromParent target .* does not match ACL contract/);
+    });
+
+    it('should reject a decoy txHex whose sendMultiSig args differ from the signed recipient', async function () {
+      const txHex = await buildRawContractCallTxHex(
+        walletContract,
+        sendMultiSigData(ATTACKER_CONTRACT_ADDRESS, '12345', delegationData, expireTime, 1, '0x' + '00'.repeat(65))
+      );
+      await verifyMultisigEnable(
+        buildStrictPrebuild({ recipient: { address: ZAMA_ACL_ADDRESS, amount: '0', data: delegationData }, txHex })
+      ).should.be.rejectedWith(/txHex sendMultiSig target .* does not match the recipient/);
+    });
+
+    it('should reject a txHex that is not a sendMultiSig envelope', async function () {
+      const txHex = await buildRawContractCallTxHex(walletContract, approveTheftCalldata);
+      await verifyMultisigEnable(
+        buildStrictPrebuild({ recipient: { address: ZAMA_ACL_ADDRESS, amount: '0', data: delegationData }, txHex })
+      ).should.be.rejectedWith(/must be a sendMultiSig call/);
+    });
+
+    it('should reject a prebuild with no recipient to bind the signature to', async function () {
+      await verifyMultisigEnable(buildStrictPrebuild({})).should.be.rejectedWith(/exactly one recipient/);
+    });
+
+    it('should revert to the legacy flow when the Flipt flag is explicitly false (kill-switch proof)', async function () {
+      const result = await verifyMultisigEnable(
+        buildStrictPrebuild({
+          recipient: { address: ATTACKER_CONTRACT_ADDRESS, amount: '12345', data: approveTheftCalldata },
+          multisigEnableTokenStrictVerification: false,
+        })
+      );
+      result.should.equal(true);
     });
   });
 });
