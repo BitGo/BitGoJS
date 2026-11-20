@@ -960,11 +960,9 @@ export class Erc7984Token extends Eth {
       return true;
     }
 
-    // Parse and decode the raw transaction
-    const txBuilder = this.getTransactionBuilder();
-    txBuilder.from(txPrebuild.txHex);
-    const tx = await txBuilder.build();
-    const txJson = tx.toJson();
+    // Decode the original signed bytes. A TransactionBuilder round trip reserializes from the fields it
+    // models, so the checks below would inspect a rebuilt copy instead of what is signed.
+    const txJson = this.decodeRawTssTxFields(txPrebuild.txHex);
 
     let toAddress: string;
     let tokenContractAddress: string;

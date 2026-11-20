@@ -207,9 +207,17 @@ export function resolveEffectiveTxParams(
     effectiveTxParams.wrapParams = { tokenName: intent.tokenName, amount: intent.amount };
   }
 
-  // Propagate the persisted top-level tokenName (e.g. `tokenApproval` intents store tokenName
-  // at the intent root with no recipients; pendingApproval/stored-intent signing carries no caller txParams).
-  if (!effectiveTxParams.tokenName && typeof intent?.tokenName === 'string' && intent.tokenName !== '') {
+  // Propagate the persisted top-level tokenName for `tokenApproval` only: those intents store tokenName
+  // at the intent root with no recipients, and pendingApproval/stored-intent signing carries no caller
+  // txParams. Any other type must not inherit it, or a caller's native payment would be verified as a
+  // payment of the stored token.
+  if (
+    !effectiveTxParams.tokenName &&
+    effectiveTxParams.type === 'tokenApproval' &&
+    intent?.intentType === 'tokenApproval' &&
+    typeof intent.tokenName === 'string' &&
+    intent.tokenName !== ''
+  ) {
     effectiveTxParams.tokenName = intent.tokenName;
   }
 

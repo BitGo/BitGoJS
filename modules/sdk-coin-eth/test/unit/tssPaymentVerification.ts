@@ -720,8 +720,8 @@ describe('TSS payment verification', function () {
     it('still rejects approve(wrapper, MAX) relabelled as tokenApproval', async function () {
       const pair = coins.get('hteth:cusdt') as Erc7984Coin;
       const txHex = await buildTx({
-        to: pair.underlyingErc20Address,
-        data: approveData(pair.contractAddress, maxUint256),
+        to: String(pair.underlyingErc20Address),
+        data: approveData(String(pair.contractAddress), maxUint256),
       });
       await expectMismatch(verify(approvalIntent('hteth:cusdt'), txHex), /must be declared as a wrapApprove intent/);
     });
@@ -731,7 +731,7 @@ describe('TSS payment verification', function () {
   // declared recipient, token contract and zero native value. The encrypted amount stays a warning.
   describe('ERC-7984 confidential payment verification', function () {
     const confidentialToken = 'hteth:ctest1';
-    const confidentialContract = (coins.get(confidentialToken) as Erc7984Coin).contractAddress;
+    const confidentialContract = String((coins.get(confidentialToken) as Erc7984Coin).contractAddress);
     const encryptedHandle = '0x' + 'ab'.repeat(32);
     const inputProof = '0x' + 'cd'.repeat(50);
     const confidentialIntent = (address: string) => ({

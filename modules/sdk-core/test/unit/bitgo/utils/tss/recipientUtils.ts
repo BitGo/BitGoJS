@@ -227,6 +227,25 @@ describe('recipientUtils', function () {
         });
         assert.strictEqual(resolveEffectiveTxParams(txRequest, { tokenName: 'hteth:usdc' }).tokenName, 'hteth:usdc');
       });
+
+      it('does not attach a stored tokenName to a caller-declared payment', function () {
+        const txRequest = makeTxRequest({
+          intent: { intentType: 'payment', tokenName: approvalTokenName, recipients: [] } as unknown as PopulatedIntent,
+        });
+        const result = resolveEffectiveTxParams(
+          txRequest,
+          { type: 'transfer', recipients: [{ address: '0xabc', amount: '1' }] },
+          'hteth'
+        );
+        assert.strictEqual(result.tokenName, undefined);
+      });
+
+      it('does not attach a stored tokenApproval tokenName when the caller declared another type', function () {
+        const txRequest = makeTxRequest({
+          intent: { intentType: 'tokenApproval', tokenName: approvalTokenName } as PopulatedIntent,
+        });
+        assert.strictEqual(resolveEffectiveTxParams(txRequest, { type: 'transfer' }).tokenName, undefined);
+      });
     });
 
     describe('tx-level memo propagation', function () {

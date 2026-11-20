@@ -3661,7 +3661,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
    * bypassing `TransactionBuilder.from()` / `.build()` reserialization so calldata bytes cannot be
    * altered or normalized before verification.
    */
-  private decodeRawTssTxFields(txHex: string | undefined): { to: string; value: string; data: string } {
+  protected decodeRawTssTxFields(txHex: string | undefined): { to: string; value: string; data: string } {
     if (!txHex) {
       throw new Error('missing txHex in txPrebuild');
     }
