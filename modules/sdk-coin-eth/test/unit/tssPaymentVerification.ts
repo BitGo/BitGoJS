@@ -388,6 +388,36 @@ describe('TSS payment verification', function () {
         /amount in txPrebuild does not match/
       );
     });
+
+    // The builder drops calldata shorter than a 4-byte selector when it reserializes, so the check
+    // must read the original signed bytes, not a rebuilt copy.
+    it('rejects a contractCall whose signed bytes carry sub-selector calldata the intent did not declare', async function () {
+      const common = AbstractEthLikeNewCoins.getCustomChainCommon(coin.getChainId());
+      const tx = FeeMarketEIP1559Transaction.fromTxData(
+        {
+          nonce: 1,
+          maxPriorityFeePerGas: 10,
+          maxFeePerGas: 100,
+          gasLimit: 100000,
+          to: otherRecipient,
+          value: 0,
+          data: '0x01',
+          chainId: coin.getChainId(),
+        },
+        { common }
+      );
+      const txHex = '0x' + tx.serialize().toString('hex');
+      await expectMismatch(
+        verify({ type: 'contractCall', recipients: [{ address: otherRecipient, amount: '0' }] }, txHex),
+        /calldata does not match/
+      );
+      (
+        await verify(
+          { type: 'contractCall', recipients: [{ address: otherRecipient, amount: '0', data: '0x01' }] },
+          txHex
+        )
+      ).should.be.true();
+    });
   });
 
   describe('other intents', function () {

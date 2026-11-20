@@ -94,6 +94,7 @@ import {
   decodeUnwrapCalldata,
   decodeWrapCalldata,
   ERC1155TransferBuilder,
+  EthTransactionData,
   ERC721TransferBuilder,
   getBufferedByteCode,
   getCommon,
@@ -3645,6 +3646,27 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
   }
 
   /**
+   * Decode raw serialized EVM transaction bytes directly via `EthTransactionData.fromSerialized`,
+   * bypassing `TransactionBuilder.from()` / `.build()` reserialization so calldata bytes cannot be
+   * altered or normalized before verification.
+   */
+  private decodeRawTssTxFields(txHex: string | undefined): { to: string; value: string; data: string } {
+    if (!txHex) {
+      throw new Error('missing txHex in txPrebuild');
+    }
+    const common = AbstractEthLikeNewCoins.getCustomChainCommon(this.getChainId());
+    if (!this.staticsCoin?.features.includes(CoinFeature.EIP1559)) {
+      common.setHardfork(optionalDeps.EthCommon.Hardfork.Petersburg);
+    }
+    const txJson = EthTransactionData.fromSerialized(txHex, common).toJson();
+    return {
+      to: (txJson.to ?? '').toLowerCase(),
+      value: txJson.value ?? '0',
+      data: (txJson.data || '0x').toLowerCase(),
+    };
+  }
+
+  /**
    * Verify a single-recipient payment: explicit calldata must match exactly; otherwise the bytes
    * must be a plain native send or a canonical ERC-20 transfer of the declared token.
    */
@@ -3838,17 +3860,9 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
         []
       );
     }
-    if (!txHex) {
-      throw new Error('missing txHex in txPrebuild');
-    }
 
     const recipient = recipients[0];
-    const txBuilder = this.getTransactionBuilder();
-    txBuilder.from(txHex);
-    const txJson = (await txBuilder.build()).toJson();
-    const to = (txJson.to ?? '').toLowerCase();
-    const value = txJson.value ?? '0';
-    const data = (txJson.data || '0x').toLowerCase();
+    const { to, value, data } = this.decodeRawTssTxFields(txHex);
     const mismatch = (message: string, address = to, amount = value): Promise<never> =>
       throwRecipientMismatch(message, [{ address, amount }]);
 

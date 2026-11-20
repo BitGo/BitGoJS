@@ -1635,22 +1635,44 @@ describe('ETH:', function () {
         });
       });
 
-      it('should reject a mutated-amount wrapper approve relabelled as tokenApproval', async function () {
+      it('should still reject approve(wrapper, amount) relabelled as customTx, with or without a declared call', async function () {
+        // customTx is now verified by the contract-call handler before the wrapper guard runs; either check
+        // may reject, but the relabelled wrapper approve must never sign.
+        const data = defiCalldata('approve(address,uint256)', [wrapper, amount]);
+        const coin = bitgo.coin('hteth') as Hteth;
+        const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: address1 } });
+        const txHex = await buildDefiTxHex(data, underlying);
+        for (const recipients of [undefined, [{ address: underlying, amount: '0', data }]]) {
+          await expectDefiRejection(
+            coin.verifyTransaction({
+              txParams: { type: 'customTx', recipients, wallet } as never,
+              txPrebuild: { txHex, coin: 'hteth', walletId: 'w' } as never,
+              wallet,
+              verification: {},
+              walletType: 'tss',
+            }),
+            recipients ? /must be declared as a wrapApprove intent/ : /requires a declared recipient/
+          );
+        }
+      });
+
+      it('should reject a mutated-amount wrapper approve relabelled as transferToken', async function () {
         await expectDefiRejection(
-          verifyAs('tokenApproval', defiCalldata('approve(address,uint256)', [wrapper, '999999999999'])),
+          verifyAs('transferToken', defiCalldata('approve(address,uint256)', [wrapper, '999999999999'])),
           /must be declared as a wrapApprove intent/
         );
       });
 
       it('should reject a wrapper approve with trailing bytes (an ERC-20 ignores them)', async function () {
         await expectDefiRejection(
-          verifyAs('tokenApproval', defiCalldata('approve(address,uint256)', [wrapper, amount]) + '00'),
+          verifyAs('transferToken', defiCalldata('approve(address,uint256)', [wrapper, amount]) + '00'),
           /must be declared as a wrapApprove intent/
         );
       });
 
       it('should not affect approvals of the underlying to other spenders', async function () {
-        (await verifyAs('tokenApproval', defiCalldata('approve(address,uint256)', [address2, amount]))).should.equal(
+        // tokenApproval and customTx have their own verifiers; an intent type with no verifier still passes untouched.
+        (await verifyAs('transferToken', defiCalldata('approve(address,uint256)', [address2, amount]))).should.equal(
           true
         );
       });
@@ -1667,7 +1689,7 @@ describe('ETH:', function () {
           );
           try {
             await coin.verifyTransaction({
-              txParams: { type: 'tokenApproval', wallet } as any,
+              txParams: { type: 'transferToken', wallet } as never,
               txPrebuild: { txHex, coin: 'hteth', walletId: 'w' } as any,
               wallet,
               verification: {},
@@ -1687,9 +1709,10 @@ describe('ETH:', function () {
         // Every type below skips the wrapApprove check and reaches the guard; none of these txs is an approve of a
         // wrapper, so all must verify exactly as they did before the guard existed.
         const benign: Array<[string, string, string]> = [
-          ['tokenApproval', defiCalldata('transfer(address,uint256)', [address2, amount]), underlying],
-          ['tokenApproval', defiCalldata('approve(address,uint256)', [address2, amount]), underlying],
-          ['tokenApproval', defiCalldata('approve(address,uint256)', [wrapper, amount]), address2],
+          // tokenApproval and customTx are verified by their own handlers and are not part of this list.
+          ['transferToken', defiCalldata('transfer(address,uint256)', [address2, amount]), underlying],
+          ['transferToken', defiCalldata('approve(address,uint256)', [address2, amount]), underlying],
+          ['transferToken', defiCalldata('approve(address,uint256)', [wrapper, amount]), address2],
           ['acceleration', defiCalldata('transfer(address,uint256)', [address2, amount]), address2],
           ['fillNonce', '0x', address2],
           ['enabletoken', defiCalldata('transfer(address,uint256)', [address2, amount]), address2],
@@ -1700,9 +1723,12 @@ describe('ETH:', function () {
       });
 
       it('should not affect transfers to the underlying or approves of the wrapper on other contracts', async function () {
-        (await verifyAs('tokenApproval', defiCalldata('transfer(address,uint256)', [wrapper, amount]))).should.equal(
+        (await verifyAs('transferToken', defiCalldata('transfer(address,uint256)', [wrapper, amount]))).should.equal(
           true
         );
+        (
+          await verifyAs('transferToken', defiCalldata('approve(address,uint256)', [wrapper, amount]), address2)
+        ).should.equal(true);
       });
 
       it('should still verify a declared wrapApprove through the full check', async function () {
