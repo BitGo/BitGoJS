@@ -7747,6 +7747,20 @@ export const botTokens = [
     undefined,
     Networks.test.sol
   ),
+  AccountCtors.tsolToken(
+    '8d374871-4a49-48fa-8a0c-c613d758fe9a',
+    'tsol:amssolwp2',
+    'ams sol wp 2',
+    6,
+    'BQEFtGG3Yd8a7UwKWPo5LYwPNhMGQwoYkQTC4v2Sk6RR',
+    'BQEFtGG3Yd8a7UwKWPo5LYwPNhMGQwoYkQTC4v2Sk6RR',
+    'tsol:amssolwp2' as unknown as UnderlyingAsset,
+    getTokenFeatures('sol'),
+    AccountCtors.ProgramID.Token2022ProgramId,
+    undefined,
+    undefined,
+    Networks.test.sol
+  ),
   AccountCtors.erc20(
     '4161ed06-c331-4e21-8791-eaca5151e869',
     'eth:abtx',
