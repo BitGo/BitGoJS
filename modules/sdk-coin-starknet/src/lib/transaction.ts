@@ -112,16 +112,15 @@ export class Transaction extends BaseTransaction {
       nonce: data.nonce,
       type: TransactionType.Send,
     };
-
     const firstCall = data.calls[0];
-    if (!firstCall) {
-      return result;
-    }
 
-    const transfer = parseTransferCall(firstCall);
-    if (transfer) {
-      result.recipient = transfer.recipient;
-      result.amount = transfer.amount;
+    const transfers = data.calls
+      .map(parseTransferCall)
+      .filter((transfer): transfer is NonNullable<typeof transfer> => transfer !== undefined);
+    if (transfers.length > 0) {
+      result.recipients = transfers;
+      result.recipient = transfers[0].recipient;
+      result.amount = transfers.reduce((total, transfer) => (BigInt(total) + BigInt(transfer.amount)).toString(), '0');
       return result;
     }
 
@@ -144,20 +143,31 @@ export class Transaction extends BaseTransaction {
   explainTransaction(): StarknetTransactionExplanation {
     const result = this.toJson();
     const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee'];
-    const outputs: TransactionRecipient[] = [];
-
-    if (result.recipient && result.amount) {
-      outputs.push({
-        address: result.recipient,
-        amount: result.amount,
-      });
-    }
+    const transfers =
+      result.recipients ??
+      (result.recipient && result.amount
+        ? [
+            {
+              recipient: result.recipient,
+              amount: result.amount,
+              tokenContract: '',
+            },
+          ]
+        : []);
+    const outputs: TransactionRecipient[] = transfers.map((transfer) => ({
+      address: transfer.recipient,
+      amount: transfer.amount,
+    }));
+    const outputAmount = transfers.reduce(
+      (total, transfer) => (BigInt(total) + BigInt(transfer.amount)).toString(),
+      '0'
+    );
 
     return {
       displayOrder,
       id: this.id,
       outputs,
-      outputAmount: result.amount || '0',
+      outputAmount,
       fee: { fee: '0' },
       type: result.type,
       changeOutputs: [],
