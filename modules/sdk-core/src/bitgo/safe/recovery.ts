@@ -10,10 +10,12 @@ import { MAX_BIP32_INDEX } from '@bitgo/statics';
 import type { RootKeyType } from '@bitgo/public-types';
 import {
   buildSafeBip44Path,
+  decodeDerivableEd25519Pub,
   decodeEd25519StrKeyPublicKey,
   deriveSafeChildEd25519Hardened,
   deriveSafeChildTriplet,
   Ed25519ChainCodeEntryCodec,
+  encodeEd25519ChainCode,
   ExternalBackupEntryCodec,
   getSafeBip44CoinType,
   parseSafeBip44Path,
@@ -109,7 +111,10 @@ export type Ed25519MultisigChildKeys = {
   bitgo: { readonly pub: string };
 };
 
-/** As {@link Ed25519MultisigChildKeys}, for a safe whose backup root may be external. */
+/**
+ * As {@link Ed25519MultisigChildKeys}, for a safe whose backup root may be external. The backup
+ * child is an extended key when `externalBackupRootPrv` was supplied, pub-only otherwise.
+ */
 export type Ed25519ExternalBackupChildKeys = {
   user: SafeEd25519SeedKey;
   backup: SafeEd25519ExtendedKey | SafeEd25519ExternalKey;
@@ -354,10 +359,11 @@ export async function decryptSafeKeycard(params: {
  * Supports all four slots: `secp256k1Multisig`, `ed25519Multisig`, `ecdsaMpc`, and `eddsaMpc`.
  *
  * With an external backup root the backup child is derived from the public key alone (relative soft
- * derivation, so a non-master root works). For `secp256k1Multisig`, `externalBackupRootPrv` — the
- * caller's own backup xprv — adds the backup child private key (needed for signed recovery) and is
- * checked against the external root pub. For `ed25519Multisig` the holder signs through an
- * `ExternalEd25519Signer` at recovery instead (see `buildSafeRecoverKeyParams`).
+ * derivation, so a non-master root works). For the two multisig slots `externalBackupRootPrv` — the
+ * caller's own backup root private key (xprv for `secp256k1Multisig`, root seed StrKey `S…` for
+ * `ed25519Multisig`) — adds the backup child private key for signed recovery, checked against the
+ * external root pub; an `ed25519Multisig` holder without it signs via `ExternalEd25519Signer` (see
+ * `buildSafeRecoverKeyParams`).
  */
 export async function deriveSafeWalletKeys(params: {
   coin: string;
@@ -387,8 +393,12 @@ export async function deriveSafeWalletKeys(params: {
   const path = buildSafeBip44Path(getSafeBip44CoinType(params.coin), params.slot, account);
   const { coinType, slotOrdinal } = parseSafeBip44Path(path);
 
-  if (params.externalBackupRootPrv !== undefined && params.slot !== 'secp256k1Multisig') {
-    throw new Error(`deriveSafeWalletKeys: externalBackupRootPrv only applies to the secp256k1Multisig slot`);
+  if (
+    params.externalBackupRootPrv !== undefined &&
+    params.slot !== 'secp256k1Multisig' &&
+    params.slot !== 'ed25519Multisig'
+  ) {
+    throw new Error(`deriveSafeWalletKeys: externalBackupRootPrv only applies to the multisig slots`);
   }
 
   if (params.slot === 'secp256k1Multisig') {
@@ -458,6 +468,10 @@ export async function deriveSafeWalletKeys(params: {
     const root = roots.ed25519Multisig;
     const cosignerPath = toSoftTwinPath(path);
 
+    if (!('external' in root.backup) && params.externalBackupRootPrv !== undefined) {
+      throw new Error('deriveSafeWalletKeys: externalBackupRootPrv was given but the safe backup root is not external');
+    }
+
     const user = deriveSafeChildEd25519Hardened(root.user, path);
     const bitgo = await softDeriveChildPubEd25519AtPath(root.bitgo, cosignerPath);
     const userKey: SafeEd25519SeedKey = {
@@ -466,15 +480,41 @@ export async function deriveSafeWalletKeys(params: {
       pub: decodeEd25519StrKeyPublicKey(user.pub).toString('hex'),
     };
 
-    // External backup root: only its derivable composite pub is known, so derive the child pub alone.
+    // External root: derive the child pub alone, or from the caller's root seed (chain code read
+    // off the composite pub), checking the private derivation against the pub-only one.
     if ('external' in root.backup) {
       const backupPub = await softDeriveChildPubEd25519AtPath(root.backup.pub, cosignerPath);
+      if (params.externalBackupRootPrv === undefined) {
+        return {
+          slot: 'ed25519Multisig',
+          path,
+          keys: {
+            user: userKey,
+            backup: { kind: 'external', pub: backupPub.toString('hex') },
+            bitgo: { pub: bitgo.toString('hex') },
+          },
+        };
+      }
+      const { chainCode } = decodeDerivableEd25519Pub(root.backup.pub);
+      const backup = await softDeriveChildPrvEd25519AtPath({
+        seedStrKey: params.externalBackupRootPrv,
+        chainCode: encodeEd25519ChainCode(chainCode),
+        path: cosignerPath,
+      });
+      if (backup.pub.toString('hex') !== backupPub.toString('hex')) {
+        throw new Error('deriveSafeWalletKeys: externalBackupRootPrv does not match the external backup root pub');
+      }
       return {
         slot: 'ed25519Multisig',
         path,
         keys: {
           user: userKey,
-          backup: { kind: 'external', pub: backupPub.toString('hex') },
+          backup: {
+            kind: 'extended',
+            kL: backup.kL.toString('hex'),
+            kR: backup.kR.toString('hex'),
+            pub: backup.pub.toString('hex'),
+          },
           bitgo: { pub: bitgo.toString('hex') },
         },
       };
@@ -522,8 +562,9 @@ export type SafeRecoverKeyParamsRequest = {
       slot: 'ed25519Multisig';
       keys: Ed25519ExternalBackupChildKeys;
       /**
-       * Required for signed recovery when the backup root is external: the holder's own signer for
-       * the soft-derived backup child. Its `publicKey` must equal `keys.backup.pub`.
+       * Required for signed recovery of a pub-only backup child: the holder's signer for the
+       * soft-derived child, whose `publicKey` must equal `keys.backup.pub`. Rejected when the child
+       * is extended, i.e. `externalBackupRootPrv` was supplied.
        */
       externalBackupSigner?: ExternalEd25519Signer;
     }
