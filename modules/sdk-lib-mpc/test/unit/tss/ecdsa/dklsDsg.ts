@@ -189,9 +189,12 @@ describe('DKLS Dsg 2x3', function () {
 
   it(`should pass when doing key refresh on compressed key cards then signing`, async function () {
     // Fixtures generated through web-demo keycard generation example for DKLS.
-    const userCompressedPrv = Buffer.from(sjcl.decrypt('t3stSicretly!', mpcv2KeyCardData.userEncryptedPrv), 'base64');
+    const userCompressedPrv = Buffer.from(
+      sjcl.decrypt('XKCUOvGT+N6Ae2g9aVEllpYN', mpcv2KeyCardData.userEncryptedPrv),
+      'base64'
+    );
     const bakcupCompressedPrv = Buffer.from(
-      sjcl.decrypt('t3stSicretly!', mpcv2KeyCardData.backupEncryptedPrv),
+      sjcl.decrypt('XKCUOvGT+N6Ae2g9aVEllpYN', mpcv2KeyCardData.backupEncryptedPrv),
       'base64'
     );
     const userPrvJSON: ReducedKeyShare = getDecodedReducedKeyShare(userCompressedPrv);
