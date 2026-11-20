@@ -1129,6 +1129,47 @@ describe('Constructor', function () {
       changePassScope.isDone().should.be.true();
     });
 
+    it('checks batching without serializing the complete keychain payload', async function () {
+      const largeKeychains = Object.fromEntries(
+        Array.from({ length: 200 }, (_, index) => [`keychain-${index}`, 'x'.repeat(50)])
+      );
+      const updatePasswordParams = {
+        keychains: largeKeychains,
+        v2_keychains: { v2k1: 'v2enc' },
+        version: 25,
+        oldPassword: 'hashed-pw',
+        password: 'hashed-pw',
+      };
+      const expectedPayloadSizeKB = Math.ceil(JSON.stringify(updatePasswordParams).length / 1024);
+      v1UpdatePasswordStub.resolves({ keychains: largeKeychains, version: 25 });
+
+      nock(ROOT)
+        .get('/api/v2/user/checkBatchingPasswordFlow')
+        .query({ payloadSize: expectedPayloadSizeKB.toString() })
+        .reply(200, { isBatchingFlowEnabled: true, maxBatchSizeKB: 1 });
+      const batchPutScope = nock(ROOT).persist().put('/api/v2/user/keychains').reply(200, {});
+      const changePassScope = nock(ROOT)
+        .post('/api/v1/user/changepassword', (body: any) => !body.keychains && !body.v2_keychains)
+        .reply(200, {});
+
+      const originalStringify = JSON.stringify;
+      const stringifyStub = sandbox.stub(JSON, 'stringify').callsFake((value: any) => {
+        if (value?.keychains && Object.keys(value.keychains).length > 100) {
+          throw new Error('complete keychain payload was serialized');
+        }
+        return originalStringify(value);
+      });
+
+      try {
+        await bitgo.changePassword({ oldPassword: 'oldpw', newPassword: 'newpw' });
+      } finally {
+        stringifyStub.restore();
+      }
+
+      batchPutScope.isDone().should.be.true();
+      changePassScope.isDone().should.be.true();
+    });
+
     it('stages an empty batch and changes password when no keychains are re-encryptable', async function () {
       v1UpdatePasswordStub.resolves({ keychains: {}, version: 25 });
       v2UpdatePasswordStub.resolves({});
