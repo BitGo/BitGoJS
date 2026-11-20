@@ -1,3 +1,4 @@
+import utils from '../../src/lib/utils';
 import * as FlrpLib from '../../src/lib';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { Flrp, TflrP } from '../../src/';
@@ -343,6 +344,28 @@ describe('Flrp test cases', function () {
       isVerified.should.equal(true);
     });
 
+    it('should verify an export when txParams.type is the lowercase "export" intent alias', async () => {
+      // WP issues lowercase intentTypes; TransactionType['export'] is undefined, so the
+      // alias must normalize to 'Export' or the type gate rejects every such export.
+      const txPrebuild = {
+        txHex: EXPORT_IN_C.signedHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: '',
+            amount: EXPORT_IN_C.amount,
+          },
+        ],
+        type: 'export',
+        locktime: 0,
+      };
+
+      const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      isVerified.should.equal(true);
+    });
+
     it('should verify an export from P-chain transaction', async () => {
       const txPrebuild = {
         txHex: EXPORT_IN_P.fullSigntxHex,
@@ -389,7 +412,7 @@ describe('Flrp test cases', function () {
         txInfo: {},
       };
       const txParams = {
-        recipients: [],
+        recipients: [{ address: IMPORT_IN_P.pAddresses.join('~'), amount: IMPORT_IN_P.amount }],
         type: 'Import',
         locktime: 0,
       };
@@ -486,6 +509,366 @@ describe('Flrp test cases', function () {
         .verifyTransaction({ txParams, txPrebuild })
         .should.be.rejectedWith('Expected 1 recipient in import transaction');
     });
+
+    it('should fail to verify import to C-chain with an attacker destination (CECHO-2717)', async () => {
+      const txPrebuild = {
+        txHex: IMPORT_IN_C.fullSigntxHex,
+        txInfo: {},
+      };
+      const attackerAddress = '0x0000000000000000000000000000000000000001';
+      const txParams = {
+        recipients: [
+          {
+            address: attackerAddress,
+            amount: '1',
+          },
+        ],
+        type: 'ImportToC',
+        locktime: 0,
+      };
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild })
+        .should.be.rejectedWith(/Import destination .* does not match the expected recipient/);
+    });
+
+    it('should verify import to C-chain with a lowercase recipient address (case-insensitive compare)', async () => {
+      // checksummed vs lowercase forms must compare equal
+      const txPrebuild = {
+        txHex: IMPORT_IN_C.fullSigntxHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: IMPORT_IN_C.to.toLowerCase(),
+            amount: '1',
+          },
+        ],
+        type: 'ImportToC',
+        locktime: 0,
+      };
+
+      const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      isVerified.should.equal(true);
+    });
+
+    it('should fail to verify import to P-chain with an attacker owner set (CECHO-2717)', async () => {
+      const txPrebuild = {
+        txHex: IMPORT_IN_P.signedHex,
+        txInfo: {},
+      };
+      const attackerAddress = 'P-costwo1xv5mulgpe5lt4tnx2ntnylwe79azu9vpja6lut';
+      const txParams = {
+        recipients: [{ address: attackerAddress, amount: IMPORT_IN_P.amount }],
+        type: 'Import',
+        locktime: 0,
+      };
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild })
+        .should.be.rejectedWith(/Import destination .* does not match the expected wallet destination/);
+    });
+
+    it('should verify import to P-chain against the wallet rootAddress when no recipients are given', async () => {
+      const txPrebuild = {
+        txHex: IMPORT_IN_P.signedHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [],
+        type: 'Import',
+        locktime: 0,
+      };
+      const wallet = {
+        coinSpecific: () => ({ rootAddress: IMPORT_IN_P.pAddresses.join('~') }),
+        receiveAddress: () => undefined,
+      };
+
+      const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet });
+      isVerified.should.equal(true);
+    });
+
+    it('should fail to verify import to P-chain when the wallet rootAddress does not match the output', async () => {
+      const txPrebuild = {
+        txHex: IMPORT_IN_P.signedHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [],
+        type: 'Import',
+        locktime: 0,
+      };
+      const wallet = {
+        coinSpecific: () => ({ rootAddress: ON_CHAIN_TEST_WALLET.user.pChainAddress }),
+        receiveAddress: () => undefined,
+      };
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, wallet })
+        .should.be.rejectedWith(/Import destination .* does not match the expected wallet destination/);
+    });
+
+    it('should fail closed when import to P-chain has no destination intent at all', async () => {
+      const txPrebuild = {
+        txHex: IMPORT_IN_P.signedHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [],
+        type: 'Import',
+        locktime: 0,
+      };
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild })
+        .should.be.rejectedWith(
+          'Unable to verify import destination: no expected address provided in txParams.recipients or wallet rootAddress'
+        );
+    });
+
+    it('should enforce the type gate for ImportToC instead of skipping it', async () => {
+      // Previously 'ImportToC' was exempt from the type-match gate, so a prebuild of
+      // any other type (here an Export) slipped past the gate when the caller asked
+      // for an import. It must now throw.
+      const txPrebuild = {
+        txHex: EXPORT_IN_C.signedHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: '',
+            amount: EXPORT_IN_C.amount,
+          },
+        ],
+        type: 'ImportToC',
+        locktime: 0,
+      };
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild })
+        .should.be.rejectedWith('Tx type does not match with expected txParams type');
+    });
+
+    it('should accept the lowercase importtoc intent alias for import transactions', async () => {
+      const txPrebuild = {
+        txHex: IMPORT_IN_C.fullSigntxHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: IMPORT_IN_C.to,
+            amount: '1',
+          },
+        ],
+        type: 'importtoc',
+        locktime: 0,
+      };
+
+      const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      isVerified.should.equal(true);
+    });
+
+    it('should throw a clean error when the import-to-C recipient address is empty', async () => {
+      // Runtime guard: a missing/empty expected address must fail with a clear
+      // validation error, not a TypeError from calling toLowerCase on undefined.
+      const txPrebuild = {
+        txHex: IMPORT_IN_C.fullSigntxHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: '',
+            amount: '1',
+          },
+        ],
+        type: 'ImportToC',
+        locktime: 0,
+      };
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild })
+        .should.be.rejectedWith('Invalid expected C-chain import recipient: ');
+    });
+
+    it('should throw a clean error when the import-to-C recipient address is undefined', async () => {
+      const txPrebuild = {
+        txHex: IMPORT_IN_C.fullSigntxHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [{ amount: '1' }] as unknown as { address: string; amount: string }[],
+        type: 'ImportToC',
+        locktime: 0,
+      };
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild })
+        .should.be.rejectedWith('Invalid expected C-chain import recipient: undefined');
+    });
+
+    it('should reject import to P-chain when recipients conflict with the wallet rootAddress', async () => {
+      // Both intent sources present but disagreeing must fail closed rather than
+      // silently preferring one.
+      const txPrebuild = {
+        txHex: IMPORT_IN_P.signedHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [{ address: ON_CHAIN_TEST_WALLET.user.pChainAddress, amount: IMPORT_IN_P.amount }],
+        type: 'Import',
+        locktime: 0,
+      };
+      const wallet = {
+        coinSpecific: () => ({ rootAddress: IMPORT_IN_P.pAddresses.join('~') }),
+        receiveAddress: () => undefined,
+      };
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, wallet })
+        .should.be.rejectedWith(/Import destination intent conflict/);
+    });
+
+    it('should verify import to P-chain when recipients and wallet rootAddress agree', async () => {
+      const txPrebuild = {
+        txHex: IMPORT_IN_P.signedHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [{ address: IMPORT_IN_P.pAddresses.join('~'), amount: IMPORT_IN_P.amount }],
+        type: 'Import',
+        locktime: 0,
+      };
+      const wallet = {
+        coinSpecific: () => ({ rootAddress: IMPORT_IN_P.pAddresses.slice().reverse().join('~') }),
+        receiveAddress: () => undefined,
+      };
+
+      const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet });
+      isVerified.should.equal(true);
+    });
+
+    it('should verify an export when the recipient carries the matching destination', async () => {
+      const txPrebuild = {
+        txHex: EXPORT_IN_C.signedHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address:
+              'P-costwo1zt9n96hey4fsvnde35n3k4kt5pu7c784dzewzd~P-costwo1cwrdtrgf4xh80ncu7palrjw7gn4mpj0n4dxghh~P-costwo15msvr27szvhhpmah0c38gcml7vm29xjh7tcek8',
+            amount: EXPORT_IN_C.amount,
+          },
+        ],
+        type: 'Export',
+        locktime: 0,
+      };
+
+      const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      isVerified.should.equal(true);
+    });
+
+    it('should reject an export whose destination differs from the supplied recipient', async () => {
+      const txPrebuild = {
+        txHex: EXPORT_IN_C.signedHex,
+        txInfo: {},
+      };
+      const attackerAddress = 'P-costwo1xv5mulgpe5lt4tnx2ntnylwe79azu9vpja6lut';
+      const txParams = {
+        recipients: [
+          {
+            address: attackerAddress,
+            amount: EXPORT_IN_C.amount,
+          },
+        ],
+        type: 'Export',
+        locktime: 0,
+      };
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild })
+        .should.be.rejectedWith(/Export destination .* does not match the expected recipient/);
+    });
+
+    it('should verify a P-to-C export whose recipient carries the C-chain destination (not comparable to the P-form output)', async () => {
+      // P→C exports pay the wallet's own addresses; a caller-supplied C-chain
+      // destination recipient must not be bound against the P-form output owner set.
+      const txPrebuild = {
+        txHex: EXPORT_IN_P.fullSigntxHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: EXPORT_IN_C.cHexAddress,
+            amount: EXPORT_IN_P.amount,
+          },
+        ],
+        type: 'Export',
+        locktime: 0,
+      };
+
+      const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      isVerified.should.equal(true);
+    });
+
+    it('should verify import to P-chain via wallet receiveAddress when rootAddress is absent', async () => {
+      const txPrebuild = {
+        txHex: IMPORT_IN_P.signedHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [],
+        type: 'Import',
+        locktime: 0,
+      };
+      const wallet = {
+        coinSpecific: () => ({}),
+        receiveAddress: () => IMPORT_IN_P.pAddresses.join('~'),
+      };
+
+      const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet });
+      isVerified.should.equal(true);
+    });
+
+    it('should reject an import whose burned fee exceeds maxImportFee', () => {
+      // inputs 20M, output 5M — 15M burned exceeds the network maxImportFee of 10M.
+      // Real explanations map outputs to { address, amount }, inputs carry value.
+      const maliciousExplanation = {
+        inputs: [
+          { address: '', value: '10000000' },
+          { address: '', value: '10000000' },
+        ],
+        outputs: [{ address: IMPORT_IN_P.pAddresses.join('~'), amount: '5000000' }],
+      };
+
+      assert.throws(
+        () => basecoin.validateImportFee(maliciousExplanation),
+        /Import burns .* exceeding the network maxImportFee/
+      );
+    });
+
+    it('should accept an import whose burned fee is within maxImportFee', () => {
+      const explanation = {
+        inputs: [{ address: '', value: '50000000' }],
+        outputs: [{ address: IMPORT_IN_P.pAddresses.join('~'), amount: '48739000' }],
+      };
+
+      assert.doesNotThrow(() => basecoin.validateImportFee(explanation));
+    });
+
+    it('should fail closed when import output entries lack the amount field', () => {
+      const malformedExplanation = {
+        inputs: [{ address: '', value: '50000000' }],
+        outputs: [{ address: IMPORT_IN_P.pAddresses.join('~') }],
+      };
+
+      assert.throws(() => basecoin.validateImportFee(malformedExplanation), /not finite numbers/);
+    });
   });
 
   describe('Address Validation', () => {
@@ -527,8 +910,7 @@ describe('Flrp test cases', function () {
     });
 
     it('should fail to validate array with invalid address', function () {
-      const addresses = [...EXPORT_IN_C.pAddresses, 'invalid'];
-      basecoin.isValidAddress(addresses).should.be.false();
+      basecoin.isValidAddress([...EXPORT_IN_C.pAddresses, 'invalid']).should.be.false();
     });
   });
 
@@ -647,7 +1029,7 @@ describe('Flrp test cases', function () {
         outputAmount: '50000000000000',
         type: TransactionType.AddPermissionlessDelegator,
         inputs: [],
-        outputs: [],
+        outputs: [{ address: validStakingOptions.nodeID, value: '0' }],
         changeOutputs: [],
         changeAmount: '0',
         fee: { fee: '1000' },
@@ -702,6 +1084,114 @@ describe('Flrp test cases', function () {
         );
       });
 
+      it('should fail closed when the delegation transaction exposes no stake outputs', () => {
+        const delegationTx = {
+          getFlareTransaction: () => ({
+            getTx: () => ({
+              stake: [],
+              getDelegatorRewardsOwner: () => ({ addrs: [] }),
+            }),
+          }),
+        };
+        const params = { txParams: { stakingOptions: validStakingOptions } };
+
+        assert.throws(() => basecoin.validateDelegationOwners(delegationTx, params), /exposes no stake outputs/);
+      });
+
+      it('should reject a delegation whose rewards owner differs from stakingOptions.rewardAddress', () => {
+        const attackerOwnerBytes = Buffer.alloc(20, 2);
+        const delegationTx = {
+          getFlareTransaction: () => ({
+            getTx: () => ({
+              stake: [{ output: { getOwners: () => [Buffer.alloc(20, 1)] } }],
+              getDelegatorRewardsOwner: () => ({ addrs: [{ toBytes: () => attackerOwnerBytes }] }),
+            }),
+          }),
+        };
+        const params = { txParams: { stakingOptions: validStakingOptions } };
+
+        assert.throws(
+          () => basecoin.validateDelegationOwners(delegationTx, params),
+          /does not match the requested rewardAddress/
+        );
+      });
+
+      it('should reject a delegation whose stake owner is outside the wallet anchor', () => {
+        const delegationTx = {
+          getFlareTransaction: () => ({
+            getTx: () => ({
+              stake: [{ output: { getOwners: () => [Buffer.alloc(20, 1)] } }],
+              getDelegatorRewardsOwner: () => ({ addrs: [{ toBytes: () => Buffer.alloc(20, 3) }] }),
+            }),
+          }),
+        };
+        const params = {
+          txParams: { stakingOptions: validStakingOptions },
+          wallet: {
+            coinSpecific: () => ({ rootAddress: ON_CHAIN_TEST_WALLET.user.pChainAddress }),
+            receiveAddress: () => undefined,
+          },
+        };
+
+        assert.throws(
+          () => basecoin.validateDelegationOwners(delegationTx, params),
+          /is not one of the wallet's own addresses/
+        );
+      });
+
+      it('should accept a delegation whose stake owners are a signing-key subset of the wallet owner set', () => {
+        // Stake outputs are built from getSigningAddresses() — two of the wallet's three
+        // keys (user+bitgo, or backup+bitgo in recovery) — so the stake owners are a
+        // subset of the wallet's full owner set, not equal to it.
+        const walletOwners = [
+          ON_CHAIN_TEST_WALLET.user.pChainAddress,
+          ON_CHAIN_TEST_WALLET.bitgo.pChainAddress,
+          ON_CHAIN_TEST_WALLET.backup.pChainAddress,
+        ].join('~');
+        const signingOwnerBytes = [
+          utils.parseAddress(ON_CHAIN_TEST_WALLET.user.pChainAddress),
+          utils.parseAddress(ON_CHAIN_TEST_WALLET.bitgo.pChainAddress),
+        ];
+        const rewardBytes = utils.parseAddress(validStakingOptions.rewardAddress);
+        const delegationTx = {
+          getFlareTransaction: () => ({
+            getTx: () => ({
+              stake: [{ output: { getOwners: () => signingOwnerBytes } }],
+              getDelegatorRewardsOwner: () => ({ addrs: [{ toBytes: () => rewardBytes }] }),
+            }),
+          }),
+        };
+        const params = {
+          txParams: { stakingOptions: validStakingOptions },
+          wallet: {
+            coinSpecific: () => ({ rootAddress: walletOwners }),
+            receiveAddress: () => undefined,
+          },
+        };
+
+        assert.doesNotThrow(() => basecoin.validateDelegationOwners(delegationTx, params));
+      });
+
+      it('should accept a delegation whose rewardAddress is supplied in hex form', () => {
+        // The builder accepts 0x-prefixed reward addresses; the comparison is by decoded
+        // bytes so hex, raw-hex, and P-/C- bech32 forms of the same address all match.
+        const rewardBytes = utils.parseAddress(validStakingOptions.rewardAddress);
+        const hexRewardAddress = '0x' + rewardBytes.toString('hex');
+        const delegationTx = {
+          getFlareTransaction: () => ({
+            getTx: () => ({
+              stake: [{ output: { getOwners: () => [rewardBytes] } }],
+              getDelegatorRewardsOwner: () => ({ addrs: [{ toBytes: () => rewardBytes }] }),
+            }),
+          }),
+        };
+        const params = {
+          txParams: { stakingOptions: { ...validStakingOptions, rewardAddress: hexRewardAddress } },
+        };
+
+        assert.doesNotThrow(() => basecoin.validateDelegationOwners(delegationTx, params));
+      });
+
       it('should throw when rewardAddress is missing', () => {
         const txParams = {
           stakingOptions: {
@@ -724,6 +1214,36 @@ describe('Flrp test cases', function () {
         assert.throws(
           () => basecoin.validateDelegationTx(txParams, mismatchedExplainedTx),
           /Delegation amount mismatch/
+        );
+      });
+
+      it('should pass when the transaction validator nodeId matches the requested nodeID', () => {
+        const txParams = { stakingOptions: validStakingOptions };
+        const explainedTx = {
+          ...validExplainedTx,
+          outputs: [{ address: validStakingOptions.nodeID, value: '0' }],
+        };
+        assert.doesNotThrow(() => basecoin.validateDelegationTx(txParams, explainedTx));
+      });
+
+      it('should throw when the transaction delegates to a different node than requested', () => {
+        const txParams = { stakingOptions: validStakingOptions };
+        const explainedTx = {
+          ...validExplainedTx,
+          outputs: [{ address: 'NodeID-AnotherNode1234567890abcdefghijklmnopqr', value: '0' }],
+        };
+        assert.throws(() => basecoin.validateDelegationTx(txParams, explainedTx), /Delegation nodeID mismatch/);
+      });
+
+      it('should fail closed when the delegation transaction exposes no nodeId', () => {
+        const txParams = { stakingOptions: validStakingOptions };
+        const explainedTx = {
+          ...validExplainedTx,
+          outputs: [],
+        };
+        assert.throws(
+          () => basecoin.validateDelegationTx(txParams, explainedTx),
+          /does not expose the validator nodeId/
         );
       });
     });
@@ -750,21 +1270,28 @@ describe('Flrp test cases', function () {
       return tx.toBroadcastFormat();
     }
 
-    // Helper: build unsigned MPC ImportInP tx and return its hex
-    async function buildUnsignedImportInP(): Promise<string> {
+    // Helper: build unsigned MPC ImportInP tx and return its hex.
+    // outputLocktime/outputThreshold shape the destination output; utxoThreshold is the
+    // threshold of the consumed UTXO (which determines the imported input's sig indices).
+    async function buildUnsignedImportInP(opts?: {
+      outputLocktime?: number;
+      outputThreshold?: number;
+      utxoThreshold?: number;
+    }): Promise<string> {
+      const { outputLocktime = 0, outputThreshold = 1, utxoThreshold = 1 } = opts ?? {};
       const mpcUtxo = {
         outputID: 7,
         amount: '50000000',
         txid: 'aLwVQequmbhhjfhL6SvfM6MGWAB8wHwQfJ67eowEbAEUpkueN',
-        threshold: 1,
+        threshold: utxoThreshold,
         addresses: [ON_CHAIN_TEST_WALLET.user.pChainAddress],
         outputidx: '0',
         locktime: '0',
       };
       const txBuilder = factory
         .getImportInPBuilder()
-        .threshold(1)
-        .locktime(0)
+        .threshold(outputThreshold)
+        .locktime(outputLocktime)
         .fromPubKey([ON_CHAIN_TEST_WALLET.user.corethAddress])
         .to([ON_CHAIN_TEST_WALLET.user.pChainAddress])
         .externalChainId(IMPORT_IN_P.sourceChainId)
@@ -962,7 +1489,7 @@ describe('Flrp test cases', function () {
         const txHex = await buildUnsignedImportInP();
         const txPrebuild = { txHex, txInfo: {} };
         const txParams = {
-          recipients: [],
+          recipients: [{ address: ON_CHAIN_TEST_WALLET.user.pChainAddress, amount: '1' }],
           type: 'Import',
           locktime: 0,
         };
@@ -975,7 +1502,7 @@ describe('Flrp test cases', function () {
         const txHex = await buildUnsignedImportInP();
         const txPrebuild = { txHex, txInfo: {} };
         const txParams = {
-          recipients: [],
+          recipients: [{ address: ON_CHAIN_TEST_WALLET.user.pChainAddress, amount: '1' }],
           type: 'import',
           locktime: 0,
         };
@@ -1003,6 +1530,144 @@ describe('Flrp test cases', function () {
         const txParams = {
           recipients: [{ address: '0x96993BAEb6AaE2e06BF95F144e2775D4f8efbD35', amount: '1' }],
           type: 'ImportToC',
+          locktime: 0,
+        };
+
+        const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+        isVerified.should.equal(true);
+      });
+
+      it('should enforce the import-to-C destination check even without txParams.type (TSS intent flow pin)', async () => {
+        // The MPC signing flow can reach verifyTransaction with no txParams.type; the
+        // destination check must not depend on it. Correct destination passes:
+        const txHex = await buildUnsignedImportInC();
+        const txPrebuild = { txHex, txInfo: {} };
+        const okParams = {
+          recipients: [{ address: '0x96993BAEb6AaE2e06BF95F144e2775D4f8efbD35', amount: '1' }],
+          locktime: 0,
+        };
+
+        const isVerified = await basecoin.verifyTransaction({ txParams: okParams, txPrebuild });
+        isVerified.should.equal(true);
+
+        // Attacker destination without a type still rejects:
+        const attackerParams = {
+          recipients: [{ address: '0x0000000000000000000000000000000000000001', amount: '1' }],
+          locktime: 0,
+        };
+        await basecoin
+          .verifyTransaction({ txParams: attackerParams, txPrebuild })
+          .should.be.rejectedWith(/Import destination .* does not match the expected recipient/);
+      });
+
+      it('should reject an import-to-P output with a future locktime', async () => {
+        const futureLocktime = Math.floor(Date.now() / 1000) + 3600;
+        const txHex = await buildUnsignedImportInP({ outputLocktime: futureLocktime });
+        const txPrebuild = { txHex, txInfo: {} };
+        const txParams = {
+          recipients: [{ address: ON_CHAIN_TEST_WALLET.user.pChainAddress, amount: '1' }],
+          type: 'Import',
+          locktime: 0,
+        };
+
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild })
+          .should.be.rejectedWith(/Import output locktime .* must be 0/);
+      });
+
+      it('should accept an import-to-P that consumes UTXOs whose thresholds differ from the output threshold', () => {
+        // Inputs may carry any threshold the network accepts — the consumed atomic UTXO's
+        // threshold is set by whoever created it (the earlier export), so importing a
+        // 1-of-N UTXO into a 2-of-3 output must not throw (regression pin).
+        const mixedThresholdTx = {
+          getFlareTransaction: () => ({
+            getTx: () => ({
+              baseTx: {
+                outputs: [
+                  {
+                    output: {
+                      getLocktime: () => 0n,
+                      getThreshold: () => 2,
+                      getOwners: () => [Buffer.alloc(20, 1), Buffer.alloc(20, 2), Buffer.alloc(20, 3)],
+                    },
+                  },
+                ],
+              },
+              ins: [{ input: { sigIndicies: () => [0] } }, { input: { sigIndicies: () => [0, 1] } }],
+            }),
+          }),
+        };
+
+        assert.doesNotThrow(() => basecoin.validateImportOutputPolicy(mixedThresholdTx));
+      });
+
+      it('should reject an import-to-P output whose threshold is structurally invalid', () => {
+        // threshold 0 and threshold > owner count are both invalid output policies
+        const zeroThresholdTx = {
+          getFlareTransaction: () => ({
+            getTx: () => ({
+              baseTx: {
+                outputs: [
+                  { output: { getLocktime: () => 0n, getThreshold: () => 0, getOwners: () => [Buffer.alloc(20, 1)] } },
+                ],
+              },
+              ins: [{ input: { sigIndicies: () => [0] } }],
+            }),
+          }),
+        };
+        assert.throws(() => basecoin.validateImportOutputPolicy(zeroThresholdTx), /threshold 0 is invalid/);
+
+        const overThresholdTx = {
+          getFlareTransaction: () => ({
+            getTx: () => ({
+              baseTx: {
+                outputs: [
+                  {
+                    output: {
+                      getLocktime: () => 0n,
+                      getThreshold: () => 3,
+                      getOwners: () => [Buffer.alloc(20, 1), Buffer.alloc(20, 2)],
+                    },
+                  },
+                ],
+              },
+              ins: [{ input: { sigIndicies: () => [0] } }],
+            }),
+          }),
+        };
+        assert.throws(() => basecoin.validateImportOutputPolicy(overThresholdTx), /threshold 3 is invalid/);
+      });
+
+      it('should verify an import-to-P output with a valid 2-of-2 owner set', async () => {
+        const mpcUtxo = {
+          outputID: 7,
+          amount: '50000000',
+          txid: 'aLwVQequmbhhjfhL6SvfM6MGWAB8wHwQfJ67eowEbAEUpkueN',
+          threshold: 2,
+          addresses: [ON_CHAIN_TEST_WALLET.user.pChainAddress, ON_CHAIN_TEST_WALLET.bitgo.pChainAddress],
+          outputidx: '0',
+          locktime: '0',
+        };
+        const txBuilder = factory
+          .getImportInPBuilder()
+          .threshold(2)
+          .locktime(0)
+          .fromPubKey([ON_CHAIN_TEST_WALLET.user.corethAddress, ON_CHAIN_TEST_WALLET.bitgo.corethAddress])
+          .to([ON_CHAIN_TEST_WALLET.user.pChainAddress, ON_CHAIN_TEST_WALLET.bitgo.pChainAddress])
+          .externalChainId(IMPORT_IN_P.sourceChainId)
+          .decodedUtxos([mpcUtxo])
+          .context(IMPORT_IN_P.context as FlrpContext)
+          .feeState(IMPORT_IN_P.feeState as any);
+        const txHex = (await (await txBuilder.build()).toBroadcastFormat()) as unknown as string;
+        const txPrebuild = { txHex, txInfo: {} };
+        const txParams = {
+          recipients: [
+            {
+              address: `${ON_CHAIN_TEST_WALLET.user.pChainAddress}~${ON_CHAIN_TEST_WALLET.bitgo.pChainAddress}`,
+              amount: '1',
+            },
+          ],
+          type: 'Import',
           locktime: 0,
         };
 
