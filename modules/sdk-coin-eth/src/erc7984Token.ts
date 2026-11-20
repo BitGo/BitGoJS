@@ -22,7 +22,10 @@ import {
   decodeFlushERC7984ForwarderTokenCalldata,
   decodeSendMultiSigFlushERC7984Data,
   sendMultisigMethodId,
+  sendMultiSigTypes,
   confidentialTransferWithProofMethodId,
+  confidentialTransferWithProofTypes,
+  getRawDecoded,
   buildConfidentialTransferByHandleCalldata,
   optionalDeps,
   RecoverOptions,
@@ -64,6 +67,24 @@ import { TransactionBuilder } from './lib';
 // to de-risk exactly this class of false positive.
 const STRICT_CONSOLIDATION_MAX_DERIVATION_INDEX = 10000;
 const STRICT_CONSOLIDATION_FORWARDER_VERSIONS = [1, 2, 4, 5] as const;
+
+/**
+ * True when the calldata body after the 4-byte selector is exactly the canonical ABI encoding of
+ * `types`: no trailing bytes, no dirty address padding, no non-standard dynamic offsets.
+ *
+ * Mirrors the check the chain-level TSS payment verifier applies, so the token-coin path
+ * (`Erc7984Token`) enforces the same calldata shape as the base coin.
+ */
+function isCanonicalErc7984Calldata(data: string, types: string[]): boolean {
+  try {
+    const args = data.slice(10).toLowerCase();
+    const decoded = getRawDecoded(types, Buffer.from(args, 'hex'));
+    const encodable = decoded.map((value) => (typeof value === 'string' ? addHexPrefix(value) : value));
+    return optionalDeps.ethAbi.rawEncode(types, encodable).toString('hex') === args;
+  } catch {
+    return false;
+  }
+}
 
 export { Erc7984TokenConfig };
 
@@ -882,6 +903,12 @@ export class Erc7984Token extends Eth {
    *     2. Decoded recipient matches txParams.recipients[0].address or buildParams.recipients[0].address.
    *     3. encryptedHandle and inputProof are structurally present (non-empty).
    *     4. txParams.recipients[0].amount is a positive integer and matches buildParams when both present.
+   *     5. The transaction carries zero native value and the calldata is canonical for its shape.
+   *
+   *   Verification limit (CECHO-2689): the transferred amount is encrypted (`euint64` ciphertext plus
+   *   an input proof), so the plaintext `recipients[0].amount` cannot be compared against it. The
+   *   selector, token contract, recipient, native value and calldata shape are all enforced; the
+   *   encrypted amount is verified only structurally (non-empty 32-byte handle, non-empty proof).
    *
    * Without txHex (first-signer / pre-signing path):
    *  1. Requires exactly one recipient in txParams.
@@ -933,11 +960,9 @@ export class Erc7984Token extends Eth {
       return true;
     }
 
-    // Parse and decode the raw transaction
-    const txBuilder = this.getTransactionBuilder();
-    txBuilder.from(txPrebuild.txHex);
-    const tx = await txBuilder.build();
-    const txJson = tx.toJson();
+    // Decode the original signed bytes. A TransactionBuilder round trip reserializes from the fields it
+    // models, so the checks below would inspect a rebuilt copy instead of what is signed.
+    const txJson = this.decodeRawTssTxFields(txPrebuild.txHex);
 
     let toAddress: string;
     let tokenContractAddress: string;
@@ -970,6 +995,31 @@ export class Erc7984Token extends Eth {
     } catch (e) {
       throw new Error(
         `verifyConfidentialTransfer: failed to decode confidential transfer calldata — ${(e as Error).message}`
+      );
+    }
+
+    // 0. Native value must be zero. A confidentialTransfer moves an encrypted token amount; any
+    //    nonzero `value` would additionally send the chain's native coin to the token contract.
+    if (txJson.value !== undefined && String(txJson.value) !== '0') {
+      throw new Error(
+        `verifyConfidentialTransfer: confidential transfer must not carry native value (got ${txJson.value})`
+      );
+    }
+
+    // 0b. Calldata must be the canonical ABI encoding for its shape. The EVM ignores trailing
+    //     bytes; accepting them would sign more than the decoded intent describes.
+    const calldataTypes = txJson.data.startsWith(sendMultisigMethodId)
+      ? sendMultiSigTypes
+      : confidentialTransferWithProofTypes;
+    if (!isCanonicalErc7984Calldata(txJson.data, calldataTypes)) {
+      throw new Error('verifyConfidentialTransfer: confidential transfer calldata is not canonical');
+    }
+
+    // 0c. A confidential transfer carries exactly one recipient. A multi-recipient intent would
+    //     silently ignore every entry after the first.
+    if (txParams?.recipients && txParams.recipients.length > 1) {
+      throw new Error(
+        `verifyConfidentialTransfer: confidential transfers support exactly 1 recipient, got ${txParams.recipients.length}`
       );
     }
 

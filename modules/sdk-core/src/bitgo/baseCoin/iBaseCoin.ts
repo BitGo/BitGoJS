@@ -294,6 +294,8 @@ export interface TransactionParams {
   executorPartyId?: string;
   /** Canton split (fanout): number of equal-value holdings the selected unspents are split into. */
   numberOfSplits?: number;
+  /** Top-level token name for token-scoped intents (e.g. `tokenApproval`, `consolidate`). */
+  tokenName?: string;
 }
 
 export interface AddressVerificationData {
