@@ -59,6 +59,7 @@ import { BaseEcdsaUtils } from './base';
 import { EncryptionVersion, IRequestTracer } from '../../../../api';
 import { resolveEffectiveTxParams } from '../recipientUtils';
 import { shouldVerifyWithSerializedTxHex } from '../serializedTxHexVerify';
+import { isCoinWithPreHashedSignable, shouldUsePreHashedSignable } from '../preHashedSignable';
 import { isCoinWithSignableConsistency } from '../signableConsistency';
 
 const encryptNShare = ECDSAMethods.encryptNShare;
@@ -1065,18 +1066,41 @@ export class EcdsaUtils extends BaseEcdsaUtils {
         );
       }
 
-      // For some coins, signableHex is not a parseable transaction. Pass
-      // serializedTxHex so verifyTransaction can decode the full tx bytes.
-      // Gated by CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX (ICP hash digests,
-      // BSC/XDC legacy EIP-155 RLP with v=chainId, etc.).
-      if (shouldVerifyWithSerializedTxHex(this.baseCoin)) {
+      // Pre-hashed signables (Avalanche atomic FLR/FLRP, Starknet) are detected from the request.
+      // MPCv1 cannot sign them: createUserSignatureShare always applies the coin hash to
+      // signableHex, which is already the final digest. Fail closed before verification instead
+      // of verifying a digest as if it were a transaction, or signing the wrong preimage.
+      if (isCoinWithPreHashedSignable(this.baseCoin)) {
+        const usePreHashedSignable = shouldUsePreHashedSignable(this.baseCoin, unsignedTx);
+        if (!usePreHashedSignable && !unsignedTx.serializedTxHex?.trim()) {
+          throw new InvalidTransactionError(
+            'Missing serializedTxHex for transaction requiring serialized verification'
+          );
+        }
+        if (usePreHashedSignable) {
+          throw new InvalidTransactionError('Pre-hashed signable is not supported by ECDSA MPCv1 signing; use MPCv2');
+        }
+      }
+
+      // For some coins or envelopes, signableHex is not a parseable transaction.
+      // Pass serializedTxHex so verifyTransaction can decode the full tx bytes:
+      // - CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX (ICP hash digests,
+      //   BSC/XDC legacy EIP-155 RLP with v=chainId, etc.).
+      // - Coin-detected legacy type-0 EVM envelopes on EIP-1559 chains.
+      const verifyWithSerializedTxHex = shouldVerifyWithSerializedTxHex(this.baseCoin, unsignedTx);
+      if (verifyWithSerializedTxHex) {
+        if (!unsignedTx.serializedTxHex?.trim()) {
+          throw new InvalidTransactionError(
+            'Missing serializedTxHex for transaction requiring serialized verification'
+          );
+        }
         await this.baseCoin.verifyTransaction({
           txPrebuild: { txHex: unsignedTx.serializedTxHex, txInfo: unsignedTx.signableHex },
           txParams: resolveEffectiveTxParams(txRequest, params.txParams, this.baseCoin.getChain()),
           wallet: this.wallet,
           walletType: this.wallet.multisigType(),
         });
-        if (shouldVerifyWithSerializedTxHex(this.baseCoin) && isCoinWithSignableConsistency(this.baseCoin)) {
+        if (isCoinWithSignableConsistency(this.baseCoin)) {
           this.baseCoin.assertSignableConsistency(unsignedTx.serializedTxHex, unsignedTx.signableHex);
         }
       } else {

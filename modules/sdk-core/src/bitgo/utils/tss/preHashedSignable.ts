@@ -28,7 +28,7 @@ export function isCoinWithPreHashedSignable(coin: unknown): coin is CoinWithPreH
  * so we check for '0000' not '0x0000'.
  */
 export function isAvalancheAtomicTx(unsignedTx: SignableTransaction): boolean {
-  return unsignedTx.serializedTxHex.startsWith('0000');
+  return typeof unsignedTx.serializedTxHex === 'string' && unsignedTx.serializedTxHex.startsWith('0000');
 }
 
 export function shouldUsePreHashedSignable(coin: IBaseCoin, unsignedTx: SignableTransaction): boolean {
