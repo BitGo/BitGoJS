@@ -16,9 +16,29 @@ import {
 } from '../resources/transactionData/multisigDelegationTx';
 import { HalfSignedAccountTransaction, TransactionType, MPCAlgorithm, common } from '@bitgo/sdk-core';
 import { secp256k1 } from '@flarenetwork/flarejs';
-import { FlrpContext } from '@bitgo/public-types';
+import { FlrpContext, FlrpFeeState } from '@bitgo/public-types';
 import assert from 'assert';
 import nock from 'nock';
+
+// Wallet mock whose owner set is derived from keychain public key material,
+// mirroring the SDK's keychain-based ownership derivation in verifyTransaction
+// (CECHO-2716). keyMaterial selects the keychain field: 'pub' (default) or
+// 'commonKeychain'. The commonKeychain form stores the REAL TSS shape — the
+// 66-char compressed public key followed by a 64-char chain code (130 chars),
+// as sdk-core's EcdsaUtils.getPublicKeyFromCommonKeychain expects.
+function keychainWallet(privKeys: string[], keyMaterial: 'pub' | 'commonKeychain' = 'pub') {
+  return {
+    keyIds: () => privKeys.map((_, i) => `${i}`),
+    baseCoin: {
+      keychains: () => ({
+        get: async ({ id }: { id: string }) => {
+          const pub = new FlrpLib.KeyPair({ prv: privKeys[Number(id)] }).getKeys().pub;
+          return { [keyMaterial]: keyMaterial === 'commonKeychain' ? pub + '0'.repeat(64) : pub };
+        },
+      }),
+    },
+  };
+}
 import { CreatePairedWalletResponse } from '../../src/lib/iface';
 
 describe('Flrp test cases', function () {
@@ -358,8 +378,9 @@ describe('Flrp test cases', function () {
         type: 'Export',
         locktime: 0,
       };
+      const wallet = keychainWallet(EXPORT_IN_P.privateKeys);
 
-      const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet });
       isVerified.should.equal(true);
     });
 
@@ -485,6 +506,298 @@ describe('Flrp test cases', function () {
       await basecoin
         .verifyTransaction({ txParams, txPrebuild })
         .should.be.rejectedWith('Expected 1 recipient in import transaction');
+    });
+
+    it('should reject a P-to-C export whose exported output pays a foreign owner set (CECHO-2716)', async () => {
+      // Amount and shape match, but the exporting wallet's keychains (the trust
+      // anchor, derived client-side) do not own the fixture tx's outputs — exactly
+      // what a malicious prebuild paying an attacker looks like.
+      const txPrebuild = {
+        txHex: EXPORT_IN_P.fullSigntxHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: '',
+            amount: EXPORT_IN_P.amount,
+          },
+        ],
+        type: 'Export',
+        locktime: 0,
+      };
+      const wallet = keychainWallet([ON_CHAIN_TEST_WALLET.user.privateKey]);
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, wallet })
+        .should.be.rejectedWith(/Export output pays non-wallet address/);
+    });
+
+    it('should reject a P-to-C export whose change output pays an attacker (CECHO-2716)', () => {
+      // The SDK builder computes change back to the wallet; a malicious prebuild can
+      // redirect it. Unit-test the owner binding directly with a crafted explanation.
+      const walletAnchor = EXPORT_IN_P.pAddresses.join('~');
+      const anchorOwners = new Set(
+        walletAnchor
+          .split('~')
+          .map((a) => a.toLowerCase())
+          .sort()
+      );
+      const attackerChange = ON_CHAIN_TEST_WALLET.user.pChainAddress;
+
+      assert.throws(
+        () => basecoin.requireWalletOwnedAddresses('Export change output', attackerChange, anchorOwners),
+        /Export change output pays non-wallet address/
+      );
+    });
+
+    it('should reject a P-to-C export with a mixed owner set (one wallet address, one attacker address)', () => {
+      // Subset containment must catch a single foreign owner hidden inside a
+      // wallet-majority owner set, not just fully-foreign destinations.
+      const walletAnchor = EXPORT_IN_P.pAddresses.join('~');
+      const anchorOwners = new Set(
+        walletAnchor
+          .split('~')
+          .map((a) => a.toLowerCase())
+          .sort()
+      );
+      const mixedOwnerSet = `${EXPORT_IN_P.pAddresses[0]}~${ON_CHAIN_TEST_WALLET.user.pChainAddress}`;
+
+      assert.throws(
+        () => basecoin.requireWalletOwnedAddresses('Export output', mixedOwnerSet, anchorOwners),
+        /Export output pays non-wallet address/
+      );
+    });
+
+    it('should fail closed on a P-to-C export with no wallet anchor', async () => {
+      const txPrebuild = {
+        txHex: EXPORT_IN_P.fullSigntxHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: '',
+            amount: EXPORT_IN_P.amount,
+          },
+        ],
+        type: 'Export',
+        locktime: 0,
+      };
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild })
+        .should.be.rejectedWith(
+          'Unable to verify P-chain export: could not derive the wallet owner set from keychains'
+        );
+    });
+
+    it('should verify a P-to-C export anchored on keychains that carry only commonKeychain (TSS shape)', async () => {
+      // TSS/MPC keychains carry the joint public key in commonKeychain and may not
+      // populate pub — the derivation must accept both fields.
+      const txPrebuild = {
+        txHex: EXPORT_IN_P.fullSigntxHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: '',
+            amount: EXPORT_IN_P.amount,
+          },
+        ],
+        type: 'Export',
+        locktime: 0,
+      };
+      const wallet = keychainWallet(EXPORT_IN_P.privateKeys, 'commonKeychain');
+
+      const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet });
+      isVerified.should.equal(true);
+    });
+
+    it('should fail closed when a commonKeychain is not the real TSS shape (not 130 hex chars)', async () => {
+      // A bare 66-char public key stored in commonKeychain is not the real shape
+      // (33-byte compressed pubkey + 32-byte chain code); the extraction must throw
+      // rather than feed the field to KeyPair as-is.
+      const txPrebuild = {
+        txHex: EXPORT_IN_P.fullSigntxHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: '',
+            amount: EXPORT_IN_P.amount,
+          },
+        ],
+        type: 'Export',
+        locktime: 0,
+      };
+      const pub = new FlrpLib.KeyPair({ prv: ON_CHAIN_TEST_WALLET.user.privateKey }).getKeys().pub;
+      const wallet = {
+        keyIds: () => ['0'],
+        baseCoin: {
+          keychains: () => ({
+            get: async () => ({ commonKeychain: pub }),
+          }),
+        },
+      };
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, wallet })
+        .should.be.rejectedWith(/Invalid commonKeychain length, expected 130/);
+    });
+
+    it('should fail closed when keychains carry neither pub nor commonKeychain', async () => {
+      const txPrebuild = {
+        txHex: EXPORT_IN_P.fullSigntxHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: '',
+            amount: EXPORT_IN_P.amount,
+          },
+        ],
+        type: 'Export',
+        locktime: 0,
+      };
+      const wallet = {
+        keyIds: () => ['0'],
+        baseCoin: {
+          keychains: () => ({
+            get: async () => ({ ethAddress: '0xirrelevant' }),
+          }),
+        },
+      };
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild, wallet })
+        .should.be.rejectedWith(
+          'Unable to verify P-chain export: could not derive the wallet owner set from keychains'
+        );
+    });
+
+    it('should fail closed when a keychain fetch rejects', async () => {
+      const txPrebuild = {
+        txHex: EXPORT_IN_P.fullSigntxHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: '',
+            amount: EXPORT_IN_P.amount,
+          },
+        ],
+        type: 'Export',
+        locktime: 0,
+      };
+      const wallet = {
+        keyIds: () => ['0'],
+        baseCoin: {
+          keychains: () => ({
+            get: async () => {
+              throw new Error('keychain not found');
+            },
+          }),
+        },
+      };
+
+      await basecoin.verifyTransaction({ txParams, txPrebuild, wallet }).should.be.rejectedWith('keychain not found');
+    });
+
+    it('should reject a P-to-C export that burns more than the network fee bound as fee', () => {
+      // inputs 50M, exported 30M, change 5M — 15M burned exceeds the 10M bound.
+      const maliciousExplanation = {
+        inputs: [{ address: '', value: '50000000' }],
+        outputs: [{ address: EXPORT_IN_P.pAddresses.join('~'), amount: '30000000' }],
+        changeOutputs: [{ address: EXPORT_IN_P.pAddresses.join('~'), amount: '5000000' }],
+      };
+
+      assert.throws(
+        () => basecoin.validateExportFee(maliciousExplanation),
+        /Export burns .* exceeding the network fee bound/
+      );
+    });
+
+    it('should accept a P-to-C export whose burned fee is within the network fee bound', () => {
+      // Fixture shape: inputs 50M, exported 30M, change 18.69M — ~1.31M burned.
+      const explanation = {
+        inputs: [{ address: '', value: '50000000' }],
+        outputs: [{ address: EXPORT_IN_P.pAddresses.join('~'), amount: '30000000' }],
+        changeOutputs: [{ address: EXPORT_IN_P.pAddresses.join('~'), amount: '18691035' }],
+      };
+
+      assert.doesNotThrow(() => basecoin.validateExportFee(explanation));
+    });
+
+    it('should verify a P-to-C export whose outputs and change are wallet-owned', async () => {
+      // The fixture export pays the wallet owner set for both the exported output and
+      // the P-chain change; subset containment against the wallet anchor holds.
+      const txPrebuild = {
+        txHex: EXPORT_IN_P.fullSigntxHex,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: '',
+            amount: EXPORT_IN_P.amount,
+          },
+        ],
+        type: 'Export',
+        locktime: 0,
+      };
+      const wallet = keychainWallet(EXPORT_IN_P.privateKeys);
+
+      const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet });
+      isVerified.should.equal(true);
+    });
+
+    it('should bind a C-to-P export to the named recipient destination (CECHO-2716)', async () => {
+      const txPrebuild = {
+        txHex: EXPORT_IN_C.signedHex,
+        txInfo: {},
+      };
+      const destination =
+        'P-costwo1zt9n96hey4fsvnde35n3k4kt5pu7c784dzewzd~P-costwo1cwrdtrgf4xh80ncu7palrjw7gn4mpj0n4dxghh~P-costwo15msvr27szvhhpmah0c38gcml7vm29xjh7tcek8';
+      const txParams = {
+        recipients: [
+          {
+            address: destination,
+            amount: EXPORT_IN_C.amount,
+          },
+        ],
+        type: 'Export',
+        locktime: 0,
+      };
+
+      const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      isVerified.should.equal(true);
+    });
+
+    it('should reject a C-to-P export whose destination differs from the named recipient', async () => {
+      const txPrebuild = {
+        txHex: EXPORT_IN_C.signedHex,
+        txInfo: {},
+      };
+      const attackerDestination = 'P-costwo1xv5mulgpe5lt4tnx2ntnylwe79azu9vpja6lut';
+      const txParams = {
+        recipients: [
+          {
+            address: attackerDestination,
+            amount: EXPORT_IN_C.amount,
+          },
+        ],
+        type: 'Export',
+        locktime: 0,
+      };
+
+      await basecoin
+        .verifyTransaction({ txParams, txPrebuild })
+        .should.be.rejectedWith(/Export destination .* does not match the expected recipient/);
     });
   });
 
@@ -776,8 +1089,11 @@ describe('Flrp test cases', function () {
       return tx.toBroadcastFormat();
     }
 
-    // Helper: build unsigned MPC ExportInP tx and return its hex
-    async function buildUnsignedExportInP(): Promise<string> {
+    // Helper: build unsigned MPC ExportInP tx and return its hex.
+    // amount/locktime shape the exported output (a full-spend amount produces no
+    // change output; a future locktime produces a time-locked output).
+    async function buildUnsignedExportInP(opts?: { amount?: string; locktime?: number }): Promise<string> {
+      const { amount = '30000000', locktime = 0 } = opts ?? {};
       const mpcUtxo = {
         outputID: 7,
         amount: '50000000',
@@ -790,13 +1106,13 @@ describe('Flrp test cases', function () {
       const txBuilder = factory
         .getExportInPBuilder()
         .threshold(1)
-        .locktime(0)
+        .locktime(locktime)
         .fromPubKey([ON_CHAIN_TEST_WALLET.user.pChainAddress])
-        .amount('30000000')
+        .amount(amount)
         .externalChainId(EXPORT_IN_P.sourceChainId)
         .decodedUtxos([mpcUtxo])
         .context(EXPORT_IN_P.context as FlrpContext)
-        .feeState(EXPORT_IN_P.feeState as any);
+        .feeState(EXPORT_IN_P.feeState as unknown as FlrpFeeState);
 
       const tx = await txBuilder.build();
       return tx.toBroadcastFormat();
@@ -992,9 +1308,44 @@ describe('Flrp test cases', function () {
           type: 'Export',
           locktime: 0,
         };
+        const wallet = keychainWallet([ON_CHAIN_TEST_WALLET.user.privateKey]);
 
-        const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+        const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet });
         isVerified.should.equal(true);
+      });
+
+      it('should verify a P-to-C export with no change outputs (full-spend export)', async () => {
+        // Exporting the entire spendable amount leaves no P-chain change output;
+        // the empty change list must verify cleanly.
+        const txHex = await buildUnsignedExportInP({ amount: '48739000' });
+        const txPrebuild = { txHex, txInfo: {} };
+        const txParams = {
+          recipients: [{ address: ON_CHAIN_TEST_WALLET.user.pChainAddress, amount: '48739000' }],
+          type: 'Export',
+          locktime: 0,
+        };
+        const wallet = keychainWallet([ON_CHAIN_TEST_WALLET.user.privateKey]);
+
+        const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet });
+        isVerified.should.equal(true);
+      });
+
+      it('should reject a P-to-C export whose output has a future locktime', async () => {
+        // Wallet-owned output, matching amount — but time-locked funds would be
+        // frozen until the locktime passes; verification must fail.
+        const futureLocktime = Math.floor(Date.now() / 1000) + 3600;
+        const txHex = await buildUnsignedExportInP({ locktime: futureLocktime });
+        const txPrebuild = { txHex, txInfo: {} };
+        const txParams = {
+          recipients: [{ address: ON_CHAIN_TEST_WALLET.user.pChainAddress, amount: '30000000' }],
+          type: 'Export',
+          locktime: 0,
+        };
+        const wallet = keychainWallet([ON_CHAIN_TEST_WALLET.user.privateKey]);
+
+        await basecoin
+          .verifyTransaction({ txParams, txPrebuild, wallet })
+          .should.be.rejectedWith(/Export output locktime .* must be 0/);
       });
 
       it('should verify MPC ImportInC transaction', async () => {
@@ -1056,11 +1407,13 @@ describe('Flrp test cases', function () {
           type: 'Export',
           locktime: 0,
         };
+        const wallet = keychainWallet([ON_CHAIN_TEST_WALLET.user.privateKey]);
 
         const isVerified = await basecoin.verifyTransaction({
           txParams,
           txPrebuild,
           walletType: 'tss',
+          wallet,
         });
         isVerified.should.equal(true);
       });
