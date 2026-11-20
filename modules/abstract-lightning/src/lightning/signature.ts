@@ -3,6 +3,21 @@ import * as sdkcore from '@bitgo/sdk-core';
 import { canonicalizeObject, Signable } from './signableJson';
 
 /**
+ * Parses a BIP32 lightning key.
+ *
+ * Lightning auth keys are generated with the default (bitcoin) network, so `tlnbtc` keys are still
+ * `xpub`/`xprv` strings even though the coin's network is testnet. Parsing them against the testnet
+ * version bytes would throw, so `xpub`/`xprv` keys are always parsed with the bitcoin versions.
+ * Any other prefix (e.g. `tpub`) is parsed with the supplied network, as before.
+ */
+function parseLightningKey(key: string, network: utxolib.Network): utxolib.BIP32Interface {
+  if (key.startsWith('xpub') || key.startsWith('xprv')) {
+    return utxolib.bip32.fromBase58(key, utxolib.networks.bitcoin);
+  }
+  return utxolib.bip32.fromBase58(key, network);
+}
+
+/**
  * Verifies a signature for a given message.
  *
  * @param {Signable} message - The message to verify.
@@ -18,7 +33,7 @@ export function verifyMessageSignature(
   network: utxolib.Network = utxolib.networks.bitcoin
 ): boolean {
   const messageString = JSON.stringify(canonicalizeObject(message));
-  const pubKey = utxolib.bip32.fromBase58(pub, network).publicKey;
+  const pubKey = parseLightningKey(pub, network).publicKey;
   const signatureBuffer = Buffer.from(signature, 'hex');
   return sdkcore.verifyMessage(messageString, pubKey, signatureBuffer, network);
 }
@@ -37,6 +52,6 @@ export function createMessageSignature(
   network: utxolib.Network = utxolib.networks.bitcoin
 ): string {
   const requestString = JSON.stringify(canonicalizeObject(message));
-  const prvKey = utxolib.bip32.fromBase58(xprv, network);
+  const prvKey = parseLightningKey(xprv, network);
   return sdkcore.signMessage(requestString, prvKey, network).toString('hex');
 }
