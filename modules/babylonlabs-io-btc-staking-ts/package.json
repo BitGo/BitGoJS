@@ -45,7 +45,7 @@
   },
   "dependencies": {
     "@babylonlabs-io/babylon-proto-ts": "1.7.2",
-    "@bitcoin-js/tiny-secp256k1-asmjs": "2.2.3",
+    "@bitcoin-js/tiny-secp256k1-asmjs": "2.2.5",
     "@cosmjs/encoding": "^0.33.0",
     "bip174": "=2.1.1",
     "bitcoinjs-lib": "^6.1.7"
