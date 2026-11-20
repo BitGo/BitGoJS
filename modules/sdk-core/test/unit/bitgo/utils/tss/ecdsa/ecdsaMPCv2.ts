@@ -941,6 +941,61 @@ describe('ECDSA MPC v2', async () => {
     assert.strictEqual(hashFunctionSpy.callCount, 0);
   });
 
+  it('signRequestBase fails closed when a pre-hashed-route coin request is missing serializedTxHex (CECHO-2681)', async () => {
+    const signableHex = createHash('sha256').update(Buffer.from('00', 'hex')).digest('hex');
+    const mockBgWithPost = {
+      getEnv: sinon.stub().returns('test'),
+      setRequestTracer: sinon.stub(),
+    } as unknown as BitGoBase;
+    const verifyTransactionStub = sinon.stub().resolves(true);
+    const hashFunctionSpy = sinon.stub().callsFake(() => createKeccakHash('keccak256') as Hash);
+    const mockFlrCoin = {
+      getHashFunction: hashFunctionSpy,
+      verifyTransaction: verifyTransactionStub,
+      shouldVerifyWithSerializedTxHex: sinon.stub().returns(false),
+      assertSignableConsistency: sinon.spy(),
+      isSignablePreHashed: (u: { serializedTxHex?: string }) => u.serializedTxHex?.startsWith('0000') ?? false,
+      getMPCAlgorithm: sinon.stub().returns('ecdsa'),
+      getChain: sinon.stub().returns('flr'),
+      getConfig: sinon.stub().returns({ family: 'flr', features: [CoinFeature.EIP1559] }),
+    } as unknown as IBaseCoin;
+    const mockWallet = {
+      id: sinon.stub().returns(walletID),
+      multisigType: sinon.stub().returns('tss'),
+      multisigTypeVersion: sinon.stub().returns('MPCv2'),
+    };
+
+    const utils = new EcdsaMPCv2Utils(mockBgWithPost, mockFlrCoin, mockWallet as unknown as IWallet);
+    // pickBitgoPubGpgKeyForSigning is private; the cast is test-only.
+    sinon
+      .stub(utils as unknown as Record<string, (...args: unknown[]) => Promise<string>>, 'pickBitgoPubGpgKeyForSigning')
+      .resolves(bitgoGpgKey.public);
+
+    for (const missingHex of ['', '   ', undefined]) {
+      const txRequest = {
+        txRequestId: 'cecho-2681-flr-missing',
+        apiVersion: 'full',
+        walletId: walletID,
+        transactions: [
+          { unsignedTx: { derivationPath: 'm/0', signableHex, serializedTxHex: missingHex }, signatureShares: [] },
+        ],
+      } as unknown as TxRequest;
+
+      await assert.rejects(
+        utils.signTxRequest({
+          txRequest,
+          txParams: { recipients: [{ address: '0x' + '00'.repeat(20), amount: '1000' }] },
+          prv: userShare.toString('base64'),
+          reqId: { inc: sinon.stub(), toString: sinon.stub().returns('test-req') } as unknown as RequestTracer,
+        }),
+        /Missing serializedTxHex for transaction requiring serialized verification/
+      );
+    }
+
+    assert.strictEqual(verifyTransactionStub.callCount, 0);
+    assert.strictEqual(hashFunctionSpy.callCount, 0);
+  });
+
   // Regression test for CGD-1815 / DEFI-661: resolveEffectiveTxParams() special-cases wrap-native
   // and unwrap-native so the no-recipients guard in verifyTssTransaction doesn't reject them. That
   // bypass is security-sensitive (it's what lets a DeFi vault wrap/unwrap tx skip recipient

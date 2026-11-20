@@ -51,7 +51,7 @@ import {
   isV2Envelope,
   SignableTransaction,
 } from '../baseTypes';
-import { shouldUsePreHashedSignable } from '../preHashedSignable';
+import { isCoinWithPreHashedSignable, shouldUsePreHashedSignable } from '../preHashedSignable';
 import { shouldVerifyWithSerializedTxHex } from '../serializedTxHexVerify';
 import { isCoinWithSignableConsistency } from '../signableConsistency';
 import { BaseEcdsaUtils } from './base';
@@ -996,6 +996,12 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       //   serializedTxHex is the PVM/EVM atomic tx (codec prefix 0x0000).
       // For other coins, signableHex IS the unsigned transaction (e.g. EIP-1559 RLP).
       const usePreHashedSignable = shouldUsePreHashedSignable(this.baseCoin, unsignedTx);
+      // A coin with a pre-hashed route (e.g. FLR/FLRP atomic) detects that route from serializedTxHex.
+      // Without it the route cannot be chosen, and the default branch would verify a digest as if it
+      // were a transaction, so fail closed before verification.
+      if (!usePreHashedSignable && isCoinWithPreHashedSignable(this.baseCoin) && !unsignedTx.serializedTxHex?.trim()) {
+        throw new InvalidTransactionError('Missing serializedTxHex for transaction requiring serialized verification');
+      }
       const verifyWithSerializedTxHex =
         !usePreHashedSignable && shouldVerifyWithSerializedTxHex(this.baseCoin, unsignedTx);
       if (verifyWithSerializedTxHex || usePreHashedSignable) {
