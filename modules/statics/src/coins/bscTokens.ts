@@ -1329,7 +1329,7 @@ export const bscTokens = [
     18,
     '0xf8a0bf9cf54bb92f17374d9e9a321e6a111a51bd',
     UnderlyingAsset['bsc:link'],
-    BSC_TOKEN_FEATURES
+    [...BSC_TOKEN_FEATURES, CoinFeature.CUSTODY_BITGO_KOREA]
   ),
   bscToken(
     '3cd43d47-451e-4043-822c-d2566ea93ade',
