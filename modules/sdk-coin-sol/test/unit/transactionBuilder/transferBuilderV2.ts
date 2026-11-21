@@ -253,6 +253,43 @@ describe('Sol Transfer Builder V2', () => {
       should.equal(Utils.isValidRawTransaction(rawTx), true);
       should.equal(rawTx, testData.NATIVE_MULTI_TRANSFERV2_SIGNED);
     });
+
+    it('build a native-only transfer tx unsigned with priority fee', async () => {
+      const txBuilder = factory.getTransferBuilderV2();
+      txBuilder.nonce(recentBlockHash);
+      txBuilder.feePayer(feePayerAccount.pub);
+      txBuilder.sender(authAccount.pub);
+      txBuilder.send({ address: otherAccount.pub, amount });
+      txBuilder.setPriorityFee({ amount: 5000 });
+      const tx = await txBuilder.build();
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].should.deepEqual({
+        address: authAccount.pub,
+        value: amount,
+        coin: 'tsol',
+      });
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].should.deepEqual({
+        address: otherAccount.pub,
+        value: amount,
+        coin: 'tsol',
+      });
+      const txJson = tx.toJson();
+      txJson.instructionsData.length.should.equal(2);
+      txJson.instructionsData[0].type.should.equal('SetPriorityFee');
+      txJson.instructionsData[0].params.fee.toString().should.equal('5000');
+      txJson.instructionsData[1].type.should.equal('Transfer');
+      txJson.instructionsData[1].params.should.deepEqual({
+        fromAddress: authAccount.pub,
+        toAddress: otherAccount.pub,
+        amount: amount,
+      });
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(Utils.isValidRawTransaction(rawTx), true);
+      // from(raw) → build() round trip must reproduce the same bytes
+      const rebuilt = await factory.from(rawTx).build();
+      rebuilt.toBroadcastFormat().should.equal(rawTx);
+    });
   });
   describe('Fail Native Transfer', () => {
     it('for invalid sender', () => {
