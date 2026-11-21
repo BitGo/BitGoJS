@@ -496,3 +496,174 @@ describe('Keychains.list safeId filter', function () {
     sinon.assert.calledWith(query, { safeId: 'safe-123' });
   });
 });
+
+describe('Keychains.list envelopeOnly', function () {
+  function buildListKeychains() {
+    const query = sinon.stub();
+    const chain = { query, result: sinon.stub().resolves({ keys: [] }) };
+    query.returns(chain);
+    const get = sinon.stub().returns(chain);
+    const bitgo = { get } as unknown as BitGoBase;
+    const baseCoin = { url: sinon.stub().callsFake((path: string) => path) } as unknown as IBaseCoin;
+    return { listKeychains: new Keychains(bitgo, baseCoin), query };
+  }
+
+  it('forwards envelopeOnly=true as a query parameter', async function () {
+    const { listKeychains, query } = buildListKeychains();
+    await listKeychains.list({ envelopeOnly: true });
+    sinon.assert.calledWith(query, { envelopeOnly: 'true' });
+  });
+
+  it('omits the parameter when envelopeOnly is false or undefined', async function () {
+    const { listKeychains, query } = buildListKeychains();
+    await listKeychains.list({ envelopeOnly: false });
+    sinon.assert.calledWith(query, {});
+    await listKeychains.list({});
+    sinon.assert.calledWith(query, {});
+  });
+
+  it('rejects a non-boolean envelopeOnly', async function () {
+    const { listKeychains } = buildListKeychains();
+    await listKeychains
+      // @ts-expect-error exercising the runtime guard
+      .list({ envelopeOnly: 'true' })
+      .should.be.rejectedWith('invalid envelopeOnly argument, expecting boolean');
+  });
+});
+
+describe('Keychains.updatePassword (legacy mode, slim walk)', function () {
+  const OLD_PASSWORD = 'old-passphrase';
+  const NEW_PASSWORD = 'new-passphrase';
+
+  let keychains: Keychains;
+  let decryptStub: sinon.SinonStub;
+
+  // getEncryptionVersion re-parses the old envelope in the legacy path, so it must be JSON.
+  function key(id: string, overrides: Partial<Keychain> = {}): Keychain {
+    return {
+      id,
+      pub: `pub-${id}`,
+      type: 'independent',
+      encryptedPrv: JSON.stringify({ v: 1, iv: 'iv-' + id, ct: 'ct-' + id }),
+      ...overrides,
+    };
+  }
+
+  beforeEach(function () {
+    decryptStub = sinon.stub().callsFake(async ({ password }: { input: string; password: string }) => {
+      if (password !== OLD_PASSWORD) {
+        throw new Error('incorrect password');
+      }
+      return 'plain-prv';
+    });
+    const bitgo = {
+      decrypt: decryptStub,
+      createEncryptionSession: sinon
+        .stub()
+        .resolves({ encrypt: sinon.stub().resolves('new-envelope'), destroy: sinon.stub() }),
+      encrypt: sinon.stub().resolves('new-envelope'),
+      setRequestTracer: sinon.stub(),
+    } as unknown as BitGoBase;
+    const baseCoin = { url: sinon.stub().callsFake((path: string) => path) } as unknown as IBaseCoin;
+    keychains = new Keychains(bitgo, baseCoin);
+  });
+
+  it('opts the walk into the slim key list and rotates a slim response', async function () {
+    // Slim shape: only the fields the rotation walk consumes.
+    const slimKey = key('slim-1');
+    const listStub = sinon.stub(keychains, 'list').callsFake(async (params: ListKeychainOptions = {}) => ({
+      keys: params.prevId === undefined ? [slimKey] : [],
+      nextBatchPrevId: params.prevId === undefined ? 'page-2' : undefined,
+    }));
+
+    const changedKeys = await keychains.updatePassword({ oldPassword: OLD_PASSWORD, newPassword: NEW_PASSWORD });
+
+    changedKeys.should.deepEqual({ 'pub-slim-1': 'new-envelope' });
+    sinon.assert.calledWithExactly(listStub.firstCall, { limit: 500, envelopeOnly: true });
+    sinon.assert.calledWithExactly(listStub.secondCall, { limit: 500, envelopeOnly: true, prevId: 'page-2' });
+  });
+
+  it('starts the next page fetch before finishing the current page', async function () {
+    // Page 2's fetch must be issued while page 1's re-encryption is still running.
+    let listCalls = 0;
+    let listCallsAtDecrypt = -1;
+    sinon.stub(keychains, 'list').callsFake(async (params: ListKeychainOptions = {}) => {
+      listCalls++;
+      const keys = params.prevId === undefined ? [key('page1')] : [key('page2')];
+      return { keys, nextBatchPrevId: params.prevId === undefined ? 'page-2' : undefined };
+    });
+    decryptStub.callsFake(async (args: { input: string; password: string }) => {
+      if (args.input.includes('page1')) {
+        listCallsAtDecrypt = listCalls;
+      }
+      if (args.password !== OLD_PASSWORD) {
+        throw new Error('incorrect password');
+      }
+      return 'plain-prv';
+    });
+
+    await keychains.updatePassword({ oldPassword: OLD_PASSWORD, newPassword: NEW_PASSWORD });
+
+    (listCallsAtDecrypt >= 2).should.be.true();
+  });
+
+  it('still rotates full (old-server) responses when the param is ignored', async function () {
+    const fullKey = key('full-1', { commonKeychain: 'a'.repeat(64) });
+    sinon.stub(keychains, 'list').resolves({ keys: [fullKey], nextBatchPrevId: undefined });
+
+    const changedKeys = await keychains.updatePassword({ oldPassword: OLD_PASSWORD, newPassword: NEW_PASSWORD });
+
+    changedKeys.should.deepEqual({ 'pub-full-1': 'new-envelope' });
+  });
+
+  it('keys slim responses by id for tss and ofc multi-user keys, by pub otherwise', async function () {
+    const tssKey = key('tss-1', { type: 'tss' });
+    const ofcKey = key('ofc-1', {
+      coinSpecific: { ofc: { features: ['multi-user-key'] } },
+    });
+    const plainKey = key('plain-1');
+    sinon.stub(keychains, 'list').resolves({ keys: [tssKey, ofcKey, plainKey], nextBatchPrevId: undefined });
+
+    const changedKeys = await keychains.updatePassword({ oldPassword: OLD_PASSWORD, newPassword: NEW_PASSWORD });
+
+    changedKeys.should.deepEqual({
+      // tss and ofc multi-user keys are identified by id; plain keys by pub.
+      'tss-1': 'new-envelope',
+      'ofc-1': 'new-envelope',
+      'pub-plain-1': 'new-envelope',
+    });
+  });
+
+  it('still rejects with the fetch error when a later page fails', async function () {
+    // The pipelined prefetch must not swallow fetch failures: the walk rejects
+    // before processing any record of the failing page, after finishing page 1.
+    sinon.stub(keychains, 'list').callsFake(async (params: ListKeychainOptions = {}) => {
+      if (params.prevId === undefined) {
+        return { keys: [key('page1')], nextBatchPrevId: 'page-2' };
+      }
+      throw new Error('page 2 fetch failed');
+    });
+
+    await keychains
+      .updatePassword({ oldPassword: OLD_PASSWORD, newPassword: NEW_PASSWORD })
+      .should.be.rejectedWith('page 2 fetch failed');
+  });
+
+  it('reports a slim key without an envelope as skipped, not an error', async function () {
+    // S3-residency / listed-but-no-envelope records: the slim shape is exactly
+    // { id, pub, type, source } with no encryptedPrv — the walk must report the
+    // record skipped and leave it out of changedKeys, never throw.
+    const noEnvelope: Keychain = { id: 'slim-no-env', pub: 'pub-slim-no-env', type: 'independent' };
+    const events: { status: string; currentKeychainId?: string }[] = [];
+    sinon.stub(keychains, 'list').resolves({ keys: [noEnvelope], nextBatchPrevId: undefined });
+
+    const changedKeys = await keychains.updatePassword({
+      oldPassword: OLD_PASSWORD,
+      newPassword: NEW_PASSWORD,
+      progressCallback: (p) => events.push({ status: p.status, currentKeychainId: p.currentKeychainId }),
+    });
+
+    changedKeys.should.deepEqual({});
+    events.should.deepEqual([{ status: 'skipped', currentKeychainId: 'pub-slim-no-env' }]);
+  });
+});

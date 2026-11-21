@@ -102,6 +102,14 @@ export interface ListKeychainOptions {
    * the same keys for any coin's keychains()), so any coin may be used for the walk.
    */
   safeId?: string;
+  /**
+   * Opt-in slim response for the password-rotation walk (WCI-2309). Forwarded as the
+   * `envelopeOnly=true` query param; the server then returns a slim key shape (a subset
+   * of `Keychain` sufficient for password rotation: id, pub, type, source, the caller's
+   * encryptedPrv, coinSpecific.ofc.features). Older servers ignore the param and return
+   * full keychains, so opting in degrades gracefully.
+   */
+  envelopeOnly?: boolean;
 }
 
 export type KeychainPasswordUpdateStatus = 'updated' | 'skipped';
