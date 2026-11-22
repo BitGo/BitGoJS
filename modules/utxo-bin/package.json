@@ -34,7 +34,7 @@
     "@bitgo/unspents": "^0.51.12",
     "@bitgo/utxo-core": "^1.42.2",
     "@bitgo/utxo-lib": "^11.25.1",
-    "@bitgo/wasm-utxo": "^5.15.0",
+    "@bitgo/wasm-utxo": "^5.30.0",
     "@noble/curves": "1.8.1",
     "archy": "^1.0.0",
     "bech32": "^2.0.0",
