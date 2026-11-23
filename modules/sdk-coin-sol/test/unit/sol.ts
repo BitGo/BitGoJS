@@ -5,7 +5,14 @@ import * as should from 'should';
 import * as sinon from 'sinon';
 
 import { getExtraAccountMetaAddress, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import { Keypair, PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.js';
+import {
+  Keypair,
+  MessageV0,
+  PublicKey,
+  SystemProgram,
+  TransactionInstruction,
+  VersionedTransaction,
+} from '@solana/web3.js';
 import * as base58 from 'bs58';
 import * as nacl from 'tweetnacl';
 
@@ -48,7 +55,13 @@ import {
   Tsol,
 } from '../../src';
 import { Transaction } from '../../src/lib';
-import { AtaInit, ExtraAccountMeta, InstructionParams, TokenTransfer } from '../../src/lib/iface';
+import {
+  AtaInit,
+  ExtraAccountMeta,
+  InstructionParams,
+  TokenTransfer,
+  VersionedTransactionData,
+} from '../../src/lib/iface';
 import {
   TOKEN_ACL_FLAG_ACCOUNT_SEED,
   TOKEN_ACL_MINT_CONFIG_SEED,
@@ -1647,6 +1660,671 @@ describe('SOL:', function () {
             wallet: walletObj,
           } as any)
           .should.be.rejectedWith('CustomTx prebuild instruction 0 key 0 mismatch');
+      });
+    });
+
+    describe('versioned transactions', () => {
+      const MEMO_PROGRAM_ID = 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr';
+      const altAccountKey = Keypair.generate().publicKey.toBase58();
+      const extraProgramKey = Keypair.generate().publicKey.toBase58();
+      const extraWritableKey = Keypair.generate().publicKey.toBase58();
+      const extraReadonlyKey = Keypair.generate().publicKey.toBase58();
+      const attackerKey = Keypair.generate().publicKey.toBase58();
+      const relayerKey = Keypair.generate().publicKey.toBase58();
+      const nonceAccountKey = Keypair.generate().publicKey.toBase58();
+      const nonceAuthKey = Keypair.generate().publicKey.toBase58();
+      const refreshedBlockHash = Keypair.generate().publicKey.toBase58();
+
+      const makeBasicVersionedData = (): VersionedTransactionData => ({
+        versionedInstructions: [
+          {
+            programIdIndex: 1,
+            accountKeyIndexes: [0],
+            data: base58.encode(Buffer.from('Hello Versioned Tx', 'utf-8')),
+          },
+        ],
+        addressLookupTables: [],
+        staticAccountKeys: [wallet.pub, MEMO_PROGRAM_ID],
+        messageHeader: {
+          numRequiredSignatures: 1,
+          numReadonlySignedAccounts: 0,
+          numReadonlyUnsignedAccounts: 1,
+        },
+        recentBlockhash: blockHash,
+      });
+
+      const makeAltVersionedData = (): VersionedTransactionData => ({
+        versionedInstructions: [
+          {
+            programIdIndex: 3,
+            accountKeyIndexes: [0, 1, 2, 4, 5, 6],
+            data: base58.encode(Buffer.from([1, 2, 3, 4, 5, 6, 7, 8])),
+          },
+        ],
+        addressLookupTables: [
+          {
+            accountKey: altAccountKey,
+            writableIndexes: [0, 2],
+            readonlyIndexes: [5],
+          },
+        ],
+        staticAccountKeys: [wallet.pub, extraWritableKey, extraReadonlyKey, extraProgramKey],
+        messageHeader: {
+          numRequiredSignatures: 1,
+          numReadonlySignedAccounts: 0,
+          numReadonlyUnsignedAccounts: 2,
+        },
+        recentBlockhash: blockHash,
+      });
+
+      const buildRawVersionedTx = (
+        data: VersionedTransactionData,
+        overrideBlockhash?: string
+      ): VersionedTransaction => {
+        const messageV0 = new MessageV0({
+          header: data.messageHeader,
+          staticAccountKeys: data.staticAccountKeys.map((k) => new PublicKey(k)),
+          recentBlockhash: overrideBlockhash ?? data.recentBlockhash ?? blockHash,
+          compiledInstructions: data.versionedInstructions.map((ix) => ({
+            programIdIndex: ix.programIdIndex,
+            accountKeyIndexes: ix.accountKeyIndexes,
+            data: Buffer.from(base58.decode(ix.data)),
+          })),
+          addressTableLookups: (data.addressLookupTables ?? []).map((alt) => ({
+            accountKey: new PublicKey(alt.accountKey),
+            writableIndexes: alt.writableIndexes,
+            readonlyIndexes: alt.readonlyIndexes,
+          })),
+        });
+        return new VersionedTransaction(messageV0);
+      };
+
+      it('should verify a valid v0 versioned transaction (base64)', async function () {
+        const versionedData = makeBasicVersionedData();
+        const tx = await factory
+          .getCustomInstructionBuilder()
+          .sender(wallet.pub)
+          .nonce(blockHash)
+          .fromVersionedTransactionData(versionedData)
+          .build();
+
+        const valid = await basecoin.verifyTransaction({
+          txParams: { type: 'customTx', recipients: [], solVersionedTransactionData: versionedData },
+          txPrebuild: { txBase64: tx.toBroadcastFormat() },
+          wallet: walletObj,
+        } as any);
+        valid.should.equal(true);
+      });
+
+      it('should verify a valid v0 versioned transaction (hex, matching Wallet Platform serializedTxHex)', async function () {
+        const versionedData = makeBasicVersionedData();
+        const rawHex = Buffer.from(buildRawVersionedTx(versionedData).serialize()).toString('hex');
+
+        const valid = await basecoin.verifyTransaction({
+          txParams: { type: 'customTx', solVersionedTransactionData: versionedData },
+          txPrebuild: { txHex: rawHex },
+          wallet: walletObj,
+        } as any);
+        valid.should.equal(true);
+      });
+
+      it('should verify a valid v0 versioned transaction with Address Lookup Tables (ALTs)', async function () {
+        const versionedData = makeAltVersionedData();
+        const tx = await factory
+          .getCustomInstructionBuilder()
+          .sender(wallet.pub)
+          .nonce(blockHash)
+          .fromVersionedTransactionData(versionedData)
+          .build();
+
+        const valid = await basecoin.verifyTransaction({
+          txParams: { type: 'customTx', recipients: [], solVersionedTransactionData: versionedData },
+          txPrebuild: { txBase64: tx.toBroadcastFormat() },
+          wallet: walletObj,
+        } as any);
+        valid.should.equal(true);
+      });
+
+      it('should verify a valid v0 transaction after DEFI-820 recentBlockhash refresh', async function () {
+        const versionedData = makeAltVersionedData();
+        const refreshedRaw = Buffer.from(buildRawVersionedTx(versionedData, refreshedBlockHash).serialize()).toString(
+          'base64'
+        );
+
+        const valid = await basecoin.verifyTransaction({
+          txParams: { type: 'customTx', recipients: [], solVersionedTransactionData: versionedData },
+          txPrebuild: { txBase64: refreshedRaw },
+          wallet: walletObj,
+        } as any);
+        valid.should.equal(true);
+      });
+
+      it('should verify a valid v0 transaction with a third-party gasless fee payer when wallet root is a required signer', async function () {
+        const versionedData = {
+          versionedInstructions: [
+            {
+              programIdIndex: 2,
+              accountKeyIndexes: [0, 1],
+              data: base58.encode(Buffer.from('gasless swap', 'utf-8')),
+            },
+          ],
+          addressLookupTables: [],
+          staticAccountKeys: [relayerKey, wallet.pub, MEMO_PROGRAM_ID],
+          messageHeader: {
+            numRequiredSignatures: 2,
+            numReadonlySignedAccounts: 0,
+            numReadonlyUnsignedAccounts: 1,
+          },
+          recentBlockhash: blockHash,
+        };
+        const rawBase64 = Buffer.from(buildRawVersionedTx(versionedData).serialize()).toString('base64');
+
+        const valid = await basecoin.verifyTransaction({
+          txParams: { type: 'customTx', recipients: [], solVersionedTransactionData: versionedData },
+          txPrebuild: { txBase64: rawBase64 },
+          wallet: walletObj,
+        } as any);
+        valid.should.equal(true);
+      });
+
+      it('should verify a valid v0 transaction with declared sponsored feePayer matching staticAccountKeys[0]', async function () {
+        const versionedData = {
+          versionedInstructions: [
+            {
+              programIdIndex: 2,
+              accountKeyIndexes: [0, 1],
+              data: base58.encode(Buffer.from('sponsored', 'utf-8')),
+            },
+          ],
+          addressLookupTables: [],
+          staticAccountKeys: [relayerKey, wallet.pub, MEMO_PROGRAM_ID],
+          messageHeader: {
+            numRequiredSignatures: 2,
+            numReadonlySignedAccounts: 0,
+            numReadonlyUnsignedAccounts: 1,
+          },
+          recentBlockhash: blockHash,
+        };
+        const rawBase64 = Buffer.from(buildRawVersionedTx(versionedData).serialize()).toString('base64');
+
+        const valid = await basecoin.verifyTransaction({
+          txParams: { type: 'customTx', recipients: [], solVersionedTransactionData: versionedData },
+          txPrebuild: { txBase64: rawBase64 },
+          feePayer: relayerKey,
+          wallet: walletObj,
+        } as any);
+        valid.should.equal(true);
+      });
+
+      it('should verify a valid v0 transaction with empty instruction data', async function () {
+        const versionedData = {
+          ...makeBasicVersionedData(),
+          versionedInstructions: [
+            {
+              programIdIndex: 1,
+              accountKeyIndexes: [0],
+              data: '',
+            },
+          ],
+        };
+        const rawBase64 = Buffer.from(buildRawVersionedTx(versionedData).serialize()).toString('base64');
+
+        const valid = await basecoin.verifyTransaction({
+          txParams: { type: 'customTx', solVersionedTransactionData: versionedData },
+          txPrebuild: { txBase64: rawBase64 },
+          wallet: walletObj,
+        } as any);
+        valid.should.equal(true);
+      });
+
+      it('should verify a valid v0 transaction with WP-injected durable nonce (including shifted ALT indexes)', async function () {
+        const versionedData = makeAltVersionedData();
+        const tx = await factory
+          .getCustomInstructionBuilder()
+          .sender(wallet.pub)
+          .nonce(blockHash, { walletNonceAddress: nonceAccountKey, authWalletAddress: nonceAuthKey })
+          .fromVersionedTransactionData(versionedData)
+          .build();
+
+        // Without explicit durableNonce param
+        const validWithoutParam = await basecoin.verifyTransaction({
+          txParams: { type: 'customTx', solVersionedTransactionData: versionedData },
+          txPrebuild: { txBase64: tx.toBroadcastFormat() },
+          wallet: walletObj,
+        } as any);
+        validWithoutParam.should.equal(true);
+
+        // With matching durableNonce param
+        const validWithParam = await basecoin.verifyTransaction({
+          txParams: { type: 'customTx', solVersionedTransactionData: versionedData },
+          txPrebuild: { txBase64: tx.toBroadcastFormat() },
+          durableNonce: { walletNonceAddress: nonceAccountKey, authWalletAddress: nonceAuthKey },
+          wallet: walletObj,
+        } as any);
+        validWithParam.should.equal(true);
+      });
+
+      it('should reject a substituted SystemProgram.transfer draining wallet funds', async function () {
+        const versionedData = makeBasicVersionedData();
+        const maliciousTransferIx = SystemProgram.transfer({
+          fromPubkey: new PublicKey(wallet.pub),
+          toPubkey: new PublicKey(attackerKey),
+          lamports: 1_000_000_000,
+        });
+        const maliciousData = {
+          versionedInstructions: [
+            {
+              programIdIndex: 2,
+              accountKeyIndexes: [0, 1],
+              data: base58.encode(maliciousTransferIx.data),
+            },
+          ],
+          addressLookupTables: [],
+          staticAccountKeys: [wallet.pub, attackerKey, SystemProgram.programId.toBase58()],
+          messageHeader: {
+            numRequiredSignatures: 1,
+            numReadonlySignedAccounts: 0,
+            numReadonlyUnsignedAccounts: 1,
+          },
+          recentBlockhash: blockHash,
+        };
+        const maliciousRaw = Buffer.from(buildRawVersionedTx(maliciousData).serialize()).toString('base64');
+
+        await basecoin
+          .verifyTransaction({
+            txParams: { type: 'customTx', recipients: [], solVersionedTransactionData: versionedData },
+            txPrebuild: { txBase64: maliciousRaw },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith(/does not match solVersionedTransactionData/);
+      });
+
+      it('should reject modified instruction data bytes', async function () {
+        const versionedData = makeBasicVersionedData();
+        const tamperedData = {
+          ...versionedData,
+          versionedInstructions: [
+            {
+              ...versionedData.versionedInstructions[0],
+              data: base58.encode(Buffer.from('Tampered Data', 'utf-8')),
+            },
+          ],
+        };
+        const tamperedRaw = Buffer.from(buildRawVersionedTx(tamperedData).serialize()).toString('base64');
+
+        await basecoin
+          .verifyTransaction({
+            txParams: { type: 'customTx', solVersionedTransactionData: versionedData },
+            txPrebuild: { txBase64: tamperedRaw },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith(/instruction\[0\] does not match/);
+      });
+
+      it('should reject modified instruction accountKeyIndexes', async function () {
+        const versionedData = makeAltVersionedData();
+        const tamperedData = {
+          ...versionedData,
+          versionedInstructions: [
+            {
+              ...versionedData.versionedInstructions[0],
+              accountKeyIndexes: [0, 2, 1, 4, 5, 6],
+            },
+          ],
+        };
+        const tamperedRaw = Buffer.from(buildRawVersionedTx(tamperedData).serialize()).toString('base64');
+
+        await basecoin
+          .verifyTransaction({
+            txParams: { type: 'customTx', solVersionedTransactionData: versionedData },
+            txPrebuild: { txBase64: tamperedRaw },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith(/instruction\[0\] does not match/);
+      });
+
+      it('should reject an extra injected non-nonce instruction', async function () {
+        const versionedData = makeBasicVersionedData();
+        const tamperedData = {
+          ...versionedData,
+          versionedInstructions: [
+            ...versionedData.versionedInstructions,
+            {
+              programIdIndex: 1,
+              accountKeyIndexes: [0],
+              data: base58.encode(Buffer.from('extra', 'utf-8')),
+            },
+          ],
+        };
+        const tamperedRaw = Buffer.from(buildRawVersionedTx(tamperedData).serialize()).toString('base64');
+
+        await basecoin
+          .verifyTransaction({
+            txParams: { type: 'customTx', solVersionedTransactionData: versionedData },
+            txPrebuild: { txBase64: tamperedRaw },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith(/unexpected extra instruction/);
+      });
+
+      it('should reject modified staticAccountKeys', async function () {
+        const versionedData = makeAltVersionedData();
+        const tamperedData = {
+          ...versionedData,
+          staticAccountKeys: [wallet.pub, attackerKey, extraReadonlyKey, extraProgramKey],
+        };
+        const tamperedRaw = Buffer.from(buildRawVersionedTx(tamperedData).serialize()).toString('base64');
+
+        await basecoin
+          .verifyTransaction({
+            txParams: { type: 'customTx', solVersionedTransactionData: versionedData },
+            txPrebuild: { txBase64: tamperedRaw },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith(/staticAccountKeys\[1\] does not match/);
+      });
+
+      it('should reject substituted ALT accountKey or lookup indexes', async function () {
+        const versionedData = makeAltVersionedData();
+
+        const tamperedAltKey = {
+          ...versionedData,
+          addressLookupTables: [{ ...versionedData.addressLookupTables[0], accountKey: attackerKey }],
+        };
+        await basecoin
+          .verifyTransaction({
+            txParams: { type: 'customTx', solVersionedTransactionData: versionedData },
+            txPrebuild: { txBase64: Buffer.from(buildRawVersionedTx(tamperedAltKey).serialize()).toString('base64') },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith(/addressTableLookups\[0\] does not match/);
+
+        const tamperedAltIndexes = {
+          ...versionedData,
+          addressLookupTables: [{ ...versionedData.addressLookupTables[0], writableIndexes: [0, 9] }],
+        };
+        await basecoin
+          .verifyTransaction({
+            txParams: { type: 'customTx', solVersionedTransactionData: versionedData },
+            txPrebuild: {
+              txBase64: Buffer.from(buildRawVersionedTx(tamperedAltIndexes).serialize()).toString('base64'),
+            },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith(/addressTableLookups\[0\] does not match/);
+      });
+
+      it('should reject modified messageHeader flags', async function () {
+        const versionedData = makeAltVersionedData();
+        const tamperedHeader = {
+          ...versionedData,
+          messageHeader: { ...versionedData.messageHeader, numReadonlyUnsignedAccounts: 1 },
+        };
+        const tamperedRaw = Buffer.from(buildRawVersionedTx(tamperedHeader).serialize()).toString('base64');
+
+        await basecoin
+          .verifyTransaction({
+            txParams: { type: 'customTx', solVersionedTransactionData: versionedData },
+            txPrebuild: { txBase64: tamperedRaw },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith(/messageHeader does not match/);
+      });
+
+      it('should reject nonce injection that escalates an existing non-signer or read-only account', async function () {
+        const versionedData = makeAltVersionedData();
+
+        // Attempt to escalate existing non-signer extraWritableKey to signer via nonce authority
+        const escalatedAuthTx = await factory
+          .getCustomInstructionBuilder()
+          .sender(wallet.pub)
+          .nonce(blockHash, { walletNonceAddress: nonceAccountKey, authWalletAddress: extraWritableKey })
+          .fromVersionedTransactionData(versionedData)
+          .build();
+
+        await basecoin
+          .verifyTransaction({
+            txParams: { type: 'customTx', solVersionedTransactionData: versionedData },
+            txPrebuild: { txBase64: escalatedAuthTx.toBroadcastFormat() },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith(/cannot escalate an existing non-signer account to a signer/);
+
+        // Attempt to escalate existing read-only extraReadonlyKey to writable via nonce account
+        const escalatedNonceTx = await factory
+          .getCustomInstructionBuilder()
+          .sender(wallet.pub)
+          .nonce(blockHash, { walletNonceAddress: extraReadonlyKey, authWalletAddress: nonceAuthKey })
+          .fromVersionedTransactionData(versionedData)
+          .build();
+
+        await basecoin
+          .verifyTransaction({
+            txParams: { type: 'customTx', solVersionedTransactionData: versionedData },
+            txPrebuild: { txBase64: escalatedNonceTx.toBroadcastFormat() },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith(/cannot escalate an existing read-only account to writable/);
+      });
+
+      it('should reject mismatched durableNonce param', async function () {
+        const versionedData = makeAltVersionedData();
+        const tx = await factory
+          .getCustomInstructionBuilder()
+          .sender(wallet.pub)
+          .nonce(blockHash, { walletNonceAddress: nonceAccountKey, authWalletAddress: nonceAuthKey })
+          .fromVersionedTransactionData(versionedData)
+          .build();
+
+        await basecoin
+          .verifyTransaction({
+            txParams: { type: 'customTx', solVersionedTransactionData: versionedData },
+            txPrebuild: { txBase64: tx.toBroadcastFormat() },
+            durableNonce: { walletNonceAddress: attackerKey, authWalletAddress: nonceAuthKey },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith(/Tx durableNonce does not match/);
+      });
+
+      it('should reject fake 2-byte [0x00, 0x80] stub, legacy tx, v1 wire bytes, and trailing bytes', async function () {
+        const versionedData = makeBasicVersionedData();
+
+        // 2-byte [0x00, 0x80] buffer that passed the old stub
+        await basecoin
+          .verifyTransaction({
+            txParams: { type: 'customTx', solVersionedTransactionData: versionedData },
+            txPrebuild: { txBase64: Buffer.from([0x00, 0x80]).toString('base64') },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith(/failed to deserialize versioned transaction/);
+
+        // Legacy Solana transaction bytes
+        const legacyTx = await factory
+          .getTransferBuilder()
+          .sender(wallet.pub)
+          .nonce(blockHash)
+          .send({ address: attackerKey, amount: '1000' })
+          .build();
+        await basecoin
+          .verifyTransaction({
+            txParams: { type: 'customTx', solVersionedTransactionData: versionedData },
+            txPrebuild: { txBase64: legacyTx.toBroadcastFormat() },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith(/not a v0 versioned transaction/);
+
+        // v1 (0x81) wire bytes
+        const v1HeaderBytes = Buffer.concat([Buffer.from([0x00, 0x81]), Buffer.alloc(64)]);
+        await basecoin
+          .verifyTransaction({
+            txParams: { type: 'customTx', solVersionedTransactionData: versionedData },
+            txPrebuild: { txBase64: v1HeaderBytes.toString('base64') },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith(/failed to deserialize versioned transaction/);
+
+        // Valid v0 tx with trailing smuggled byte
+        const validBytes = Buffer.from(buildRawVersionedTx(versionedData).serialize());
+        const trailingBytes = Buffer.concat([validBytes, Buffer.from([0x00])]);
+        await basecoin
+          .verifyTransaction({
+            txParams: { type: 'customTx', solVersionedTransactionData: versionedData },
+            txPrebuild: { txBase64: trailingBytes.toString('base64') },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith(/non-canonical encoding or trailing bytes/);
+      });
+
+      it('should fail closed on non-customTx type, non-empty recipients, consolidation flags, or version !== 0', async function () {
+        const versionedData = makeBasicVersionedData();
+        const rawBase64 = Buffer.from(buildRawVersionedTx(versionedData).serialize()).toString('base64');
+
+        await basecoin
+          .verifyTransaction({
+            txParams: { type: 'transfer', solVersionedTransactionData: versionedData },
+            txPrebuild: { txBase64: rawBase64 },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith(/only supported for customTx/);
+
+        await basecoin
+          .verifyTransaction({
+            txParams: {
+              type: 'customTx',
+              recipients: [{ address: attackerKey, amount: '1000' }],
+              solVersionedTransactionData: versionedData,
+            },
+            txPrebuild: { txBase64: rawBase64 },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith(/recipients are not supported/);
+
+        await basecoin
+          .verifyTransaction({
+            txParams: { type: 'customTx', solVersionedTransactionData: versionedData },
+            txPrebuild: { txBase64: rawBase64, consolidateId: 'consolidate-1' },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith(/consolidations are not supported/);
+
+        await basecoin
+          .verifyTransaction({
+            txParams: { type: 'customTx', solVersionedTransactionData: { ...versionedData, version: 1 } },
+            txPrebuild: { txBase64: rawBase64 },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith(/unsupported versioned transaction version/);
+      });
+
+      it('should reject mismatched declared feePayer or wallet root absent from required signers', async function () {
+        const versionedData = makeBasicVersionedData();
+        const rawBase64 = Buffer.from(buildRawVersionedTx(versionedData).serialize()).toString('base64');
+
+        await basecoin
+          .verifyTransaction({
+            txParams: { type: 'customTx', solVersionedTransactionData: versionedData },
+            txPrebuild: { txBase64: rawBase64 },
+            feePayer: relayerKey,
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith(/does not match the declared sponsored fee payer/);
+
+        const nonWalletData = {
+          ...versionedData,
+          staticAccountKeys: [relayerKey, MEMO_PROGRAM_ID],
+        };
+        const nonWalletRaw = Buffer.from(buildRawVersionedTx(nonWalletData).serialize()).toString('base64');
+        await basecoin
+          .verifyTransaction({
+            txParams: { type: 'customTx', solVersionedTransactionData: nonWalletData },
+            txPrebuild: { txBase64: nonWalletRaw },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith(/Wallet root address is not a required signer/);
+      });
+
+      it('should verify a real multi-instruction multi-ALT Jupiter v0 swap and reject tampering', async function () {
+        const jupiterBase64 =
+          'AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAQAFDTWoM5DBCGn7cn5aV56fomo6mhD2K1c5XYhQIan41E6dG9t06ox6DMdvVuBnSEATyN/8qIq246iO5aDm1jm82x4wM40FR8Q7xSZUpUtB0lbvelaZ46oRQ2GM9hWGMukHG1EUsA1R9ZO55ClUvNMyw8IQOrfRmu3ONG50oNeluT4LgaOacN+I4d0HStcu+oh0no4XXgVUwjzk5+egiUaQDkCCjXAlSDAb46ahLAfWeKOqzO/HC/z2WgRk8RS1yc6heMZzBbR3SPDwrNvWlCZGaETaixiH9ufdOJ823Gv+MnxH1SOu6TCsX1+TMskj94D3NElDpado8okFQbUuzaijU9oAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIyXJY9OJInxuz0QKRSODYMLWhOZ2v8QhASOe9jb6fhZAwZGb+UhFzL/7K26csOb57yM5bvF9xJrLEObOkAAAAAEedVb8jHAbu50xW7OaBUH/bGy3qP0jlECsc2iVrwTjwbd9uHXZaGT2cvhRs7reawctIXtX1s3kTqM9YV+/wCp+mGpF4I4ZrV12bapJ7p61Babt3ty7HYDUKtMso38OYgHCgAFAooyBAAKAAkDoQ4BAAAAAAAIAgAFDAIAAAAwKyIAAAAAAAsFBQAgDAgJk/F7ZPSErnb/CQYABwAdCAwBAQs/HgAFDg0HIB0MDBwLJg8mEBIODSAdESYeDAwkJgIDBgsmGyYWGQ4EICUaJh4MDCQmGBcBCyIjDCEeBA0VExQfMtGYU5N8/tjpC0ANAwAAAAAAWqwAAAAAAAAyAAAAAAADAAAAJiwaAAMm5AwAAgoQJwIDDAMFAAABCQQpv5UHKk+/BN9xdZPnOLzMIScoFcJHGoDZ+fVVsNSEJQI0IwUAKA4CFyo9SDjsPdfWXAdMF0mu2+xZbw9rbR6rzNAEeFkLmyKwBGBmYWUAMHCJ6Oi0A1Qjpjp1Yv3xP+sPLm2qJ//TKZd5Z9KzjvEDwb3CA77DwOtKd1MCu6h4XJjC42yc8TcL92nhzFUR6HLW3XrAIZOvBo6Ki5CRjQOMk5Q=';
+        const original = VersionedTransaction.deserialize(Buffer.from(jupiterBase64, 'base64'));
+        const staticAccountKeys = original.message.staticAccountKeys.map((k) => k.toBase58());
+        staticAccountKeys[0] = wallet.pub;
+
+        const versionedData: VersionedTransactionData = {
+          versionedInstructions: original.message.compiledInstructions.map((ix) => ({
+            programIdIndex: ix.programIdIndex,
+            accountKeyIndexes: ix.accountKeyIndexes,
+            data: base58.encode(ix.data),
+          })),
+          addressLookupTables: (original.message.addressTableLookups ?? []).map((lookup) => ({
+            accountKey: lookup.accountKey.toBase58(),
+            writableIndexes: lookup.writableIndexes,
+            readonlyIndexes: lookup.readonlyIndexes,
+          })),
+          staticAccountKeys,
+          messageHeader: original.message.header,
+          recentBlockhash: original.message.recentBlockhash,
+        };
+
+        const built = await factory
+          .getCustomInstructionBuilder()
+          .sender(wallet.pub)
+          .nonce(blockHash)
+          .fromVersionedTransactionData(versionedData)
+          .build();
+
+        const valid = await basecoin.verifyTransaction({
+          txParams: { type: 'customTx', recipients: [], solVersionedTransactionData: versionedData },
+          txPrebuild: { txHex: Buffer.from(built.toBroadcastFormat(), 'base64').toString('hex') },
+          wallet: walletObj,
+        } as any);
+        valid.should.equal(true);
+
+        // Tamper with one instruction inside the Jupiter swap
+        const tamperedData: VersionedTransactionData = {
+          ...versionedData,
+          versionedInstructions: versionedData.versionedInstructions.map((ix, i) =>
+            i === versionedData.versionedInstructions.length - 1
+              ? { ...ix, data: base58.encode(Buffer.from([0xde, 0xad, 0xbe, 0xef])) }
+              : ix
+          ),
+        };
+        const tamperedRaw = Buffer.from(buildRawVersionedTx(tamperedData).serialize()).toString('base64');
+        await basecoin
+          .verifyTransaction({
+            txParams: { type: 'customTx', recipients: [], solVersionedTransactionData: versionedData },
+            txPrebuild: { txBase64: tamperedRaw },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith(/instruction\[\d+\] does not match/);
+      });
+
+      it('should reject a valid WP-injected nonce paired with a tampered user instruction', async function () {
+        const versionedData = makeAltVersionedData();
+        const tamperedUserData: VersionedTransactionData = {
+          ...versionedData,
+          versionedInstructions: [
+            {
+              ...versionedData.versionedInstructions[0],
+              data: base58.encode(Buffer.from([9, 9, 9, 9])),
+            },
+          ],
+        };
+        const tamperedWithNonceTx = await factory
+          .getCustomInstructionBuilder()
+          .sender(wallet.pub)
+          .nonce(blockHash, { walletNonceAddress: nonceAccountKey, authWalletAddress: nonceAuthKey })
+          .fromVersionedTransactionData(tamperedUserData)
+          .build();
+
+        await basecoin
+          .verifyTransaction({
+            txParams: { type: 'customTx', solVersionedTransactionData: versionedData },
+            txPrebuild: { txBase64: tamperedWithNonceTx.toBroadcastFormat() },
+            durableNonce: { walletNonceAddress: nonceAccountKey, authWalletAddress: nonceAuthKey },
+            wallet: walletObj,
+          } as any)
+          .should.be.rejectedWith(/instruction\[1\] does not match/);
       });
     });
   });
