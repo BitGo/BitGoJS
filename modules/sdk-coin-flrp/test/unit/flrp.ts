@@ -417,7 +417,11 @@ describe('Flrp test cases', function () {
         locktime: 0,
       };
 
-      const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+      const isVerified = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        wallet: { coinSpecific: () => ({ threshold: 2 }), receiveAddress: () => undefined },
+      });
       isVerified.should.equal(true);
     });
 
@@ -581,7 +585,7 @@ describe('Flrp test cases', function () {
         locktime: 0,
       };
       const wallet = {
-        coinSpecific: () => ({ rootAddress: IMPORT_IN_P.pAddresses.join('~') }),
+        coinSpecific: () => ({ rootAddress: IMPORT_IN_P.pAddresses.join('~'), threshold: 2 }),
         receiveAddress: () => undefined,
       };
 
@@ -743,7 +747,7 @@ describe('Flrp test cases', function () {
         locktime: 0,
       };
       const wallet = {
-        coinSpecific: () => ({ rootAddress: IMPORT_IN_P.pAddresses.slice().reverse().join('~') }),
+        coinSpecific: () => ({ rootAddress: IMPORT_IN_P.pAddresses.slice().reverse().join('~'), threshold: 2 }),
         receiveAddress: () => undefined,
       };
 
@@ -827,7 +831,7 @@ describe('Flrp test cases', function () {
         locktime: 0,
       };
       const wallet = {
-        coinSpecific: () => ({}),
+        coinSpecific: () => ({ threshold: 2 }),
         receiveAddress: () => IMPORT_IN_P.pAddresses.join('~'),
       };
 
@@ -835,9 +839,11 @@ describe('Flrp test cases', function () {
       isVerified.should.equal(true);
     });
 
-    it('should reject an import whose burned fee exceeds maxImportFee', () => {
-      // inputs 20M, output 5M — 15M burned exceeds the network maxImportFee of 10M.
-      // Real explanations map outputs to { address, amount }, inputs carry value.
+    it('should reject an import whose burned fee exceeds the gas-aware fee bound', async () => {
+      // inputs 20M, output 5M — 15M burned exceeds both the network maxImportFee (10M)
+      // and the fixture tx's gas-aware bound (gasCost x 1000). Real explanations map
+      // outputs to { address, amount }, inputs carry value.
+      const tx = await basecoin.getBuilder().from(IMPORT_IN_P.signedHex).build();
       const maliciousExplanation = {
         inputs: [
           { address: '', value: '10000000' },
@@ -847,27 +853,64 @@ describe('Flrp test cases', function () {
       };
 
       assert.throws(
-        () => basecoin.validateImportFee(maliciousExplanation),
-        /Import burns .* exceeding the network maxImportFee/
+        () => basecoin.validateImportFee(maliciousExplanation, tx),
+        /Import burns .* exceeding the gas-aware import fee bound/
       );
     });
 
-    it('should accept an import whose burned fee is within maxImportFee', () => {
+    it('should accept an import whose burned fee is within the flat maxImportFee', async () => {
+      const tx = await basecoin.getBuilder().from(IMPORT_IN_P.signedHex).build();
       const explanation = {
         inputs: [{ address: '', value: '50000000' }],
         outputs: [{ address: IMPORT_IN_P.pAddresses.join('~'), amount: '48739000' }],
       };
 
-      assert.doesNotThrow(() => basecoin.validateImportFee(explanation));
+      assert.doesNotThrow(() => basecoin.validateImportFee(explanation, tx));
     });
 
-    it('should fail closed when import output entries lack the amount field', () => {
+    it('should accept a large import whose gas-scaled fee exceeds the flat maxImportFee (CECHO-2717 review)', async () => {
+      // flarejs charges per serialized byte and per signature, so a large import's
+      // legitimate fee scales with its own gas cost and can exceed the flat 10M
+      // maxImportFee. The burned fee must be accepted whenever it stays under the
+      // transaction's gas-aware bound (gasCost x MAX_IMPORT_FEE_RATE_PER_GAS).
+      const tx = await basecoin.getBuilder().from(IMPORT_IN_P.signedHex).build();
+      const gasAwareBound = basecoin.importGasCost(tx).times(1000).toNumber();
+      const maxImportFee = 10000000;
+      gasAwareBound.should.be.greaterThan(maxImportFee);
+
+      // burned fee above the flat cap but below the gas-aware bound must pass
+      const burned = maxImportFee + 1;
+      const explanation = {
+        inputs: [{ address: '', value: (50000000 + burned).toString() }],
+        outputs: [{ address: IMPORT_IN_P.pAddresses.join('~'), amount: '50000000' }],
+      };
+
+      assert.doesNotThrow(() => basecoin.validateImportFee(explanation, tx));
+    });
+
+    it('should reject an import whose burned fee exceeds the gas-aware bound even when inputs are many', async () => {
+      const tx = await basecoin.getBuilder().from(IMPORT_IN_P.signedHex).build();
+      const gasAwareBound = basecoin.importGasCost(tx).times(1000).toNumber();
+
+      // burned fee one unit above the gas-aware bound must fail — the bound retains
+      // protection against excessive fees no matter how the prebuild is shaped
+      const burned = gasAwareBound + 1;
+      const explanation = {
+        inputs: [{ address: '', value: (50000000 + burned).toString() }],
+        outputs: [{ address: IMPORT_IN_P.pAddresses.join('~'), amount: '50000000' }],
+      };
+
+      assert.throws(() => basecoin.validateImportFee(explanation, tx), /exceeding the gas-aware import fee bound/);
+    });
+
+    it('should fail closed when import output entries lack the amount field', async () => {
+      const tx = await basecoin.getBuilder().from(IMPORT_IN_P.signedHex).build();
       const malformedExplanation = {
         inputs: [{ address: '', value: '50000000' }],
         outputs: [{ address: IMPORT_IN_P.pAddresses.join('~') }],
       };
 
-      assert.throws(() => basecoin.validateImportFee(malformedExplanation), /not finite numbers/);
+      assert.throws(() => basecoin.validateImportFee(malformedExplanation, tx), /not finite numbers/);
     });
   });
 
@@ -1494,7 +1537,11 @@ describe('Flrp test cases', function () {
           locktime: 0,
         };
 
-        const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+        const isVerified = await basecoin.verifyTransaction({
+          txParams,
+          txPrebuild,
+          wallet: { coinSpecific: () => ({ threshold: 1 }), receiveAddress: () => undefined },
+        });
         isVerified.should.equal(true);
       });
 
@@ -1507,7 +1554,11 @@ describe('Flrp test cases', function () {
           locktime: 0,
         };
 
-        const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+        const isVerified = await basecoin.verifyTransaction({
+          txParams,
+          txPrebuild,
+          wallet: { coinSpecific: () => ({ threshold: 1 }), receiveAddress: () => undefined },
+        });
         isVerified.should.equal(true);
       });
 
@@ -1598,7 +1649,78 @@ describe('Flrp test cases', function () {
           }),
         };
 
-        assert.doesNotThrow(() => basecoin.validateImportOutputPolicy(mixedThresholdTx));
+        assert.doesNotThrow(() =>
+          basecoin.validateImportOutputPolicy(mixedThresholdTx, {
+            wallet: { coinSpecific: () => ({ threshold: 2 }) },
+          })
+        );
+      });
+
+      it('should reject an import-to-P output whose threshold does not match the wallet spend threshold', () => {
+        // The output threshold must bind to the wallet record's independently established
+        // spend policy — a prebuild weakening the policy over the wallet's own addresses
+        // (here a 1-of-3 output for a 2-of-3 wallet) must fail verification.
+        const weakenedThresholdTx = {
+          getFlareTransaction: () => ({
+            getTx: () => ({
+              baseTx: {
+                outputs: [
+                  {
+                    output: {
+                      getLocktime: () => 0n,
+                      getThreshold: () => 1,
+                      getOwners: () => [Buffer.alloc(20, 1), Buffer.alloc(20, 2), Buffer.alloc(20, 3)],
+                    },
+                  },
+                ],
+              },
+              ins: [{ input: { sigIndicies: () => [0] } }],
+            }),
+          }),
+        };
+
+        assert.throws(
+          () =>
+            basecoin.validateImportOutputPolicy(weakenedThresholdTx, {
+              wallet: { coinSpecific: () => ({ threshold: 2 }) },
+            }),
+          /Import output threshold 1 does not match the wallet's spend threshold 2/
+        );
+      });
+
+      it('should fail closed when the wallet spend threshold is unavailable', () => {
+        // No wallet (or a wallet record without a threshold) must not silently fall back
+        // to the loose structural range check.
+        const thresholdTx = {
+          getFlareTransaction: () => ({
+            getTx: () => ({
+              baseTx: {
+                outputs: [
+                  {
+                    output: {
+                      getLocktime: () => 0n,
+                      getThreshold: () => 2,
+                      getOwners: () => [Buffer.alloc(20, 1), Buffer.alloc(20, 2), Buffer.alloc(20, 3)],
+                    },
+                  },
+                ],
+              },
+              ins: [{ input: { sigIndicies: () => [0] } }],
+            }),
+          }),
+        };
+
+        assert.throws(
+          () => basecoin.validateImportOutputPolicy(thresholdTx, {}),
+          /the wallet spend threshold is unavailable/
+        );
+        assert.throws(
+          () =>
+            basecoin.validateImportOutputPolicy(thresholdTx, {
+              wallet: { coinSpecific: () => ({}) },
+            }),
+          /the wallet spend threshold is unavailable/
+        );
       });
 
       it('should reject an import-to-P output whose threshold is structurally invalid', () => {
@@ -1615,7 +1737,7 @@ describe('Flrp test cases', function () {
             }),
           }),
         };
-        assert.throws(() => basecoin.validateImportOutputPolicy(zeroThresholdTx), /threshold 0 is invalid/);
+        assert.throws(() => basecoin.validateImportOutputPolicy(zeroThresholdTx, {}), /threshold 0 is invalid/);
 
         const overThresholdTx = {
           getFlareTransaction: () => ({
@@ -1635,7 +1757,7 @@ describe('Flrp test cases', function () {
             }),
           }),
         };
-        assert.throws(() => basecoin.validateImportOutputPolicy(overThresholdTx), /threshold 3 is invalid/);
+        assert.throws(() => basecoin.validateImportOutputPolicy(overThresholdTx, {}), /threshold 3 is invalid/);
       });
 
       it('should verify an import-to-P output with a valid 2-of-2 owner set', async () => {
@@ -1671,7 +1793,11 @@ describe('Flrp test cases', function () {
           locktime: 0,
         };
 
-        const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+        const isVerified = await basecoin.verifyTransaction({
+          txParams,
+          txPrebuild,
+          wallet: { coinSpecific: () => ({ threshold: 2 }), receiveAddress: () => undefined },
+        });
         isVerified.should.equal(true);
       });
 
@@ -1743,6 +1869,7 @@ describe('Flrp test cases', function () {
           txParams,
           txPrebuild,
           walletType: 'tss',
+          wallet: { coinSpecific: () => ({ threshold: 1 }), receiveAddress: () => undefined },
         });
         isVerified.should.equal(true);
       });
