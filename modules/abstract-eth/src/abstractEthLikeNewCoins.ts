@@ -3661,7 +3661,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
    * bypassing `TransactionBuilder.from()` / `.build()` reserialization so calldata bytes cannot be
    * altered or normalized before verification.
    */
-  protected decodeRawTssTxFields(txHex: string | undefined): { to: string; value: string; data: string } {
+  private decodeRawTssTxFields(txHex: string | undefined): { to: string; value: string; data: string } {
     if (!txHex) {
       throw new Error('missing txHex in txPrebuild');
     }
@@ -3687,7 +3687,64 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     txHex: string | undefined,
     throwRecipientMismatch: (message: string, mismatchedRecipients: Recipient[]) => Promise<never>
   ): Promise<void> {
-    const { to, value, data } = this.decodeRawTssTxFields(txHex);
+    // Resolve the declared asset first: a declared ERC-7984 payment must never bypass the
+    // confidential-transfer checks by supplying caller-authored explicit calldata.
+    const token = this.resolveTssToken(recipient.tokenName ?? txParams.tokenName);
+
+    if (token.confidential) {
+      // ERC-7984 confidential token payment: MUST call confidentialTransfer(address,bytes32,bytes)
+      // on the declared token contract with zero native value and matching recipient.
+      // Encrypted amount (handle + inputProof) cannot be decrypted client-side and stays a warning.
+      // Decode the exact signed bytes rather than a builder rebuild so calldata cannot be altered.
+      const raw = this.decodeRawTssTxFields(txHex);
+      const confidentialMismatch = (message: string, address = raw.to, amount = raw.value): Promise<never> =>
+        throwRecipientMismatch(message, [{ address, amount }]);
+      const expectedSelector = confidentialTransferWithProofMethodId.toLowerCase();
+      if (!raw.data.startsWith(expectedSelector)) {
+        await confidentialMismatch('ERC-7984 payment calldata must use confidentialTransfer(address,bytes32,bytes)');
+      }
+      if (!isCanonicalTssCalldata(raw.data, confidentialTransferWithProofTypes)) {
+        await confidentialMismatch('ERC-7984 confidentialTransfer calldata is not canonical');
+      }
+      const [innerRecipient, encryptedHandle, inputProof] = decodeTssCalldataArgs(
+        raw.data,
+        confidentialTransferWithProofTypes
+      );
+      const decodedRecipient = addHexPrefix(innerRecipient as string).toLowerCase();
+      if (!recipient.address || decodedRecipient !== recipient.address.toLowerCase()) {
+        await confidentialMismatch(
+          'destination address does not match with the recipient address',
+          decodedRecipient,
+          raw.value
+        );
+      }
+      if (!tssValuesEqual(raw.value, '0')) {
+        await confidentialMismatch('ERC-7984 confidential transfer must not carry native value');
+      }
+      if (!token.contract || raw.to !== token.contract) {
+        await confidentialMismatch('transaction is not sent to the declared token contract');
+      }
+      const handleBuf = encryptedHandle as Buffer;
+      const proofBuf = inputProof as Buffer;
+      if (!handleBuf || handleBuf.length !== 32 || handleBuf.every((b) => b === 0)) {
+        await confidentialMismatch('ERC-7984 confidentialTransfer encryptedHandle is missing or empty');
+      }
+      if (!proofBuf || proofBuf.length === 0) {
+        await confidentialMismatch('ERC-7984 confidentialTransfer inputProof is missing or empty');
+      }
+      this.warnTssVerificationIncomplete(
+        'transfer',
+        `${token.reason}: encrypted amount cannot be verified against declared plaintext amount`
+      );
+      return;
+    }
+
+    const txBuilder = this.getTransactionBuilder();
+    txBuilder.from(txHex);
+    const txJson = (await txBuilder.build()).toJson();
+    const to = (txJson.to ?? '').toLowerCase();
+    const value = txJson.value ?? '0';
+    const data = (txJson.data || '0x').toLowerCase();
     const mismatch = (message: string, address = to, amount = value): Promise<never> =>
       throwRecipientMismatch(message, [{ address, amount }]);
 
@@ -3703,48 +3760,6 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       if (data !== addHexPrefix(recipient.data as string).toLowerCase()) {
         await mismatch('transaction calldata does not match the calldata given by client');
       }
-      return;
-    }
-
-    const token = this.resolveTssToken(recipient.tokenName ?? txParams.tokenName);
-
-    if (token.confidential) {
-      // ERC-7984 confidential token payment: MUST call confidentialTransfer(address,bytes32,bytes)
-      // on the declared token contract with zero native value and matching recipient.
-      // Encrypted amount (handle + inputProof) cannot be decrypted client-side and stays a warning.
-      const expectedSelector = confidentialTransferWithProofMethodId.toLowerCase();
-      if (!data.startsWith(expectedSelector)) {
-        await mismatch('ERC-7984 payment calldata must use confidentialTransfer(address,bytes32,bytes)');
-      }
-      if (!isCanonicalTssCalldata(data, confidentialTransferWithProofTypes)) {
-        await mismatch('ERC-7984 confidentialTransfer calldata is not canonical');
-      }
-      const [innerRecipient, encryptedHandle, inputProof] = decodeTssCalldataArgs(
-        data,
-        confidentialTransferWithProofTypes
-      );
-      const decodedRecipient = addHexPrefix(innerRecipient as string).toLowerCase();
-      if (!recipient.address || decodedRecipient !== recipient.address.toLowerCase()) {
-        await mismatch('destination address does not match with the recipient address', decodedRecipient, value);
-      }
-      if (!tssValuesEqual(value, '0')) {
-        await mismatch('ERC-7984 confidential transfer must not carry native value');
-      }
-      if (!token.contract || to !== token.contract) {
-        await mismatch('transaction is not sent to the declared token contract');
-      }
-      const handleBuf = encryptedHandle as Buffer;
-      const proofBuf = inputProof as Buffer;
-      if (!handleBuf || handleBuf.length !== 32 || handleBuf.every((b) => b === 0)) {
-        await mismatch('ERC-7984 confidentialTransfer encryptedHandle is missing or empty');
-      }
-      if (!proofBuf || proofBuf.length === 0) {
-        await mismatch('ERC-7984 confidentialTransfer inputProof is missing or empty');
-      }
-      this.warnTssVerificationIncomplete(
-        'transfer',
-        `${token.reason}: encrypted amount cannot be verified against declared plaintext amount`
-      );
       return;
     }
 
@@ -3808,7 +3823,12 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     txHex: string | undefined,
     throwRecipientMismatch: (message: string, mismatchedRecipients: Recipient[]) => Promise<never>
   ): Promise<void> {
-    const { to, value, data } = this.decodeRawTssTxFields(txHex);
+    const txBuilder = this.getTransactionBuilder();
+    txBuilder.from(txHex);
+    const txJson = (await txBuilder.build()).toJson();
+    const to = (txJson.to ?? '').toLowerCase();
+    const value = txJson.value ?? '0';
+    const data = (txJson.data || '0x').toLowerCase();
     const mismatch = (message: string, address = to, amount = value): Promise<never> =>
       throwRecipientMismatch(message, [{ address, amount }]);
 

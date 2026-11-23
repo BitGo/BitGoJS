@@ -752,6 +752,18 @@ describe('TSS payment verification', function () {
       warned(/encrypted amount cannot be verified/).should.be.true();
     });
 
+    it('enforces confidentialTransfer when the recipient supplies explicit calldata', async function () {
+      // A declared ERC-7984 payment must not skip the confidential-transfer checks by presenting
+      // caller-authored explicit calldata: the ERC-7984 rules run before the generic explicit branch.
+      const attack = calldata('approve', ['address', 'uint256'], [otherRecipient, '1']);
+      const txHex = await buildTx({ to: confidentialContract, data: attack });
+      const intent = {
+        type: 'payment',
+        recipients: [{ address: confidentialContract, amount: '0', tokenName: confidentialToken, data: attack }],
+      };
+      await expectMismatch(verify(intent, txHex), /must use confidentialTransfer/);
+    });
+
     it('rejects approve(attacker, MAX) relabelled as a confidential payment', async function () {
       const attack = calldata(
         'approve',

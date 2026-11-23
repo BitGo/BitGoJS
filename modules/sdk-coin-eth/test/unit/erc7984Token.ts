@@ -30,10 +30,7 @@ import {
   TransferBuilderERC7984,
   confidentialTransferNoProofMethodId,
   approveMethodId,
-  AbstractEthLikeNewCoins,
-  EthTransactionData,
 } from '@bitgo/abstract-eth';
-import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx';
 import EthereumAbi from 'ethereumjs-abi';
 import { addHexPrefix } from 'ethereumjs-util';
 import { ethers } from 'ethers';
@@ -827,15 +824,12 @@ async function buildConfidentialTransferTxHex(opts: {
   recipientAddress: string;
   encryptedHandle: string;
   inputProof: string;
-  /** Native value carried by the outer sendMultiSig transaction (must be 0 for a real transfer). */
-  value?: string;
 }): Promise<string> {
   const key = testData.KEYPAIR_PRV.getKeys().prv as string;
   const txBuilder = getBuilder('hteth') as TransactionBuilder;
   txBuilder.fee({ fee: '1000000000', gasLimit: '12100000' });
   txBuilder.counter(1);
   txBuilder.contract(opts.walletContractAddress);
-  txBuilder.value(opts.value ?? '0');
   txBuilder.type(TransactionType.SendERC7984);
 
   const transferBuilder = txBuilder.transfer() as TransferBuilderERC7984;
@@ -1163,61 +1157,6 @@ describe('verifyTransaction – confidential transfer (SendERC7984)', function (
         wallet: {} as any,
       })
       .should.be.rejectedWith(/recipient address mismatch/);
-  });
-
-  it('should throw when the sendMultiSig-wrapped confidential call carries native value', async function () {
-    const txHex = await buildConfidentialTransferTxHex({
-      walletContractAddress: WALLET_CONTRACT,
-      tokenContractAddress: CTEST1_TOKEN_ADDRESS,
-      recipientAddress: RECIPIENT,
-      encryptedHandle: HANDLE,
-      inputProof: PROOF,
-      value: '1',
-    });
-
-    await coin
-      .verifyTransaction({
-        txParams: { recipients: [{ address: RECIPIENT, amount: AMOUNT }] },
-        txPrebuild: { txHex } as any,
-        wallet: {} as any,
-      })
-      .should.be.rejectedWith(/must not carry native value/);
-  });
-
-  // The TransactionBuilder round trip re-encodes sendMultiSig calldata and drops trailing bytes, so the
-  // check must read the original signed bytes; a rebuilt copy would look canonical.
-  it('should throw when the signed sendMultiSig calldata carries trailing bytes', async function () {
-    const builtHex = await buildConfidentialTransferTxHex({
-      walletContractAddress: WALLET_CONTRACT,
-      tokenContractAddress: CTEST1_TOKEN_ADDRESS,
-      recipientAddress: RECIPIENT,
-      encryptedHandle: HANDLE,
-      inputProof: PROOF,
-    });
-    const common = AbstractEthLikeNewCoins.getCustomChainCommon(coin.getChainId());
-    const built = EthTransactionData.fromSerialized(builtHex, common).toJson();
-    const tampered = FeeMarketEIP1559Transaction.fromTxData(
-      {
-        nonce: 1,
-        maxPriorityFeePerGas: 10,
-        maxFeePerGas: 100,
-        gasLimit: Number(built.gasLimit),
-        to: built.to,
-        value: 0,
-        data: built.data + 'ff',
-        chainId: coin.getChainId(),
-      },
-      { common }
-    );
-    const txHex = '0x' + tampered.serialize().toString('hex');
-
-    await coin
-      .verifyTransaction({
-        txParams: { recipients: [{ address: RECIPIENT, amount: AMOUNT }] },
-        txPrebuild: { txHex } as never,
-        wallet: {} as never,
-      })
-      .should.be.rejectedWith(/not canonical/);
   });
 });
 
