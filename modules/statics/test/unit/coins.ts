@@ -1035,6 +1035,18 @@ describe('CoinMap', function () {
       tavaxcName!.should.equal('tavaxc');
       should(() => coins.get(tavaxcName!)).not.throw();
     });
+
+    it('should map Kava EVM chain IDs to registered coin names', () => {
+      const kavaevmName = coins.coinNameFromChainId(2222);
+      should(kavaevmName).not.be.undefined();
+      kavaevmName!.should.equal('kavaevm');
+      should(() => coins.get(kavaevmName!)).not.throw();
+
+      const tkavaevmName = coins.coinNameFromChainId(2221);
+      should(tkavaevmName).not.be.undefined();
+      tkavaevmName!.should.equal('tkavaevm');
+      should(() => coins.get(tkavaevmName!)).not.throw();
+    });
   });
 });
 
