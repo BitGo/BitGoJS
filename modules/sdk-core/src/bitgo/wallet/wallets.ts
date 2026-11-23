@@ -454,6 +454,13 @@ export class Wallets implements IWallets {
       });
     }
 
+    // RedPallas (Zcash Orchard) keys exist only for shielded wallets, which returned above. Without this
+    // guard a non-shielded zec TSS request would fall through to the generic TSS paths below (e.g. an
+    // ECDSA key ceremony for hot wallets, or a custodial wallet without coinSpecific.isShielded).
+    if (isTss && this.baseCoin.getMPCAlgorithm() === 'redpallas') {
+      throw new Error(`coin ${this.baseCoin.getChain()} only supports TSS for shielded wallets (set isShielded: true)`);
+    }
+
     if (isTss) {
       if (!this.baseCoin.supportsTss()) {
         throw new Error(`coin ${this.baseCoin.getFamily()} does not support TSS at this time`);

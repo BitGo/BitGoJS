@@ -12,6 +12,7 @@ import { coins as staticsCoins } from '@bitgo/statics';
 import {
   BaseCoin,
   ECDSAUtils,
+  EDDSAUtils,
   EddsaUtils,
   Environments,
   Keychain,
@@ -19,6 +20,7 @@ import {
   PendingApproval,
   PendingApprovalData,
   PendingApprovalInfo,
+  RedpallasUtils,
   RequestTracer,
   SignatureShareType,
   SignedTransaction,
@@ -90,7 +92,7 @@ describe('Pending Approvals:', () => {
     (pendingApprovalData as any).wallet = wallet;
   });
 
-  ['tsol', 'teth', 'tbtc'].forEach((coinName) => {
+  ['tsol', 'teth', 'tbtc', 'tzec'].forEach((coinName) => {
     it(`should use correct tssUtils for  ${coinName}`, () => {
       const coin = bitgo.coin(coinName);
       const pendingAproval = new PendingApproval(bitgo, coin, {} as unknown as PendingApprovalData);
@@ -99,10 +101,29 @@ describe('Pending Approvals:', () => {
           pendingAproval['tssUtils'].should.be.instanceOf(ECDSAUtils.EcdsaUtils);
         } else if (coin.getMPCAlgorithm() === 'eddsa') {
           pendingAproval['tssUtils'].should.be.instanceOf(EddsaUtils);
+        } else if (coin.getMPCAlgorithm() === 'redpallas') {
+          pendingAproval['tssUtils'].should.be.instanceOf(RedpallasUtils.RedpallasMPCv2Utils);
         }
       } else {
         (pendingAproval['tssUtils'] === undefined).should.be.true();
       }
+    });
+  });
+
+  ['MPCv2', undefined].forEach((multisigTypeVersion) => {
+    it(`should use RedpallasMPCv2Utils for tzec TSS wallet, multisigTypeVersion: ${multisigTypeVersion}`, () => {
+      const coin = bitgo.coin('tzec');
+      const tzecTssWallet = new Wallet(bitgo, coin, {
+        ...walletData,
+        coin: 'tzec',
+        multisigType: 'tss',
+        multisigTypeVersion,
+      });
+
+      const pendingApproval = new PendingApproval(bitgo, coin, {} as unknown as PendingApprovalData, tzecTssWallet);
+      pendingApproval['tssUtils'].should.be.instanceOf(RedpallasUtils.RedpallasMPCv2Utils);
+      pendingApproval['tssUtils'].should.not.be.instanceOf(EddsaUtils);
+      pendingApproval['tssUtils'].should.not.be.instanceOf(EDDSAUtils.EddsaMPCv2Utils);
     });
   });
 

@@ -14,6 +14,7 @@ import {
   Wallets,
   ECDSAUtils,
   EDDSAUtils,
+  Keychains,
   KeychainsTriplet,
   GenerateWalletOptions,
   Wallet,
@@ -1056,6 +1057,69 @@ describe('V2 Wallets:', function () {
       const shieldedWallets = new Wallets(bitgo, tzec);
 
       await shieldedWallets.generateWallet(walletParams).should.be.rejectedWith('enterprise is required');
+    });
+
+    (['hot', 'custodial', 'cold'] as const).forEach((type) => {
+      [false, undefined].forEach((isShielded) => {
+        it(`should reject non-shielded ${type} TSS wallet (isShielded: ${isShielded})`, async function () {
+          const walletParams: GenerateWalletOptions = {
+            label: 'tss wallet',
+            multisigType: 'tss',
+            enterprise: 'enterprise',
+            passphrase: 'passphrase',
+            type,
+            isShielded,
+            ...(type === 'cold' && { bitgoKeyId: 'bitgoKeyId', commonKeychain: 'commonKeychain' }),
+          };
+          const createMpcSpy = sinon.spy(Keychains.prototype, 'createMpc');
+          const postSpy = sinon.spy(bitgo, 'post');
+          try {
+            await new Wallets(bitgo, tzec)
+              .generateWallet(walletParams)
+              .should.be.rejectedWith('coin tzec only supports TSS for shielded wallets (set isShielded: true)');
+            createMpcSpy.called.should.be.false();
+            postSpy.called.should.be.false();
+          } finally {
+            createMpcSpy.restore();
+            postSpy.restore();
+          }
+        });
+      });
+    });
+
+    it('should still create an onchain tzec wallet without isShielded', async function () {
+      const walletParams: GenerateWalletOptions = {
+        label: 'onchain wallet',
+        multisigType: 'onchain',
+        type: 'custodial',
+        enterprise: 'enterprise',
+      };
+
+      // Stub the request layer directly rather than nock, so interceptors left behind by other tests in
+      // this suite cannot answer the /wallet/add request.
+      const sentBodies: Record<string, unknown>[] = [];
+      const postStub = sinon.stub(bitgo, 'post').callsFake((url: string) => {
+        url.should.endWith('/api/v2/tzec/wallet/add');
+        return {
+          send: (body: Record<string, unknown>) => {
+            sentBodies.push(body);
+            return { result: async () => ({ ...walletParams, id: 'onchain-wallet', keys: ['1', '2', '3'] }) };
+          },
+        } as unknown as ReturnType<typeof bitgo.post>;
+      });
+      const keychainGetStub = sinon
+        .stub(Keychains.prototype, 'get')
+        .callsFake(async ({ id }) => ({ id, pub: `pub${id}`, type: 'independent' }));
+      try {
+        await new Wallets(bitgo, tzec).generateWallet(walletParams);
+        sentBodies.should.have.length(1);
+        should(sentBodies[0].type).equal('custodial');
+        should.not.exist(sentBodies[0].multisigType);
+        keychainGetStub.callCount.should.equal(3);
+      } finally {
+        postStub.restore();
+        keychainGetStub.restore();
+      }
     });
   });
 
