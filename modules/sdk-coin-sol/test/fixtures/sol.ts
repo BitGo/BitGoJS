@@ -612,39 +612,37 @@ export const tokenAddress = {
 };
 export const keys = {
   userKey:
-    '{"iv":"abI51qL+t0WJD/kvdO6tQA==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
-    ':"ccm","adata":"","cipher":"aes","salt":"IlrhJ5t0FRo=","ct":"G/NoEkgwCPQdOW\n' +
-    'opq+2s43uJVzvxRBhgGRYhcaPmFJWgkN9vaU0IODvvC5WBh0fNKKvPaYXniDcfwf/onk+fr7xPT\n' +
-    'R2dcn3xYWB9QyTgrzbRnP3ALmFcUuFLhruMq4cdxG6JBibEQmKpFsnBkU2+r7gCamvJq6tBiwST\n' +
-    'eu8bhGaY6jJGLAyo4dwdzyE6mdOc4lisVdx9ctMuiSyEzRwFUWJL5nLULD4MiXaN6lvJaSMmhmw\n' +
-    'QUxE0KZ2QOqaA5mPU6wTJvNA+67E/F/zc3clyC5FSRIU/I8mCx1n9H+QOncdqhdOUvH8f2tJRYv\n' +
-    'kyEjkcziQd8pBtkwUCEtd2ULlYcszHUKI3UOvo3wDP4aoOqu+1VQB2c+aM1LzpOLr6T4hnFsWIC\n' +
-    'zE8uODWGFa0yILvrHp5thQPLQvQ/IS2SDl5IIR9dWGJife1l5dDUWCLBykhiq7ipASvakYR82As\n' +
-    '68AdtlpSVsSdfmrTeogG+AtchfbMGBeyt0qYvczbP1eiFV+zRKFhRavvAUX+LfhHGD0iSeWyof/\n' +
-    'RQDmgC5Nj+/yHwQ985S61RdthPwyJ1HWzB1fSb41nX3tPxMPL0OXn0dg3Qv78RsOpD+bb/EU7Yu\n' +
-    'DGu6r2R0mP50YXY583w/+Ku95z1CydUzzd+etJ6rZCtogRj/Xuk7VbFbd66QFEKkmoyjU7Kw9XQ\n' +
-    'pYK1xlShCe1uZrPvQq942trVP83AM14IwLDxnFR7GmTJjEvf2Ojxb+9EZyYvGhQnIId6IpLtOfV\n' +
-    'AtDI7rHM0K0AgabGtUjhUA3GAtP+U/pO7u58JIXjqcQovMLUcjzqR9kWSWVyviKjJ/8g7rI3N26\n' +
-    'tA+KFV4olxuAU2nwd1Hs4U/V7IbRyLf2UN9xZxd+XdT5aRdMt72EDjY44CEoj919+yt6v/ekEJT\n' +
-    '8OBQiLAbHnxx9awIBqR68aKTr+ysv4b5iwX3S+BMasv2rMgeGdE6clkNHCVkieiUalkkZLM5aqF\n' +
-    'v6JHFev/tdZNzMbPl9F2JPRkas="}',
+    '{"iv":"Ny9mUdseALNqhGRWaa3B6g==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"yFsL4yofqwY=","ct":"\n' +
+    'mOBYoVA0uzP12965+yULzZulVkPbhyQV0uI2XhJC0WWKNIFI4DjgTAWp34Vy/peMhHkuFvaiJVU\n' +
+    'RslGACZkjkYSPqbbPA7loAomwMm9nv7YHs6aIFcuBVFsGIxlffj5B+sS19sOMtd2Qf8sQJJPPiL\n' +
+    'MZ6XRsZd0x5lQc5xgs+/mBEg5pcvecbVfCWgr8hnu+S2aIS0JGLM8lue9ubkpiZMvntBwxhoMGV\n' +
+    'zbKiQ4B9xcxr9V7+e54bN+l2FE1gzxLSAcx02Ufl7dRSaAB3D+O/Pec8XpRPyiA0qTWdqjCgJWi\n' +
+    'FC4/BoIF3yl+qdWBkwQkdqPSa8hSB0Zyn319VjHUTh+MSjrwIHWmyFH8ZwHKuQabm7WinB59CFr\n' +
+    '4OlwUAMvtnfmd9PLKNZ90rgVCgvbg+OiMwe9qT8D8piglbVGfOz71oqKZVqLBMlumAF33+nFhHD\n' +
+    't65N9TtRjaPvx1z/d++yoks7QJHLPkjxeOp0XzBIAGOjUeC6nukBuTW4LhkDgPomYbs0izYfCM9\n' +
+    'NTO5HIaXWc//SZ4D86WLmeDIrnbGBqSaYnQpWmKX9Sl72AmcOWJHFFAtr/hoWm8RAYE/RXMoeYM\n' +
+    'fYdFtZshiTzDZmCDJRU4wpBPm2R7kVx4v4PiCC2S1eibU+gThcCOag8KJG3BHuUBYDgS6E3m9G5\n' +
+    'LoyWeJe+3F+jsanH1K01HgdsMBgC+1rApNU06Dd8nW2vrjiMFs+sw/Tfr9YHIVYZJQ9E+6/u9t1\n' +
+    'onvElu3fo6NvcyjdhJDBjgQpQHv2AxOtPqLiIMDQ7PXjJ/x6ctOg1RC6PIzSlhECJogqj45zPSL\n' +
+    'vmLc0Ztt7Jlzoj9NMooKjTC7figW070pJxuKYAzGql7jkxz9i78mSO9SDcl+LQFtKnNicIwKLIh\n' +
+    'iWLqrLmf+mXXoOE2xzbpGOaiYCHnSRn3yqKw9swmxI23k/Fabge9nQDpuQSIb6mQXB8TKFZr9Cq\n' +
+    'IlFspNHkNdwL+6+2MLey3Sq6c7ZmUhWdx9gGH+ug="}',
   backupKey:
-    '{"iv":"1cOLqQflLZUqiDVpoKI2SQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
-    ':"ccm","adata":"","cipher":"aes","salt":"i50ZX4iKnpg=","ct":"ckO+rOwDQJGP1h\n' +
-    'hLXRpje98DZ+pYo3LFRm9W8T349FZQ2JfPe4dHcddxmQPLTiyaMRJZCPQmSXmK0kYM7HyQmIGb6\n' +
-    'FtAB4W5WTjukxjes8fftPlfiwSrMbDm5VIf/qPv4/k/Cd7enUnSHUUUjTy5iqli0ea47mh3l52b\n' +
-    'PYdnw4RwX0gMT/Jl82HHUYZazMe9AK+hIJuLJsv3PnUSz1SKhSYz0Wi9InSzVF7/HyG6IMmFbWM\n' +
-    'gyBPNIjaILaDpa/4rKoHBJjCDhO70rq5hjU3t0rKwbdUVcGf9HhvQwAINbWmY+Kx4YHfD622oRp\n' +
-    'D4hgcTWn5NtRu/t2/eBM72Nr+wsRanCk2CoO3L9saoQlE5M8jPPZ1oZkpnSsjq9DFCDTHM0tT4c\n' +
-    'NUcSn7z48E0a6fnQJamWE0taEFZpZfwrF63iDiK6Txc1vUL7S/mZgWzJSOogSBEbbcQYvxHizYe\n' +
-    'wwezSUkQ+MrRLYmnzgnWQYLnRuR6iOevPfH/5VnW5tE1mKx1nstx1MyGcWCIyYZ4Vsjy2N2X6L6\n' +
-    'ZAYsIzucrmyBTK3r8zFIu5RIVB3165SakvyLy0Tgkw/WxO1Ii5ydw0EKKQLbjWKcxvsH0Os5xYt\n' +
-    'Qk5VfeCoXO140LhBEeD01F3fGeF1Cgi0pm3IEcgWaw14cfHCDjKFAwiSQINJAFWRT1fz8vn3yFu\n' +
-    'aEK/HIufxynCYzLzIplabgJ7tCbCmVHQyg12ijz6G0UOvgyDFsQxRtTgr5kJNjbpbH1qhv0AnfZ\n' +
-    '4VTHKqJpsA826ZlmFc5uTZijcXtwTRmiMrAxyR0MmYL8EhdFtak+MbMyyqOxOsq7gpgCpxp1JbP\n' +
-    'OlrvWZ+vdfz6eiNR12A0ToLVrjhfnRsiljMpcxMNDUNZHzUQUIzb0LnMn8/WJ4/hXGso8bqboms\n' +
-    'oBM5Jvu9XtPLcmfiA5FZSXfWpHbgAIBhITIDyGy5MzHau7bnNoImIWOpch7IKGAK0m8s3BLWevx\n' +
-    'ahjFvzJ48z99NVMkDLzXeiv"}',
+    '{"iv":"T5cIAILY6Pk1QHV3ONMhSw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"yFsL4yofqwY=","ct":"\n' +
+    '4zKt4O0kjLxwTcsF7vuk/ObdxsvPm8m6CpFo2udzCrqXQlWzHunWaXo+IluKGM71HsjCGL9iQli\n' +
+    '1Eub15of0TVZx5ahI1hGJsL1WeisqadPQIfjuF46LwZhIANS7WlrgRyoDgIkG6Kwm64247NEtZ+\n' +
+    'WaQZ6EYsJLxiE0vG3D1W76PtmxysCC9SwjXTJ3GZcP3FAN2H+lwr2VkoLFFCeBQ6qPxW4mcW7y1\n' +
+    'Qw1epHDix0wELIgqXuafdKPU/CAuWlWE+WKuI7JwbqPTAiW0D+mOyFxzD5Fx51bL8xcul5RY0GE\n' +
+    'KXkWME/Y5/v2QqxutmU9G7EwWL5BrhBvMTg47TFJQWEnJgX4vWxDqGjuR3GY7l/xbQitaVKLXtR\n' +
+    '07UqO6rEllfjfDhgiR9fwM7FQeiYvLCuFQPXBXDgoPZjmwKWUFx0Etu5Nf55l8RHKUhRacmbuSC\n' +
+    'cnM/R0tIsCgRwrvWZmD94VwShtKp21PSHgRN60VmFr7AjnyPaQYk0UI35rOzSC3qFmx/u13U8h8\n' +
+    'PA4jSZIKFTfqla2hvIO8JsAyoXJKJd/qLkyrYRMT4J4HXBO2KKFUhNQ5NYGG0/N2GpT55J17rnj\n' +
+    'HymxX42eT0iX0/KZZHy9F72hXU1C6dV8kQSKkxvWu0CwV2LW5hQtRA+R3ASYVFFPYmG3C5rBkx2\n' +
+    'dMDqQTpYrLN1eaS5lK6Jb+OiW/eubOhek7LJ/qYbqSoHkzIOwlRqNXcIYD6TJMSeXyQgYqa17b5\n' +
+    'CaiUGFgQp9OhBQ4oBPJKTT5xxNle+aTc0Jl9dtIS1AIJNC9B9aAYl1VJMoQEwiUyRMZdwDseYAb\n' +
+    'wpSGMeWt6nPQ76JVyznd8PupFtZBz/c708EM2zwVadGiEpODDvG+APipYxOUgC9YwUr8FV+C3As\n' +
+    'ZQOtZn7XEp9ol/xC14SZNUVKmH1FaW6Wd6t8HdAx02hNxLhSS09tEzTItTPukNPv21q+xBlXKy4\n' +
+    'dchO4+zhLR1qQ8DplwLTC3vHYeuFXk1lWAu7R"}',
   bitgoKey:
     'd3530bb015dadd34c8083d544794ac6e4e0fa4ad21c1167ad590baf9b0482b9bcd6c3b9e55c\n' +
     '5cd9bf18bf96e27edd8b7f58f9f51ce0a256c5a793aeaff8db811',
@@ -653,7 +651,7 @@ export const keys = {
     '3060a1777530681a784cb15165f41e49f072d5eb8026d7a287b35',
   destinationPubKey: '3EJt66Hwfi22FRU2HWPet7faPRstiSdGxrEe486CxhTL',
   destinationPubKey2: 'HMEgbR4S2hLKfst2VZUVpHVUu4FioFPyW5iUuJvZdMvs',
-  walletPassword: 't3stSicretly!',
+  walletPassword: 'XKCUOvGT+N6Ae2g9aVEllpYN',
   durableNoncePubKey: '6LqY5ncj7s4b1c3YJV1hsn2hVPNhEfvDCNYMaCc1jJhX',
   durableNoncePubKey2: '4Y3kQtmVUfF7nimtABPpCwjihmLgJUgm8eZTAo44c4u9',
   durableNoncePubKey3: '6UW2N7eynvw1zjULpGDxPorJHj6wpvVgiFUcjzwoY6fg',

@@ -62,7 +62,7 @@ export async function downloadKeycardForDKLsTSS() {
   const userCompressed = user.getReducedKeyShare();
   const backupCompressed = backup.getReducedKeyShare();
   const encryptedUser = await encrypt(
-    't3stSicretly!',
+    'XKCUOvGT+N6Ae2g9aVEllpYN',
     btoa(
       String.fromCharCode.apply(
         null,
@@ -71,7 +71,7 @@ export async function downloadKeycardForDKLsTSS() {
     ),
   );
   const encryptedBackup = await encrypt(
-    't3stSicretly!',
+    'XKCUOvGT+N6Ae2g9aVEllpYN',
     btoa(
       String.fromCharCode.apply(
         null,
@@ -106,7 +106,7 @@ export async function downloadKeycardForDKLsTSS() {
     coin: coins.get('hteth'),
     keyCardImage: await downloadKeycardImage('eth'),
     passcodeEncryptionCode: '654321',
-    passphrase: 't3stSicretly!',
+    passphrase: 'XKCUOvGT+N6Ae2g9aVEllpYN',
     userKeychain,
     walletLabel: 'Hot DKLS Wallet',
   });
