@@ -50,4 +50,19 @@ export type TransactionExplanationUtxolibPsbt = TransactionExplanationWithSignat
 
 export type TransactionExplanationDescriptor = TransactionExplanationWithSignatures<string, Output>;
 
-export type TransactionExplanation = TransactionExplanationUtxolibPsbt | TransactionExplanationWasm;
+/**
+ * Keyless explanation of a Zcash shielded (Ironwood v6) spend PSBT of a TSS (RedPallas) wallet.
+ * Change is only what the keyless parser can recognize (an output paying back to a spent
+ * note's own address), so change outputs carry no fixed-script chain/index.
+ */
+export type TransactionExplanationShielded = AbstractUtxoTransactionExplanation<string, Output> & {
+  inputs: Array<{ address: string; value: string }>;
+  inputAmount: string;
+  /** The spent notes, in action order. */
+  shieldedSpends: Array<{ actionIndex: number; address: string; value: string; nullifier: string }>;
+};
+
+export type TransactionExplanation =
+  | TransactionExplanationUtxolibPsbt
+  | TransactionExplanationWasm
+  | TransactionExplanationShielded;

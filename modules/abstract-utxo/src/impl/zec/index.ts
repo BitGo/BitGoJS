@@ -4,3 +4,4 @@ export * from './shieldedAddress';
 export * from './address';
 export * from './recipients';
 export * from './types';
+export * from './shieldedVerify';

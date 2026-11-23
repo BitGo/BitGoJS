@@ -6,22 +6,27 @@ import {
   BitGoBase,
   ExtraPrebuildParamsOptions,
   HalfSignedUtxoTransaction,
+  IBaseCoin,
   IWallet,
   MPCAlgorithm,
   SignedTransaction,
-  Wallet,
+  TxIntentMismatchError,
   UnifiedRecipientPreference,
+  Wallet,
 } from '@bitgo/sdk-core';
 import _ from 'lodash';
 
 import {
   AbstractUtxoCoin,
   ParseTransactionOptions,
+  ExplainTransactionOptions,
   SignTransactionOptions,
   UtxoCoinSpecific,
   VerifyAddressOptions,
+  VerifyTransactionOptions,
 } from '../../abstractUtxoCoin';
 import type { ParsedTransaction } from '../../transaction/types';
+import type { TransactionExplanation } from '../../transaction/fixedScript/explainTransaction';
 import { stringToBufferTryFormats } from '../../transaction/decode';
 import { UtxoCoinName, toWasmUtxoCoinName } from '../../names';
 import { AddressCodec } from '../../transaction/recipient';
@@ -31,6 +36,7 @@ import { signIronwoodTransaction } from './signIronwoodTransaction';
 import { resolvePsbtRecipients, PsbtRecipient } from './recipients';
 import { assertShieldedWalletAddress } from './shieldedAddress';
 import type { ZcashCoinName } from './types';
+import { explainShieldedSpendPsbt, verifyShieldedSpendAgainstRecipients } from './shieldedVerify';
 
 export class Zec extends AbstractUtxoCoin {
   readonly name: UtxoCoinName = 'zec';
@@ -47,6 +53,12 @@ export class Zec extends AbstractUtxoCoin {
    */
   getMPCAlgorithm(): MPCAlgorithm {
     return 'redpallas';
+  }
+
+  override supportsTss(): boolean {
+    // Shielded (Orchard/Ironwood) wallets are RedPallas TSS; without this the Wallet
+    // constructor never instantiates tssUtils and TSS sends crash on `prebuildTxWithIntent`.
+    return true;
   }
 
   static createInstance(bitgo: BitGoBase): Zec {
@@ -110,6 +122,72 @@ export class Zec extends AbstractUtxoCoin {
       params,
       new ZecAddressCodec(this.name, this.wasmName, preference ?? 'transparent')
     );
+  }
+
+  override async verifyTransaction<TNumber extends number | bigint = number>(
+    params: VerifyTransactionOptions<TNumber>
+  ): Promise<boolean> {
+    if (params.walletType === 'tss' || params.wallet?.multisigType() === 'tss') {
+      // TSS (RedPallas) wallets carry no xpub keychains, so the fixed-script verification
+      // path (which fetches `{ pub }`-shaped keychains to classify outputs) cannot run.
+      return this.verifyShieldedTransaction(params);
+    }
+    return super.verifyTransaction(params);
+  }
+
+  /**
+   * Verify a prebuilt transaction for a TSS (RedPallas) shielded wallet against the requested
+   * recipients, without wallet keys or wallet data.
+   *
+   * The client holds no viewing keys, so it cannot prove which addresses are the wallet's.
+   * The only change it can recognize is the keyless parser's `isChange` (an output paying back
+   * to the exact address of a note the transaction spends — where wallet-platform always sends
+   * change). The prebuild must therefore:
+   *   - pass the key-free bundle verifier,
+   *   - contain every requested recipient with its exact amount,
+   *   - pay every other output to parser-marked change, and
+   *   - pay a fee within the ZIP-317 bounds wallet-platform enforces.
+   */
+  async verifyShieldedTransaction<TNumber extends number | bigint = number>(
+    params: VerifyTransactionOptions<TNumber>
+  ): Promise<boolean> {
+    const { txParams, txPrebuild, reqId } = params;
+    const txExplanation = await TxIntentMismatchError.tryGetTxExplanation(this as unknown as IBaseCoin, txPrebuild);
+    const throwTxMismatch = (message: string): never => {
+      throw new TxIntentMismatchError(message, reqId, [txParams], txPrebuild.txHex, txExplanation);
+    };
+    if (txPrebuild.txHex === undefined) {
+      return throwTxMismatch('missing required txPrebuild property txHex');
+    }
+    try {
+      verifyShieldedSpendAgainstRecipients(txPrebuild.txHex, txParams.recipients ?? [], this.name as ZcashCoinName);
+    } catch (e) {
+      return throwTxMismatch(e instanceof Error ? e.message : String(e));
+    }
+    return true;
+  }
+
+  /**
+   * Shielded spend PSBTs of TSS (RedPallas) wallets carry no fixed-script keys, so they are
+   * explained keylessly; everything else keeps the fixed-script path.
+   */
+  override async explainTransaction<TNumber extends number | bigint = number>(
+    params: ExplainTransactionOptions<TNumber>,
+    wallet?: IWallet
+  ): Promise<TransactionExplanation> {
+    const isTssWallet = wallet?.multisigType() === 'tss';
+    if (!params.pubs && (wallet === undefined || isTssWallet)) {
+      const tx = this.decodeTransactionFromPrebuild(params);
+      // A shielded-input v6 PSBT is a RedPallas spend bundle; a transparent-input one (a
+      // fixed-script shielding send) still needs the wallet's pubs.
+      if (
+        tx instanceof fixedScriptWallet.ZcashIronwoodBitGoPsbt &&
+        (isTssWallet || tx.shieldedStatus().inputKind === 'shielded')
+      ) {
+        return explainShieldedSpendPsbt(tx);
+      }
+    }
+    return super.explainTransaction(params, wallet);
   }
 
   override async getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions & { wallet: Wallet }) {

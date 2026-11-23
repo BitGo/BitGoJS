@@ -27,6 +27,7 @@ import EddsaUtils, { EddsaMPCv2Utils } from '../utils/tss/eddsa';
 import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
 import { KeyShare as EcdsaKeyShare } from '../utils/tss/ecdsa/types';
 import { KeyShare as EddsaKeyShare } from '../utils/tss/eddsa/types';
+import { RedpallasMPCv2Utils } from '../utils/tss/redpallas';
 import { sendTxRequest } from '../tss/common';
 import assert from 'assert';
 
@@ -45,7 +46,7 @@ type ApprovePendingApprovalRequestBody = {
 export class PendingApproval implements IPendingApproval {
   private readonly bitgo: BitGoBase;
   private readonly baseCoin: IBaseCoin;
-  private tssUtils?: BaseTssUtils<EcdsaKeyShare | EddsaKeyShare>;
+  private tssUtils?: BaseTssUtils<EcdsaKeyShare | EddsaKeyShare> | RedpallasMPCv2Utils;
   private wallet?: IWallet;
   private _pendingApproval: PendingApprovalData;
 
@@ -55,12 +56,16 @@ export class PendingApproval implements IPendingApproval {
     this.wallet = wallet;
 
     if (this.baseCoin.supportsTss()) {
-      if (this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
+      const mpcAlgorithm = this.baseCoin.getMPCAlgorithm();
+      if (mpcAlgorithm === 'ecdsa') {
         if (this.wallet?.multisigTypeVersion() === 'MPCv2') {
           this.tssUtils = new EcdsaMPCv2Utils(this.bitgo, this.baseCoin, wallet);
         } else {
           this.tssUtils = new EcdsaUtils(this.bitgo, this.baseCoin, wallet);
         }
+      } else if (mpcAlgorithm === 'redpallas') {
+        // RedPallas (Zcash Orchard shielded pool) is MPCv2-only; there is no MPCv1 variant.
+        this.tssUtils = new RedpallasMPCv2Utils(this.bitgo, this.baseCoin, wallet);
       } else {
         if (this.wallet?.multisigTypeVersion() === 'MPCv2') {
           this.tssUtils = new EddsaMPCv2Utils(this.bitgo, this.baseCoin, wallet);
