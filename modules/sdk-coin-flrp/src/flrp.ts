@@ -190,6 +190,16 @@ export class Flrp extends BaseCoin {
         if (params.txParams.stakingOptions) {
           this.validateDelegationTx(params.txParams, explainedTx);
           this.validateDelegationOwners(tx, params);
+        } else {
+          // MPC staking-service flow (CECHO-2715): txRequests are created by
+          // staking-service with no buildParams, so the nodeID/amount/reward intent
+          // never reaches the client — previously this skipped validation entirely.
+          // The wallet-anchored ownership checks (stake and change owners) MUST still
+          // run, failing closed when no wallet anchor is available. Residual: with no
+          // staking intent, nodeID/rewards/amount remain unbound — tracked as
+          // CECHO-2904 (supply staking intent through the signing path).
+          const walletAnchor = params.wallet?.coinSpecific()?.rootAddress || params.wallet?.receiveAddress();
+          this.validateDelegationWalletOwnership(tx, walletAnchor);
         }
         break;
       default:
@@ -464,6 +474,112 @@ export class Flrp extends BaseCoin {
   }
 
   /**
+   * Bind the delegation's wallet-owned outputs (CECHO-2715): EVERY stake output's
+   * owner set and every change-output owner must be contained in the wallet's owner
+   * set (stake outputs are built from the signing keys — a SUBSET of the wallet's full
+   * owner set — so exact-set equality would reject every multisig delegation). The
+   * wallet anchor is REQUIRED in both the intent and no-intent paths: without it the
+   * change-output redirection check — which nodeID/amount/rewards checks do not
+   * cover — cannot run, so a missing anchor fails closed. Fails closed when the
+   * parsed transaction exposes no stake outputs.
+   *
+   * @param {FlrpLib.Transaction} tx parsed delegation transaction
+   * @param {string | undefined} walletAnchor the wallet's rootAddress or receiveAddress
+   */
+  validateDelegationWalletOwnership(tx: FlrpLib.Transaction, walletAnchor: string | undefined): void {
+    const network = this._staticsCoin.network as FlareNetwork;
+    const pvmDelegatorTx = this.getDelegatorTx(tx);
+
+    if (pvmDelegatorTx.stake.length === 0) {
+      throw new Error('Delegation transaction exposes no stake outputs; refusing to verify');
+    }
+
+    if (!walletAnchor) {
+      throw new Error('Unable to verify delegation: no wallet address available in rootAddress or receiveAddress');
+    }
+
+    const anchorOwnerSet = normalizeAddressSet(walletAnchor);
+    const anchorOwners = new Set(anchorOwnerSet.split(ADDRESS_SEPARATOR));
+    const requireWalletOwned = (label: string, address: string): void => {
+      const ownerList = normalizeAddressSet(address).split(ADDRESS_SEPARATOR);
+      const foreignOwner = ownerList.find((owner) => !anchorOwners.has(owner));
+      if (foreignOwner) {
+        throw new Error(`${label} ${foreignOwner} is not one of the wallet's own addresses ${walletAnchor}`);
+      }
+    };
+
+    // A delegation can carry several stake outputs; a malicious prebuild could put a
+    // wallet-owned output first and an attacker-owned one after it, so EVERY stake
+    // output is bound, not just the first. Stake owners use SUBSET containment:
+    // stake outputs are built from the signing keys, a subset of the wallet's full
+    // owner set, so exact-set equality would reject every multisig delegation. A
+    // threshold-sanity check (1 ≤ threshold ≤ owners) applies per output; stake
+    // LOCKTIME is not checked — stake locking until the period end is expected
+    // delegation behavior, unlike change which must be immediately spendable.
+    for (const [index, stakeOutput] of pvmDelegatorTx.stake.entries()) {
+      const stakeOutputTyped = stakeOutput.output as TransferOutput;
+      const stakeOwnerCount = stakeOutputTyped.getOwners().length;
+      const stakeThreshold = stakeOutputTyped.getThreshold();
+      if (stakeThreshold < 1 || stakeThreshold > stakeOwnerCount) {
+        throw new Error(
+          `Delegation stake output ${index} threshold ${stakeThreshold} is invalid for ${stakeOwnerCount} owner(s); refusing to verify`
+        );
+      }
+      const stakeOwners = stakeOutputTyped
+        .getOwners()
+        .map((owner) => utils.addressToString(network.hrp, 'P', Buffer.from(owner)))
+        .sort()
+        .join(ADDRESS_SEPARATOR);
+      requireWalletOwned(`Delegation stake output ${index} owner`, stakeOwners);
+    }
+
+    // Surplus inputs are returned as the delegation's P-chain change outputs. Each
+    // change output must be immediately spendable (locktime 0), structurally sound
+    // (1 ≤ threshold ≤ owner count), and carry EXACTLY the wallet's owner set — the
+    // builder pays change to the wallet's full from-address set, so exact-set
+    // equality keeps a single-key change output (e.g. only the BitGo key at
+    // threshold 1) from letting the platform control the surplus alone, while
+    // builder-produced change still passes. mapOutputToEntry only accepts plain
+    // TransferableOutputs; a non-transferable (e.g. stakeable-locked) change output
+    // throws there — a fail-closed outcome for a shape the SDK builder never
+    // produces, not a false reject.
+    const changeOutputs = pvmDelegatorTx.baseTx.outputs;
+    for (const [index, changeOutput] of changeOutputs.entries()) {
+      const output = changeOutput.output as TransferOutput;
+      const locktime = output.getLocktime();
+      if (locktime !== 0n) {
+        throw new Error(
+          `Delegation change output ${index} locktime ${locktime} must be 0 — a time-locked output would freeze the wallet's funds`
+        );
+      }
+      const threshold = output.getThreshold();
+      const ownerCount = output.getOwners().length;
+      if (threshold < 1 || threshold > ownerCount) {
+        throw new Error(
+          `Delegation change output ${index} threshold ${threshold} is invalid for ${ownerCount} owner(s); refusing to verify`
+        );
+      }
+      const changeEntry = utils.mapOutputToEntry(network)(changeOutput);
+      if (normalizeAddressSet(changeEntry.address) !== anchorOwnerSet) {
+        throw new Error(
+          `Delegation change output ${index} owner set ${changeEntry.address} does not match the wallet's full owner set ${walletAnchor}`
+        );
+      }
+    }
+  }
+
+  /**
+   * Extract the parsed P-chain delegation transaction from the built SDK transaction.
+   * Shared by the delegation ownership and rewards-owner verifications so both derive
+   * the underlying tx the same way.
+   *
+   * @param {FlrpLib.Transaction} tx parsed delegation transaction
+   */
+  private getDelegatorTx(tx: FlrpLib.Transaction): pvmSerial.AddPermissionlessDelegatorTx {
+    return (tx.getFlareTransaction() as UnsignedTx).getTx() as pvmSerial.AddPermissionlessDelegatorTx;
+  }
+
+  /**
    * Bind the delegation's stake and reward ownership (review hardening for CECHO-2717):
    * a compromised platform can serve a delegation to the right node for the right
    * amount while returning the stake to an attacker owner set or paying rewards to an
@@ -480,33 +596,10 @@ export class Flrp extends BaseCoin {
     if (!rewardAddress) {
       throw new Error('Delegation transaction requires stakingOptions.rewardAddress');
     }
-    const network = this._staticsCoin.network as FlareNetwork;
-    const pvmDelegatorTx = (tx.getFlareTransaction() as UnsignedTx).getTx() as pvmSerial.AddPermissionlessDelegatorTx;
-
-    if (pvmDelegatorTx.stake.length === 0) {
-      throw new Error('Delegation transaction exposes no stake outputs; refusing to verify');
-    }
-    const stakeOwners = (pvmDelegatorTx.stake[0].output as TransferOutput)
-      .getOwners()
-      .map((owner) => utils.addressToString(network.hrp, 'P', Buffer.from(owner)))
-      .sort()
-      .join(ADDRESS_SEPARATOR);
-
-    // Stake outputs are built from the signing keys (user+bitgo, or backup+bitgo in
-    // recovery), which are a SUBSET of the wallet's full owner set — exact-set equality
-    // against the wallet anchor would reject every multisig delegation. Require the
-    // stake owners to be contained in the wallet's owner set instead.
     const walletAnchor = params.wallet?.coinSpecific()?.rootAddress || params.wallet?.receiveAddress();
-    if (walletAnchor) {
-      const anchorOwners = new Set(normalizeAddressSet(walletAnchor).split(ADDRESS_SEPARATOR));
-      const stakeOwnerList = normalizeAddressSet(stakeOwners).split(ADDRESS_SEPARATOR);
-      const foreignOwner = stakeOwnerList.find((owner) => !anchorOwners.has(owner));
-      if (foreignOwner) {
-        throw new Error(
-          `Delegation stake owner ${foreignOwner} is not one of the wallet's own addresses ${walletAnchor}`
-        );
-      }
-    }
+    this.validateDelegationWalletOwnership(tx, walletAnchor);
+
+    const pvmDelegatorTx = this.getDelegatorTx(tx);
 
     // Compare rewards owners by decoded address bytes so every accepted form of
     // stakingOptions.rewardAddress matches: bech32 P-/C- prefixed forms and 0x-prefixed
