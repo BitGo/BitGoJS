@@ -1181,6 +1181,75 @@ describe('DefiVault', function () {
     });
   });
 
+  describe('cold wallet rejection', function () {
+    function makeColdWalletData(extra?: Record<string, unknown>) {
+      return {
+        id: 'test-wallet-id',
+        coin: 'eth',
+        keys: ['user-key', 'backup-key', 'bitgo-key'],
+        enterprise: 'test-enterprise-id',
+        ...extra,
+      };
+    }
+
+    const coldRejection = 'DeFi vault flows are not supported for cold wallets';
+
+    it('rejects depositToVault for a cold wallet before any network call', async function () {
+      const coldDefi = new Wallet(mockBitGo, mockBaseCoin, makeColdWalletData({ type: 'cold' })).defi;
+
+      await assert.rejects(() => coldDefi.depositToVault({ vaultId: 'vlt-galaxy-usdc', amount: '1000000' }), {
+        message: coldRejection,
+      });
+      mockBitGo.get.called.should.be.false();
+      mockBitGo.post.called.should.be.false();
+    });
+
+    it('rejects resumeDeposit for a cold wallet before any network call', async function () {
+      const coldDefi = new Wallet(mockBitGo, mockBaseCoin, makeColdWalletData({ type: 'cold' })).defi;
+
+      await assert.rejects(() => coldDefi.resumeDeposit({ operationId: 'op-1', vaultId: 'vlt-galaxy-usdc' }), {
+        message: coldRejection,
+      });
+      mockBitGo.get.called.should.be.false();
+    });
+
+    it('rejects withdrawFromVault for a cold wallet before any network call', async function () {
+      const coldDefi = new Wallet(mockBitGo, mockBaseCoin, makeColdWalletData({ type: 'cold' })).defi;
+
+      await assert.rejects(() => coldDefi.withdrawFromVault({ vaultId: 'vlt-galaxy-usdc', amount: '1000000' }), {
+        message: coldRejection,
+      });
+      mockBitGo.get.called.should.be.false();
+    });
+
+    it('rejects wrap and unwrap for a cold wallet before any network call', async function () {
+      const coldDefi = new Wallet(mockBitGo, mockBaseCoin, makeColdWalletData({ type: 'cold' })).defi;
+
+      await assert.rejects(() => coldDefi.wrap({ vaultId: 'vlt-galaxy-weth', amount: '1000' }), {
+        message: coldRejection,
+      });
+      await assert.rejects(() => coldDefi.unwrap({ vaultId: 'vlt-galaxy-weth', amount: '1000' }), {
+        message: coldRejection,
+      });
+      mockBitGo.get.called.should.be.false();
+    });
+
+    it('rejects on isCold alone, even when type is not set', async function () {
+      const coldDefi = new Wallet(mockBitGo, mockBaseCoin, makeColdWalletData({ isCold: true })).defi;
+
+      await assert.rejects(() => coldDefi.wrap({ vaultId: 'vlt-galaxy-weth', amount: '1000' }), {
+        message: coldRejection,
+      });
+    });
+
+    it('does not reject read-only flows for a cold wallet', async function () {
+      const coldDefi = new Wallet(mockBitGo, mockBaseCoin, makeColdWalletData({ type: 'cold' })).defi;
+      mockBitGo.get.returns(mockRequest(makeMorphoVault('vlt-galaxy-usdc')));
+
+      await coldDefi.getVaultConfig({ vaultId: 'vlt-galaxy-usdc' });
+    });
+  });
+
   describe('wallet.defi getter', function () {
     it('should return a DefiVault instance', function () {
       const defi = wallet.defi;
