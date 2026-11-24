@@ -87,6 +87,14 @@ export interface BitGoAPIOptions {
    * `upgradeEncryption`.
    */
   upgradeEncryptionOnSign?: boolean;
+  /**
+   * Maximum number of Argon2id hashes running at once, shared by all clients in this JS isolate.
+   * Hashes beyond the limit wait in a FIFO queue of up to 500 entries; further calls fail with
+   * `AsyncWorkQueueFullError`. Must be a positive safe integer. Defaults to 16 (about 64 MiB of
+   * WASM memory per default-parameter hash, so about 1 GiB in flight). Accepted decrypts can use
+   * up to 256 MiB each. Not a total RSS cap. The most recently set value applies to all clients.
+   */
+  argon2Concurrency?: number;
   getAdditionalHeadersCb?: AdditionalHeadersCallback;
   requestIdPrefix?: string;
   evm?: {

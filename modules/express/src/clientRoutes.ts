@@ -505,6 +505,9 @@ async function decryptPrivKey(bg: BitGo, encryptedPrivKey: string, walletPw: str
   try {
     return await bg.decrypt({ password: walletPw, input: encryptedPrivKey });
   } catch (e) {
+    if (e instanceof Error && e.name === 'AsyncWorkQueueFullError') {
+      throw e;
+    }
     const detail = e instanceof Error ? e.message : String(e);
     if (/not valid JSON|unknown envelope version|salt must be|iv must be/i.test(detail)) {
       throw new Error(`Error when trying to decrypt private key: ${detail}`);
@@ -1944,6 +1947,7 @@ function prepareBitGo(config: Config) {
       env,
       customRootURI: customRootUri,
       customBitcoinNetwork,
+      argon2Concurrency: config.argon2Concurrency,
       accessToken,
       userAgent,
       ...(useProxyUrl

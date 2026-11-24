@@ -12,6 +12,7 @@ import { Environments } from 'bitgo';
 
 import { SSL_OP_NO_TLSv1 } from 'constants';
 import { TlsConfigurationError, NodeEnvironmentError } from '../../src/errors';
+import type { Config } from '../../src/config';
 
 import { app as expressApp, startup, createServer, createBaseUri, prepareIpc } from '../../src/expressApp';
 
@@ -577,6 +578,17 @@ describe('Bitgo Express', function () {
       const readValidStub = sinon.stub(fs, 'readFileSync').returns(validLightningSignerConfigJSON);
       (() => expressApp(args)).should.not.throw();
       readValidStub.restore();
+    });
+
+    it('should reject an invalid argon2Concurrency before serving requests', function () {
+      const base = { env: 'test', bind: 'localhost' } satisfies Partial<Config>;
+      should(() => expressApp({ ...base, argon2Concurrency: 0 } as Config)).throw(
+        'argon2Concurrency must be a positive safe integer'
+      );
+      should(() => expressApp({ ...base, argon2Concurrency: 1.5 } as Config)).throw(
+        'argon2Concurrency must be a positive safe integer'
+      );
+      should(() => expressApp({ ...base, argon2Concurrency: 4 } as Config)).not.throw();
     });
 
     it('should set keepAliveTimeout and headersTimeout if specified in config for HTTP server', async function () {

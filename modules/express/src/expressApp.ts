@@ -232,6 +232,13 @@ function checkPreconditions(config: Config) {
 
   const needsTLS = !ipc && env === 'prod' && bind !== 'localhost' && !disableSSL;
 
+  if (
+    config.argon2Concurrency !== undefined &&
+    !(Number.isSafeInteger(config.argon2Concurrency) && config.argon2Concurrency > 0)
+  ) {
+    throw new Error('argon2Concurrency must be a positive safe integer');
+  }
+
   // make sure keyPath and crtPath are set when running over TLS
   if (needsTLS && !(keyPath && crtPath) && !(sslKey && sslCert)) {
     throw new TlsConfigurationError('Must enable TLS when running against prod and listening on external interfaces!');

@@ -389,6 +389,34 @@ describe('With the handler to sign an arbitrary payload in external signing mode
       envStub.restore();
     });
 
+    it('should surface AsyncWorkQueueFullError instead of reporting a wrong passphrase', async () => {
+      const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(validPrv);
+      const envStub = sinon.stub(process, 'env').value({ [`WALLET_${walletId}_PASSPHRASE`]: 'anyPassphrase' });
+      const queueFull = Object.assign(new Error('Async work queue is full'), { name: 'AsyncWorkQueueFullError' });
+      const decryptStub = sinon.stub(bitgo, 'decrypt').rejects(queueFull);
+
+      const req = {
+        bitgo,
+        body: {
+          walletId,
+          payload,
+        },
+        decoded: {
+          walletId,
+          payload,
+        },
+        config: {
+          signerFileSystemPath: 'signerFileSystemPath',
+        },
+      } as unknown as ExpressApiRouteRequest<'express.v2.ofc.extSignPayload', 'post'>;
+
+      await handleV2OFCSignPayloadInExtSigningMode(req).should.be.rejectedWith(queueFull);
+
+      decryptStub.restore();
+      readFileStub.restore();
+      envStub.restore();
+    });
+
     it('should throw error when trying to decrypt with invalid wallet passphrase in body', async () => {
       const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(validPrv);
 

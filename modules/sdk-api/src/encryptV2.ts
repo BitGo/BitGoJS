@@ -2,6 +2,7 @@ import { argon2id } from '@bitgo/argon2';
 import { base64String, boundedInt, decodeWithCodec } from '@bitgo/sdk-core';
 import { randomBytes, webcrypto } from 'crypto';
 import * as t from 'io-ts';
+import { argon2Queue } from './argon2Limiter';
 
 /** Web Crypto subtle — browser global in DOM; Node/Electron main must use `webcrypto`. */
 const subtle = globalThis.crypto?.subtle ?? webcrypto.subtle;
@@ -92,15 +93,17 @@ async function argon2Hash(
   salt: Uint8Array,
   params: { memorySize: number; iterations: number; parallelism: number }
 ): Promise<Uint8Array> {
-  return argon2id({
-    password,
-    salt,
-    memorySize: params.memorySize,
-    iterations: params.iterations,
-    parallelism: params.parallelism,
-    hashLength: ARGON2_DEFAULTS.hashLength,
-    outputType: 'binary',
-  });
+  return argon2Queue.run(() =>
+    argon2id({
+      password,
+      salt,
+      memorySize: params.memorySize,
+      iterations: params.iterations,
+      parallelism: params.parallelism,
+      hashLength: ARGON2_DEFAULTS.hashLength,
+      outputType: 'binary',
+    })
+  );
 }
 
 async function argon2ToAesKey(
