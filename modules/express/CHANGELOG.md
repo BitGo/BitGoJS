@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [17.10.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fexpress%4017.10.0...%40bitgo%2Fexpress%4017.10.1) (2026-11-24)
+
+### Bug Fixes
+
+* **express:** bound error redaction cost and contain error-response failures (WAL-2460) ([105c8c8](https://github.com/BitGo/BitGoJS/commit/105c8c8d3bbcc18ea87c4b5514f88f2aa895226b))
+
+
 # [17.10.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fexpress%4017.9.1...%40bitgo%2Fexpress%4017.10.0) (2026-11-19)
 
 ### Features

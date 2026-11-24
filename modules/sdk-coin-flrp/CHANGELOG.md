@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.21.12](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-flrp%401.21.11...%40bitgo%2Fsdk-coin-flrp%401.21.12) (2026-11-24)
+
+### Bug Fixes
+
+* **sdk-coin-flrp:** always validate delegations and bind change outputs to the wallet ([6b35c87](https://github.com/BitGo/BitGoJS/commit/6b35c87ded190ec327302d7d8a1dbb47f5c3fefa))
+* **sdk-coin-flrp:** verify import destination and close ImportToC type-gate bypass ([7477f12](https://github.com/BitGo/BitGoJS/commit/7477f126539f27d31705de356ac77acb604b2452))
+
+
 ## [1.21.11](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-flrp%401.21.10...%40bitgo%2Fsdk-coin-flrp%401.21.11) (2026-11-19)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-flrp
