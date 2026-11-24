@@ -16,25 +16,35 @@ export interface DepositToVaultOptions {
 export interface ResumeDepositOptions {
   /** operationId of the partially-completed deposit */
   operationId: string;
+  /** vault the operation belongs to — required to fetch the operation from the vault-scoped route */
+  vaultId: string;
   /** Wallet passphrase — required for hot wallets, omit for custody */
   walletPassphrase?: string;
 }
 
 export interface GetOperationOptions {
+  /** DeFi-service vault identifier — required by the vault-scoped route */
+  vaultId: string;
   operationId: string;
 }
 
 export interface ListOperationsOptions {
   vaultId: string;
-  state?: string;
-  type?: string;
+  /** filter by wallet — the API accepts an optional walletId query param */
+  walletId?: string;
+  state?: DefiOperationState;
+  type?: 'DEPOSIT' | 'WITHDRAW';
   limit?: number;
-  cursor?: string;
+  /** pagination cursor from a previous response's nextCursor */
+  nextCursor?: string;
 }
 
 export interface GetVaultConfigOptions {
   vaultId: string;
 }
+
+/** defi-service operation states as returned by the public API (lowercase). */
+export type DefiOperationState = 'pending' | 'completed' | 'cancelled';
 
 export interface DefiOperation {
   operationId: string;
@@ -42,7 +52,7 @@ export interface DefiOperation {
   vaultId: string;
   type: 'DEPOSIT' | 'WITHDRAW';
   assetAmount: string;
-  state: string;
+  state: DefiOperationState;
   txRequestId?: string;
   associatedTxRequestId?: string;
   createdAt: string;
@@ -68,8 +78,8 @@ export type MorphoDepositResult = Erc4626DepositResult;
 export type DepositResult = ConcreteDepositResult | Erc4626DepositResult;
 
 export interface DefiOperationListResult {
-  items: DefiOperation[];
-  nextCursor?: string;
+  operations: DefiOperation[];
+  nextCursor?: string | null;
 }
 
 export interface WithdrawFromVaultOptions {
