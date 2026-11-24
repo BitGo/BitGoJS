@@ -12,6 +12,8 @@ import { BaseCoin, BaseNetwork, CoinNotDefinedError, coins, SolCoin } from '@bit
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   getAssociatedTokenAddress,
+  NATIVE_MINT,
+  NATIVE_MINT_2022,
   TOKEN_PROGRAM_ID,
   TOKEN_2022_PROGRAM_ID,
   decodeInstruction,
@@ -811,4 +813,125 @@ export function computeTransferFee(amount: string, basisPoints: number, maximumF
   const raw = (BigInt(amount) * BigInt(basisPoints)) / 10000n;
   const cap = BigInt(maximumFee);
   return (raw < cap ? raw : cap).toString();
+}
+
+/** The System Program AdvanceNonceAccount instruction: u32 little-endian index 4. */
+const SYSTEM_ADVANCE_NONCE_INDEX = 4;
+/** Position of the nonce authority in the account list of AdvanceNonceAccount: nonce, recent blockhashes, authority. */
+const ADVANCE_NONCE_AUTHORITY_POSITION = 2;
+/** Position of the funder in the account list of an associated-token-account creation. */
+const ATA_CREATE_FUNDER_POSITION = 0;
+
+function isAdvanceNonceInstruction(instruction: TransactionInstruction): boolean {
+  return (
+    instruction.programId.equals(SystemProgram.programId) &&
+    instruction.data.length >= 4 &&
+    instruction.data.readUInt32LE(0) === SYSTEM_ADVANCE_NONCE_INDEX
+  );
+}
+
+function isAtaCreationInstruction(instruction: TransactionInstruction): boolean {
+  return instruction.programId.equals(ASSOCIATED_TOKEN_PROGRAM_ID);
+}
+
+/** The Token Program Transfer instruction (index 3) names no mint: the destination's owner cannot be told. */
+const TOKEN_TRANSFER_INSTRUCTION_INDEX = 3;
+
+function isPlainTokenTransfer(instruction: TransactionInstruction): boolean {
+  return (
+    [TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID].some((program) => instruction.programId.equals(program)) &&
+    instruction.data.length > 0 &&
+    instruction.data[0] === TOKEN_TRANSFER_INSTRUCTION_INDEX
+  );
+}
+
+/**
+ * The associated token accounts the fee payer owns for the mints a transaction may touch. An instruction names its
+ * token accounts, not their owners, so a transfer or a pool deposit into an account the fee payer owns cannot be seen
+ * from the account list alone: the fee payer's account is derived for every account the transaction lists (any of
+ * them may be a mint, such as a stake pool's mint), for the mints the caller parsed, and for the native mint (a
+ * transfer of SOL into the fee payer's wrapped-SOL account), under both token programs, and compared.
+ */
+function feePayerTokenAccounts(
+  feePayer: PublicKey,
+  instructions: TransactionInstruction[],
+  extraMints: string[]
+): Set<string> {
+  const candidates = new Map<string, PublicKey>();
+  const consider = (key: PublicKey) => candidates.set(key.toBase58(), key);
+  instructions.forEach((instruction) => instruction.keys.forEach((meta) => consider(meta.pubkey)));
+  extraMints.forEach((mint) => consider(new PublicKey(mint)));
+  consider(NATIVE_MINT);
+  consider(NATIVE_MINT_2022);
+  const owned = new Set<string>();
+  for (const mint of candidates.values()) {
+    for (const tokenProgram of [TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID]) {
+      const [address] = PublicKey.findProgramAddressSync(
+        [feePayer.toBuffer(), tokenProgram.toBuffer(), mint.toBuffer()],
+        ASSOCIATED_TOKEN_PROGRAM_ID
+      );
+      owned.add(address.toBase58());
+    }
+  }
+  return owned;
+}
+
+/**
+ * Whether a fee payer other than the wallet is isolated from the transaction's instructions: it pays the network fee
+ * and may be the durable-nonce authority or the funder of a token-account creation, and nothing else. It is never a
+ * source, destination, owner, delegate or authority of any other instruction, and it owns none of the token accounts
+ * the transaction moves tokens into or out of.
+ *
+ * The check runs on the compiled instructions (account lists and data), not on parsed parameters, because the parsers
+ * drop accounts they do not model: a stake account's staker and withdrawer, or the destination of a pool deposit.
+ *
+ * @param feePayer the transaction's fee payer
+ * @param instructions the compiled instructions of the transaction
+ * @param extraMints mints the caller knows the transaction moves (parsed token transfers), derived in addition to
+ *   the mints found in the instructions
+ * @returns true when no instruction references the fee payer outside the two roles above
+ *
+ * @obligation MUST reject the fee payer in any account list or inside any instruction data, except as the
+ *   AdvanceNonceAccount authority and as the funder of an associated-token-account creation — consequence: a stake
+ *   whose staker or withdrawer is the fee payer, an approval or authority change to it, or a transfer to it is never
+ *   accepted as sponsored, whichever address the server names as the fee payer
+ * @obligation MUST reject a token account the fee payer owns (its associated token account for every account the
+ *   transaction lists, for the parsed mints and for the native mint) in any account list — consequence: a token
+ *   transfer, a pool deposit or a transfer of SOL into the fee payer's token account is not accepted
+ * @obligation MUST reject a plain token Transfer, which names no mint — consequence: a transfer into a token account
+ *   whose owner cannot be derived is never accepted as sponsored (the builders use TransferChecked)
+ * @edge a token account the fee payer owns that is not its associated token account cannot be recognised without
+ *   reading the chain — consequence: the caller's recipients check (txParams.recipients) is the remaining guard there
+ * @edge the rent of a closed token account goes to the destination the instruction names; a destination that is the
+ *   fee payer's token account for a mint the transaction never lists is not recognised — consequence: bounded to the
+ *   closed account's rent, and close-ATA transactions skip this check
+ * @guarantees SHALL return true for a transaction with no instruction — consequence: the caller decides what an
+ *   empty transaction means
+ */
+export function isFeePayerIsolated(
+  feePayer: string,
+  instructions: TransactionInstruction[],
+  extraMints: string[] = []
+): boolean {
+  const feePayerKey = new PublicKey(feePayer);
+  const feePayerBytes = feePayerKey.toBuffer();
+  const ownedTokenAccounts = feePayerTokenAccounts(feePayerKey, instructions, extraMints);
+  return instructions.every((instruction) => {
+    if (isPlainTokenTransfer(instruction) || instruction.data.includes(feePayerBytes)) {
+      return false;
+    }
+    return instruction.keys.every((meta, position) => {
+      const address = meta.pubkey.toBase58();
+      if (ownedTokenAccounts.has(address)) {
+        return false;
+      }
+      if (address !== feePayer) {
+        return true;
+      }
+      return (
+        (isAdvanceNonceInstruction(instruction) && position === ADVANCE_NONCE_AUTHORITY_POSITION) ||
+        (isAtaCreationInstruction(instruction) && position === ATA_CREATE_FUNDER_POSITION)
+      );
+    });
+  });
 }
