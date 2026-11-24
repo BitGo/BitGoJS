@@ -290,6 +290,20 @@ export interface TransactionParams {
   stakingRequestId?: string;
   /** ERC-7984 shield intent (`type: 'wrapApprove' | 'wrap'`): wrapper coin name and exact amount. */
   wrapParams?: { tokenName: string; amount: string };
+  /**
+   * DeFi vault intent parameters (`type: 'defiApprove' | 'defiDeposit' | 'defiWithdraw'`):
+   * vault the operation targets and the exact amount (share amount for defiWithdraw).
+   * Reconstructed from the flattened intent on no-txParams signing paths
+   * (see resolveEffectiveTxParams) so the coin verifier's DeFi calldata checks still run.
+   * Shape matches the existing EthTransactionParams.defiParams redeclaration
+   * (DefiIntentParams) — keep the fields required or the optional-to-required
+   * variance breaks EthLike verifyTransaction assignability (sdk-coin-flr).
+   */
+  defiParams?: {
+    vaultId: string;
+    amount: string;
+    operationId?: string;
+  };
   /** External settlement executor party ID for Canton standing delegation intents. */
   executorPartyId?: string;
   /** Canton split (fanout): number of equal-value holdings the selected unspents are split into. */

@@ -31,6 +31,10 @@ describe('recipientUtils', function () {
         'defiApprove',
         'defiDeposit',
         'defiWithdraw',
+        // DeFi vault operations are registered in the camelCase spelling only:
+        // resolveEffectiveTxParams normalizes the kebab-case intentType WP
+        // persists, so the no-txParams PA path matches the camelCase entries.
+        // The normalization tests below pin that contract.
         // Native wrap/unwrap — registered in both spellings on purpose
         'wrapNative',
         'wrap-native',
@@ -82,7 +86,7 @@ describe('recipientUtils', function () {
     });
 
     it('does not contain value-transfer types', function () {
-      ['payment', 'fanout', 'vote', 'defi-deposit', 'defi-redeem'].forEach((t) => {
+      ['payment', 'fanout', 'vote', 'transfer'].forEach((t) => {
         assert.ok(!NO_RECIPIENT_TX_TYPES.has(t), `${t} must NOT be in NO_RECIPIENT_TX_TYPES`);
       });
     });
@@ -385,6 +389,107 @@ describe('recipientUtils', function () {
         for (const intentType of ['wrap-native', 'unwrap-native']) {
           const txRequest = makeTxRequest({ intent: { intentType, vaultId: 'vlt-weth-1', amount: '10' } as any });
           assert.doesNotThrow(() => resolveEffectiveTxParams(txRequest, undefined));
+        }
+      });
+    });
+
+    describe('DeFi vault intent propagation (kebab-case persisted intentTypes)', function () {
+      // WP persists defi intentTypes kebab-case with the defiParams flattened onto the
+      // intent by createIntent (vaultId/amount; shareTokenAmount for defi-withdraw —
+      // see mpcUtils.createIntent). pendingApproval.approve() → recreateTxRequest() →
+      // signTxRequest() carries no txParams, so the intent is the ONLY source of both
+      // the type and the defiParams. The coin verifier's dedicated DeFi calldata checks
+      // (abstractEthLikeNewCoins.verifyTssTransaction) key on the camelCase txParams.type
+      // and read txParams.defiParams, so the type must be normalized and defiParams
+      // reconstructed — otherwise the PA-approved leg skips DeFi verification entirely.
+      const kebabToCamel: Record<string, string> = {
+        'defi-approve': 'defiApprove',
+        'defi-deposit': 'defiDeposit',
+        'defi-withdraw': 'defiWithdraw',
+      };
+
+      it('does not throw for kebab-case DeFi intents signed without txParams (PA approve path)', function () {
+        for (const intentType of Object.keys(kebabToCamel)) {
+          const txRequest = makeTxRequest({ intent: { intentType } as PopulatedIntent });
+          const result = resolveEffectiveTxParams(txRequest, undefined);
+          assert.strictEqual(result.type, kebabToCamel[intentType]);
+          assert.strictEqual(result.recipients, undefined);
+        }
+      });
+
+      it('reconstructs defiParams from the flattened intent (vaultId/amount, shareTokenAmount for withdraw)', function () {
+        for (const intentType of Object.keys(kebabToCamel)) {
+          const txRequest = makeTxRequest({
+            intent: {
+              intentType,
+              vaultId: 'vlt-galaxy-usdc',
+              amount: '1000000',
+              shareTokenAmount: '900000',
+            } as PopulatedIntent,
+          });
+          const result = resolveEffectiveTxParams(txRequest, undefined);
+          assert.strictEqual(result.type, kebabToCamel[intentType]);
+          assert.deepStrictEqual(result.defiParams, {
+            vaultId: 'vlt-galaxy-usdc',
+            amount: intentType === 'defi-withdraw' ? '900000' : '1000000',
+          });
+        }
+      });
+
+      it('propagates operationId from the intent onto the reconstructed defiParams', function () {
+        const txRequest = makeTxRequest({
+          intent: {
+            intentType: 'defi-deposit',
+            vaultId: 'vlt-galaxy-usdc',
+            amount: '1000000',
+            operationId: 'op-123',
+          } as PopulatedIntent,
+        });
+        const result = resolveEffectiveTxParams(txRequest, undefined);
+        assert.deepStrictEqual(result.defiParams, {
+          vaultId: 'vlt-galaxy-usdc',
+          amount: '1000000',
+          operationId: 'op-123',
+        });
+      });
+
+      it('does not overwrite defiParams supplied by the caller', function () {
+        const callerDefiParams = { vaultId: 'vlt-caller', amount: '5' };
+        const txRequest = makeTxRequest({
+          intent: { intentType: 'defi-approve', vaultId: 'vlt-galaxy-usdc', amount: '1000000' } as PopulatedIntent,
+        });
+        const result = resolveEffectiveTxParams(txRequest, { type: 'defiApprove', defiParams: callerDefiParams });
+        assert.deepStrictEqual(result.defiParams, callerDefiParams);
+      });
+
+      it('does not derive defiParams for non-defi intents', function () {
+        const txRequest = makeTxRequest({ intent: { intentType: 'consolidate' } as PopulatedIntent });
+        const result = resolveEffectiveTxParams(txRequest, undefined);
+        assert.strictEqual(result.defiParams, undefined);
+      });
+
+      it('reconstructs nothing (fail closed) when the flattened intent fields are malformed', function () {
+        // Non-string amount/shareTokenAmount or a missing/non-string vaultId ⇒ no
+        // defiParams reach the coin verifier, which then rejects the sign with
+        // 'missing required intent parameters' — fail closed (see the analogous
+        // wrapParams non-string-amount test above).
+        const malformedIntents: PopulatedIntent[] = [
+          { intentType: 'defi-deposit', vaultId: 'vlt-galaxy-usdc', amount: { value: '1000000' } } as PopulatedIntent,
+          // Deliberately malformed shapes — the double cast is the point of the test.
+          {
+            intentType: 'defi-withdraw',
+            vaultId: 'vlt-galaxy-usdc',
+            shareTokenAmount: 900000,
+          } as unknown as PopulatedIntent,
+          { intentType: 'defi-approve', amount: '1000000' } as PopulatedIntent,
+        ];
+        for (const intent of malformedIntents) {
+          const txRequest = makeTxRequest({ intent });
+          const result = resolveEffectiveTxParams(txRequest, undefined);
+          // The type still normalizes so the verifier routes into its DeFi
+          // calldata checks — but with no defiParams to check against.
+          assert.strictEqual(result.type, kebabToCamel[intent.intentType]);
+          assert.strictEqual(result.defiParams, undefined);
         }
       });
     });

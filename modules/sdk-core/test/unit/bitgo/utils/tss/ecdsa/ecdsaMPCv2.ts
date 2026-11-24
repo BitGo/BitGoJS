@@ -20,6 +20,7 @@ import {
   EcdsaMPCv2KeyGenCallbacks,
   IBaseCoin,
   IWallet,
+  IRequestTracer,
   RequestTracer,
   SignatureShareRecord,
   SignatureShareType,
@@ -833,6 +834,105 @@ describe('ECDSA MPC v2', async () => {
       const verifyCallArgs = verifyTransactionSpy.firstCall.args[0];
       assert.strictEqual(verifyCallArgs.txParams.type, intentType);
       assert.strictEqual(verifyCallArgs.txParams.recipients, undefined);
+    });
+  });
+
+  // Regression test for DEFI-1356: WP persists DeFi vault intentTypes kebab-case with the
+  // defiParams flattened onto the intent (vaultId/amount, shareTokenAmount for withdraw —
+  // see mpcUtils.createIntent). The coin verifier's dedicated DeFi calldata checks
+  // (abstractEthLikeNewCoins.verifyTssTransaction) key on the camelCase txParams.type and
+  // read txParams.defiParams, so a no-txParams sign must normalize the type and reconstruct
+  // defiParams — otherwise the PA-approved leg skips DeFi verification entirely (only the
+  // warnTssVerificationIncomplete warning fires). Pin it through the real signRequestBase()
+  // -> resolveEffectiveTxParams() -> verifyTransaction() wiring, mirroring the wrap-native
+  // regression above: pendingApproval.approve() -> recreateTxRequest() -> signTxRequest()
+  // carries no txParams at all, so the intent is the only source of type and defiParams.
+  ['defi-approve', 'defi-deposit', 'defi-withdraw'].forEach((intentType) => {
+    it(`signRequestBase should hand the verifier a camelCase type and defiParams for a no-txParams ${intentType} intent`, async () => {
+      const serializedTxHex = 'f86c808504a817c80082520894' + '00'.repeat(20) + '80808080';
+      const signableHex = serializedTxHex;
+      const derivationPath = 'm/0';
+
+      const mockBgWithPost = {} as BitGoBase;
+      mockBgWithPost.getEnv = sinon.stub().returns('test');
+      mockBgWithPost.setRequestTracer = sinon.stub();
+      mockBgWithPost.encrypt = sinon.stub().resolves('encrypted');
+      mockBgWithPost.decrypt = sinon.stub().resolves('decrypted');
+      mockBgWithPost.post = sinon.stub().returns({
+        send: sinon.stub().returnsThis(),
+        set: sinon.stub().returnsThis(),
+        result: sinon.stub().rejects(new Error('mock: HTTP not available')),
+      });
+
+      const verifyTransactionSpy = sinon.stub().resolves(true);
+      const mockCoinForDefi = {
+        getHashFunction: sinon.stub().callsFake(() => createKeccakHash('keccak256') as Hash),
+        verifyTransaction: verifyTransactionSpy,
+        getMPCAlgorithm: sinon.stub().returns('ecdsa'),
+        getChain: sinon.stub().returns('hteth'),
+        getConfig: sinon.stub().returns({ family: 'hteth' }),
+      } as unknown as IBaseCoin;
+
+      const mockWallet = {
+        id: sinon.stub().returns(walletID),
+        multisigType: sinon.stub().returns('tss'),
+        multisigTypeVersion: sinon.stub().returns('MPCv2'),
+      };
+
+      const defiUtils = new EcdsaMPCv2Utils(mockBgWithPost, mockCoinForDefi, mockWallet as unknown as IWallet);
+      sinon
+        .stub(defiUtils as unknown as Record<string, unknown>, 'pickBitgoPubGpgKeyForSigning')
+        .resolves(bitgoGpgKey.public);
+
+      // The persisted intent shape from mpcUtils.createIntent: flattened DefiIntentFields,
+      // no defiParams container. No recipients anywhere — the calldata is built server-side.
+      const txRequest = {
+        txRequestId: `defi-test-${intentType}`,
+        apiVersion: 'full',
+        walletId: walletID,
+        intent: {
+          intentType,
+          vaultId: 'vlt-galaxy-usdc',
+          amount: '1000000',
+          shareTokenAmount: '900000',
+        },
+        transactions: [
+          {
+            unsignedTx: { derivationPath, signableHex, serializedTxHex },
+            signatureShares: [],
+          },
+        ],
+      } as unknown as TxRequest;
+
+      try {
+        await defiUtils.signTxRequest({
+          txRequest,
+          // No txParams at all — mirrors pendingApproval.approve() -> recreateTxRequest() ->
+          // signTxRequest(), the one signing path that only ever sees the kebab-case intentType.
+          txParams: undefined,
+          prv: userShare.toString('base64'),
+          reqId: { inc: sinon.stub(), toString: sinon.stub().returns('test-req') } as unknown as IRequestTracer,
+        });
+      } catch (e) {}
+
+      assert.strictEqual(
+        verifyTransactionSpy.callCount,
+        1,
+        'verifyTransaction must be reached: resolveEffectiveTxParams must not throw for a no-recipients ' +
+          `${intentType} intent`
+      );
+      const verifyCallArgs = verifyTransactionSpy.firstCall.args[0];
+      const camelCaseType = {
+        'defi-approve': 'defiApprove',
+        'defi-deposit': 'defiDeposit',
+        'defi-withdraw': 'defiWithdraw',
+      }[intentType];
+      assert.strictEqual(verifyCallArgs.txParams.type, camelCaseType);
+      assert.strictEqual(verifyCallArgs.txParams.recipients, undefined);
+      assert.deepStrictEqual(verifyCallArgs.txParams.defiParams, {
+        vaultId: 'vlt-galaxy-usdc',
+        amount: intentType === 'defi-withdraw' ? '900000' : '1000000',
+      });
     });
   });
 

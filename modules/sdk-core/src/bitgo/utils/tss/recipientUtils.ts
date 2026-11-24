@@ -11,7 +11,9 @@ import { PopulatedIntent, TxRequest } from './baseTypes';
  * ECDSA types: acceleration, fillNonce, transferToken, tokenApproval, consolidate,
  *              bridgeFunds, enableToken, customTx, wrapApprove, wrap, unwrap,
  *              finalizeUnwrap, contractCall
- * BSC/BNB delegation-based staking: delegate, undelegate, switchValidator
+ * DeFi vault operations: defiApprove, defiDeposit, defiWithdraw (camelCase
+ *              only — resolveEffectiveTxParams normalizes the kebab-case
+ *              intentType WP persists)
  * CELO/ETH lock-based staking: stake, unstake, stakeWithCallData, unstakeWithCallData,
  *              transferStake, increaseStake, goUnstake
  * Claim rewards (BSC, CELO — TRX/SOL use EdDSA and are unaffected): claim, stakeClaimRewards
@@ -29,7 +31,15 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
   'disableToken',
   'disabletoken',
   'customTx',
-  // DeFi vault operations — recipients/calldata built server-side from defiParams
+  // DeFi vault operations — recipients/calldata built server-side from defiParams.
+  // Registered only in the camelCase txParams.type spelling: WP persists the
+  // intentType kebab-case ('defi-approve' etc.), and resolveEffectiveTxParams
+  // normalizes that persisted spelling to the camelCase type before any
+  // consumer of this set sees it — so the no-txParams signing path
+  // (pendingApproval.approve() → recreateTxRequest() → signTxRequest())
+  // matches here AND reaches the coin verifier's dedicated DeFi calldata
+  // checks, which also key on the camelCase type. The normalization is the
+  // single bridge; do not rely on dual registration here.
   'defiApprove',
   'defiDeposit',
   'defiWithdraw',
@@ -106,6 +116,16 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
 ]);
 
 /**
+ * DeFi vault intents: the kebab-case intentType WP persists → the camelCase
+ * txParams.type that the coin verifier's dedicated DeFi calldata checks key on
+ * (abstractEthLikeNewCoins.verifyTssTransaction).
+ */
+const DEFI_INTENT_TYPE_TO_TX_TYPE: Record<string, 'defiApprove' | 'defiDeposit' | 'defiWithdraw'> = {
+  'defi-approve': 'defiApprove',
+  'defi-deposit': 'defiDeposit',
+  'defi-withdraw': 'defiWithdraw',
+};
+/**
  * The SDK persists intent recipient addresses as `{ address }`, but txRequests created by other clients
  * (e.g. the retail UI's Canton split) store a plain string. Accept both.
  */
@@ -164,6 +184,36 @@ export function resolveEffectiveTxParams(
     ...txParams,
     recipients: txParams?.recipients?.length ? txParams.recipients : intentRecipients,
   };
+
+  // DeFi vault intents: WP persists intentType kebab-case ('defi-approve',
+  // 'defi-deposit', 'defi-withdraw') with the defiParams flattened onto the
+  // intent by createIntent (vaultId/amount, shareTokenAmount for defi-withdraw).
+  // Signing paths that carry no txParams — pendingApproval.approve() →
+  // recreateTxRequest() → signTxRequest() — must still reach the coin
+  // verifier's dedicated DeFi calldata checks, which key on the camelCase
+  // txParams.type and read txParams.defiParams (abstractEthLikeNewCoins
+  // verifyTssTransaction). Normalize the type and reconstruct defiParams from
+  // the flattened intent, mirroring the wrapApprove wrapParams propagation
+  // below. A malformed intent (non-string amount fields) reconstructs nothing
+  // and the coin verifier then rejects the sign with 'missing required intent
+  // parameters' — fail closed.
+  const defiIntent = txRequest.intent as PopulatedIntent | undefined;
+  const defiTxType = defiIntent ? DEFI_INTENT_TYPE_TO_TX_TYPE[defiIntent.intentType] : undefined;
+  if (defiTxType && defiIntent) {
+    if (!effectiveTxParams.type) {
+      effectiveTxParams.type = defiTxType;
+    }
+    if (!effectiveTxParams.defiParams) {
+      const amount = defiIntent.intentType === 'defi-withdraw' ? defiIntent.shareTokenAmount : defiIntent.amount;
+      if (typeof defiIntent.vaultId === 'string' && typeof amount === 'string') {
+        effectiveTxParams.defiParams = {
+          vaultId: defiIntent.vaultId,
+          amount,
+          ...(typeof defiIntent.operationId === 'string' && { operationId: defiIntent.operationId }),
+        };
+      }
+    }
+  }
 
   // Fall back to intent.intentType when txParams.type is not explicitly set.
   // Staking wallets call signTransaction without txParams, so the type lives only in the intent.
