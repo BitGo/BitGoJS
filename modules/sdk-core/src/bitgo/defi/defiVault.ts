@@ -158,16 +158,10 @@ export class DefiVault implements IDefiVault {
    * calls (approve + deposit) and returns the operationId that links them.
    */
   private async depositToErc4626Vault(params: DepositToVaultOptions): Promise<Erc4626DepositResult> {
-    // TODO(CGD-1709): Re-enable active operation pre-flight check once the
-    // defi-service operations endpoint is deployed and returning active state.
-    // const activeOps: DefiOperationListResult = await this.bitgo
-    //   .get(this.bitgo.microservicesUrl(this.operationsUrl()))
-    //   .query({ vaultId: params.vaultId, state: 'active' })
-    //   .result();
-    //
-    // if (activeOps.items && activeOps.items.length > 0) {
-    //   throw new ActiveOperationExistsError(activeOps.items[0].operationId);
-    // }
+    // (The active-operation pre-flight check previously sketched here targeted a
+    // wallet-scoped operations route that does not exist and a 'active' state
+    // the API never returns. It is re-added correctly in the seamless-recovery
+    // work against the vault-scoped route with state: 'pending', type: 'DEPOSIT'.)
 
     // Step 1: Approve txRequest via sendMany
     const approveResult = await this.wallet.sendMany({
@@ -212,15 +206,21 @@ export class DefiVault implements IDefiVault {
    * between the approve and deposit txRequest creation.
    *
    * @param params.operationId - the operationId from the original depositToVault call
+   * @param params.vaultId - the vault the operation belongs to (from the original call
+   *   or from ActiveOperationExistsError)
    * @param params.walletPassphrase - required for hot wallets, omit for custody
    */
   async resumeDeposit(params: ResumeDepositOptions): Promise<DepositResult> {
-    if (!params.operationId) {
-      throw new Error('operationId is required');
+    if (!params.vaultId || !params.operationId) {
+      throw new Error('vaultId and operationId are required');
     }
 
     // Fetch the operation to get the vault and amount details
-    const operation = await this.getOperation({ operationId: params.operationId });
+    const operation = await this.getOperation({ vaultId: params.vaultId, operationId: params.operationId });
+
+    if (operation.vaultId !== params.vaultId) {
+      throw new Error(`operation ${params.operationId} does not belong to vault ${params.vaultId}`);
+    }
 
     if (operation.associatedTxRequestId) {
       throw new Error('Deposit txRequest already exists for this operation; nothing to resume');
@@ -251,49 +251,58 @@ export class DefiVault implements IDefiVault {
   }
 
   /**
-   * Get the current state of a DeFi operation.
+   * Get the current state of a DeFi operation from the vault-scoped
+   * defi-service route.
    *
+   * @param params.vaultId - the vault the operation belongs to
    * @param params.operationId - the operation to retrieve
    */
   async getOperation(params: GetOperationOptions): Promise<DefiOperation> {
-    if (!params.operationId) {
-      throw new Error('operationId is required');
+    if (!params.vaultId || !params.operationId) {
+      throw new Error('vaultId and operationId are required');
     }
 
-    return await this.bitgo.get(this.bitgo.microservicesUrl(this.operationsUrl() + '/' + params.operationId)).result();
+    return await this.bitgo
+      .get(this.bitgo.microservicesUrl(`${this.operationsUrl(params.vaultId)}/${params.operationId}`))
+      .set('enterprise-id', this.wallet.toJSON().enterprise)
+      .result();
   }
 
   /**
-   * List operations for a vault filtered by walletId.
+   * List operations for a vault from the vault-scoped defi-service route.
    *
    * @param params.vaultId - vault to list operations for
-   * @param params.state - optional state filter
+   * @param params.walletId - optional wallet filter
+   * @param params.state - optional state filter (pending | completed | cancelled)
    * @param params.type - optional type filter (DEPOSIT | WITHDRAW)
    * @param params.limit - page size
-   * @param params.cursor - pagination cursor
+   * @param params.nextCursor - pagination cursor from a previous response
    */
   async listOperations(params: ListOperationsOptions): Promise<DefiOperationListResult> {
     if (!params.vaultId) {
       throw new Error('vaultId is required');
     }
 
-    const query: Record<string, string | number> = {
-      vaultId: params.vaultId,
-    };
+    const query: Record<string, string | number> = {};
+    if (params.walletId) query.walletId = params.walletId;
     if (params.state) query.state = params.state;
     if (params.type) query.type = params.type;
     if (params.limit) query.limit = params.limit;
-    if (params.cursor) query.cursor = params.cursor;
+    if (params.nextCursor) query.nextCursor = params.nextCursor;
 
-    return await this.bitgo.get(this.bitgo.microservicesUrl(this.operationsUrl())).query(query).result();
+    return await this.bitgo
+      .get(this.bitgo.microservicesUrl(this.operationsUrl(params.vaultId)))
+      .query(query)
+      .set('enterprise-id', this.wallet.toJSON().enterprise)
+      .result();
   }
 
   /**
    * Withdraw vault shares from a DeFi vault.
    *
    * Issues a single sendMany call (defiWithdraw) and returns the operationId
-   * and txRequestId. The state machine for withdrawal is simpler than deposit:
-   * CREATED → WITHDRAW_TX_REQUESTED → WITHDRAW_SIGNED → WITHDRAW_CONFIRMED → COMPLETED
+   * and txRequestId. The operation the caller observes transitions through the
+   * API states `pending → completed | cancelled` (lowercase).
    *
    * @param params.vaultId - DeFi-service vault identifier
    * @param params.amount - amount in base units of the vault share token
@@ -468,7 +477,7 @@ export class DefiVault implements IDefiVault {
     };
   }
 
-  private operationsUrl(): string {
-    return `/api/defi-service/v1/wallets/${this.wallet.id()}/operations`;
+  private operationsUrl(vaultId: string): string {
+    return `/api/defi-service/v1/vaults/${vaultId}/operations`;
   }
 }
