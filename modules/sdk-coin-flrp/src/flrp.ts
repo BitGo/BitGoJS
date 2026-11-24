@@ -39,6 +39,24 @@ import { isValidAddress as isValidEthAddress } from 'ethereumjs-util';
 import { pvmSerial, TransferOutput, UnsignedTx } from '@flarenetwork/flarejs';
 
 /**
+ * FlareJS import gas model, mirroring the gas-cost function flarejs applies in
+ * newImportTxFromBaseFee: one gas per serialized unsigned-tx byte, gas per signature
+ * slot, plus the fixed AtomicTxBaseCost.
+ */
+const IMPORT_GAS_PER_SIGNATURE = 1000n;
+const IMPORT_TX_BASE_GAS = 10000n;
+
+/**
+ * Verification-time ceiling on the per-gas fee rate (nFLR per gas unit) an import may
+ * burn (CECHO-2717 review follow-up). Flare C-chain base fees are historically in the
+ * tens of nFLR per gas (the CECHO-2717 fixtures use 25); 1000 nFLR/gas is ~40x that,
+ * absorbing base-fee volatility and P-chain fee-state spikes while still bounding a
+ * compromised prebuild: the burned fee can never exceed gasCost x 1000, however many
+ * UTXOs the import consumes.
+ */
+const MAX_IMPORT_FEE_RATE_PER_GAS = 1000n;
+
+/**
  * Normalize an address (or tilde-joined owner set) for comparison: case-insensitive
  * and order-insensitive over the sorted owner set. Handles both single addresses and
  * multisig owner sets for P-chain destinations.
@@ -173,7 +191,7 @@ export class Flrp extends BaseCoin {
             );
           }
           this.validateImportTx(explainedTx.inputs, params.txParams);
-          this.validateImportFee(explainedTx);
+          this.validateImportFee(explainedTx, tx);
         } else {
           // Import to P-chain: the output owner set receiving the imported value must be
           // the wallet's own address, with its spend policy preserved (CECHO-2717).
@@ -182,8 +200,8 @@ export class Flrp extends BaseCoin {
           }
           this.validateImportTx(explainedTx.inputs, params.txParams);
           this.validateImportDestination(explainedTx.outputs[0].address, params);
-          this.validateImportOutputPolicy(tx);
-          this.validateImportFee(explainedTx);
+          this.validateImportOutputPolicy(tx, params);
+          this.validateImportFee(explainedTx, tx);
         }
         break;
       case TransactionType.AddPermissionlessDelegator:
@@ -338,23 +356,27 @@ export class Flrp extends BaseCoin {
   /**
    * Bind the import-to-P output's spend policy (review hardening for CECHO-2717):
    * the output must be immediately spendable (locktime 0), consume at least one UTXO,
-   * and be structurally sound (threshold between 1 and the owner count).
+   * be structurally sound (threshold between 1 and the owner count), and — the binding
+   * that matters — spend with the wallet's own spend policy: the output threshold must
+   * equal the threshold on the wallet record (1 for TSS wallets, 2 for 2-of-3 multisig),
+   * the same independently established value wallet-platform passes to the import
+   * builder. A prebuild weakening the spend policy over the wallet's own addresses
+   * (for example a 1-of-3 output for a 2-of-3 wallet) must fail verification, and a
+   * missing wallet threshold fails closed rather than falling back to the loose range
+   * check.
    *
    * The output threshold is deliberately NOT bound to the consumed UTXOs' thresholds:
    * those are set by whoever created the atomic UTXO (the earlier export) and may
    * legitimately differ from the wallet's output threshold — importing a 1-of-N UTXO
-   * into a 2-of-3 output is valid, and equality here would reject flows the base branch
-   * verified. No client-side authoritative expected threshold exists either (TSS
-   * wallets use 1, custodial m-of-n uses m, and neither reaches verifyTransaction),
-   * so threshold weakening within the wallet's own owner set is not verifiable here —
-   * the owner-set binding in validateImportDestination is what keeps the funds on
-   * wallet-controlled addresses.
+   * into a 2-of-3 output is valid.
    *
    * @param {FlrpLib.Transaction} tx the parsed transaction carrying the raw outputs
+   * @param {FlrpVerifyTransactionOptions} params verification params carrying the wallet record
    * @throws Error when the output locktime is nonzero, the import consumes no UTXOs,
-   * or the output threshold is structurally invalid
+   * the output threshold is structurally invalid, or the output threshold does not
+   * match the wallet's spend threshold
    */
-  validateImportOutputPolicy(tx: FlrpLib.Transaction): void {
+  validateImportOutputPolicy(tx: FlrpLib.Transaction, params: FlrpVerifyTransactionOptions): void {
     const pvmImportTx = (tx.getFlareTransaction() as UnsignedTx).getTx() as pvmSerial.ImportTx;
     const output = pvmImportTx.baseTx.outputs[0].output as TransferOutput;
 
@@ -374,19 +396,43 @@ export class Flrp extends BaseCoin {
     if (threshold < 1 || threshold > ownerCount) {
       throw new Error(`Import output threshold ${threshold} is invalid for ${ownerCount} owner(s); refusing to verify`);
     }
+
+    // The wallet record is platform wallet data, not the prebuild under verification —
+    // the threshold it carries is the independently established wallet spend policy.
+    // Cast: the flrp wallet subdocument serializes its P-chain spend threshold into
+    // coinSpecific (wallet-platform flrp.schema), which sdk-core's WalletCoinSpecific
+    // does not model; the typeof guard below validates the value before use.
+    const coinSpecific = params.wallet?.coinSpecific() as { threshold?: unknown } | undefined;
+    const walletThreshold = coinSpecific?.threshold;
+    if (typeof walletThreshold !== 'number' || !Number.isInteger(walletThreshold) || walletThreshold < 1) {
+      throw new Error(
+        'Import output threshold cannot be verified: the wallet spend threshold is unavailable; refusing to verify'
+      );
+    }
+    if (threshold !== walletThreshold) {
+      throw new Error(
+        `Import output threshold ${threshold} does not match the wallet's spend threshold ${walletThreshold}; refusing to verify`
+      );
+    }
   }
 
   /**
    * Bound the fee burned by an import (review hardening for CECHO-2717): the
    * difference between consumed input value and the output value is burned as the
-   * import fee. Without this check, a prebuild paying the right destination a dust
-   * amount while burning the rest as fee would pass verification.
+   * import fee. The bound is gas-aware because flarejs charges per serialized byte
+   * and per signature slot (plus the fixed AtomicTxBaseCost): a large import
+   * legitimately burns a fee that scales with its own size, so a flat cap alone would
+   * reject every such import. The burned fee must stay within the larger of the
+   * network's flat maxImportFee and this transaction's own gas cost priced at the
+   * MAX_IMPORT_FEE_RATE_PER_GAS ceiling — a prebuild paying the right destination a
+   * dust amount while burning the rest as fee still exceeds that bound and fails.
    *
    * @param {FlrpLib.TransactionExplanation} explainedTx parsed import explanation
-   * @throws Error when the burned fee exceeds the network's maxImportFee
+   * @param {FlrpLib.Transaction} tx the parsed transaction whose gas cost bounds the fee
+   * @throws Error when the burned fee exceeds the gas-aware import fee bound
    */
-  validateImportFee(explainedTx: FlrpLib.TransactionExplanation): void {
-    const maxImportFee = (this._staticsCoin.network as FlareNetwork).maxImportFee;
+  validateImportFee(explainedTx: FlrpLib.TransactionExplanation, tx: FlrpLib.Transaction): void {
+    const maxImportFee = new BigNumber((this._staticsCoin.network as FlareNetwork).maxImportFee);
     // Input entries carry `value`; output entries carry `amount` (explainTransaction
     // maps outputs to { address, amount }). Fail closed when either total is not a
     // finite number — a field mismatch must never silently disable the cap.
@@ -399,11 +445,31 @@ export class Flrp extends BaseCoin {
       throw new Error('Import fee cap: input/output totals are not finite numbers; refusing to verify');
     }
     const burnedFee = consumedTotal.minus(importedTotal);
-    if (burnedFee.isGreaterThan(maxImportFee)) {
+    const feeBound = BigNumber.max(maxImportFee, this.importGasCost(tx).times(MAX_IMPORT_FEE_RATE_PER_GAS.toString()));
+    if (burnedFee.isGreaterThan(feeBound)) {
       throw new Error(
-        `Import burns ${burnedFee.toString()} in fees, exceeding the network maxImportFee ${maxImportFee}`
+        `Import burns ${burnedFee.toString()} in fees, exceeding the gas-aware import fee bound ${feeBound.toString()} (network maxImportFee ${maxImportFee.toString()})`
       );
     }
+  }
+
+  /**
+   * Gas this import charges under FlareJS's import gas model: one gas per serialized
+   * unsigned-tx byte, IMPORT_GAS_PER_SIGNATURE per signature slot, plus the fixed
+   * IMPORT_TX_BASE_GAS (AtomicTxBaseCost). Mirrors the gas-cost function flarejs
+   * applies in newImportTxFromBaseFee, computed from the parsed transaction under
+   * verification so the fee bound tracks the transaction's real cost.
+   *
+   * @param {FlrpLib.Transaction} tx the parsed import transaction
+   * @returns {BigNumber} the import's gas cost in gas units
+   */
+  importGasCost(tx: FlrpLib.Transaction): BigNumber {
+    const unsignedTx = tx.getFlareTransaction() as UnsignedTx;
+    const sigIndices = unsignedTx.getSigIndices() as number[][];
+    const signatureCount = sigIndices.reduce((total, indices) => total + indices.length, 0);
+    const gasUnits =
+      BigInt(unsignedTx.toBytes().length) + IMPORT_GAS_PER_SIGNATURE * BigInt(signatureCount) + IMPORT_TX_BASE_GAS;
+    return new BigNumber(gasUnits.toString());
   }
 
   /**
