@@ -26,15 +26,46 @@ import { BitGoBase } from '../bitgoBase';
 import { decodeWithCodec } from '../utils';
 
 /**
- * Error thrown when a concurrent active deposit already exists for the (wallet, vault) pair.
+ * Error thrown when a concurrent active deposit already exists for the
+ * (wallet, vault) pair.
+ *
+ * Carries everything needed to resume seamlessly — catch it and call
+ * {@link DefiVault.resumeDeposit} with the error's own fields, no extra
+ * API calls:
+ *
+ * ```ts
+ * try {
+ *   result = await wallet.defi.depositToVault({ vaultId, amount, walletPassphrase });
+ * } catch (e) {
+ *   if (e instanceof ActiveOperationExistsError) {
+ *     // same amount already in flight → finish it; different amount → ask the user
+ *     result = await wallet.defi.resumeDeposit({
+ *       operationId: e.operationId,
+ *       vaultId: e.vaultId,
+ *       walletPassphrase,
+ *     });
+ *   } else {
+ *     throw e;
+ *   }
+ * }
+ * ```
+ *
+ * The result has the standard deposit shape either way, so the caller's flow
+ * is identical for fresh and resumed deposits.
  */
 export class ActiveOperationExistsError extends Error {
   public readonly operationId: string;
+  /** The vault the in-flight operation belongs to. */
+  public readonly vaultId: string;
+  /** The in-flight amount, to compare against what the user asked for. */
+  public readonly assetAmount: string;
 
-  constructor(operationId: string) {
-    super(`An active deposit operation already exists: ${operationId}`);
+  constructor(params: { operationId: string; vaultId: string; assetAmount: string }) {
+    super(`An active deposit operation already exists: ${params.operationId}`);
     this.name = 'ActiveOperationExistsError';
-    this.operationId = operationId;
+    this.operationId = params.operationId;
+    this.vaultId = params.vaultId;
+    this.assetAmount = params.assetAmount;
   }
 }
 
@@ -159,10 +190,24 @@ export class DefiVault implements IDefiVault {
    * calls (approve + deposit) and returns the operationId that links them.
    */
   private async depositToErc4626Vault(params: DepositToVaultOptions): Promise<Erc4626DepositResult> {
-    // (The active-operation pre-flight check previously sketched here targeted a
-    // wallet-scoped operations route that does not exist and a 'active' state
-    // the API never returns. It is re-added correctly in the seamless-recovery
-    // work against the vault-scoped route with state: 'pending', type: 'DEPOSIT'.)
+    // Pre-flight: a still-pending DEPOSIT for this wallet+vault means a
+    // partially-completed (or in-flight) deposit — hand the caller everything
+    // needed to resume it seamlessly (see ActiveOperationExistsError). A
+    // pending WITHDRAW must not block a deposit, hence the type filter.
+    const activeOps = await this.listOperations({
+      vaultId: params.vaultId,
+      walletId: this.wallet.id(),
+      state: 'pending',
+      type: 'DEPOSIT',
+    });
+    if (activeOps.operations.length > 0) {
+      const op = activeOps.operations[0];
+      throw new ActiveOperationExistsError({
+        operationId: op.operationId,
+        vaultId: op.vaultId,
+        assetAmount: op.assetAmount,
+      });
+    }
 
     // Step 1: Approve txRequest via sendMany
     const approveResult = await this.wallet.sendMany({
@@ -212,7 +257,20 @@ export class DefiVault implements IDefiVault {
 
   /**
    * Resume a partially-completed deposit. Call this when the SDK process died
-   * between the approve and deposit txRequest creation.
+   * between the approve and deposit txRequest creation, or catch
+   * {@link ActiveOperationExistsError} from {@link depositToVault} and pass
+   * its fields straight through.
+   *
+   * Idempotent: for an operation that is already fully created (both legs
+   * issued — e.g. a crash after both sendMany calls, still awaiting
+   * approvals or on-chain confirmation), returns the existing leg ids
+   * without issuing another deposit. Only an operation with no approve leg
+   * at all is unrecoverable client-side and throws.
+   *
+   * Known limitation: the fully-created path returns leg ids only — the
+   * operation record carries no pending-approval ids, so no
+   * `pendingApprovalIds` are returned even when the legs are gated; callers
+   * discover pending approvals via the wallet's pending-approval listing.
    *
    * @param params.operationId - the operationId from the original depositToVault call
    * @param params.vaultId - the vault the operation belongs to (from the original call
@@ -232,11 +290,34 @@ export class DefiVault implements IDefiVault {
       throw new Error(`operation ${params.operationId} does not belong to vault ${params.vaultId}`);
     }
 
-    if (operation.associatedTxRequestId) {
-      throw new Error('Deposit txRequest already exists for this operation; nothing to resume');
+    if (operation.state === 'cancelled') {
+      throw new Error(`operation ${params.operationId} is cancelled; nothing to resume`);
     }
 
-    if (!operation.txRequestId) {
+    if (operation.walletId !== this.wallet.id()) {
+      throw new Error(`operation ${params.operationId} does not belong to wallet ${this.wallet.id()}`);
+    }
+
+    // defi-service links the legs to the operation as (verified live):
+    // associatedTxRequestId = the approve leg (set as soon as the approve leg
+    // is created); txRequestId = the deposit leg (null until it is issued).
+    const approveTxRequestId = operation.associatedTxRequestId;
+    const depositTxRequestId = operation.txRequestId;
+
+    if (depositTxRequestId && approveTxRequestId) {
+      // Fully created already (crash after both sendMany calls, or the legs
+      // are simply awaiting approvals/on-chain confirmation) — resume must
+      // converge to the standard result shape, not dead-end.
+      return {
+        operationId: params.operationId,
+        txRequestIds: {
+          approve: approveTxRequestId,
+          deposit: depositTxRequestId,
+        },
+      };
+    }
+
+    if (!approveTxRequestId) {
       throw new Error('Approve txRequest not found for this operation; cannot resume');
     }
 
@@ -256,7 +337,7 @@ export class DefiVault implements IDefiVault {
     return {
       operationId: params.operationId,
       txRequestIds: {
-        approve: operation.txRequestId,
+        approve: approveTxRequestId,
         deposit: this.extractTxRequestId(depositResult),
       },
       ...(depositPendingApprovalId && { pendingApprovalIds: { deposit: depositPendingApprovalId } }),
