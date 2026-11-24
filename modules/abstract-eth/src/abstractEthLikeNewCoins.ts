@@ -94,6 +94,7 @@ import {
   decodeUnwrapCalldata,
   decodeWrapCalldata,
   ERC1155TransferBuilder,
+  EthTransactionData,
   ERC721TransferBuilder,
   getBufferedByteCode,
   getCommon,
@@ -596,6 +597,9 @@ export const optionalDeps = {
 
 /** Intent types other than payments that verifyTssTransaction already verifies. */
 const TSS_DEDICATED_INTENT_TYPES = new Set(['defiApprove', 'defiDeposit', 'defiWithdraw', 'wrapApprove']);
+
+/** Contract-call / custom-tx intent spellings verified against a single declared recipient. */
+const TSS_CONTRACT_CALL_INTENT_TYPES = new Set(['contractCall', 'contract-call', 'customTx', 'custom-tx']);
 
 type TssDecodedArg = ReturnType<typeof getRawDecoded>[number];
 
@@ -3647,6 +3651,27 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
   }
 
   /**
+   * Decode raw serialized EVM transaction bytes directly via `EthTransactionData.fromSerialized`,
+   * bypassing `TransactionBuilder.from()` / `.build()` reserialization so calldata bytes cannot be
+   * altered or normalized before verification.
+   */
+  private decodeRawTssTxFields(txHex: string | undefined): { to: string; value: string; data: string } {
+    if (!txHex) {
+      throw new Error('missing txHex in txPrebuild');
+    }
+    const common = AbstractEthLikeNewCoins.getCustomChainCommon(this.getChainId());
+    if (!this.staticsCoin?.features.includes(CoinFeature.EIP1559)) {
+      common.setHardfork(optionalDeps.EthCommon.Hardfork.Petersburg);
+    }
+    const txJson = EthTransactionData.fromSerialized(txHex, common).toJson();
+    return {
+      to: (txJson.to ?? '').toLowerCase(),
+      value: txJson.value ?? '0',
+      data: (txJson.data || '0x').toLowerCase(),
+    };
+  }
+
+  /**
    * Verify a single-recipient payment: explicit calldata must match exactly; otherwise the bytes
    * must be a plain native send or a canonical ERC-20 transfer of the declared token.
    */
@@ -3821,6 +3846,48 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
   }
 
   /**
+   * Verify a `contractCall` / `customTx` (including kebab-case aliases) intent against the decoded
+   * transaction. Fails closed unless exactly one recipient is declared and decoded `to`, `value`
+   * (default 0) and `data` match the declared address, amount and calldata exactly.
+   */
+  private async verifyTssContractCall(
+    txType: string,
+    recipients: ITransactionRecipient[],
+    txHex: string | undefined,
+    throwRecipientMismatch: (message: string, mismatchedRecipients: Recipient[]) => Promise<never>
+  ): Promise<void> {
+    if (recipients.length === 0) {
+      await throwRecipientMismatch(`${txType} transaction requires a declared recipient to verify against`, []);
+    }
+    if (recipients.length > 1) {
+      await throwRecipientMismatch(
+        `${txType} transaction must declare a single recipient, got ${recipients.length}`,
+        []
+      );
+    }
+
+    const recipient = recipients[0];
+    const { to, value, data } = this.decodeRawTssTxFields(txHex);
+    const mismatch = (message: string, address = to, amount = value): Promise<never> =>
+      throwRecipientMismatch(message, [{ address, amount }]);
+
+    if (!recipient.address || to !== recipient.address.toLowerCase()) {
+      await mismatch('destination address does not match with the recipient address');
+    }
+    const expectedAmount =
+      recipient.amount === undefined || recipient.amount === null || recipient.amount === '' ? '0' : recipient.amount;
+    if (!tssValuesEqual(value, expectedAmount)) {
+      await mismatch('the transaction amount in txPrebuild does not match the value given by client');
+    }
+    const expectedData = isEmptyTssCalldata(recipient.data)
+      ? '0x'
+      : addHexPrefix(recipient.data as string).toLowerCase();
+    if (data !== expectedData) {
+      await mismatch('transaction calldata does not match the calldata given by client');
+    }
+  }
+
+  /**
    * @param {VerifyEthTransactionOptions} params
    * @param {TransactionParams} params.txParams - params object passed to send
    * @param {TransactionPrebuild} params.txPrebuild - prebuild object returned by server
@@ -3851,7 +3918,10 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
         txPrebuild?.consolidateId ||
         txParams.stakingRequestId ||
         txParams.prebuildTx?.stakingRequestId ||
-        (txParams.type && NO_RECIPIENT_TX_TYPES.has(txParams.type))
+        (txParams.type && NO_RECIPIENT_TX_TYPES.has(txParams.type)) ||
+        // The kebab-case aliases of contractCall/customTx are not in NO_RECIPIENT_TX_TYPES, but they
+        // are verified fail-closed below, so they must not trip this generic guard either.
+        (txParams.type && TSS_CONTRACT_CALL_INTENT_TYPES.has(txParams.type))
       )
     ) {
       throw new Error('missing txParams');
@@ -3876,6 +3946,8 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       } else {
         await this.verifyTssBatchPayment(txParams, recipients, txPrebuild.txHex, throwRecipientMismatch);
       }
+    } else if (txType && TSS_CONTRACT_CALL_INTENT_TYPES.has(txType)) {
+      await this.verifyTssContractCall(txType, txParams.recipients ?? [], txPrebuild.txHex, throwRecipientMismatch);
     } else if (txType && !TSS_DEDICATED_INTENT_TYPES.has(txType) && !params.verification?.consolidationToBaseAddress) {
       this.warnTssVerificationIncomplete(
         txType,
