@@ -122,6 +122,7 @@ export class DefiVault implements IDefiVault {
     if (!params.amount) {
       throw new Error('amount is required');
     }
+    this.assertDeFiSupportedWallet();
 
     const protocol = await this.getVaultProtocol({ vaultId: params.vaultId });
 
@@ -222,6 +223,7 @@ export class DefiVault implements IDefiVault {
     if (!params.vaultId || !params.operationId) {
       throw new Error('vaultId and operationId are required');
     }
+    this.assertDeFiSupportedWallet();
 
     // Fetch the operation to get the vault and amount details
     const operation = await this.getOperation({ vaultId: params.vaultId, operationId: params.operationId });
@@ -326,6 +328,7 @@ export class DefiVault implements IDefiVault {
     if (!params.amount) {
       throw new Error('amount is required');
     }
+    this.assertDeFiSupportedWallet();
 
     const withdrawResult = await this.wallet.sendMany({
       type: 'defiWithdraw',
@@ -389,6 +392,9 @@ export class DefiVault implements IDefiVault {
    * tracking arrives in milestone M5.
    */
   private async sendWrapIntent(type: 'wrapNative' | 'unwrapNative', params: WrapOptions): Promise<WrapResult> {
+    // Cold wallets can neither sign client-side nor be signed server-side —
+    // reject before the amount/EVM validation or any network call.
+    this.assertDeFiSupportedWallet();
     const vaultId = params.vaultId?.trim();
     if (!vaultId) {
       throw new Error('vaultId is required');
@@ -434,6 +440,22 @@ export class DefiVault implements IDefiVault {
       return sendManyResult.txRequestId as string;
     }
     throw new Error('txRequestId not found in sendMany response');
+  }
+
+  /**
+   * DeFi vault flows require a wallet that can either sign client-side (hot
+   * TSS) or be signed server-side (custodial/custody). Cold wallets can do
+   * neither — reject before any network call. Read-only methods stay
+   * unguarded: inspecting positions from any wallet is harmless.
+   *
+   * Keys off wallet type only. The isCold boolean on wallet data must NOT be
+   * used: custodial wallets also report isCold: true (their keys are held in
+   * cold custody), yet they sign server-side and are fully supported.
+   */
+  private assertDeFiSupportedWallet(): void {
+    if (this.wallet.toJSON().type === 'cold') {
+      throw new Error('DeFi vault flows are not supported for cold wallets');
+    }
   }
 
   /**
