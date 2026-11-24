@@ -1,7 +1,7 @@
 import { EncryptionVersion, IRequestTracer } from '../../../api';
 import * as openpgp from 'openpgp';
 import { Key, readKey, SerializedKeyPair } from 'openpgp';
-import { IBaseCoin, KeychainsTriplet } from '../../baseCoin';
+import { IBaseCoin, KeychainsTriplet, TransactionParams } from '../../baseCoin';
 import { BitGoBase } from '../../bitgoBase';
 import { MethodNotImplementedError } from '../../errors';
 import { Keychain, KeyIndices, WebauthnKeyEncryptionInfo } from '../../keychain';
@@ -628,11 +628,16 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    * @param {RequestTracer} reqId id tracer.
    * @returns {Promise<any>}
    */
-  async recreateTxRequest(txRequestId: string, decryptedPrv: string, reqId: IRequestTracer): Promise<TxRequest> {
+  async recreateTxRequest(
+    txRequestId: string,
+    decryptedPrv: string,
+    reqId: IRequestTracer,
+    txParams?: TransactionParams
+  ): Promise<TxRequest> {
     await this.deleteSignatureShares(txRequestId, reqId);
     // after delete signatures shares get the tx without them
     const txRequest = await this.getTxRequest(txRequestId, reqId);
-    return await this.signTxRequest({ txRequest, prv: decryptedPrv, reqId });
+    return await this.signTxRequest({ txRequest, prv: decryptedPrv, reqId, txParams });
   }
 
   /**

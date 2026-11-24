@@ -5545,7 +5545,13 @@ export class Wallet implements IWallet {
     }
 
     const txRequest: string | TxRequest = params.txPrebuild.txRequestId;
-    const txParams: TransactionParams | undefined = params.txPrebuild.buildParams;
+    // Caller supplied verification params take precedence over the prebuild's build params. Either way the
+    // txRequest is fetched, verified and signed as one object inside signTxRequest, so a txRequestId-only
+    // call can no longer skip verification.
+    const buildParams: TransactionParams | undefined = params.txPrebuild.buildParams;
+    const txParams: TransactionParams | undefined = params.verifyTxParams?.txParams
+      ? { ...buildParams, ...params.verifyTxParams.txParams }
+      : buildParams;
 
     try {
       return await this.tssUtils!.signTxRequest({

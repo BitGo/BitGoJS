@@ -662,7 +662,10 @@ describe('TSS Utils:', async function () {
         },
       ],
       date: new Date().toISOString(),
-      intent: { intentType: 'payment' },
+      intent: {
+        intentType: 'payment',
+        recipients: [{ address: { address: 'recipient-address' }, amount: { value: '1', symbol: coinName } }],
+      },
       latest: true,
       state: 'pendingUserSignature',
       walletType: 'hot',
@@ -673,6 +676,7 @@ describe('TSS Utils:', async function () {
     };
 
     it('v2 R-share round-trip: encrypt via commitment, verify envelope, decrypt via createRShare', async function () {
+      sandbox.stub(baseCoin, 'verifyTransaction').resolves(true);
       const passphrase = 'test-passphrase';
       const prv = JSON.stringify(validUserSigningMaterial);
 
@@ -724,6 +728,7 @@ describe('TSS Utils:', async function () {
       date: new Date().toISOString(),
       intent: {
         intentType: 'payment',
+        recipients: [{ address: { address: 'recipient-address' }, amount: { value: '1', symbol: coinName } }],
       },
       latest: true,
       state: 'pendingUserSignature',
@@ -741,7 +746,10 @@ describe('TSS Utils:', async function () {
     };
     let requestBodies: Record<string, unknown>[] = [];
 
+    let verifyTransactionStub: sinon.SinonStub;
+
     beforeEach(async function () {
+      verifyTransactionStub = sandbox.stub(baseCoin, 'verifyTransaction').resolves(true);
       requestBodies = [];
       txRequest.signatureShares = [];
       txRequest.state = 'pendingUserSignature';
@@ -779,6 +787,77 @@ describe('TSS Utils:', async function () {
         walletId: wallet.id(),
         txRequestId: txRequest.txRequestId,
         response: exchangeCommitResponse,
+      });
+    });
+
+    describe('verification before signing (WCI-2259)', function () {
+      it('verifies the serializedTxHex of the txRequest it signs, before any share is sent', async function () {
+        await tssUtils.signTxRequest({ txRequest, prv: JSON.stringify(validUserSigningMaterial), reqId });
+        verifyTransactionStub.calledOnce.should.be.true();
+        const args = verifyTransactionStub.firstCall.args[0];
+        args.txPrebuild.txHex.should.equal(txRequest.unsignedTxs[0].serializedTxHex);
+        args.txParams.recipients[0].address.should.equal('recipient-address');
+        sandbox.verifyAndRestore();
+      });
+
+      it('fails closed and sends no signature share when verification fails', async function () {
+        verifyTransactionStub.rejects(new Error('tx does not match what the caller asked for'));
+        await tssUtils
+          .signTxRequest({ txRequest, prv: JSON.stringify(validUserSigningMaterial), reqId })
+          .should.be.rejectedWith('tx does not match what the caller asked for');
+        requestBodies.length.should.equal(0);
+      });
+
+      it('rejects a server that swaps the txRequest between prebuild verification and signing', async function () {
+        // The prebuild was verified earlier; the txRequest re-fetched for signing carries different bytes.
+        const swapped = {
+          ...txRequest,
+          unsignedTxs: [{ ...txRequest.unsignedTxs[0], serializedTxHex: 'attacker command', signableHex: 'dead' }],
+        };
+        verifyTransactionStub.callsFake(async ({ txPrebuild }) => {
+          if (txPrebuild.txHex !== 'MPC on a Friday night') {
+            throw new Error('unexpected transaction');
+          }
+          return true;
+        });
+        await tssUtils
+          .signTxRequest({ txRequest: swapped, prv: JSON.stringify(validUserSigningMaterial), reqId })
+          .should.be.rejectedWith('unexpected transaction');
+        requestBodies.length.should.equal(0);
+      });
+
+      it('fails closed when the coin cannot tie signableHex to the verified transaction', async function () {
+        const consistencyStub = sandbox.stub().rejects(new Error('signableHex does not match'));
+        (baseCoin as unknown as Record<string, unknown>).assertSignableConsistency = consistencyStub;
+        try {
+          await tssUtils
+            .signTxRequest({ txRequest, prv: JSON.stringify(validUserSigningMaterial), reqId })
+            .should.be.rejectedWith('signableHex does not match');
+          consistencyStub
+            .calledOnceWithExactly(txRequest.unsignedTxs[0].serializedTxHex, txRequest.unsignedTxs[0].signableHex)
+            .should.be.true();
+          requestBodies.length.should.equal(0);
+        } finally {
+          delete (baseCoin as unknown as Record<string, unknown>).assertSignableConsistency;
+        }
+      });
+
+      it('lets caller txParams take precedence over intent fields', async function () {
+        const txParams = { type: 'cantonBroadridgeStandingDelegation', executorPartyId: 'caller-executor' };
+        const withIntentExecutor = {
+          ...txRequest,
+          intent: { ...(txRequest.intent as Record<string, unknown>), executorPartyId: 'server-executor' },
+        } as TxRequest;
+        await tssUtils.signTxRequest({
+          txRequest: withIntentExecutor,
+          txParams,
+          prv: JSON.stringify(validUserSigningMaterial),
+          reqId,
+        });
+        const args = verifyTransactionStub.firstCall.args[0];
+        args.txParams.executorPartyId.should.equal('caller-executor');
+        args.txParams.type.should.equal('cantonBroadridgeStandingDelegation');
+        sandbox.verifyAndRestore();
       });
     });
 
@@ -888,6 +967,7 @@ describe('TSS Utils:', async function () {
       date: new Date().toISOString(),
       intent: {
         intentType: 'payment',
+        recipients: [{ address: { address: 'recipient-address' }, amount: { value: '1', symbol: coinName } }],
       },
       latest: true,
       state: 'pendingUserSignature',
@@ -899,6 +979,7 @@ describe('TSS Utils:', async function () {
     };
 
     beforeEach(async function () {
+      sandbox.stub(baseCoin, 'verifyTransaction').resolves(true);
       const userSignShare = validUserSignShare;
       const rShare = userSignShare.rShares[3];
       const signatureShare: SignatureShareRecord = {

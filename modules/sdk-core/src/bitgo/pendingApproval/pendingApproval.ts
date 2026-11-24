@@ -5,7 +5,7 @@ import * as _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
 import type { AttestationPayload } from '@bitgo/public-types';
 import { MESSAGE_SIGNING_INTENT_TYPES } from './iPendingApproval';
-import { IBaseCoin } from '../baseCoin';
+import { IBaseCoin, TransactionParams } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import {
   ApproveOptions,
@@ -283,7 +283,10 @@ export class PendingApproval implements IPendingApproval {
         .keychains()
         .upgradeEncryption({ keychain: childUserKeychain, passphrase: walletPassphrase });
     }
-    const txRequest = await this.tssUtils!.recreateTxRequest(txRequestId, decryptedPrv, reqId);
+    // Carry the pending approval's original build params into verification so the txRequest that gets
+    // signed is checked against what was approved, not only against fields the server persisted.
+    const buildParams = this.info()?.transactionRequest?.buildParams as TransactionParams | undefined;
+    const txRequest = await this.tssUtils!.recreateTxRequest(txRequestId, decryptedPrv, reqId, buildParams);
     if (txRequest.apiVersion === 'lite') {
       if (!txRequest.unsignedTxs || txRequest.unsignedTxs.length === 0) {
         throw new Error('Unexpected error, no transactions found in txRequest.');

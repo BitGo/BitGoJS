@@ -37,6 +37,8 @@ import {
   isV2Envelope,
 } from '../baseTypes';
 import { InvalidTransactionError } from '../../../errors';
+import { resolveEffectiveTxParams } from '../recipientUtils';
+import { isCoinWithSignableConsistency } from '../signableConsistency';
 import { CreateEddsaBitGoKeychainParams, CreateEddsaKeychainParams, KeyShare, YShare } from './types';
 import baseTSSUtils from '../baseTSSUtils';
 import { eddsaUserSigningMaterialMatchesCommonKeychain } from '../keyVerification';
@@ -782,6 +784,17 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       unsignedTx =
         apiVersion === 'full' ? txRequestResolved.transactions![0].unsignedTx : txRequestResolved.unsignedTxs[0];
       assert(unsignedTx, 'Missing unsignedTx in txRequest');
+      await this.baseCoin.verifyTransaction({
+        txPrebuild: { txHex: unsignedTx.serializedTxHex ?? unsignedTx.signableHex },
+        txParams: resolveEffectiveTxParams(txRequestResolved, params.txParams, this.baseCoin.getChain()),
+        wallet: this.wallet,
+        walletType: this.wallet.multisigType(),
+      });
+      // verifyTransaction checks serializedTxHex but the MPC rounds sign signableHex; both are
+      // server supplied. Coins that can derive one from the other must confirm they agree.
+      if (unsignedTx.serializedTxHex && isCoinWithSignableConsistency(this.baseCoin)) {
+        await this.baseCoin.assertSignableConsistency(unsignedTx.serializedTxHex, unsignedTx.signableHex);
+      }
     } else if (requestType === RequestType.message) {
       assert(txRequestResolved.messages?.length, 'Unable to find messages in txRequest for message signing');
       const message = txRequestResolved.messages[0];

@@ -10,6 +10,7 @@ import {
   EDDSAMethods,
   extractCommonKeychain,
   InvalidAddressError,
+  InvalidTransactionError,
   KeyPair,
   MPCAlgorithm,
   MultisigType,
@@ -114,6 +115,36 @@ export class Canton extends BaseCoin {
 
   getMPCAlgorithm(): MPCAlgorithm {
     return 'eddsa';
+  }
+
+  /**
+   * Ties the server supplied `signableHex` (the value the MPC signers sign) to the transaction
+   * that `verifyTransaction` inspects (`serializedTxHex`).
+   *
+   * For Canton the signed value is the `preparedTransactionHash`, an opaque hash chosen by the
+   * server. Verifying the transaction bytes alone proves nothing about what gets signed, so this
+   * checks that (1) `signableHex` is the hash carried by the verified transaction and (2) that hash
+   * is the one derived locally from the verified prepared transaction.
+   *
+   * @param serializedTxHex - the serialized transaction that was verified
+   * @param signableHex - the hex payload that is about to be signed
+   * @throws InvalidTransactionError when the signed payload does not match the verified transaction
+   */
+  async assertSignableConsistency(serializedTxHex: string, signableHex: string): Promise<void> {
+    const coinConfig = coins.get(this.getChain());
+    const transaction = new TransactionBuilderFactory(coinConfig).from(serializedTxHex).transaction as Transaction;
+    if (transaction.signablePayload.toString('hex') !== signableHex.toLowerCase()) {
+      throw new InvalidTransactionError('signableHex does not match the verified transaction');
+    }
+    const prepareCommand = transaction.prepareCommand;
+    if (prepareCommand?.preparedTransaction) {
+      const localHash = await utils.computeHashFromPrepareSubmissionResponse(prepareCommand.preparedTransaction);
+      if (localHash !== prepareCommand.preparedTransactionHash) {
+        throw new InvalidTransactionError(
+          'preparedTransactionHash does not match the hash computed from the prepared transaction'
+        );
+      }
+    }
   }
 
   /** @inheritDoc */

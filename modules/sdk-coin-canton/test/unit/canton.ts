@@ -496,6 +496,37 @@ describe('Canton verifyTransaction - Broadridge standing delegation:', function 
       })
       .should.be.rejectedWith(/executor mismatch/);
   });
+
+  describe('assertSignableConsistency (WCI-2259):', function () {
+    const hashHex = Buffer.from(CantonStandingDelegationPrepareResponse.preparedTransactionHash, 'base64').toString(
+      'hex'
+    );
+
+    it('accepts a signableHex that is the hash of the verified prepared transaction', async function () {
+      const txHex = buildRawTx('CantonCommand', CantonStandingDelegationPrepareResponse, 'standing-delegation-003');
+      await basecoin.assertSignableConsistency(txHex, hashHex);
+    });
+
+    it('rejects a signableHex that differs from the verified transaction hash', async function () {
+      const txHex = buildRawTx('CantonCommand', CantonStandingDelegationPrepareResponse, 'standing-delegation-004');
+      const otherHash = Buffer.alloc(32, 0xab).toString('hex');
+      await basecoin
+        .assertSignableConsistency(txHex, otherHash)
+        .should.be.rejectedWith(/signableHex does not match the verified transaction/);
+    });
+
+    it('rejects a transaction whose hash was not derived from its prepared transaction', async function () {
+      const forgedHash = Buffer.alloc(32, 0xcd);
+      const forged = {
+        ...CantonStandingDelegationPrepareResponse,
+        preparedTransactionHash: forgedHash.toString('base64'),
+      };
+      const txHex = buildRawTx('CantonCommand', forged, 'standing-delegation-005');
+      await basecoin
+        .assertSignableConsistency(txHex, forgedHash.toString('hex'))
+        .should.be.rejectedWith(/does not match the hash computed from the prepared transaction/);
+    });
+  });
 });
 
 describe('Canton explainTransaction - AllocationReject:', function () {

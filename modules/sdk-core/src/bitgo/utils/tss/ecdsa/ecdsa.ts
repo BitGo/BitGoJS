@@ -1077,7 +1077,7 @@ export class EcdsaUtils extends BaseEcdsaUtils {
           walletType: this.wallet.multisigType(),
         });
         if (shouldVerifyWithSerializedTxHex(this.baseCoin) && isCoinWithSignableConsistency(this.baseCoin)) {
-          this.baseCoin.assertSignableConsistency(unsignedTx.serializedTxHex, unsignedTx.signableHex);
+          await this.baseCoin.assertSignableConsistency(unsignedTx.serializedTxHex, unsignedTx.signableHex);
         }
       } else {
         await this.baseCoin.verifyTransaction({

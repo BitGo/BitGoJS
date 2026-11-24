@@ -6,7 +6,7 @@ export interface CoinWithSignableConsistency {
    * independently.  This method derives the expected signableHex from the
    * serializedTxHex locally and throws InvalidTransactionError if they diverge.
    */
-  assertSignableConsistency(serializedTxHex: string, signableHex: string): void;
+  assertSignableConsistency(serializedTxHex: string, signableHex: string): void | Promise<void>;
 }
 
 export function isCoinWithSignableConsistency(coin: unknown): coin is CoinWithSignableConsistency {
