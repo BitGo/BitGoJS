@@ -1972,26 +1972,47 @@ function isTraversableObject(value: unknown): value is Record<string, unknown> |
   return value !== null && typeof value === 'object';
 }
 
+/**
+ * Maximum number of distinct sensitive values per request whose redaction the
+ * error path can guarantee. A body can carry hundreds of thousands of values
+ * under sensitive keys, and redaction cost is linear in the number of collected
+ * secrets, so requests carrying more than this many fail closed instead of
+ * scanning them all. No legitimate request comes anywhere near this many.
+ */
+const MAX_SENSITIVE_VALUES = 32;
+
+interface CollectedSensitiveValues {
+  values: Set<string>;
+  /** True when the request contained more distinct sensitive values than can be guaranteed redactable. */
+  exceeded: boolean;
+}
+
 function collectSensitiveRequestValues(
   value: unknown,
-  values = new Set<string>(),
+  collected: CollectedSensitiveValues = { values: new Set<string>(), exceeded: false },
   seen = new WeakSet<Record<string, unknown> | unknown[]>()
-): Set<string> {
+): CollectedSensitiveValues {
   if (!isTraversableObject(value) || seen.has(value)) {
-    return values;
+    return collected;
   }
   seen.add(value);
   if (Array.isArray(value)) {
-    value.forEach((item) => collectSensitiveRequestValues(item, values, seen));
+    value.forEach((item) => collectSensitiveRequestValues(item, collected, seen));
   } else {
     Object.entries(value).forEach(([key, item]) => {
       if (SENSITIVE_REQUEST_KEYS.has(key.toLowerCase()) && typeof item === 'string' && item.length > 0) {
-        values.add(item);
+        if (!collected.values.has(item)) {
+          if (collected.values.size < MAX_SENSITIVE_VALUES) {
+            collected.values.add(item);
+          } else {
+            collected.exceeded = true;
+          }
+        }
       }
-      collectSensitiveRequestValues(item, values, seen);
+      collectSensitiveRequestValues(item, collected, seen);
     });
   }
-  return values;
+  return collected;
 }
 
 function redactSensitiveValues(
@@ -2000,7 +2021,61 @@ function redactSensitiveValues(
   ancestors = new WeakSet<Record<string, unknown> | unknown[]>()
 ): unknown {
   if (typeof value === 'string') {
-    return [...sensitiveValues].reduce((redacted, secret) => redacted.split(secret).join('[REDACTED]'), value);
+    if (sensitiveValues.size === 0) {
+      return value;
+    }
+    // Single scan over the input:
+    // - every secret keeps a cached next-match position that only moves
+    //   forward, so each secret scans the string about once and the total
+    //   cost is linear in the input length and the number of secrets, even
+    //   when one secret matches thousands of times while another never does;
+    // - when matches overlap, the union of their ranges is replaced, so no
+    //   part of any matched secret can remain in the output;
+    // - replaced text is never rescanned, so output length stays bounded at
+    //   roughly 11x the input regardless of the number or content of the
+    //   collected secrets.
+    const secrets = [...sensitiveValues];
+    const notSearched = -2;
+    const nextMatch = new Array<number>(secrets.length).fill(notSearched);
+    let redacted = '';
+    let fromIndex = 0;
+    while (fromIndex < value.length) {
+      let matchIndex = -1;
+      let matchEnd = -1;
+      for (let i = 0; i < secrets.length; i++) {
+        const cached = nextMatch[i];
+        if (cached !== -1 && (cached === notSearched || cached < fromIndex)) {
+          nextMatch[i] = value.indexOf(secrets[i], fromIndex);
+        }
+        const index = nextMatch[i];
+        if (index !== -1 && (matchIndex === -1 || index < matchIndex)) {
+          matchIndex = index;
+          matchEnd = index + secrets[i].length;
+        }
+      }
+      if (matchIndex === -1) {
+        break;
+      }
+      // extend the replacement over every secret that starts inside the matched
+      // span, so a secret overlapping the chosen match cannot leak its tail
+      let extended = true;
+      while (extended) {
+        extended = false;
+        for (let i = 0; i < secrets.length; i++) {
+          const index = nextMatch[i];
+          if (index !== -1 && index >= matchIndex && index < matchEnd) {
+            const end = index + secrets[i].length;
+            if (end > matchEnd) {
+              matchEnd = end;
+              extended = true;
+            }
+          }
+        }
+      }
+      redacted += `${value.slice(fromIndex, matchIndex)}[REDACTED]`;
+      fromIndex = matchEnd;
+    }
+    return redacted + value.slice(fromIndex);
   }
   if (!isTraversableObject(value)) {
     return value;
@@ -2024,36 +2099,58 @@ function redactSensitiveValues(
 }
 
 function handleRequestHandlerError(res: express.Response, error: unknown, requestBody?: unknown) {
-  let err;
-  if (error instanceof Error) {
-    err = error;
-  } else if (typeof error === 'string') {
-    err = new BitGoExpressError('(string_error) ' + error);
-  } else {
-    err = new BitGoExpressError('(object_error) ' + JSON.stringify(error));
-  }
-
-  const sensitiveValues = collectSensitiveRequestValues(requestBody);
-  const message = (redactSensitiveValues(err.message, sensitiveValues) as string) || 'local error';
-  let result = redactSensitiveValues(err.result || { error: message }, sensitiveValues);
-  result = _.extend({}, result, {
-    message,
-    name: err.name || 'BitGoExpressError',
-    bitgoJsVersion: version,
-    bitgoExpressVersion: pjson.version,
-    ...(err.code ? { code: err.code } : {}),
-  });
-  const status = err.status || 500;
-  if (!(status >= 200 && status < 300)) {
-    console.log('error %s: %s', status, message);
-  }
-  if (status >= 500 && status <= 599) {
-    if (err.response && err.response.request) {
-      console.log(`failed to make ${err.response.request.method} request to ${err.response.request.url}`);
+  try {
+    let err;
+    if (error instanceof Error) {
+      err = error;
+    } else if (typeof error === 'string') {
+      err = new BitGoExpressError('(string_error) ' + error);
+    } else {
+      err = new BitGoExpressError('(object_error) ' + JSON.stringify(error));
     }
-    console.log(redactSensitiveValues(err.stack, sensitiveValues));
+
+    const { values: sensitiveValues, exceeded: exceededSensitiveValues } = collectSensitiveRequestValues(requestBody);
+    // Values of any length (including 1-3 characters) are collected and redacted,
+    // so nothing sensitive is echoed. Only a request carrying more distinct
+    // sensitive values than can be guaranteed redactable fails closed - with a
+    // message naming that cause - so every other request keeps its real,
+    // redacted error details.
+    const message = exceededSensitiveValues
+      ? 'error details withheld: too many sensitive values in request'
+      : (redactSensitiveValues(err.message, sensitiveValues) as string) || 'local error';
+    // the message is already redacted above; running it through redaction again
+    // would re-match [REDACTED]-substring secrets inside the inserted tokens
+    let result = exceededSensitiveValues
+      ? { error: message }
+      : err.result
+      ? redactSensitiveValues(err.result, sensitiveValues)
+      : { error: message };
+    result = _.extend({}, result, {
+      message,
+      name: err.name || 'BitGoExpressError',
+      bitgoJsVersion: version,
+      bitgoExpressVersion: pjson.version,
+      ...(err.code ? { code: err.code } : {}),
+    });
+    const status = err.status || 500;
+    if (!(status >= 200 && status < 300)) {
+      console.log('error %s: %s', status, message);
+    }
+    if (status >= 500 && status <= 599 && !exceededSensitiveValues) {
+      if (err.response && err.response.request) {
+        console.log(`failed to make ${err.response.request.method} request to ${err.response.request.url}`);
+      }
+      console.log(redactSensitiveValues(err.stack, sensitiveValues));
+    }
+    res.status(status).send(result);
+  } catch (e) {
+    // Building the error response failed: respond generically, and log only
+    // the error name, since its message may contain unredacted secrets.
+    if (!res.headersSent) {
+      res.status(500).send({ message: 'internal error' });
+    }
+    console.log('error-response construction failed:', e instanceof Error ? e.name : typeof e);
   }
-  res.status(status).send(result);
 }
 
 /**
