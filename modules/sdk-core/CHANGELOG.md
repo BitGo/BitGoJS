@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [40.10.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4040.9.0...%40bitgo%2Fsdk-core%4040.10.0) (2026-11-24)
+
+### Features
+
+* **abstract-utxo:** add shielded zec tx verification ([3513f7a](https://github.com/BitGo/BitGoJS/commit/3513f7ad4f7d05dab4cb0d08d45532a976f05fbe))
+* recover external ed25519Multisig from backup root prv ([6098a44](https://github.com/BitGo/BitGoJS/commit/6098a44a61759cd158e082e0e66066c42764a7ba))
+
+
 # [40.9.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4040.8.1...%40bitgo%2Fsdk-core%4040.9.0) (2026-11-19)
 
 ### Bug Fixes

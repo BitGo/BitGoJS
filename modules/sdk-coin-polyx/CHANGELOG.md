@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.3.14](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-polyx%402.3.13...%40bitgo%2Fsdk-coin-polyx%402.3.14) (2026-11-24)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-polyx
+
+
+
+
+
 ## [2.3.13](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-polyx%402.3.12...%40bitgo%2Fsdk-coin-polyx%402.3.13) (2026-11-19)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-polyx

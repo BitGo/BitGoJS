@@ -3,6 +3,34 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.33.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fstatics%4059.32.1...%40bitgo%2Fstatics%4059.33.0) (2026-11-24)
+
+### Features
+
+* add new tokens from AMS API ([01b0272](https://github.com/BitGo/BitGoJS/commit/01b027261ff78a9421bdd5fa4e2eae6a59e25dc4))
+* add new tokens from AMS API ([fccfea2](https://github.com/BitGo/BitGoJS/commit/fccfea22ca436d241b07397e9d5f950d0a3ea9c7))
+* add new tokens from AMS API ([f9899aa](https://github.com/BitGo/BitGoJS/commit/f9899aac8ac480fc2035e7e99ecc859705830ace))
+* add new tokens from AMS API ([4e342c5](https://github.com/BitGo/BitGoJS/commit/4e342c59a1155aa436a160016fa5a501760dd30b))
+* add new tokens from AMS API ([59081e2](https://github.com/BitGo/BitGoJS/commit/59081e2d99fbd458ca82b27d59028b0d02215c5f))
+* add new tokens from AMS API ([db923ca](https://github.com/BitGo/BitGoJS/commit/db923cac3d792051969c42698e40cbf40d2e2641))
+* add new tokens from AMS API ([2a48cac](https://github.com/BitGo/BitGoJS/commit/2a48cac950203f8e35cd0a6c45680f4caa8240fc))
+* add new tokens from AMS API ([cf021c6](https://github.com/BitGo/BitGoJS/commit/cf021c63fccfe31739dad86ab38a40e5f3c5b646))
+* add new tokens from AMS API ([510923f](https://github.com/BitGo/BitGoJS/commit/510923f85effb25a9043546a4dd7a545f299357f))
+* add new tokens from AMS API ([e27a3b0](https://github.com/BitGo/BitGoJS/commit/e27a3b02cd0810e911f5d947fa9ae438ac3f14eb))
+* add new tokens from AMS API ([f438aad](https://github.com/BitGo/BitGoJS/commit/f438aad7b38d3ddc9933fd0796714f2ba82f2cfb))
+* add new tokens from AMS API ([7addb2c](https://github.com/BitGo/BitGoJS/commit/7addb2c34c0b382f942c5b530394a81830ab0a4f))
+* add new tokens from AMS API ([e383932](https://github.com/BitGo/BitGoJS/commit/e383932b96a19119af29a0f6c6d16e7f0ac365bd))
+* add new tokens from AMS API ([bbd126c](https://github.com/BitGo/BitGoJS/commit/bbd126c568719761820250e835245d0aafb54eaf))
+* add new tokens from AMS API ([7805c91](https://github.com/BitGo/BitGoJS/commit/7805c91c26932b896b1022378a53c23fcbe409a8))
+* add new tokens from AMS API ([27921f8](https://github.com/BitGo/BitGoJS/commit/27921f84a0fd8b0f0c665892052950ae25c750a0))
+* add tsui:hbtc testnet token to statics ([95ca102](https://github.com/BitGo/BitGoJS/commit/95ca1025d556579079915699df5e8ab53120b3ba))
+* **statics:** add constantAddressPrefix for Hedera account IDs ([e09a7eb](https://github.com/BitGo/BitGoJS/commit/e09a7eb09ae280412d7bb7be5298e2b23e11a85b))
+* **statics:** add SpaceX goStock stg token definition ([2e4f51f](https://github.com/BitGo/BitGoJS/commit/2e4f51fa65733c2f55885f0ffd4d5dbef269699b))
+* **statics:** enable CoinFeature.STAKING on mon ([d2a2010](https://github.com/BitGo/BitGoJS/commit/d2a2010673128aa2feae31e6152536d755444453))
+* **statics:** enable DOGE, LINK, Canton custody for BitGo Korea ([6dc27e4](https://github.com/BitGo/BitGoJS/commit/6dc27e48e14377a90dd502ff3233ac23bffd1150))
+* **statics:** onboard 20 Zama ERC-7984 confidential tokens ([211b5a6](https://github.com/BitGo/BitGoJS/commit/211b5a64b47aa70c028dbe8c2d7bf231b47e0c9e))
+
+
 ## [59.32.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fstatics%4059.32.0...%40bitgo%2Fstatics%4059.32.1) (2026-11-18)
 
 ### Bug Fixes
