@@ -5434,6 +5434,13 @@ export const ofcCoins = [
     9,
     UnderlyingAsset['tsui:tmerog']
   ),
+  tofcSuiToken(
+    '30ff76e9-11a4-48f3-9a2c-dd680a0c85a9',
+    'ofctsui:hbtc',
+    'Testnet Hashi BTC',
+    8,
+    UnderlyingAsset['tsui:hbtc']
+  ),
   ofc('d45636f8-f120-4374-b717-70fe999baa43', 'ofcarcusdc', 'USDC (ARC)', 18, UnderlyingAsset.ARCUSDC, CoinKind.CRYPTO),
   tofc(
     'bc57e64d-045e-4421-aa92-64db0c51e1d7',

@@ -4426,6 +4426,7 @@ export enum UnderlyingAsset {
   'tsui:wal' = 'tsui:wal',
   'tsui:tmerog' = 'tsui:tmerog',
   'tsui:usdc' = 'tsui:usdc',
+  'tsui:hbtc' = 'tsui:hbtc',
 
   // Apt tokens
   'apt:usd1' = 'apt:usd1',
