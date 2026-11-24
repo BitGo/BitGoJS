@@ -804,13 +804,15 @@ export const VET_FEATURES = [
 ];
 export const VET_TOKEN_FEATURES = VET_FEATURES.filter((feature) => feature !== CoinFeature.SUPPORTS_TOKENS);
 
-export const EVM_NON_EIP1559_FEATURES = [...EVM_FEATURES.filter((feature) => feature !== CoinFeature.EIP1559)];
-
-export const XDC_FEATURES = [
-  ...EVM_NON_EIP1559_FEATURES,
-  CoinFeature.ERC20_BULK_TRANSACTION,
+// Non-EIP1559 EVM chains build legacy type-0 envelopes whose signableHex is not a parseable
+// transaction, so TSS signing verifies the serialized bytes instead (see
+// shouldVerifyWithSerializedTxHex in sdk-core).
+export const EVM_NON_EIP1559_FEATURES = [
+  ...EVM_FEATURES.filter((feature) => feature !== CoinFeature.EIP1559),
   CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX,
 ];
+
+export const XDC_FEATURES = [...EVM_NON_EIP1559_FEATURES, CoinFeature.ERC20_BULK_TRANSACTION];
 export const XDC_TOKEN_FEATURES = [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX];
 
 export const SGB_FEATURES = [...EVM_FEATURES, CoinFeature.ERC20_BULK_TRANSACTION];

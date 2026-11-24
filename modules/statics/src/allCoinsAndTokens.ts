@@ -82,6 +82,7 @@ import { flrp } from './flrp';
 import { hypeEvm } from './hypeevm';
 import { kaspa } from './kaspa';
 import {
+  ACCOUNT_COIN_DEFAULT_FEATURES,
   ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_EUROPE,
   ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE,
   ACCOUNT_COIN_DEFAULT_FEATURES_TRUST_ONLY,
@@ -5911,7 +5912,8 @@ export const allCoinsAndTokens = [
     2,
     '0x2e392eee4da541dc8aab48d4a4c5eb3a8d8f468b',
     UnderlyingAsset['tprividiumeth:USB-ESCROW-D'],
-    Networks.test.prividiumeth
+    Networks.test.prividiumeth,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX]
   ),
 
   erc20Token(
@@ -5921,7 +5923,8 @@ export const allCoinsAndTokens = [
     2,
     '0xde1c06e0aabf9c224c36e80cc13259f13237d0df',
     UnderlyingAsset['tprividiumeth:tMMF'],
-    Networks.test.prividiumeth
+    Networks.test.prividiumeth,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX]
   ),
 
   hederaCoin(

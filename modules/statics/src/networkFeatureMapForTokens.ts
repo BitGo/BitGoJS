@@ -32,10 +32,15 @@ export const EVM_TOKEN_FEATURES: CoinFeature[] = [
   CoinFeature.SUPPORTS_ERC20,
 ];
 
-/** Same as EVM_TOKEN_FEATURES, minus EIP1559, for EVM-compatible families that don't support it (e.g. xdc). */
-export const EVM_TOKEN_FEATURES_NON_EIP1559: CoinFeature[] = EVM_TOKEN_FEATURES.filter(
-  (feature) => feature !== CoinFeature.EIP1559
-);
+/**
+ * Same as EVM_TOKEN_FEATURES, minus EIP1559, for EVM-compatible families that don't support it
+ * (e.g. xdc). TSS_VERIFY_USE_SERIALIZED_TX_HEX mirrors the base coin: these families sign legacy
+ * type-0 envelopes, so TSS verification must decode serializedTxHex.
+ */
+export const EVM_TOKEN_FEATURES_NON_EIP1559: CoinFeature[] = [
+  ...EVM_TOKEN_FEATURES.filter((feature) => feature !== CoinFeature.EIP1559),
+  CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX,
+];
 
 /**
  * Populate networkFeatureMapForTokens for every family whose base coin carries
