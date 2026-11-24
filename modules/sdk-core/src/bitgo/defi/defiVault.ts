@@ -191,6 +191,8 @@ export class DefiVault implements IDefiVault {
       ...(params.walletPassphrase ? { walletPassphrase: params.walletPassphrase } : {}),
     });
     const depositTxRequestId = this.extractTxRequestId(depositResult);
+    const approvePendingApprovalId = this.extractPendingApprovalId(approveResult);
+    const depositPendingApprovalId = this.extractPendingApprovalId(depositResult);
 
     return {
       operationId,
@@ -198,6 +200,12 @@ export class DefiVault implements IDefiVault {
         approve: approveTxRequestId,
         deposit: depositTxRequestId,
       },
+      ...((approvePendingApprovalId || depositPendingApprovalId) && {
+        pendingApprovalIds: {
+          ...(approvePendingApprovalId && { approve: approvePendingApprovalId }),
+          ...(depositPendingApprovalId && { deposit: depositPendingApprovalId }),
+        },
+      }),
     };
   }
 
@@ -241,12 +249,15 @@ export class DefiVault implements IDefiVault {
       ...(params.walletPassphrase ? { walletPassphrase: params.walletPassphrase } : {}),
     });
 
+    const depositPendingApprovalId = this.extractPendingApprovalId(depositResult);
+
     return {
       operationId: params.operationId,
       txRequestIds: {
         approve: operation.txRequestId,
         deposit: this.extractTxRequestId(depositResult),
       },
+      ...(depositPendingApprovalId && { pendingApprovalIds: { deposit: depositPendingApprovalId } }),
     };
   }
 
@@ -332,7 +343,8 @@ export class DefiVault implements IDefiVault {
       throw new Error('operationId not found in withdraw txRequest response');
     }
 
-    return { operationId, txRequestId };
+    const pendingApprovalId = this.extractPendingApprovalId(withdrawResult);
+    return { operationId, txRequestId, ...(pendingApprovalId && { pendingApprovalId }) };
   }
 
   /**
@@ -422,6 +434,16 @@ export class DefiVault implements IDefiVault {
       return sendManyResult.txRequestId as string;
     }
     throw new Error('txRequestId not found in sendMany response');
+  }
+
+  /**
+   * Extract the pendingApproval id from a sendMany result, if the leg was
+   * gated by wallet policy. Absent for un-gated legs — callers keep their
+   * exact un-gated result shape.
+   */
+  private extractPendingApprovalId(sendManyResult: Record<string, unknown>): string | undefined {
+    const pendingApproval = sendManyResult.pendingApproval as Record<string, unknown> | undefined;
+    return pendingApproval?.id as string | undefined;
   }
 
   /**
