@@ -1296,10 +1296,10 @@ describe('V2 Keychains', function () {
       })
       .reply(200);
 
-    const backup = await keychains.createBackup({ passphrase: 't3stSicretly!' });
+    const backup = await keychains.createBackup({ passphrase: 'XKCUOvGT+N6Ae2g9aVEllpYN' });
     scope.isDone().should.be.true();
     backup.should.have.property('encryptedPrv');
-    const decryptedPrv = await bitgo.decrypt({ input: backup.encryptedPrv, password: 't3stSicretly!' });
+    const decryptedPrv = await bitgo.decrypt({ input: backup.encryptedPrv, password: 'XKCUOvGT+N6Ae2g9aVEllpYN' });
     decryptedPrv.should.startWith('xprv');
   });
 

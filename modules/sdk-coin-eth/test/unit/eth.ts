@@ -1243,6 +1243,7 @@ describe('ETH:', function () {
           coinName?: 'eth' | 'hteth';
           wrapParams?: { tokenName: string; amount: string } | null;
           unwrapParams?: { tokenName: string; amount: string } | null;
+          pendingApprovalId?: string;
           txPrebuildRecipients?: Array<Record<string, unknown>>;
           omitRecipients?: boolean;
         } = {}
@@ -1253,6 +1254,7 @@ describe('ETH:', function () {
         return coin.verifyTransaction({
           txParams: {
             type,
+            ...(opts.pendingApprovalId !== undefined ? { pendingApprovalId: opts.pendingApprovalId } : {}),
             ...(opts.wrapParams !== undefined ? { wrapParams: opts.wrapParams } : {}),
             ...(opts.unwrapParams !== undefined ? { unwrapParams: opts.unwrapParams } : {}),
           } as unknown as VerifyEthTransactionOptions['txParams'],
@@ -1376,6 +1378,52 @@ describe('ETH:', function () {
             ])
           ),
           /requires unwrapParams/
+        );
+      });
+
+      it('should verify a server-leg unwrap rebuild (registered wrapper, no unwrapParams)', async function () {
+        const result = await verifyIntent(
+          'unwrap',
+          intentCalldata('unwrap(address,address,bytes32,bytes)', [
+            baseAddress,
+            baseAddress,
+            Buffer.from(encryptedAmount.slice(2), 'hex'),
+            Buffer.from(inputProof.slice(2), 'hex'),
+          ]),
+          { pendingApprovalId: '6ae3233a7d9bc0b7b3f187a165996e15' }
+        );
+        result.should.equal(true);
+      });
+
+      it('should reject a server-leg unwrap rebuild targeting a non-registered contract', async function () {
+        await expectDefiRejection(
+          verifyIntent(
+            'unwrap',
+            intentCalldata('unwrap(address,address,bytes32,bytes)', [
+              baseAddress,
+              baseAddress,
+              Buffer.from(encryptedAmount.slice(2), 'hex'),
+              Buffer.from(inputProof.slice(2), 'hex'),
+            ]),
+            { to: address2, pendingApprovalId: '6ae3233a7d9bc0b7b3f187a165996e15' }
+          ),
+          /must target a registered ERC-7984 wrapper/
+        );
+      });
+
+      it('should reject a server-leg unwrap rebuild that is not self-directed', async function () {
+        await expectDefiRejection(
+          verifyIntent(
+            'unwrap',
+            intentCalldata('unwrap(address,address,bytes32,bytes)', [
+              baseAddress,
+              address2,
+              Buffer.from(encryptedAmount.slice(2), 'hex'),
+              Buffer.from(inputProof.slice(2), 'hex'),
+            ]),
+            { pendingApprovalId: '6ae3233a7d9bc0b7b3f187a165996e15' }
+          ),
+          /self-directed/
         );
       });
 
@@ -1633,6 +1681,27 @@ describe('ETH:', function () {
             /must be declared as a wrapApprove intent/
           );
         });
+      });
+
+      it('should still reject approve(wrapper, amount) relabelled as customTx, with or without a declared call', async function () {
+        // customTx is now verified by the contract-call handler before the wrapper guard runs; either check
+        // may reject, but the relabelled wrapper approve must never sign.
+        const data = defiCalldata('approve(address,uint256)', [wrapper, amount]);
+        const coin = bitgo.coin('hteth') as Hteth;
+        const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: address1 } });
+        const txHex = await buildDefiTxHex(data, underlying);
+        for (const recipients of [undefined, [{ address: underlying, amount: '0', data }]]) {
+          await expectDefiRejection(
+            coin.verifyTransaction({
+              txParams: { type: 'customTx', recipients, wallet } as never,
+              txPrebuild: { txHex, coin: 'hteth', walletId: 'w' } as never,
+              wallet,
+              verification: {},
+              walletType: 'tss',
+            }),
+            recipients ? /must be declared as a wrapApprove intent/ : /requires a declared recipient/
+          );
+        }
       });
 
       it('should reject a mutated-amount wrapper approve relabelled as transferToken', async function () {

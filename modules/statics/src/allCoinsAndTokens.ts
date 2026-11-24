@@ -1846,7 +1846,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.MON,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.STAKING]
   ),
   account(
     '5c5ebe50-fa27-4312-ae3d-7032520aedb5',
@@ -4032,7 +4032,13 @@ export const allCoinsAndTokens = [
     'Canton',
     Networks.main.canton,
     UnderlyingAsset.CANTON,
-    [...CANTON_FEATURES, CoinFeature.UNSPENT_MODEL, CoinFeature.MERGE_UTXOS, CoinFeature.BYOV_VALIDATOR],
+    [
+      ...CANTON_FEATURES,
+      CoinFeature.UNSPENT_MODEL,
+      CoinFeature.MERGE_UTXOS,
+      CoinFeature.BYOV_VALIDATOR,
+      CoinFeature.CUSTODY_BITGO_KOREA,
+    ],
     KeyCurve.Ed25519
   ),
   canton(
@@ -4041,7 +4047,7 @@ export const allCoinsAndTokens = [
     'Testnet Canton',
     Networks.test.canton,
     UnderlyingAsset.CANTON,
-    TCANTON_FEATURES,
+    [...TCANTON_FEATURES, CoinFeature.CUSTODY_BITGO_KOREA],
     KeyCurve.Ed25519
   ),
   gasTankAccount(

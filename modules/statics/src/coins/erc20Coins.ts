@@ -3764,7 +3764,7 @@ export const erc20Coins = [
     18,
     '0x514910771af9ca656af840dff83e8264ecf986ca',
     UnderlyingAsset.LINK,
-    ETH_FEATURES_WITH_FRANKFURT
+    [...ETH_FEATURES_WITH_FRANKFURT, CoinFeature.CUSTODY_BITGO_KOREA]
   ),
   erc20(
     'ca72e22a-8fd4-4f17-90f0-c44987be9dcd',
@@ -15192,6 +15192,18 @@ export const erc20Coins = [
     Networks.test.hoodi
   ),
   terc20(
+    '010e9f1e-4654-41e9-872a-f49ff23fd257',
+    'sepeth:stgspcxgo',
+    'Test SpaceX',
+    18,
+    '0xb8e91131d281acc3c4ef7a1670553b43ab6c9a1a',
+    UnderlyingAsset['sepeth:stgspcxgo'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.TOKENIZED_EQUITY, CoinFeature.BITGO_TOKENIZED_EQUITY],
+    undefined,
+    undefined,
+    Networks.test.sepolia
+  ),
+  terc20(
     '62705940-65f5-45c3-a5d6-9e043d5a5902',
     'sepeth:usdc',
     'Sepolia Testnet USD Coin',
@@ -15270,7 +15282,7 @@ export const erc20Coins = [
     18,
     '0x779877a7b0d9e8603169ddbd7836e478b4624789',
     UnderlyingAsset['sepeth:link'],
-    ACCOUNT_COIN_DEFAULT_FEATURES,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_KOREA],
     undefined,
     undefined,
     Networks.test.sepolia

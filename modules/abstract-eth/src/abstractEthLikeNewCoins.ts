@@ -169,6 +169,11 @@ export interface TransactionPrebuild extends BaseTransactionPrebuild {
     eip1559?: EIP1559;
     isBatch?: boolean;
   };
+  /**
+   * Server-evaluated Flipt rollout state for the multisig enable-token verification:
+   * absent or false keeps the legacy flow; an explicit true enables the strict flow.
+   */
+  multisigEnableTokenStrictVerification?: boolean;
 }
 
 export interface SignFinalOptions {
@@ -600,6 +605,9 @@ const TSS_DEDICATED_INTENT_TYPES = new Set([
   'wrapApprove',
   'tokenApproval',
 ]);
+
+/** Contract-call / custom-tx intent spellings verified against a single declared recipient. */
+const TSS_CONTRACT_CALL_INTENT_TYPES = new Set(['contractCall', 'contract-call', 'customTx', 'custom-tx']);
 
 type TssDecodedArg = ReturnType<typeof getRawDecoded>[number];
 
@@ -3968,6 +3976,48 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
   }
 
   /**
+   * Verify a `contractCall` / `customTx` (including kebab-case aliases) intent against the decoded
+   * transaction. Fails closed unless exactly one recipient is declared and decoded `to`, `value`
+   * (default 0) and `data` match the declared address, amount and calldata exactly.
+   */
+  private async verifyTssContractCall(
+    txType: string,
+    recipients: ITransactionRecipient[],
+    txHex: string | undefined,
+    throwRecipientMismatch: (message: string, mismatchedRecipients: Recipient[]) => Promise<never>
+  ): Promise<void> {
+    if (recipients.length === 0) {
+      await throwRecipientMismatch(`${txType} transaction requires a declared recipient to verify against`, []);
+    }
+    if (recipients.length > 1) {
+      await throwRecipientMismatch(
+        `${txType} transaction must declare a single recipient, got ${recipients.length}`,
+        []
+      );
+    }
+
+    const recipient = recipients[0];
+    const { to, value, data } = this.decodeRawTssTxFields(txHex);
+    const mismatch = (message: string, address = to, amount = value): Promise<never> =>
+      throwRecipientMismatch(message, [{ address, amount }]);
+
+    if (!recipient.address || to !== recipient.address.toLowerCase()) {
+      await mismatch('destination address does not match with the recipient address');
+    }
+    const expectedAmount =
+      recipient.amount === undefined || recipient.amount === null || recipient.amount === '' ? '0' : recipient.amount;
+    if (!tssValuesEqual(value, expectedAmount)) {
+      await mismatch('the transaction amount in txPrebuild does not match the value given by client');
+    }
+    const expectedData = isEmptyTssCalldata(recipient.data)
+      ? '0x'
+      : addHexPrefix(recipient.data as string).toLowerCase();
+    if (data !== expectedData) {
+      await mismatch('transaction calldata does not match the calldata given by client');
+    }
+  }
+
+  /**
    * @param {VerifyEthTransactionOptions} params
    * @param {TransactionParams} params.txParams - params object passed to send
    * @param {TransactionPrebuild} params.txPrebuild - prebuild object returned by server
@@ -3998,7 +4048,10 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
         txPrebuild?.consolidateId ||
         txParams.stakingRequestId ||
         txParams.prebuildTx?.stakingRequestId ||
-        (txParams.type && NO_RECIPIENT_TX_TYPES.has(txParams.type))
+        (txParams.type && NO_RECIPIENT_TX_TYPES.has(txParams.type)) ||
+        // The kebab-case aliases of contractCall/customTx are not in NO_RECIPIENT_TX_TYPES, but they
+        // are verified fail-closed below, so they must not trip this generic guard either.
+        (txParams.type && TSS_CONTRACT_CALL_INTENT_TYPES.has(txParams.type))
       )
     ) {
       throw new Error('missing txParams');
@@ -4023,6 +4076,8 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       } else {
         await this.verifyTssBatchPayment(txParams, recipients, txPrebuild.txHex, throwRecipientMismatch);
       }
+    } else if (txType && TSS_CONTRACT_CALL_INTENT_TYPES.has(txType)) {
+      await this.verifyTssContractCall(txType, txParams.recipients ?? [], txPrebuild.txHex, throwRecipientMismatch);
     } else if (txType && !TSS_DEDICATED_INTENT_TYPES.has(txType) && !params.verification?.consolidationToBaseAddress) {
       this.warnTssVerificationIncomplete(
         txType,
@@ -4622,8 +4677,10 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
    * wrapParams/unwrapParams, and server-leg PA rebuilds re-derive everything from the journey
    * (the PA carries only the type and pendingApprovalId). Verification is therefore content-based
    * on the sendMultiSig args:
-   *   - unwrap: strict — inner target must be the registered pair's wrapper for unwrapParams.tokenName
-   *     and the unwrap args must be self-directed (wallet base address).
+   *   - unwrap: strict when unwrapParams is present — inner target must be the registered pair's
+   *     wrapper for unwrapParams.tokenName; bounded on a PA rebuild (no unwrapParams, pendingApprovalId
+   *     set) — inner target must be a registered ERC-7984 wrapper. Either way the unwrap args must be
+   *     self-directed (wallet base address) and carry a non-empty encryptedAmount and inputProof.
    *   - wrap: strict when wrapParams is present (target wrapper + amount); bounded otherwise —
    *     inner target must be a registered ERC-7984 wrapper and the mint recipient the wallet base.
    *   - finalizeUnwrap: bounded — registered wrapper target and well-formed request fields.
@@ -4641,7 +4698,11 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     if (!txPrebuild?.txHex) {
       throw new Error('missing txHex in txPrebuild');
     }
-    if (type === 'unwrap' && !intentParams?.tokenName) {
+    // CHALO-2023: the unwrap PA-rebuild carries only the type and the pendingApprovalId; the
+    // unwrapParams live in the journey. Same gate as wrapApprove (CHALO-2010): strict whenever
+    // unwrapParams names the pair; bounded only when unwrapParams is absent AND a pendingApprovalId
+    // is present (caller-supplied, so it grants no more than the bounded checks).
+    if (type === 'unwrap' && !intentParams?.tokenName && (intentParams || !txParams.pendingApprovalId)) {
       return throwRecipientMismatch('unwrap transaction requires unwrapParams with tokenName', []);
     }
 
@@ -4724,15 +4785,19 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
         break;
       }
       case 'unwrap': {
-        const wrapper = wrapperByTokenName.get(intentParams!.tokenName);
-        if (!wrapper) {
-          return throwRecipientMismatch(
-            `unwrap: '${intentParams!.tokenName}' is not a registered ERC-7984 shield pair`,
-            []
-          );
-        }
-        if (innerTo.toLowerCase() !== wrapper) {
-          await mismatch('unwrap transaction must target the registered wrapper contract');
+        if (intentParams?.tokenName) {
+          const wrapper = wrapperByTokenName.get(intentParams.tokenName);
+          if (!wrapper) {
+            return throwRecipientMismatch(
+              `unwrap: '${intentParams.tokenName}' is not a registered ERC-7984 shield pair`,
+              []
+            );
+          }
+          if (innerTo.toLowerCase() !== wrapper) {
+            await mismatch('unwrap transaction must target the registered wrapper contract');
+          }
+        } else if (!registeredWrappers.has(innerTo.toLowerCase())) {
+          await mismatch('unwrap transaction must target a registered ERC-7984 wrapper');
         }
         let decoded: { from: string; to: string; encryptedAmount: string; inputProof: string };
         try {

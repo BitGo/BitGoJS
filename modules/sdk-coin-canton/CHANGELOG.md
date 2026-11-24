@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.8](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-canton%401.38.7...%40bitgo%2Fsdk-coin-canton%401.38.8) (2026-11-19)
+
+### Bug Fixes
+
+* **sdk-coin-canton:** verify split transactions as a batch ([2ac6eaf](https://github.com/BitGo/BitGoJS/commit/2ac6eafed928a33f9fbcf364955b894efaf69a95))
+
+
 ## [1.38.7](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-canton%401.38.6...%40bitgo%2Fsdk-coin-canton%401.38.7) (2026-11-18)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-canton

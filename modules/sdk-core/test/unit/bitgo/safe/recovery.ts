@@ -20,6 +20,7 @@ import {
   encodeAlgoKey,
   encodeDerivableEd25519Pub,
   encodeEd25519ChainCode,
+  encodeEd25519StrKeySecretSeed,
   signEd25519Extended,
   softDeriveChildPubEd25519AtPath,
 } from '../../../../src';
@@ -1076,15 +1077,17 @@ describe('external backup roots (BYOK)', () => {
       }).should.be.rejectedWith(/backup root is not external/);
     });
 
-    it('rejects externalBackupRootPrv for any other slot', async () => {
-      await deriveSafeWalletKeys({
-        coin: 'algo',
-        slot: 'ed25519Multisig',
-        account: 0,
-        roots,
-        externalBackupRootPrv: externalPrvRoot.toBase58(),
-      }).should.be.rejectedWith(/only applies to the secp256k1Multisig slot/);
-    });
+    for (const slot of ['ecdsaMpc', 'eddsaMpc'] as const) {
+      it(`rejects externalBackupRootPrv for the ${slot} slot`, async () => {
+        await deriveSafeWalletKeys({
+          coin: 'eth',
+          slot,
+          account: 0,
+          roots,
+          externalBackupRootPrv: externalPrvRoot.toBase58(),
+        }).should.be.rejectedWith(/only applies to the multisig slots/);
+      });
+    }
   });
 
   describe('buildSafeRecoverKeyParams secp256k1Multisig', () => {
@@ -1195,8 +1198,14 @@ describe('external backup roots (BYOK)', () => {
       },
     };
 
-    async function derive(roots: DecryptedSafeRootsWithExternal) {
-      const derived = await deriveSafeWalletKeys({ coin: 'algo', slot: 'ed25519Multisig', account: 0, roots });
+    async function derive(roots: DecryptedSafeRootsWithExternal, externalBackupRootPrv?: string) {
+      const derived = await deriveSafeWalletKeys({
+        coin: 'algo',
+        slot: 'ed25519Multisig',
+        account: 0,
+        roots,
+        externalBackupRootPrv,
+      });
       if (derived.slot !== 'ed25519Multisig') {
         throw new Error('expected ed25519Multisig slot');
       }
@@ -1214,6 +1223,101 @@ describe('external backup roots (BYOK)', () => {
       );
       external.keys.user.pub.should.equal(local.keys.user.pub);
       external.keys.bitgo.pub.should.equal(local.keys.bitgo.pub);
+    });
+
+    it('derives the extended backup child from the caller root prv, matching the pub-only derivation', async () => {
+      const pubOnly = await derive(externalRoots);
+      const withPrv = await derive(externalRoots, STRKEY_SEED);
+
+      withPrv.keys.backup.kind.should.equal('extended');
+      if (withPrv.keys.backup.kind !== 'extended') {
+        throw new Error('expected an extended backup child');
+      }
+      withPrv.keys.backup.pub.should.equal(pubOnly.keys.backup.pub);
+      withPrv.keys.user.pub.should.equal(pubOnly.keys.user.pub);
+      withPrv.keys.bitgo.pub.should.equal(pubOnly.keys.bitgo.pub);
+
+      // The derived kL/kR sign for the pub-only child pub the keycard alone yields.
+      const message = Buffer.from('safe-recovery-signing-bytes');
+      const signature = await signEd25519Extended(
+        message,
+        Buffer.from(withPrv.keys.backup.kL, 'hex'),
+        Buffer.from(withPrv.keys.backup.kR, 'hex')
+      );
+      ed25519.verify(signature, message, Buffer.from(pubOnly.keys.backup.pub, 'hex')).should.equal(true);
+    });
+
+    it('builds signed params from the extended external backup child without a caller signer', async () => {
+      const withPrv = await derive(externalRoots, STRKEY_SEED);
+      const bitgo = { encrypt: sinon.stub().resolves('enc') } as unknown as BitGoBase;
+
+      const result = await buildSafeRecoverKeyParams({
+        bitgo,
+        coin: 'algo',
+        slot: 'ed25519Multisig',
+        keys: withPrv.keys,
+        mode: 'signed',
+      });
+      if (result.slot !== 'ed25519Multisig' || result.mode !== 'signed') {
+        throw new Error('expected signed ed25519Multisig params');
+      }
+
+      result.externalBackupSigner.publicKey.should.equal(withPrv.keys.backup.pub);
+      const message = Buffer.from('safe-recovery-signing-bytes');
+      const { signature } = await result.externalBackupSigner.sign(message);
+      ed25519
+        .verify(Buffer.from(signature, 'hex'), message, Buffer.from(withPrv.keys.backup.pub, 'hex'))
+        .should.equal(true);
+    });
+
+    it('rejects an externalBackupSigner alongside the prv-derived extended child', async () => {
+      const withPrv = await derive(externalRoots, STRKEY_SEED);
+      const bitgo = { encrypt: sinon.stub().resolves('enc') } as unknown as BitGoBase;
+
+      await buildSafeRecoverKeyParams({
+        bitgo,
+        coin: 'algo',
+        slot: 'ed25519Multisig',
+        keys: withPrv.keys,
+        mode: 'signed',
+        externalBackupSigner: {
+          publicKey: withPrv.keys.backup.pub,
+          sign: async () => ({ signature: '00'.repeat(64) }),
+        },
+      }).should.be.rejectedWith(/only applies to an external backup root/);
+    });
+
+    it('rejects a root prv that does not belong to the external root pub', async () => {
+      await derive(externalRoots, encodeEd25519StrKeySecretSeed(Buffer.alloc(32, 0x99))).should.be.rejectedWith(
+        /does not match the external backup root pub/
+      );
+    });
+
+    it('does not accept the user root seed as the external backup root prv', async () => {
+      const userSeed = encodeEd25519StrKeySecretSeed(Buffer.alloc(32, 0x55));
+      const roots: DecryptedSafeRootsWithExternal = {
+        ...localRoots,
+        ed25519Multisig: {
+          user: userSeed,
+          backup: {
+            external: true,
+            pub: encodeDerivableEd25519Pub(Buffer.from(ed25519.getPublicKey(Buffer.alloc(32, 0x66))), backupChainCode),
+          },
+          bitgo: bitgoComposite,
+        },
+      };
+      await derive(roots, userSeed).should.be.rejectedWith(/does not match the external backup root pub/);
+    });
+
+    it('rejects a root prv when the backup root is local', async () => {
+      await derive(localRoots, STRKEY_SEED).should.be.rejectedWith(/backup root is not external/);
+    });
+
+    it('rejects a malformed root prv with a clear error that never contains the value', async () => {
+      const malformed = 'not-a-strkey-secret';
+      const promise = derive(externalRoots, malformed);
+      await promise.should.be.rejectedWith(/Invalid ed25519 StrKey secret seed/);
+      await promise.catch((error) => (error as Error).message.should.not.containEql(malformed));
     });
 
     it('unsigned mode returns the encoded backup child without a signer', async () => {

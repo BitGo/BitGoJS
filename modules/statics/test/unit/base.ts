@@ -358,6 +358,15 @@ describe('Tokenized Equity CoinFeatures', function () {
       });
     });
 
+  ['sepeth:stgspcxgo', 'ofcsepeth:stgspcxgo'].forEach((name) => {
+    it(`${name} should be a tokenized equity and not a stablecoin`, function () {
+      const coin = coins.get(name);
+      coin.features.should.containEql(CoinFeature.TOKENIZED_EQUITY);
+      coin.features.should.containEql(CoinFeature.BITGO_TOKENIZED_EQUITY);
+      coin.features.should.not.containEql(CoinFeature.STABLECOIN);
+    });
+  });
+
   it('invariant: BITGO_TOKENIZED_EQUITY without TOKENIZED_EQUITY should throw MissingRequiredCoinFeatureError', function () {
     let threw = false;
     let errorMessage = '';
@@ -447,8 +456,10 @@ describe('Monad staking feature', function () {
     coin.features.should.containEql(CoinFeature.SHARED_EVM_SDK);
   });
 
-  it('mon should not expose STAKING', function () {
-    coins.get('mon').features.includes(CoinFeature.STAKING).should.be.false();
+  it('mon should expose STAKING without dropping its existing features', function () {
+    const coin = coins.get('mon');
+    coin.features.should.containEql(CoinFeature.STAKING);
+    coin.features.should.containEql(CoinFeature.SHARED_EVM_SIGNING);
   });
 });
 

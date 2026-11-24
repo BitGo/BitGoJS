@@ -159,6 +159,22 @@ describe('Cosmos-family addressPrefix', function () {
   }
 });
 
+describe('Hedera constantAddressPrefix', function () {
+  // shard.realm prefix of every Hedera account ID (0.0.<num>), asserted per network.
+  for (const [label, network] of [
+    ['main.hedera', Networks.main.hedera],
+    ['test.hedera', Networks.test.hedera],
+  ] as const) {
+    it(`Networks.${label} has constantAddressPrefix '0.0.'`, function () {
+      network.should.have.property('constantAddressPrefix', '0.0.');
+    });
+
+    it(`Networks.${label} leaves the bech32 addressPrefix unset`, function () {
+      network.should.not.have.property('addressPrefix');
+    });
+  }
+});
+
 describe('Polymesh (POLYX) v8 network fields', function () {
   it('mainnet has v8SpecVersion and v8TxVersion', function () {
     const network: PolyxNetwork = Networks.main.polyx as PolyxNetwork;

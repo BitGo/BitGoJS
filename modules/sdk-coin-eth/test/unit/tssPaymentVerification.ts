@@ -325,13 +325,102 @@ describe('TSS payment verification', function () {
     });
   });
 
-  describe('other intents', function () {
-    it('warns for contractCall instead of claiming it was verified', async function () {
-      const txHex = await buildTx({ to: recipient, value: '1' });
-      (await verify({ type: 'contractCall', recipients: [] }, txHex)).should.be.true();
-      warned(/contractCall: no verifier is implemented/).should.be.true();
+  // CECHO-2680 / INFOSEC-671: contractCall and customTx (both spellings) are verified against a
+  // single declared recipient instead of returning true unchecked.
+  describe('contractCall / customTx verification', function () {
+    const callData = calldata('deposit', ['uint256', 'address'], ['5', baseAddress]);
+
+    for (const type of ['contractCall', 'contract-call', 'customTx', 'custom-tx']) {
+      it(`verifies a matching ${type} call`, async function () {
+        const txHex = await buildTx({ to: otherRecipient, value: '0', data: callData });
+        const txParams = { type, recipients: [{ address: otherRecipient, amount: '0', data: callData }] };
+        (await verify(txParams, txHex)).should.be.true();
+        warn.called.should.be.false();
+      });
+
+      it(`rejects a ${type} call to a different destination`, async function () {
+        const txHex = await buildTx({ to: recipient, value: '0', data: callData });
+        const txParams = { type, recipients: [{ address: otherRecipient, amount: '0', data: callData }] };
+        await expectMismatch(verify(txParams, txHex), /destination address does not match/);
+      });
+
+      it(`rejects a ${type} call with a different native value`, async function () {
+        const txHex = await buildTx({ to: otherRecipient, value: '1', data: callData });
+        const txParams = { type, recipients: [{ address: otherRecipient, amount: '0', data: callData }] };
+        await expectMismatch(verify(txParams, txHex), /amount in txPrebuild does not match/);
+      });
+
+      it(`rejects a ${type} call with different calldata`, async function () {
+        const txHex = await buildTx({ to: otherRecipient, value: '0', data: callData });
+        const declared = calldata('deposit', ['uint256', 'address'], ['6', baseAddress]);
+        const txParams = { type, recipients: [{ address: otherRecipient, amount: '0', data: declared }] };
+        await expectMismatch(verify(txParams, txHex), /calldata does not match/);
+      });
+
+      it(`rejects a ${type} with no recipients`, async function () {
+        const txHex = await buildTx({ to: otherRecipient, value: '1' });
+        await expectMismatch(verify({ type }, txHex), /requires a declared recipient/);
+        await expectMismatch(verify({ type, recipients: [] }, txHex), /requires a declared recipient/);
+      });
+
+      it(`rejects a ${type} with more than one recipient`, async function () {
+        const txHex = await buildTx({ to: otherRecipient, value: '0', data: callData });
+        const txParams = {
+          type,
+          recipients: [
+            { address: otherRecipient, amount: '0', data: callData },
+            { address: recipient, amount: '0', data: callData },
+          ],
+        };
+        await expectMismatch(verify(txParams, txHex), /must declare a single recipient/);
+      });
+    }
+
+    it('defaults a contractCall value to 0 and empty calldata when the intent declares neither', async function () {
+      const txHex = await buildTx({ to: otherRecipient, value: '0' });
+      (await verify({ type: 'contractCall', recipients: [{ address: otherRecipient }] }, txHex)).should.be.true();
     });
 
+    it('rejects a contractCall whose tx carries value the intent did not declare', async function () {
+      const txHex = await buildTx({ to: otherRecipient, value: '1' });
+      await expectMismatch(
+        verify({ type: 'contractCall', recipients: [{ address: otherRecipient }] }, txHex),
+        /amount in txPrebuild does not match/
+      );
+    });
+
+    // The builder drops calldata shorter than a 4-byte selector when it reserializes, so the check
+    // must read the original signed bytes, not a rebuilt copy.
+    it('rejects a contractCall whose signed bytes carry sub-selector calldata the intent did not declare', async function () {
+      const common = AbstractEthLikeNewCoins.getCustomChainCommon(coin.getChainId());
+      const tx = FeeMarketEIP1559Transaction.fromTxData(
+        {
+          nonce: 1,
+          maxPriorityFeePerGas: 10,
+          maxFeePerGas: 100,
+          gasLimit: 100000,
+          to: otherRecipient,
+          value: 0,
+          data: '0x01',
+          chainId: coin.getChainId(),
+        },
+        { common }
+      );
+      const txHex = '0x' + tx.serialize().toString('hex');
+      await expectMismatch(
+        verify({ type: 'contractCall', recipients: [{ address: otherRecipient, amount: '0' }] }, txHex),
+        /calldata does not match/
+      );
+      (
+        await verify(
+          { type: 'contractCall', recipients: [{ address: otherRecipient, amount: '0', data: '0x01' }] },
+          txHex
+        )
+      ).should.be.true();
+    });
+  });
+
+  describe('other intents', function () {
     it('warns for an intent type with no verifier', async function () {
       const txHex = await buildTx({ to: recipient, value: '1' });
       (await verify({ type: 'acceleration' }, txHex)).should.be.true();

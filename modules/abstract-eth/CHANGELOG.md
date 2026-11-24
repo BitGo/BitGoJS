@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [25.7.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fabstract-eth%4025.6.5...%40bitgo%2Fabstract-eth%4025.7.0) (2026-11-19)
+
+### Features
+
+* **abstract-eth:** surface flush value words in ERC-7984 consolidation decoders (CECHO-2719) ([ac832ab](https://github.com/BitGo/BitGoJS/commit/ac832ab30b95db6bea8dd8eb8058e9e83389cdc4))
+
+
 ## [25.6.5](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fabstract-eth%4025.6.4...%40bitgo%2Fabstract-eth%4025.6.5) (2026-11-18)
 
 ### Bug Fixes

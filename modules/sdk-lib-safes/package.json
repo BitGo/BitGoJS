@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-lib-safes",
-  "version": "1.10.1",
+  "version": "1.11.0",
   "description": "Pure Safe key derivation, slot mapping and keycard box parsing shared by mint, sign, and recovery",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
