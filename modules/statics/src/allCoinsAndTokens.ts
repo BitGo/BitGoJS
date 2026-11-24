@@ -8998,6 +8998,18 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['tsui:usdc'],
     [...SUI_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
+  tsuiToken(
+    '0432b3e9-3dbc-4601-940e-e480dcf22289',
+    'tsui:hbtc',
+    'Testnet Hashi BTC',
+    8,
+    '0x5e0b99c31f691742acea5de4ca1bf53c398d5639fed6503a51ffe8035dc68485',
+    'btc',
+    'BTC',
+    '0x5e0b99c31f691742acea5de4ca1bf53c398d5639fed6503a51ffe8035dc68485::btc::BTC',
+    UnderlyingAsset['tsui:hbtc'],
+    SUI_TOKEN_FEATURES
+  ),
   ttaoToken(
     'b8b5fded-65f8-49eb-8f83-ad97d08d07f2',
     'ttao:apex',
