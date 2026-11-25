@@ -87,6 +87,8 @@ export const NO_RECIPIENT_TX_TYPES = new Set([
   'cantonEndInvestorOnboardingOffer',
   'cantonEndInvestorOnboardingAccept',
   'cantonEndInvestorOnboardingReject',
+  'cantonEndInvestorOnboardingCancel',
+  'cantonEndInvestorOffboarding',
   'cantonParticipantOnboardingRequest',
 
   'pledge',

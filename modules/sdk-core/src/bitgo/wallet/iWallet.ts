@@ -355,7 +355,7 @@ export interface PrebuildTransactionOptions {
   cantonCommandParams?: CantonCommandParams;
   /** External settlement executor party ID (cantonBroadridgeStandingDelegation intent). */
   executorPartyId?: string;
-  /** Canton party ID of the end investor to onboard (cantonEndInvestorOnboardingOffer intent). */
+  /** Canton party ID of the end investor to onboard or offboard (cantonEndInvestorOnboardingOffer / cantonEndInvestorOffboarding intents). */
   endInvestorPartyId?: string;
   /** Reason for rejecting the onboarding offer (cantonEndInvestorOnboardingReject intent). */
   reason?: string;

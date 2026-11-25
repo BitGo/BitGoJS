@@ -431,7 +431,7 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
   wrapParams?: WrapIntentParams;
   /** ERC-7984 unwrap (unshield) fields flattened onto the WP intent. */
   unwrapParams?: UnwrapIntentParams;
-  /** Canton party ID of the end investor to onboard (cantonEndInvestorOnboardingOffer intent). */
+  /** Canton party ID of the end investor to onboard or offboard (cantonEndInvestorOnboardingOffer / cantonEndInvestorOffboarding intents). */
   endInvestorPartyId?: string;
   /** Reason for rejecting the onboarding offer (cantonEndInvestorOnboardingReject intent). */
   reason?: string;
@@ -549,7 +549,7 @@ export interface PopulatedIntent extends PopulatedIntentBase, DefiIntentFields {
   cantonCommandParams?: CantonCommandParams;
   /** External settlement executor party ID (cantonBroadridgeStandingDelegation intent). */
   executorPartyId?: string;
-  /** Canton party ID of the end investor to onboard (cantonEndInvestorOnboardingOffer intent). */
+  /** Canton party ID of the end investor to onboard or offboard (cantonEndInvestorOnboardingOffer / cantonEndInvestorOffboarding intents). */
   endInvestorPartyId?: string;
   /** Reason for rejecting the onboarding offer (cantonEndInvestorOnboardingReject intent). */
   reason?: string;

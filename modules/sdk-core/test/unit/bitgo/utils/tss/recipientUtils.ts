@@ -67,6 +67,8 @@ describe('recipientUtils', function () {
         'cantonEndInvestorOnboardingOffer',
         'cantonEndInvestorOnboardingAccept',
         'cantonEndInvestorOnboardingReject',
+        'cantonEndInvestorOnboardingCancel',
+        'cantonEndInvestorOffboarding',
         'cantonParticipantOnboardingRequest',
         'pledge',
         // Avalanche / Flare cross-chain atomic imports
@@ -316,6 +318,8 @@ describe('recipientUtils', function () {
         'cantonEndInvestorOnboardingOffer',
         'cantonEndInvestorOnboardingAccept',
         'cantonEndInvestorOnboardingReject',
+        'cantonEndInvestorOnboardingCancel',
+        'cantonEndInvestorOffboarding',
         'cantonParticipantOnboardingRequest',
         'cantonBroadridgeStandingDelegation',
       ];
