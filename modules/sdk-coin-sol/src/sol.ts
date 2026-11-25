@@ -99,6 +99,7 @@ import {
   getMarinadeUnstakeTransfer,
   getSolTokenFromAddress,
   getSolTokenFromTokenName,
+  isFeePayerIsolated,
   isValidAddress,
   isValidBase64,
   isValidHex,
@@ -904,10 +905,11 @@ export class Sol extends BaseCoin {
       }
     }
 
-    // For non-consolidate transactions, feePayer must be the wallet's root address,
-    // or — when wallet-platform declares a sponsored fee payer — exactly that address.
-    // The closed match only accepts the specific fee payer declared for this
-    // transaction; every other non-root fee payer still throws. (CHALO-1749)
+    // For non-consolidate transactions the fee payer is one of three things:
+    //  - the wallet's root address: accepted;
+    //  - a fee payer wallet-platform declares as sponsored: it must match exactly, any other address throws (CHALO-1749);
+    //  - a non-root fee payer nothing declares, as when the signing path re-verifies from the transaction request alone:
+    //    accepted only when it is isolated from the instructions (isFeePayerIsolated), otherwise it throws (CHALO-998).
     const declaredFeePayer =
       params.feePayer ??
       (typeof txParams === 'object' &&
@@ -927,8 +929,19 @@ export class Sol extends BaseCoin {
           );
         }
       } else if (transactionJson.feePayer !== walletRootAddress) {
-        // Today's behavior: fee payer must be the wallet root
-        throw new Error('Tx fee payer is not the wallet root address');
+        // A fee payer other than the wallet root is a sponsored transaction (the enterprise fee address pays the fee)
+        // only when it is isolated: it appears in no instruction except as the durable-nonce authority or the payer of
+        // a token-account creation, so it cannot be the source, destination or authority of anything the wallet signs.
+        // Anything else keeps today's behavior: the fee payer must be the wallet root.
+        const feePayer = transactionJson.feePayer;
+        const parsedTokenMints = transactionJson.instructionsData.flatMap((instruction) =>
+          instruction.type === InstructionBuilderTypes.TokenTransfer && instruction.params.tokenAddress
+            ? [instruction.params.tokenAddress]
+            : []
+        );
+        if (!feePayer || !isFeePayerIsolated(feePayer, transaction.solTransaction.instructions, parsedTokenMints)) {
+          throw new Error('Tx fee payer is not the wallet root address');
+        }
       }
     }
 

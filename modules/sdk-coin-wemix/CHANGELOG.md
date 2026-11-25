@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.7.64](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-wemix%401.7.63...%40bitgo%2Fsdk-coin-wemix%401.7.64) (2026-11-24)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-wemix
+
+
+
+
+
 ## [1.7.63](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-wemix%401.7.62...%40bitgo%2Fsdk-coin-wemix%401.7.63) (2026-11-19)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-wemix

@@ -236,5 +236,324 @@ describe('common methods', () => {
       send.firstCall.args[0].secret.should.equal('[REDACTED]');
       send.firstCall.args[0].self.should.equal('[Circular]');
     });
+
+    it('should redact short sensitive values in a single pass', async () => {
+      // many short values under sensitive keys, including substrings of the
+      // [REDACTED] replacement token, are all collected and redacted
+      const handler = sandbox.stub().rejects(new Error('failed with a sensitive message'));
+      const req = {
+        body: Object.fromEntries(
+          ['e', '[', 'RE', 'ED', ']', 'D]', 'A', 'CT'].map((v, i) => [`k${i}`, { password: v }])
+        ),
+      } as unknown as express.Request;
+      const status = sandbox.stub().returnsThis();
+      const send = sandbox.stub().returnsThis();
+      const res = { status, send } as unknown as express.Response;
+      const next = sandbox.stub();
+      const consoleLog = sandbox.stub(console, 'log');
+
+      await promiseWrapper(handler)(req, res, next);
+
+      // short values are redacted too, and the single-pass scan cannot amplify:
+      // the message is mangled but stays bounded
+      status.calledWith(500).should.be.true();
+      const response = send.firstCall.args[0];
+      response.message.should.equal('fail[REDACTED]d with a s[REDACTED]nsitiv[REDACTED] m[REDACTED]ssag[REDACTED]');
+      JSON.stringify(response).should.not.containEql('sensitive message');
+      consoleLog.args.flat().join(' ').should.not.containEql('sensitive message');
+    });
+
+    it('should redact the passphrase normally when short junk values are present', async () => {
+      const passphrase = 'real-wallet-passphrase';
+      const handler = sandbox.stub().rejects(new Error(`failed with ${passphrase}`));
+      const req = {
+        body: {
+          walletPassphrase: passphrase,
+          ...Object.fromEntries(['e', '[', 'RE', 'ED]'].map((v, i) => [`k${i}`, { password: v }])),
+        },
+      } as unknown as express.Request;
+      const status = sandbox.stub().returnsThis();
+      const send = sandbox.stub().returnsThis();
+      const res = { status, send } as unknown as express.Response;
+      const next = sandbox.stub();
+
+      await promiseWrapper(handler)(req, res, next);
+
+      // short values are redacted like any other, so the real message is
+      // kept, with the passphrase redacted (the junk 'e' is redacted as well)
+      send.firstCall.args[0].message.should.equal('fail[REDACTED]d with [REDACTED]');
+    });
+
+    it('should redact secrets containing special characters literally', async () => {
+      const secret = 'p@$$w0rd.*+?(x)';
+      const handler = sandbox.stub().rejects(new Error(`failed with ${secret}`));
+      const req = { body: { walletPassphrase: secret } } as unknown as express.Request;
+      const status = sandbox.stub().returnsThis();
+      const send = sandbox.stub().returnsThis();
+      const res = { status, send } as unknown as express.Response;
+      const next = sandbox.stub();
+
+      await promiseWrapper(handler)(req, res, next);
+
+      send.firstCall.args[0].message.should.equal('failed with [REDACTED]');
+    });
+
+    it('should redact overlapping secrets as a single token', async () => {
+      const handler = sandbox.stub().rejects(new Error('failed with REDACTED] token'));
+      const req = {
+        body: Object.fromEntries([
+          ['password', 'REDA'],
+          ['prv', 'REDACTED]'],
+        ]),
+      } as unknown as express.Request;
+      const status = sandbox.stub().returnsThis();
+      const send = sandbox.stub().returnsThis();
+      const res = { status, send } as unknown as express.Response;
+      const next = sandbox.stub();
+
+      await promiseWrapper(handler)(req, res, next);
+
+      // the union of the overlapping matches is replaced as one token
+      send.firstCall.args[0].message.should.equal('failed with [REDACTED] token');
+    });
+
+    it('should not leak the tail of a secret overlapped by a shorter one', async () => {
+      const handler = sandbox.stub().rejects(new Error('failed with abcdef'));
+      const req = {
+        body: {
+          prv: 'cdef',
+          password: 'abc',
+        },
+      } as unknown as express.Request;
+      const status = sandbox.stub().returnsThis();
+      const send = sandbox.stub().returnsThis();
+      const res = { status, send } as unknown as express.Response;
+      const next = sandbox.stub();
+
+      await promiseWrapper(handler)(req, res, next);
+
+      // 'abc' matches first, but the replacement extends over 'cdef' which
+      // starts inside its span, so no part of either secret leaks
+      const response = send.firstCall.args[0];
+      response.message.should.equal('failed with [REDACTED]');
+      JSON.stringify(response).should.not.containEql('cdef');
+      JSON.stringify(response).should.not.containEql('abcdef');
+    });
+
+    it('should not re-redact the message into the error field', async () => {
+      // secret chosen as a substring of the [REDACTED] replacement token: a
+      // second redaction pass over the already-redacted message would expand
+      // the inserted tokens into nested junk in response.error
+      const handler = sandbox.stub().rejects(new Error('failed with REDACTED] token'));
+      const req = { body: { password: 'REDA' } } as unknown as express.Request;
+      const status = sandbox.stub().returnsThis();
+      const send = sandbox.stub().returnsThis();
+      const res = { status, send } as unknown as express.Response;
+      const next = sandbox.stub();
+
+      await promiseWrapper(handler)(req, res, next);
+
+      const response = send.firstCall.args[0];
+      response.message.should.equal('failed with [REDACTED]CTED] token');
+      response.error.should.equal('failed with [REDACTED]CTED] token');
+    });
+
+    it('should fail closed with a specific message when the collected secret cap is exceeded', async () => {
+      const passphrase = 'real-wallet-passphrase';
+      const handler = sandbox.stub().rejects(new Error(`failed with ${passphrase}`));
+      const junk: Record<string, unknown> = {};
+      for (let i = 0; i < 40; i++) {
+        junk[`junk${i}`] = { password: `junk-passphrase-value-${i}` };
+      }
+      const req = { body: { walletPassphrase: passphrase, ...junk } } as unknown as express.Request;
+      const status = sandbox.stub().returnsThis();
+      const send = sandbox.stub().returnsThis();
+      const res = { status, send } as unknown as express.Response;
+      const next = sandbox.stub();
+
+      await promiseWrapper(handler)(req, res, next);
+
+      // more distinct sensitive values than can be guaranteed redactable: the
+      // response names that cause and echoes nothing
+      const response = send.firstCall.args[0];
+      response.message.should.equal('error details withheld: too many sensitive values in request');
+      response.error.should.equal('error details withheld: too many sensitive values in request');
+      JSON.stringify(response).should.not.containEql(passphrase);
+    });
+
+    it('should redact normally when the number of distinct secrets is exactly at the cap', async () => {
+      const passphrase = 'real-wallet-passphrase';
+      const handler = sandbox.stub().rejects(new Error(`failed with ${passphrase}`));
+      const junk: Record<string, unknown> = {};
+      for (let i = 0; i < 31; i++) {
+        junk[`junk${i}`] = { password: `junk-passphrase-value-${i}` };
+      }
+      // passphrase plus 31 junk values = 32 distinct, exactly the cap
+      const req = { body: { walletPassphrase: passphrase, ...junk } } as unknown as express.Request;
+      const status = sandbox.stub().returnsThis();
+      const send = sandbox.stub().returnsThis();
+      const res = { status, send } as unknown as express.Response;
+      const next = sandbox.stub();
+
+      await promiseWrapper(handler)(req, res, next);
+
+      // at the cap everything is still collected, so the real message is kept
+      send.firstCall.args[0].message.should.equal('failed with [REDACTED]');
+    });
+
+    it('should not count repeated occurrences of a value toward the cap', async () => {
+      const passphrase = 'real-wallet-passphrase';
+      const handler = sandbox.stub().rejects(new Error(`failed with ${passphrase}`));
+      const repeated: Record<string, unknown> = {};
+      for (let i = 0; i < 40; i++) {
+        repeated[`item${i}`] = { walletPassphrase: passphrase };
+      }
+      const req = { body: repeated } as unknown as express.Request;
+      const status = sandbox.stub().returnsThis();
+      const send = sandbox.stub().returnsThis();
+      const res = { status, send } as unknown as express.Response;
+      const next = sandbox.stub();
+
+      await promiseWrapper(handler)(req, res, next);
+
+      // 40 fields sharing one value: a single distinct secret, redacted normally
+      send.firstCall.args[0].message.should.equal('failed with [REDACTED]');
+    });
+
+    it('should not fail closed when a capped set receives a duplicate of a collected value', async () => {
+      const passphrase = 'real-wallet-passphrase';
+      const handler = sandbox.stub().rejects(new Error(`failed with ${passphrase}`));
+      const junk: Record<string, unknown> = {};
+      for (let i = 0; i < 31; i++) {
+        junk[`junk${i}`] = { password: `junk-passphrase-value-${i}` };
+      }
+      // 32 distinct secrets (the cap) plus one repeat of the passphrase
+      const req = {
+        body: { walletPassphrase: passphrase, ...junk, repeated: { passphrase: passphrase } },
+      } as unknown as express.Request;
+      const status = sandbox.stub().returnsThis();
+      const send = sandbox.stub().returnsThis();
+      const res = { status, send } as unknown as express.Response;
+      const next = sandbox.stub();
+
+      await promiseWrapper(handler)(req, res, next);
+
+      // the duplicate does not add a distinct value, so the cap is not exceeded
+      send.firstCall.args[0].message.should.equal('failed with [REDACTED]');
+    });
+
+    it('should stay linear when one secret matches many times and another never', async function () {
+      // an absent secret is searched about once, not once per match of the
+      // present secret
+      const hugeMessage = 'a'.repeat(200000);
+      const handler = sandbox.stub().rejects(new Error(hugeMessage));
+      const req = {
+        body: {
+          password: 'aaaa',
+          nested: { secret: 'zzzz-not-present-anywhere' },
+        },
+      } as unknown as express.Request;
+      const status = sandbox.stub().returnsThis();
+      const send = sandbox.stub().returnsThis();
+      const res = { status, send } as unknown as express.Response;
+      const next = sandbox.stub();
+      sandbox.stub(console, 'log');
+
+      const startedAt = Date.now();
+      await promiseWrapper(handler)(req, res, next);
+      const elapsedMs = Date.now() - startedAt;
+
+      status.calledWith(500).should.be.true();
+      send.firstCall.args[0].message.should.equal('[REDACTED]'.repeat(50000));
+      elapsedMs.should.be.below(10000);
+    });
+
+    it('should fail closed instead of redacting hundreds of distinct secrets', async () => {
+      // hundreds of distinct secrets cannot be redacted under the collection
+      // cap, so the response fails closed: no error text, nothing echoed
+      const secrets = Array.from({ length: 500 }, (_, i) => `passphrase-number-${i}`);
+      const handler = sandbox.stub().rejects(new Error(`failed with ${secrets[0]} and ${secrets[499]} only`));
+      const body = Object.fromEntries(secrets.map((v, i) => [`k${i}`, { password: v }]));
+      const req = { body } as unknown as express.Request;
+      const status = sandbox.stub().returnsThis();
+      const send = sandbox.stub().returnsThis();
+      const res = { status, send } as unknown as express.Response;
+      const next = sandbox.stub();
+
+      await promiseWrapper(handler)(req, res, next);
+
+      const response = send.firstCall.args[0];
+      response.message.should.equal('error details withheld: too many sensitive values in request');
+      for (const secret of [secrets[0], secrets[499]]) {
+        JSON.stringify(response).should.not.containEql(secret);
+      }
+    });
+
+    it('should not treat empty sensitive values as secrets', async () => {
+      const handler = sandbox.stub().rejects(new Error('plain failure message'));
+      const req = { body: { walletPassphrase: '' } } as unknown as express.Request;
+      const status = sandbox.stub().returnsThis();
+      const send = sandbox.stub().returnsThis();
+      const res = { status, send } as unknown as express.Response;
+      const next = sandbox.stub();
+
+      await promiseWrapper(handler)(req, res, next);
+
+      // an empty sensitive value carries no secret and is not collected
+      send.firstCall.args[0].message.should.equal('plain failure message');
+    });
+
+    it('should still redact full-length encrypted key material', async () => {
+      const encryptedPrv = `{"iv":"${'a'.repeat(
+        32
+      )}","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","ct":"${'b'.repeat(2048)}"}`;
+      const handler = sandbox.stub().rejects(new Error(`failed to decrypt ${encryptedPrv}`));
+      const req = { body: { encryptedprv: encryptedPrv } } as unknown as express.Request;
+      const status = sandbox.stub().returnsThis();
+      const send = sandbox.stub().returnsThis();
+      const res = { status, send } as unknown as express.Response;
+      const next = sandbox.stub();
+
+      await promiseWrapper(handler)(req, res, next);
+
+      send.firstCall.args[0].message.should.equal('failed to decrypt [REDACTED]');
+      JSON.stringify(send.firstCall.args[0]).should.not.containEql(encryptedPrv);
+    });
+
+    it('should return a generic 500 when building the error response itself fails', async () => {
+      // a thrown object containing a BigInt makes JSON.stringify throw inside
+      // handleRequestHandlerError
+      const handler = sandbox.stub().rejects({ message: 'weird', value: 10n });
+      const req = { body: {} } as unknown as express.Request;
+      const status = sandbox.stub().returnsThis();
+      const send = sandbox.stub().returnsThis();
+      const res = { headersSent: false, status, send } as unknown as express.Response;
+      const next = sandbox.stub();
+      const consoleLog = sandbox.stub(console, 'log');
+
+      // resolves instead of escaping as an unhandled rejection, which would
+      // leave the request hanging until the connect timeout
+      await promiseWrapper(handler)(req, res, next);
+
+      status.calledWith(500).should.be.true();
+      send.calledWith({ message: 'internal error' }).should.be.true();
+      consoleLog.args.flat().join(' ').should.not.containEql('weird');
+    });
+
+    it('should not attempt a second response when headers were already sent', async () => {
+      const handler = sandbox.stub().rejects({ message: 'weird', value: 10n });
+      const req = { body: {} } as unknown as express.Request;
+      const status = sandbox.stub().returnsThis();
+      const send = sandbox.stub().returnsThis();
+      const res = { headersSent: true, status, send } as unknown as express.Response;
+      const next = sandbox.stub();
+      const consoleLog = sandbox.stub(console, 'log');
+
+      await promiseWrapper(handler)(req, res, next);
+
+      status.called.should.be.false();
+      send.called.should.be.false();
+      consoleLog.args.flat().join(' ').should.containEql('TypeError');
+    });
   });
 });

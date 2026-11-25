@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [13.7.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fabstract-utxo%4013.6.9...%40bitgo%2Fabstract-utxo%4013.7.0) (2026-11-24)
+
+### Features
+
+* **abstract-utxo:** add shielded zec tx verification ([3513f7a](https://github.com/BitGo/BitGoJS/commit/3513f7ad4f7d05dab4cb0d08d45532a976f05fbe))
+
+
 ## [13.6.9](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fabstract-utxo%4013.6.8...%40bitgo%2Fabstract-utxo%4013.6.9) (2026-11-19)
 
 ### Bug Fixes

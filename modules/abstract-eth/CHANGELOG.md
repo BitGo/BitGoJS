@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [25.7.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fabstract-eth%4025.7.0...%40bitgo%2Fabstract-eth%4025.7.1) (2026-11-24)
+
+### Bug Fixes
+
+* **abstract-eth:** bounded unwrap verify on ERC-7984 PA rebuild ([eba01b0](https://github.com/BitGo/BitGoJS/commit/eba01b013cc7417e3ae5bcd94dffa67023783791))
+* **abstract-eth:** verify contract calls against the original tx bytes ([c0bc68a](https://github.com/BitGo/BitGoJS/commit/c0bc68aec91ed9af3926e19224f594659978e161))
+* **abstract-eth:** verify contractCall and customTx EVM TSS intents ([4f04992](https://github.com/BitGo/BitGoJS/commit/4f04992e3a1505be01991867b002da7021808f59))
+* **sdk-coin-eth:** strictly verify the multisig enable-token sendMultiSig operation (CECHO-2815) ([9113b40](https://github.com/BitGo/BitGoJS/commit/9113b40745739bb0c7d7bb91da111694aca63ae2))
+
+
 # [25.7.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fabstract-eth%4025.6.5...%40bitgo%2Fabstract-eth%4025.7.0) (2026-11-19)
 
 ### Features

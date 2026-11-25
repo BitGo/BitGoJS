@@ -82,6 +82,7 @@ import { flrp } from './flrp';
 import { hypeEvm } from './hypeevm';
 import { kaspa } from './kaspa';
 import {
+  ACCOUNT_COIN_DEFAULT_FEATURES,
   ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_EUROPE,
   ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE,
   ACCOUNT_COIN_DEFAULT_FEATURES_TRUST_ONLY,
@@ -5911,7 +5912,8 @@ export const allCoinsAndTokens = [
     2,
     '0x2e392eee4da541dc8aab48d4a4c5eb3a8d8f468b',
     UnderlyingAsset['tprividiumeth:USB-ESCROW-D'],
-    Networks.test.prividiumeth
+    Networks.test.prividiumeth,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX]
   ),
 
   erc20Token(
@@ -5921,7 +5923,8 @@ export const allCoinsAndTokens = [
     2,
     '0xde1c06e0aabf9c224c36e80cc13259f13237d0df',
     UnderlyingAsset['tprividiumeth:tMMF'],
-    Networks.test.prividiumeth
+    Networks.test.prividiumeth,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX]
   ),
 
   hederaCoin(
@@ -8997,6 +9000,18 @@ export const allCoinsAndTokens = [
     '0xa1ec7fc00a6f40db9693ad1415d0c193ad3906494428cf252621037bd7117e29::usdc::USDC',
     UnderlyingAsset['tsui:usdc'],
     [...SUI_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  tsuiToken(
+    '0432b3e9-3dbc-4601-940e-e480dcf22289',
+    'tsui:hbtc',
+    'Testnet Hashi BTC',
+    8,
+    '0x5e0b99c31f691742acea5de4ca1bf53c398d5639fed6503a51ffe8035dc68485',
+    'btc',
+    'BTC',
+    '0x5e0b99c31f691742acea5de4ca1bf53c398d5639fed6503a51ffe8035dc68485::btc::BTC',
+    UnderlyingAsset['tsui:hbtc'],
+    SUI_TOKEN_FEATURES
   ),
   ttaoToken(
     'b8b5fded-65f8-49eb-8f83-ad97d08d07f2',

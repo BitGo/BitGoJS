@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.5.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-algo%403.4.8...%40bitgo%2Fsdk-coin-algo%403.5.0) (2026-11-24)
+
+### Features
+
+* recover external ed25519Multisig from backup root prv ([6098a44](https://github.com/BitGo/BitGoJS/commit/6098a44a61759cd158e082e0e66066c42764a7ba))
+
+
 ## [3.4.8](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-algo%403.4.7...%40bitgo%2Fsdk-coin-algo%403.4.8) (2026-11-19)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-algo

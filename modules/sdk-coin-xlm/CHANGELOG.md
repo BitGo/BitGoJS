@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.6.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-xlm%404.5.6...%40bitgo%2Fsdk-coin-xlm%404.6.0) (2026-11-24)
+
+### Features
+
+* recover external ed25519Multisig from backup root prv ([6098a44](https://github.com/BitGo/BitGoJS/commit/6098a44a61759cd158e082e0e66066c42764a7ba))
+
+
 ## [4.5.6](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-xlm%404.5.5...%40bitgo%2Fsdk-coin-xlm%404.5.6) (2026-11-19)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xlm

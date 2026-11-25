@@ -16,7 +16,7 @@ import {
   MPC_DELEGATION_UNSIGNED_TX_HEX,
 } from '../resources/transactionData/multisigDelegationTx';
 import { HalfSignedAccountTransaction, TransactionType, MPCAlgorithm, common } from '@bitgo/sdk-core';
-import { secp256k1 } from '@flarenetwork/flarejs';
+import { secp256k1, TypeSymbols } from '@flarenetwork/flarejs';
 import { FlrpContext } from '@bitgo/public-types';
 import assert from 'assert';
 import nock from 'nock';
@@ -1100,28 +1100,13 @@ describe('Flrp test cases', function () {
 
       it('should reject a delegation whose rewards owner differs from stakingOptions.rewardAddress', () => {
         const attackerOwnerBytes = Buffer.alloc(20, 2);
+        const walletOwnerBytes = utils.parseAddress(ON_CHAIN_TEST_WALLET.user.pChainAddress);
         const delegationTx = {
           getFlareTransaction: () => ({
             getTx: () => ({
-              stake: [{ output: { getOwners: () => [Buffer.alloc(20, 1)] } }],
+              stake: [{ output: { getOwners: () => [walletOwnerBytes], getThreshold: () => 1 } }],
+              baseTx: { outputs: [] },
               getDelegatorRewardsOwner: () => ({ addrs: [{ toBytes: () => attackerOwnerBytes }] }),
-            }),
-          }),
-        };
-        const params = { txParams: { stakingOptions: validStakingOptions } };
-
-        assert.throws(
-          () => basecoin.validateDelegationOwners(delegationTx, params),
-          /does not match the requested rewardAddress/
-        );
-      });
-
-      it('should reject a delegation whose stake owner is outside the wallet anchor', () => {
-        const delegationTx = {
-          getFlareTransaction: () => ({
-            getTx: () => ({
-              stake: [{ output: { getOwners: () => [Buffer.alloc(20, 1)] } }],
-              getDelegatorRewardsOwner: () => ({ addrs: [{ toBytes: () => Buffer.alloc(20, 3) }] }),
             }),
           }),
         };
@@ -1135,7 +1120,266 @@ describe('Flrp test cases', function () {
 
         assert.throws(
           () => basecoin.validateDelegationOwners(delegationTx, params),
+          /does not match the requested rewardAddress/
+        );
+      });
+
+      it('should reject a delegation whose stake owner is outside the wallet anchor', () => {
+        const delegationTx = {
+          getFlareTransaction: () => ({
+            getTx: () => ({
+              stake: [{ output: { getOwners: () => [Buffer.alloc(20, 1)], getThreshold: () => 1 } }],
+              baseTx: { outputs: [] },
+              getDelegatorRewardsOwner: () => ({ addrs: [{ toBytes: () => Buffer.alloc(20, 3) }] }),
+            }),
+          }),
+        };
+
+        const params = {
+          txParams: { stakingOptions: validStakingOptions },
+          wallet: {
+            coinSpecific: () => ({ rootAddress: ON_CHAIN_TEST_WALLET.user.pChainAddress }),
+            receiveAddress: () => undefined,
+          },
+        };
+
+        assert.throws(
+          () => basecoin.validateDelegationOwners(delegationTx, params),
           /is not one of the wallet's own addresses/
+        );
+      });
+
+      it('should run wallet-anchored ownership checks in the MPC staking flow even without stakingOptions (CECHO-2715)', () => {
+        // The no-intent path must still reject a delegation whose stake owner is not
+        // one of the wallet's addresses — previously this shape verified unconditionally.
+        const delegationTx = {
+          getFlareTransaction: () => ({
+            getTx: () => ({
+              stake: [{ output: { getOwners: () => [Buffer.alloc(20, 1)], getThreshold: () => 1 } }],
+              baseTx: { outputs: [] },
+            }),
+          }),
+        };
+
+        assert.throws(
+          () => basecoin.validateDelegationWalletOwnership(delegationTx, ON_CHAIN_TEST_WALLET.user.pChainAddress),
+          /Delegation stake output 0 owner .* is not one of the wallet's own addresses/
+        );
+      });
+
+      it('should bind every stake output, not just the first', () => {
+        // A malicious prebuild can put a wallet-owned stake output first and an
+        // attacker-owned one after it — every stake output must be wallet-owned.
+        const walletOwnerBytes = utils.parseAddress(ON_CHAIN_TEST_WALLET.user.pChainAddress);
+        const delegationTx = {
+          getFlareTransaction: () => ({
+            getTx: () => ({
+              stake: [
+                { output: { getOwners: () => [walletOwnerBytes], getThreshold: () => 1 } },
+                { output: { getOwners: () => [Buffer.alloc(20, 1)], getThreshold: () => 1 } },
+              ],
+              baseTx: { outputs: [] },
+            }),
+          }),
+        };
+
+        assert.throws(
+          () => basecoin.validateDelegationWalletOwnership(delegationTx, ON_CHAIN_TEST_WALLET.user.pChainAddress),
+          /Delegation stake output 1 owner .* is not one of the wallet's own addresses/
+        );
+      });
+
+      it('should fail closed in the MPC staking flow when no wallet anchor is available (CECHO-2715)', () => {
+        const delegationTx = {
+          getFlareTransaction: () => ({
+            getTx: () => ({
+              stake: [{ output: { getOwners: () => [Buffer.alloc(20, 1)], getThreshold: () => 1 } }],
+              baseTx: { outputs: [] },
+            }),
+          }),
+        };
+
+        assert.throws(
+          () => basecoin.validateDelegationWalletOwnership(delegationTx, undefined),
+          /Unable to verify delegation: no wallet address available/
+        );
+      });
+
+      it('should reject a delegation whose change output pays an attacker even without stakingOptions (CECHO-2715)', () => {
+        const walletOwnerBytes = utils.parseAddress(ON_CHAIN_TEST_WALLET.user.pChainAddress);
+        const attackerChangeBytes = utils.parseAddress(ON_CHAIN_TEST_WALLET.bitgo.pChainAddress);
+        const delegationTx = {
+          getFlareTransaction: () => ({
+            getTx: () => ({
+              stake: [{ output: { getOwners: () => [walletOwnerBytes], getThreshold: () => 1 } }],
+              baseTx: {
+                outputs: [
+                  {
+                    _type: TypeSymbols.TransferableOutput,
+                    amount: () => 1000n,
+                    output: { getOwners: () => [attackerChangeBytes], getLocktime: () => 0n, getThreshold: () => 1 },
+                  },
+                ],
+              },
+            }),
+          }),
+        };
+
+        assert.throws(
+          () => basecoin.validateDelegationWalletOwnership(delegationTx, ON_CHAIN_TEST_WALLET.user.pChainAddress),
+          /Delegation change output 0 owner set .* does not match the wallet's full owner set/
+        );
+      });
+
+      it('should reject a delegation whose change output has a future locktime', () => {
+        const walletOwnerBytes = utils.parseAddress(ON_CHAIN_TEST_WALLET.user.pChainAddress);
+        const delegationTx = {
+          getFlareTransaction: () => ({
+            getTx: () => ({
+              stake: [{ output: { getOwners: () => [walletOwnerBytes], getThreshold: () => 1 } }],
+              baseTx: {
+                outputs: [
+                  {
+                    _type: TypeSymbols.TransferableOutput,
+                    amount: () => 1000n,
+                    output: { getOwners: () => [walletOwnerBytes], getLocktime: () => 3600n, getThreshold: () => 1 },
+                  },
+                ],
+              },
+            }),
+          }),
+        };
+
+        assert.throws(
+          () => basecoin.validateDelegationWalletOwnership(delegationTx, ON_CHAIN_TEST_WALLET.user.pChainAddress),
+          /Delegation change output 0 locktime 3600 must be 0/
+        );
+      });
+
+      it('should reject a delegation whose change output threshold is structurally invalid', () => {
+        const walletOwnerBytes = utils.parseAddress(ON_CHAIN_TEST_WALLET.user.pChainAddress);
+        const delegationTx = {
+          getFlareTransaction: () => ({
+            getTx: () => ({
+              stake: [{ output: { getOwners: () => [walletOwnerBytes], getThreshold: () => 1 } }],
+              baseTx: {
+                outputs: [
+                  {
+                    _type: TypeSymbols.TransferableOutput,
+                    amount: () => 1000n,
+                    output: { getOwners: () => [walletOwnerBytes], getLocktime: () => 0n, getThreshold: () => 2 },
+                  },
+                ],
+              },
+            }),
+          }),
+        };
+
+        assert.throws(
+          () => basecoin.validateDelegationWalletOwnership(delegationTx, ON_CHAIN_TEST_WALLET.user.pChainAddress),
+          /Delegation change output 0 threshold 2 is invalid for 1 owner/
+        );
+      });
+
+      it('should reject a single-key change output on a multi-address wallet anchor', () => {
+        // Exact-set equality (review hardening): the builder pays change to the
+        // wallet's full from-address set, so a change output owned by only one
+        // wallet address (e.g. just the BitGo key at threshold 1) must not let
+        // the platform control the surplus alone.
+        const walletOwners = [
+          ON_CHAIN_TEST_WALLET.user.pChainAddress,
+          ON_CHAIN_TEST_WALLET.bitgo.pChainAddress,
+          ON_CHAIN_TEST_WALLET.backup.pChainAddress,
+        ].join('~');
+        const changePaysBitgoOnly = utils.parseAddress(ON_CHAIN_TEST_WALLET.bitgo.pChainAddress);
+        const delegationTx = {
+          getFlareTransaction: () => ({
+            getTx: () => ({
+              stake: [
+                {
+                  output: {
+                    getOwners: () => [utils.parseAddress(ON_CHAIN_TEST_WALLET.user.pChainAddress)],
+                    getThreshold: () => 1,
+                  },
+                },
+              ],
+              baseTx: {
+                outputs: [
+                  {
+                    _type: TypeSymbols.TransferableOutput,
+                    amount: () => 1000n,
+                    output: { getOwners: () => [changePaysBitgoOnly], getLocktime: () => 0n, getThreshold: () => 1 },
+                  },
+                ],
+              },
+            }),
+          }),
+        };
+
+        assert.throws(
+          () => basecoin.validateDelegationWalletOwnership(delegationTx, walletOwners),
+          /Delegation change output 0 owner set .* does not match the wallet's full owner set/
+        );
+      });
+
+      it('should accept a change output carrying the full wallet owner set in any order', () => {
+        const walletOwners = [
+          ON_CHAIN_TEST_WALLET.user.pChainAddress,
+          ON_CHAIN_TEST_WALLET.bitgo.pChainAddress,
+          ON_CHAIN_TEST_WALLET.backup.pChainAddress,
+        ].join('~');
+        // Deliberately a different order than the anchor — order-insensitive compare.
+        const fullSetReordered = [
+          ON_CHAIN_TEST_WALLET.backup.pChainAddress,
+          ON_CHAIN_TEST_WALLET.user.pChainAddress,
+          ON_CHAIN_TEST_WALLET.bitgo.pChainAddress,
+        ].map((addr) => utils.parseAddress(addr));
+        const delegationTx = {
+          getFlareTransaction: () => ({
+            getTx: () => ({
+              stake: [
+                {
+                  output: {
+                    getOwners: () => [utils.parseAddress(ON_CHAIN_TEST_WALLET.user.pChainAddress)],
+                    getThreshold: () => 1,
+                  },
+                },
+              ],
+              baseTx: {
+                outputs: [
+                  {
+                    _type: TypeSymbols.TransferableOutput,
+                    amount: () => 1000n,
+                    output: { getOwners: () => fullSetReordered, getLocktime: () => 0n, getThreshold: () => 1 },
+                  },
+                ],
+              },
+            }),
+          }),
+        };
+
+        assert.doesNotThrow(() => basecoin.validateDelegationWalletOwnership(delegationTx, walletOwners));
+      });
+
+      it('should accept a delegation with no change outputs (empty baseTx.outputs)', () => {
+        const delegationTx = {
+          getFlareTransaction: () => ({
+            getTx: () => ({
+              stake: [
+                {
+                  output: {
+                    getOwners: () => [utils.parseAddress(ON_CHAIN_TEST_WALLET.user.pChainAddress)],
+                    getThreshold: () => 1,
+                  },
+                },
+              ],
+              baseTx: { outputs: [] },
+            }),
+          }),
+        };
+
+        assert.doesNotThrow(() =>
+          basecoin.validateDelegationWalletOwnership(delegationTx, ON_CHAIN_TEST_WALLET.user.pChainAddress)
         );
       });
 
@@ -1156,8 +1400,9 @@ describe('Flrp test cases', function () {
         const delegationTx = {
           getFlareTransaction: () => ({
             getTx: () => ({
-              stake: [{ output: { getOwners: () => signingOwnerBytes } }],
+              stake: [{ output: { getOwners: () => signingOwnerBytes, getThreshold: () => 1 } }],
               getDelegatorRewardsOwner: () => ({ addrs: [{ toBytes: () => rewardBytes }] }),
+              baseTx: { outputs: [] },
             }),
           }),
         };
@@ -1180,13 +1425,20 @@ describe('Flrp test cases', function () {
         const delegationTx = {
           getFlareTransaction: () => ({
             getTx: () => ({
-              stake: [{ output: { getOwners: () => [rewardBytes] } }],
+              stake: [{ output: { getOwners: () => [rewardBytes], getThreshold: () => 1 } }],
+              baseTx: { outputs: [] },
               getDelegatorRewardsOwner: () => ({ addrs: [{ toBytes: () => rewardBytes }] }),
             }),
           }),
         };
         const params = {
           txParams: { stakingOptions: { ...validStakingOptions, rewardAddress: hexRewardAddress } },
+          wallet: {
+            // P-form of the same payload as the C-prefixed fixture rewardAddress:
+            // the stake owner's derived P-address must be in the anchor set.
+            coinSpecific: () => ({ rootAddress: 'P-costwo1uyp5n76gjqltrddur7qlrsmt3kyh8fnrmwhqk7' }),
+            receiveAddress: () => undefined,
+          },
         };
 
         assert.doesNotThrow(() => basecoin.validateDelegationOwners(delegationTx, params));
@@ -1686,24 +1938,38 @@ describe('Flrp test cases', function () {
             rewardAddress: MULTISIG_DELEGATION_PARAMS.rewardAddress,
           },
         };
+        // The fixture delegation's stake and change owners are the wallet's multisig
+        // address set; the intent path also requires the wallet anchor (CECHO-2715).
+        const wallet = {
+          coinSpecific: () => ({ rootAddress: MULTISIG_DELEGATION_PARAMS.multisigAddresses.join('~') }),
+          receiveAddress: () => undefined,
+        };
 
-        const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+        const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet });
         isVerified.should.equal(true);
       });
-
-      it('should verify delegation transaction when txParams.type is undefined (MPC intent flow)', async () => {
+      it('should verify delegation in the MPC staking flow (no type, no stakingOptions) against the wallet anchor', async () => {
         // In the MPC/TSS staking flow, the txRequest is created by staking-service (not the UI).
         // The UI only has txRequestId — no buildParams. The SDK falls back to { recipients: [] }
-        // with no type and no stakingOptions. verifyTransaction must still pass because the
-        // parsed hex (explainedTx.type) is the source of truth built by wallet-platform.
+        // with no type and no stakingOptions. Without staking intent, verification now runs the
+        // wallet-anchored ownership checks (stake and change owners) and fails closed when no
+        // anchor is available (CECHO-2715); the nodeID/rewards/amount residual is tracked as
+        // CECHO-2904. The real signing flow always passes the wallet — mirrored here.
         const txPrebuild = { txHex: MPC_DELEGATION_UNSIGNED_TX_HEX, txInfo: {} };
         const txParams = {
           recipients: [],
           // no type — simulates MPC staking flow where buildParams is unavailable
           // no stakingOptions — not passed through in the MPC intent flow
         };
+        // The fixture delegation's stake and change owners are the wallet's own address.
+        const wallet = {
+          coinSpecific: () => ({
+            rootAddress: 'P-costwo1snayg8ucrl88e433382swxqzxa4dvemwscm7nq',
+          }),
+          receiveAddress: () => undefined,
+        };
 
-        const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild });
+        const isVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet });
         isVerified.should.equal(true);
       });
     });

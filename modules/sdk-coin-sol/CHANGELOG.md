@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [8.21.7](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-sol%408.21.6...%40bitgo%2Fsdk-coin-sol%408.21.7) (2026-11-24)
+
+### Bug Fixes
+
+* **sdk-coin-sol:** accept an isolated sponsored fee payer in verifyTransaction ([cf30a67](https://github.com/BitGo/BitGoJS/commit/cf30a67566eda8a9a6b9bebbfb27627346010ebd))
+
+
 ## [8.21.6](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-sol%408.21.5...%40bitgo%2Fsdk-coin-sol%408.21.6) (2026-11-19)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

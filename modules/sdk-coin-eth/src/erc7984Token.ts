@@ -11,7 +11,7 @@ import {
   RecoveryProviderError,
   Util,
 } from '@bitgo/sdk-core';
-import { coins, Erc7984TokenConfig, EthereumNetwork, tokens } from '@bitgo/statics';
+import { coins, CoinFeature, Erc7984TokenConfig, EthereumNetwork, tokens } from '@bitgo/statics';
 import {
   CoinNames,
   DecryptionDelegationBuilder,
@@ -23,6 +23,10 @@ import {
   decodeSendMultiSigFlushERC7984Data,
   sendMultisigMethodId,
   confidentialTransferWithProofMethodId,
+  confidentialTransferWithProofTypes,
+  getRawDecoded,
+  AbstractEthLikeNewCoins,
+  EthTransactionData,
   buildConfidentialTransferByHandleCalldata,
   optionalDeps,
   RecoverOptions,
@@ -66,6 +70,26 @@ import { TransactionBuilder } from './lib';
 // to de-risk exactly this class of false positive.
 const STRICT_CONSOLIDATION_MAX_DERIVATION_INDEX = 10000;
 const STRICT_CONSOLIDATION_FORWARDER_VERSIONS = [1, 2, 4, 5] as const;
+
+/**
+ * True when the calldata body after the 4-byte selector is exactly the canonical ABI encoding of
+ * `confidentialTransfer(address,bytes32,bytes)`: no trailing bytes, no dirty address padding, no
+ * non-standard dynamic offsets.
+ *
+ * Mirrors the check the chain-level TSS payment verifier applies, so the direct-call token-coin
+ * path (`Erc7984Token`) enforces the same calldata shape as the base coin.
+ */
+function isCanonicalConfidentialTransferCalldata(data: string): boolean {
+  const types = confidentialTransferWithProofTypes;
+  try {
+    const args = data.slice(10).toLowerCase();
+    const decoded = getRawDecoded(types, Buffer.from(args, 'hex'));
+    const encodable = decoded.map((value) => (typeof value === 'string' ? addHexPrefix(value) : value));
+    return optionalDeps.ethAbi.rawEncode(types, encodable).toString('hex') === args;
+  } catch {
+    return false;
+  }
+}
 
 export { Erc7984TokenConfig };
 
@@ -872,6 +896,23 @@ export class Erc7984Token extends Eth {
   }
 
   /**
+   * Decode the original serialized bytes with `EthTransactionData` so the direct-call verifier
+   * inspects exactly the `to`, `value` and `data` that were signed instead of a builder rebuild.
+   */
+  private decodeRawTxFields(txHex: string): { to: string; value: string; data: string } {
+    const common = AbstractEthLikeNewCoins.getCustomChainCommon(this.getChainId());
+    if (!this.staticsCoin?.features.includes(CoinFeature.EIP1559)) {
+      common.setHardfork(optionalDeps.EthCommon.Hardfork.Petersburg);
+    }
+    const txJson = EthTransactionData.fromSerialized(txHex, common).toJson();
+    return {
+      to: (txJson.to ?? '').toLowerCase(),
+      value: txJson.value ?? '0',
+      data: (txJson.data || '0x').toLowerCase(),
+    };
+  }
+
+  /**
    * Verifies a confidential token transfer (SendERC7984) transaction.
    *
    * With txHex — two on-chain shapes are supported:
@@ -891,6 +932,15 @@ export class Erc7984Token extends Eth {
    *     2. Decoded recipient matches txParams.recipients[0].address or buildParams.recipients[0].address.
    *     3. encryptedHandle and inputProof are structurally present (non-empty).
    *     4. txParams.recipients[0].amount is a positive integer and matches buildParams when both present.
+   *
+   *   The direct-call (TSS EOA) shape additionally verifies the exact serialized bytes: zero native
+   *   value, canonical `confidentialTransfer(address,bytes32,bytes)` calldata, and a single recipient.
+   *
+   *   Verification limit (CECHO-2689): the transferred amount is encrypted (`euint64` ciphertext plus
+   *   an input proof), so the plaintext `recipients[0].amount` cannot be compared against it. The
+   *   selector, token contract, recipient, native value and calldata shape are all enforced on the
+   *   direct shape; the encrypted amount is verified only structurally (non-empty 32-byte handle,
+   *   non-empty proof).
    *
    * Without txHex (first-signer / pre-signing path):
    *  1. Requires exactly one recipient in txParams.
@@ -942,11 +992,12 @@ export class Erc7984Token extends Eth {
       return true;
     }
 
-    // Parse and decode the raw transaction
+    // The legacy sendMultiSig-wrapped (multisig / smart-contract wallet) shape keeps the original
+    // builder-based parse. The direct-call (hot/TSS EOA) shape decodes the exact serialized bytes
+    // so calldata cannot be normalized or have trailing bytes dropped before verification.
     const txBuilder = this.getTransactionBuilder();
     txBuilder.from(txPrebuild.txHex);
-    const tx = await txBuilder.build();
-    const txJson = tx.toJson();
+    const txJson = (await txBuilder.build()).toJson();
 
     let toAddress: string;
     let tokenContractAddress: string;
@@ -965,12 +1016,32 @@ export class Erc7984Token extends Eth {
       } else if (txJson.data.startsWith(confidentialTransferWithProofMethodId)) {
         // Direct call path: hot/TSS EOA wallet calls the token contract directly.
         // The transaction's `to` field is the token contract address.
-        if (!txJson.to) {
+        const raw = this.decodeRawTxFields(txPrebuild.txHex);
+        if (!raw.to) {
           throw new Error('direct confidentialTransfer call is missing transaction to address');
         }
-        const decoded = decodeDirectConfidentialTransferCalldata(txJson.data);
+        // A confidentialTransfer moves an encrypted token amount; any nonzero `value` would
+        // additionally send the chain's native coin to the token contract.
+        if (String(raw.value) !== '0') {
+          throw new Error(
+            `verifyConfidentialTransfer: confidential transfer must not carry native value (got ${raw.value})`
+          );
+        }
+        // The EVM ignores trailing bytes; accepting them would sign more than the decoded intent
+        // describes, so require the canonical ABI encoding of confidentialTransfer(...).
+        if (!isCanonicalConfidentialTransferCalldata(raw.data)) {
+          throw new Error('verifyConfidentialTransfer: confidential transfer calldata is not canonical');
+        }
+        // A confidential transfer carries exactly one recipient. A multi-recipient intent would
+        // silently ignore every entry after the first.
+        if (txParams?.recipients && txParams.recipients.length > 1) {
+          throw new Error(
+            `verifyConfidentialTransfer: confidential transfers support exactly 1 recipient, got ${txParams.recipients.length}`
+          );
+        }
+        const decoded = decodeDirectConfidentialTransferCalldata(raw.data);
         toAddress = decoded.toAddress;
-        tokenContractAddress = txJson.to;
+        tokenContractAddress = raw.to;
         encryptedHandle = decoded.encryptedHandle;
         inputProof = decoded.inputProof;
       } else {
