@@ -53,6 +53,9 @@ async function main() {
   console.log('\nWithdrawal complete:');
   console.log('  operationId  :', result.operationId);
   console.log('  txRequestId  :', result.txRequestId);
+  if (result.pendingApprovalId) {
+    console.log('  pendingApprovalId :', result.pendingApprovalId, '(a wallet policy gated this withdraw)');
+  }
   console.log('\nFull result:', JSON.stringify(result, null, 2));
 }
 
