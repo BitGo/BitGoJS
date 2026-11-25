@@ -603,8 +603,17 @@ const TSS_DEDICATED_INTENT_TYPES = new Set([
   'defiDeposit',
   'defiWithdraw',
   'wrapApprove',
+  'consolidate',
+  'consolidateToken',
   'tokenApproval',
 ]);
+
+/**
+ * Consolidation intents, in both the camelCase spelling callers build with and the kebab-case
+ * spelling WP may persist. Kept local to this module: sdk-core's NO_RECIPIENT_TX_TYPES is shared
+ * with non-EVM coins and must not grow EVM-only entries.
+ */
+const TSS_CONSOLIDATION_INTENT_TYPES = new Set(['consolidate', 'consolidateToken', 'consolidate-token']);
 
 /** Contract-call / custom-tx intent spellings verified against a single declared recipient. */
 const TSS_CONTRACT_CALL_INTENT_TYPES = new Set(['contractCall', 'contract-call', 'customTx', 'custom-tx']);
@@ -645,6 +654,35 @@ function toTssEncodable(value: TssDecodedArg): unknown {
   return typeof value === 'string' ? addHexPrefix(value) : value;
 }
 
+/** Argument width in bytes for the fixed-size ABI types used by the verifiers below. */
+const TSS_STATIC_TYPE_BYTES: Record<string, number> = { address: 32, uint256: 32 };
+
+/** Argument bytes for a fully fixed-size type list, or `undefined` when any type is dynamic. */
+function tssStaticArgsByteLength(types: string[]): number | undefined {
+  let total = 0;
+  for (const type of types) {
+    const size = TSS_STATIC_TYPE_BYTES[type];
+    if (size === undefined) {
+      return undefined;
+    }
+    total += size;
+  }
+  return total;
+}
+
+/** True when every `address` argument word carries the 12 zero bytes the ABI requires on its left. */
+function hasCanonicalAddressPadding(args: string, types: string[]): boolean {
+  const zeroPaddedAddressPrefix = '0'.repeat(24);
+  let offset = 0;
+  for (const type of types) {
+    if (type === 'address' && args.slice(offset, offset + 24) !== zeroPaddedAddressPrefix) {
+      return false;
+    }
+    offset += 64;
+  }
+  return true;
+}
+
 /**
  * True when the arguments after the selector are exactly the canonical ABI encoding of `types`:
  * no trailing bytes, no dirty address padding, no non-standard dynamic offsets.
@@ -652,6 +690,13 @@ function toTssEncodable(value: TssDecodedArg): unknown {
 function isCanonicalTssCalldata(data: string, types: string[]): boolean {
   try {
     const args = stripHexPrefix(data).slice(8).toLowerCase();
+    // Fixed-size arguments (e.g. transfer(address,uint256) is exactly 64 bytes) are checked
+    // structurally before decoding, so a wrong word count or dirty address padding fails here as a
+    // recipient mismatch instead of surfacing as a decoder error or a silently truncated decode.
+    const staticBytes = tssStaticArgsByteLength(types);
+    if (staticBytes !== undefined && (args.length !== staticBytes * 2 || !hasCanonicalAddressPadding(args, types))) {
+      return false;
+    }
     const decoded = decodeTssCalldataArgs(data, types);
     return optionalDeps.ethAbi.rawEncode(types, decoded.map(toTssEncodable)).toString('hex') === args;
   } catch {
@@ -4041,17 +4086,23 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       );
     };
 
+    // One predicate for both the missing-params guard and the consolidation trigger so an empty
+    // nested `prebuildTx.consolidateId` cannot mask a valid top-level `txPrebuild.consolidateId`.
+    const hasConsolidateId = Boolean(txParams?.prebuildTx?.consolidateId || txPrebuild?.consolidateId);
+
     if (
       !txParams?.recipients &&
       !(
-        txParams.prebuildTx?.consolidateId ||
-        txPrebuild?.consolidateId ||
+        hasConsolidateId ||
         txParams.stakingRequestId ||
         txParams.prebuildTx?.stakingRequestId ||
         (txParams.type && NO_RECIPIENT_TX_TYPES.has(txParams.type)) ||
         // The kebab-case aliases of contractCall/customTx are not in NO_RECIPIENT_TX_TYPES, but they
         // are verified fail-closed below, so they must not trip this generic guard either.
-        (txParams.type && TSS_CONTRACT_CALL_INTENT_TYPES.has(txParams.type))
+        (txParams.type && TSS_CONTRACT_CALL_INTENT_TYPES.has(txParams.type)) ||
+        // A token consolidation may be persisted in kebab-case, which is also absent from
+        // NO_RECIPIENT_TX_TYPES; both spellings are verified below.
+        (txParams.type && TSS_CONSOLIDATION_INTENT_TYPES.has(txParams.type))
       )
     ) {
       throw new Error('missing txParams');
@@ -4065,7 +4116,18 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     }
 
     // Stored tx requests persist a payment as `payment`; callers declare it as `transfer`.
-    const txType = txParams.type === 'payment' ? 'transfer' : txParams.type;
+    // Token consolidations may also be persisted in kebab-case (`consolidate-token`).
+    const canonicalType = txParams.type === 'consolidate-token' ? 'consolidateToken' : txParams.type;
+    const txType = canonicalType === 'payment' ? 'transfer' : canonicalType;
+
+    // A consolidation is verified when the caller asks for it explicitly, declares a consolidation
+    // intent type, or the prebuild/params carry a consolidateId. A payment intent always wins: a
+    // consolidateId alongside declared recipients must not turn a transfer into a sweep.
+    const consolidationFlagged = !!params.verification?.consolidationToBaseAddress;
+    const consolidationRecognised =
+      (txType !== undefined && TSS_CONSOLIDATION_INTENT_TYPES.has(txType)) ||
+      (hasConsolidateId && txType !== 'transfer');
+    const consolidationTriggered = consolidationFlagged || consolidationRecognised;
 
     if (txType === 'transfer') {
       const recipients = txParams.recipients ?? [];
@@ -4078,7 +4140,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       }
     } else if (txType && TSS_CONTRACT_CALL_INTENT_TYPES.has(txType)) {
       await this.verifyTssContractCall(txType, txParams.recipients ?? [], txPrebuild.txHex, throwRecipientMismatch);
-    } else if (txType && !TSS_DEDICATED_INTENT_TYPES.has(txType) && !params.verification?.consolidationToBaseAddress) {
+    } else if (txType && !TSS_DEDICATED_INTENT_TYPES.has(txType) && !consolidationTriggered) {
       this.warnTssVerificationIncomplete(
         txType,
         'no verifier is implemented for this intent type: the transaction was not compared against the intent'
@@ -4186,62 +4248,79 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       await this.verifyTssTokenApproval(txParams, txPrebuild.txHex, throwRecipientMismatch);
     }
 
-    // Verify consolidation transactions send to base address
-    if (params.verification?.consolidationToBaseAddress) {
-      const coinSpecific = wallet.coinSpecific();
-      if (!coinSpecific || !coinSpecific.baseAddress) {
-        throw new Error('Unable to determine base address for consolidation');
+    // Verify consolidation transactions send to base address. The explicit flag is a caller
+    // request for this check and its failure is fatal; an intent-recognised consolidation only
+    // warns when the check cannot run, so a caller relying on declared intent still gets the sweep
+    // compared whenever the data to compare exists.
+    if (consolidationTriggered) {
+      const baseAddress = wallet.coinSpecific()?.baseAddress;
+      if (!baseAddress) {
+        if (consolidationFlagged) {
+          throw new Error('Unable to determine base address for consolidation');
+        }
+        this.warnTssVerificationIncomplete(
+          txType ?? 'consolidate',
+          'wallet has no base address: the consolidation was not verified'
+        );
+        return true;
       }
-      const baseAddress = coinSpecific.baseAddress;
 
-      if (!txPrebuild.txHex) {
-        throw new Error('missing txHex in txPrebuild');
+      if (!txPrebuild.txHex || txPrebuild.txHex === '0x') {
+        if (consolidationFlagged) {
+          throw new Error('missing txHex in txPrebuild');
+        }
+        this.warnTssVerificationIncomplete(
+          txType ?? 'consolidate',
+          'txPrebuild has no txHex: the consolidation was not verified'
+        );
+        return true;
       }
 
-      const txBuilder = this.getTransactionBuilder();
-      txBuilder.from(txPrebuild.txHex);
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
+      // Decode the serialized transaction itself, not the TransactionBuilder round-trip: the builder
+      // classifies short (< 4 byte) calldata as a native send and rebuilds it with empty calldata,
+      // which would hide non-empty calldata on a native sweep.
+      const txJson = EthTransactionData.fromSerialized(
+        txPrebuild.txHex,
+        getCommon(this.getNetwork() as EthLikeNetwork)
+      ).toJson();
+      const txTo = (txJson.to ?? '').toLowerCase();
+      const txValue = txJson.value;
+      const txData = (txJson.data || '0x').toLowerCase();
 
       // Verify the transaction recipient matches the base address
-      if (!txJson.to) {
+      if (!txTo) {
         throw new Error('Consolidation transaction is missing recipient address');
       }
 
-      const erc20TransferSelector = addHexPrefix(
-        optionalDeps.ethAbi.methodID('transfer', ['address', 'uint256']).toString('hex')
-      );
+      const erc20TransferSelector = tssMethodId('transfer', TSS_ERC20_TRANSFER_TYPES);
 
-      if (txJson.data && txJson.data.startsWith(erc20TransferSelector)) {
-        // For ERC20 token consolidations, txJson.to is the token contract address,
-        // not the actual transfer recipient. The real recipient is encoded in the
-        // transfer(address,uint256) calldata. Decode it and verify against baseAddress.
-        const [recipientAddress] = getRawDecoded(
-          ['address', 'uint256'],
-          getBufferedByteCode(erc20TransferSelector, txJson.data)
-        );
+      if (!isEmptyTssCalldata(txData) && txData.startsWith(erc20TransferSelector)) {
+        // For ERC20 token consolidations, txTo is the token contract address, not the actual
+        // transfer recipient. Check the canonical shape before decoding so malformed calldata is a
+        // recipient mismatch rather than a decoder error; the recipient is in the transfer args.
+        if (!isCanonicalTssCalldata(txData, TSS_ERC20_TRANSFER_TYPES)) {
+          await throwRecipientMismatch('Consolidation transaction calldata is not a canonical ERC-20 transfer', [
+            { address: txTo, amount: txValue },
+          ]);
+        }
+        const [recipientAddress] = decodeTssCalldataArgs(txData, TSS_ERC20_TRANSFER_TYPES);
         const decodedRecipient = addHexPrefix(recipientAddress.toString()).toLowerCase();
         if (decodedRecipient !== baseAddress.toLowerCase()) {
           await throwRecipientMismatch('Consolidation transaction recipient does not match wallet base address', [
-            { address: decodedRecipient, amount: txJson.value },
+            { address: decodedRecipient, amount: txValue },
           ]);
         }
-        if (!isCanonicalTssCalldata(txJson.data, TSS_ERC20_TRANSFER_TYPES)) {
-          await throwRecipientMismatch('Consolidation transaction calldata is not a canonical ERC-20 transfer', [
-            { address: decodedRecipient, amount: txJson.value },
-          ]);
-        }
-        if (!tssValuesEqual(txJson.value, '0')) {
+        if (!tssValuesEqual(txValue, '0')) {
           await throwRecipientMismatch('Consolidation token transfer must not carry native value', [
-            { address: txJson.to, amount: txJson.value },
+            { address: txTo, amount: txValue },
           ]);
         }
         // Sweep amounts are not compared: a consolidation moves whatever the address holds.
         const token = this.resolveTssToken(txParams.tokenName);
         if (token.contract) {
-          if (txJson.to.toLowerCase() !== token.contract) {
+          if (txTo !== token.contract) {
             await throwRecipientMismatch('Consolidation transaction does not call the declared token contract', [
-              { address: txJson.to, amount: txJson.value },
+              { address: txTo, amount: txValue },
             ]);
           }
         } else {
@@ -4250,15 +4329,15 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
             `${token.reason}: the consolidation token contract was not verified`
           );
         }
-      } else if (txJson.to.toLowerCase() !== baseAddress.toLowerCase()) {
-        // Native coin consolidation: txJson.to is the actual recipient
+      } else if (txTo !== baseAddress.toLowerCase()) {
+        // Native coin consolidation: txTo is the actual recipient
         await throwRecipientMismatch('Consolidation transaction recipient does not match wallet base address', [
-          { address: txJson.to, amount: txJson.value },
+          { address: txTo, amount: txValue },
         ]);
-      } else if (!isEmptyTssCalldata(txJson.data)) {
+      } else if (!isEmptyTssCalldata(txData)) {
         // A native consolidation is a plain send to the base address.
         await throwRecipientMismatch('Native consolidation transaction must not carry calldata', [
-          { address: txJson.to, amount: txJson.value },
+          { address: txTo, amount: txValue },
         ]);
       }
     }

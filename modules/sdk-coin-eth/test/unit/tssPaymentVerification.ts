@@ -743,6 +743,134 @@ describe('TSS payment verification', function () {
     });
   });
 
+  describe('consolidation recognised from the declared intent', function () {
+    // No `consolidationToBaseAddress`: the declared intent type or a consolidateId alone must
+    // trigger the same sweep check.
+    function verifyWith(
+      target: Wallet,
+      txParams: Record<string, unknown>,
+      txHex: string,
+      prebuildExtra: Record<string, unknown> = {},
+      verification = {}
+    ) {
+      return coin.verifyTransaction({
+        txParams: { wallet: target, ...txParams } as never,
+        txPrebuild: { txHex, coin: 'hteth', walletId: 'fakeWalletId', ...prebuildExtra } as never,
+        wallet: target,
+        verification,
+        walletType: 'tss',
+      });
+    }
+
+    const maxUint256 = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
+
+    for (const type of ['consolidate', 'consolidateToken', 'consolidate-token']) {
+      it(`rejects approve(attacker, MAX) declared as ${type} without the flag`, async function () {
+        const data = calldata('approve', ['address', 'uint256'], [otherRecipient, maxUint256]);
+        const txHex = await buildTx({ to: tokenContract, data });
+        await expectMismatch(verify({ type }, txHex), /does not match wallet base address/);
+      });
+    }
+
+    it('rejects approve(attacker, MAX) when only a consolidateId is present', async function () {
+      const data = calldata('approve', ['address', 'uint256'], [otherRecipient, maxUint256]);
+      const txHex = await buildTx({ to: tokenContract, data });
+      await expectMismatch(
+        verifyWith(wallet, {}, txHex, { consolidateId: 'cid' }),
+        /does not match wallet base address/
+      );
+    });
+
+    it('rejects a native sweep to a non-base address declared as consolidate', async function () {
+      const txHex = await buildTx({ to: otherRecipient, value: '1000' });
+      await expectMismatch(verify({ type: 'consolidate' }, txHex), /does not match wallet base address/);
+    });
+
+    it('rejects calldata on a native sweep without the flag', async function () {
+      const data = calldata('approve', ['address', 'uint256'], [recipient, '1']);
+      const txHex = await buildTx({ to: baseAddress, value: '1000', data });
+      await expectMismatch(verify({ type: 'consolidate' }, txHex), /must not carry calldata/);
+    });
+
+    it('rejects short non-empty calldata on a native sweep', async function () {
+      // Under 4 bytes of calldata: the TransactionBuilder reclassifies this as a native send and
+      // rebuilds it with empty calldata, so the check must read the serialized transaction.
+      const txHex = await buildTx({ to: baseAddress, value: '1000', data: '0x1234' });
+      await expectMismatch(verify({ type: 'consolidate' }, txHex), /must not carry calldata/);
+    });
+
+    it('rejects a truncated ERC-20 transfer as a recipient mismatch', async function () {
+      // Selector plus four bytes: starts with transfer(address,uint256) but cannot be decoded.
+      const truncated = erc20Transfer(baseAddress, '1').slice(0, 18);
+      const txHex = await buildTx({ to: tokenContract, data: truncated });
+      await expectMismatch(verify({ type: 'consolidateToken', tokenName }, txHex), /not a canonical ERC-20 transfer/);
+    });
+
+    it('uses the top-level consolidateId when the nested one is empty', async function () {
+      const data = calldata('approve', ['address', 'uint256'], [otherRecipient, maxUint256]);
+      const txHex = await buildTx({ to: tokenContract, data });
+      await expectMismatch(
+        verifyWith(wallet, { prebuildTx: { consolidateId: '' } }, txHex, { consolidateId: 'cid' }),
+        /does not match wallet base address/
+      );
+    });
+
+    it('rejects an ERC-20 sweep carrying native value without the flag', async function () {
+      const txHex = await buildTx({ to: tokenContract, value: '1', data: erc20Transfer(baseAddress, '1') });
+      await expectMismatch(verify({ type: 'consolidateToken', tokenName }, txHex), /must not carry native value/);
+    });
+
+    it('verifies a native sweep declared as consolidate', async function () {
+      const txHex = await buildTx({ to: baseAddress, value: '1000' });
+      (await verify({ type: 'consolidate' }, txHex)).should.be.true();
+    });
+
+    it('verifies an ERC-20 sweep declared as consolidate-token', async function () {
+      const txHex = await buildTx({ to: tokenContract, data: erc20Transfer(baseAddress, '123') });
+      (await verify({ type: 'consolidate-token', tokenName }, txHex)).should.be.true();
+    });
+
+    it('warns instead of throwing when the wallet has no base address on the intent path', async function () {
+      const noBaseWallet = new Wallet(bitgo, coin, { coinSpecific: {} });
+      const txHex = await buildTx({ to: recipient, value: '1' });
+      (await verifyWith(noBaseWallet, { type: 'consolidate' }, txHex)).should.be.true();
+      warned(/wallet has no base address/).should.be.true();
+    });
+
+    it('throws when the wallet has no base address and the flag is set', async function () {
+      const noBaseWallet = new Wallet(bitgo, coin, { coinSpecific: {} });
+      const txHex = await buildTx({ to: recipient, value: '1' });
+      await verifyWith(
+        noBaseWallet,
+        { type: 'consolidate' },
+        txHex,
+        {},
+        { consolidationToBaseAddress: true }
+      ).should.be.rejectedWith('Unable to determine base address for consolidation');
+    });
+
+    it('does not turn a declared payment into a sweep when a consolidateId is present', async function () {
+      const txHex = await buildTx({ to: recipient, value: '1000' });
+      const result = await verifyWith(
+        wallet,
+        { type: 'transfer', recipients: [{ address: recipient, amount: '1000' }] },
+        txHex,
+        { consolidateId: 'cid' }
+      );
+      result.should.be.true();
+    });
+
+    it('still verifies the payment destination when a consolidateId is present', async function () {
+      const txHex = await buildTx({ to: baseAddress, value: '1000' });
+      await expectMismatch(
+        verifyWith(wallet, { type: 'transfer', recipients: [{ address: recipient, amount: '1000' }] }, txHex, {
+          consolidateId: 'cid',
+        }),
+        /destination address does not match/
+      );
+    });
+  });
+
   // CECHO-2689: tokenApproval must be verified, not merely warned about. Expected shape is
   // approve(batcher, MAX_UINT256) on the declared token contract with zero native value.
   describe('tokenApproval verification', function () {
