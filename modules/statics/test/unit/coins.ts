@@ -1041,6 +1041,30 @@ describe('CoinMap', function () {
       tavaxcName!.should.equal('tavaxc');
       should(() => coins.get(tavaxcName!)).not.throw();
     });
+
+    it('should map Kava EVM chain IDs to registered coin names', () => {
+      const kavaevmName = coins.coinNameFromChainId(2222);
+      should(kavaevmName).not.be.undefined();
+      kavaevmName!.should.equal('kavaevm');
+      should(() => coins.get(kavaevmName!)).not.throw();
+
+      const tkavaevmName = coins.coinNameFromChainId(2221);
+      should(tkavaevmName).not.be.undefined();
+      tkavaevmName!.should.equal('tkavaevm');
+      should(() => coins.get(tkavaevmName!)).not.throw();
+    });
+
+    it('should map Prividium chain IDs to registered coin names', () => {
+      const prividiumethName = coins.coinNameFromChainId(9999999);
+      should(prividiumethName).not.be.undefined();
+      prividiumethName!.should.equal('prividiumeth');
+      should(() => coins.get(prividiumethName!)).not.throw();
+
+      const tprividiumethName = coins.coinNameFromChainId(8022834);
+      should(tprividiumethName).not.be.undefined();
+      tprividiumethName!.should.equal('tprividiumeth');
+      should(() => coins.get(tprividiumethName!)).not.throw();
+    });
   });
 });
 
@@ -1446,17 +1470,30 @@ describe('ERC20 Bulk Transaction Feature', () => {
 
 describe('TSS Verify Use Serialized Tx Hex Feature', () => {
   it('should have TSS_VERIFY_USE_SERIALIZED_TX_HEX for coins whose signableHex is not parseable', () => {
-    const coinsNeedingSerializedTxHexVerify = ['bsc', 'tbsc', 'xdc', 'txdc', 'icp', 'ticp'];
+    const coinsNeedingSerializedTxHexVerify = [
+      'bsc',
+      'tbsc',
+      'xdc',
+      'txdc',
+      'icp',
+      'ticp',
+      // non-EIP1559 EVM chains sign legacy type-0 envelopes
+      'kavaevm',
+      'tkavaevm',
+      'prividiumeth',
+      'tprividiumeth',
+    ];
     coinsNeedingSerializedTxHexVerify.forEach((coinName) => {
       const coin = coins.get(coinName);
       coin.features.includes(CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX).should.eql(true);
     });
   });
 
-  it('should have TSS_VERIFY_USE_SERIALIZED_TX_HEX on BSC and XDC tokens', () => {
+  it('should have TSS_VERIFY_USE_SERIALIZED_TX_HEX on BSC, XDC and non-EIP1559 EVM tokens', () => {
     coins.get('bsc:busd').features.includes(CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX).should.eql(true);
     coins.get('xdc:usdc').features.includes(CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX).should.eql(true);
     coins.get('txdc:tmt').features.includes(CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX).should.eql(true);
+    coins.get('tprividiumeth:tMMF').features.includes(CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX).should.eql(true);
   });
 });
 
