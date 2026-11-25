@@ -15,7 +15,7 @@ import {
   Wallet,
 } from '@bitgo/sdk-core';
 import { AbstractEthLikeNewCoins, TransferBuilderERC7984 } from '@bitgo/abstract-eth';
-import { BaseCoin as StaticsBaseCoin, CoinFeature, coins, EthereumNetwork } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, CoinFeature, coins, Erc7984Coin, EthereumNetwork } from '@bitgo/statics';
 import { Hteth, TransactionBuilder } from '../../src';
 import { getBuilder } from './getBuilder';
 
@@ -664,7 +664,7 @@ describe('TSS payment verification', function () {
     }
 
     for (const { route, useSerializedTxHex } of routes) {
-      it(`verifies a stored confidential payment from ${route}`, async function () {
+      it(`verifies a stored confidential payment from ${route} and warns only about the encrypted amount`, async function () {
         const request = storedPaymentRequest(
           confidentialRecipient,
           { value: confidentialSendAmount, symbol: confidentialToken },
@@ -672,7 +672,9 @@ describe('TSS payment verification', function () {
         );
         const { error, boundary } = await runSigning(request, useSerializedTxHex);
         error.should.be.exactly(boundary);
-        warned(/ERC-7984 token: the payment calldata was not verified/).should.be.true();
+        // The calldata is now verified; only the encrypted amount is unverifiable.
+        warned(/encrypted amount cannot be verified/).should.be.true();
+        warned(/the payment calldata was not verified/).should.be.false();
       });
 
       it(`verifies a stored native payment from ${route} without warnings`, async function () {
@@ -739,5 +741,298 @@ describe('TSS payment verification', function () {
         /does not call the declared token contract/
       );
     });
+  });
+
+  // CECHO-2689: tokenApproval must be verified, not merely warned about. Expected shape is
+  // approve(batcher, MAX_UINT256) on the declared token contract with zero native value.
+  describe('tokenApproval verification', function () {
+    const approveData = (spender: string, amount: string) =>
+      calldata('approve', ['address', 'uint256'], [spender, amount]);
+    const maxUint256 = ((1n << 256n) - 1n).toString();
+    const approvalIntent = (declaredToken: string | undefined) => ({
+      type: 'tokenApproval',
+      ...(declaredToken === undefined ? {} : { tokenName: declaredToken }),
+    });
+
+    it('verifies approve(batcher, MAX_UINT256) on the declared token contract', async function () {
+      const txHex = await buildTx({ to: tokenContract, data: approveData(batcher, maxUint256) });
+      (await verify(approvalIntent(tokenName), txHex)).should.be.true();
+      warn.called.should.be.false();
+    });
+
+    it('rejects an approval on a different token contract', async function () {
+      const txHex = await buildTx({ to: otherTokenContract, data: approveData(batcher, maxUint256) });
+      await expectMismatch(verify(approvalIntent(tokenName), txHex), /not sent to the declared token contract/);
+    });
+
+    it('rejects approve() of an attacker spender', async function () {
+      const txHex = await buildTx({ to: tokenContract, data: approveData(otherRecipient, maxUint256) });
+      await expectMismatch(verify(approvalIntent(tokenName), txHex), /spender does not match the network batcher/);
+    });
+
+    it('rejects a finite approval amount', async function () {
+      const txHex = await buildTx({ to: tokenContract, data: approveData(batcher, '1000') });
+      await expectMismatch(verify(approvalIntent(tokenName), txHex), /must be MAX_UINT256/);
+    });
+
+    it('rejects native value on an approval', async function () {
+      const txHex = await buildTx({ to: tokenContract, value: '1', data: approveData(batcher, maxUint256) });
+      await expectMismatch(verify(approvalIntent(tokenName), txHex), /must not carry native value/);
+    });
+
+    it('rejects a non-approve selector', async function () {
+      const txHex = await buildTx({ to: tokenContract, data: erc20Transfer(recipient, '1000') });
+      await expectMismatch(verify(approvalIntent(tokenName), txHex), /must use ERC-20 approve/);
+    });
+
+    it('rejects trailing bytes after the approve arguments', async function () {
+      const txHex = await buildTx({
+        to: tokenContract,
+        data: approveData(batcher, maxUint256) + '00'.repeat(32),
+      });
+      await expectMismatch(verify(approvalIntent(tokenName), txHex), /not canonical/);
+    });
+
+    it('rejects a tokenApproval with no declared token', async function () {
+      const txHex = await buildTx({ to: tokenContract, data: approveData(batcher, maxUint256) });
+      await expectMismatch(verify(approvalIntent(undefined), txHex), /requires a declared tokenName/);
+    });
+
+    it('rejects a token that cannot be resolved on this network', async function () {
+      const txHex = await buildTx({ to: tokenContract, data: approveData(batcher, maxUint256) });
+      await expectMismatch(
+        verify(approvalIntent('hteth:notatoken'), txHex),
+        /cannot be resolved to a contract on this network/
+      );
+    });
+
+    it('still rejects approve(wrapper, MAX) relabelled as tokenApproval', async function () {
+      const pair = coins.get('hteth:cusdt') as Erc7984Coin;
+      const txHex = await buildTx({
+        to: String(pair.underlyingErc20Address),
+        data: approveData(String(pair.contractAddress), maxUint256),
+      });
+      await expectMismatch(verify(approvalIntent('hteth:cusdt'), txHex), /must be declared as a wrapApprove intent/);
+    });
+  });
+
+  // CECHO-2689 (Nov 19): a payment of an ERC-7984 token must use confidentialTransfer and name the
+  // declared recipient, token contract and zero native value. The encrypted amount stays a warning.
+  describe('ERC-7984 confidential payment verification', function () {
+    const confidentialToken = 'hteth:ctest1';
+    const confidentialContract = String((coins.get(confidentialToken) as Erc7984Coin).contractAddress);
+    const encryptedHandle = '0x' + 'ab'.repeat(32);
+    const inputProof = '0x' + 'cd'.repeat(50);
+    const confidentialIntent = (address: string) => ({
+      type: 'payment',
+      recipients: [{ address, amount: '1000000', tokenName: confidentialToken }],
+    });
+    const confidentialTransferTo = (to: string) =>
+      new TransferBuilderERC7984()
+        .to(to)
+        .tokenContractAddress(confidentialContract)
+        .encryptedHandle(encryptedHandle)
+        .inputProof(inputProof)
+        .build();
+
+    it('verifies a confidentialTransfer to the declared recipient on the declared token', async function () {
+      const txHex = await buildTx({ to: confidentialContract, data: confidentialTransferTo(recipient) });
+      (await verify(confidentialIntent(recipient), txHex)).should.be.true();
+      warned(/encrypted amount cannot be verified/).should.be.true();
+    });
+
+    it('enforces confidentialTransfer when the recipient supplies explicit calldata', async function () {
+      // A declared ERC-7984 payment must not skip the confidential-transfer checks by presenting
+      // caller-authored explicit calldata: the ERC-7984 rules run before the generic explicit branch.
+      const attack = calldata('approve', ['address', 'uint256'], [otherRecipient, '1']);
+      const txHex = await buildTx({ to: confidentialContract, data: attack });
+      const intent = {
+        type: 'payment',
+        recipients: [{ address: confidentialContract, amount: '0', tokenName: confidentialToken, data: attack }],
+      };
+      await expectMismatch(verify(intent, txHex), /must use confidentialTransfer/);
+    });
+
+    it('rejects approve(attacker, MAX) relabelled as a confidential payment', async function () {
+      const attack = calldata(
+        'approve',
+        ['address', 'uint256'],
+        [otherRecipient, '115792089237316195423570985008687907853269984665640564039457584007913129639935']
+      );
+      const txHex = await buildTx({ to: confidentialContract, data: attack });
+      await expectMismatch(verify(confidentialIntent(recipient), txHex), /must use confidentialTransfer/);
+    });
+
+    it('rejects a confidentialTransfer to a different recipient', async function () {
+      const txHex = await buildTx({ to: confidentialContract, data: confidentialTransferTo(otherRecipient) });
+      await expectMismatch(verify(confidentialIntent(recipient), txHex), /destination address does not match/);
+    });
+
+    it('rejects a confidentialTransfer sent to a different token contract', async function () {
+      const txHex = await buildTx({ to: otherTokenContract, data: confidentialTransferTo(recipient) });
+      await expectMismatch(verify(confidentialIntent(recipient), txHex), /not sent to the declared token contract/);
+    });
+
+    it('rejects native value on a confidential payment', async function () {
+      const txHex = await buildTx({ to: confidentialContract, value: '1', data: confidentialTransferTo(recipient) });
+      await expectMismatch(verify(confidentialIntent(recipient), txHex), /must not carry native value/);
+    });
+
+    it('rejects trailing bytes after the confidentialTransfer arguments', async function () {
+      const txHex = await buildTx({
+        to: confidentialContract,
+        data: confidentialTransferTo(recipient) + '00'.repeat(32),
+      });
+      await expectMismatch(verify(confidentialIntent(recipient), txHex), /not canonical/);
+    });
+
+    it('rejects a batch that names an ERC-7984 token', async function () {
+      const txHex = await buildTx({
+        to: batcher,
+        data: tokenBatch(confidentialContract, [recipient, otherRecipient], ['100', '200']),
+      });
+      const intent = {
+        type: 'transfer',
+        recipients: [
+          { address: recipient, amount: '100', tokenName: confidentialToken },
+          { address: otherRecipient, amount: '200', tokenName: confidentialToken },
+        ],
+      };
+      await expectMismatch(verify(intent, txHex), /cannot be paid through a batch/);
+    });
+  });
+
+  // Stored-intent signing carries no caller txParams, so the token survives only in the persisted
+  // intent. Both MPC versions must still verify the approval (tokenName propagation).
+  describe('stored tokenApproval intent without caller txParams', function () {
+    const approvalToken = tokenName;
+    const approvalTokenContract = tokenContract;
+    const maxUint256 = ((1n << 256n) - 1n).toString();
+    const signingBoundaryMessage = 'signing boundary reached after intent verification';
+    const signingMaterial = JSON.stringify({
+      pShare: { i: 1, n: 'stub-user-paillier-modulus' },
+      backupNShare: { i: 3, n: 'stub-backup-paillier-modulus' },
+    });
+
+    function approvalBytes(spender: string) {
+      const common = AbstractEthLikeNewCoins.getCustomChainCommon(coin.getChainId());
+      const tx = FeeMarketEIP1559Transaction.fromTxData(
+        {
+          nonce: 1,
+          maxPriorityFeePerGas: 10,
+          maxFeePerGas: 100,
+          gasLimit: 200000,
+          to: approvalTokenContract,
+          value: 0,
+          data: calldata('approve', ['address', 'uint256'], [spender, maxUint256]),
+          chainId: coin.getChainId(),
+        },
+        { common }
+      );
+      return {
+        signableHex: tx.getMessageToSign(false).toString('hex'),
+        serializedTxHex: tx.serialize().toString('hex'),
+      };
+    }
+
+    function storedApprovalRequest(txBytes: { signableHex: string; serializedTxHex: string }): TxRequest {
+      return {
+        txRequestId: 'stored-token-approval',
+        apiVersion: 'full',
+        walletId: 'storedApprovalWallet',
+        intent: { intentType: 'tokenApproval', tokenName: approvalToken },
+        transactions: [{ unsignedTx: { derivationPath: 'm/0', ...txBytes }, signatureShares: [] }],
+      } as unknown as TxRequest;
+    }
+
+    async function runMpcv2(
+      txRequest: TxRequest,
+      useSerializedTxHex: boolean
+    ): Promise<{ error: Error; boundary: Error }> {
+      const signingWallet = new Wallet(bitgo, coin, {
+        id: 'storedApprovalWallet',
+        multisigType: 'tss',
+        multisigTypeVersion: 'MPCv2',
+        coinSpecific: { baseAddress },
+      });
+      const utils = new EcdsaMPCv2Utils(bitgo, coin, signingWallet);
+      sinon
+        .stub(utils as unknown as Record<string, () => Promise<string>>, 'pickBitgoPubGpgKeyForSigning')
+        .resolves('stubbed-gpg-key');
+
+      const baseConfig = coin.getConfig();
+      const features = baseConfig.features.filter((f) => f !== CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX);
+      sinon.stub(coin, 'getConfig').returns({
+        ...baseConfig,
+        features: useSerializedTxHex ? [...features, CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX] : features,
+      } as unknown as Readonly<StaticsBaseCoin>);
+
+      const boundary = new Error(signingBoundaryMessage);
+      sinon.stub(coin, 'getHashFunction').returns({
+        update: () => {
+          throw boundary;
+        },
+      } as unknown as Hash);
+
+      try {
+        await utils.signTxRequest({ txRequest, prv: '', reqId: new RequestTracer() });
+      } catch (e) {
+        return { error: e as Error, boundary };
+      }
+      throw new Error('expected signTxRequest to reject');
+    }
+
+    async function runMpcv1(
+      txRequest: TxRequest,
+      useSerializedTxHex: boolean
+    ): Promise<{ error: Error; boundary: Error }> {
+      const signingWallet = new Wallet(bitgo, coin, {
+        id: 'storedApprovalWallet',
+        multisigType: 'tss',
+        coinSpecific: { baseAddress },
+      });
+      const utils = new EcdsaUtils(bitgo, coin, signingWallet);
+      const baseConfig = coin.getConfig();
+      const features = baseConfig.features.filter((f) => f !== CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX);
+      sinon.stub(coin, 'getConfig').returns({
+        ...baseConfig,
+        features: useSerializedTxHex ? [...features, CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX] : features,
+      } as unknown as Readonly<StaticsBaseCoin>);
+
+      const boundary = new Error(signingBoundaryMessage);
+      sinon.stub(utils, 'getOfflineSignerPaillierModulus').throws(boundary);
+
+      try {
+        await utils.signTxRequest({ txRequest, prv: signingMaterial, reqId: new RequestTracer() });
+      } catch (e) {
+        return { error: e as Error, boundary };
+      }
+      throw new Error('expected signTxRequest to reject');
+    }
+
+    const routes = [
+      { route: 'signableHex', useSerializedTxHex: false },
+      { route: 'serializedTxHex', useSerializedTxHex: true },
+    ];
+
+    for (const { route, useSerializedTxHex } of routes) {
+      it(`verifies a stored approval from ${route} (MPCv2)`, async function () {
+        const { error, boundary } = await runMpcv2(storedApprovalRequest(approvalBytes(batcher)), useSerializedTxHex);
+        error.should.be.exactly(boundary);
+        warn.called.should.be.false();
+      });
+
+      it(`verifies a stored approval from ${route} (MPCv1)`, async function () {
+        const { error, boundary } = await runMpcv1(storedApprovalRequest(approvalBytes(batcher)), useSerializedTxHex);
+        error.should.be.exactly(boundary);
+        warn.called.should.be.false();
+      });
+
+      it(`rejects a stored approval naming an attacker spender from ${route} (MPCv2)`, async function () {
+        const { error } = await runMpcv2(storedApprovalRequest(approvalBytes(otherRecipient)), useSerializedTxHex);
+        error.should.be.instanceOf(TxIntentMismatchRecipientError);
+        error.message.should.match(/spender does not match the network batcher/);
+      });
+    }
   });
 });

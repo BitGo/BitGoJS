@@ -86,6 +86,8 @@ import { EthLikeToken } from './ethLikeToken';
 import {
   calculateForwarderV1Address,
   coinFamiliesWithL1Fees,
+  confidentialTransferWithProofMethodId,
+  confidentialTransferWithProofTypes,
   approveMethodId,
   decodeApproveCalldata,
   decodeFinalizeUnwrapCalldata,
@@ -596,7 +598,13 @@ export const optionalDeps = {
 };
 
 /** Intent types other than payments that verifyTssTransaction already verifies. */
-const TSS_DEDICATED_INTENT_TYPES = new Set(['defiApprove', 'defiDeposit', 'defiWithdraw', 'wrapApprove']);
+const TSS_DEDICATED_INTENT_TYPES = new Set([
+  'defiApprove',
+  'defiDeposit',
+  'defiWithdraw',
+  'wrapApprove',
+  'tokenApproval',
+]);
 
 /** Contract-call / custom-tx intent spellings verified against a single declared recipient. */
 const TSS_CONTRACT_CALL_INTENT_TYPES = new Set(['contractCall', 'contract-call', 'customTx', 'custom-tx']);
@@ -604,6 +612,7 @@ const TSS_CONTRACT_CALL_INTENT_TYPES = new Set(['contractCall', 'contract-call',
 type TssDecodedArg = ReturnType<typeof getRawDecoded>[number];
 
 const TSS_ERC20_TRANSFER_TYPES = ['address', 'uint256'];
+const TSS_ERC20_APPROVE_TYPES = ['address', 'uint256'];
 const TSS_NATIVE_BATCH_TYPES = ['address[]', 'uint256[]'];
 const TSS_TOKEN_BATCH_TYPES = ['address', 'address[]', 'uint256[]'];
 
@@ -3645,7 +3654,12 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       return { isToken: true, reason: `token '${declared}' cannot be resolved to a contract on this network` };
     }
     if (token instanceof Erc7984Coin) {
-      return { isToken: true, confidential: true, reason: `token '${declared}' is an ERC-7984 token` };
+      return {
+        isToken: true,
+        contract: contract.toLowerCase(),
+        confidential: true,
+        reason: `token '${declared}' is an ERC-7984 token`,
+      };
     }
     return { isToken: true, contract: contract.toLowerCase() };
   }
@@ -3681,6 +3695,58 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     txHex: string | undefined,
     throwRecipientMismatch: (message: string, mismatchedRecipients: Recipient[]) => Promise<never>
   ): Promise<void> {
+    // Resolve the declared asset first: a declared ERC-7984 payment must never bypass the
+    // confidential-transfer checks by supplying caller-authored explicit calldata.
+    const token = this.resolveTssToken(recipient.tokenName ?? txParams.tokenName);
+
+    if (token.confidential) {
+      // ERC-7984 confidential token payment: MUST call confidentialTransfer(address,bytes32,bytes)
+      // on the declared token contract with zero native value and matching recipient.
+      // Encrypted amount (handle + inputProof) cannot be decrypted client-side and stays a warning.
+      // Decode the exact signed bytes rather than a builder rebuild so calldata cannot be altered.
+      const raw = this.decodeRawTssTxFields(txHex);
+      const confidentialMismatch = (message: string, address = raw.to, amount = raw.value): Promise<never> =>
+        throwRecipientMismatch(message, [{ address, amount }]);
+      const expectedSelector = confidentialTransferWithProofMethodId.toLowerCase();
+      if (!raw.data.startsWith(expectedSelector)) {
+        await confidentialMismatch('ERC-7984 payment calldata must use confidentialTransfer(address,bytes32,bytes)');
+      }
+      if (!isCanonicalTssCalldata(raw.data, confidentialTransferWithProofTypes)) {
+        await confidentialMismatch('ERC-7984 confidentialTransfer calldata is not canonical');
+      }
+      const [innerRecipient, encryptedHandle, inputProof] = decodeTssCalldataArgs(
+        raw.data,
+        confidentialTransferWithProofTypes
+      );
+      const decodedRecipient = addHexPrefix(innerRecipient as string).toLowerCase();
+      if (!recipient.address || decodedRecipient !== recipient.address.toLowerCase()) {
+        await confidentialMismatch(
+          'destination address does not match with the recipient address',
+          decodedRecipient,
+          raw.value
+        );
+      }
+      if (!tssValuesEqual(raw.value, '0')) {
+        await confidentialMismatch('ERC-7984 confidential transfer must not carry native value');
+      }
+      if (!token.contract || raw.to !== token.contract) {
+        await confidentialMismatch('transaction is not sent to the declared token contract');
+      }
+      const handleBuf = encryptedHandle as Buffer;
+      const proofBuf = inputProof as Buffer;
+      if (!handleBuf || handleBuf.length !== 32 || handleBuf.every((b) => b === 0)) {
+        await confidentialMismatch('ERC-7984 confidentialTransfer encryptedHandle is missing or empty');
+      }
+      if (!proofBuf || proofBuf.length === 0) {
+        await confidentialMismatch('ERC-7984 confidentialTransfer inputProof is missing or empty');
+      }
+      this.warnTssVerificationIncomplete(
+        'transfer',
+        `${token.reason}: encrypted amount cannot be verified against declared plaintext amount`
+      );
+      return;
+    }
+
     const txBuilder = this.getTransactionBuilder();
     txBuilder.from(txHex);
     const txJson = (await txBuilder.build()).toJson();
@@ -3705,8 +3771,6 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       return;
     }
 
-    const token = this.resolveTssToken(recipient.tokenName ?? txParams.tokenName);
-
     if (isEmptyTssCalldata(data)) {
       if (token.isToken) {
         await mismatch('token payment carries no ERC-20 transfer calldata');
@@ -3722,10 +3786,6 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
 
     const transferMethodId = tssMethodId('transfer', TSS_ERC20_TRANSFER_TYPES);
     if (!data.startsWith(transferMethodId)) {
-      if (token.confidential) {
-        this.warnTssVerificationIncomplete('transfer', `${token.reason}: the payment calldata was not verified`);
-        return;
-      }
       await mismatch('payment calldata is not a native send or an ERC-20 transfer(address,uint256)');
     }
     if (!isCanonicalTssCalldata(data, TSS_ERC20_TRANSFER_TYPES)) {
@@ -3834,6 +3894,10 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     }
     const tokenContract = addHexPrefix(decoded[0] as string).toLowerCase();
     for (const token of tokens) {
+      if (token.confidential) {
+        // ERC-7984 confidential tokens have no batchTransferFrom surface; a batch intent naming one is a mismatch.
+        await mismatch('ERC-7984 confidential tokens cannot be paid through a batch', tokenContract);
+      }
       if (!token.contract) {
         this.warnTssVerificationIncomplete(
           'transfer',
@@ -3842,6 +3906,72 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       } else if (token.contract !== tokenContract) {
         await mismatch('batchTransferFrom token contract does not match the declared token', tokenContract);
       }
+    }
+  }
+
+  /**
+   * Verify a `tokenApproval` TSS intent against raw transaction bytes (CECHO-2689).
+   *
+   * Expected shape (fail closed on any deviation):
+   *   - `to` = contract address of the declared token on this network
+   *   - `value` = 0
+   *   - `data` = canonical `approve(address,uint256)` (`0x095ea7b3`)
+   *   - `spender` = this network's configured `batcherContractAddress`
+   *   - `amount` = `MAX_UINT256` (`2^256 - 1`)
+   */
+  private async verifyTssTokenApproval(
+    txParams: EthTransactionParams,
+    txHex: string | undefined,
+    throwRecipientMismatch: (message: string, mismatchedRecipients: Recipient[]) => Promise<never>
+  ): Promise<void> {
+    const { to, value, data } = this.decodeRawTssTxFields(txHex);
+    const mismatch = (message: string, address = to, amount = value): Promise<never> =>
+      throwRecipientMismatch(message, [{ address, amount }]);
+
+    const token = this.resolveTssToken(txParams.tokenName);
+    if (!token.isToken || !token.contract) {
+      await mismatch(
+        token.reason
+          ? `tokenApproval: ${token.reason}`
+          : 'tokenApproval transaction requires a declared tokenName resolvable to a contract on this network'
+      );
+    }
+
+    const configuredBatcher = this.getNetwork()?.batcherContractAddress;
+    if (!configuredBatcher) {
+      await mismatch('tokenApproval: no batcher contract is configured for this network');
+    }
+    // Unreachable when the mismatch above threw; an empty string can never equal a decoded address.
+    const batcherSpender = configuredBatcher ?? '';
+
+    if (to !== token.contract) {
+      await mismatch('tokenApproval transaction is not sent to the declared token contract');
+    }
+    if (!tssValuesEqual(value, '0')) {
+      await mismatch('tokenApproval transaction must not carry native value');
+    }
+
+    const expectedSelector = approveMethodId.toLowerCase();
+    if (!data.startsWith(expectedSelector)) {
+      await mismatch('tokenApproval transaction must use ERC-20 approve(address,uint256) calldata');
+    }
+    if (!isCanonicalTssCalldata(data, TSS_ERC20_APPROVE_TYPES)) {
+      await mismatch('tokenApproval approve calldata is not canonical');
+    }
+
+    const [rawSpender, rawAmount] = decodeTssCalldataArgs(data, TSS_ERC20_APPROVE_TYPES);
+    const decodedSpender = addHexPrefix(rawSpender as string).toLowerCase();
+    const decodedAmount = (rawAmount as BN).toString(10);
+
+    if (decodedSpender !== batcherSpender.toLowerCase()) {
+      await mismatch(
+        'tokenApproval transaction spender does not match the network batcher contract',
+        decodedSpender,
+        decodedAmount
+      );
+    }
+    if (!tssValuesEqual(decodedAmount, MAX_UINT256.toString())) {
+      await mismatch('tokenApproval transaction amount must be MAX_UINT256', decodedSpender, decodedAmount);
     }
   }
 
@@ -4048,7 +4178,12 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     } else {
       // Declared as anything else: only an approve of a registered wrapper is rejected (see the method doc);
       // for every other tx this returns without parsing or after one best-effort parse.
+      // Runs BEFORE tokenApproval so a relabeled approve(wrapper, ...) fails with the wrapper-approve error.
       await this.assertWrapperApproveIsDeclared(params, throwRecipientMismatch);
+    }
+
+    if (txParams.type === 'tokenApproval') {
+      await this.verifyTssTokenApproval(txParams, txPrebuild.txHex, throwRecipientMismatch);
     }
 
     // Verify consolidation transactions send to base address

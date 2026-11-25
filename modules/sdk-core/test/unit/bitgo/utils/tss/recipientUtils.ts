@@ -208,6 +208,46 @@ describe('recipientUtils', function () {
       });
     });
 
+    describe('tokenName propagation (tokenApproval)', function () {
+      const approvalTokenName = 'hteth:stgusd1';
+
+      it('derives tokenName from the intent when txParams is undefined (pendingApproval re-sign path)', function () {
+        const txRequest = makeTxRequest({
+          intent: { intentType: 'tokenApproval', tokenName: approvalTokenName } as PopulatedIntent,
+        });
+        const result = resolveEffectiveTxParams(txRequest, undefined);
+        assert.strictEqual(result.tokenName, approvalTokenName);
+        assert.strictEqual(result.type, 'tokenApproval');
+        assert.strictEqual(result.recipients, undefined);
+      });
+
+      it('does not overwrite a caller-supplied tokenName', function () {
+        const txRequest = makeTxRequest({
+          intent: { intentType: 'tokenApproval', tokenName: approvalTokenName } as PopulatedIntent,
+        });
+        assert.strictEqual(resolveEffectiveTxParams(txRequest, { tokenName: 'hteth:usdc' }).tokenName, 'hteth:usdc');
+      });
+
+      it('does not attach a stored tokenName to a caller-declared payment', function () {
+        const txRequest = makeTxRequest({
+          intent: { intentType: 'payment', tokenName: approvalTokenName, recipients: [] } as unknown as PopulatedIntent,
+        });
+        const result = resolveEffectiveTxParams(
+          txRequest,
+          { type: 'transfer', recipients: [{ address: '0xabc', amount: '1' }] },
+          'hteth'
+        );
+        assert.strictEqual(result.tokenName, undefined);
+      });
+
+      it('does not attach a stored tokenApproval tokenName when the caller declared another type', function () {
+        const txRequest = makeTxRequest({
+          intent: { intentType: 'tokenApproval', tokenName: approvalTokenName } as PopulatedIntent,
+        });
+        assert.strictEqual(resolveEffectiveTxParams(txRequest, { type: 'transfer' }).tokenName, undefined);
+      });
+    });
+
     describe('tx-level memo propagation', function () {
       it('derives memo from the intent when txParams is undefined (pendingApproval re-sign path)', function () {
         const txRequest = makeTxRequest({
