@@ -632,76 +632,6 @@ describe('SOL:', function () {
         .should.be.rejectedWith('Tx fee payer is not the wallet root address');
     });
 
-    // CHALO-998: a sponsored transaction (the enterprise fee address pays the fee) is accepted without a declared fee
-    // payer when the fee payer is isolated from the instructions the wallet signs; every other non-root fee payer
-    // still fails. Built with the real transfer builder, no mocks.
-    describe('sponsored fee payer without a declaration', () => {
-      const feeAddress = new KeyPair(resources.authAccount2).getKeys().pub;
-      const nonceAccount = new KeyPair(resources.nonceAccount).getKeys().pub;
-      const recipient = 'CP5Dpaa42RtJmMuKqCQsLwma5Yh3knuvKsYDFX85F41S';
-
-      const buildTx = async (opts: { sender: string; feePayer: string; to: string; nonceAuthority?: string }) => {
-        const txBuilder = factory.getTransferBuilder();
-        txBuilder.sender(opts.sender);
-        txBuilder.feePayer(opts.feePayer);
-        txBuilder.nonce(blockHash, {
-          walletNonceAddress: nonceAccount,
-          authWalletAddress: opts.nonceAuthority ?? opts.feePayer,
-        });
-        txBuilder.send({ address: opts.to, amount: '1000' });
-        return (await txBuilder.build()).toBroadcastFormat();
-      };
-
-      const verify = (txBase64: string, params: Record<string, unknown> = {}) =>
-        basecoin.verifyTransaction({
-          txParams: { recipients: [{ address: recipient, amount: '1000' }] },
-          txPrebuild: { txBase64 },
-          wallet: walletObj,
-          ...params,
-        } as any);
-
-      it('accepts a fee payer that is only the durable-nonce authority', async function () {
-        const txBase64 = await buildTx({ sender: wallet.pub, feePayer: feeAddress, to: recipient });
-        (await verify(txBase64)).should.equal(true);
-      });
-
-      it('accepts a sponsored fee payer on a recent-blockhash transaction with no nonce', async function () {
-        const txBuilder = factory.getTransferBuilder();
-        txBuilder.sender(wallet.pub);
-        txBuilder.feePayer(feeAddress);
-        txBuilder.nonce(blockHash);
-        txBuilder.send({ address: recipient, amount: '1000' });
-        const txBase64 = (await txBuilder.build()).toBroadcastFormat();
-        (await verify(txBase64)).should.equal(true);
-      });
-
-      it('rejects a non-root fee payer that is the source of the transfer', async function () {
-        const txBase64 = await buildTx({ sender: feeAddress, feePayer: feeAddress, to: recipient });
-        await verify(txBase64).should.be.rejectedWith('Tx fee payer is not the wallet root address');
-      });
-
-      it('rejects a non-root fee payer that is the destination of the transfer', async function () {
-        const txBase64 = await buildTx({ sender: wallet.pub, feePayer: feeAddress, to: feeAddress });
-        await verify(txBase64, {
-          txParams: { recipients: [{ address: feeAddress, amount: '1000' }] },
-        }).should.be.rejectedWith('Tx fee payer is not the wallet root address');
-      });
-
-      it('still requires the exact declared fee payer when one is declared', async function () {
-        const txBase64 = await buildTx({ sender: wallet.pub, feePayer: feeAddress, to: recipient });
-        await verify(txBase64, { feePayer: recipient }).should.be.rejectedWith(
-          `Tx fee payer ${feeAddress} does not match the declared sponsored fee payer ${recipient}`
-        );
-        (await verify(txBase64, { feePayer: feeAddress })).should.equal(true);
-      });
-
-      it('keeps the wallet root as an accepted fee payer', async function () {
-        const rootWallet = new Wallet(bitgo, basecoin, { ...walletData, coinSpecific: { rootAddress: wallet.pub } });
-        const txBase64 = await buildTx({ sender: wallet.pub, feePayer: wallet.pub, to: recipient });
-        (await verify(txBase64, { wallet: rootWallet })).should.equal(true);
-      });
-    });
-
     // CHALO-1749: sponsored fee-payer bypass — when wallet-platform declares a
     // fee payer, the transaction's fee payer must match it exactly; when it doesn't,
     // today's wallet-root check applies. All tests below use the same fixture
@@ -1025,14 +955,14 @@ describe('SOL:', function () {
         coin: 'tsol',
       };
 
-      // Without a declared feePayer: the tx feePayer (enterprise) ≠ wallet root (sender), but it is isolated (it only
-      // pays the fee and owns the durable nonce), so it is accepted as a sponsored fee payer (CHALO-998)
-      const withoutDeclaration = await basecoin.verifyTransaction({
-        txParams,
-        txPrebuild: prebuild,
-        wallet: senderWallet,
-      } as unknown as SolVerifyTransactionOptions);
-      withoutDeclaration.should.equal(true);
+      // Without the declared feePayer: the tx feePayer (enterprise) ≠ wallet root (sender) → throws
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild: prebuild,
+          wallet: senderWallet,
+        } as unknown as SolVerifyTransactionOptions)
+        .should.be.rejectedWith('Tx fee payer is not the wallet root address');
 
       // With the declared feePayer matching the tx's actual fee payer → passes
       const result = await basecoin.verifyTransaction({
