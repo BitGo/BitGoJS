@@ -117,7 +117,7 @@ $ yarn build-docker-express
 $ docker run -it bitgo-express:latest
 ```
 
-The BitGo Express Docker image tracks the older of the two most recent Node.js Long-Term Support (LTS) releases. It currently builds and runs on Node.js 24.
+The BitGo Express Docker image tracks the newest Node.js Long-Term Support (LTS) release. It currently builds and runs on Node.js 26.
 
 ## From source
 
