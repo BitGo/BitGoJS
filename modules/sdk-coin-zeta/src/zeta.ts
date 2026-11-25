@@ -89,15 +89,16 @@ export class Zeta extends CosmosCoin {
   /**
    * @inheritDoc
    *
-   * Overrides CosmosCoin.verifyTransaction to fix a ZETA-specific gap: recipients can carry
-   * their memo folded into the address as `address?memoId=X` (the BitGo combined
-   * address+memo convention - see getAddressDetails), but explainTransaction() always
-   * reports the plain on-chain address plus a separate `memo` field. The base class
-   * compares the two sides as raw strings, so any memo-tagged recipient fails verification
-   * even when the transaction was built correctly - this reproduced a live incident where a
-   * client could never sign a correctly-built, pending ZETA transaction to a memo'd
-   * recipient. Normalize both sides to the same {address, amount, memo?} shape before
-   * comparing.
+   * Overrides CosmosCoin.verifyTransaction because a recipient's memo can be expressed in
+   * several ways, while explainTransaction() reports the plain on-chain address plus a single
+   * tx-level `memo` field stamped on every output:
+   *   1. folded into the address as `address?memoId=X` (see getAddressDetails) — the API shape;
+   *   2. a `recipient.memo` field;
+   *   3. a tx-level `txParams.memo` ({value, type}) — the web UI shape (bare address plus memo),
+   *      also restored from intent.memo by resolveEffectiveTxParams on pending-approval re-signs.
+   * Normalize both sides to the same {address, amount, memo?} shape before comparing. Empty
+   * memos count as absent, and conflicting declarations are rejected. A declared memo must match
+   * the transaction memo exactly; when none is declared, the transaction must not carry one.
    */
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     let totalAmount = new BigNumber(0);
@@ -111,7 +112,14 @@ export class Zeta extends CosmosCoin {
     if (txParams.recipients && txParams.recipients.length > 0) {
       const filteredRecipients = txParams.recipients.map((recipient) => {
         const { address, memoId } = this.getAddressDetails(recipient.address);
-        return { address, amount: recipient.amount, ...(memoId !== undefined ? { memo: memoId } : {}) };
+        const declaredMemos = [memoId, recipient.memo, txParams.memo?.value].filter(
+          (memo): memo is string => memo !== undefined && memo !== ''
+        );
+        if (declaredMemos.some((memo) => memo !== declaredMemos[0])) {
+          throw new Error('Tx outputs does not match with expected txParams recipients');
+        }
+        const memo = declaredMemos[0];
+        return { address, amount: recipient.amount, ...(memo !== undefined ? { memo } : {}) };
       });
       const filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount', 'memo']));
 
