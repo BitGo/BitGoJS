@@ -114,6 +114,14 @@ export class Keychains implements IKeychains {
       }
       queryObject.safeId = params.safeId;
     }
+    if (!_.isUndefined(params.envelopeOnly)) {
+      if (!_.isBoolean(params.envelopeOnly)) {
+        throw new Error('invalid envelopeOnly argument, expecting boolean');
+      }
+      if (params.envelopeOnly) {
+        queryObject.envelopeOnly = 'true';
+      }
+    }
 
     return this.bitgo.get(this.baseCoin.url('/key')).query(queryObject).result();
   }
@@ -182,13 +190,24 @@ export class Keychains implements IKeychains {
     };
     const observationId = (key: Keychain): string | undefined =>
       key.type === 'tss' || Keychains.isMultiUserKey(key) ? key.id : key.pub;
-    let prevId;
-    let keysLeft = true;
-    while (keysLeft) {
-      const result: ListKeychainsResult = await this.list({ limit: 500, prevId });
+    // The prefetch runs while the previous page's crypto is still awaited; attach a no-op
+    // catch immediately so a rejected fetch cannot become an unhandled rejection before
+    // the next iteration awaits it (Node's default handler would kill the process).
+    const startFetch = (prevId?: string): Promise<ListKeychainsResult> => {
+      const fetch = this.list({ limit: 500, envelopeOnly: true, ...(prevId ? { prevId } : {}) });
+      fetch.catch(_.noop);
+      return fetch;
+    };
+    let pendingFetch: Promise<ListKeychainsResult> | undefined = startFetch();
+    while (pendingFetch !== undefined) {
+      const result: ListKeychainsResult = await pendingFetch;
       if (total === undefined && result.totalCount !== undefined) {
         total = result.totalCount;
       }
+      // Pipeline: start the next page's fetch while this page's re-encryption runs.
+      // Page N's records are all processed before page N+1's, so progress-event order
+      // stays deterministic. Last page → no prefetch.
+      pendingFetch = result.nextBatchPrevId ? startFetch(result.nextBatchPrevId) : undefined;
       for (const key of result.keys) {
         const oldEncryptedPrv = key.encryptedPrv;
         if (_.isUndefined(oldEncryptedPrv)) {
@@ -235,11 +254,6 @@ export class Keychains implements IKeychains {
           }
           notifyProgress('skipped', observationId(key));
         }
-      }
-      if (result.nextBatchPrevId) {
-        prevId = result.nextBatchPrevId;
-      } else {
-        keysLeft = false;
       }
     }
     return changedKeys;

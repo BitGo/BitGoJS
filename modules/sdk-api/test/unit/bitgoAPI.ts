@@ -1,7 +1,7 @@
 import * as assert from 'assert';
-import 'should';
 import { BitGoAPI } from '../../src/bitgoAPI';
 import { ProxyAgent } from 'proxy-agent';
+import * as should from 'should';
 import * as sinon from 'sinon';
 import nock from 'nock';
 import type { IHmacAuthStrategy } from '@bitgo/sdk-hmac';
@@ -976,6 +976,54 @@ describe('Constructor', function () {
     });
   });
 
+  describe('computeChangePasswordPayloadSize', function () {
+    let bitgo: BitGoAPI;
+
+    before(function () {
+      bitgo = new BitGoAPI({ env: 'custom', customRootURI: 'https://app.example.local' });
+    });
+
+    function payloadSize(params: {
+      keychains: Record<string, string>;
+      v2_keychains: Record<string, string>;
+      version?: number;
+      oldPassword: string;
+      password: string;
+    }): number {
+      return (bitgo as any).computeChangePasswordPayloadSize(params);
+    }
+
+    it('equals the scalar scaffold when both maps are empty', function () {
+      const params = { keychains: {}, v2_keychains: {}, version: 2, oldPassword: 'old', password: 'new' };
+      payloadSize(params).should.equal(JSON.stringify({ version: 2, oldPassword: 'old', password: 'new' }).length);
+    });
+
+    it('equals scalar scaffold plus per-entry id/value byte lengths', function () {
+      const keychains = { k1: 'v'.repeat(1000), 'id"q': 'x'.repeat(500), plain: 'base64+/=envelope' };
+      const v2Keychains = { xpub: 'y'.repeat(2000) };
+      const params = { keychains, v2_keychains: v2Keychains, version: 2, oldPassword: 'old', password: 'new' };
+      const scalars = JSON.stringify({ version: 2, oldPassword: 'old', password: 'new' }).length;
+      const material = [...Object.entries(keychains), ...Object.entries(v2Keychains)].reduce(
+        (sum, [id, value]) => sum + Buffer.byteLength(id, 'utf8') + Buffer.byteLength(value, 'utf8'),
+        0
+      );
+      payloadSize(params).should.equal(scalars + material);
+    });
+
+    it('sizes a payload larger than V8 max string length without materializing it', function () {
+      // 600 MiB of key material — past V8's 536,870,888-char string cap, where a full
+      // stringify would throw RangeError: Invalid string length
+      const oneMiB = 'x'.repeat(1024 * 1024);
+      const keychains: Record<string, string> = {};
+      for (let i = 0; i < 600; i++) {
+        keychains[`id${i}`] = oneMiB;
+      }
+      const params = { keychains, v2_keychains: {}, version: 1, oldPassword: 'old', password: 'new' };
+      const size = payloadSize(params);
+      (size >= 600 * 1024 * 1024).should.be.true();
+    });
+  });
+
   describe('processKeychainPasswordUpdatesInBatches', function () {
     const ROOT = 'https://app.example.local';
     let bitgo: BitGoAPI;
@@ -1062,6 +1110,111 @@ describe('Constructor', function () {
       await runBatches({}, {}, 1024);
       scope.isDone().should.be.true();
     });
+
+    it('uploads bins concurrently, capping in-flight PUTs at 4', async function () {
+      // 12 entries at ~1000 bytes each with a 1 KB cap => 12 single-entry bins
+      const v2Keychains: Record<string, string> = {};
+      for (let i = 0; i < 12; i++) {
+        v2Keychains[`vk${i}`] = 'x'.repeat(1000);
+      }
+
+      let inFlight = 0;
+      let maxInFlight = 0;
+      let saturated = false;
+      const releases: Array<(result: [number, Record<string, unknown>]) => void> = [];
+      const putBodies: Record<string, unknown>[] = [];
+      nock(ROOT)
+        .put('/api/v2/user/keychains')
+        .times(12)
+        .reply((uri, body) => {
+          if (typeof body === 'object' && body !== null) {
+            putBodies.push(body);
+          }
+          if (saturated) {
+            return [200, {}] as [number, Record<string, unknown>];
+          }
+          inFlight++;
+          maxInFlight = Math.max(maxInFlight, inFlight);
+          return new Promise((resolve) => {
+            releases.push(resolve);
+          });
+        });
+
+      const batchesDone = runBatches({}, v2Keychains, 1);
+      // wait until the pool saturates (4 PUTs held in flight)
+      for (let waited = 0; inFlight < 4 && waited < 200; waited++) {
+        await new Promise((resolve) => setTimeout(resolve, 10));
+      }
+      inFlight.should.equal(4);
+      saturated = true;
+      releases.splice(0).forEach((resolve) => resolve([200, {}]));
+      await batchesDone;
+      maxInFlight.should.equal(4);
+
+      const seenCounts: Record<string, number> = {};
+      for (const body of putBodies) {
+        const v2Batch = typeof body === 'object' && body !== null ? body.v2_keychains : undefined;
+        for (const key of Object.keys((v2Batch as Record<string, string> | undefined) ?? {})) {
+          seenCounts[key] = (seenCounts[key] ?? 0) + 1;
+        }
+      }
+      for (const key of Object.keys(v2Keychains)) {
+        seenCounts[key].should.equal(1);
+      }
+    });
+
+    it('dispatches every bin exactly once under concurrency', async function () {
+      // 8 entries at ~1000 bytes each with a 1 KB cap => 8 single-entry bins
+      const v2Keychains: Record<string, string> = {};
+      for (let i = 0; i < 8; i++) {
+        v2Keychains[`vk${i}`] = 'x'.repeat(1000);
+      }
+
+      let putCount = 0;
+      const mergedV2: Record<string, string> = {};
+      nock(ROOT)
+        .put('/api/v2/user/keychains')
+        .times(8)
+        .reply((uri, body) => {
+          putCount++;
+          const v2Batch = typeof body === 'object' && body !== null ? body.v2_keychains : undefined;
+          Object.assign(mergedV2, (v2Batch as Record<string, string> | undefined) ?? {});
+          return [200, {}] as [number, Record<string, unknown>];
+        });
+
+      await runBatches({}, v2Keychains, 1);
+
+      putCount.should.equal(8);
+      mergedV2.should.deepEqual(v2Keychains);
+    });
+
+    it('stops dispatching new bins and rethrows the first terminal error', async function () {
+      // 10 entries at ~1000 bytes each with a 1 KB cap => 10 single-entry bins
+      const v2Keychains: Record<string, string> = {};
+      for (let i = 0; i < 10; i++) {
+        v2Keychains[`vk${i}`] = 'x'.repeat(1000);
+      }
+
+      let putCount = 0;
+      nock(ROOT)
+        .put('/api/v2/user/keychains')
+        .times(10)
+        .reply(() => {
+          putCount++;
+          return [500, { error: 'internal error' }] as [number, Record<string, unknown>];
+        });
+
+      let thrownError: Error | undefined;
+      try {
+        await runBatches({}, v2Keychains, 1, 1);
+      } catch (e) {
+        thrownError = e as Error;
+      }
+      should.exist(thrownError);
+      thrownError!.message.should.match(/Batch \d+ failed after 1 retries/);
+      // 4 workers each pull one bin; a terminal failure stops all further pulls
+      putCount.should.equal(4);
+    });
   });
 
   describe('changePassword batching flow', function () {
@@ -1120,7 +1273,10 @@ describe('Constructor', function () {
       const batchPutScope = nock(ROOT).put('/api/v2/user/keychains').reply(200, {});
 
       const changePassScope = nock(ROOT)
-        .post('/api/v1/user/changepassword', (body: any) => !body.keychains && !body.v2_keychains)
+        .post(
+          '/api/v1/user/changepassword',
+          (body: Record<string, unknown>) => !body.keychains && !body.v2_keychains && body.expectedKeychainCount === 2
+        )
         .reply(200, {});
 
       await bitgo.changePassword({ oldPassword: 'oldpw', newPassword: 'newpw' });
@@ -1140,7 +1296,10 @@ describe('Constructor', function () {
         .put('/api/v2/user/keychains', { keychains: {}, v2_keychains: {} })
         .reply(200, {});
       const changePassScope = nock(ROOT)
-        .post('/api/v1/user/changepassword', (body: any) => !body.keychains && !body.v2_keychains)
+        .post(
+          '/api/v1/user/changepassword',
+          (body: Record<string, unknown>) => !body.keychains && !body.v2_keychains && body.expectedKeychainCount === 0
+        )
         .reply(200, {});
       await bitgo.changePassword({ oldPassword: 'oldpw', newPassword: 'newpw' });
       batchPutScope.isDone().should.be.true();
@@ -1151,7 +1310,11 @@ describe('Constructor', function () {
       nock(ROOT).get('/api/v2/user/checkBatchingPasswordFlow').query(true).reply(200, { isBatchingFlowEnabled: false });
 
       const legacyScope = nock(ROOT)
-        .post('/api/v1/user/changepassword', (body: any) => !!body.keychains && !!body.v2_keychains)
+        .post(
+          '/api/v1/user/changepassword',
+          (body: Record<string, unknown>) =>
+            !!body.keychains && !!body.v2_keychains && body.expectedKeychainCount === undefined
+        )
         .reply(200, {});
 
       await bitgo.changePassword({ oldPassword: 'oldpw', newPassword: 'newpw' });
