@@ -15,8 +15,11 @@ RUN find modules \! -name "package.json" -mindepth 2 -maxdepth 2 -print | xargs 
 FROM node:26.13.1-bookworm-slim@sha256:0042e17d232a87a2cd485be1da7900fca4d10a4ad11b29e9285da1d2e54798c9 AS builder
 ARG SOCKET_SECURITY_MODE=monitor
 ENV SOCKET_SECURITY_MODE=${SOCKET_SECURITY_MODE}
+# Puppeteer is only used by browser tests; the Express image never needs a bundled Chrome.
+ENV PUPPETEER_SKIP_DOWNLOAD=true
 RUN apt-get update && apt-get install -y git python3 make g++ libtool autoconf automake
-RUN npm i -g --no-fund sfw@2.0.6 && sfw true
+# Node 26+ official images no longer bundle Yarn; pin the version from package.json "packageManager".
+RUN npm i -g --no-fund sfw@2.0.6 yarn@1.22.22 && sfw true
 WORKDIR /tmp/bitgo
 COPY --from=filter-packages-json /tmp/bitgo .
 # (skip postinstall) https://github.com/yarnpkg/yarn/issues/4100#issuecomment-388944260
@@ -36,6 +39,7 @@ RUN \
 
 FROM node:26.13.1-bookworm-slim@sha256:0042e17d232a87a2cd485be1da7900fca4d10a4ad11b29e9285da1d2e54798c9
 RUN apt-get update && apt-get install -y tini
+RUN npm i -g --no-fund yarn@1.22.22
 # copy the root node_modules to the bitgo-express parent node_modules
 COPY --from=builder /tmp/bitgo/node_modules  /var/node_modules/
 COPY --from=builder /tmp/bitgo/modules/express /var/bitgo-express/
