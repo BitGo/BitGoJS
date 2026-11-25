@@ -9,6 +9,7 @@ import {
   EcdsaMPCv2Utils,
   EcdsaUtils,
   RequestTracer,
+  resolveEffectiveTxParams,
   TransactionType,
   TxIntentMismatchRecipientError,
   TxRequest,
@@ -1162,5 +1163,677 @@ describe('TSS payment verification', function () {
         error.message.should.match(/spender does not match the network batcher/);
       });
     }
+  });
+
+  // CECHO-2690: fillNonce must be a plain self-send (no calldata) to the wallet address with value 0 or 1 wei.
+  describe('fillNonce verification', function () {
+    it('verifies a prod-shaped fillNonce self-send (1 wei, empty calldata, to == baseAddress)', async function () {
+      const txHex = await buildTx({ to: baseAddress, value: '1' });
+      (await verify({ type: 'fillNonce' }, txHex)).should.be.true();
+      warn.called.should.be.false();
+    });
+
+    it('verifies a 0 wei fillNonce self-send', async function () {
+      const txHex = await buildTx({ to: baseAddress, value: '0' });
+      (await verify({ type: 'fillNonce' }, txHex)).should.be.true();
+    });
+
+    it('ignores a caller-declared receiveAddress and still requires the wallet base address', async function () {
+      // Every production fillNonce row is a self-send (senderAddressIndex 0 to baseAddress); a
+      // caller-supplied address must never redirect the filler.
+      const txHex = await buildTx({ to: recipient, value: '1' });
+      await expectMismatch(
+        verify({ type: 'fillNonce', receiveAddress: recipient }, txHex),
+        /destination does not match wallet base address/
+      );
+    });
+
+    it('rejects a fillNonce sent to an address other than the wallet address', async function () {
+      const txHex = await buildTx({ to: otherRecipient, value: '1' });
+      await expectMismatch(verify({ type: 'fillNonce' }, txHex), /destination does not match wallet base address/);
+    });
+
+    it('verifies a declared nonce that matches and rejects any other nonce', async function () {
+      const txHex = await buildTx({ to: baseAddress, value: '1' });
+      // buildTx increments to counter 1, so the signed nonce is 1.
+      (await verify({ type: 'fillNonce', nonce: '1' }, txHex)).should.be.true();
+      (await verify({ type: 'fillNonce', nonce: 1 }, txHex)).should.be.true();
+      await expectMismatch(
+        verify({ type: 'fillNonce', nonce: '2' }, txHex),
+        /nonce 1 does not match the declared nonce 2/
+      );
+      await expectMismatch(
+        verify({ type: 'fillNonce', nonce: 'abc' }, txHex),
+        /declared nonce must be a non-negative integer/
+      );
+    });
+
+    it('enforces numeric stored nonce 0 through resolveEffectiveTxParams reconstruction', async function () {
+      const common = AbstractEthLikeNewCoins.getCustomChainCommon(coin.getChainId());
+      const buildWithNonce = (nonce: number) => {
+        const tx = FeeMarketEIP1559Transaction.fromTxData(
+          {
+            nonce,
+            maxPriorityFeePerGas: 10,
+            maxFeePerGas: 100,
+            gasLimit: 21000,
+            to: baseAddress,
+            value: 1,
+            data: '0x',
+            chainId: coin.getChainId(),
+          },
+          { common }
+        );
+        return '0x' + tx.serialize().toString('hex');
+      };
+
+      const txParams = resolveEffectiveTxParams(
+        {
+          txRequestId: 'stored-fill-nonce-zero',
+          walletId: 'fakeWalletId',
+          intent: { intentType: 'fillNonce', nonce: 0 },
+        } as unknown as TxRequest,
+        undefined,
+        'hteth'
+      );
+      String(txParams.nonce).should.equal('0');
+
+      (await verify(txParams as Record<string, unknown>, buildWithNonce(0))).should.be.true();
+      await expectMismatch(
+        verify(txParams as Record<string, unknown>, buildWithNonce(1)),
+        /nonce 1 does not match the declared nonce 0/
+      );
+    });
+
+    it('rejects a fillNonce carrying calldata (including sub-selector raw bytes)', async function () {
+      const txHex = await buildTx({ to: baseAddress, value: '1', data: erc20Transfer(otherRecipient, '100') });
+      await expectMismatch(verify({ type: 'fillNonce' }, txHex), /must not carry calldata/);
+
+      const common = AbstractEthLikeNewCoins.getCustomChainCommon(coin.getChainId());
+      const subSelectorTx = FeeMarketEIP1559Transaction.fromTxData(
+        {
+          nonce: 1,
+          maxPriorityFeePerGas: 10,
+          maxFeePerGas: 100,
+          gasLimit: 21000,
+          to: baseAddress,
+          value: 1,
+          data: '0x01',
+          chainId: coin.getChainId(),
+        },
+        { common }
+      );
+      await expectMismatch(
+        verify({ type: 'fillNonce' }, '0x' + subSelectorTx.serialize().toString('hex')),
+        /must not carry calldata/
+      );
+    });
+
+    it('rejects a fillNonce with value greater than 1 wei', async function () {
+      const txHex = await buildTx({ to: baseAddress, value: '2' });
+      await expectMismatch(verify({ type: 'fillNonce' }, txHex), /value must be 0 or 1 wei/);
+    });
+
+    it('rejects a fillNonce when the wallet has no baseAddress and no receiveAddress is declared', async function () {
+      const noBaseWallet = new Wallet(bitgo, coin, { coinSpecific: {} });
+      const txHex = await buildTx({ to: baseAddress, value: '1' });
+      await expectMismatch(
+        coin.verifyTransaction({
+          txParams: { type: 'fillNonce' } as never,
+          txPrebuild: { txHex, coin: 'hteth', walletId: 'fakeWalletId' } as never,
+          wallet: noBaseWallet,
+          verification: {},
+          walletType: 'tss',
+        }),
+        /requires a wallet base address/
+      );
+    });
+  });
+
+  // CECHO-2690: transferToken ERC-20 fails closed (coordinated with COINS-2263 amount semantics);
+  // ERC-721 / ERC-1155 NFT transferToken stays warn-only while enforcing canonical NFT calldata and value == 0.
+  describe('transferToken verification', function () {
+    const nftContract = '0x5df4076613e714a4cc4284abac87caa927b918a8';
+    const erc721Safe3 = (from: string, to: string, tokenId: string) =>
+      calldata('safeTransferFrom', ['address', 'address', 'uint256'], [from, to, tokenId]);
+    const erc1155Safe = (from: string, to: string, tokenId: string, qty: string) =>
+      calldata(
+        'safeTransferFrom',
+        ['address', 'address', 'uint256', 'uint256', 'bytes'],
+        [from, to, tokenId, qty, Buffer.alloc(0)]
+      );
+    const erc20TransferFrom = (from: string, to: string, qty: string) =>
+      calldata('transferFrom', ['address', 'address', 'uint256'], [from, to, qty]);
+
+    for (const type of ['transferToken', 'transfertoken']) {
+      it(`verifies prod eth/arbeth shape (${type}, amount='0' placeholder + tokenData.tokenQuantity)`, async function () {
+        const txHex = await buildTx({ to: tokenContract, data: erc20Transfer(recipient, '1000000') });
+        const txParams = {
+          type,
+          recipients: [
+            {
+              address: recipient,
+              amount: '0',
+              tokenData: {
+                tokenType: 'ERC20',
+                tokenQuantity: '1000000',
+                tokenName,
+                tokenContractAddress: tokenContract,
+              },
+            },
+          ],
+        };
+        (await verify(txParams, txHex)).should.be.true();
+        warn.called.should.be.false();
+      });
+    }
+
+    it('verifies prod bsc/polygon shape (amount === tokenData.tokenQuantity)', async function () {
+      const txHex = await buildTx({ to: tokenContract, data: erc20Transfer(recipient, '500000') });
+      const txParams = {
+        type: 'transferToken',
+        recipients: [
+          {
+            address: recipient,
+            amount: '500000',
+            tokenName,
+            tokenData: { tokenType: 'ERC20', tokenQuantity: '500000', tokenName },
+          },
+        ],
+      };
+      (await verify(txParams, txHex)).should.be.true();
+      warn.called.should.be.false();
+    });
+
+    it('verifies contract-only ERC-20 transferToken resolved through @bitgo/statics', async function () {
+      const txHex = await buildTx({ to: tokenContract, data: erc20Transfer(recipient, '250') });
+      const txParams = {
+        type: 'transferToken',
+        recipients: [
+          {
+            address: recipient,
+            amount: '250',
+            tokenData: { tokenType: 'ERC20', tokenQuantity: '250', tokenContractAddress: tokenContract },
+          },
+        ],
+      };
+      (await verify(txParams, txHex)).should.be.true();
+    });
+
+    it('rejects amount vs tokenData.tokenQuantity spoofing (COINS-2263)', async function () {
+      const txHex = await buildTx({ to: tokenContract, data: erc20Transfer(recipient, '1000000') });
+      const txParams = {
+        type: 'transferToken',
+        recipients: [
+          {
+            address: recipient,
+            amount: '3',
+            tokenData: { tokenType: 'ERC20', tokenQuantity: '1000000', tokenName },
+          },
+        ],
+      };
+      await expectMismatch(verify(txParams, txHex), /does not match tokenData\.tokenQuantity/);
+    });
+
+    it('rejects non-integer tokenQuantity', async function () {
+      const txHex = await buildTx({ to: tokenContract, data: erc20Transfer(recipient, '100') });
+      const txParams = {
+        type: 'transferToken',
+        recipients: [
+          {
+            address: recipient,
+            amount: '0',
+            tokenData: { tokenType: 'ERC20', tokenQuantity: '1.5', tokenName },
+          },
+        ],
+      };
+      await expectMismatch(verify(txParams, txHex), /tokenQuantity must be a non-negative integer/);
+    });
+
+    it('rejects recipient, amount, contract, native value, selector, trailing bytes, and missing/multiple recipients', async function () {
+      const baseIntent = {
+        type: 'transferToken',
+        recipients: [
+          {
+            address: recipient,
+            amount: '0',
+            tokenData: { tokenType: 'ERC20', tokenQuantity: '1000', tokenName },
+          },
+        ],
+      };
+
+      await expectMismatch(
+        verify(baseIntent, await buildTx({ to: tokenContract, data: erc20Transfer(otherRecipient, '1000') })),
+        /destination address does not match/
+      );
+      await expectMismatch(
+        verify(baseIntent, await buildTx({ to: tokenContract, data: erc20Transfer(recipient, '999') })),
+        /does not match the declared token amount/
+      );
+      await expectMismatch(
+        verify(baseIntent, await buildTx({ to: otherTokenContract, data: erc20Transfer(recipient, '1000') })),
+        /not sent to the declared token contract/
+      );
+      await expectMismatch(
+        verify(baseIntent, await buildTx({ to: tokenContract, value: '1', data: erc20Transfer(recipient, '1000') })),
+        /must not carry native value/
+      );
+      await expectMismatch(
+        verify(
+          baseIntent,
+          await buildTx({
+            to: tokenContract,
+            data: calldata('approve', ['address', 'uint256'], [otherRecipient, '1000']),
+          })
+        ),
+        /must use ERC-20 transfer/
+      );
+      await expectMismatch(
+        verify(
+          baseIntent,
+          await buildTx({ to: tokenContract, data: erc20Transfer(recipient, '1000') + '00'.repeat(32) })
+        ),
+        /not canonical/
+      );
+      await expectMismatch(
+        verify(
+          { type: 'transferToken', recipients: [] },
+          await buildTx({ to: tokenContract, data: erc20Transfer(recipient, '1000') })
+        ),
+        /must declare a single recipient/
+      );
+      await expectMismatch(
+        verify(
+          {
+            type: 'transferToken',
+            recipients: [
+              { address: recipient, amount: '1000', tokenName },
+              { address: otherRecipient, amount: '1000', tokenName },
+            ],
+          },
+          await buildTx({ to: tokenContract, data: erc20Transfer(recipient, '1000') })
+        ),
+        /must declare a single recipient/
+      );
+    });
+
+    it('fails closed when the ERC-20 token cannot be resolved in @bitgo/statics', async function () {
+      const txHex = await buildTx({ to: otherTokenContract, data: erc20Transfer(recipient, '1000') });
+      await expectMismatch(
+        verify(
+          {
+            type: 'transferToken',
+            recipients: [
+              {
+                address: recipient,
+                amount: '0',
+                tokenData: { tokenType: 'ERC20', tokenQuantity: '1000', tokenName: 'hteth:notatoken' },
+              },
+            ],
+          },
+          txHex
+        ),
+        /cannot be resolved to a contract on this network/
+      );
+    });
+
+    it('rejects mismatched declared tokenContractAddress vs registered statics contract', async function () {
+      const txHex = await buildTx({ to: tokenContract, data: erc20Transfer(recipient, '1000') });
+      await expectMismatch(
+        verify(
+          {
+            type: 'transferToken',
+            recipients: [
+              {
+                address: recipient,
+                amount: '0',
+                tokenData: {
+                  tokenType: 'ERC20',
+                  tokenQuantity: '1000',
+                  tokenName,
+                  tokenContractAddress: otherTokenContract,
+                },
+              },
+            ],
+          },
+          txHex
+        ),
+        /declared tokenContractAddress does not match/
+      );
+    });
+
+    it('warns on ERC-721 and ERC-1155 NFT transferToken with canonical safeTransferFrom and value == 0', async function () {
+      const erc721Tx = await buildTx({ to: nftContract, data: erc721Safe3(baseAddress, recipient, '42') });
+      (
+        await verify(
+          {
+            type: 'transferToken',
+            recipients: [
+              {
+                address: recipient,
+                amount: '0',
+                tokenData: {
+                  tokenType: 'ERC721',
+                  tokenQuantity: '1',
+                  tokenId: '42',
+                  tokenContractAddress: nftContract,
+                },
+              },
+            ],
+          },
+          erc721Tx
+        )
+      ).should.be.true();
+      warned(/NFT token transfer \(ERC721\)/).should.be.true();
+
+      warn.resetHistory();
+      const erc1155Tx = await buildTx({ to: nftContract, data: erc1155Safe(baseAddress, recipient, '7', '3') });
+      (
+        await verify(
+          {
+            type: 'transferToken',
+            recipients: [
+              {
+                address: recipient,
+                amount: '0',
+                tokenData: {
+                  tokenType: 'ERC1155',
+                  tokenQuantity: '3',
+                  tokenId: '7',
+                  tokenContractAddress: nftContract,
+                },
+              },
+            ],
+          },
+          erc1155Tx
+        )
+      ).should.be.true();
+      warned(/NFT token transfer \(ERC1155\)/).should.be.true();
+    });
+
+    it('rejects NFT transferToken smuggling nonzero native value, wrong contract, or ERC-20 transferFrom on non-Hedera chains', async function () {
+      const erc721Intent = {
+        type: 'transferToken',
+        recipients: [
+          {
+            address: recipient,
+            amount: '0',
+            tokenData: {
+              tokenType: 'ERC721',
+              tokenQuantity: '1',
+              tokenId: '42',
+              tokenContractAddress: nftContract,
+            },
+          },
+        ],
+      };
+
+      await expectMismatch(
+        verify(
+          erc721Intent,
+          await buildTx({ to: nftContract, value: '1', data: erc721Safe3(baseAddress, recipient, '42') })
+        ),
+        /must not carry native value/
+      );
+      await expectMismatch(
+        verify(
+          erc721Intent,
+          await buildTx({ to: otherTokenContract, data: erc721Safe3(baseAddress, recipient, '42') })
+        ),
+        /not sent to the declared contract/
+      );
+      await expectMismatch(
+        verify(erc721Intent, await buildTx({ to: tokenContract, data: erc20Transfer(otherRecipient, '999999') })),
+        /canonical NFT safeTransferFrom/
+      );
+      // ERC-20 transferFrom shares selector 0x23b872dd — must NEVER bypass on non-Hedera chains
+      await expectMismatch(
+        verify(
+          erc721Intent,
+          await buildTx({ to: nftContract, data: erc20TransferFrom(baseAddress, otherRecipient, '999999') })
+        ),
+        /canonical NFT safeTransferFrom/
+      );
+      await expectMismatch(
+        verify(
+          { type: 'transferToken', recipients: [{ address: recipient, amount: '0' }] },
+          await buildTx({ to: tokenContract, data: erc20TransferFrom(baseAddress, otherRecipient, '999999') })
+        ),
+        /requires a declared ERC-20 token/
+      );
+    });
+
+    it('binds the NFT decoded recipient to the declared recipient', async function () {
+      // The tokenId/quantity stays warn-only, but the signed destination must still be the declared one.
+      const erc721Intent = {
+        type: 'transferToken',
+        recipients: [
+          {
+            address: recipient,
+            amount: '0',
+            tokenData: { tokenType: 'ERC721', tokenQuantity: '1', tokenId: '42', tokenContractAddress: nftContract },
+          },
+        ],
+      };
+      await expectMismatch(
+        verify(erc721Intent, await buildTx({ to: nftContract, data: erc721Safe3(baseAddress, otherRecipient, '42') })),
+        /NFT transferToken destination address does not match the recipient address/
+      );
+      // A matching calldata recipient still verifies (with the warning) so the binding is not over-tight.
+      (
+        await verify(erc721Intent, await buildTx({ to: nftContract, data: erc721Safe3(baseAddress, recipient, '42') }))
+      ).should.be.true();
+    });
+  });
+
+  // CECHO-2690 P0: a stored transferToken intent keeps tokenData (tokenQuantity / tokenType / contract);
+  // the sdk-core reconstruction must carry it into verifyTssTransaction, otherwise MPCv1/MPCv2
+  // re-signing has only the '0' amount placeholder to verify against.
+  describe('stored transferToken intent without caller txParams', function () {
+    const signingBoundaryMessage = 'signing boundary reached after intent verification';
+    const tokenQuantity = '1000000';
+
+    function transferBytes(to: string, amount: string) {
+      const common = AbstractEthLikeNewCoins.getCustomChainCommon(coin.getChainId());
+      const tx = FeeMarketEIP1559Transaction.fromTxData(
+        {
+          nonce: 1,
+          maxPriorityFeePerGas: 10,
+          maxFeePerGas: 100,
+          gasLimit: 200000,
+          to,
+          value: 0,
+          data: erc20Transfer(recipient, amount),
+          chainId: coin.getChainId(),
+        },
+        { common }
+      );
+      return {
+        signableHex: tx.getMessageToSign(false).toString('hex'),
+        serializedTxHex: tx.serialize().toString('hex'),
+      };
+    }
+
+    function storedTransferRequest(
+      bytes: { signableHex: string; serializedTxHex: string },
+      tokenData: Record<string, unknown>
+    ): TxRequest {
+      return {
+        txRequestId: 'stored-transfer-token',
+        apiVersion: 'full',
+        walletId: 'storedTransferWallet',
+        intent: {
+          intentType: 'transferToken',
+          recipients: [{ address: { address: recipient }, amount: { value: '0', symbol: 'stgusd1' }, tokenData }],
+        },
+        transactions: [{ unsignedTx: { derivationPath: 'm/0', ...bytes }, signatureShares: [] }],
+      } as unknown as TxRequest;
+    }
+
+    async function runMpcv2(txRequest: TxRequest): Promise<{ error: Error; boundary: Error }> {
+      const signingWallet = new Wallet(bitgo, coin, {
+        id: 'storedTransferWallet',
+        multisigType: 'tss',
+        multisigTypeVersion: 'MPCv2',
+        coinSpecific: { baseAddress },
+      });
+      const utils = new EcdsaMPCv2Utils(bitgo, coin, signingWallet);
+      sinon
+        .stub(utils as unknown as Record<string, () => Promise<string>>, 'pickBitgoPubGpgKeyForSigning')
+        .resolves('stubbed-gpg-key');
+
+      const baseConfig = coin.getConfig();
+      sinon.stub(coin, 'getConfig').returns({
+        ...baseConfig,
+        features: baseConfig.features.filter((f) => f !== CoinFeature.TSS_VERIFY_USE_SERIALIZED_TX_HEX),
+      } as unknown as Readonly<StaticsBaseCoin>);
+
+      const boundary = new Error(signingBoundaryMessage);
+      sinon.stub(coin, 'getHashFunction').returns({
+        update: () => {
+          throw boundary;
+        },
+      } as unknown as Hash);
+
+      try {
+        await utils.signTxRequest({ txRequest, prv: '', reqId: new RequestTracer() });
+      } catch (e) {
+        return { error: e as Error, boundary };
+      }
+      throw new Error('expected signTxRequest to reject');
+    }
+
+    it('verifies the prod eth/arbeth shape from the reconstructed stored intent (MPCv2)', async function () {
+      const { error, boundary } = await runMpcv2(
+        storedTransferRequest(transferBytes(tokenContract, tokenQuantity), {
+          tokenName,
+          tokenQuantity,
+          tokenType: 'ERC20',
+        })
+      );
+      error.should.be.exactly(boundary);
+      warn.called.should.be.false();
+    });
+
+    it('verifies a contract-only stored intent resolved through @bitgo/statics (MPCv2)', async function () {
+      const { error, boundary } = await runMpcv2(
+        storedTransferRequest(transferBytes(tokenContract, '250'), {
+          tokenQuantity: '250',
+          tokenType: 'ERC20',
+          tokenContractAddress: tokenContract,
+        })
+      );
+      error.should.be.exactly(boundary);
+    });
+
+    it('verifies a stored bare-symbol intent on a token wallet (prod shape)', async function () {
+      // Production rows persist tokenData.tokenName as the bare symbol ('usdt') with no contract, so the
+      // name resolves to nothing; the wallet's own `chain:token` identity must bind the signed bytes.
+      // Testnet token statics omit EIP1559 while mainnet ETH token coins enable it; production
+      // transferToken bytes are EIP-1559, so mirror that feature on the token coin.
+      const tokenStatics = coins.get(tokenName);
+      const tokenCoin = Hteth.createInstance(bitgo, {
+        ...tokenStatics,
+        features: [...tokenStatics.features, CoinFeature.EIP1559],
+      } as unknown as Readonly<StaticsBaseCoin>);
+      const tokenWallet = new Wallet(bitgo, tokenCoin, { coinSpecific: { baseAddress } });
+      const bytes = transferBytes(tokenContract, tokenQuantity);
+      const txParams = resolveEffectiveTxParams(
+        storedTransferRequest(bytes, { tokenName: 'stgusd1', tokenQuantity, tokenType: 'ERC20' }),
+        undefined,
+        tokenCoin.getChain()
+      );
+      txParams.recipients![0].tokenData!.tokenQuantity.should.equal(tokenQuantity);
+
+      const result = await tokenCoin.verifyTransaction({
+        txParams: txParams as never,
+        txPrebuild: { txHex: '0x' + bytes.serializedTxHex, coin: tokenName, walletId: 'fakeWalletId' } as never,
+        wallet: tokenWallet,
+        verification: {},
+        walletType: 'tss',
+      });
+      result.should.be.true();
+      warn.called.should.be.false();
+    });
+
+    it('rejects a stored intent whose signed amount differs from tokenQuantity (MPCv2)', async function () {
+      const { error } = await runMpcv2(
+        storedTransferRequest(transferBytes(tokenContract, '999999'), {
+          tokenName,
+          tokenQuantity,
+          tokenType: 'ERC20',
+        })
+      );
+      error.should.be.instanceOf(TxIntentMismatchRecipientError);
+      error.message.should.match(/does not match the declared token amount/);
+    });
+  });
+
+  // CECHO-2690: bridgeFunds is rejected outright on non-HyperEVM EVM chains.
+  describe('bridgeFunds on non-HyperEVM chains', function () {
+    it('rejects bridgeFunds outright on hteth', async function () {
+      const txHex = await buildTx({ to: '0x3333333333333333333333333333333333333333', value: '0' });
+      await expectMismatch(
+        verify({ type: 'bridgeFunds', intentAmount: { value: '10000000000000000', symbol: 'hteth' } }, txHex),
+        /bridgeFunds is not supported on EVM coin 'hteth'/
+      );
+    });
+  });
+
+  // CECHO-2690: DeFi intents (defiApprove, defiDeposit, defiWithdraw) never carry native ETH value
+  // and must use canonical ABI calldata.
+  describe('DeFi native value and canonical calldata verification', function () {
+    const defiParams = { vaultId: 'hteth-usdc-test', amount: '10', operationId: 'op-1' };
+    const approveData = calldata('approve', ['address', 'uint256'], [recipient, '10']);
+    const depositData = calldata('deposit', ['uint256', 'address'], ['10', baseAddress]);
+    const redeemData = calldata('redeem', ['uint256', 'address', 'address'], ['10', baseAddress, baseAddress]);
+
+    it('rejects nonzero native value on defiApprove, defiDeposit, and defiWithdraw', async function () {
+      await expectMismatch(
+        verify(
+          { type: 'defiApprove', defiParams },
+          await buildTx({ to: tokenContract, value: '1', data: approveData })
+        ),
+        /defiApprove transaction must not carry native value/
+      );
+      await expectMismatch(
+        verify(
+          { type: 'defiDeposit', defiParams },
+          await buildTx({ to: tokenContract, value: '10', data: depositData })
+        ),
+        /defiDeposit transaction must not carry native value/
+      );
+      await expectMismatch(
+        verify(
+          { type: 'defiWithdraw', defiParams },
+          await buildTx({ to: tokenContract, value: '1', data: redeemData })
+        ),
+        /defiWithdraw transaction must not carry native value/
+      );
+    });
+
+    it('rejects non-canonical trailing bytes on defiApprove, defiDeposit, and defiWithdraw', async function () {
+      await expectMismatch(
+        verify(
+          { type: 'defiApprove', defiParams },
+          await buildTx({ to: tokenContract, data: approveData + '00'.repeat(32) })
+        ),
+        /not canonical/
+      );
+      await expectMismatch(
+        verify(
+          { type: 'defiDeposit', defiParams },
+          await buildTx({ to: tokenContract, data: depositData + '00'.repeat(32) })
+        ),
+        /not canonical/
+      );
+      await expectMismatch(
+        verify(
+          { type: 'defiWithdraw', defiParams },
+          await buildTx({ to: tokenContract, data: redeemData + '00'.repeat(32) })
+        ),
+        /not canonical/
+      );
+    });
   });
 });

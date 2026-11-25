@@ -552,12 +552,17 @@ describe('flr', function () {
           walletPassphrase: 'fakeWalletPassphrase',
         };
 
+        const txBuilder = tflrCoin.getTransactionBuilder();
+        txBuilder.type(TransactionType.SingleSigSend);
+        txBuilder.fee({ fee: '10', gasLimit: '21000' });
+        txBuilder.counter(1);
+        txBuilder.contract('0x174cfd823af8ce27ed0afee3fcf3c3ba259116be');
+        txBuilder.value('1');
         const txPrebuild = {
-          txHex: '0x',
+          txHex: (await txBuilder.build()).toBroadcastFormat(),
           coin: 'tflr',
           walletId: 'fakeWalletId',
         };
-
         const verification = {};
 
         const isTransactionVerified = await tflrCoin.verifyTransaction({

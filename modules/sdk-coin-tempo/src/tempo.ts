@@ -256,6 +256,12 @@ export class Tempo extends AbstractEthLikeNewCoins {
   async verifyTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
     const { txParams, txPrebuild } = params;
 
+    // `bridgeFunds` is HyperEVM-only. This override never reaches the abstract TSS intent dispatch,
+    // so without an explicit rejection Tempo would accept the intent with no bridge verification at all.
+    if (txParams?.type === 'bridgeFunds') {
+      throw new Error('bridgeFunds is not supported on Tempo');
+    }
+
     if (!txPrebuild?.txHex) {
       return true;
     }

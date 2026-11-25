@@ -63,9 +63,12 @@ import {
   ChainIdNotFoundError,
   CoinFeature,
   coins,
+  ContractAddressDefinedToken,
   Erc7984Coin,
+  EthLikeERC721Token,
   EthereumNetwork as EthLikeNetwork,
   ethGasConfigs,
+  UnderlyingAsset,
 } from '@bitgo/statics';
 import type * as EthLikeCommon from '@ethereumjs/common';
 import type * as EthLikeTxLib from '@ethereumjs/tx';
@@ -98,7 +101,6 @@ import {
   ERC1155TransferBuilder,
   EthTransactionData,
   ERC721TransferBuilder,
-  getBufferedByteCode,
   getCommon,
   getCreateForwarderParamsAndTypes,
   getProxyInitcode,
@@ -398,7 +400,6 @@ interface FeeEstimate {
   feeEstimate: number;
 }
 
-// TODO: This interface will need to be updated for the new fee model introduced in the London Hard Fork
 interface EthTransactionParams extends TransactionParams {
   gasPrice?: number;
   gasLimit?: number;
@@ -407,6 +408,8 @@ interface EthTransactionParams extends TransactionParams {
   prebuildTx?: PrebuildTransactionResult;
   tokenName?: string;
   feeToken?: string;
+  /** Stored-intent top-level amount shape for `bridgeFunds` intents. */
+  amount?: { value: string; symbol: string } | string;
   defiParams?: DefiIntentParams;
   /** ERC-7984 shield intent (`type: 'wrapApprove' | 'wrap'`): wrapper coin name and exact amount. */
   wrapParams?: { tokenName: string; amount: string };
@@ -417,6 +420,9 @@ interface EthTransactionParams extends TransactionParams {
 }
 
 const MAX_UINT256 = 2n ** 256n - 1n;
+const HYPEEVM_CORE_WRITER_CONTRACT = '0x3333333333333333333333333333333333333333';
+const HYPEEVM_BRIDGE_ACTION_HEADER = Buffer.from([0x01, 0x00, 0x00, 0x06]);
+const HYPEEVM_BRIDGE_DECIMAL_DIVISOR = 10n ** 10n;
 
 export interface VerifyEthTransactionOptions extends VerifyTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -606,6 +612,10 @@ const TSS_DEDICATED_INTENT_TYPES = new Set([
   'consolidate',
   'consolidateToken',
   'tokenApproval',
+  'fillNonce',
+  'transferToken',
+  'transfertoken',
+  'bridgeFunds',
 ]);
 
 /**
@@ -622,11 +632,42 @@ type TssDecodedArg = ReturnType<typeof getRawDecoded>[number];
 
 const TSS_ERC20_TRANSFER_TYPES = ['address', 'uint256'];
 const TSS_ERC20_APPROVE_TYPES = ['address', 'uint256'];
+const TSS_DEFI_DEPOSIT_TYPES = ['uint256', 'address'];
+const TSS_DEFI_REDEEM_TYPES = ['uint256', 'address', 'address'];
 const TSS_NATIVE_BATCH_TYPES = ['address[]', 'uint256[]'];
 const TSS_TOKEN_BATCH_TYPES = ['address', 'address[]', 'uint256[]'];
+const TSS_BRIDGE_SEND_RAW_ACTION_TYPES = ['bytes'];
+const TSS_HYPEEVM_BRIDGE_ARGS_TYPES = ['address', 'uint64', 'uint64'];
+const TSS_ERC721_SAFE_TRANSFER_3_TYPES = ['address', 'address', 'uint256'];
+const TSS_ERC721_SAFE_TRANSFER_4_TYPES = ['address', 'address', 'uint256', 'bytes'];
+const TSS_ERC1155_SAFE_TRANSFER_TYPES = ['address', 'address', 'uint256', 'uint256', 'bytes'];
+const TSS_NON_NEGATIVE_INT_RE = /^(0|[1-9][0-9]*)$/;
 
 function tssMethodId(name: string, types: string[]): string {
   return addHexPrefix(optionalDeps.ethAbi.methodID(name, types).toString('hex')).toLowerCase();
+}
+
+function isRegisteredFungibleEvmToken(coin: Readonly<StaticsBaseCoin> | undefined): boolean {
+  return (
+    coin instanceof ContractAddressDefinedToken &&
+    !(coin instanceof EthLikeERC721Token) &&
+    !(coin instanceof Erc7984Coin) &&
+    coin.asset !== UnderlyingAsset.ERC721 &&
+    coin.asset !== UnderlyingAsset.ERC1155
+  );
+}
+
+/**
+ * True only for a *positively* classified NFT coin (ERC-721 / ERC-1155). An unregistered contract, or
+ * one that merely is not a registered ERC-20, must never inherit the NFT warn-only path.
+ */
+function isRegisteredNftEvmToken(coin: Readonly<StaticsBaseCoin> | undefined): boolean {
+  return (
+    !!coin &&
+    (coin instanceof EthLikeERC721Token ||
+      coin.asset === UnderlyingAsset.ERC721 ||
+      coin.asset === UnderlyingAsset.ERC1155)
+  );
 }
 
 function isEmptyTssCalldata(data?: string): boolean {
@@ -3674,39 +3715,154 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
   }
 
   /**
-   * Resolve a declared token to its contract from local statics. With no token name, a token coin
-   * declares itself and a base coin declares no asset (`isToken: false`).
+   * Extract the bare token symbol after the optional `chain:` prefix (lowercased).
+   */
+  private static bareTokenSymbol(name: string): string {
+    const idx = name.indexOf(':');
+    return (idx >= 0 ? name.slice(idx + 1) : name).toLowerCase();
+  }
+
+  /**
+   * Extract a valid 20-byte hex EVM contract address from a statics coin, if present.
+   */
+  private static getHexContractAddress(coin: Readonly<StaticsBaseCoin> | undefined): string | undefined {
+    if (!coin || !('contractAddress' in coin) || typeof coin.contractAddress !== 'string') {
+      return undefined;
+    }
+    return /^0x[0-9a-fA-F]{40}$/.test(coin.contractAddress) ? coin.contractAddress.toLowerCase() : undefined;
+  }
+
+  /**
+   * Look up a declared token or coin name strictly on the signing coin's network.
+   *
+   * Never returns a coin from a different network (e.g. Ethereum's bare `usdt` when signing on
+   * Arbitrum). When a bare symbol is supplied on a chain whose tokens are prefixed (`arbeth:usdt`),
+   * resolves `${networkPrefix}:${name}` on the signing network first so cross-network bare names
+   * cannot shadow same-network tokens.
+   */
+  private resolveSameNetworkStaticsCoin(name: string): Readonly<StaticsBaseCoin> | undefined {
+    const self = coins.getOrUndefined(this.getChain());
+    const network = self?.network ?? this.staticsCoin?.network;
+    if (!network) {
+      return undefined;
+    }
+
+    const direct = coins.getOrUndefined(name);
+    if (direct && direct.network === network) {
+      return direct;
+    }
+
+    // Bare symbol (no `chain:` prefix): try qualifying with the signing coin's chain prefix on
+    // the same network (e.g. bare `usdt` -> `arbeth:usdt` on Arbitrum, or `hteth:stgusd1` on Hoodi).
+    if (!name.includes(':')) {
+      const basePrefix = this.getBaseChain().split(':')[0];
+      const candidates = new Set<string>();
+      if (basePrefix) {
+        candidates.add(`${basePrefix}:${name}`);
+        candidates.add(`${basePrefix}:${name.toLowerCase()}`);
+      }
+      const selfChainPrefix = this.getChain().includes(':') ? this.getChain().split(':')[0] : undefined;
+      if (selfChainPrefix) {
+        candidates.add(`${selfChainPrefix}:${name}`);
+        candidates.add(`${selfChainPrefix}:${name.toLowerCase()}`);
+      }
+      const chainId = 'chainId' in network && typeof network.chainId === 'number' ? network.chainId : undefined;
+      const chainIdPrefix = chainId !== undefined ? coins.coinNameFromChainId(chainId) : undefined;
+      if (chainIdPrefix) {
+        candidates.add(`${chainIdPrefix}:${name}`);
+        candidates.add(`${chainIdPrefix}:${name.toLowerCase()}`);
+      }
+      for (const candidate of candidates) {
+        const prefixed = coins.getOrUndefined(candidate);
+        if (prefixed && prefixed.network === network) {
+          return prefixed;
+        }
+      }
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Resolve a declared token to its contract from local statics on the signing coin's network.
+   * With no token name, a token coin declares itself and a base coin declares no asset (`isToken: false`).
+   * When signing on a token coin, a declared token name must agree with the signing token.
+   *
+   * `mismatch` marks a *known* conflict (an explicitly empty name, a declaration that names the
+   * signing chain's native asset, a different signing token, or a token that statics knows on another
+   * network) as opposed to a token nobody has registered here. Callers must fail closed on
+   * `mismatch`; only a genuinely unregistered token may still warn and continue.
    */
   private resolveTssToken(tokenName?: string): {
     isToken: boolean;
     contract?: string;
     confidential?: boolean;
     reason?: string;
+    mismatch?: boolean;
   } {
-    // Token coins (e.g. `txdc:usdc`) resolve through their own chain name.
+    // An explicitly empty (or whitespace-only) name is a declaration, never an omission: it must not
+    // fall back to the signing token.
+    if (typeof tokenName === 'string' && tokenName.trim() === '') {
+      return {
+        isToken: true,
+        mismatch: true,
+        reason: 'declared tokenName is empty and cannot be resolved to a contract',
+      };
+    }
+    // Token coins (e.g. `txdc:usdc`, `arbeth:usdt`) resolve through their own chain name.
     const self = coins.getOrUndefined(this.getChain());
     const network = self?.network ?? this.staticsCoin?.network;
-    const declared = tokenName ?? (self?.isToken ? self.name : undefined);
+    const selfIsToken = Boolean(self?.isToken);
+    const declared = tokenName ?? (selfIsToken ? self!.name : undefined);
     if (!declared) {
       return { isToken: false };
     }
-    const token = coins.getOrUndefined(declared);
+    const token = this.resolveSameNetworkStaticsCoin(declared);
     if (token && !token.isToken && token.network === network) {
+      if (selfIsToken) {
+        return {
+          isToken: true,
+          mismatch: true,
+          reason: `declared token '${declared}' does not match signing token '${self!.name}'`,
+        };
+      }
       return { isToken: false }; // the chain's own native coin
     }
-    const contract = (token as { contractAddress?: string } | undefined)?.contractAddress;
-    if (!token || token.network !== network || !contract || !/^0x[0-9a-fA-F]{40}$/.test(contract)) {
-      return { isToken: true, reason: `token '${declared}' cannot be resolved to a contract on this network` };
+    const contract = AbstractEthLikeNewCoins.getHexContractAddress(token);
+    if (!token || token.network !== network || !contract) {
+      // A name statics knows only on another network is a known cross-network conflict, not an
+      // unregistered token. Anything absent from statics stays a warning-only unknown.
+      const offNetwork = token ? undefined : coins.getOrUndefined(declared);
+      const mismatch = Boolean(offNetwork && offNetwork.network !== network);
+      return {
+        isToken: true,
+        mismatch,
+        reason: `token '${declared}' cannot be resolved to a contract on this network`,
+      };
+    }
+    if (selfIsToken && self) {
+      const selfContract = AbstractEthLikeNewCoins.getHexContractAddress(self);
+      if (
+        !selfContract ||
+        selfContract !== contract ||
+        AbstractEthLikeNewCoins.bareTokenSymbol(token.name) !== AbstractEthLikeNewCoins.bareTokenSymbol(self.name)
+      ) {
+        return {
+          isToken: true,
+          mismatch: true,
+          reason: `declared token '${declared}' does not match signing token '${self.name}'`,
+        };
+      }
     }
     if (token instanceof Erc7984Coin) {
       return {
         isToken: true,
-        contract: contract.toLowerCase(),
+        contract,
         confidential: true,
         reason: `token '${declared}' is an ERC-7984 token`,
       };
     }
-    return { isToken: true, contract: contract.toLowerCase() };
+    return { isToken: true, contract };
   }
 
   /**
@@ -3714,7 +3870,12 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
    * bypassing `TransactionBuilder.from()` / `.build()` reserialization so calldata bytes cannot be
    * altered or normalized before verification.
    */
-  private decodeRawTssTxFields(txHex: string | undefined): { to: string; value: string; data: string } {
+  private decodeRawTssTxFields(txHex: string | undefined): {
+    to: string;
+    value: string;
+    data: string;
+    nonce: number;
+  } {
     if (!txHex) {
       throw new Error('missing txHex in txPrebuild');
     }
@@ -3727,6 +3888,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       to: (txJson.to ?? '').toLowerCase(),
       value: txJson.value ?? '0',
       data: (txJson.data || '0x').toLowerCase(),
+      nonce: txJson.nonce,
     };
   }
 
@@ -3743,6 +3905,13 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     // Resolve the declared asset first: a declared ERC-7984 payment must never bypass the
     // confidential-transfer checks by supplying caller-authored explicit calldata.
     const token = this.resolveTssToken(recipient.tokenName ?? txParams.tokenName);
+    // A known conflict (declared token vs signing token / network, or an explicitly empty name) is a
+    // mismatch, never a warning: warn-and-continue would verify the wrong contract.
+    if (token.mismatch) {
+      await throwRecipientMismatch(`payment token declaration is invalid: ${token.reason}`, [
+        { address: recipient.address, amount: String(recipient.amount) },
+      ]);
+    }
 
     if (token.confidential) {
       // ERC-7984 confidential token payment: MUST call confidentialTransfer(address,bytes32,bytes)
@@ -3923,6 +4092,13 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
 
     // Each recipient declares its own asset; a batch moves exactly one.
     const tokens = recipients.map((recipient) => this.resolveTssToken(recipient.tokenName ?? txParams.tokenName));
+    for (const token of tokens) {
+      // A known conflict (declared token vs signing token / network, or an explicitly empty name) is
+      // a mismatch, never a warning: warn-and-continue would verify the wrong contract.
+      if (token.mismatch) {
+        await mismatch(`batch payment token declaration is invalid: ${token.reason}`);
+      }
+    }
     if (isNativeBatch) {
       if (tokens.some((token) => token.isToken)) {
         await mismatch('token batch payment must use batchTransferFrom calldata');
@@ -4017,6 +4193,468 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     }
     if (!tssValuesEqual(decodedAmount, MAX_UINT256.toString())) {
       await mismatch('tokenApproval transaction amount must be MAX_UINT256', decodedSpender, decodedAmount);
+    }
+  }
+
+  /**
+   * Verify a `fillNonce` TSS intent against raw serialized transaction bytes (CECHO-2690).
+   *
+   * Expected shape (fail closed on any deviation):
+   *   - `to` = `wallet.coinSpecific().baseAddress` (every production fillNonce row is a self-send to
+   *     the wallet's own address; `verifyTransaction` does not receive verifiable wallet keychain /
+   *     derivation metadata for arbitrary non-base receive addresses, so an unverified caller-supplied
+   *     `receiveAddress` is rejected rather than trusted to redirect the filler)
+   *   - `data` = empty (`0x`)
+   *   - `value` = `0` or `1` wei (production EVM TSS self-sends use `1` wei)
+   *   - `nonce`, when declared by the caller or the stored intent, equals the signed transaction nonce
+   */
+  private async verifyTssFillNonce(
+    txParams: EthTransactionParams,
+    wallet: IWallet,
+    txHex: string | undefined,
+    throwRecipientMismatch: (message: string, mismatchedRecipients: Recipient[]) => Promise<never>
+  ): Promise<void> {
+    const { to, value, data, nonce } = this.decodeRawTssTxFields(txHex);
+    const mismatch = (message: string, address = to, amount = value): Promise<never> =>
+      throwRecipientMismatch(message, [{ address, amount }]);
+
+    const baseAddress = wallet.coinSpecific()?.baseAddress;
+    if (!baseAddress) {
+      await mismatch('fillNonce transaction requires a wallet base address to verify against');
+      return;
+    }
+    if (!to || to !== baseAddress.toLowerCase()) {
+      await mismatch('fillNonce transaction destination does not match wallet base address');
+    }
+    if (!isEmptyTssCalldata(data)) {
+      await mismatch('fillNonce transaction must not carry calldata');
+    }
+    if (!tssValuesEqual(value, '0') && !tssValuesEqual(value, '1')) {
+      await mismatch('fillNonce transaction value must be 0 or 1 wei');
+    }
+    if (txParams.nonce !== undefined && txParams.nonce !== null) {
+      const declaredNonce = String(txParams.nonce).trim();
+      if (!TSS_NON_NEGATIVE_INT_RE.test(declaredNonce)) {
+        await mismatch(`fillNonce declared nonce must be a non-negative integer, got '${txParams.nonce}'`);
+      }
+      if (!tssValuesEqual(declaredNonce, nonce)) {
+        await mismatch(`fillNonce transaction nonce ${nonce} does not match the declared nonce ${declaredNonce}`);
+      }
+    }
+  }
+
+  /**
+   * Verify a `transferToken` / `transfertoken` TSS intent against raw serialized transaction bytes (CECHO-2690).
+   *
+   * - ERC-721 / ERC-1155 NFT transfers stay warning-only for tokenId/quantity semantics, but only for
+   *   a positively classified NFT (declared `tokenType` or a statics NFT coin): canonical NFT calldata
+   *   for the declared standard, the declared contract, zero native value, and the decoded recipient
+   *   are all enforced before the warning is emitted.
+   * - ERC-20 transfers fail closed on recipient, amount, declared token contract (from `@bitgo/statics`),
+   *   canonical `transfer(address,uint256)` calldata, and `value == 0`.
+   * - Coordinates amount semantics with COINS-2263 (`BitGo/bitgo-microservices#64621`):
+   *   when `tokenData.tokenQuantity` is present, it is the authoritative ERC-20 quantity, and
+   *   `recipient.amount` must be either the canonical `'0'` placeholder or equal to `tokenQuantity`.
+   */
+  private async verifyTssTransferToken(
+    txParams: EthTransactionParams,
+    txHex: string | undefined,
+    throwRecipientMismatch: (message: string, mismatchedRecipients: Recipient[]) => Promise<never>
+  ): Promise<void> {
+    const recipients = txParams.recipients ?? [];
+    if (recipients.length !== 1) {
+      await throwRecipientMismatch(
+        `transferToken transaction must declare a single recipient, got ${recipients.length}`,
+        []
+      );
+    }
+
+    const recipient = recipients[0];
+    const { to, value, data } = this.decodeRawTssTxFields(txHex);
+    const mismatch = (message: string, address = to, amount = value): Promise<never> =>
+      throwRecipientMismatch(message, [{ address, amount }]);
+
+    const tokenData = recipient.tokenData;
+    const tokenType = tokenData?.tokenType ? String(tokenData.tokenType).toUpperCase() : undefined;
+    const selfCoin = coins.getOrUndefined(this.getChain());
+    const network = selfCoin?.network ?? this.getNetwork();
+    const declaredContract = tokenData?.tokenContractAddress ?? recipient.tokenAddress;
+    const declaredTokenName = tokenData?.tokenName ?? recipient.tokenName ?? txParams.tokenName;
+    // An explicitly empty (or whitespace-only) tokenName is a declaration, never an omission: it must
+    // not fall back to the signing token or a contract-derived token.
+    if (typeof declaredTokenName === 'string' && declaredTokenName.trim() === '') {
+      await mismatch('transferToken declared tokenName is empty');
+    }
+    // Resolve declared token identities strictly on the signing coin's network so a bare symbol
+    // (e.g. 'usdt' on Arbitrum) resolves to the same-network token ('arbeth:usdt'), never to a
+    // token on another chain (e.g. Ethereum 'usdt').
+    // `getToken` matches only the network *type* and coin family, so a contract registered on a
+    // different network of the same type (e.g. Hoodi's `terc721:bitgoerc721` while signing on
+    // another testnet) would come back as a foreign statics entry: require exact network identity.
+    const declaredNameCoin = declaredTokenName ? this.resolveSameNetworkStaticsCoin(declaredTokenName) : undefined;
+    const declaredContractCandidate =
+      declaredContract && network ? getToken(declaredContract, network, this.getFamily()) : undefined;
+    const declaredContractCoin =
+      declaredContractCandidate && declaredContractCandidate.network === network
+        ? declaredContractCandidate
+        : undefined;
+    // Positive NFT classification only: the declared tokenType, or a declared token name / contract
+    // that resolves on this network in @bitgo/statics to a registered ERC-721 / ERC-1155 coin.
+    // "Not a registered ERC-20" is NOT classification — otherwise any unregistered contract would
+    // skip verification.
+    let declaredNftStandard: 'ERC721' | 'ERC1155' | undefined;
+    const selfIsNft = isRegisteredNftEvmToken(selfCoin);
+    const declaredNftCoin = [
+      declaredNameCoin,
+      declaredContractCoin,
+      !declaredTokenName && selfIsNft ? selfCoin : undefined,
+    ].find(isRegisteredNftEvmToken);
+    if (tokenType === 'ERC721' || tokenType === 'ERC1155') {
+      declaredNftStandard = tokenType;
+    } else if (declaredNftCoin) {
+      declaredNftStandard = declaredNftCoin.asset === UnderlyingAsset.ERC1155 ? 'ERC1155' : 'ERC721';
+    }
+    const erc721Safe3Selector = tssMethodId('safeTransferFrom', TSS_ERC721_SAFE_TRANSFER_3_TYPES);
+    const erc721Safe4Selector = tssMethodId('safeTransferFrom', TSS_ERC721_SAFE_TRANSFER_4_TYPES);
+    const erc1155SafeSelector = tssMethodId('safeTransferFrom', TSS_ERC1155_SAFE_TRANSFER_TYPES);
+    const erc721TransferFromSelector = tssMethodId('transferFrom', TSS_ERC721_SAFE_TRANSFER_3_TYPES);
+    const isHederaEvm = this.getFamily() === 'hbarevm';
+    const targetCoin = to && network ? getToken(to, network, this.getFamily()) : undefined;
+    const targetIsRegisteredErc20 =
+      !!targetCoin && targetCoin.network === network && isRegisteredFungibleEvmToken(targetCoin);
+
+    // Canonical NFT transfer calldata for the declared standard, or `undefined` when the calldata is
+    // not an NFT transfer of that standard. ERC-20 transferFrom(address,address,uint256) shares the
+    // 3-argument selector, so it is only admitted on Hedera EVM (HTS NFTs), never against a
+    // registered ERC-20 contract and never for a declared ERC-1155.
+    const nftCalldataTypesFor = (standard: 'ERC721' | 'ERC1155'): string[] | undefined => {
+      if (standard === 'ERC1155') {
+        return data.startsWith(erc1155SafeSelector) && isCanonicalTssCalldata(data, TSS_ERC1155_SAFE_TRANSFER_TYPES)
+          ? TSS_ERC1155_SAFE_TRANSFER_TYPES
+          : undefined;
+      }
+      if (data.startsWith(erc721Safe3Selector) && isCanonicalTssCalldata(data, TSS_ERC721_SAFE_TRANSFER_3_TYPES)) {
+        return TSS_ERC721_SAFE_TRANSFER_3_TYPES;
+      }
+      if (data.startsWith(erc721Safe4Selector) && isCanonicalTssCalldata(data, TSS_ERC721_SAFE_TRANSFER_4_TYPES)) {
+        return TSS_ERC721_SAFE_TRANSFER_4_TYPES;
+      }
+      if (
+        isHederaEvm &&
+        !targetIsRegisteredErc20 &&
+        data.startsWith(erc721TransferFromSelector) &&
+        isCanonicalTssCalldata(data, TSS_ERC721_SAFE_TRANSFER_3_TYPES)
+      ) {
+        return TSS_ERC721_SAFE_TRANSFER_3_TYPES;
+      }
+      return undefined;
+    };
+
+    // NFT transferToken (ERC-721 / ERC-1155): the tokenId/quantity semantics stay warning-only until
+    // a dedicated NFT verifier lands, but nothing else is relaxed. Canonical NFT calldata, the
+    // declared contract, zero native value, and the decoded recipient are all enforced so a
+    // compromised server cannot smuggle an ERC-20 transfer/approve, native value, or a different
+    // destination under an NFT label.
+    if (declaredNftStandard) {
+      const nftCalldataTypes = nftCalldataTypesFor(declaredNftStandard);
+      if (!nftCalldataTypes) {
+        return await mismatch('NFT transferToken calldata must be a canonical NFT safeTransferFrom call');
+      }
+      // Require a concrete, same-network 20-byte contract address (either declared on the intent or
+      // from a same-network statics NFT coin) and bind `to` to it before emitting a warn-only pass.
+      // Generic placeholder NFT entries (e.g. `0xerc721:token`) have non-hex contracts and do not
+      // satisfy this requirement on their own.
+      const resolvedStaticsNftContract = AbstractEthLikeNewCoins.getHexContractAddress(declaredNftCoin);
+      const normalizedDeclaredContract =
+        declaredContract && /^0x[0-9a-fA-F]{40}$/.test(declaredContract) ? declaredContract.toLowerCase() : undefined;
+      if (declaredContract && !normalizedDeclaredContract) {
+        await mismatch('NFT transferToken declared contract address is invalid');
+      }
+      // If the intent declared a tokenName that resolves on a DIFFERENT network in statics (e.g.
+      // `erc721:witch` on Ethereum while signing on Hoodi), fail closed even if a contract was also
+      // supplied, so cross-network NFT names are never accepted.
+      const globalNamedCoin = declaredTokenName ? coins.getOrUndefined(declaredTokenName) : undefined;
+      if (declaredTokenName && globalNamedCoin && globalNamedCoin.network !== network && !declaredNameCoin) {
+        await mismatch(`NFT transferToken declared token '${declaredTokenName}' does not belong to this network`);
+      }
+      if (declaredTokenName && !declaredNameCoin && !normalizedDeclaredContract) {
+        await mismatch(
+          `NFT transferToken declared token '${declaredTokenName}' cannot be resolved to a contract on this network`
+        );
+      }
+      if (
+        normalizedDeclaredContract &&
+        resolvedStaticsNftContract &&
+        normalizedDeclaredContract !== resolvedStaticsNftContract
+      ) {
+        await mismatch('NFT transferToken declared tokenContractAddress does not match the registered NFT contract');
+      }
+      const expectedNftContract = normalizedDeclaredContract ?? resolvedStaticsNftContract;
+      if (!expectedNftContract) {
+        return await mismatch('NFT transferToken requires a declared or registered same-network contract address');
+      }
+      if (to !== expectedNftContract) {
+        await mismatch('NFT transferToken transaction is not sent to the declared contract');
+      }
+      if (!tssValuesEqual(value, '0')) {
+        await mismatch('NFT transferToken transaction must not carry native value');
+      }
+      const [, decodedNftRecipient] = decodeTssCalldataArgs(data, nftCalldataTypes);
+      const decodedNftTo = addHexPrefix(decodedNftRecipient as string).toLowerCase();
+      if (!recipient.address || decodedNftTo !== recipient.address.toLowerCase()) {
+        await mismatch('NFT transferToken destination address does not match the recipient address', decodedNftTo);
+      }
+      this.warnTssVerificationIncomplete(
+        'transferToken',
+        `NFT token transfer (${declaredNftStandard}) verification is not implemented: only tokenId/quantity ` +
+          'semantics were skipped; calldata shape, contract, recipient, and zero native value were verified'
+      );
+      return;
+    }
+    if (tokenType && tokenType !== 'ERC20') {
+      await mismatch(`transferToken unsupported tokenType '${tokenData?.tokenType}'`);
+    }
+
+    // Resolve authoritative ERC-20 amount (coordinated with COINS-2263):
+    // - If tokenData.tokenQuantity is present, it must be a non-negative integer, and
+    //   recipient.amount must be either the canonical '0' placeholder (or empty/undefined) or
+    //   equal to tokenQuantity (prevents amount.value vs tokenQuantity spoofing).
+    // - Otherwise fall back to recipient.amount (e.g. stored-intent path where resolveEffectiveTxParams
+    //   did not forward tokenData, or direct callers supplying only amount).
+    let expectedAmount: string;
+    if (tokenData?.tokenQuantity !== undefined && tokenData?.tokenQuantity !== null) {
+      const rawQty = String(tokenData.tokenQuantity).trim();
+      if (!TSS_NON_NEGATIVE_INT_RE.test(rawQty)) {
+        await mismatch(`transferToken tokenQuantity must be a non-negative integer, got '${tokenData.tokenQuantity}'`);
+      }
+      const trimmedAmount =
+        recipient.amount === undefined || recipient.amount === null ? '' : String(recipient.amount).trim();
+      if (trimmedAmount !== '') {
+        if (!TSS_NON_NEGATIVE_INT_RE.test(trimmedAmount)) {
+          await mismatch(`transferToken amount must be a non-negative integer, got '${recipient.amount}'`);
+        }
+        if (!tssValuesEqual(trimmedAmount, '0') && !tssValuesEqual(trimmedAmount, rawQty)) {
+          await mismatch('transferToken amount does not match tokenData.tokenQuantity');
+        }
+      }
+      expectedAmount = rawQty;
+    } else {
+      const rawAmount =
+        recipient.amount === undefined || recipient.amount === null ? '' : String(recipient.amount).trim();
+      if (!TSS_NON_NEGATIVE_INT_RE.test(rawAmount)) {
+        await mismatch('transferToken requires a valid non-negative integer amount');
+      }
+      expectedAmount = rawAmount;
+    }
+
+    // Resolve declared ERC-20 token contract from @bitgo/statics on the signing coin's network
+    // (fail closed if missing, cross-network, or unresolvable).
+    // - If a tokenName is declared, it MUST resolve on this network (e.g. `usdt` -> `arbeth:usdt`
+    //   on Arbitrum) and, when signing on a token-scoped wallet, must agree with the signing token.
+    //   Never silently fall back to the signing token when the declared name fails to resolve or
+    //   names a different token/network.
+    // - If no tokenName is declared, resolve via declaredContractCoin on this network, or fall back
+    //   to the signing token coin itself (when signing on a token wallet).
+    let tokenLookup: string | undefined;
+    if (declaredTokenName) {
+      tokenLookup = declaredTokenName;
+    } else if (declaredContractCoin) {
+      tokenLookup = declaredContractCoin.name;
+    }
+    const token = this.resolveTssToken(tokenLookup);
+    if (!token.isToken || !token.contract || token.confidential) {
+      await mismatch(
+        token.reason
+          ? `transferToken: ${token.reason}`
+          : 'transferToken requires a declared ERC-20 token resolvable to a contract on this network'
+      );
+      return;
+    }
+    if (declaredContract && declaredContract.toLowerCase() !== token.contract) {
+      await mismatch('transferToken declared tokenContractAddress does not match the registered token contract');
+    }
+    if (to !== token.contract) {
+      await mismatch('transferToken transaction is not sent to the declared token contract');
+    }
+    if (!tssValuesEqual(value, '0')) {
+      await mismatch('transferToken transaction must not carry native value');
+    }
+
+    const transferSelector = tssMethodId('transfer', TSS_ERC20_TRANSFER_TYPES);
+    if (!data.startsWith(transferSelector)) {
+      await mismatch('transferToken calldata must use ERC-20 transfer(address,uint256)');
+    }
+    if (!isCanonicalTssCalldata(data, TSS_ERC20_TRANSFER_TYPES)) {
+      await mismatch('transferToken ERC-20 transfer calldata is not canonical');
+    }
+
+    const [rawRecipient, rawAmount] = decodeTssCalldataArgs(data, TSS_ERC20_TRANSFER_TYPES);
+    const decodedRecipient = addHexPrefix(rawRecipient as string).toLowerCase();
+    const decodedAmount = (rawAmount as BN).toString(10);
+
+    if (!recipient.address || decodedRecipient !== recipient.address.toLowerCase()) {
+      await mismatch(
+        'transferToken destination address does not match the recipient address',
+        decodedRecipient,
+        decodedAmount
+      );
+    }
+    if (!tssValuesEqual(decodedAmount, expectedAmount)) {
+      await mismatch(
+        'transferToken amount in txPrebuild does not match the declared token amount',
+        decodedRecipient,
+        decodedAmount
+      );
+    }
+  }
+
+  /**
+   * Verify a `bridgeFunds` TSS intent against raw serialized transaction bytes (CECHO-2690).
+   *
+   * Only HyperEVM (`hypeevm` / `thypeevm`, family `hypeevm`) supports `bridgeFunds` on EVM:
+   *   - `to` = HyperCore CoreWriter precompile (`0x3333...3333`)
+   *   - `value` = `0`
+   *   - `data` = canonical `sendRawAction(bytes)` (`0x17938e13`) where the payload is:
+   *       `0x01` (version 1) || `0x000006` (actionId 6) || canonical ABI `(address, uint64, uint64)`
+   *   - `destination` = coin's `systemAddress` from `@bitgo/statics`
+   *   - `tokenId` = coin's `tokenId` from `@bitgo/statics` (`150` mainnet / `1105` testnet)
+   *   - `amount` = `BigInt(declaredAmount.value) / 10^10` (18-decimal wei truncated to 8-decimal HyperCore units);
+   *     the result must be a positive `uint64`, so zero, sub-unit dust, and overflow are rejected
+   *   - `declaredAmount` comes from `txParams.intentAmount`, or the stored-intent `txParams.amount`
+   *     shape that `resolveEffectiveTxParams` propagates — never from calldata
+   *
+   * All other EVM chains reject `bridgeFunds` outright.
+   */
+  private async verifyTssBridgeFunds(
+    txParams: EthTransactionParams,
+    txHex: string | undefined,
+    throwRecipientMismatch: (message: string, mismatchedRecipients: Recipient[]) => Promise<never>
+  ): Promise<void> {
+    const { to, value, data } = this.decodeRawTssTxFields(txHex);
+    const mismatch = (message: string, address = to, amount = value): Promise<never> =>
+      throwRecipientMismatch(message, [{ address, amount }]);
+
+    if (this.getFamily() !== 'hypeevm') {
+      await mismatch(`bridgeFunds is not supported on EVM coin '${this.getChain()}'`);
+    }
+    if (txParams.recipients && txParams.recipients.length > 0) {
+      await mismatch('bridgeFunds transaction must not declare recipients');
+    }
+    const rawAmount =
+      txParams.intentAmount ??
+      (typeof txParams.amount === 'object' && txParams.amount !== null ? txParams.amount : undefined);
+    if (!rawAmount || typeof rawAmount.value !== 'string' || typeof rawAmount.symbol !== 'string') {
+      await mismatch('bridgeFunds transaction requires a declared amount ({ value, symbol }) to verify against');
+      return;
+    }
+    if (!TSS_NON_NEGATIVE_INT_RE.test(rawAmount.value.trim())) {
+      await mismatch(`bridgeFunds declared amount must be a non-negative integer, got '${rawAmount.value}'`);
+    }
+    if (rawAmount.symbol.toLowerCase() !== this.getChain().toLowerCase()) {
+      await mismatch(`bridgeFunds declared symbol '${rawAmount.symbol}' does not match chain '${this.getChain()}'`);
+    }
+
+    const staticCoin: unknown = coins.getOrUndefined(this.getChain()) ?? this.staticsCoin;
+    const expectedTokenId =
+      staticCoin && typeof staticCoin === 'object' && 'tokenId' in staticCoin && typeof staticCoin.tokenId === 'number'
+        ? staticCoin.tokenId
+        : undefined;
+    const expectedSystemAddress =
+      staticCoin &&
+      typeof staticCoin === 'object' &&
+      'systemAddress' in staticCoin &&
+      typeof staticCoin.systemAddress === 'string' &&
+      /^0x[0-9a-fA-F]{40}$/.test(staticCoin.systemAddress)
+        ? staticCoin.systemAddress.toLowerCase()
+        : undefined;
+    if (expectedTokenId === undefined || expectedSystemAddress === undefined) {
+      await mismatch(`bridgeFunds: missing HyperEVM bridge configuration in statics for '${this.getChain()}'`);
+      return;
+    }
+    if (to !== HYPEEVM_CORE_WRITER_CONTRACT) {
+      await mismatch('bridgeFunds transaction is not sent to the HyperEVM CoreWriter contract');
+    }
+    if (!tssValuesEqual(value, '0')) {
+      await mismatch('bridgeFunds transaction must not carry native value');
+    }
+
+    const sendRawActionSelector = tssMethodId('sendRawAction', TSS_BRIDGE_SEND_RAW_ACTION_TYPES);
+    if (!data.startsWith(sendRawActionSelector)) {
+      await mismatch('bridgeFunds calldata must use sendRawAction(bytes)');
+    }
+    if (!isCanonicalTssCalldata(data, TSS_BRIDGE_SEND_RAW_ACTION_TYPES)) {
+      await mismatch('bridgeFunds sendRawAction calldata is not canonical');
+    }
+
+    const [rawPayload] = decodeTssCalldataArgs(data, TSS_BRIDGE_SEND_RAW_ACTION_TYPES);
+    const bridgePayload = rawPayload as Buffer;
+    // Payload = 1 byte version (0x01) + 3 bytes actionId (0x000006) + 3 * 32-byte ABI words = 100 bytes exact
+    if (!Buffer.isBuffer(bridgePayload) || bridgePayload.length !== 100) {
+      await mismatch('bridgeFunds payload has invalid length');
+    }
+    if (!bridgePayload.subarray(0, 4).equals(HYPEEVM_BRIDGE_ACTION_HEADER)) {
+      await mismatch('bridgeFunds payload header must be version 1 and actionId 6');
+    }
+
+    const innerArgs = bridgePayload.subarray(4);
+    let decodedInner: TssDecodedArg[];
+    try {
+      decodedInner = getRawDecoded(TSS_HYPEEVM_BRIDGE_ARGS_TYPES, innerArgs);
+      const reencodedInner = optionalDeps.ethAbi.rawEncode(
+        TSS_HYPEEVM_BRIDGE_ARGS_TYPES,
+        decodedInner.map(toTssEncodable)
+      );
+      if (!reencodedInner.equals(innerArgs)) {
+        await mismatch('bridgeFunds inner bridge arguments are not canonical');
+      }
+    } catch (e) {
+      if (e instanceof TxIntentMismatchRecipientError) {
+        throw e;
+      }
+      await mismatch('bridgeFunds inner bridge arguments could not be decoded');
+      return;
+    }
+
+    const [rawDestination, rawTokenId, rawScaledAmount] = decodedInner;
+    const decodedDestination = addHexPrefix(rawDestination as string).toLowerCase();
+    const decodedTokenId = (rawTokenId as BN).toString(10);
+    const decodedScaledAmount = (rawScaledAmount as BN).toString(10);
+
+    if (decodedDestination !== expectedSystemAddress) {
+      await mismatch(
+        'bridgeFunds destination does not match the HyperEVM system address',
+        decodedDestination,
+        decodedScaledAmount
+      );
+    }
+    if (!tssValuesEqual(decodedTokenId, expectedTokenId.toString())) {
+      await mismatch('bridgeFunds tokenId does not match the HyperEVM chain configuration', decodedDestination);
+    }
+
+    // HyperCore amounts are 8-decimal uint64 units. A positive wei amount below one HyperCore unit
+    // truncates to 0 and would bridge less than the intent declared (or nothing at all), and a value
+    // above uint64 cannot be carried by the payload at all.
+    const expectedScaledAmount = BigInt(rawAmount.value.trim()) / HYPEEVM_BRIDGE_DECIMAL_DIVISOR;
+    if (expectedScaledAmount <= 0n) {
+      await mismatch(
+        `bridgeFunds declared amount must be at least one HyperCore unit (${HYPEEVM_BRIDGE_DECIMAL_DIVISOR} wei)`,
+        decodedDestination,
+        rawAmount.value
+      );
+    }
+    if (expectedScaledAmount > UINT64_MAX) {
+      await mismatch(
+        'bridgeFunds declared amount exceeds the HyperCore uint64 limit',
+        decodedDestination,
+        expectedScaledAmount.toString()
+      );
+    }
+    if (!tssValuesEqual(decodedScaledAmount, expectedScaledAmount.toString())) {
+      await mismatch(
+        'bridgeFunds scaled amount does not match the declared amount',
+        decodedDestination,
+        decodedScaledAmount
+      );
     }
   }
 
@@ -4146,12 +4784,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
         'no verifier is implemented for this intent type: the transaction was not compared against the intent'
       );
     }
-
     if (txParams.type && ['defiApprove', 'defiDeposit', 'defiWithdraw'].includes(txParams.type)) {
-      if (!txPrebuild.txHex) {
-        throw new Error('missing txHex in txPrebuild');
-      }
-
       const baseAddress = wallet.coinSpecific()?.baseAddress;
       const defiParams = txParams.defiParams;
       if (!baseAddress || !defiParams) {
@@ -4161,32 +4794,37 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
 
       const validatedBaseAddress = baseAddress as string;
       const validatedDefiParams = defiParams;
-      const txBuilder = this.getTransactionBuilder();
-      txBuilder.from(txPrebuild.txHex);
-      const txJson = (await txBuilder.build()).toJson();
-      const mismatch = async (message: string, address = txJson.to, amount = txJson.value): Promise<never> =>
+      const { to, value, data } = this.decodeRawTssTxFields(txPrebuild.txHex);
+      const mismatch = async (message: string, address = to, amount = value): Promise<never> =>
         throwRecipientMismatch(message, [{ address: address || '', amount: amount || '' }]);
-      const data = txJson.data || '';
+
+      // ERC-4626 DeFi approve, deposit, and withdraw never carry native ETH value
+      // (native ETH wrapping uses the dedicated `wrap-native` intent, not `defiDeposit`).
+      if (!tssValuesEqual(value, '0')) {
+        await mismatch(`${txParams.type} transaction must not carry native value`);
+      }
 
       if (txParams.type === 'defiApprove') {
-        const selector = addHexPrefix(optionalDeps.ethAbi.methodID('approve', ['address', 'uint256']).toString('hex'));
+        const selector = tssMethodId('approve', TSS_ERC20_APPROVE_TYPES);
         if (!data.startsWith(selector)) {
           await mismatch('defiApprove transaction must use ERC-20 approve(address,uint256) calldata');
         }
-        const [, amount] = getRawDecoded(['address', 'uint256'], getBufferedByteCode(selector, data));
+        if (!isCanonicalTssCalldata(data, TSS_ERC20_APPROVE_TYPES)) {
+          await mismatch('defiApprove approve calldata is not canonical');
+        }
+        const [, amount] = decodeTssCalldataArgs(data, TSS_ERC20_APPROVE_TYPES);
         if (amount.toString() !== validatedDefiParams.amount) {
-          await mismatch(
-            'defiApprove transaction amount does not match the requested amount',
-            txJson.to,
-            amount.toString()
-          );
+          await mismatch('defiApprove transaction amount does not match the requested amount', to, amount.toString());
         }
       } else if (txParams.type === 'defiDeposit') {
-        const selector = addHexPrefix(optionalDeps.ethAbi.methodID('deposit', ['uint256', 'address']).toString('hex'));
+        const selector = tssMethodId('deposit', TSS_DEFI_DEPOSIT_TYPES);
         if (!data.startsWith(selector)) {
           await mismatch('defiDeposit transaction must use deposit(uint256,address) calldata');
         }
-        const [amount, receiver] = getRawDecoded(['uint256', 'address'], getBufferedByteCode(selector, data));
+        if (!isCanonicalTssCalldata(data, TSS_DEFI_DEPOSIT_TYPES)) {
+          await mismatch('defiDeposit deposit calldata is not canonical');
+        }
+        const [amount, receiver] = decodeTssCalldataArgs(data, TSS_DEFI_DEPOSIT_TYPES);
         const decodedReceiver = addHexPrefix(receiver.toString()).toLowerCase();
         if (decodedReceiver !== validatedBaseAddress.toLowerCase()) {
           await mismatch(
@@ -4203,16 +4841,14 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
           );
         }
       } else {
-        const selector = addHexPrefix(
-          optionalDeps.ethAbi.methodID('redeem', ['uint256', 'address', 'address']).toString('hex')
-        );
+        const selector = tssMethodId('redeem', TSS_DEFI_REDEEM_TYPES);
         if (!data.startsWith(selector)) {
           await mismatch('defiWithdraw transaction must use redeem(uint256,address,address) calldata');
         }
-        const [shares, receiver, owner] = getRawDecoded(
-          ['uint256', 'address', 'address'],
-          getBufferedByteCode(selector, data)
-        );
+        if (!isCanonicalTssCalldata(data, TSS_DEFI_REDEEM_TYPES)) {
+          await mismatch('defiWithdraw redeem calldata is not canonical');
+        }
+        const [shares, receiver, owner] = decodeTssCalldataArgs(data, TSS_DEFI_REDEEM_TYPES);
         const decodedReceiver = addHexPrefix(receiver.toString()).toLowerCase();
         const decodedOwner = addHexPrefix(owner.toString()).toLowerCase();
         if (
@@ -4234,7 +4870,6 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
         }
       }
     }
-
     if (txParams.type === 'wrapApprove') {
       await this.verifyWrapApproveTransaction(params, throwRecipientMismatch);
     } else {
@@ -4246,6 +4881,12 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
 
     if (txParams.type === 'tokenApproval') {
       await this.verifyTssTokenApproval(txParams, txPrebuild.txHex, throwRecipientMismatch);
+    } else if (txType === 'fillNonce') {
+      await this.verifyTssFillNonce(txParams, wallet, txPrebuild.txHex, throwRecipientMismatch);
+    } else if (txType === 'transferToken' || txType === 'transfertoken') {
+      await this.verifyTssTransferToken(txParams, txPrebuild.txHex, throwRecipientMismatch);
+    } else if (txType === 'bridgeFunds') {
+      await this.verifyTssBridgeFunds(txParams, txPrebuild.txHex, throwRecipientMismatch);
     }
 
     // Verify consolidation transactions send to base address. The explicit flag is a caller
@@ -4317,6 +4958,13 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
         }
         // Sweep amounts are not compared: a consolidation moves whatever the address holds.
         const token = this.resolveTssToken(txParams.tokenName);
+        // A known conflict (declared token vs signing token / network, or an explicitly empty name)
+        // is a mismatch, never a warning: warn-and-continue would sweep an unverified contract.
+        if (token.mismatch) {
+          await throwRecipientMismatch(`Consolidation token declaration is invalid: ${token.reason}`, [
+            { address: txTo, amount: txValue },
+          ]);
+        }
         if (token.contract) {
           if (txTo !== token.contract) {
             await throwRecipientMismatch('Consolidation transaction does not call the declared token contract', [

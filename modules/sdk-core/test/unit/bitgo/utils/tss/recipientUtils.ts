@@ -248,6 +248,128 @@ describe('recipientUtils', function () {
       });
     });
 
+    describe('stored bridgeFunds amount propagation (CECHO-2690)', function () {
+      // Production stored-intent shape (45 rows): { intentType: 'bridgeFunds', amount: { symbol, value } }.
+      const storedBridgeIntent = {
+        intentType: 'bridgeFunds',
+        amount: { symbol: 'hypeevm', value: '21000000000000000' },
+      } as PopulatedIntent;
+
+      it('derives intentAmount from the intent when txParams is undefined (pendingApproval re-sign path)', function () {
+        const result = resolveEffectiveTxParams(makeTxRequest({ intent: storedBridgeIntent }), undefined, 'hypeevm');
+        assert.strictEqual(result.type, 'bridgeFunds');
+        assert.deepStrictEqual(result.intentAmount, { value: '21000000000000000', symbol: 'hypeevm' });
+        assert.strictEqual(result.recipients, undefined);
+      });
+
+      it('does not overwrite a caller-supplied intentAmount', function () {
+        const callerAmount = { value: '1', symbol: 'hypeevm' };
+        const result = resolveEffectiveTxParams(makeTxRequest({ intent: storedBridgeIntent }), {
+          intentAmount: callerAmount,
+        });
+        assert.deepStrictEqual(result.intentAmount, callerAmount);
+      });
+
+      it('does not attach the stored amount to a caller-declared payment', function () {
+        const result = resolveEffectiveTxParams(makeTxRequest({ intent: storedBridgeIntent }), {
+          type: 'transfer',
+          recipients: [{ address: '0xabc', amount: '1' }],
+        });
+        assert.strictEqual(result.intentAmount, undefined);
+      });
+
+      it('ignores a string amount and a non-bridgeFunds intent', function () {
+        const stringAmount = makeTxRequest({
+          intent: { intentType: 'bridgeFunds', amount: '21000000000000000' } as PopulatedIntent,
+        });
+        assert.strictEqual(resolveEffectiveTxParams(stringAmount, {}).intentAmount, undefined);
+
+        const otherIntent = makeTxRequest({
+          intent: {
+            intentType: 'payment',
+            amount: { value: '21000000000000000', symbol: 'hypeevm' },
+            recipients: [{ address: { address: '0xabc' }, amount: { value: '1', symbol: 'hypeevm' } }],
+          } as PopulatedIntent,
+        });
+        assert.strictEqual(resolveEffectiveTxParams(otherIntent, undefined).intentAmount, undefined);
+      });
+    });
+
+    describe('stored transferToken tokenData preservation (CECHO-2690)', function () {
+      // Production ETH/Arbitrum shape: amount.value is the '0' placeholder and tokenData carries the quantity.
+      const storedTokenIntent = {
+        intentType: 'transferToken',
+        recipients: [
+          {
+            address: { address: '0x7e85bdc27c050e3905ebf4b8e634d9ad6edd0de6' },
+            amount: { value: '0', symbol: 'usdt' },
+            tokenData: { tokenName: 'usdt', tokenQuantity: '1000000', tokenType: 'ERC20' },
+          },
+        ],
+      } as unknown as PopulatedIntent;
+
+      it('carries tokenData onto the reconstructed recipient', function () {
+        const result = resolveEffectiveTxParams(makeTxRequest({ intent: storedTokenIntent }), undefined, 'eth');
+        assert.strictEqual(result.type, 'transferToken');
+        assert.strictEqual(result.recipients?.[0].amount, '0');
+        assert.deepStrictEqual(result.recipients?.[0].tokenData, {
+          tokenName: 'usdt',
+          tokenQuantity: '1000000',
+          tokenType: 'ERC20',
+        });
+      });
+
+      it('does not invent tokenData when the stored intent has none', function () {
+        const txRequest = makeTxRequest({
+          intent: {
+            intentType: 'transferToken',
+            recipients: [{ address: { address: '0xabc' }, amount: { value: '1', symbol: 'eth' } }],
+          } as unknown as PopulatedIntent,
+        });
+        assert.strictEqual(resolveEffectiveTxParams(txRequest, {}).recipients?.[0].tokenData, undefined);
+      });
+
+      it('leaves caller-supplied recipients untouched', function () {
+        const callerRecipients = [{ address: '0xabc', amount: '5' }];
+        const result = resolveEffectiveTxParams(makeTxRequest({ intent: storedTokenIntent }), {
+          recipients: callerRecipients,
+        });
+        assert.strictEqual(result.recipients, callerRecipients);
+      });
+    });
+
+    describe('intent nonce propagation (CECHO-2690)', function () {
+      it('derives nonce from the intent when txParams is undefined', function () {
+        const txRequest = makeTxRequest({ intent: { intentType: 'fillNonce', nonce: '7' } as PopulatedIntent });
+        assert.strictEqual(resolveEffectiveTxParams(txRequest, undefined).nonce, '7');
+      });
+
+      it('does not overwrite a caller-supplied nonce', function () {
+        const txRequest = makeTxRequest({ intent: { intentType: 'fillNonce', nonce: '7' } as PopulatedIntent });
+        assert.strictEqual(resolveEffectiveTxParams(txRequest, { nonce: '9' }).nonce, '9');
+      });
+
+      it('preserves numeric stored nonce including 0', function () {
+        const zeroNonceReq = makeTxRequest({ intent: { intentType: 'fillNonce', nonce: 0 } as PopulatedIntent });
+        assert.strictEqual(resolveEffectiveTxParams(zeroNonceReq, undefined).nonce, '0');
+
+        const nonZeroNonceReq = makeTxRequest({ intent: { intentType: 'fillNonce', nonce: 42 } as PopulatedIntent });
+        assert.strictEqual(resolveEffectiveTxParams(nonZeroNonceReq, undefined).nonce, '42');
+      });
+
+      it('does not overwrite caller-supplied numeric nonce 0', function () {
+        const txRequest = makeTxRequest({ intent: { intentType: 'fillNonce', nonce: '7' } as PopulatedIntent });
+        assert.strictEqual(resolveEffectiveTxParams(txRequest, { nonce: 0 }).nonce, 0);
+      });
+
+      it('ignores negative, non-integer, or non-finite numeric stored nonces', function () {
+        for (const badNonce of [-1, 1.5, NaN, Infinity]) {
+          const txRequest = makeTxRequest({ intent: { intentType: 'fillNonce', nonce: badNonce } as PopulatedIntent });
+          assert.strictEqual(resolveEffectiveTxParams(txRequest, undefined).nonce, undefined);
+        }
+      });
+    });
+
     describe('tx-level memo propagation', function () {
       it('derives memo from the intent when txParams is undefined (pendingApproval re-sign path)', function () {
         const txRequest = makeTxRequest({
