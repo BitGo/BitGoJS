@@ -998,7 +998,7 @@ export const solTokens = [
     9,
     'MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey',
     'MNDEFzGvMt87ueuHvVU9VcTqsAP5b3fTGPsHuuPA5ey',
-    UnderlyingAsset.MNDE,
+    UnderlyingAsset['sol:mnde'],
     SOL_TOKEN_FEATURES
   ),
   solToken(
@@ -1892,7 +1892,7 @@ export const solTokens = [
     9,
     'jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL',
     'jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL',
-    UnderlyingAsset['jto'],
+    UnderlyingAsset['sol:jto'],
     SOL_TOKEN_FEATURES_EXCLUDE_EUROPE
   ),
   solToken(
@@ -1902,7 +1902,7 @@ export const solTokens = [
     6,
     'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN',
     'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN',
-    UnderlyingAsset['jup'],
+    UnderlyingAsset['sol:jup'],
     [...SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.BULK_TRANSACTION]
   ),
   solToken(
@@ -1922,7 +1922,7 @@ export const solTokens = [
     6,
     'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',
     'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',
-    UnderlyingAsset['wif'],
+    UnderlyingAsset['sol:wif'],
     SOL_TOKEN_FEATURES_WITH_FRANKFURT
   ),
   solToken(
@@ -1932,7 +1932,7 @@ export const solTokens = [
     6,
     'FRySi8LPkuByB7VPSCCggxpewFUeeJiwEGRKKuhwpKcX',
     'FRySi8LPkuByB7VPSCCggxpewFUeeJiwEGRKKuhwpKcX',
-    UnderlyingAsset['natix'],
+    UnderlyingAsset['sol:natix'],
     SOL_TOKEN_FEATURES
   ),
   solToken(
@@ -2012,7 +2012,7 @@ export const solTokens = [
     6,
     'mb1eu7TzEc71KxDpsmsKoucSSuuoGLv1drys1oP2jh6',
     'mb1eu7TzEc71KxDpsmsKoucSSuuoGLv1drys1oP2jh6',
-    UnderlyingAsset['mobile'],
+    UnderlyingAsset['sol:mobile'],
     SOL_TOKEN_FEATURES
   ),
   solToken(
