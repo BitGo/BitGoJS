@@ -1385,14 +1385,18 @@ class Stx extends Mainnet implements StacksNetwork {
   // unstake, update-bond-registration, ...), not only `register-for-bond` — the register-only
   // restriction lives in wallet-platform, not here. Intentionally allowed for this test deployment.
   //
-  // `expiresAt` is a full timestamp: `'2026-11-02'` parses as 00:00Z, so the allowance ends at the
-  // START of Nov 2, not after it.
+  // `expiresAt` is a full timestamp: `'2026-12-01'` parses as 00:00Z, so the allowance ends at the
+  // START of Dec 1 2026, not after it — i.e. it stays usable through Nov 30 (month end, inclusive).
+  //
+  // Extended from `'2026-11-02'` (SI-2644): the mainnet PoX-5 dummy-contract test is still in
+  // progress and needs a live allowance for `register-for-bond` builds and vault re-parses. Now
+  // time-boxed to the end of Nov 2026 — do not make this permanent.
   //
   // @obligation remove this entry (and its tests) together with the test contract — see the removal
   //   ticket on SI-2089. The deployer `SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY` is the Stacks
   //   Foundation's test deployment.
   allowedStakingContracts = [
-    { name: 'pox-5', address: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY', expiresAt: '2026-11-02' },
+    { name: 'pox-5', address: 'SP3JVSE4ZB5GMDJP5XBPX7ZB1BG3QDFW7RCEQJDMY', expiresAt: '2026-12-01' },
   ];
 }
 
