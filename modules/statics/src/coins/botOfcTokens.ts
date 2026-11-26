@@ -6957,4 +6957,18 @@ export const botOfcTokens = [
     undefined,
     'okbxlayer'
   ),
+  AccountCtors.ofcerc20(
+    'c64c0c16-2b05-44d3-b8c1-39c9ebb74db3',
+    'ofceth:antx',
+    'Anthropic xStock',
+    18,
+    'eth:antx' as unknown as UnderlyingAsset,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'eth'
+  ),
 ];

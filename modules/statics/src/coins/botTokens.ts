@@ -17313,4 +17313,22 @@ export const botTokens = [
       'custody-bitgo-korea' as CoinFeature,
     ])
   ),
+  AccountCtors.erc20(
+    'f50a2f90-5820-4a3f-936a-a7d7f37ecc3f',
+    'eth:antx',
+    'Anthropic xStock',
+    18,
+    '0x909369940f22dc1c143ac78753a33f41597138b1',
+    'eth:antx' as unknown as UnderlyingAsset,
+    getTokenFeatures('eth', [
+      'custody-bitgo-new-york' as CoinFeature,
+      'custody-bitgo-germany' as CoinFeature,
+      'custody-bitgo-switzerland' as CoinFeature,
+      'custody-bitgo-sister-trust-one' as CoinFeature,
+      'custody-bitgo-korea' as CoinFeature,
+    ]),
+    undefined,
+    undefined,
+    undefined
+  ),
 ];
