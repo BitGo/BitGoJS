@@ -1,5 +1,6 @@
 import * as _ from 'lodash';
-import { tokens } from '@bitgo/statics';
+import { coins, tokens } from '@bitgo/statics';
+import { safeSlotsForCoin } from '@bitgo/sdk-lib-safes';
 import { EnvironmentName, Environments } from './environments';
 
 export type KrsProvider = {
@@ -8,6 +9,30 @@ export type KrsProvider = {
   supportedCoins: string[];
   feeAddresses?: Record<string, string>;
 };
+
+/**
+ * Coin families with a non-token coin whose safe slots include secp256k1Multisig or
+ * ed25519Multisig.
+ */
+function safeMultisigCoinFamilies(): string[] {
+  const families = new Set<string>();
+  coins.forEach((coin) => {
+    if (coin.isToken) {
+      return;
+    }
+    let slots: string[];
+    try {
+      slots = safeSlotsForCoin(coin.name);
+    } catch {
+      // Coins that safeSlotsForCoin cannot place cannot be minted in a safe; skip them so module load never throws.
+      return;
+    }
+    if (slots.some((slot) => slot === 'secp256k1Multisig' || slot === 'ed25519Multisig')) {
+      families.add(coin.family);
+    }
+  });
+  return [...families].sort();
+}
 
 // KRS providers and their fee structures
 export const krsProviders: Record<string, KrsProvider> = {
@@ -25,6 +50,12 @@ export const krsProviders: Record<string, KrsProvider> = {
     feeType: 'flatUsd',
     feeAmount: 0, // dai will receive payments off-chain
     supportedCoins: ['btc', 'eth', 'xlm', 'xrp', 'dash', 'zec', 'ltc', 'bch', 'bsv', 'bcha'],
+  },
+  // CoinCover as the external backup-root provider for Wallet Safes.
+  coincover: {
+    feeType: 'flatUsd',
+    feeAmount: 0,
+    supportedCoins: safeMultisigCoinFamilies(),
   },
 };
 
