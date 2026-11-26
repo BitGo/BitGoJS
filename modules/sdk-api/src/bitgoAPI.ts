@@ -44,6 +44,7 @@ import {
   verifyResponseAsync,
 } from './api';
 import { decrypt, encrypt } from './encrypt';
+import { argon2Queue } from './argon2Limiter';
 import { createEncryptionSession } from './encryptionSession';
 import { verifyAddress } from './v1/verifyAddress';
 import {
@@ -308,6 +309,13 @@ export class BitGoAPI implements BitGoBase {
       throw new Error('invalid argument');
     }
 
+    if (
+      params.argon2Concurrency !== undefined &&
+      !(Number.isSafeInteger(params.argon2Concurrency) && params.argon2Concurrency > 0)
+    ) {
+      throw new Error('argon2Concurrency must be a positive safe integer');
+    }
+
     // By default, we operate on the test server.
     // Deprecate useProduction in the future
     let env: EnvironmentName;
@@ -468,6 +476,9 @@ export class BitGoAPI implements BitGoBase {
     this._customProxyAgent = params.customProxyAgent;
     this._tlsPolicy = params.tlsPolicy;
     this._hmacAuthStrategy = params.hmacAuthStrategy ?? new DefaultHmacAuthStrategy();
+    if (params.argon2Concurrency !== undefined) {
+      argon2Queue.setConcurrency(params.argon2Concurrency);
+    }
 
     // Only fetch constants from constructor if clientConstants was not provided
     if (!clientConstants) {

@@ -54,6 +54,8 @@ export interface Config {
   lightningSignerFileSystemPath?: string;
   keepAliveTimeout?: number;
   headersTimeout?: number;
+  /** Max concurrent Argon2id hashes in the SDK queue. Defaults to the SDK default (16) when unset. */
+  argon2Concurrency?: number;
 }
 
 export const ArgConfig = (args): Partial<Config> => ({
@@ -82,35 +84,50 @@ export const ArgConfig = (args): Partial<Config> => ({
   lightningSignerFileSystemPath: args.lightningSignerFileSystemPath,
   keepAliveTimeout: args.keepalivetimeout,
   headersTimeout: args.headerstimeout,
+  argon2Concurrency: args.argon2concurrency,
 });
 
-export const EnvConfig = (): Partial<Config> => ({
-  port: Number(readEnvVar('BITGO_PORT')),
-  bind: readEnvVar('BITGO_BIND'),
-  ipc: readEnvVar('BITGO_IPC'),
-  env: readEnvVar('BITGO_ENV') as EnvironmentName,
-  debugNamespace: (readEnvVar('BITGO_DEBUG_NAMESPACE') || '').split(','),
-  keyPath: readEnvVar('BITGO_KEYPATH'),
-  crtPath: readEnvVar('BITGO_CRTPATH'),
-  sslKey: readEnvVar('BITGO_SSL_KEY'),
-  sslCert: readEnvVar('BITGO_SSL_CERT'),
-  logFile: readEnvVar('BITGO_LOGFILE'),
-  disableSSL: readEnvVar('BITGO_DISABLE_SSL', 'BITGO_DISABLESSL', 'DISABLESSL', 'DISABLE_SSL') ? true : undefined,
-  disableProxy: readEnvVar('BITGO_DISABLE_PROXY', 'DISABLE_PROXY') ? true : undefined,
-  disableEnvCheck: readEnvVar('BITGO_DISABLE_ENV_CHECK', 'DISABLE_ENV_CHECK') ? true : undefined,
-  disablePinCerts: readBooleanEnvVar('BITGO_DISABLE_PIN_CERTS'),
-  timeout: Number(readEnvVar('BITGO_TIMEOUT')),
-  customRootUri: readEnvVar('BITGO_CUSTOM_ROOT_URI'),
-  customBitcoinNetwork: readEnvVar('BITGO_CUSTOM_BITCOIN_NETWORK') as V1Network,
-  authVersion: Number(readEnvVar('BITGO_AUTH_VERSION')),
-  externalSignerUrl: readEnvVar('BITGO_EXTERNAL_SIGNER_URL'),
-  signerMode: readEnvVar('BITGO_SIGNER_MODE') ? true : undefined,
-  signerFileSystemPath: readEnvVar('BITGO_SIGNER_FILE_SYSTEM_PATH'),
-  signerRegistryFilePath: readEnvVar('BITGO_SIGNER_REGISTRY_FILE_PATH'),
-  lightningSignerFileSystemPath: readEnvVar('BITGO_LIGHTNING_SIGNER_FILE_SYSTEM_PATH'),
-  keepAliveTimeout: Number(readEnvVar('BITGO_KEEP_ALIVE_TIMEOUT')),
-  headersTimeout: Number(readEnvVar('BITGO_HEADERS_TIMEOUT')),
-});
+export const EnvConfig = (): Partial<Config> => {
+  const argon2ConcurrencyEnv = readEnvVar('BITGO_ARGON2_CONCURRENCY');
+  let argon2Concurrency: number | undefined;
+  if (argon2ConcurrencyEnv !== undefined) {
+    const trimmed = argon2ConcurrencyEnv.trim();
+    const parsed = Number(trimmed);
+    if (!/^\d+$/.test(trimmed) || !Number.isSafeInteger(parsed) || parsed <= 0) {
+      throw new Error('BITGO_ARGON2_CONCURRENCY must be a positive safe integer');
+    }
+    argon2Concurrency = parsed;
+  }
+
+  return {
+    port: Number(readEnvVar('BITGO_PORT')),
+    bind: readEnvVar('BITGO_BIND'),
+    ipc: readEnvVar('BITGO_IPC'),
+    env: readEnvVar('BITGO_ENV') as EnvironmentName,
+    debugNamespace: (readEnvVar('BITGO_DEBUG_NAMESPACE') || '').split(','),
+    keyPath: readEnvVar('BITGO_KEYPATH'),
+    crtPath: readEnvVar('BITGO_CRTPATH'),
+    sslKey: readEnvVar('BITGO_SSL_KEY'),
+    sslCert: readEnvVar('BITGO_SSL_CERT'),
+    logFile: readEnvVar('BITGO_LOGFILE'),
+    disableSSL: readEnvVar('BITGO_DISABLE_SSL', 'BITGO_DISABLESSL', 'DISABLESSL', 'DISABLE_SSL') ? true : undefined,
+    disableProxy: readEnvVar('BITGO_DISABLE_PROXY', 'DISABLE_PROXY') ? true : undefined,
+    disableEnvCheck: readEnvVar('BITGO_DISABLE_ENV_CHECK', 'DISABLE_ENV_CHECK') ? true : undefined,
+    disablePinCerts: readBooleanEnvVar('BITGO_DISABLE_PIN_CERTS'),
+    timeout: Number(readEnvVar('BITGO_TIMEOUT')),
+    customRootUri: readEnvVar('BITGO_CUSTOM_ROOT_URI'),
+    customBitcoinNetwork: readEnvVar('BITGO_CUSTOM_BITCOIN_NETWORK') as V1Network,
+    authVersion: Number(readEnvVar('BITGO_AUTH_VERSION')),
+    externalSignerUrl: readEnvVar('BITGO_EXTERNAL_SIGNER_URL'),
+    signerMode: readEnvVar('BITGO_SIGNER_MODE') ? true : undefined,
+    signerFileSystemPath: readEnvVar('BITGO_SIGNER_FILE_SYSTEM_PATH'),
+    signerRegistryFilePath: readEnvVar('BITGO_SIGNER_REGISTRY_FILE_PATH'),
+    lightningSignerFileSystemPath: readEnvVar('BITGO_LIGHTNING_SIGNER_FILE_SYSTEM_PATH'),
+    keepAliveTimeout: Number(readEnvVar('BITGO_KEEP_ALIVE_TIMEOUT')),
+    headersTimeout: Number(readEnvVar('BITGO_HEADERS_TIMEOUT')),
+    argon2Concurrency,
+  };
+};
 
 export const DefaultConfig: Config = {
   port: 3080,
@@ -199,6 +216,7 @@ function mergeConfigs(...configs: Partial<Config>[]): Config {
     lightningSignerFileSystemPath: get('lightningSignerFileSystemPath'),
     keepAliveTimeout: get('keepAliveTimeout'),
     headersTimeout: get('headersTimeout'),
+    ...(get('argon2Concurrency') !== undefined ? { argon2Concurrency: get('argon2Concurrency') } : {}),
   };
 }
 

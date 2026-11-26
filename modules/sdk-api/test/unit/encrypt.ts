@@ -1,7 +1,10 @@
+import argon2 = require('@bitgo/argon2');
 import assert from 'assert';
 import { randomBytes, webcrypto } from 'crypto';
+import * as sinon from 'sinon';
 
 import { decrypt, decryptV2, encrypt, encryptV2, V2Envelope, createEncryptionSession } from '../../src';
+import { argon2Queue } from '../../src/argon2Limiter';
 import { BitGoAPI } from '../../src/bitgoAPI';
 
 const subtle = globalThis.crypto?.subtle ?? webcrypto.subtle;
@@ -637,6 +640,84 @@ describe('encryption methods tests', () => {
       assert.strictEqual(result, plaintext);
       session.destroy();
       await assert.rejects(() => session.encrypt(plaintext), /destroyed/);
+    });
+  });
+
+  describe('argon2Concurrency', () => {
+    const password = 'argon-pw';
+    const plaintext = 'argon-plaintext';
+    let started: number;
+    let releases: Array<() => void>;
+
+    /** Each stubbed hash waits for its own release, so the test controls when slots free. */
+    function holdHashes(): void {
+      started = 0;
+      releases = [];
+      sinon.stub(argon2, 'argon2id').callsFake((async () => {
+        started++;
+        await new Promise<void>((resolve) => releases.push(resolve));
+        return new Uint8Array(32);
+      }) as never);
+    }
+
+    async function flush(): Promise<void> {
+      await new Promise((resolve) => setImmediate(resolve));
+    }
+
+    /** Release every hash that has started so far. */
+    function releaseAll(): void {
+      const pending = releases;
+      releases = [];
+      pending.forEach((release) => release());
+    }
+
+    afterEach(() => {
+      sinon.restore();
+      argon2Queue.setConcurrency(16);
+    });
+
+    it('caps concurrent hashes at 16 by default across encrypt calls', async () => {
+      holdHashes();
+      const runs = Array.from({ length: 20 }, () => encryptV2(password, plaintext));
+      await flush();
+      assert.strictEqual(started, 16);
+
+      releaseAll();
+      await flush();
+      assert.strictEqual(started, 20);
+      releaseAll();
+      await Promise.all(runs);
+    });
+
+    it('uses the most recent argon2Concurrency and rejects invalid values', async () => {
+      new BitGoAPI({ env: 'test', argon2Concurrency: 2 });
+      assert.throws(() => new BitGoAPI({ env: 'test', argon2Concurrency: 0 }), {
+        message: 'argon2Concurrency must be a positive safe integer',
+      });
+      // The invalid construction above must not have changed the cap set by the line before it.
+      holdHashes();
+      const runs = Array.from({ length: 5 }, () => encryptV2(password, plaintext));
+      await flush();
+      assert.strictEqual(started, 2);
+
+      releaseAll();
+      await flush();
+      releaseAll();
+      await flush();
+      releaseAll();
+      await Promise.all(runs);
+    });
+
+    it('rejects the active hash and still runs the next queued hash at cap 1', async () => {
+      argon2Queue.setConcurrency(1);
+      const stub = sinon.stub(argon2, 'argon2id');
+      stub.onFirstCall().rejects(new Error('kdf failed'));
+      stub.onSecondCall().resolves(new Uint8Array(32) as never);
+
+      const first = encryptV2(password, plaintext);
+      const second = encryptV2(password, plaintext);
+      await assert.rejects(first, /kdf failed/);
+      assert.strictEqual(JSON.parse(await second).v, 2);
     });
   });
 });

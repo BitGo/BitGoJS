@@ -2,6 +2,7 @@
 /// <reference types="mocha" />
 // eslint-disable-next-line
 /// <reference types="node" />
+import assert from 'assert';
 import * as should from 'should';
 import * as sinon from 'sinon';
 
@@ -307,6 +308,54 @@ describe('Config:', () => {
     try {
       const parsed = args.args();
       parsed.disablepincerts.should.equal(true);
+    } finally {
+      argvStub.restore();
+    }
+  });
+
+  it('should parse BITGO_ARGON2_CONCURRENCY and let the CLI flag take precedence', () => {
+    const envStub = sinon.stub(process, 'env').value({ BITGO_ARGON2_CONCURRENCY: '4' });
+    try {
+      const { config: envConfig } = proxyquire('../../src/config', { './args': { args: () => ({}) } });
+      assert.strictEqual(envConfig().argon2Concurrency, 4);
+
+      const { config: cliConfig } = proxyquire('../../src/config', {
+        './args': { args: () => ({ argon2concurrency: 2 }) },
+      });
+      assert.strictEqual(cliConfig().argon2Concurrency, 2);
+    } finally {
+      envStub.restore();
+    }
+  });
+
+  it('should leave argon2Concurrency unset when BITGO_ARGON2_CONCURRENCY is missing or empty', () => {
+    for (const env of [{}, { BITGO_ARGON2_CONCURRENCY: '' }]) {
+      const envStub = sinon.stub(process, 'env').value(env);
+      try {
+        const { config: proxyConfig } = proxyquire('../../src/config', { './args': { args: () => ({}) } });
+        assert.strictEqual(proxyConfig().argon2Concurrency, undefined);
+      } finally {
+        envStub.restore();
+      }
+    }
+  });
+
+  it('should reject malformed BITGO_ARGON2_CONCURRENCY values instead of dropping them', () => {
+    for (const raw of ['abc', '0', '-1', '1.5', '   ', '9007199254740992']) {
+      const envStub = sinon.stub(process, 'env').value({ BITGO_ARGON2_CONCURRENCY: raw });
+      try {
+        const { config: proxyConfig } = proxyquire('../../src/config', { './args': { args: () => ({}) } });
+        assert.throws(() => proxyConfig(), /BITGO_ARGON2_CONCURRENCY must be a positive safe integer/);
+      } finally {
+        envStub.restore();
+      }
+    }
+  });
+
+  it('should parse --argon2concurrency from argv', () => {
+    const argvStub = sinon.stub(process, 'argv').value([process.argv[0], process.argv[1], '--argon2concurrency', '2']);
+    try {
+      assert.strictEqual(args.args().argon2concurrency, 2);
     } finally {
       argvStub.restore();
     }

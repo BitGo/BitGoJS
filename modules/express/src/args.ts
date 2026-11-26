@@ -127,4 +127,9 @@ parser.addArgument(['--keepalivetimeout'], {
 parser.addArgument(['--headerstimeout'], {
   help: 'headers timeout in milliseconds',
 });
+
+parser.addArgument(['--argon2concurrency'], {
+  type: 'int',
+  help: 'Max concurrent Argon2id hashes (default 16).',
+});
 export const args = () => parser.parseArgs();
