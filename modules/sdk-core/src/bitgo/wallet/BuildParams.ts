@@ -185,6 +185,9 @@ export const BuildParams = t.exact(
       wrapParams: t.unknown,
       // ERC-7984 unwrap (unshield): { tokenName, amount } passthrough to WP
       unwrapParams: t.unknown,
+      // Top-level { value, symbol } amount for recipient-less intents (e.g. bridgeFunds). Without this
+      // key the exact BuildParams codec rejects the intent's declared amount before signing.
+      intentAmount: t.unknown,
       // WebAuthn attestation for the withdrawal intent — pass-through only.
       attestation: AttestationPayload,
     }),

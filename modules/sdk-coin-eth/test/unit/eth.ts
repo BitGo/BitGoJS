@@ -890,12 +890,17 @@ describe('ETH:', function () {
         walletPassphrase: 'fakeWalletPassphrase',
       };
 
+      const txBuilder = getBuilder('hteth') as TransactionBuilder;
+      txBuilder.type(TransactionType.SingleSigSend);
+      txBuilder.fee({ fee: '10', gasLimit: '21000' });
+      txBuilder.counter(1);
+      txBuilder.contract(baseAddress);
+      txBuilder.value('1');
       const txPrebuild = {
-        txHex: '0x',
+        txHex: (await txBuilder.build()).toBroadcastFormat(),
         coin: 'hteth',
         walletId: 'fakeWalletId',
       };
-
       const verification = {};
 
       const isTransactionVerified = await coin.verifyTransaction({
@@ -1719,8 +1724,9 @@ describe('ETH:', function () {
       });
 
       it('should not affect approvals of the underlying to other spenders', async function () {
-        // tokenApproval and customTx have their own verifiers; an intent type with no verifier still passes untouched.
-        (await verifyAs('transferToken', defiCalldata('approve(address,uint256)', [address2, amount]))).should.equal(
+        // tokenApproval, customTx, transferToken, and fillNonce have their own verifiers; an intent type
+        // with no verifier (acceleration) still passes untouched.
+        (await verifyAs('acceleration', defiCalldata('approve(address,uint256)', [address2, amount]))).should.equal(
           true
         );
       });
@@ -1737,7 +1743,7 @@ describe('ETH:', function () {
           );
           try {
             await coin.verifyTransaction({
-              txParams: { type: 'transferToken', wallet } as never,
+              txParams: { type: 'acceleration', wallet } as never,
               txPrebuild: { txHex, coin: 'hteth', walletId: 'w' } as any,
               wallet,
               verification: {},
@@ -1757,12 +1763,10 @@ describe('ETH:', function () {
         // Every type below skips the wrapApprove check and reaches the guard; none of these txs is an approve of a
         // wrapper, so all must verify exactly as they did before the guard existed.
         const benign: Array<[string, string, string]> = [
-          // tokenApproval and customTx are verified by their own handlers and are not part of this list.
-          ['transferToken', defiCalldata('transfer(address,uint256)', [address2, amount]), underlying],
-          ['transferToken', defiCalldata('approve(address,uint256)', [address2, amount]), underlying],
-          ['transferToken', defiCalldata('approve(address,uint256)', [wrapper, amount]), address2],
+          // tokenApproval, customTx, transferToken, and fillNonce are verified by their own handlers and are not part of this list.
           ['acceleration', defiCalldata('transfer(address,uint256)', [address2, amount]), address2],
-          ['fillNonce', '0x', address2],
+          ['acceleration', defiCalldata('approve(address,uint256)', [address2, amount]), underlying],
+          ['acceleration', defiCalldata('approve(address,uint256)', [wrapper, amount]), address2],
           ['enabletoken', defiCalldata('transfer(address,uint256)', [address2, amount]), address2],
         ];
         for (const [type, data, to] of benign) {
@@ -1771,14 +1775,13 @@ describe('ETH:', function () {
       });
 
       it('should not affect transfers to the underlying or approves of the wrapper on other contracts', async function () {
-        (await verifyAs('transferToken', defiCalldata('transfer(address,uint256)', [wrapper, amount]))).should.equal(
+        (await verifyAs('acceleration', defiCalldata('transfer(address,uint256)', [wrapper, amount]))).should.equal(
           true
         );
         (
-          await verifyAs('transferToken', defiCalldata('approve(address,uint256)', [wrapper, amount]), address2)
+          await verifyAs('acceleration', defiCalldata('approve(address,uint256)', [wrapper, amount]), address2)
         ).should.equal(true);
       });
-
       it('should still verify a declared wrapApprove through the full check', async function () {
         const coin = bitgo.coin('hteth') as Hteth;
         const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: address1 } });

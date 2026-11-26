@@ -490,7 +490,7 @@ export interface PopulatedIntent extends PopulatedIntentBase, DefiIntentFields {
   recipients?: IntentRecipient[];
   /** Canton split (fanout): number of equal-value holdings the unspents are split into. */
   numberOfSplits?: number;
-  nonce?: string;
+  nonce?: string | number;
   token?: string;
   enableTokens?: TokenEnablement[];
   /**

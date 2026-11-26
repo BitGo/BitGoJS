@@ -254,4 +254,14 @@ describe('Tempo Recovery', function () {
       buildStub.calledOnce.should.equal(true);
     });
   });
+
+  describe('verifyTransaction — unsupported intents', function () {
+    it('rejects a bridgeFunds intent instead of accepting it unverified', async function () {
+      // bridgeFunds is HyperEVM-only and Tempo overrides verifyTransaction, so it never reaches the
+      // abstract TSS intent dispatch: the intent must be rejected explicitly, with or without txHex.
+      await basecoin
+        .verifyTransaction({ txParams: { type: 'bridgeFunds' }, txPrebuild: {} } as never)
+        .should.be.rejectedWith(/bridgeFunds is not supported on Tempo/);
+    });
+  });
 });

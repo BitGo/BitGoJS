@@ -156,6 +156,9 @@ export function resolveEffectiveTxParams(
       address: getIntentRecipientAddress(intentRecipient.address),
       amount: intentRecipient.amount.value,
       data: intentRecipient.data,
+      // Carry the structured token data (authoritative tokenQuantity / tokenType / contract) so the
+      // coin verifier can bind the declared ERC-20 quantity and contract to the signed bytes.
+      ...(intentRecipient.tokenData && { tokenData: intentRecipient.tokenData }),
       ...(tokenName && { tokenName }),
     };
   });
@@ -205,6 +208,60 @@ export function resolveEffectiveTxParams(
     typeof intent.amount === 'string'
   ) {
     effectiveTxParams.wrapParams = { tokenName: intent.tokenName, amount: intent.amount };
+  }
+
+  // Propagate the persisted top-level amount for `bridgeFunds` only: those intents carry no recipients,
+  // and pendingApproval re-signing (MPCv1/MPCv2) passes no caller txParams, so the verifier would
+  // otherwise have nothing to compare the bridge payload's scaled amount against.
+  if (
+    !effectiveTxParams.intentAmount &&
+    effectiveTxParams.type === 'bridgeFunds' &&
+    intent?.intentType === 'bridgeFunds' &&
+    typeof intent.amount === 'object' &&
+    intent.amount !== null &&
+    typeof intent.amount.value === 'string' &&
+    typeof intent.amount.symbol === 'string'
+  ) {
+    effectiveTxParams.intentAmount = { value: intent.amount.value, symbol: intent.amount.symbol };
+  }
+
+  // Propagate the persisted intent nonce for `fillNonce` only: it is the one intent whose verifier
+  // requires an exact nonce, and pendingApproval re-signing (MPCv1/MPCv2) passes no caller txParams.
+  // Gated on the resolved type like the `bridgeFunds` and `tokenApproval` propagations above, so no
+  // other verifier can silently inherit a stored nonce.
+  // Wallet Platform can persist numeric `0`, so handle finite non-negative integer numbers as well
+  // as non-empty strings without truthiness checks.
+  if (
+    effectiveTxParams.nonce === undefined &&
+    effectiveTxParams.type === 'fillNonce' &&
+    intent?.intentType === 'fillNonce' &&
+    intent.nonce !== undefined &&
+    intent.nonce !== null
+  ) {
+    if (typeof intent.nonce === 'string' && intent.nonce !== '') {
+      effectiveTxParams.nonce = intent.nonce;
+    } else if (
+      typeof intent.nonce === 'number' &&
+      Number.isFinite(intent.nonce) &&
+      Number.isInteger(intent.nonce) &&
+      intent.nonce >= 0
+    ) {
+      effectiveTxParams.nonce = String(intent.nonce);
+    }
+  }
+
+  // Propagate the persisted intent receiveAddress for `fillNonce` only: Wallet Platform sends the
+  // 1 wei self-send to that address, and pendingApproval re-signing (MPCv1/MPCv2) passes no caller
+  // txParams. Gated on the resolved type like the nonce above, so no other verifier can inherit a
+  // stored receive address. An empty persisted value is not a declaration and is never propagated.
+  if (
+    !effectiveTxParams.receiveAddress &&
+    effectiveTxParams.type === 'fillNonce' &&
+    intent?.intentType === 'fillNonce' &&
+    typeof intent.receiveAddress === 'string' &&
+    intent.receiveAddress.trim() !== ''
+  ) {
+    effectiveTxParams.receiveAddress = intent.receiveAddress;
   }
 
   // Propagate the persisted top-level tokenName for `tokenApproval` only: those intents store tokenName

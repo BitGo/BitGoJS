@@ -86,6 +86,8 @@ export interface ITransactionRecipient {
   programId?: string;
   memo?: string;
   data?: string;
+  /** Structured token data Wallet Platform persists on stored intents (authoritative ERC-20/NFT quantity and contract). */
+  tokenData?: TokenTransferRecipientParams;
 }
 
 /**
@@ -296,6 +298,15 @@ export interface TransactionParams {
   numberOfSplits?: number;
   /** Top-level token name for token-scoped intents (e.g. `tokenApproval`, `consolidate`). */
   tokenName?: string;
+  /** Top-level amount for recipient-less intents that persist `intent.amount` (e.g. `bridgeFunds`). */
+  intentAmount?: { value: string; symbol: string };
+  /** Nonce the caller — or the persisted intent — requires the signed transaction to carry. */
+  nonce?: string | number;
+  /**
+   * Receive address the caller — or the persisted intent — declared for a recipient-less intent that
+   * still sends to a wallet address (e.g. the `fillNonce` self-send). The signed `to` must match it.
+   */
+  receiveAddress?: string;
 }
 
 export interface AddressVerificationData {
