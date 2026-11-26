@@ -250,6 +250,20 @@ export function resolveEffectiveTxParams(
     }
   }
 
+  // Propagate the persisted intent receiveAddress for `fillNonce` only: Wallet Platform sends the
+  // 1 wei self-send to that address, and pendingApproval re-signing (MPCv1/MPCv2) passes no caller
+  // txParams. Gated on the resolved type like the nonce above, so no other verifier can inherit a
+  // stored receive address. An empty persisted value is not a declaration and is never propagated.
+  if (
+    !effectiveTxParams.receiveAddress &&
+    effectiveTxParams.type === 'fillNonce' &&
+    intent?.intentType === 'fillNonce' &&
+    typeof intent.receiveAddress === 'string' &&
+    intent.receiveAddress.trim() !== ''
+  ) {
+    effectiveTxParams.receiveAddress = intent.receiveAddress;
+  }
+
   // Propagate the persisted top-level tokenName for `tokenApproval` only: those intents store tokenName
   // at the intent root with no recipients, and pendingApproval/stored-intent signing carries no caller
   // txParams. Any other type must not inherit it, or a caller's native payment would be verified as a

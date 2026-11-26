@@ -302,6 +302,11 @@ export interface TransactionParams {
   intentAmount?: { value: string; symbol: string };
   /** Nonce the caller — or the persisted intent — requires the signed transaction to carry. */
   nonce?: string | number;
+  /**
+   * Receive address the caller — or the persisted intent — declared for a recipient-less intent that
+   * still sends to a wallet address (e.g. the `fillNonce` self-send). The signed `to` must match it.
+   */
+  receiveAddress?: string;
 }
 
 export interface AddressVerificationData {

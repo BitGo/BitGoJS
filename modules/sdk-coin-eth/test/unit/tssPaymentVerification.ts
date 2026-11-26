@@ -1178,13 +1178,18 @@ describe('TSS payment verification', function () {
       (await verify({ type: 'fillNonce' }, txHex)).should.be.true();
     });
 
-    it('ignores a caller-declared receiveAddress and still requires the wallet base address', async function () {
-      // Every production fillNonce row is a self-send (senderAddressIndex 0 to baseAddress); a
-      // caller-supplied address must never redirect the filler.
-      const txHex = await buildTx({ to: recipient, value: '1' });
+    it('binds a caller-declared receiveAddress as the fillNonce destination', async function () {
+      // Wallet Platform builds the self-send to the declared receive address (wallet.ts forwards
+      // params.receiveAddress into the fillNonce intent), so the declaration is the authorised
+      // destination; a redirect away from it must fail closed.
+      const matchingTx = await buildTx({ to: recipient, value: '1' });
+      (await verify({ type: 'fillNonce', receiveAddress: recipient }, matchingTx)).should.be.true();
+      warn.called.should.be.false();
+
+      const redirectedTx = await buildTx({ to: otherRecipient, value: '1' });
       await expectMismatch(
-        verify({ type: 'fillNonce', receiveAddress: recipient }, txHex),
-        /destination does not match wallet base address/
+        verify({ type: 'fillNonce', receiveAddress: recipient }, redirectedTx),
+        /destination does not match the declared receive address/
       );
     });
 

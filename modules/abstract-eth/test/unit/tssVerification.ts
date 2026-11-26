@@ -1148,8 +1148,10 @@ describe('AbstractEthLikeNewCoins TSS verification (HyperEVM bridgeFunds & Heder
       );
     });
 
-    it('ignores a contract-only statics match from a same-type network (Hoodi NFT on teth)', async function () {
-      // No tokenName: only the contract address is declared, and `getToken` matches any testnet.
+    it('never infers an NFT classification from a contract-only match on a same-type network (Hoodi NFT on teth)', async function () {
+      // No tokenName: only the contract address is declared, and `getToken` matches any testnet. The
+      // foreign statics entry must not classify the contract as an NFT, so the declared contract is
+      // bound as an (unregistered) ERC-20 and the NFT-shaped calldata fails closed.
       const teth = makeCoin('teth');
       const wallet = new Wallet(bitgo, teth, { coinSpecific: { baseAddress } });
       const txHex = buildRawEip1559Tx(teth, {
@@ -1175,7 +1177,7 @@ describe('AbstractEthLikeNewCoins TSS verification (HyperEVM bridgeFunds & Heder
           verification: {},
           walletType: 'tss',
         }),
-        /requires a declared ERC-20 token/
+        /transferToken calldata must use ERC-20 transfer\(address,uint256\)/
       );
       warn.called.should.be.false();
     });
@@ -1389,6 +1391,266 @@ describe('AbstractEthLikeNewCoins TSS verification (HyperEVM bridgeFunds & Heder
         }),
         /transferToken declared tokenName is empty/
       );
+    });
+  });
+
+  describe('fillNonce receiveAddress binding (CECHO-2690 review)', function () {
+    const receiveAddress = '0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed';
+    // Checksummed spelling: the binding is case-insensitive against the decoded lowercase `to`.
+    const checksummedReceiveAddress = '0xfB6916095ca1df60bB79Ce92cE3Ea74c37c5d359';
+
+    function verifyFillNonce(
+      coin: TestEvmCoin,
+      wallet: Wallet,
+      txHex: string,
+      txParams: Record<string, unknown>
+    ): Promise<boolean> {
+      return coin.verifyTransaction({
+        txParams: { type: 'fillNonce', ...txParams } as never,
+        txPrebuild: { txHex, coin: coin.getChain(), walletId: 'fakeWalletId' } as never,
+        wallet,
+        verification: {},
+        walletType: 'tss',
+      });
+    }
+
+    it('accepts a fillNonce self-send to the caller-declared receiveAddress', async function () {
+      const arbeth = makeCoin('arbeth');
+      const wallet = new Wallet(bitgo, arbeth, { coinSpecific: { baseAddress } });
+      const txHex = buildRawEip1559Tx(arbeth, { to: checksummedReceiveAddress.toLowerCase(), value: '1' });
+
+      const result = await verifyFillNonce(arbeth, wallet, txHex, { receiveAddress: checksummedReceiveAddress });
+      result.should.be.true();
+      warn.called.should.be.false();
+    });
+
+    it('rejects a fillNonce whose destination is not the declared receiveAddress', async function () {
+      const arbeth = makeCoin('arbeth');
+      const wallet = new Wallet(bitgo, arbeth, { coinSpecific: { baseAddress } });
+      const txHex = buildRawEip1559Tx(arbeth, { to: baseAddress, value: '1' });
+
+      await expectMismatch(
+        verifyFillNonce(arbeth, wallet, txHex, { receiveAddress }),
+        /does not match the declared receive address/
+      );
+    });
+
+    it('binds a fillNonce without a declared receiveAddress to the wallet base address', async function () {
+      const arbeth = makeCoin('arbeth');
+      const wallet = new Wallet(bitgo, arbeth, { coinSpecific: { baseAddress } });
+
+      const selfSendTx = buildRawEip1559Tx(arbeth, { to: baseAddress, value: '1' });
+      (await verifyFillNonce(arbeth, wallet, selfSendTx, {})).should.be.true();
+
+      const redirectedTx = buildRawEip1559Tx(arbeth, { to: attacker, value: '1' });
+      await expectMismatch(verifyFillNonce(arbeth, wallet, redirectedTx, {}), /does not match wallet base address/);
+    });
+
+    it('rejects an empty or malformed declared receiveAddress instead of falling back', async function () {
+      const arbeth = makeCoin('arbeth');
+      const wallet = new Wallet(bitgo, arbeth, { coinSpecific: { baseAddress } });
+      const txHex = buildRawEip1559Tx(arbeth, { to: baseAddress, value: '1' });
+
+      for (const badReceiveAddress of ['', '   ', '0x1234', `0x${'g'.repeat(40)}`]) {
+        await expectMismatch(
+          verifyFillNonce(arbeth, wallet, txHex, { receiveAddress: badReceiveAddress }),
+          /declared receiveAddress is not a valid EVM address/
+        );
+      }
+      warn.called.should.be.false();
+    });
+
+    it('binds the stored intent receiveAddress propagated by resolveEffectiveTxParams', async function () {
+      const arbeth = makeCoin('arbeth');
+      const wallet = new Wallet(bitgo, arbeth, { coinSpecific: { baseAddress } });
+      const txHex = buildRawEip1559Tx(arbeth, { to: receiveAddress, value: '1' });
+
+      const txParams = resolveEffectiveTxParams(
+        {
+          txRequestId: 'stored-fillnonce',
+          walletId: 'fakeWalletId',
+          intent: { intentType: 'fillNonce', receiveAddress },
+        } as unknown as TxRequest,
+        undefined,
+        arbeth.getChain()
+      );
+      txParams.receiveAddress?.should.equal(receiveAddress);
+
+      (
+        await arbeth.verifyTransaction({
+          txParams: txParams as never,
+          txPrebuild: { txHex, coin: 'arbeth', walletId: 'fakeWalletId' } as never,
+          wallet,
+          verification: {},
+          walletType: 'tss',
+        })
+      ).should.be.true();
+      warn.called.should.be.false();
+    });
+  });
+
+  describe('Unregistered ERC-20 transferToken binds the declared contract (CECHO-2690 review)', function () {
+    // Not in @bitgo/statics (an AMS-only or post-release token on Wallet Platform).
+    const unregisteredContract = '0x8e0d6b1c0b0c9b6d9f2f0a5c1e4d3b2a1f0e9d8c';
+    const tokenQuantity = '1000000';
+
+    const erc20TransferData = (to: string, amount: string) =>
+      '0x' +
+      Buffer.concat([
+        EthereumAbi.methodID('transfer', ['address', 'uint256']),
+        EthereumAbi.rawEncode(['address', 'uint256'], [to, amount]),
+      ]).toString('hex');
+
+    function verifyTransferToken(
+      coin: TestEvmCoin,
+      wallet: Wallet,
+      txHex: string,
+      recipientParams: Record<string, unknown>
+    ): Promise<boolean> {
+      return coin.verifyTransaction({
+        txParams: {
+          type: 'transferToken',
+          recipients: [{ address: recipient, amount: '0', ...recipientParams }],
+        } as never,
+        txPrebuild: { txHex, coin: coin.getChain(), walletId: 'fakeWalletId' } as never,
+        wallet,
+        verification: {},
+        walletType: 'tss',
+      });
+    }
+
+    it('warns and passes when the token is not in statics but declares its contract address', async function () {
+      const arbeth = makeCoin('arbeth');
+      const wallet = new Wallet(bitgo, arbeth, { coinSpecific: { baseAddress } });
+      const txHex = buildRawEip1559Tx(arbeth, {
+        to: unregisteredContract,
+        value: '0',
+        data: erc20TransferData(recipient, tokenQuantity),
+      });
+
+      const result = await verifyTransferToken(arbeth, wallet, txHex, {
+        tokenData: {
+          tokenName: 'ams:newtoken',
+          tokenType: 'ERC20',
+          tokenQuantity,
+          tokenContractAddress: unregisteredContract,
+        },
+      });
+      result.should.be.true();
+      warn
+        .getCalls()
+        .some(
+          (call) =>
+            /transferToken/.test(String(call.args[0])) && /declared tokenContractAddress/.test(String(call.args[0]))
+        )
+        .should.be.true();
+    });
+
+    it('still enforces contract, calldata, recipient, amount, and zero value for an unregistered token', async function () {
+      const arbeth = makeCoin('arbeth');
+      const wallet = new Wallet(bitgo, arbeth, { coinSpecific: { baseAddress } });
+      const tokenData = {
+        tokenName: 'ams:newtoken',
+        tokenType: 'ERC20',
+        tokenQuantity,
+        tokenContractAddress: unregisteredContract,
+      };
+
+      // Different contract than declared
+      const wrongContractTx = buildRawEip1559Tx(arbeth, {
+        to: attacker,
+        value: '0',
+        data: erc20TransferData(recipient, tokenQuantity),
+      });
+      await expectMismatch(
+        verifyTransferToken(arbeth, wallet, wrongContractTx, { tokenData }),
+        /not sent to the declared token contract/
+      );
+
+      // Native value attached
+      const valueTx = buildRawEip1559Tx(arbeth, {
+        to: unregisteredContract,
+        value: '1',
+        data: erc20TransferData(recipient, tokenQuantity),
+      });
+      await expectMismatch(verifyTransferToken(arbeth, wallet, valueTx, { tokenData }), /must not carry native value/);
+
+      // Recipient in calldata differs from the declared recipient
+      const wrongRecipientTx = buildRawEip1559Tx(arbeth, {
+        to: unregisteredContract,
+        value: '0',
+        data: erc20TransferData(attacker, tokenQuantity),
+      });
+      await expectMismatch(
+        verifyTransferToken(arbeth, wallet, wrongRecipientTx, { tokenData }),
+        /destination address does not match the recipient address/
+      );
+
+      // Declared quantity differs from the calldata amount
+      const wrongAmountTx = buildRawEip1559Tx(arbeth, {
+        to: unregisteredContract,
+        value: '0',
+        data: erc20TransferData(recipient, '2000000'),
+      });
+      await expectMismatch(
+        verifyTransferToken(arbeth, wallet, wrongAmountTx, { tokenData }),
+        /does not match the declared token amount/
+      );
+    });
+
+    it('still fails closed for a known cross-network token conflict despite a declared contract', async function () {
+      const arbeth = makeCoin('arbeth');
+      const wallet = new Wallet(bitgo, arbeth, { coinSpecific: { baseAddress } });
+      const txHex = buildRawEip1559Tx(arbeth, {
+        to: unregisteredContract,
+        value: '0',
+        data: erc20TransferData(recipient, tokenQuantity),
+      });
+
+      await expectMismatch(
+        verifyTransferToken(arbeth, wallet, txHex, {
+          tokenData: {
+            tokenName: 'erc721:witch',
+            tokenType: 'ERC20',
+            tokenQuantity,
+            tokenContractAddress: unregisteredContract,
+          },
+        }),
+        /cannot be resolved to a contract on this network/
+      );
+      warn.called.should.be.false();
+    });
+
+    it('fails closed when the token is unresolvable and no concrete contract is declared', async function () {
+      const arbeth = makeCoin('arbeth');
+      const wallet = new Wallet(bitgo, arbeth, { coinSpecific: { baseAddress } });
+      const txHex = buildRawEip1559Tx(arbeth, {
+        to: unregisteredContract,
+        value: '0',
+        data: erc20TransferData(recipient, tokenQuantity),
+      });
+
+      // No contract address at all
+      await expectMismatch(
+        verifyTransferToken(arbeth, wallet, txHex, {
+          tokenData: { tokenName: 'ams:newtoken', tokenType: 'ERC20', tokenQuantity },
+        }),
+        /cannot be resolved to a contract on this network/
+      );
+
+      // Malformed contract address
+      await expectMismatch(
+        verifyTransferToken(arbeth, wallet, txHex, {
+          tokenData: {
+            tokenName: 'ams:newtoken',
+            tokenType: 'ERC20',
+            tokenQuantity,
+            tokenContractAddress: '0xdeadbeef',
+          },
+        }),
+        /cannot be resolved to a contract on this network/
+      );
+      warn.called.should.be.false();
     });
   });
 });

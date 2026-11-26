@@ -4200,10 +4200,13 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
    * Verify a `fillNonce` TSS intent against raw serialized transaction bytes (CECHO-2690).
    *
    * Expected shape (fail closed on any deviation):
-   *   - `to` = `wallet.coinSpecific().baseAddress` (every production fillNonce row is a self-send to
-   *     the wallet's own address; `verifyTransaction` does not receive verifiable wallet keychain /
-   *     derivation metadata for arbitrary non-base receive addresses, so an unverified caller-supplied
-   *     `receiveAddress` is rejected rather than trusted to redirect the filler)
+   *   - `to` = the declared receive address when one is present (caller `txParams.receiveAddress`, or
+   *     the stored intent's `receiveAddress` propagated by `resolveEffectiveTxParams`), otherwise
+   *     `wallet.coinSpecific().baseAddress`. Wallet Platform sends this 1 wei self-send to the
+   *     declared receive address, so the declaration is the destination the signer authorised. The
+   *     verifier cannot re-derive arbitrary receive addresses, so it binds `to` to the declaration
+   *     byte-for-byte (case-insensitive) and rejects an empty or malformed one instead of silently
+   *     falling back to the base address.
    *   - `data` = empty (`0x`)
    *   - `value` = `0` or `1` wei (production EVM TSS self-sends use `1` wei)
    *   - `nonce`, when declared by the caller or the stored intent, equals the signed transaction nonce
@@ -4218,13 +4221,31 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     const mismatch = (message: string, address = to, amount = value): Promise<never> =>
       throwRecipientMismatch(message, [{ address, amount }]);
 
-    const baseAddress = wallet.coinSpecific()?.baseAddress;
-    if (!baseAddress) {
-      await mismatch('fillNonce transaction requires a wallet base address to verify against');
-      return;
+    const declaredReceiveAddress = txParams.receiveAddress;
+    let expectedDestination: string;
+    if (declaredReceiveAddress !== undefined && declaredReceiveAddress !== null) {
+      // A declared receive address is the recipient the caller authorised: bind to it exactly, and
+      // reject an empty or malformed declaration rather than falling back to the base address.
+      const normalizedReceiveAddress = String(declaredReceiveAddress).trim().toLowerCase();
+      if (!/^0x[0-9a-f]{40}$/.test(normalizedReceiveAddress)) {
+        await mismatch(`fillNonce declared receiveAddress is not a valid EVM address: '${declaredReceiveAddress}'`);
+        return;
+      }
+      expectedDestination = normalizedReceiveAddress;
+    } else {
+      const baseAddress = wallet.coinSpecific()?.baseAddress;
+      if (!baseAddress) {
+        await mismatch('fillNonce transaction requires a wallet base address to verify against');
+        return;
+      }
+      expectedDestination = baseAddress.toLowerCase();
     }
-    if (!to || to !== baseAddress.toLowerCase()) {
-      await mismatch('fillNonce transaction destination does not match wallet base address');
+    if (!to || to !== expectedDestination) {
+      await mismatch(
+        declaredReceiveAddress !== undefined && declaredReceiveAddress !== null
+          ? 'fillNonce transaction destination does not match the declared receive address'
+          : 'fillNonce transaction destination does not match wallet base address'
+      );
     }
     if (!isEmptyTssCalldata(data)) {
       await mismatch('fillNonce transaction must not carry calldata');
@@ -4250,8 +4271,13 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
    *   a positively classified NFT (declared `tokenType` or a statics NFT coin): canonical NFT calldata
    *   for the declared standard, the declared contract, `from == wallet base address`, zero native
    *   value, and the decoded recipient are all enforced before the warning is emitted.
-   * - ERC-20 transfers fail closed on recipient, amount, declared token contract (from `@bitgo/statics`),
-   *   canonical `transfer(address,uint256)` calldata, and `value == 0`.
+   * - ERC-20 transfers fail closed on recipient, amount, declared token contract, canonical
+   *   `transfer(address,uint256)` calldata, and `value == 0`. The contract is the `@bitgo/statics`
+   *   entry for a registered token, or — for a token statics cannot resolve on this network (newer
+   *   than the bundled statics, or registered only through coinFactory/AMS on Wallet Platform) — the
+   *   intent's declared 20-byte `tokenContractAddress`, with a warn that statics could not confirm it.
+   *   A known conflict (`resolveTssToken` mismatch) and a declaration with no concrete contract stay
+   *   fail-closed.
    * - Coordinates amount semantics with COINS-2263 (`BitGo/bitgo-microservices#64621`):
    *   when `tokenData.tokenQuantity` is present, it is the authoritative ERC-20 quantity, and
    *   `recipient.amount` must be either the canonical `'0'` placeholder or equal to `tokenQuantity`.
@@ -4488,7 +4514,26 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       tokenLookup = declaredContractCoin.name;
     }
     const token = this.resolveTssToken(tokenLookup);
-    if (!token.isToken || !token.contract || token.confidential) {
+    // A token statics cannot resolve on this network is a warning, not a conflict: tokens newer than
+    // the bundled statics, and tokens registered only through coinFactory/AMS on Wallet Platform,
+    // never enter the static `coins` map. When the intent declares a concrete 20-byte contract,
+    // bind `to` and every ERC-20 check to that declaration and warn (mirroring the single-payment
+    // path), instead of failing a transfer that the base branch warned-and-signed. A known conflict
+    // (`mismatch`: cross-network name, different signing token, empty name), a confidential token,
+    // and a declaration with no concrete contract address stay fail-closed.
+    const normalizedDeclaredContract =
+      declaredContract && /^0x[0-9a-fA-F]{40}$/.test(declaredContract) ? declaredContract.toLowerCase() : undefined;
+    let expectedTokenContract: string;
+    let unregisteredToken = false;
+    if (token.isToken && token.contract && !token.confidential) {
+      if (declaredContract && declaredContract.toLowerCase() !== token.contract) {
+        await mismatch('transferToken declared tokenContractAddress does not match the registered token contract');
+      }
+      expectedTokenContract = token.contract;
+    } else if (!token.mismatch && !token.confidential && normalizedDeclaredContract) {
+      expectedTokenContract = normalizedDeclaredContract;
+      unregisteredToken = true;
+    } else {
       await mismatch(
         token.reason
           ? `transferToken: ${token.reason}`
@@ -4496,10 +4541,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       );
       return;
     }
-    if (declaredContract && declaredContract.toLowerCase() !== token.contract) {
-      await mismatch('transferToken declared tokenContractAddress does not match the registered token contract');
-    }
-    if (to !== token.contract) {
+    if (to !== expectedTokenContract) {
       await mismatch('transferToken transaction is not sent to the declared token contract');
     }
     if (!tssValuesEqual(value, '0')) {
@@ -4530,6 +4572,15 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
         'transferToken amount in txPrebuild does not match the declared token amount',
         decodedRecipient,
         decodedAmount
+      );
+    }
+
+    if (unregisteredToken) {
+      this.warnTssVerificationIncomplete(
+        'transferToken',
+        `${token.reason ?? 'the declared token is not registered in @bitgo/statics on this network'}: the ` +
+          'contract, transfer calldata, recipient, amount, and zero native value were checked against the ' +
+          'declared tokenContractAddress, which statics could not confirm'
       );
     }
   }

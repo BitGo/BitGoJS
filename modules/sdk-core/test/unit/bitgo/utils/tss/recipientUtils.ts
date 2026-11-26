@@ -401,6 +401,53 @@ describe('recipientUtils', function () {
       });
     });
 
+    describe('intent receiveAddress propagation (fillNonce only, CECHO-2690 review)', function () {
+      const receiveAddress = '0x5aaeb6053f3e94c9b9a09f33669435e7ef1beaed';
+      const fillNonceIntent = { intentType: 'fillNonce', receiveAddress } as PopulatedIntent;
+
+      it('derives receiveAddress from the intent when txParams is undefined', function () {
+        const txRequest = makeTxRequest({ intent: fillNonceIntent });
+        assert.strictEqual(resolveEffectiveTxParams(txRequest, undefined).receiveAddress, receiveAddress);
+      });
+
+      it('does not overwrite a caller-supplied receiveAddress', function () {
+        const txRequest = makeTxRequest({ intent: fillNonceIntent });
+        const callerReceiveAddress = '0xfB6916095ca1df60bB79Ce92cE3Ea74c37c5d359';
+        assert.strictEqual(
+          resolveEffectiveTxParams(txRequest, { receiveAddress: callerReceiveAddress }).receiveAddress,
+          callerReceiveAddress
+        );
+      });
+
+      it('does not propagate an empty or whitespace-only stored receiveAddress', function () {
+        for (const empty of ['', '   ']) {
+          const txRequest = makeTxRequest({
+            intent: { intentType: 'fillNonce', receiveAddress: empty } as PopulatedIntent,
+          });
+          assert.strictEqual(resolveEffectiveTxParams(txRequest, undefined).receiveAddress, undefined);
+        }
+      });
+
+      it('does not attach a stored fillNonce receiveAddress when the caller declared another type', function () {
+        const txRequest = makeTxRequest({ intent: fillNonceIntent });
+        assert.strictEqual(resolveEffectiveTxParams(txRequest, { type: 'acceleration' }).receiveAddress, undefined);
+      });
+
+      it('does not attach a stored receiveAddress when the intent is not a fillNonce intent', function () {
+        const txRequest = makeTxRequest({
+          intent: { intentType: 'acceleration', receiveAddress } as PopulatedIntent,
+        });
+        assert.strictEqual(resolveEffectiveTxParams(txRequest, undefined).receiveAddress, undefined);
+      });
+
+      it('does not inherit a non-fillNonce intent receiveAddress for a fillNonce caller', function () {
+        const txRequest = makeTxRequest({
+          intent: { intentType: 'acceleration', receiveAddress } as PopulatedIntent,
+        });
+        assert.strictEqual(resolveEffectiveTxParams(txRequest, { type: 'fillNonce' }).receiveAddress, undefined);
+      });
+    });
+
     describe('tx-level memo propagation', function () {
       it('derives memo from the intent when txParams is undefined (pendingApproval re-sign path)', function () {
         const txRequest = makeTxRequest({
