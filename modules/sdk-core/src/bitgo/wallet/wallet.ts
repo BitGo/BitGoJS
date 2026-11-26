@@ -4012,6 +4012,11 @@ export class Wallet implements IWallet {
       throw new Error('Failed to find consolidation id on consolidation transaction.');
     }
 
+    params.verification = {
+      ...params.verification,
+      consolidationToBaseAddress: true,
+    };
+
     if (this._wallet.multisigType === 'tss') {
       if (!params.prebuildTx.txRequestId) {
         throw new Error('Consolidation request missing txRequestId.');
