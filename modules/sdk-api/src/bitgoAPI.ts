@@ -2227,8 +2227,8 @@ export class BitGoAPI implements BitGoBase {
         password: hmacNewPassword,
       };
 
-      // Calculate payload size in KB
-      const payloadSizeBytes = JSON.stringify(updatePasswordParams).length;
+      // sized per-entry: a full stringify crashes on heavy accounts before batching can run
+      const payloadSizeBytes = this.computeChangePasswordPayloadSize(updatePasswordParams);
       const payloadSizeKB = Math.ceil(payloadSizeBytes / 1024);
 
       // Check if batching flow is enabled
@@ -2255,11 +2255,16 @@ export class BitGoAPI implements BitGoBase {
         // Call changepassword API without keychains for batching flow. Awaited outside the
         // check/upload try-catch above, so a rejection here still propagates to the caller
         // with no legacy-POST fallback, exactly as before.
+        // Verified server-side against the total staged — a partial or TTL-expired upload
+        // fails loudly instead of flipping the password.
+        const expectedKeychainCount =
+          Object.keys(updatePasswordParams.keychains).length + Object.keys(updatePasswordParams.v2_keychains).length;
         const result = await this.post(this.url('/user/changepassword'))
           .send({
             version: updatePasswordParams.version,
             oldPassword: updatePasswordParams.oldPassword,
             password: updatePasswordParams.password,
+            expectedKeychainCount,
           })
           .result();
         emitProgress({ phase: 'finalizing', status: 'completed' });
@@ -2567,6 +2572,29 @@ export class BitGoAPI implements BitGoBase {
   }
 
   /**
+   * Approximate serialized size, in bytes, of the changePassword update payload:
+   * scalar fields via JSON.stringify plus per-entry byte lengths for the keychain
+   * maps, the same idiom packKeychainsFFD uses. Approximation is sufficient — the
+   * server compares this size, KB-rounded, against its batching threshold — while
+   * a full stringify of hundreds of MB of re-encrypted key material would throw
+   * RangeError above V8's max string length, crashing the rotation before the
+   * batching check could run.
+   */
+  private computeChangePasswordPayloadSize(params: {
+    keychains: Record<string, string>;
+    v2_keychains: Record<string, string>;
+    [key: string]: unknown;
+  }): number {
+    const { keychains, v2_keychains, ...scalars } = params;
+    const keyMaterialBytes = (map: Record<string, string>): number =>
+      Object.entries(map).reduce(
+        (sum, [id, value]) => sum + Buffer.byteLength(id, 'utf8') + Buffer.byteLength(value, 'utf8'),
+        0
+      );
+    return JSON.stringify(scalars).length + keyMaterialBytes(keychains) + keyMaterialBytes(v2_keychains);
+  }
+
+  /**
    * Process keychain password updates in batches with retry logic.
    * Uses First Fit Decreasing (FFD) bin packing to ensure no batch exceeds
    * maxBatchSizeKB
@@ -2593,15 +2621,28 @@ export class BitGoAPI implements BitGoBase {
       bins.push({ v1Batch: {}, v2Batch: {}, sizeBytes: 0 });
     }
 
-    for (let i = 0; i < bins.length; i++) {
+    const BATCH_CONCURRENCY = 4; // WCI-2309 probe: ~6 Mbps at 4 streams vs ~1.7 single-stream
+
+    // Computed once after the empty-bins guard; binCount >= 1 from here on.
+    const binCount = bins.length;
+    const workerCount = Math.min(BATCH_CONCURRENCY, binCount);
+    const keychainsUrl = this.url('/user/keychains', 2);
+
+    let nextBin = 0;
+    let firstError: Error | undefined;
+
+    // Same retry loop, PUT, and error strings as the sequential version — only dispatch is
+    // concurrent; nextBin++ on the single-threaded event loop is exactly-once. A sibling's
+    // terminal failure abandons this bin's remaining retries.
+    const processBin = async (i: number): Promise<void> => {
       const { v1Batch, v2Batch } = bins[i];
 
       let retryCount = 0;
       let success = false;
 
-      while (retryCount < maxRetries && !success) {
+      while (retryCount < maxRetries && !success && !firstError) {
         try {
-          const response = await this.put(this.url('/user/keychains', 2))
+          const response = await this.put(keychainsUrl)
             .send({
               keychains: v1Batch,
               v2_keychains: v2Batch,
@@ -2626,6 +2667,30 @@ export class BitGoAPI implements BitGoBase {
           }
         }
       }
+    };
+
+    // A terminal failure stops new pulls; in-flight bins settle (idempotent staging
+    // upserts, retries abandoned). First error rethrows after all workers finish.
+    const worker = async (): Promise<void> => {
+      while (!firstError) {
+        const i = nextBin++;
+        if (i >= binCount) {
+          return;
+        }
+        try {
+          await processBin(i);
+        } catch (error) {
+          if (!firstError) {
+            firstError = error instanceof Error ? error : new Error(String(error));
+          }
+          return;
+        }
+      }
+    };
+
+    await Promise.all(Array.from({ length: workerCount }, () => worker()));
+    if (firstError) {
+      throw firstError;
     }
   }
 }
