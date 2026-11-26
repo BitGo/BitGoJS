@@ -1653,4 +1653,652 @@ describe('AbstractEthLikeNewCoins TSS verification (HyperEVM bridgeFunds & Heder
       warn.called.should.be.false();
     });
   });
+
+  describe('Fail-closed default for missing/unknown/unverified intent types (CECHO-2861)', function () {
+    function makeVerifiedCoin(chain: string) {
+      const coin = makeCoin(chain);
+      const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress } });
+      const txHex = buildRawEip1559Tx(coin, { to: attacker, value: '1000000000000000000' });
+      return { coin, wallet, txHex };
+    }
+
+    it('rejects missing, empty, or whitespace-only intent type even when recipients are present', async function () {
+      const { coin, wallet, txHex } = makeVerifiedCoin('hteth');
+      const recipients = [{ address: attacker, amount: '1000000000000000000' }];
+
+      for (const badType of [undefined, '', '   ']) {
+        await expectMismatch(
+          coin.verifyTransaction({
+            txParams: { ...(badType !== undefined ? { type: badType } : {}), recipients } as never,
+            txPrebuild: { txHex, coin: 'hteth', walletId: 'fakeWalletId' } as never,
+            wallet,
+            verification: {},
+            walletType: 'tss',
+          }),
+          /requires a declared intent type/
+        );
+      }
+      warn.called.should.be.false();
+    });
+
+    it('rejects missing intent type without recipients when stakingRequestId bypasses missing-txParams guard', async function () {
+      const { coin, wallet, txHex } = makeVerifiedCoin('hteth');
+
+      await expectMismatch(
+        coin.verifyTransaction({
+          txParams: { stakingRequestId: 'stake-req-1' } as never,
+          txPrebuild: { txHex, coin: 'hteth', walletId: 'fakeWalletId' } as never,
+          wallet,
+          verification: {},
+          walletType: 'tss',
+        }),
+        /requires a declared intent type/
+      );
+      warn.called.should.be.false();
+    });
+
+    it('rejects transfer and payment with empty recipients array', async function () {
+      const { coin, wallet, txHex } = makeVerifiedCoin('hteth');
+
+      for (const type of ['transfer', 'payment']) {
+        await expectMismatch(
+          coin.verifyTransaction({
+            txParams: { type, recipients: [] } as never,
+            txPrebuild: { txHex, coin: 'hteth', walletId: 'fakeWalletId' } as never,
+            wallet,
+            verification: {},
+            walletType: 'tss',
+          }),
+          new RegExp(`${type} transaction requires at least one declared recipient`)
+        );
+      }
+      warn.called.should.be.false();
+    });
+
+    it('rejects unknown/unlisted intent types and unused NO_RECIPIENT_TX_TYPES labels (direct and stored-intent paths)', async function () {
+      const { coin, wallet, txHex } = makeVerifiedCoin('hteth');
+      const unusedOrUnknownTypes = [
+        // Unused on EVM from Sanket retest + NO_RECIPIENT_TX_TYPES
+        'disableToken',
+        'disabletoken',
+        'unstake',
+        'transferStake',
+        'increaseStake',
+        'goUnstake',
+        'createAccount',
+        'pledge',
+        'deactivate',
+        'authorize',
+        'cantonCommand',
+        'transferAccept',
+        // Arbitrary / typo / prototype-property labels
+        'unknownIntent',
+        'acceleraton',
+        ' transfer ',
+        'constructor',
+        'toString',
+        '__proto__',
+      ];
+
+      for (const type of unusedOrUnknownTypes) {
+        // Direct path with recipients present
+        await expectMismatch(
+          coin.verifyTransaction({
+            txParams: { type, recipients: [{ address: recipient, amount: '1000' }] } as never,
+            txPrebuild: { txHex, coin: 'hteth', walletId: 'fakeWalletId' } as never,
+            wallet,
+            verification: {},
+            walletType: 'tss',
+          }),
+          /no TSS transaction verifier is implemented for intent type/
+        );
+
+        // Direct path without recipients when stakingRequestId bypasses entry guard
+        await expectMismatch(
+          coin.verifyTransaction({
+            txParams: { type, stakingRequestId: 'stake-req-1' } as never,
+            txPrebuild: { txHex, coin: 'hteth', walletId: 'fakeWalletId' } as never,
+            wallet,
+            verification: {},
+            walletType: 'tss',
+          }),
+          /no TSS transaction verifier is implemented for intent type/
+        );
+      }
+
+      // Stored-intent path via resolveEffectiveTxParams (e.g. disableToken or unknown label with recipients)
+      for (const intent of [
+        { intentType: 'disableToken' },
+        {
+          intentType: 'customUnlistedLabel',
+          recipients: [{ address: { address: recipient }, amount: { value: '1000', symbol: 'hteth' } }],
+        },
+      ]) {
+        const txParams = resolveEffectiveTxParams(
+          { txRequestId: 'req-unlisted', apiVersion: 'full', walletId: 'w', intent } as unknown as TxRequest,
+          undefined,
+          'hteth'
+        );
+        await expectMismatch(
+          coin.verifyTransaction({
+            txParams: txParams as never,
+            txPrebuild: { txHex, coin: 'hteth', walletId: 'fakeWalletId' } as never,
+            wallet,
+            verification: {},
+            walletType: 'tss',
+          }),
+          /no TSS transaction verifier is implemented for intent type/
+        );
+      }
+      warn.called.should.be.false();
+    });
+
+    it('enforces chain-family scoping on family-restricted allowlisted exemptions', async function () {
+      const arbeth = makeVerifiedCoin('arbeth');
+      const flr = makeVerifiedCoin('tflr');
+      const hype = makeVerifiedCoin('thypeevm');
+      const eth = makeVerifiedCoin('hteth');
+
+      // FLR atomic export/import: allowed (with warning) on flr, rejected on arbeth and eth
+      for (const type of ['export', 'Export', 'import', 'importtoc']) {
+        warn.resetHistory();
+        (
+          await flr.coin.verifyTransaction({
+            txParams: { type, recipients: [{ address: recipient, amount: '1000' }] } as never,
+            txPrebuild: { txHex: flr.txHex, coin: 'tflr', walletId: 'fakeWalletId' } as never,
+            wallet: flr.wallet,
+            verification: {},
+            walletType: 'tss',
+          })
+        ).should.be.true();
+        warn.calledOnce.should.be.true();
+
+        await expectMismatch(
+          arbeth.coin.verifyTransaction({
+            txParams: { type, recipients: [{ address: recipient, amount: '1000' }] } as never,
+            txPrebuild: { txHex: arbeth.txHex, coin: 'arbeth', walletId: 'fakeWalletId' } as never,
+            wallet: arbeth.wallet,
+            verification: {},
+            walletType: 'tss',
+          }),
+          /no TSS transaction verifier is implemented for intent type/
+        );
+      }
+
+      // HyperEVM spotTransfer: allowed (with warning) on hypeevm, rejected on eth and arbeth
+      warn.resetHistory();
+      (
+        await hype.coin.verifyTransaction({
+          txParams: { type: 'spotTransfer', recipients: [{ address: recipient, amount: '1000' }] } as never,
+          txPrebuild: { txHex: hype.txHex, coin: 'thypeevm', walletId: 'fakeWalletId' } as never,
+          wallet: hype.wallet,
+          verification: {},
+          walletType: 'tss',
+        })
+      ).should.be.true();
+      warn.calledOnce.should.be.true();
+
+      await expectMismatch(
+        eth.coin.verifyTransaction({
+          txParams: { type: 'spotTransfer', recipients: [{ address: recipient, amount: '1000' }] } as never,
+          txPrebuild: { txHex: eth.txHex, coin: 'hteth', walletId: 'fakeWalletId' } as never,
+          wallet: eth.wallet,
+          verification: {},
+          walletType: 'tss',
+        }),
+        /no TSS transaction verifier is implemented for intent type/
+      );
+
+      // Kebab-case DeFi spellings are NOT exempt (CECHO-2861 P1 #1): a recipient-less stored
+      // request is already rejected in resolveEffectiveTxParams, and a request that does carry
+      // recipients must not skip the camelCase defiApprove/defiDeposit/defiWithdraw verifiers.
+      // They therefore fail closed on every family, including eth itself.
+      warn.resetHistory();
+      for (const type of ['defi-approve', 'defi-deposit', 'defi-withdraw']) {
+        for (const target of [eth, arbeth]) {
+          await expectMismatch(
+            target.coin.verifyTransaction({
+              txParams: { type, recipients: [{ address: recipient, amount: '0' }] } as never,
+              txPrebuild: {
+                txHex: target.txHex,
+                coin: target === eth ? 'hteth' : 'arbeth',
+                walletId: 'fakeWalletId',
+              } as never,
+              wallet: target.wallet,
+              verification: {},
+              walletType: 'tss',
+            }),
+            /no TSS transaction verifier is implemented for intent type/
+          );
+        }
+      }
+      warn.called.should.be.false();
+
+      // ETH-only wrap/Zama legs: allowed (with warning) on eth family, rejected on arbeth
+      for (const type of [
+        'wrapNative',
+        'wrap-native',
+        'unwrapNative',
+        'unwrap-native',
+        'enableToken',
+        'enabletoken',
+        'wrap',
+        'unwrap',
+        'finalizeUnwrap',
+      ]) {
+        warn.resetHistory();
+        (
+          await eth.coin.verifyTransaction({
+            txParams: { type, recipients: [{ address: recipient, amount: '0' }] } as never,
+            txPrebuild: { txHex: eth.txHex, coin: 'hteth', walletId: 'fakeWalletId' } as never,
+            wallet: eth.wallet,
+            verification: {},
+            walletType: 'tss',
+          })
+        ).should.be.true();
+        warn.calledOnce.should.be.true();
+
+        await expectMismatch(
+          arbeth.coin.verifyTransaction({
+            txParams: { type, recipients: [{ address: recipient, amount: '0' }] } as never,
+            txPrebuild: { txHex: arbeth.txHex, coin: 'arbeth', walletId: 'fakeWalletId' } as never,
+            wallet: arbeth.wallet,
+            verification: {},
+            walletType: 'tss',
+          }),
+          /no TSS transaction verifier is implemented for intent type/
+        );
+      }
+    });
+
+    it('warns and passes for the family-agnostic acceleration exemption', async function () {
+      // `acceleration` is a fee-bump replacement (CECHO-2871) and is not chain-scoped.
+      const { coin, wallet, txHex } = makeVerifiedCoin('arbeth');
+      warn.resetHistory();
+      (
+        await coin.verifyTransaction({
+          txParams: { type: 'acceleration', stakingRequestId: 'stake-req-1' } as never,
+          txPrebuild: { txHex, coin: 'arbeth', walletId: 'fakeWalletId' } as never,
+          wallet,
+          verification: {},
+          walletType: 'tss',
+        })
+      ).should.be.true();
+      warn
+        .getCalls()
+        .some((call) => /acceleration: no verifier is implemented/.test(String(call.args[0])))
+        .should.be.true();
+    });
+
+    it('scopes each staking exemption to its audited families (CECHO-2861 P1 #2)', async function () {
+      const cases: Array<[type: string, chain: string, passes: boolean]> = [
+        // Audited families: warn-and-pass (no verifier, but the intent is served there).
+        ['stake', 'hteth', true],
+        ['stake', 'thypeevm', true],
+        ['stake', 'txdc', true],
+        ['stakeWithCallData', 'hteth', true],
+        ['unstakeWithCallData', 'hteth', true],
+        ['switchValidatorWithCallData', 'tcoredao', true],
+        // ETH validator consolidation behind the staking-service feature flag (hteth fixture).
+        ['switchValidatorWithCallData', 'hteth', true],
+        ['delegate', 'tbsc', true],
+        ['delegate', 'tbera', true],
+        ['undelegate', 'txdc', true],
+        ['switchValidator', 'tflr', true],
+        ['claim', 'txdc', true],
+        ['stakeClaimRewards', 'tcoredao', true],
+        // Unrelated families: fail closed instead of inheriting a blanket exemption.
+        ['stake', 'tarbeth', false],
+        ['stakeWithCallData', 'tarbeth', false],
+        ['stakeWithCallData', 'tpolygon', false],
+        ['unstakeWithCallData', 'tarbeth', false],
+        ['switchValidatorWithCallData', 'tarbeth', false],
+        ['switchValidatorWithCallData', 'tpolygon', false],
+        ['delegate', 'hteth', false],
+        ['delegate', 'tarbeth', false],
+        ['switchValidator', 'tcoredao', false],
+        ['claim', 'tcoredao', false],
+        ['stakeClaimRewards', 'txdc', false],
+      ];
+
+      for (const [type, chain, passes] of cases) {
+        const target = makeVerifiedCoin(chain);
+        warn.resetHistory();
+        const request = target.coin.verifyTransaction({
+          txParams: { type, stakingRequestId: 'stake-req-1' } as never,
+          txPrebuild: { txHex: target.txHex, coin: chain, walletId: 'fakeWalletId' } as never,
+          wallet: target.wallet,
+          verification: {},
+          walletType: 'tss',
+        });
+        if (passes) {
+          (await request).should.be.true();
+          warn
+            .getCalls()
+            .some((call) => new RegExp(`${type}: no verifier is implemented`).test(String(call.args[0])))
+            .should.be.true();
+        } else {
+          await expectMismatch(request, /no TSS transaction verifier is implemented for intent type/);
+          warn.called.should.be.false();
+        }
+      }
+    });
+
+    // CECHO-2861 P2: `tstt.getFamily()` returns `stt` (not `somi`), and Wallet Platform serves
+    // Somnia testnet staking, so the Somnia exemptions must cover both family labels.
+    it('serves Somnia testnet (stt) staking exemptions (CECHO-2861 P2)', async function () {
+      const target = makeVerifiedCoin('tstt');
+      target.coin.getFamily().should.equal('stt');
+
+      for (const type of ['delegate', 'undelegate', 'switchValidator', 'claim', 'stakeClaimRewards']) {
+        warn.resetHistory();
+        (
+          await target.coin.verifyTransaction({
+            txParams: { type, stakingRequestId: 'stake-req-1' } as never,
+            txPrebuild: { txHex: target.txHex, coin: 'tstt', walletId: 'fakeWalletId' } as never,
+            wallet: target.wallet,
+            verification: {},
+            walletType: 'tss',
+          })
+        ).should.be.true();
+        warn
+          .getCalls()
+          .some((call) => new RegExp(`${type}: no verifier is implemented`).test(String(call.args[0])))
+          .should.be.true();
+      }
+
+      // Labels exempt only on other families still fail closed on Somnia testnet.
+      warn.resetHistory();
+      await expectMismatch(
+        target.coin.verifyTransaction({
+          txParams: { type: 'stake', stakingRequestId: 'stake-req-1' } as never,
+          txPrebuild: { txHex: target.txHex, coin: 'tstt', walletId: 'fakeWalletId' } as never,
+          wallet: target.wallet,
+          verification: {},
+          walletType: 'tss',
+        }),
+        /no TSS transaction verifier is implemented for intent type/
+      );
+      warn.called.should.be.false();
+    });
+
+    // CECHO-2861 P1 #3: a consolidateId must never reinterpret a declared intent type as a sweep,
+    // and a triggered consolidation must actually run its sweep check (never warn-and-pass).
+    describe('consolidateId cannot bypass the fail-closed default (CECHO-2861 P1 #3)', function () {
+      function verifyWith(
+        target: { coin: TestEvmCoin; wallet: Wallet },
+        txParams: Record<string, unknown>,
+        txPrebuild: Record<string, unknown>,
+        verification: Record<string, unknown> = {}
+      ) {
+        return target.coin.verifyTransaction({
+          txParams: txParams as never,
+          txPrebuild: txPrebuild as never,
+          wallet: target.wallet,
+          verification: verification as never,
+          walletType: 'tss',
+        });
+      }
+
+      it('keeps the legitimate ID-only sweep: no declared type plus consolidateId and a valid sweep tx', async function () {
+        const eth = makeVerifiedCoin('hteth');
+        const txHex = buildRawEip1559Tx(eth.coin, { to: baseAddress, value: '1000000000000000000' });
+
+        (
+          await verifyWith(
+            eth,
+            { prebuildTx: { consolidateId: 'cid' } },
+            { txHex, consolidateId: 'cid', coin: 'hteth', walletId: 'fakeWalletId' }
+          )
+        ).should.be.true();
+        warn.called.should.be.false();
+      });
+
+      it('still runs the sweep check on an ID-only consolidation (attacker destination rejects)', async function () {
+        const eth = makeVerifiedCoin('hteth');
+        const txHex = buildRawEip1559Tx(eth.coin, { to: attacker, value: '1000000000000000000' });
+
+        await expectMismatch(
+          verifyWith(eth, { prebuildTx: { consolidateId: 'cid' } }, { txHex, coin: 'hteth', walletId: 'fakeWalletId' }),
+          /does not match wallet base address/
+        );
+      });
+
+      for (const badType of ['unknownLabel', ' transfer ', 'bogus', 'constructor']) {
+        it(`rejects a declared type of ${JSON.stringify(
+          badType
+        )} even when a consolidateId is present`, async function () {
+          const eth = makeVerifiedCoin('hteth');
+          const txHex = buildRawEip1559Tx(eth.coin, { to: baseAddress, value: '1000000000000000000' });
+
+          await expectMismatch(
+            verifyWith(
+              eth,
+              { type: badType, recipients: [{ address: baseAddress, amount: '1000000000000000000' }] },
+              { txHex, consolidateId: 'cid', coin: 'hteth', walletId: 'fakeWalletId' }
+            ),
+            /no TSS transaction verifier is implemented for intent type/
+          );
+        });
+      }
+
+      for (const emptyType of ['', '   ']) {
+        it(`rejects a present-but-empty type of ${JSON.stringify(
+          emptyType
+        )} even when a consolidateId is present`, async function () {
+          const eth = makeVerifiedCoin('hteth');
+          const txHex = buildRawEip1559Tx(eth.coin, { to: baseAddress, value: '1000000000000000000' });
+
+          await expectMismatch(
+            verifyWith(
+              eth,
+              { type: emptyType, recipients: [{ address: baseAddress, amount: '1000000000000000000' }] },
+              { txHex, consolidateId: 'cid', coin: 'hteth', walletId: 'fakeWalletId' }
+            ),
+            /requires a declared intent type/
+          );
+        });
+      }
+
+      // A `null`/non-string type is a declaration, not an omission (CECHO-2861 P1 #1 round 2): it
+      // must not be collapsed into the ID-only sweep path.
+      for (const malformedType of [null, 123, {}]) {
+        it(`rejects a malformed declared type of ${JSON.stringify(
+          malformedType
+        )} even when a consolidateId is present`, async function () {
+          const eth = makeVerifiedCoin('hteth');
+          const txHex = buildRawEip1559Tx(eth.coin, { to: baseAddress, value: '1000000000000000000' });
+
+          await expectMismatch(
+            verifyWith(
+              eth,
+              { type: malformedType, recipients: [{ address: baseAddress, amount: '1000000000000000000' }] },
+              { txHex, consolidateId: 'cid', coin: 'hteth', walletId: 'fakeWalletId' }
+            ),
+            /requires a declared intent type/
+          );
+        });
+      }
+
+      describe('consolidationToBaseAddress cannot bypass the fail-closed default (CECHO-2861 P1 #1)', function () {
+        const consolidation = { consolidationToBaseAddress: true };
+
+        it('passes with a genuinely omitted type and a valid sweep tx', async function () {
+          const eth = makeVerifiedCoin('hteth');
+          const txHex = buildRawEip1559Tx(eth.coin, { to: baseAddress, value: '1000000000000000000' });
+
+          (
+            await verifyWith(
+              eth,
+              { recipients: [{ address: baseAddress, amount: '1000000000000000000' }] },
+              { txHex, coin: 'hteth', walletId: 'fakeWalletId' },
+              consolidation
+            )
+          ).should.be.true();
+          warn.called.should.be.false();
+        });
+
+        it('passes with a declared consolidation intent type', async function () {
+          const eth = makeVerifiedCoin('hteth');
+          const txHex = buildRawEip1559Tx(eth.coin, { to: baseAddress, value: '1000000000000000000' });
+
+          for (const type of ['consolidate', 'consolidateToken', 'consolidate-token']) {
+            (
+              await verifyWith(eth, { type }, { txHex, coin: 'hteth', walletId: 'fakeWalletId' }, consolidation)
+            ).should.be.true();
+          }
+          warn.called.should.be.false();
+        });
+
+        it('still enforces the sweep for an omitted type (attacker destination rejects)', async function () {
+          const eth = makeVerifiedCoin('hteth');
+          const txHex = buildRawEip1559Tx(eth.coin, { to: attacker, value: '1000000000000000000' });
+
+          await expectMismatch(
+            verifyWith(
+              eth,
+              { recipients: [{ address: baseAddress, amount: '1000000000000000000' }] },
+              { txHex, coin: 'hteth', walletId: 'fakeWalletId' },
+              consolidation
+            ),
+            /does not match wallet base address/
+          );
+        });
+
+        // A sweep is the one intent that legitimately carries neither recipients nor a type: the
+        // caller only sets the `consolidationToBaseAddress` hint, so `txParams` may be `{}`.
+        it('admits a recipient-less flag-only sweep to the base address', async function () {
+          const eth = makeVerifiedCoin('hteth');
+          const txHex = buildRawEip1559Tx(eth.coin, { to: baseAddress, value: '1000000000000000000' });
+
+          (
+            await verifyWith(eth, {}, { txHex, coin: 'hteth', walletId: 'fakeWalletId' }, consolidation)
+          ).should.be.true();
+          warn.called.should.be.false();
+        });
+
+        it('runs the sweep check on a recipient-less flag-only sweep (attacker destination rejects)', async function () {
+          const eth = makeVerifiedCoin('hteth');
+          const txHex = buildRawEip1559Tx(eth.coin, { to: attacker, value: '1000000000000000000' });
+
+          await expectMismatch(
+            verifyWith(eth, {}, { txHex, coin: 'hteth', walletId: 'fakeWalletId' }, consolidation),
+            /does not match wallet base address/
+          );
+          warn.called.should.be.false();
+        });
+
+        // The flag admits only a genuinely omitted type: a present-but-malformed type on the same
+        // recipient-less request is still a malformed declaration and trips the missing-params guard.
+        for (const malformedType of [null, '', 123]) {
+          it(`rejects a recipient-less flag-only sweep declaring a malformed type of ${JSON.stringify(
+            malformedType
+          )}`, async function () {
+            const eth = makeVerifiedCoin('hteth');
+            const txHex = buildRawEip1559Tx(eth.coin, { to: baseAddress, value: '1000000000000000000' });
+
+            await verifyWith(
+              eth,
+              { type: malformedType },
+              { txHex, coin: 'hteth', walletId: 'fakeWalletId' },
+              consolidation
+            ).should.be.rejectedWith('missing txParams');
+            warn.called.should.be.false();
+          });
+        }
+
+        for (const badType of ['unknownLabel', ' transfer ', 'transferFrom', 'constructor']) {
+          it(`still rejects a declared type of ${JSON.stringify(badType)}`, async function () {
+            const eth = makeVerifiedCoin('hteth');
+            const txHex = buildRawEip1559Tx(eth.coin, { to: baseAddress, value: '1000000000000000000' });
+
+            await expectMismatch(
+              verifyWith(
+                eth,
+                { type: badType, recipients: [{ address: baseAddress, amount: '1000000000000000000' }] },
+                { txHex, coin: 'hteth', walletId: 'fakeWalletId' },
+                consolidation
+              ),
+              /no TSS transaction verifier is implemented for intent type/
+            );
+            warn.called.should.be.false();
+          });
+        }
+
+        for (const malformedType of [null, '', '   ', 123]) {
+          it(`still rejects a malformed declared type of ${JSON.stringify(malformedType)}`, async function () {
+            const eth = makeVerifiedCoin('hteth');
+            const txHex = buildRawEip1559Tx(eth.coin, { to: baseAddress, value: '1000000000000000000' });
+
+            await expectMismatch(
+              verifyWith(
+                eth,
+                { type: malformedType, recipients: [{ address: baseAddress, amount: '1000000000000000000' }] },
+                { txHex, coin: 'hteth', walletId: 'fakeWalletId' },
+                consolidation
+              ),
+              /requires a declared intent type/
+            );
+            warn.called.should.be.false();
+          });
+        }
+      });
+
+      it('fails closed when a declared consolidation has no wallet base address', async function () {
+        const eth = makeVerifiedCoin('hteth');
+        const noBaseWallet = new Wallet(bitgo, eth.coin, { coinSpecific: {} });
+        const txHex = buildRawEip1559Tx(eth.coin, { to: baseAddress, value: '1000000000000000000' });
+
+        await expectMismatch(
+          verifyWith(
+            { coin: eth.coin, wallet: noBaseWallet },
+            { type: 'consolidate' },
+            { txHex, coin: 'hteth', walletId: 'fakeWalletId' }
+          ),
+          /Unable to determine base address for consolidation/
+        );
+        warn.called.should.be.false();
+      });
+
+      it('fails closed when an ID-only consolidation has no wallet base address', async function () {
+        const eth = makeVerifiedCoin('hteth');
+        const noBaseWallet = new Wallet(bitgo, eth.coin, { coinSpecific: {} });
+        const txHex = buildRawEip1559Tx(eth.coin, { to: baseAddress, value: '1000000000000000000' });
+
+        await expectMismatch(
+          verifyWith(
+            { coin: eth.coin, wallet: noBaseWallet },
+            { prebuildTx: { consolidateId: 'cid' } },
+            { txHex, consolidateId: 'cid', coin: 'hteth', walletId: 'fakeWalletId' }
+          ),
+          /Unable to determine base address for consolidation/
+        );
+        warn.called.should.be.false();
+      });
+
+      it('fails closed when a declared consolidation has no txHex', async function () {
+        const eth = makeVerifiedCoin('hteth');
+
+        await expectMismatch(
+          verifyWith(eth, { type: 'consolidate' }, { consolidateId: 'cid', coin: 'hteth', walletId: 'fakeWalletId' }),
+          /missing txHex in txPrebuild/
+        );
+        warn.called.should.be.false();
+      });
+
+      it('fails closed when an ID-only consolidation has no txHex', async function () {
+        const eth = makeVerifiedCoin('hteth');
+
+        await expectMismatch(
+          verifyWith(
+            eth,
+            { prebuildTx: { consolidateId: 'cid' } },
+            { consolidateId: 'cid', coin: 'hteth', walletId: 'fakeWalletId' }
+          ),
+          /missing txHex in txPrebuild/
+        );
+        warn.called.should.be.false();
+      });
+    });
+  });
 });

@@ -421,11 +421,43 @@ describe('TSS payment verification', function () {
     });
   });
 
-  describe('other intents', function () {
-    it('warns for an intent type with no verifier', async function () {
+  describe('other intents and fail-closed default (CECHO-2861)', function () {
+    it('warns and passes for an explicitly allowlisted live intent type with no verifier', async function () {
       const txHex = await buildTx({ to: recipient, value: '1' });
       (await verify({ type: 'acceleration' }, txHex)).should.be.true();
       warned(/acceleration: no verifier is implemented/).should.be.true();
+    });
+
+    it('rejects unknown/unlisted intent types and unused labels (e.g. disableToken)', async function () {
+      const txHex = await buildTx({ to: recipient, value: '1' });
+      for (const type of ['disableToken', 'disabletoken', 'unknownIntent', 'acceleraton']) {
+        await expectMismatch(
+          verify({ type, recipients: [{ address: recipient, amount: '1' }] }, txHex),
+          /no TSS transaction verifier is implemented for intent type/
+        );
+      }
+      warn.called.should.be.false();
+    });
+
+    it('rejects missing/empty intent type and transfer/payment with empty recipients', async function () {
+      const txHex = await buildTx({ to: recipient, value: '1' });
+      await expectMismatch(
+        verify({ recipients: [{ address: recipient, amount: '1' }] }, txHex),
+        /requires a declared intent type/
+      );
+      await expectMismatch(
+        verify({ type: '', recipients: [{ address: recipient, amount: '1' }] }, txHex),
+        /requires a declared intent type/
+      );
+      await expectMismatch(
+        verify({ type: 'transfer', recipients: [] }, txHex),
+        /transfer transaction requires at least one declared recipient/
+      );
+      await expectMismatch(
+        verify({ type: 'payment', recipients: [] }, txHex),
+        /payment transaction requires at least one declared recipient/
+      );
+      warn.called.should.be.false();
     });
   });
 
@@ -831,11 +863,20 @@ describe('TSS payment verification', function () {
       (await verify({ type: 'consolidate-token', tokenName }, txHex)).should.be.true();
     });
 
-    it('warns instead of throwing when the wallet has no base address on the intent path', async function () {
+    it('fails closed when the wallet has no base address on the intent path (CECHO-2861 P1 #3)', async function () {
+      // A triggered consolidation must never warn-and-pass: an unverified sweep would be signed.
       const noBaseWallet = new Wallet(bitgo, coin, { coinSpecific: {} });
       const txHex = await buildTx({ to: recipient, value: '1' });
-      (await verifyWith(noBaseWallet, { type: 'consolidate' }, txHex)).should.be.true();
-      warned(/wallet has no base address/).should.be.true();
+      await expectMismatch(
+        verifyWith(noBaseWallet, { type: 'consolidate' }, txHex),
+        /Unable to determine base address for consolidation/
+      );
+      warn.called.should.be.false();
+    });
+
+    it('fails closed when an ID-only consolidation has no txHex (CECHO-2861 P1 #3)', async function () {
+      await expectMismatch(verifyWith(wallet, {}, '', { consolidateId: 'cid' }), /missing txHex in txPrebuild/);
+      warn.called.should.be.false();
     });
 
     it('throws when the wallet has no base address and the flag is set', async function () {
@@ -1839,6 +1880,93 @@ describe('TSS payment verification', function () {
         ),
         /not canonical/
       );
+    });
+  });
+
+  // CECHO-2861: stored-intent MPCv2 signing (no caller txParams) must fail closed for unlisted
+  // labels, unused NO_RECIPIENT_TX_TYPES labels (e.g. disableToken), and missing intent types.
+  describe('stored-intent fail-closed enforcement via EcdsaMPCv2Utils (CECHO-2861)', function () {
+    function buildAttackBytes(): { signableHex: string; serializedTxHex: string } {
+      const common = AbstractEthLikeNewCoins.getCustomChainCommon(coin.getChainId());
+      const tx = FeeMarketEIP1559Transaction.fromTxData(
+        {
+          nonce: 1,
+          maxPriorityFeePerGas: 10,
+          maxFeePerGas: 100,
+          gasLimit: 100000,
+          to: otherRecipient,
+          value: 1000,
+          data: '0x',
+          chainId: coin.getChainId(),
+        },
+        { common }
+      );
+      return {
+        signableHex: tx.getMessageToSign(false).toString('hex'),
+        serializedTxHex: tx.serialize().toString('hex'),
+      };
+    }
+
+    async function signStoredIntent(intent: Record<string, unknown>): Promise<Error> {
+      const txBytes = buildAttackBytes();
+      const signingWallet = new Wallet(bitgo, coin, {
+        id: 'failClosedWallet',
+        multisigType: 'tss',
+        multisigTypeVersion: 'MPCv2',
+        coinSpecific: { baseAddress },
+      });
+      const utils = new EcdsaMPCv2Utils(bitgo, coin, signingWallet);
+      sinon
+        .stub(utils as unknown as Record<string, () => Promise<string>>, 'pickBitgoPubGpgKeyForSigning')
+        .resolves('stubbed-gpg-key');
+
+      const boundary = new Error('signing boundary reached — verification passed unexpectedly');
+      sinon.stub(coin, 'getHashFunction').returns({
+        update: () => {
+          throw boundary;
+        },
+      } as unknown as Hash);
+
+      const txRequest = {
+        txRequestId: 'stored-fail-closed',
+        apiVersion: 'full',
+        walletId: 'failClosedWallet',
+        intent,
+        transactions: [{ unsignedTx: { derivationPath: 'm/0', ...txBytes }, signatureShares: [] }],
+      } as unknown as TxRequest;
+
+      try {
+        await utils.signTxRequest({ txRequest, prv: '', reqId: new RequestTracer() });
+      } catch (e) {
+        return e as Error;
+      }
+      throw new Error('expected signTxRequest to reject');
+    }
+
+    it('rejects stored disableToken (unused on EVM) before signing', async function () {
+      const err = await signStoredIntent({ intentType: 'disableToken' });
+      err.should.be.instanceOf(TxIntentMismatchRecipientError);
+      err.message.should.match(/no TSS transaction verifier is implemented for intent type 'disableToken'/);
+      warn.called.should.be.false();
+    });
+
+    it('rejects an unlisted intentType with recipients before signing', async function () {
+      const err = await signStoredIntent({
+        intentType: 'unlistedAttackIntent',
+        recipients: [{ address: { address: recipient }, amount: { value: '1000', symbol: 'hteth' } }],
+      });
+      err.should.be.instanceOf(TxIntentMismatchRecipientError);
+      err.message.should.match(/no TSS transaction verifier is implemented for intent type 'unlistedAttackIntent'/);
+      warn.called.should.be.false();
+    });
+
+    it('rejects a stored intent with missing intentType and recipients before signing', async function () {
+      const err = await signStoredIntent({
+        recipients: [{ address: { address: recipient }, amount: { value: '1000', symbol: 'hteth' } }],
+      });
+      err.should.be.instanceOf(TxIntentMismatchRecipientError);
+      err.message.should.match(/requires a declared intent type/);
+      warn.called.should.be.false();
     });
   });
 });
