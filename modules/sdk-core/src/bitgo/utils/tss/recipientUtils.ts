@@ -225,11 +225,19 @@ export function resolveEffectiveTxParams(
     effectiveTxParams.intentAmount = { value: intent.amount.value, symbol: intent.amount.symbol };
   }
 
-  // Propagate the persisted intent nonce so coin verifiers that require an exact nonce (e.g. the
-  // EVM `fillNonce` self-send) can check it on stored-request signing paths that carry no txParams.
+  // Propagate the persisted intent nonce for `fillNonce` only: it is the one intent whose verifier
+  // requires an exact nonce, and pendingApproval re-signing (MPCv1/MPCv2) passes no caller txParams.
+  // Gated on the resolved type like the `bridgeFunds` and `tokenApproval` propagations above, so no
+  // other verifier can silently inherit a stored nonce.
   // Wallet Platform can persist numeric `0`, so handle finite non-negative integer numbers as well
   // as non-empty strings without truthiness checks.
-  if (effectiveTxParams.nonce === undefined && intent?.nonce !== undefined && intent.nonce !== null) {
+  if (
+    effectiveTxParams.nonce === undefined &&
+    effectiveTxParams.type === 'fillNonce' &&
+    intent?.intentType === 'fillNonce' &&
+    intent.nonce !== undefined &&
+    intent.nonce !== null
+  ) {
     if (typeof intent.nonce === 'string' && intent.nonce !== '') {
       effectiveTxParams.nonce = intent.nonce;
     } else if (

@@ -573,6 +573,79 @@ describe('AbstractEthLikeNewCoins TSS verification (HyperEVM bridgeFunds & Heder
         /canonical NFT safeTransferFrom/
       );
     });
+
+    it('rejects a Hedera transferFrom whose sender is not the wallet base address', async function () {
+      const hbarevm = makeCoin('hbarevm');
+      const wallet = new Wallet(bitgo, hbarevm, { coinSpecific: { baseAddress } });
+      // Contract and recipient both match the declaration; only arg 0 is someone else's address.
+      const txHex = buildRawEip1559Tx(hbarevm, {
+        to: htsNftContract,
+        value: '0',
+        data: transferFromData(attacker, recipient, '1'),
+      });
+
+      await expectMismatch(
+        hbarevm.verifyTransaction({
+          txParams: {
+            type: 'transferToken',
+            recipients: [
+              {
+                address: recipient,
+                amount: '0',
+                tokenData: {
+                  tokenType: 'ERC721',
+                  tokenQuantity: '1',
+                  tokenId: '1',
+                  tokenContractAddress: htsNftContract,
+                },
+              },
+            ],
+          } as never,
+          txPrebuild: { txHex, coin: 'hbarevm', walletId: 'fakeWalletId' } as never,
+          wallet,
+          verification: {},
+          walletType: 'tss',
+        }),
+        /NFT transferToken sender does not match wallet base address/
+      );
+      warn.called.should.be.false();
+    });
+
+    it('rejects a Hedera transferFrom when the wallet has no base address to bind the sender against', async function () {
+      const hbarevm = makeCoin('hbarevm');
+      const wallet = new Wallet(bitgo, hbarevm, { coinSpecific: {} });
+      const txHex = buildRawEip1559Tx(hbarevm, {
+        to: htsNftContract,
+        value: '0',
+        data: transferFromData(baseAddress, recipient, '1'),
+      });
+
+      await expectMismatch(
+        hbarevm.verifyTransaction({
+          txParams: {
+            type: 'transferToken',
+            recipients: [
+              {
+                address: recipient,
+                amount: '0',
+                tokenData: {
+                  tokenType: 'ERC721',
+                  tokenQuantity: '1',
+                  tokenId: '1',
+                  tokenContractAddress: htsNftContract,
+                },
+              },
+            ],
+          } as never,
+          txPrebuild: { txHex, coin: 'hbarevm', walletId: 'fakeWalletId' } as never,
+          wallet,
+          verification: {},
+          walletType: 'tss',
+        }),
+        /NFT transferToken requires a wallet base address to bind the sender/
+      );
+      warn.called.should.be.false();
+    });
   });
 
   describe('Cross-network token resolution & bare-symbol binding (CECHO-2690 P0)', function () {
@@ -1103,6 +1176,101 @@ describe('AbstractEthLikeNewCoins TSS verification (HyperEVM bridgeFunds & Heder
           walletType: 'tss',
         }),
         /requires a declared ERC-20 token/
+      );
+      warn.called.should.be.false();
+    });
+  });
+
+  describe('NFT sender binding (CECHO-2690 review)', function () {
+    const hoodiNftContract = '0x8397b091514c1f7bebb9dea6ac267ea23b570605'; // terc721:bitgoerc721 (Hoodi)
+
+    const safeTransferFromData = (from: string, to: string, tokenId: string) =>
+      '0x' +
+      Buffer.concat([
+        EthereumAbi.methodID('safeTransferFrom', ['address', 'address', 'uint256']),
+        EthereumAbi.rawEncode(['address', 'address', 'uint256'], [from, to, tokenId]),
+      ]).toString('hex');
+
+    const nftTxParams = {
+      type: 'transferToken',
+      recipients: [
+        {
+          address: recipient,
+          amount: '0',
+          tokenData: { tokenName: 'terc721:bitgoerc721', tokenQuantity: '1', tokenId: '42' },
+        },
+      ],
+    };
+
+    it('accepts a canonical NFT transfer whose sender is the wallet base address (case-insensitive)', async function () {
+      const hteth = makeCoin('hteth');
+      // ABI encoding lowercases addresses, so the mixed-case value has to sit on the wallet metadata
+      // side: the calldata carries the lowercase base address and the verifier must lower-case the
+      // wallet's checksum-cased base address before comparing.
+      const wallet = new Wallet(bitgo, hteth, {
+        coinSpecific: { baseAddress: '0x174CFD823AF8ce27ED0Afee3FCF3c3ba259116bE' },
+      });
+      const txHex = buildRawEip1559Tx(hteth, {
+        to: hoodiNftContract,
+        value: '0',
+        data: safeTransferFromData(baseAddress, recipient, '42'),
+      });
+
+      const result = await hteth.verifyTransaction({
+        txParams: nftTxParams as never,
+        txPrebuild: { txHex, coin: 'hteth', walletId: 'fakeWalletId' } as never,
+        wallet,
+        verification: {},
+        walletType: 'tss',
+      });
+      result.should.be.true();
+      warn
+        .getCalls()
+        .some((call) => /NFT token transfer \(ERC721\)/.test(String(call.args[0])))
+        .should.be.true();
+    });
+
+    it('rejects a canonical NFT transfer whose sender is not the wallet base address', async function () {
+      const hteth = makeCoin('hteth');
+      const wallet = new Wallet(bitgo, hteth, { coinSpecific: { baseAddress } });
+      // Correct contract, correct recipient, canonical calldata — only `from` is a third party.
+      const txHex = buildRawEip1559Tx(hteth, {
+        to: hoodiNftContract,
+        value: '0',
+        data: safeTransferFromData(attacker, recipient, '42'),
+      });
+
+      await expectMismatch(
+        hteth.verifyTransaction({
+          txParams: nftTxParams as never,
+          txPrebuild: { txHex, coin: 'hteth', walletId: 'fakeWalletId' } as never,
+          wallet,
+          verification: {},
+          walletType: 'tss',
+        }),
+        /NFT transferToken sender does not match wallet base address/
+      );
+      warn.called.should.be.false();
+    });
+
+    it('rejects a canonical NFT transfer when the wallet has no base address to bind the sender against', async function () {
+      const hteth = makeCoin('hteth');
+      const wallet = new Wallet(bitgo, hteth, { coinSpecific: {} });
+      const txHex = buildRawEip1559Tx(hteth, {
+        to: hoodiNftContract,
+        value: '0',
+        data: safeTransferFromData(baseAddress, recipient, '42'),
+      });
+
+      await expectMismatch(
+        hteth.verifyTransaction({
+          txParams: nftTxParams as never,
+          txPrebuild: { txHex, coin: 'hteth', walletId: 'fakeWalletId' } as never,
+          wallet,
+          verification: {},
+          walletType: 'tss',
+        }),
+        /NFT transferToken requires a wallet base address to bind the sender/
       );
       warn.called.should.be.false();
     });

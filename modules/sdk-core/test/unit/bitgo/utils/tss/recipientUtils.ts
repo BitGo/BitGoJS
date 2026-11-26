@@ -338,7 +338,7 @@ describe('recipientUtils', function () {
       });
     });
 
-    describe('intent nonce propagation (CECHO-2690)', function () {
+    describe('intent nonce propagation (fillNonce only, CECHO-2690)', function () {
       it('derives nonce from the intent when txParams is undefined', function () {
         const txRequest = makeTxRequest({ intent: { intentType: 'fillNonce', nonce: '7' } as PopulatedIntent });
         assert.strictEqual(resolveEffectiveTxParams(txRequest, undefined).nonce, '7');
@@ -360,6 +360,37 @@ describe('recipientUtils', function () {
       it('does not overwrite caller-supplied numeric nonce 0', function () {
         const txRequest = makeTxRequest({ intent: { intentType: 'fillNonce', nonce: '7' } as PopulatedIntent });
         assert.strictEqual(resolveEffectiveTxParams(txRequest, { nonce: 0 }).nonce, 0);
+      });
+
+      it('does not attach the stored nonce to a caller-declared payment', function () {
+        const txRequest = makeTxRequest({ intent: { intentType: 'fillNonce', nonce: '7' } as PopulatedIntent });
+        const result = resolveEffectiveTxParams(
+          txRequest,
+          { type: 'transfer', recipients: [{ address: '0xabc', amount: '1' }] },
+          'hteth'
+        );
+        assert.strictEqual(result.type, 'transfer');
+        assert.strictEqual(result.nonce, undefined);
+      });
+
+      it('does not attach a stored fillNonce nonce when the caller declared another type', function () {
+        const txRequest = makeTxRequest({ intent: { intentType: 'fillNonce', nonce: '7' } as PopulatedIntent });
+        assert.strictEqual(resolveEffectiveTxParams(txRequest, { type: 'acceleration' }).nonce, undefined);
+      });
+
+      it('does not attach a stored nonce when the intent is not a fillNonce intent', function () {
+        const txRequest = makeTxRequest({ intent: { intentType: 'acceleration', nonce: '7' } as PopulatedIntent });
+        assert.strictEqual(resolveEffectiveTxParams(txRequest, undefined).nonce, undefined);
+      });
+
+      it('keeps the caller nonce when a fillNonce caller pairs with a non-fillNonce intent', function () {
+        // Inverse of the stored-`fillNonce` case: the resolved type alone must not be enough to pull
+        // the stored intent's nonce in, so the caller's own nonce stays authoritative.
+        const txRequest = makeTxRequest({ intent: { intentType: 'acceleration', nonce: '7' } as PopulatedIntent });
+        assert.strictEqual(resolveEffectiveTxParams(txRequest, { type: 'fillNonce', nonce: '9' }).nonce, '9');
+
+        // Same intent, caller declares `fillNonce` but supplies no nonce: nothing is inherited.
+        assert.strictEqual(resolveEffectiveTxParams(txRequest, { type: 'fillNonce' }).nonce, undefined);
       });
 
       it('ignores negative, non-integer, or non-finite numeric stored nonces', function () {

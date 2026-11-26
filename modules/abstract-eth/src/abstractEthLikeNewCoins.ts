@@ -4248,8 +4248,8 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
    *
    * - ERC-721 / ERC-1155 NFT transfers stay warning-only for tokenId/quantity semantics, but only for
    *   a positively classified NFT (declared `tokenType` or a statics NFT coin): canonical NFT calldata
-   *   for the declared standard, the declared contract, zero native value, and the decoded recipient
-   *   are all enforced before the warning is emitted.
+   *   for the declared standard, the declared contract, `from == wallet base address`, zero native
+   *   value, and the decoded recipient are all enforced before the warning is emitted.
    * - ERC-20 transfers fail closed on recipient, amount, declared token contract (from `@bitgo/statics`),
    *   canonical `transfer(address,uint256)` calldata, and `value == 0`.
    * - Coordinates amount semantics with COINS-2263 (`BitGo/bitgo-microservices#64621`):
@@ -4258,6 +4258,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
    */
   private async verifyTssTransferToken(
     txParams: EthTransactionParams,
+    wallet: IWallet,
     txHex: string | undefined,
     throwRecipientMismatch: (message: string, mismatchedRecipients: Recipient[]) => Promise<never>
   ): Promise<void> {
@@ -4352,9 +4353,21 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
 
     // NFT transferToken (ERC-721 / ERC-1155): the tokenId/quantity semantics stay warning-only until
     // a dedicated NFT verifier lands, but nothing else is relaxed. Canonical NFT calldata, the
-    // declared contract, zero native value, and the decoded recipient are all enforced so a
-    // compromised server cannot smuggle an ERC-20 transfer/approve, native value, or a different
-    // destination under an NFT label.
+    // declared contract, `from == wallet base address`, zero native value, and the decoded recipient
+    // are all enforced so a compromised server cannot smuggle an ERC-20 transfer/approve, native
+    // value, a different sender, or a different destination under an NFT label.
+    //
+    // Threat model: for contracts that are not in `@bitgo/statics`, `tokenType` and
+    // `tokenContractAddress` are intent/server-declared, so "declared an NFT" is not proof that the
+    // target really is an ERC-721/ERC-1155 — for unregistered contracts the NFT classification is
+    // server-declared. Canonical calldata constrains the *encoding* of the call, not the behavior of
+    // the contract it targets: `to` must be the declared or registered 20-byte contract on this
+    // network, arg 0 (`from`) must be the wallet's own base address, arg 1 (`to`) must be the
+    // declared recipient, and `value` must be 0 — but a target that does not implement the declared
+    // standard may still treat those arguments however it likes. tokenId/quantity are not verified
+    // semantically, and for the 4-argument ERC-721 form the trailing `bytes` argument is only checked
+    // for canonical ABI shape; its contents are not semantically checked. This is an
+    // encoding-and-recipient constraint, not a guarantee about the transfer the target performs.
     if (declaredNftStandard) {
       const nftCalldataTypes = nftCalldataTypesFor(declaredNftStandard);
       if (!nftCalldataTypes) {
@@ -4399,7 +4412,20 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       if (!tssValuesEqual(value, '0')) {
         await mismatch('NFT transferToken transaction must not carry native value');
       }
-      const [, decodedNftRecipient] = decodeTssCalldataArgs(data, nftCalldataTypes);
+      const [decodedNftFrom, decodedNftRecipient] = decodeTssCalldataArgs(data, nftCalldataTypes);
+      // Bind arg 0 (`from`) to the wallet's own base address: a canonical `safeTransferFrom` /
+      // `transferFrom` of someone else's token must never pass as this wallet's NFT transfer.
+      // `coinSpecific().baseAddress` is the same wallet metadata the consolidation and fillNonce
+      // verifiers trust, not caller txParams.
+      const nftBaseAddress = wallet.coinSpecific()?.baseAddress;
+      if (!nftBaseAddress) {
+        await mismatch('NFT transferToken requires a wallet base address to bind the sender');
+        return;
+      }
+      const decodedNftFromAddress = addHexPrefix(decodedNftFrom as string).toLowerCase();
+      if (decodedNftFromAddress !== nftBaseAddress.toLowerCase()) {
+        await mismatch('NFT transferToken sender does not match wallet base address', decodedNftFromAddress);
+      }
       const decodedNftTo = addHexPrefix(decodedNftRecipient as string).toLowerCase();
       if (!recipient.address || decodedNftTo !== recipient.address.toLowerCase()) {
         await mismatch('NFT transferToken destination address does not match the recipient address', decodedNftTo);
@@ -4407,7 +4433,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       this.warnTssVerificationIncomplete(
         'transferToken',
         `NFT token transfer (${declaredNftStandard}) verification is not implemented: only tokenId/quantity ` +
-          'semantics were skipped; calldata shape, contract, recipient, and zero native value were verified'
+          'semantics were skipped; calldata shape, contract, sender, recipient, and zero native value were verified'
       );
       return;
     }
@@ -4518,8 +4544,9 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
    *       `0x01` (version 1) || `0x000006` (actionId 6) || canonical ABI `(address, uint64, uint64)`
    *   - `destination` = coin's `systemAddress` from `@bitgo/statics`
    *   - `tokenId` = coin's `tokenId` from `@bitgo/statics` (`150` mainnet / `1105` testnet)
-   *   - `amount` = `BigInt(declaredAmount.value) / 10^10` (18-decimal wei truncated to 8-decimal HyperCore units);
-   *     the result must be a positive `uint64`, so zero, sub-unit dust, and overflow are rejected
+   *   - `amount` = `BigInt(declaredAmount.value) / 10^10` (18-decimal wei truncated to 8-decimal HyperCore units,
+   *     mirroring WP's `convertFrom18To8Decimals`); sub-unit dust truncates away and is accepted, while a
+   *     result of 0 (nothing would bridge) and anything above `uint64` (cannot be encoded) are rejected
    *   - `declaredAmount` comes from `txParams.intentAmount`, or the stored-intent `txParams.amount`
    *     shape that `resolveEffectiveTxParams` propagates — never from calldata
    *
@@ -4631,9 +4658,15 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       await mismatch('bridgeFunds tokenId does not match the HyperEVM chain configuration', decodedDestination);
     }
 
-    // HyperCore amounts are 8-decimal uint64 units. A positive wei amount below one HyperCore unit
-    // truncates to 0 and would bridge less than the intent declared (or nothing at all), and a value
-    // above uint64 cannot be carried by the payload at all.
+    // HyperCore amounts are 8-decimal uint64 units, so the declared 18-decimal wei amount is
+    // truncated — not rounded — exactly like WP's `convertFrom18To8Decimals`
+    // (bitgo-microservices: packages/wallet-platform/app/controllers/api/v2/coins/hypeevm/utils.ts:145,
+    // which carries an `@obligation` to use integer division so the encoded amount matches the
+    // intent). A partial sub-unit remainder is therefore legitimate production behavior and must NOT
+    // be rejected.
+    // Only a declared amount that truncates to 0 is refused: it would bridge nothing while
+    // consuming the intent, so it cannot be what the caller meant. The upper bound is the payload's
+    // own uint64 limit — a larger amount cannot be carried by the calldata at all.
     const expectedScaledAmount = BigInt(rawAmount.value.trim()) / HYPEEVM_BRIDGE_DECIMAL_DIVISOR;
     if (expectedScaledAmount <= 0n) {
       await mismatch(
@@ -4884,7 +4917,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     } else if (txType === 'fillNonce') {
       await this.verifyTssFillNonce(txParams, wallet, txPrebuild.txHex, throwRecipientMismatch);
     } else if (txType === 'transferToken' || txType === 'transfertoken') {
-      await this.verifyTssTransferToken(txParams, txPrebuild.txHex, throwRecipientMismatch);
+      await this.verifyTssTransferToken(txParams, wallet, txPrebuild.txHex, throwRecipientMismatch);
     } else if (txType === 'bridgeFunds') {
       await this.verifyTssBridgeFunds(txParams, txPrebuild.txHex, throwRecipientMismatch);
     }
