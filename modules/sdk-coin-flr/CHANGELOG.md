@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.11.63](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-flr%401.11.62...%40bitgo%2Fsdk-coin-flr%401.11.63) (2026-11-26)
+
+### Bug Fixes
+
+* **abstract-eth:** verify fillNonce, transferToken, bridgeFunds, DeFi ([c33fcb2](https://github.com/BitGo/BitGoJS/commit/c33fcb2e1f0ac187b7c81b3635105910fe9b3214))
+
+
 ## [1.11.62](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-flr%401.11.61...%40bitgo%2Fsdk-coin-flr%401.11.62) (2026-11-24)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-flr

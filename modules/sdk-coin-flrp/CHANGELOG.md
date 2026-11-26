@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.21.13](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-flrp%401.21.12...%40bitgo%2Fsdk-coin-flrp%401.21.13) (2026-11-26)
+
+### Bug Fixes
+
+* **sdk-coin-flrp:** bind exported output owners and change outputs to the wallet ([ee891d3](https://github.com/BitGo/BitGoJS/commit/ee891d3e359bf57c857d416dcda02871fa8d8dc9))
+
+
 ## [1.21.12](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-flrp%401.21.11...%40bitgo%2Fsdk-coin-flrp%401.21.12) (2026-11-24)
 
 ### Bug Fixes

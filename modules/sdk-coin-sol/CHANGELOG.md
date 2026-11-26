@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [8.21.8](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-sol%408.21.7...%40bitgo%2Fsdk-coin-sol%408.21.8) (2026-11-26)
+
+### Bug Fixes
+
+* **sdk-coin-sol:** verify sponsored fee payers and signing-time consolidations ([40ffe67](https://github.com/BitGo/BitGoJS/commit/40ffe67ca440540de89825b2690b706103c118da))
+
+
 ## [8.21.7](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-sol%408.21.6...%40bitgo%2Fsdk-coin-sol%408.21.7) (2026-11-24)
 
 ### Bug Fixes

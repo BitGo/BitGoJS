@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [17.11.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fexpress%4017.10.1...%40bitgo%2Fexpress%4017.11.0) (2026-11-26)
+
+### Features
+
+* **sdk-api,express:** configurable Argon2id concurrency limit ([8eb4cc9](https://github.com/BitGo/BitGoJS/commit/8eb4cc9d8bd9c19b2ab82d5c780a5c987eb12aa5))
+
+
 ## [17.10.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fexpress%4017.10.0...%40bitgo%2Fexpress%4017.10.1) (2026-11-24)
 
 ### Bug Fixes

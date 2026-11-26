@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.16.8](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-tempo%401.16.7...%40bitgo%2Fsdk-coin-tempo%401.16.8) (2026-11-26)
+
+### Bug Fixes
+
+* **abstract-eth:** verify fillNonce, transferToken, bridgeFunds, DeFi ([c33fcb2](https://github.com/BitGo/BitGoJS/commit/c33fcb2e1f0ac187b7c81b3635105910fe9b3214))
+
+
 ## [1.16.7](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-tempo%401.16.6...%40bitgo%2Fsdk-coin-tempo%401.16.7) (2026-11-24)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-tempo

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.5.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-api%403.4.4...%40bitgo%2Fsdk-api%403.5.0) (2026-11-26)
+
+### Bug Fixes
+
+* **sdk-api:** pipeline and safeguard changePassword rotation ([8d73ef0](https://github.com/BitGo/BitGoJS/commit/8d73ef0d0f0440ef55a4f3bb46d9acd4caab9252))
+
+### Features
+
+* **sdk-api,express:** configurable Argon2id concurrency limit ([8eb4cc9](https://github.com/BitGo/BitGoJS/commit/8eb4cc9d8bd9c19b2ab82d5c780a5c987eb12aa5))
+
+
 ## [3.4.4](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-api%403.4.3...%40bitgo%2Fsdk-api%403.4.4) (2026-11-24)
 
 **Note:** Version bump only for package @bitgo/sdk-api

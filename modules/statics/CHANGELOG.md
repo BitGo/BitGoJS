@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [59.34.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fstatics%4059.33.0...%40bitgo%2Fstatics%4059.34.0) (2026-11-26)
+
+### Bug Fixes
+
+* **sdk-coin-evm:** remove legacy TSS verify bypass for non-EIP1559 ([d5f7e28](https://github.com/BitGo/BitGoJS/commit/d5f7e289e4743f5818fb5e2dbe322f945fae6147))
+
+### Features
+
+* **statics:** extend the PoX-5 test-contract allowance to 2026-12-01 ([f63654a](https://github.com/BitGo/BitGoJS/commit/f63654ae0f76ad45f56c8a5396d5780dca7211b7))
+
+
 # [59.33.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fstatics%4059.32.1...%40bitgo%2Fstatics%4059.33.0) (2026-11-24)
 
 ### Features

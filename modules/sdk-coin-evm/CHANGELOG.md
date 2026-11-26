@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.17.8](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-evm%401.17.7...%40bitgo%2Fsdk-coin-evm%401.17.8) (2026-11-26)
+
+### Bug Fixes
+
+* **sdk-coin-evm:** remove legacy TSS verify bypass for non-EIP1559 ([d5f7e28](https://github.com/BitGo/BitGoJS/commit/d5f7e289e4743f5818fb5e2dbe322f945fae6147))
+
+
 ## [1.17.7](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-evm%401.17.6...%40bitgo%2Fsdk-coin-evm%401.17.7) (2026-11-24)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-evm

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [26.8.8](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-eth%4026.8.7...%40bitgo%2Fsdk-coin-eth%4026.8.8) (2026-11-26)
+
+### Bug Fixes
+
+* **abstract-eth:** address claude[bot] comments on [#10241](https://github.com/BitGo/BitGoJS/issues/10241) ([c376019](https://github.com/BitGo/BitGoJS/commit/c3760198973253f5ed7288a54bb5179f504a37d9))
+* **abstract-eth:** bind tokenApproval tokenName and decode ERC-7984 bytes ([4d462d8](https://github.com/BitGo/BitGoJS/commit/4d462d8b690979a110fee03db27687912d6f7626))
+* **abstract-eth:** enforce ERC-7984 rules before explicit calldata and trim scope ([ede044b](https://github.com/BitGo/BitGoJS/commit/ede044b9e66ac353ae40235863b75255c4974448))
+* **abstract-eth:** verify consolidation TSS transaction intents ([d89e8a5](https://github.com/BitGo/BitGoJS/commit/d89e8a54f7064928480e56be9b071d57684be1f7))
+* **abstract-eth:** verify fillNonce, transferToken, bridgeFunds, DeFi ([c33fcb2](https://github.com/BitGo/BitGoJS/commit/c33fcb2e1f0ac187b7c81b3635105910fe9b3214))
+* **abstract-eth:** verify tokenApproval and ERC-7984 TSS payment calldata ([d363c4c](https://github.com/BitGo/BitGoJS/commit/d363c4c2fd3f681d4046b2d2fbb7c0c369aaf41b))
+
+
 ## [26.8.7](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-eth%4026.8.6...%40bitgo%2Fsdk-coin-eth%4026.8.7) (2026-11-24)
 
 ### Bug Fixes

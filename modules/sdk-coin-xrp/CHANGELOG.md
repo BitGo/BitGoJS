@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.2.13](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-xrp%404.2.12...%40bitgo%2Fsdk-coin-xrp%404.2.13) (2026-11-26)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-xrp
+
+
+
+
+
 ## [4.2.12](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-coin-xrp%404.2.11...%40bitgo%2Fsdk-coin-xrp%404.2.12) (2026-11-24)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xrp

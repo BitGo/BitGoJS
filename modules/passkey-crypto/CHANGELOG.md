@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.11.13](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fpasskey-crypto%400.11.12...%40bitgo%2Fpasskey-crypto%400.11.13) (2026-11-26)
+
+**Note:** Version bump only for package @bitgo/passkey-crypto
+
+
+
+
+
 ## [0.11.12](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fpasskey-crypto%400.11.11...%40bitgo%2Fpasskey-crypto%400.11.12) (2026-11-24)
 
 **Note:** Version bump only for package @bitgo/passkey-crypto

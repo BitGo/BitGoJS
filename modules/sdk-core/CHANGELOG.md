@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [40.10.1](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4040.10.0...%40bitgo%2Fsdk-core%4040.10.1) (2026-11-26)
+
+### Bug Fixes
+
+* **abstract-eth:** address claude[bot] comments on [#10241](https://github.com/BitGo/BitGoJS/issues/10241) ([c376019](https://github.com/BitGo/BitGoJS/commit/c3760198973253f5ed7288a54bb5179f504a37d9))
+* **abstract-eth:** address PR [#10241](https://github.com/BitGo/BitGoJS/issues/10241) review feedback ([51e7554](https://github.com/BitGo/BitGoJS/commit/51e75541bc6247d51305469914cd64a39ce0937d))
+* **abstract-eth:** bind tokenApproval tokenName and decode ERC-7984 bytes ([4d462d8](https://github.com/BitGo/BitGoJS/commit/4d462d8b690979a110fee03db27687912d6f7626))
+* **abstract-eth:** verify fillNonce, transferToken, bridgeFunds, DeFi ([c33fcb2](https://github.com/BitGo/BitGoJS/commit/c33fcb2e1f0ac187b7c81b3635105910fe9b3214))
+* **abstract-eth:** verify tokenApproval and ERC-7984 TSS payment calldata ([d363c4c](https://github.com/BitGo/BitGoJS/commit/d363c4c2fd3f681d4046b2d2fbb7c0c369aaf41b))
+* **sdk-api:** pipeline and safeguard changePassword rotation ([8d73ef0](https://github.com/BitGo/BitGoJS/commit/8d73ef0d0f0440ef55a4f3bb46d9acd4caab9252))
+
+
 # [40.10.0](https://github.com/BitGo/BitGoJS/compare/%40bitgo%2Fsdk-core%4040.9.0...%40bitgo%2Fsdk-core%4040.10.0) (2026-11-24)
 
 ### Features
