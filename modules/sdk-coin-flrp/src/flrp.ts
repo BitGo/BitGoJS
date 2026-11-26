@@ -3,6 +3,8 @@ import {
   AuditDecryptedKeyParams,
   BaseCoin,
   BitGoBase,
+  EcdsaUtils,
+  IWallet,
   KeyPair,
   MPCAlgorithm,
   MultisigType,
@@ -27,6 +29,8 @@ import {
   ADDRESS_SEPARATOR,
   CreatePairedWalletParams,
   CreatePairedWalletResponse,
+  Dimensions,
+  FeeDimensions,
   FlrpEntry,
   FlrpExplainTransactionOptions,
   FlrpSignTransactionOptions,
@@ -36,7 +40,23 @@ import {
 import utils from './lib/utils';
 import BigNumber from 'bignumber.js';
 import { isValidAddress as isValidEthAddress } from 'ethereumjs-util';
-import { pvmSerial, TransferOutput, UnsignedTx } from '@flarenetwork/flarejs';
+import { pvm as FlarePvm, Common as FlareCommon, pvmSerial, UnsignedTx, TransferOutput } from '@flarenetwork/flarejs';
+
+// P-chain dynamic-fee protocol constants (Flare fee weights, order: bandwidth, dbRead,
+// dbWrite, compute) — the same weights the fixture feeState and flarejs use.
+const PVM_FEE_WEIGHTS: Dimensions = {
+  [FeeDimensions.Bandwidth]: 1,
+  [FeeDimensions.DBRead]: 1000,
+  [FeeDimensions.DBWrite]: 1000,
+  [FeeDimensions.Compute]: 4,
+};
+// Ceiling on the dynamic-fee gas price used to bound export fees: ~4x the observed
+// network price (251 on mainnet/testnet fee states, minPrice 250), leaving spike
+// headroom while still bounding burned fees proportionally to the tx's own gas.
+// If the network price sustainably exceeds ~250 nFLR for an extended period this
+// value should be updated via statics; a stale ceiling would over-reject legitimate
+// exports once the actual fee rises above it.
+const GAS_PRICE_CEILING = 1_000n;
 
 /**
  * Normalize an address (or tilde-joined owner set) for comparison: case-insensitive
@@ -136,7 +156,7 @@ export class Flrp extends BaseCoin {
         if (!params.txParams.recipients || params.txParams.recipients?.length !== 1) {
           throw new Error('Export Tx requires a recipient');
         } else {
-          this.validateExportTx(params.txParams.recipients, explainedTx, tx);
+          await this.validateExportTx(params.txParams.recipients, explainedTx, tx, params);
         }
         break;
       case TransactionType.Import:
@@ -210,20 +230,21 @@ export class Flrp extends BaseCoin {
 
   /**
    * Check if export txn is valid, based on expected tx params.
+   * Besides the amount window, binds the exported outputs and change outputs to
+   * wallet-owned addresses (CECHO-2716): a malicious prebuild spending the wallet's
+   * UTXOs while paying an attacker-owned export output or change must fail.
    *
    * @param {ITransactionRecipient[]} recipients expected recipients and info
    * @param {FlrpLib.TransactionExplanation} explainedTx explained export transaction
    * @param {FlrpLib.Transaction} tx parsed transaction, used to distinguish the export direction
+   * @param {FlrpVerifyTransactionOptions} params verification params carrying the wallet
    */
-  validateExportTx(
+  async validateExportTx(
     recipients: ITransactionRecipient[],
     explainedTx: FlrpLib.TransactionExplanation,
-    tx: FlrpLib.Transaction
-  ): void {
-    if (recipients.length !== 1 || explainedTx.outputs.length !== 1) {
-      throw new Error('Export Tx requires one recipient');
-    }
-
+    tx: FlrpLib.Transaction,
+    params: FlrpVerifyTransactionOptions
+  ): Promise<void> {
     const maxImportFee = (this._staticsCoin.network as FlareNetwork).maxImportFee;
     const recipientAmount = new BigNumber(recipients[0].amount);
     if (
@@ -235,34 +256,230 @@ export class Flrp extends BaseCoin {
       );
     }
 
-    if (explainedTx.outputs && !utils.isValidAddress(explainedTx.outputs[0].address)) {
-      throw new Error(`Invalid P-chain address ${explainedTx.outputs[0].address}`);
+    // Guard against a zero-output export before accessing outputs[0]; also ensures a
+    // two-output exploit (attacker destination at outputs[1]) is fully covered below.
+    if (!explainedTx.outputs || explainedTx.outputs.length === 0) {
+      throw new Error('Export tx has no exported outputs; refusing to verify');
     }
-
+    for (const output of explainedTx.outputs) {
+      if (!utils.isValidAddress(output.address)) {
+        throw new Error(`Invalid P-chain address ${output.address}`);
+      }
+    }
     if (tx.isTransactionForCChain) {
-      // C→P export: the outputs are the P-chain owner set the recipient names. Bind the
-      // destination when the caller carries a non-empty address (review hardening for
-      // CECHO-2717); an empty placeholder (destination supplied by the later import) is
-      // not comparable.
+      // C→P export: every exported output must pay the P-chain destination named by
+      // the recipient. Bind all outputs when the caller carries the destination
+      // (CECHO-2716). A two-output prebuild whose second output pays an attacker is
+      // caught by looping over all outputs rather than checking only outputs[0].
+      // RESIDUAL: an empty placeholder leaves the destination unbound — legitimate
+      // external destinations are held server-side, so wallet-binding here would
+      // false-reject cross-wallet exports. Tracked as CECHO-2867 (supply the
+      // destination client-side so it can be bound).
       const expectedExportDestination = recipients[0].address;
       if (expectedExportDestination) {
         if (!utils.isValidAddress(expectedExportDestination)) {
           throw new Error(`Invalid expected export destination: ${expectedExportDestination}`);
         }
-        const exportDestination = explainedTx.outputs[0].address;
-        if (normalizeAddressSet(exportDestination) !== normalizeAddressSet(expectedExportDestination)) {
-          throw new Error(
-            `Export destination ${exportDestination} does not match the expected recipient ${expectedExportDestination}`
-          );
+        for (const output of explainedTx.outputs) {
+          if (normalizeAddressSet(output.address) !== normalizeAddressSet(expectedExportDestination)) {
+            throw new Error(
+              `Export destination ${output.address} does not match the expected recipient ${expectedExportDestination}`
+            );
+          }
         }
       }
+    } else {
+      // P→C export: ALL exported outputs and every P-chain change output must be
+      // wallet-owned. A two-output prebuild that hides an attacker-owned second output
+      // behind a wallet-owned first output is caught by looping over all outputs
+      // (CECHO-2716).
+      //
+      // The owner anchor is DERIVED FROM THE WALLET'S KEYCHAINS (client-verified key
+      // material, the same derivation isWalletAddress uses) — not from platform-served
+      // wallet fields: a compromised platform controls the prebuild AND
+      // rootAddress/receiveAddress, so those cannot anchor the ownership check.
+      // Fail closed when the keychain-derived owner set is unavailable.
+      const anchorOwners = await this.deriveWalletOwnerSetFromKeychains(params.wallet);
+      if (anchorOwners.size === 0) {
+        throw new Error('Unable to verify P-chain export: could not derive the wallet owner set from keychains');
+      }
+      for (const output of explainedTx.outputs) {
+        this.requireWalletOwnedAddresses('Export output', output.address, anchorOwners);
+      }
+      for (const changeOutput of explainedTx.changeOutputs) {
+        this.requireWalletOwnedAddresses('Export change output', changeOutput.address, anchorOwners);
+      }
+      // Locktime/threshold policy on the raw outputs (review hardening for
+      // CECHO-2716): a wallet-owned output with a far-future locktime or a malformed
+      // threshold would lock or strand the funds rather than steal them, but must
+      // still fail verification.
+      this.validateExportOutputPolicy(tx);
+      // Bound the implied burned fee (review hardening for CECHO-2716): the ceiling
+      // scales with the tx's own gas so many-input exports stay verifiable.
+      this.validateExportFee(explainedTx, tx);
     }
-    // P→C export: the exported outputs are owned by the wallet's own addresses
-    // (ExportInPTxBuilder pays the wallet's fromAddresses — the C destination is the
-    // wallet's paired C address, supplied by the later import). A non-empty recipient
-    // here is the C-chain destination, which is not comparable to the P-form output
-    // owner set, so it is deliberately not bound — binding it would reject flows that
-    // pass the C destination.
+  }
+
+  /**
+   * Derive the wallet's P-chain owner addresses from its keychain public keys —
+   * the same derivation isWalletAddress performs. Keychains are fetched by the
+   * wallet's key IDs; their public key material is the client-trusted source of
+   * wallet identity, unlike platform-served wallet fields (rootAddress/receiveAddress),
+   * which a compromised platform controls alongside the prebuild.
+   * TSS/MPC keychains carry the joint public key in `commonKeychain` (130 hex chars:
+   * 33-byte compressed public key + 32-byte chain code — the same field sdk-core's
+   * verifyMPCWalletAddress reads) and may not populate `pub`. The compressed public
+   * key is extracted from it exactly as sdk-core's EcdsaUtils does; a malformed
+   * commonKeychain throws and fails closed. The address is derived from the root
+   * public key with no HD derivation path — the same convention flrp's isWalletAddress
+   * MPC branch uses, which production createAddress verification already exercises.
+   * FLRP TSS wallets use the root-key address directly (ripemd160(sha256(pubkey)));
+   * no m/{index} sub-paths exist in production FLRP MPC wallets, so root-key
+   * derivation matches what the builder pays. A keychain with neither pub nor
+   * commonKeychain yields an incomplete owner set that fails closed in the caller.
+   *
+   * @param {IWallet} wallet the wallet whose keychains define the owner set
+   * @returns the wallet's normalized owner addresses; empty when no keychains resolve
+   */
+  private async deriveWalletOwnerSetFromKeychains(wallet: IWallet | undefined): Promise<Set<string>> {
+    if (!wallet) {
+      return new Set();
+    }
+    const keyIds = wallet.keyIds();
+    if (keyIds.length === 0) {
+      return new Set();
+    }
+    const keychains = await Promise.all(keyIds.map(async (keyId) => wallet.baseCoin.keychains().get({ id: keyId })));
+    const publicKeys = keychains.map((keychain) => {
+      if (typeof keychain.pub === 'string') {
+        return keychain.pub;
+      }
+      if (typeof keychain.commonKeychain === 'string') {
+        // A TSS commonKeychain is the 33-byte compressed public key followed by the
+        // 32-byte chain code (130 hex chars) — NOT a bare public key. Extract the
+        // public key exactly as sdk-core's EcdsaUtils does; a malformed length throws
+        // and fails closed rather than feeding chain-code bytes to KeyPair.
+        return EcdsaUtils.getPublicKeyFromCommonKeychain(keychain.commonKeychain);
+      }
+      return undefined;
+    });
+    if (publicKeys.some((pub) => typeof pub !== 'string')) {
+      return new Set();
+    }
+    const networkType = this._staticsCoin.network.type;
+    const ownerAddresses = publicKeys.map((pub) => new FlrpLib.KeyPair({ pub: pub as string }).getAddress(networkType));
+    return new Set(ownerAddresses.map((address) => address.toLowerCase()));
+  }
+
+  /**
+   * Bind the P→C export's output spend policy (review hardening for CECHO-2716):
+   * every exported output and change output must be immediately spendable
+   * (locktime 0) and structurally sound (threshold between 1 and the owner count).
+   * A wallet-owned output with a far-future locktime freezes the funds; a threshold
+   * above the owner count strands them. The exact threshold is not bound to the
+   * wallet's configuration — no authoritative expected threshold reaches
+   * verifyTransaction (TSS wallets use 1, custodial m-of-n uses m), and the SDK's
+   * MPC builder legitimately produces single-key outputs, so neither threshold
+   * equality nor a minimum owner count can be enforced without false-rejecting
+   * legitimate exports. The keychain-derived wallet-ownership requirement in
+   * validateExportTx is what prevents platform-controlled theft; pinning the
+   * expected owner set / threshold by wallet type is tracked as CECHO-2868.
+   *
+   * @param {FlrpLib.Transaction} tx parsed P→C export carrying the raw outputs
+   * @throws Error when any output locktime is nonzero or its threshold is invalid
+   */
+  private validateExportOutputPolicy(tx: FlrpLib.Transaction): void {
+    const pvmExportTx = (tx.getFlareTransaction() as UnsignedTx).getTx() as pvmSerial.ExportTx;
+    const outputs = [...pvmExportTx.outs, ...pvmExportTx.baseTx.outputs];
+    for (const transferableOutput of outputs) {
+      const output = transferableOutput.output as TransferOutput;
+      const locktime = output.getLocktime();
+      if (locktime !== 0n) {
+        throw new Error(
+          `Export output locktime ${locktime} must be 0 — a time-locked output would freeze the wallet's funds`
+        );
+      }
+      const threshold = output.getThreshold();
+      const ownerCount = output.getOwners().length;
+      if (threshold < 1 || threshold > ownerCount) {
+        throw new Error(
+          `Export output threshold ${threshold} is invalid for ${ownerCount} owner(s); refusing to verify`
+        );
+      }
+    }
+  }
+
+  /**
+   * Bound the fee burned by a P→C export (review hardening for CECHO-2716): the
+   * difference between the consumed input value and the exported amount plus change
+   * is burned as the export fee. Without this check, a prebuild with a tiny
+   * wallet-owned change output could burn the remainder of the spent UTXOs as fee
+   * and still verify.
+   *
+   * The ceiling scales with the tx's own gas (flarejs getTxComplexity × the P-chain
+   * fee weights, times a gas-price ceiling of ~4x the observed network price) — a
+   * flat cap would false-reject legitimate many-input exports, since the P-chain
+   * dynamic fee grows linearly with input count (~1M nFLR per 2-of-3 input at the
+   * observed price 251, so ≥10 inputs already exceed the flat maxImportFee). The
+   * flat maxImportFee remains the floor of the bound. Fails closed when any total
+   * is not a finite number.
+   *
+   * @param {FlrpLib.TransactionExplanation} explainedTx parsed export explanation
+   * @param {FlrpLib.Transaction} tx parsed export carrying the raw tx for gas computation
+   * @throws Error when the burned fee exceeds the complexity-scaled fee bound or
+   * totals are not finite
+   */
+  private validateExportFee(explainedTx: FlrpLib.TransactionExplanation, tx: FlrpLib.Transaction): void {
+    const maxImportFee = (this._staticsCoin.network as FlareNetwork).maxImportFee;
+    // Input entries carry `value` (the UTXO amount); output and change entries carry `amount`.
+    const consumedTotal = (explainedTx.inputs as Array<{ value: string }>).reduce(
+      (sum, input) => sum.plus(input.value),
+      new BigNumber(0)
+    );
+    const payoutTotal = explainedTx.outputs
+      .concat(explainedTx.changeOutputs)
+      .reduce(
+        (sum, output) => sum.plus((output as { value?: string; amount: string }).value ?? output.amount),
+        new BigNumber(0)
+      );
+    if (!consumedTotal.isFinite() || !payoutTotal.isFinite()) {
+      throw new Error('Export fee bound: input/output totals are not finite numbers; refusing to verify');
+    }
+    const burnedFee = consumedTotal.minus(payoutTotal);
+    // Ceiling = flat network fee bound + the tx's own gas at a spike-adjusted price.
+    const rawTx = (tx.getFlareTransaction() as UnsignedTx).getTx();
+    const gas = FlareCommon.dimensionsToGas(FlarePvm.getTxComplexity(rawTx), PVM_FEE_WEIGHTS);
+    const feeCeiling = new BigNumber(maxImportFee).plus(new BigNumber((gas * GAS_PRICE_CEILING).toString()));
+    if (burnedFee.isGreaterThan(feeCeiling)) {
+      throw new Error(
+        `Export burns ${burnedFee.toString()} in fees, exceeding the complexity-scaled fee bound ${feeCeiling.toString()} (gas ${gas} at price ${GAS_PRICE_CEILING})`
+      );
+    }
+  }
+
+  /**
+   * Require every address in an (optionally tilde-joined) owner set to be one of the
+   * wallet's own addresses. Addresses are normalized (case-insensitive, sorted).
+   *
+   * Note: an output owned solely by the platform-held key at threshold 1 passes this
+   * check — it is not a foreign-address theft, but it does reduce the user key's
+   * effective spend control. Pinning the expected threshold and owner set by wallet
+   * type is tracked as CECHO-2868.
+   *
+   * @param {string} label which output is being checked, for the error message
+   * @param {string} address the output's tilde-joined owner-set address from the parsed tx
+   * @param {Set<string>} anchorOwners the wallet's normalized owner addresses
+   */
+  private requireWalletOwnedAddresses(label: string, address: string, anchorOwners: Set<string>): void {
+    if (!utils.isValidAddress(address)) {
+      throw new Error(`Invalid ${label} address: ${address}`);
+    }
+    const foreignOwner = normalizeAddressSet(address)
+      .split(ADDRESS_SEPARATOR)
+      .find((owner) => !anchorOwners.has(owner));
+    if (foreignOwner) {
+      throw new Error(`${label} pays non-wallet address ${foreignOwner}; refusing to verify`);
+    }
   }
 
   /**
@@ -397,10 +614,10 @@ export class Flrp extends BaseCoin {
    */
   validateImportFee(explainedTx: FlrpLib.TransactionExplanation): void {
     const maxImportFee = (this._staticsCoin.network as FlareNetwork).maxImportFee;
-    // Input entries carry `value`; output entries carry `amount` (explainTransaction
-    // maps outputs to { address, amount }). Fail closed when either total is not a
-    // finite number — a field mismatch must never silently disable the cap.
-    const consumedTotal = (explainedTx.inputs as unknown as FlrpEntry[]).reduce(
+    // Input entries carry `value` (the UTXO amount); output entries carry `amount`.
+    // Fail closed when either total is not a finite number — a field mismatch must
+    // never silently disable the cap.
+    const consumedTotal = (explainedTx.inputs as Array<{ value: string }>).reduce(
       (sum, input) => sum.plus(input.value),
       new BigNumber(0)
     );
