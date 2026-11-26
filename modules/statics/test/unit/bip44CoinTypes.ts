@@ -28,6 +28,43 @@ describe('bip44 coin types', function () {
     should(coins.get('usdc').bip44CoinType).equal(coins.get('eth').bip44CoinType);
   });
 
+  // Pinned values: the UTXO per-wallet derivation prefix (`44/<coinType>/<h1>/<h2>`) embeds these, and
+  // recovery scans only the canonical prefix, so a change here would make existing bip44 addresses unrecoverable.
+  describe('UTXO coin types are pinned', function () {
+    const pinned: Record<string, number> = {
+      btc: 0,
+      tbtc: 0,
+      tbtc4: 0,
+      tbtcsig: 0,
+      tbtcbgsig: 0,
+      tbtcstx: 0,
+      tbtcstxprivate1: 0,
+      tbtcstxsignet: 0,
+      ltc: 2,
+      tltc: 2,
+      doge: 3,
+      tdoge: 3,
+      dash: 5,
+      tdash: 5,
+      zec: 133,
+      tzec: 133,
+      bch: 145,
+      tbch: 145,
+      btg: 156,
+      tbtg: 156,
+      bsv: 236,
+      tbsv: 236,
+      bcha: 899,
+      tbcha: 899,
+    };
+
+    Object.entries(pinned).forEach(([name, coinType]) => {
+      it(`${name} should be ${coinType}`, function () {
+        should(coins.get(name).bip44CoinType).equal(coinType);
+      });
+    });
+  });
+
   it('every BIP44-derivable coin should have a bip44CoinType', function () {
     const missing = new Set<string>();
     coins.forEach((coin) => {
