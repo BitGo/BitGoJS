@@ -42,8 +42,9 @@ import {
   TssSignTxRequestParamsWithPrv,
   TxRequest,
   TxRequestVersion,
+  UserToBitgoRShareReveal,
 } from './baseTypes';
-import { GShare, SignShare } from '../../../account-lib/mpc/tss';
+import { GShare } from '../../../account-lib/mpc/tss';
 import { RequestTracer } from '../util';
 import { envRequiresBitgoPubGpgKeyConfig, getBitgoMpcGpgPubKey } from '../../tss/bitgoPubKeys';
 import { getBitgoGpgPubKey } from '../opengpgUtils';
@@ -371,16 +372,15 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    *
    * @param {Object} params - params object
    * @param {TxRequest} params.txRequest - transaction request with unsigned transaction
-   * @param {string} params.prv - user signing material
-   * @param {string} [params.walletPassphrase] - wallet passphrase
-   * @param {EncryptedSignerShareRecord} [params.encryptedUserToBitgoRShare] - encrypted user to bitgo R share generated in the commitment phase
-   * @returns {Promise<{ rShare: SignShare }>} - R Share to BitGo
+   * @param {string} params.walletPassphrase - wallet passphrase
+   * @param {EncryptedSignerShareRecord} params.encryptedUserToBitgoRShare - encrypted user to bitgo R share generated in the commitment phase
+   * @returns {Promise<{ rShare: UserToBitgoRShareReveal }>} - nonce reveal (r and R) to offer to BitGo
    */
   createRShareFromTxRequest(params: {
     txRequest: TxRequest;
     walletPassphrase: string;
     encryptedUserToBitgoRShare: EncryptedSignerShareRecord;
-  }): Promise<{ rShare: SignShare }> {
+  }): Promise<{ rShare: UserToBitgoRShareReveal }> {
     throw new Error('Method not implemented.');
   }
 
@@ -390,17 +390,21 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    * @param {Object} params - params object
    * @param {TxRequest} params.txRequest - transaction request with unsigned transaction
    * @param {string} params.prv - user signing material
+   * @param {string} params.walletPassphrase - wallet passphrase
+   * @param {EncryptedSignerShareRecord} params.encryptedUserToBitgoRShare - encrypted user to bitgo R share generated in the commitment phase
    * @param {SignatureShareRecord} params.bitgoToUserRShare - BitGo to User R Share
-   * @param {SignShare} params.userToBitgoRShare - User to BitGo R Share
    * @param {CommitmentShareRecord} params.bitgoToUserCommitment - BitGo to User Commitment
+   * @param {(adata: string) => void} [params.markConsumed] - marks the R-share envelope consumed via its validated adata after it authenticates
    * @returns {Promise<GShare>} - GShare from User to BitGo
    */
   createGShareFromTxRequest(params: {
     txRequest: TxRequest;
     prv: string;
+    walletPassphrase: string;
+    encryptedUserToBitgoRShare: EncryptedSignerShareRecord;
     bitgoToUserRShare: SignatureShareRecord;
-    userToBitgoRShare: SignShare;
     bitgoToUserCommitment: CommitmentShareRecord;
+    markConsumed?: (adata: string) => void;
   }): Promise<GShare> {
     throw new Error('Method not implemented.');
   }

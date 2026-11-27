@@ -33,9 +33,11 @@ import {
   TssSignTxRequestParamsWithPrv,
   TssTxRecipientSource,
   TxRequest,
+  UserToBitgoRShareReveal,
   UnsignedTransactionTss,
   isV2Envelope,
 } from '../baseTypes';
+import { formatOfflineSigningAdata, getOfflineSigningAdata, validateOfflineSigningAdata } from '../offlineSigningAdata';
 import { InvalidTransactionError } from '../../../errors';
 import { CreateEddsaBitGoKeychainParams, CreateEddsaKeychainParams, KeyShare, YShare } from './types';
 import baseTSSUtils from '../baseTSSUtils';
@@ -55,6 +57,7 @@ import type { EddsaKeyGenCallbacks } from '../../../wallet/iWallets';
  */
 
 export class EddsaUtils extends baseTSSUtils<KeyShare> {
+  private static readonly EDDSA_SIGNING_RSHARE_STATE = 'EDDSA_SIGNING_RSHARE_STATE';
   async verifyWalletSignatures(
     userGpgPub: string,
     backupGpgPub: string,
@@ -536,6 +539,10 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
   }> {
     const bitgoIndex = ShareKeyPosition.BITGO;
     const { txRequest, prv } = params;
+
+    if (envRequiresBitgoPubGpgKeyConfig(this.bitgo.getEnv())) {
+      assert(isBitgoMpcPubKey(params.bitgoGpgPubKey, 'mpcv1'), 'Invalid BitGo GPG public key');
+    }
     const txRequestResolved: TxRequest = txRequest;
 
     const hdTree = await Ed25519Bip32HdTree.initialize();
@@ -579,11 +586,15 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
 
     const encryptedSignerShare = this.createUserToBitgoEncryptedSignerShare(userToBitgoEncryptedSignerShare);
     const stringifiedRShare = JSON.stringify(userSignShare);
+    // Bind the R-share envelope to this exact signable so later rounds reject replays
+    // against any other transaction or derivation path.
+    const signableAdata = getOfflineSigningAdata(txRequestResolved, RequestType.tx);
+    const rShareAdata = formatOfflineSigningAdata(EddsaUtils.EDDSA_SIGNING_RSHARE_STATE, signableAdata);
     let encryptedRShare: string;
     if (params.encryptedPrv && isV2Envelope(params.encryptedPrv)) {
       const session = await this.bitgo.createEncryptionSession(params.walletPassphrase);
       try {
-        encryptedRShare = await session.encrypt(stringifiedRShare);
+        encryptedRShare = await session.encrypt(stringifiedRShare, rShareAdata);
       } finally {
         session.destroy();
       }
@@ -592,6 +603,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
         input: stringifiedRShare,
         password: params.walletPassphrase,
         encryptionVersion: 1,
+        adata: rShareAdata,
       });
     }
     const encryptedUserToBitgoRShare = this.createUserToBitgoEncryptedRShare(encryptedRShare);
@@ -603,30 +615,45 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     txRequest: TxRequest;
     walletPassphrase: string;
     encryptedUserToBitgoRShare: EncryptedSignerShareRecord;
-  }): Promise<{ rShare: SignShare }> {
-    const { walletPassphrase, encryptedUserToBitgoRShare } = params;
+  }): Promise<{ rShare: UserToBitgoRShareReveal }> {
+    const { txRequest, walletPassphrase, encryptedUserToBitgoRShare } = params;
+
+    // The envelope must belong to this exact signable; a captured envelope from
+    // another transaction (or derivation path) is rejected before decryption.
+    validateOfflineSigningAdata(
+      encryptedUserToBitgoRShare.share,
+      EddsaUtils.EDDSA_SIGNING_RSHARE_STATE,
+      getOfflineSigningAdata(txRequest, RequestType.tx)
+    );
 
     const decryptedRShare = await this.bitgo.decrypt({
       input: encryptedUserToBitgoRShare.share,
       password: walletPassphrase,
     });
-    const rShare = JSON.parse(decryptedRShare);
-    assert(rShare.xShare, 'Unable to find xShare in decryptedRShare');
-    assert(rShare.rShares, 'Unable to find rShares in decryptedRShare');
+    const userSignShare: SignShare = JSON.parse(decryptedRShare);
+    assert(userSignShare.xShare, 'Unable to find xShare in decryptedRShare');
+    assert(userSignShare.rShares, 'Unable to find rShares in decryptedRShare');
+    const bitgoRShare = userSignShare.rShares[ShareKeyPosition.BITGO];
+    assert(bitgoRShare, 'Unable to find bitgo rShare in decryptedRShare');
 
-    return { rShare };
+    // Reveal only the nonce material BitGo needs. The full SignShare (key share
+    // and nonce points) never leaves the signer in plaintext.
+    return { rShare: { r: bitgoRShare.r, R: bitgoRShare.R } };
   }
 
   async createGShareFromTxRequest(params: {
     txRequest: string | TxRequest;
     prv: string;
+    walletPassphrase: string;
+    encryptedUserToBitgoRShare: EncryptedSignerShareRecord;
     bitgoToUserRShare: SignatureShareRecord;
-    userToBitgoRShare: SignShare;
     bitgoToUserCommitment: CommitmentShareRecord;
+    /** Marks the R-share envelope consumed via its validated adata; invoked only after the envelope fully authenticates. */
+    markConsumed?: (adata: string) => void;
   }): Promise<GShare> {
     let txRequestResolved: TxRequest;
 
-    const { txRequest, prv, bitgoToUserCommitment, bitgoToUserRShare, userToBitgoRShare } = params;
+    const { txRequest, prv, walletPassphrase, encryptedUserToBitgoRShare, markConsumed } = params;
 
     if (typeof txRequest === 'string') {
       txRequestResolved = await getTxRequest(this.bitgo, this.wallet.id(), txRequest);
@@ -652,13 +679,29 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
 
     const signablePayload = Buffer.from(unsignedTx.signableHex, 'hex');
 
+    // The G round only consumes signer-created state: the R-share envelope bound
+    // to this exact signable. A forged, modified or replayed envelope is rejected.
+    const validatedAdata = validateOfflineSigningAdata(
+      encryptedUserToBitgoRShare.share,
+      EddsaUtils.EDDSA_SIGNING_RSHARE_STATE,
+      getOfflineSigningAdata(txRequestResolved, RequestType.tx)
+    );
+    const decryptedRShare = await this.bitgo.decrypt({
+      input: encryptedUserToBitgoRShare.share,
+      password: walletPassphrase,
+    });
+    // The envelope has fully authenticated (AEAD tag verified); only now is it
+    // marked consumed, so unauthenticated junk never reaches the registry.
+    markConsumed?.(validatedAdata);
+    const userToBitgoRShare: SignShare = JSON.parse(decryptedRShare);
+
     const userToBitGoGShare = await createUserToBitGoGShare(
       userToBitgoRShare,
-      bitgoToUserRShare,
+      params.bitgoToUserRShare,
       userSigningMaterial.backupYShare,
       userSigningMaterial.bitgoYShare,
       signablePayload,
-      bitgoToUserCommitment
+      params.bitgoToUserCommitment
     );
     return userToBitGoGShare;
   }
@@ -717,7 +760,7 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     const gSignShareTransactionParams = {
       txRequest: txRequestResolved,
       bitgoToUserRShare: bitgoToUserRShare,
-      userToBitgoRShare: rShare,
+      encryptedUserToBitgoRShare,
       bitgoToUserCommitment,
     };
     const gShare = await externalSignerGShareGenerator(gSignShareTransactionParams);
@@ -829,7 +872,10 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       this.bitgo,
       this.wallet.id(),
       txRequestId,
-      userSignShare,
+      {
+        r: userSignShare.rShares[bitgoIndex].r,
+        R: userSignShare.rShares[bitgoIndex].R,
+      },
       userToBitgoEncryptedSignerShare,
       apiVersion,
       params.reqId,

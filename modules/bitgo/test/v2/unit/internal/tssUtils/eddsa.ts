@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto';
 import * as assert from 'assert';
 import * as sodium from 'libsodium-wrappers-sumo';
 import * as _ from 'lodash';
@@ -19,10 +20,13 @@ import {
   Ed25519BIP32,
   EDDSAUtils,
   Eddsa,
+  EddsaUtils,
   EncryptedSignerShareType,
   ExchangeCommitmentResponse,
   Keychain,
   KeyShare,
+  bigIntFromBufferLE,
+  bigIntToBufferLE,
   RequestTracer,
   RequestType,
   SignatureShareRecord,
@@ -672,10 +676,34 @@ describe('TSS Utils:', async function () {
       userId: 'userId',
     };
 
-    it('v2 R-share round-trip: encrypt via commitment, verify envelope, decrypt via createRShare', async function () {
-      const passphrase = 'test-passphrase';
-      const prv = JSON.stringify(validUserSigningMaterial);
+    const passphrase = 'test-passphrase';
+    const prv = JSON.stringify(validUserSigningMaterial);
+    const otherSignableTxRequest: TxRequest = {
+      ...signingTxRequest,
+      unsignedTxs: [{ ...signingTxRequest.unsignedTxs[0], signableHex: 'deadbe00' }],
+    };
+    const forgedBitgoRecords = () => {
+      // Production nonce pattern (account-lib signShare): reduce random entropy to a scalar.
+      const rB = Eddsa.curve.scalarReduce(bigIntFromBufferLE(randomBytes(64)));
+      const rBPoint = Eddsa.curve.basePointMult(rB);
+      const rBHex = bigIntToBufferLE(rB, 32).toString('hex');
+      const rBPointHex = bigIntToBufferLE(rBPoint, 32).toString('hex');
+      return {
+        bitgoToUserRShare: {
+          from: SignatureShareType.BITGO,
+          to: SignatureShareType.USER,
+          share: rBHex + rBPointHex,
+        },
+        bitgoToUserCommitment: {
+          from: SignatureShareType.BITGO,
+          to: SignatureShareType.USER,
+          type: CommitmentType.COMMITMENT,
+          share: rBPointHex,
+        },
+      };
+    };
 
+    it('v2 signing round-trip: bound R envelope, redacted R reveal, G consumption', async function () {
       // 1. Encrypt prv with v2
       const encryptedPrv = await bitgo.encrypt({
         input: prv,
@@ -684,7 +712,7 @@ describe('TSS Utils:', async function () {
       });
       JSON.parse(encryptedPrv).v.should.equal(2);
 
-      // 2. Create commitment -- R-share should be a v2 envelope
+      // 2. Create commitment -- R-share should be a v2 envelope bound to the signable
       const commitResult = await tssUtils.createCommitmentShareFromTxRequest({
         txRequest: signingTxRequest,
         prv,
@@ -696,16 +724,132 @@ describe('TSS Utils:', async function () {
       const rShareEnvelope = JSON.parse(commitResult.encryptedUserToBitgoRShare.share);
       rShareEnvelope.v.should.equal(2);
       rShareEnvelope.should.have.property('hkdfSalt');
+      rShareEnvelope.should.have.property('adata');
 
-      // 3. Round-trip: decrypt the v2 R-share
+      // 3. R round only reveals the nonce material offered to BitGo
       const { rShare } = await tssUtils.createRShareFromTxRequest({
         txRequest: signingTxRequest,
         walletPassphrase: passphrase,
         encryptedUserToBitgoRShare: commitResult.encryptedUserToBitgoRShare,
       });
+      rShare.should.have.property('r').and.be.a.String();
+      rShare.should.have.property('R').and.be.a.String();
+      Object.keys(rShare).sort().should.deepEqual(['R', 'r']);
 
-      should.exist(rShare.xShare);
-      should.exist(rShare.rShares);
+      // 4. G round consumes the same envelope and produces the user gamma
+      const { bitgoToUserRShare, bitgoToUserCommitment } = forgedBitgoRecords();
+      const gShare = await tssUtils.createGShareFromTxRequest({
+        txRequest: signingTxRequest,
+        prv,
+        walletPassphrase: passphrase,
+        encryptedUserToBitgoRShare: commitResult.encryptedUserToBitgoRShare,
+        bitgoToUserRShare,
+        bitgoToUserCommitment,
+        markConsumed: () => undefined,
+      });
+      gShare.should.have.property('gamma').and.be.a.String();
+    });
+
+    it('commitment rejects a caller-supplied non-BitGo GPG public key in pinned envs', async function () {
+      const testEnvBitgo = TestBitGo.decorate(BitGo, { env: 'test' });
+      const testEnvUtils = new EddsaUtils(testEnvBitgo, testEnvBitgo.coin('tsol'));
+      await testEnvUtils
+        .createCommitmentShareFromTxRequest({
+          txRequest: signingTxRequest,
+          prv,
+          walletPassphrase: passphrase,
+          bitgoGpgPubKey: bitgoGpgKey.publicKey,
+        })
+        .should.be.rejectedWith('Invalid BitGo GPG public key');
+    });
+
+    it('R round rejects an envelope bound to a different signable', async function () {
+      const commitResult = await tssUtils.createCommitmentShareFromTxRequest({
+        txRequest: signingTxRequest,
+        prv,
+        walletPassphrase: passphrase,
+        bitgoGpgPubKey: bitgoGpgKey.publicKey,
+      });
+      await tssUtils
+        .createRShareFromTxRequest({
+          txRequest: otherSignableTxRequest,
+          walletPassphrase: passphrase,
+          encryptedUserToBitgoRShare: commitResult.encryptedUserToBitgoRShare,
+        })
+        .should.be.rejectedWith('Adata does not match cyphertext adata');
+    });
+
+    it('G round rejects an envelope bound to a different signable', async function () {
+      const commitResult = await tssUtils.createCommitmentShareFromTxRequest({
+        txRequest: signingTxRequest,
+        prv,
+        walletPassphrase: passphrase,
+        bitgoGpgPubKey: bitgoGpgKey.publicKey,
+      });
+      const { bitgoToUserRShare, bitgoToUserCommitment } = forgedBitgoRecords();
+      await tssUtils
+        .createGShareFromTxRequest({
+          txRequest: otherSignableTxRequest,
+          prv,
+          walletPassphrase: passphrase,
+          encryptedUserToBitgoRShare: commitResult.encryptedUserToBitgoRShare,
+          bitgoToUserRShare,
+          bitgoToUserCommitment,
+        })
+        .should.be.rejectedWith('Adata does not match cyphertext adata');
+    });
+
+    it('G round rejects a replayed envelope (second use with a different BitGo nonce)', async function () {
+      const commitResult = await tssUtils.createCommitmentShareFromTxRequest({
+        txRequest: signingTxRequest,
+        prv,
+        walletPassphrase: passphrase,
+        bitgoGpgPubKey: bitgoGpgKey.publicKey,
+      });
+      const records = forgedBitgoRecords();
+      let consumed = false;
+      const markConsumed = () => {
+        if (consumed) {
+          throw new Error('encrypted share has already been consumed; restart the signing session');
+        }
+        consumed = true;
+      };
+      await tssUtils.createGShareFromTxRequest({
+        txRequest: signingTxRequest,
+        prv,
+        walletPassphrase: passphrase,
+        encryptedUserToBitgoRShare: commitResult.encryptedUserToBitgoRShare,
+        bitgoToUserRShare: records.bitgoToUserRShare,
+        bitgoToUserCommitment: records.bitgoToUserCommitment,
+        markConsumed,
+      });
+      const secondRecords = forgedBitgoRecords();
+      await tssUtils
+        .createGShareFromTxRequest({
+          txRequest: signingTxRequest,
+          prv,
+          walletPassphrase: passphrase,
+          encryptedUserToBitgoRShare: commitResult.encryptedUserToBitgoRShare,
+          bitgoToUserRShare: secondRecords.bitgoToUserRShare,
+          bitgoToUserCommitment: secondRecords.bitgoToUserCommitment,
+          markConsumed,
+        })
+        .should.be.rejectedWith('encrypted share has already been consumed');
+    });
+
+    it('R round rejects a legacy envelope without a signable binding', async function () {
+      const legacyEnvelope = await bitgo.encrypt({
+        input: JSON.stringify({ xShare: {}, rShares: {} }),
+        password: passphrase,
+        encryptionVersion: 2,
+      });
+      await tssUtils
+        .createRShareFromTxRequest({
+          txRequest: signingTxRequest,
+          walletPassphrase: passphrase,
+          encryptedUserToBitgoRShare: { from: 'user', to: 'bitgo', share: legacyEnvelope, type: 'encryptedRShare' },
+        })
+        .should.be.rejectedWith('Missing adata on encrypted share envelope; restart the signing session');
     });
   });
 
@@ -819,7 +963,7 @@ describe('TSS Utils:', async function () {
           encryptedSignerShare: tssUtils.createUserToBitgoEncryptedSignerShare('encrypted-signer-share'),
           encryptedUserToBitgoRShare: tssUtils.createUserToBitgoEncryptedSignerShare('encrypted-r-share'),
         }),
-        async () => ({ rShare: validUserSignShare }),
+        async () => ({ rShare: { r: validUserSignShare.rShares[3].r, R: validUserSignShare.rShares[3].R } }),
         async () => ({
           i: 1,
           y: 'user-y-share',
