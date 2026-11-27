@@ -706,7 +706,23 @@ describe('ETH:', function () {
       throw new Error('expected verifyTransaction to be rejected, but it resolved');
     };
 
-    it('should verify TSS consolidation transaction when txPrebuild has consolidateId', async function () {
+    // CECHO-2861 P1 #3: a triggered consolidation must run its sweep check. `txHex: '0x'` cannot be
+    // compared against the intent, so it fails closed instead of warn-and-passing.
+    const verifyConsolidation = (
+      coin: Hteth,
+      wallet: Wallet,
+      txParams: Record<string, unknown>,
+      txPrebuild: Record<string, unknown>
+    ) =>
+      coin.verifyTransaction({
+        txParams: txParams as never,
+        txPrebuild: txPrebuild as never,
+        wallet,
+        verification: {},
+        walletType: 'tss',
+      });
+
+    it('should fail closed for a TSS consolidation when txPrebuild has only a consolidateId', async function () {
       const coin = bitgo.coin('hteth') as Hteth;
       const baseAddress = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
       const wallet = new Wallet(bitgo, coin, {
@@ -715,33 +731,20 @@ describe('ETH:', function () {
         },
       });
 
-      // txParams without recipients (as in consolidation flow)
-      const txParams = {
-        wallet: wallet,
-        walletPassphrase: 'fakeWalletPassphrase',
-      };
-
-      // txPrebuild with consolidateId (set by server during consolidation build)
-      const txPrebuild = {
-        consolidateId: '68a7d5d0c66e74e216b97173bd558c6d',
-        txHex: '0x',
-        coin: 'hteth',
-        walletId: 'fakeWalletId',
-      };
-
-      const verification = {};
-
-      const isTransactionVerified = await coin.verifyTransaction({
-        txParams: txParams as any,
-        txPrebuild: txPrebuild as any,
-        wallet,
-        verification,
-        walletType: 'tss',
-      });
-      isTransactionVerified.should.equal(true);
+      await expectDefiRejection(
+        verifyConsolidation(
+          coin,
+          wallet,
+          // txParams without recipients (as in consolidation flow)
+          { wallet, walletPassphrase: 'fakeWalletPassphrase' },
+          // txPrebuild with consolidateId (set by server during consolidation build) but no txHex
+          { consolidateId: '68a7d5d0c66e74e216b97173bd558c6d', txHex: '0x', coin: 'hteth', walletId: 'fakeWalletId' }
+        ),
+        /missing txHex in txPrebuild/
+      );
     });
 
-    it('should verify TSS transaction when txParams.type is consolidate', async function () {
+    it('should fail closed for a TSS transaction declared as consolidate without a txHex', async function () {
       const coin = bitgo.coin('hteth') as Hteth;
       const baseAddress = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
       const wallet = new Wallet(bitgo, coin, {
@@ -750,31 +753,18 @@ describe('ETH:', function () {
         },
       });
 
-      const txParams = {
-        type: 'consolidate',
-        wallet: wallet,
-        walletPassphrase: 'fakeWalletPassphrase',
-      };
-
-      const txPrebuild = {
-        txHex: '0x',
-        coin: 'hteth',
-        walletId: 'fakeWalletId',
-      };
-
-      const verification = {};
-
-      const isTransactionVerified = await coin.verifyTransaction({
-        txParams: txParams as any,
-        txPrebuild: txPrebuild as any,
-        wallet,
-        verification,
-        walletType: 'tss',
-      });
-      isTransactionVerified.should.equal(true);
+      await expectDefiRejection(
+        verifyConsolidation(
+          coin,
+          wallet,
+          { type: 'consolidate', wallet, walletPassphrase: 'fakeWalletPassphrase' },
+          { txHex: '0x', coin: 'hteth', walletId: 'fakeWalletId' }
+        ),
+        /missing txHex in txPrebuild/
+      );
     });
 
-    it('should verify TSS transaction when txParams.prebuildTx has consolidateId', async function () {
+    it('should fail closed when txParams.prebuildTx has a consolidateId and no txHex', async function () {
       const coin = bitgo.coin('hteth') as Hteth;
       const baseAddress = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
       const wallet = new Wallet(bitgo, coin, {
@@ -783,30 +773,19 @@ describe('ETH:', function () {
         },
       });
 
-      const txParams = {
-        wallet: wallet,
-        walletPassphrase: 'fakeWalletPassphrase',
-        prebuildTx: {
-          consolidateId: '68a7d5d0c66e74e216b97173bd558c6d',
-        },
-      };
-
-      const txPrebuild = {
-        txHex: '0x',
-        coin: 'hteth',
-        walletId: 'fakeWalletId',
-      };
-
-      const verification = {};
-
-      const isTransactionVerified = await coin.verifyTransaction({
-        txParams: txParams as any,
-        txPrebuild: txPrebuild as any,
-        wallet,
-        verification,
-        walletType: 'tss',
-      });
-      isTransactionVerified.should.equal(true);
+      await expectDefiRejection(
+        verifyConsolidation(
+          coin,
+          wallet,
+          {
+            wallet,
+            walletPassphrase: 'fakeWalletPassphrase',
+            prebuildTx: { consolidateId: '68a7d5d0c66e74e216b97173bd558c6d' },
+          },
+          { txHex: '0x', coin: 'hteth', walletId: 'fakeWalletId' }
+        ),
+        /missing txHex in txPrebuild/
+      );
     });
 
     it('should reject TSS transaction without recipients, consolidateId, or valid type', async function () {
@@ -1686,6 +1665,36 @@ describe('ETH:', function () {
             /must be declared as a wrapApprove intent/
           );
         });
+      });
+
+      // CECHO-2861 P2: the wrapper-approve guard runs for every declared type that is not
+      // `wrapApprove`, including labels that are merely allowlisted (warned, not verified), so a
+      // wrapper approve relabelled `wrap`/`enableToken` must still be rejected by that guard.
+      ['wrap', 'enableToken'].forEach((type) => {
+        it(`should reject approve(wrapper, amount) relabelled as the allowlisted ${type} label`, async function () {
+          await expectDefiRejection(
+            verifyAs(type, defiCalldata('approve(address,uint256)', [wrapper, amount])),
+            /must be declared as a wrapApprove intent/
+          );
+        });
+      });
+
+      it('should throw the unlisted-type error for an unknown label before reaching the wrapper-approve guard', async function () {
+        // Ordering pin: the fail-closed default fires first, so an unknown label never gets to the
+        // wrapper guard and never inherits its "declared as wrapApprove" wording.
+        const coin = bitgo.coin('hteth') as Hteth;
+        const wallet = new Wallet(bitgo, coin, { coinSpecific: { baseAddress: address1 } });
+        const txHex = await buildDefiTxHex(defiCalldata('approve(address,uint256)', [wrapper, amount]), underlying);
+        await expectDefiRejection(
+          coin.verifyTransaction({
+            txParams: { type: 'unknownLabel', recipients: [{ address: underlying, amount: '0' }], wallet } as never,
+            txPrebuild: { txHex, coin: 'hteth', walletId: 'w' } as never,
+            wallet,
+            verification: {},
+            walletType: 'tss',
+          }),
+          /no TSS transaction verifier is implemented for intent type/
+        );
       });
 
       it('should still reject approve(wrapper, amount) relabelled as customTx, with or without a declared call', async function () {

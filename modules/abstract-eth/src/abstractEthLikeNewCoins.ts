@@ -628,6 +628,91 @@ const TSS_CONSOLIDATION_INTENT_TYPES = new Set(['consolidate', 'consolidateToken
 /** Contract-call / custom-tx intent spellings verified against a single declared recipient. */
 const TSS_CONTRACT_CALL_INTENT_TYPES = new Set(['contractCall', 'contract-call', 'customTx', 'custom-tx']);
 
+/**
+ * Live EVM TSS intent types that reach `AbstractEthLikeNewCoins.verifyTssTransaction` with no
+ * verifier implemented in this base class yet — either blocked on upstream caller/WP input or
+ * owned by another product team. Every entry maps to live EVM production traffic (180-day
+ * Snowflake audit) or active EVM WP routes and carries an owner/tracking reference.
+ *
+ * Value is `true` for cross-chain EVM intents, or the restricted set of allowed `getFamily()`
+ * values when the intent only exists on specific EVM chain families (e.g. `export` on FLR,
+ * `spotTransfer` on HyperEVM, Zama ERC-7984 legs on ETH).
+ *
+ * Any intent type NOT verified by `verifyTssTransaction` and NOT matched here fails closed
+ * (throws `TxIntentMismatchRecipientError`). Do not add non-EVM or unused labels here.
+ */
+const TSS_EXEMPT_UNVERIFIED_INTENT_TYPES: Record<string, true | readonly string[]> = {
+  // Fee-bump replacement: needs original tx (nonce/to/value/data) in txParams (CECHO-2871).
+  acceleration: true,
+  // FLR cross-chain atomic export/import: coin-specific Avalanche codec verifier (CECHO-2687).
+  export: ['flr'],
+  Export: ['flr'],
+  import: ['flr'],
+  Import: ['flr'],
+  importtoc: ['flr'],
+  ImportToC: ['flr'],
+  // The kebab-case DeFi spellings (`defi-approve` / `defi-deposit` / `defi-withdraw`) are
+  // deliberately absent. A stored request that carries them with no recipients is already rejected
+  // by sdk-core's `resolveEffectiveTxParams` (they are not in NO_RECIPIENT_TX_TYPES), and listing
+  // them here would let a request that *does* carry recipients skip the camelCase
+  // defiApprove/defiDeposit/defiWithdraw verifiers above. They therefore fail closed.
+  // DeFi native wrap/unwrap (WETH9 deposit()/withdraw(uint256)): blocked by selector collision (DEFI-749).
+  wrapNative: ['eth'],
+  'wrap-native': ['eth'],
+  unwrapNative: ['eth'],
+  'unwrap-native': ['eth'],
+  // Zama ERC-7984 shield/unshield/enable legs on base chain coin (`Eth` / `Hteth`):
+  // `Erc7984Token` verifies token-coin paths, while base-coin TSS legs await CoinsHalo port (CHALO-1880 / CECHO-2720).
+  enableToken: ['eth'],
+  enabletoken: ['eth'],
+  wrap: ['eth'],
+  unwrap: ['eth'],
+  finalizeUnwrap: ['eth'],
+  // HyperEVM HyperCore <-> HyperEVM spot transfer (Staking / HyperEVM precompile).
+  spotTransfer: ['hypeevm'],
+  // EVM staking & precompile intents (Staking team). No verifier exists for these in this base
+  // class yet, so each entry is scoped to the `getFamily()` values that actually serve it. Audit
+  // basis: wallet-platform `AbstractEthLikeCommon.buildTransactionWithIntent`
+  // (`app/controllers/api/v2/coins/abstractEthLikeCommon.ts`) plus each coin's hook override
+  // (getStakingData / getDelegationData / getClaimData / getStakeWithCallData), cross-checked with
+  // the 180-day Snowflake intent audit. Any family outside the set fails closed.
+  //
+  // `stake`: ETH 2.0 deposit contract (eth), XDC, HyperEVM `getStakingData`. Other families inherit
+  // the case but have no `eth2DepositContract` in their network config, so they cannot build it.
+  stake: ['eth', 'hypeevm', 'xdc'],
+  // `stakeWithCallData` / `unstakeWithCallData`: generic `getStakeWithCallData`; live traffic is eth
+  // only (Snowflake: 8,861 / 49 eth rows). Other families inherit the handler but serve none.
+  stakeWithCallData: ['eth'],
+  unstakeWithCallData: ['eth'],
+  // `switchValidatorWithCallData`: CoreDAO has a dedicated implementation (`coredao.ts`, Flipt
+  // `coredao-switch-validator`), and staking-service emits it for ETH validator consolidation
+  // behind a feature flag (Wallet Platform carries a positive `hteth` TSS fixture).
+  switchValidatorWithCallData: ['coredao', 'eth'],
+  // `delegate` / `undelegate`: BSC, Bera, CoreDAO, FLR (WFLR/TWC2FLR token only), HyperEVM, IP, OG,
+  // SeiEVM, Somnia, XDC. Every other family's `getDelegationData` throws "Delegation not supported".
+  delegate: ['bsc', 'bera', 'coredao', 'flr', 'hypeevm', 'ip', 'og', 'seievm', 'somi', 'stt', 'xdc'],
+  undelegate: ['bsc', 'bera', 'coredao', 'flr', 'hypeevm', 'ip', 'og', 'seievm', 'somi', 'stt', 'xdc'],
+  // `switchValidator`: BSC, Bera, FLR, IP, OG, SeiEVM, Somnia. CoreDAO/XDC/HyperEVM reject it.
+  switchValidator: ['bsc', 'bera', 'flr', 'ip', 'og', 'seievm', 'somi', 'stt'],
+  // `claim`: BSC, Bera, FLR, HyperEVM, IP, OG, SeiEVM, Somnia, XDC. CoreDAO rejects `claim` (its hook
+  // asserts `stakeClaimRewards`).
+  claim: ['bsc', 'bera', 'flr', 'hypeevm', 'ip', 'og', 'seievm', 'somi', 'stt', 'xdc'],
+  // `stakeClaimRewards`: CoreDAO asserts this exact type; the generic claim hooks on Bera/FLR/IP/OG/
+  // SeiEVM/Somnia accept it too, and the ZAMA calldata path (`recipients[0].data` ->
+  // `getStakeWithCallData`) is eth. BSC/HyperEVM/XDC reject it.
+  stakeClaimRewards: ['eth', 'coredao', 'bera', 'flr', 'ip', 'og', 'seievm', 'somi', 'stt'],
+};
+
+function isExemptUnverifiedTssIntent(txType: string, family: string): boolean {
+  const rule = Object.prototype.hasOwnProperty.call(TSS_EXEMPT_UNVERIFIED_INTENT_TYPES, txType)
+    ? TSS_EXEMPT_UNVERIFIED_INTENT_TYPES[txType]
+    : undefined;
+  if (rule === true) {
+    return true;
+  }
+  return Array.isArray(rule) && rule.includes(family);
+}
+
 type TssDecodedArg = ReturnType<typeof getRawDecoded>[number];
 
 const TSS_ERC20_TRANSFER_TYPES = ['address', 'uint256'];
@@ -4812,6 +4897,11 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     // nested `prebuildTx.consolidateId` cannot mask a valid top-level `txPrebuild.consolidateId`.
     const hasConsolidateId = Boolean(txParams?.prebuildTx?.consolidateId || txPrebuild?.consolidateId);
 
+    // A caller hint that the prebuild is a sweep to this wallet's base address. Computed here, with
+    // the same truthiness the consolidation trigger has always used, so the generic missing-params
+    // guard and the sweep trigger cannot disagree about whether the caller asked for a sweep.
+    const consolidationFlagged = !!params.verification?.consolidationToBaseAddress;
+
     if (
       !txParams?.recipients &&
       !(
@@ -4824,7 +4914,11 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
         (txParams.type && TSS_CONTRACT_CALL_INTENT_TYPES.has(txParams.type)) ||
         // A token consolidation may be persisted in kebab-case, which is also absent from
         // NO_RECIPIENT_TX_TYPES; both spellings are verified below.
-        (txParams.type && TSS_CONSOLIDATION_INTENT_TYPES.has(txParams.type))
+        (txParams.type && TSS_CONSOLIDATION_INTENT_TYPES.has(txParams.type)) ||
+        // A legitimate sweep declares no recipients and needs no type, so `txParams` may be empty
+        // apart from the caller's `consolidationToBaseAddress` hint. Only a genuinely omitted type
+        // qualifies: a malformed (`null`, `''`, `123`) type must still trip this guard and fail closed.
+        (consolidationFlagged && txParams?.type === undefined)
       )
     ) {
       throw new Error('missing txParams');
@@ -4839,22 +4933,38 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
 
     // Stored tx requests persist a payment as `payment`; callers declare it as `transfer`.
     // Token consolidations may also be persisted in kebab-case (`consolidate-token`).
-    const canonicalType = txParams.type === 'consolidate-token' ? 'consolidateToken' : txParams.type;
+    //
+    // A type that is present but not a non-blank string (`''`, `'   '`, `null`, a number) is a
+    // malformed declaration, not an omitted one. It must fail closed instead of being collapsed
+    // into "no type": otherwise `type: ''` plus a consolidateId would be silently reinterpreted as
+    // a consolidation sweep, and a padded `' transfer '` would dodge the transfer verifier.
+    const hasDeclaredType = txParams.type !== undefined;
+    const rawType =
+      hasDeclaredType && typeof txParams.type === 'string' && txParams.type.trim().length > 0
+        ? txParams.type
+        : undefined;
+    const canonicalType = rawType === 'consolidate-token' ? 'consolidateToken' : rawType;
     const txType = canonicalType === 'payment' ? 'transfer' : canonicalType;
 
-    // A consolidation is verified when the caller asks for it explicitly, declares a consolidation
-    // intent type, or the prebuild/params carry a consolidateId. A payment intent always wins: a
-    // consolidateId alongside declared recipients must not turn a transfer into a sweep.
-    const consolidationFlagged = !!params.verification?.consolidationToBaseAddress;
+    // A consolidation is verified when the caller declares a consolidation intent type, or declares
+    // no type at all while the prebuild/params carry a consolidateId. Both shortcuts are reserved
+    // for a genuine request: a declared type is never reinterpreted as a sweep, so an
+    // unknown/padded/malformed label cannot reach the sweep check instead of failing closed.
     const consolidationRecognised =
-      (txType !== undefined && TSS_CONSOLIDATION_INTENT_TYPES.has(txType)) ||
-      (hasConsolidateId && txType !== 'transfer');
-    const consolidationTriggered = consolidationFlagged || consolidationRecognised;
+      (txType !== undefined && TSS_CONSOLIDATION_INTENT_TYPES.has(txType)) || (!hasDeclaredType && hasConsolidateId);
+    // `consolidationToBaseAddress` is an explicit caller hint, not a wildcard: it may only stand in
+    // for a genuinely omitted type. It must never rescue a malformed (`null`, `''`, `'   '`,
+    // non-string) or unknown/non-consolidation declared type from failing closed.
+    const consolidationTriggered = consolidationRecognised || (consolidationFlagged && !hasDeclaredType);
+
+    if (!txType && !consolidationTriggered) {
+      await throwRecipientMismatch('TSS transaction verification requires a declared intent type', []);
+    }
 
     if (txType === 'transfer') {
       const recipients = txParams.recipients ?? [];
       if (recipients.length === 0) {
-        this.warnTssVerificationIncomplete(txType, 'no recipients were given: the transaction was not verified');
+        await throwRecipientMismatch(`${rawType} transaction requires at least one declared recipient`, []);
       } else if (recipients.length === 1) {
         await this.verifyTssSinglePayment(txParams, recipients[0], txPrebuild.txHex, throwRecipientMismatch);
       } else {
@@ -4863,10 +4973,17 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
     } else if (txType && TSS_CONTRACT_CALL_INTENT_TYPES.has(txType)) {
       await this.verifyTssContractCall(txType, txParams.recipients ?? [], txPrebuild.txHex, throwRecipientMismatch);
     } else if (txType && !TSS_DEDICATED_INTENT_TYPES.has(txType) && !consolidationTriggered) {
-      this.warnTssVerificationIncomplete(
-        txType,
-        'no verifier is implemented for this intent type: the transaction was not compared against the intent'
-      );
+      if (isExemptUnverifiedTssIntent(txType, this.getFamily())) {
+        this.warnTssVerificationIncomplete(
+          txType,
+          'no verifier is implemented for this intent type: the transaction was not compared against the intent'
+        );
+      } else {
+        await throwRecipientMismatch(
+          `no TSS transaction verifier is implemented for intent type '${txType}' on '${this.getChain()}'`,
+          []
+        );
+      }
     }
     if (txParams.type && ['defiApprove', 'defiDeposit', 'defiWithdraw'].includes(txParams.type)) {
       const baseAddress = wallet.coinSpecific()?.baseAddress;
@@ -4973,32 +5090,20 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin implem
       await this.verifyTssBridgeFunds(txParams, txPrebuild.txHex, throwRecipientMismatch);
     }
 
-    // Verify consolidation transactions send to base address. The explicit flag is a caller
-    // request for this check and its failure is fatal; an intent-recognised consolidation only
-    // warns when the check cannot run, so a caller relying on declared intent still gets the sweep
-    // compared whenever the data to compare exists.
+    // Verify consolidation transactions send to base address. Whenever a consolidation is
+    // triggered — explicit caller flag, declared consolidation intent, or an ID-only
+    // `consolidateId` — the sweep check is mandatory: warn-and-continue here would hand back
+    // `true` for a transaction that was never compared against the intent.
     if (consolidationTriggered) {
       const baseAddress = wallet.coinSpecific()?.baseAddress;
       if (!baseAddress) {
-        if (consolidationFlagged) {
-          throw new Error('Unable to determine base address for consolidation');
-        }
-        this.warnTssVerificationIncomplete(
-          txType ?? 'consolidate',
-          'wallet has no base address: the consolidation was not verified'
-        );
-        return true;
+        await throwRecipientMismatch('Unable to determine base address for consolidation', []);
+        return false;
       }
 
       if (!txPrebuild.txHex || txPrebuild.txHex === '0x') {
-        if (consolidationFlagged) {
-          throw new Error('missing txHex in txPrebuild');
-        }
-        this.warnTssVerificationIncomplete(
-          txType ?? 'consolidate',
-          'txPrebuild has no txHex: the consolidation was not verified'
-        );
-        return true;
+        await throwRecipientMismatch('missing txHex in txPrebuild', []);
+        return false;
       }
 
       // Decode the serialized transaction itself, not the TransactionBuilder round-trip: the builder

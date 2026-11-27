@@ -444,68 +444,49 @@ describe('flr', function () {
         isTransactionVerified.should.equal(true);
       });
 
-      it('should verify TSS consolidation transaction when txPrebuild has consolidateId', async function () {
+      // CECHO-2861 P1 #3: a triggered consolidation must run its sweep check. `txHex: '0x'` cannot be
+      // compared against the intent, so it fails closed instead of warn-and-passing.
+      const verifyConsolidation = (
+        wallet: Wallet,
+        txParams: Record<string, unknown>,
+        txPrebuild: Record<string, unknown>
+      ) =>
+        tflrCoin.verifyTransaction({
+          txParams: txParams as never,
+          txPrebuild: txPrebuild as never,
+          wallet,
+          verification: {},
+          walletType: 'tss',
+        });
+
+      it('should fail closed for a TSS consolidation when txPrebuild has only a consolidateId', async function () {
         const wallet = new Wallet(bitgo, tflrCoin, {
           coinSpecific: {
             baseAddress: '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be',
           },
         });
 
-        // txParams without recipients (as in consolidation flow)
-        const txParams = {
-          wallet: wallet,
-          walletPassphrase: 'fakeWalletPassphrase',
-        };
-
-        // txPrebuild with consolidateId (set by server during consolidation build)
-        const txPrebuild = {
-          consolidateId: '68a7d5d0c66e74e216b97173bd558c6d',
-          txHex: '0x',
-          coin: 'tflr',
-          walletId: 'fakeWalletId',
-        };
-
-        const verification = {};
-
-        const isTransactionVerified = await tflrCoin.verifyTransaction({
-          txParams: txParams as any,
-          txPrebuild: txPrebuild as any,
+        await verifyConsolidation(
           wallet,
-          verification,
-          walletType: 'tss',
-        });
-        isTransactionVerified.should.equal(true);
+          // txParams without recipients (as in consolidation flow)
+          { wallet, walletPassphrase: 'fakeWalletPassphrase' },
+          // txPrebuild with consolidateId (set by server during consolidation build) but no txHex
+          { consolidateId: '68a7d5d0c66e74e216b97173bd558c6d', txHex: '0x', coin: 'tflr', walletId: 'fakeWalletId' }
+        ).should.be.rejectedWith(/missing txHex in txPrebuild/);
       });
 
-      it('should verify TSS transaction when txParams.type is consolidate', async function () {
+      it('should fail closed for a TSS transaction declared as consolidate without a txHex', async function () {
         const wallet = new Wallet(bitgo, tflrCoin, {
           coinSpecific: {
             baseAddress: '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be',
           },
         });
 
-        const txParams = {
-          type: 'consolidate',
-          wallet: wallet,
-          walletPassphrase: 'fakeWalletPassphrase',
-        };
-
-        const txPrebuild = {
-          txHex: '0x',
-          coin: 'tflr',
-          walletId: 'fakeWalletId',
-        };
-
-        const verification = {};
-
-        const isTransactionVerified = await tflrCoin.verifyTransaction({
-          txParams: txParams as any,
-          txPrebuild: txPrebuild as any,
+        await verifyConsolidation(
           wallet,
-          verification,
-          walletType: 'tss',
-        });
-        isTransactionVerified.should.equal(true);
+          { type: 'consolidate', wallet, walletPassphrase: 'fakeWalletPassphrase' },
+          { txHex: '0x', coin: 'tflr', walletId: 'fakeWalletId' }
+        ).should.be.rejectedWith(/missing txHex in txPrebuild/);
       });
 
       it('should verify TSS transaction with acceleration type', async function () {
