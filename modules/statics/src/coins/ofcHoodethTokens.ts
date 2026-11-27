@@ -2860,6 +2860,20 @@ export const ofcHoodethTokens = [
     undefined,
     'thoodeth'
   ),
+  ofcerc20(
+    '41661751-2683-4f65-a446-8b2c77e8292b',
+    'ofchoodeth:spcx',
+    'Space Exploration Technologies Corp',
+    18,
+    UnderlyingAsset['hoodeth:spcx'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'hoodeth'
+  ),
   tofcerc20(
     '838a17f6-55b6-44d9-affc-9567859fc5de',
     'ofcthoodeth:spcx',
