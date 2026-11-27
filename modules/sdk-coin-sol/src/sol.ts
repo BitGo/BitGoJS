@@ -84,6 +84,7 @@ import {
   AtaClose,
   AtaRecoverNested,
   ExtraAccountMeta,
+  StakingDeactivate,
   TransactionExplanation as SolLibTransactionExplanation,
 } from './lib/iface';
 import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from './lib/constants';
@@ -718,6 +719,29 @@ export class Sol extends BaseCoin {
     }
   }
 
+  /**
+   * Whether the outputs of a staking transaction are only those its type produces: at most one. A deactivation has no
+   * output at all (full unstake, Jito unstake) or one, the rent that funds the new unstaking account of a partial
+   * unstake, and that output must go to that unstaking account. Anything else, such as a transfer to another address
+   * appended to a deactivation, is not an expected output.
+   */
+  private stakingOutputsAreExpected(transaction: Transaction, outputs: { address: string }[]): boolean {
+    if (outputs.length > 1) {
+      return false;
+    }
+    if (outputs.length === 0 || transaction.type !== TransactionType.StakingDeactivate) {
+      return true;
+    }
+    const deactivate = transaction
+      .toJson()
+      .instructionsData.find((instruction) => instruction.type === InstructionBuilderTypes.StakingDeactivate) as
+      | StakingDeactivate
+      | undefined;
+    return (
+      deactivate?.params.unstakingAddress !== undefined && outputs[0].address === deactivate.params.unstakingAddress
+    );
+  }
+
   async verifyTransaction(params: SolVerifyTransactionOptions): Promise<boolean> {
     // asset name to transfer amount map
     const totalAmount: Record<string, BigNumber> = {};
@@ -774,6 +798,20 @@ export class Sol extends BaseCoin {
     if (isConsolidationByTxParamsType && explainedTx.outputs.length === 0) {
       throw new Error('Consolidation transaction must contain at least one output');
     }
+    // A stake activation, a partial unstake (split + deactivate) and a claim (withdraw) each have one output, but their
+    // intent has no recipient to name: staking intents carry `recipients: []`, and the TSS signing step passes that on
+    // as an empty list, not as undefined. Comparing an empty list with that output can never match, so it is treated as
+    // "no recipients", exactly like a staking intent without a recipients field. That is allowed only while the
+    // outputs are the ones the transaction type itself produces (see stakingOutputsAreExpected): a deactivation may
+    // legitimately carry a transfer, so an extra output must still reach the strict comparison below. Every other
+    // transaction type keeps the strict comparison, and a non-empty list is still compared.
+    const isStakingWithoutRecipients =
+      (transaction.type === TransactionType.StakingActivate ||
+        transaction.type === TransactionType.StakingDeactivate ||
+        transaction.type === TransactionType.StakingWithdraw) &&
+      Array.isArray(txParams.recipients) &&
+      txParams.recipients.length === 0 &&
+      this.stakingOutputsAreExpected(transaction, explainedTx.outputs);
 
     // CustomTx-specific verification (CHALO-2055):
     //
@@ -825,7 +863,8 @@ export class Sol extends BaseCoin {
       txParams.recipients !== undefined &&
       !isTokenEnablementTx &&
       !isCloseAssociatedTokenAccountTx &&
-      !isConsolidationByTxParamsType
+      !isConsolidationByTxParamsType &&
+      !isStakingWithoutRecipients
     ) {
       const filteredRecipients = txParams.recipients?.map((recipient) =>
         _.pick(recipient, ['address', 'amount', 'tokenName', 'tokenAddress', 'programId'])
@@ -938,7 +977,8 @@ export class Sol extends BaseCoin {
       txParams.recipients &&
       !isTokenEnablementTx &&
       !isCloseAssociatedTokenAccountTx &&
-      !isConsolidationByTxParamsType
+      !isConsolidationByTxParamsType &&
+      !isStakingWithoutRecipients
     ) {
       for (const recipients of txParams.recipients) {
         // totalAmount based on each token
