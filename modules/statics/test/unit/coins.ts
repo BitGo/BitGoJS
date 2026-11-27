@@ -1176,6 +1176,23 @@ describe('WTGXX Trust-only custody', () => {
   });
 });
 
+describe('June 18 batch BitGo Singapore gating', () => {
+  [
+    'hoodeth:spcx',
+    'ofchoodeth:spcx',
+    'tempo:syrupusdc',
+    'ofctempo:syrupusdc',
+    'tempo:stcusd',
+    'ofctempo:stcusd',
+  ].forEach((name) => {
+    it(`${name} is not offered by BitGo Singapore but remains offered by BitGo Trust`, function () {
+      const coin = coins.get(name);
+      coin.features.includes(CoinFeature.CUSTODY_BITGO_SINGAPORE).should.eql(false);
+      coin.features.includes(CoinFeature.CUSTODY_BITGO_TRUST).should.eql(true);
+    });
+  });
+});
+
 describe('ERC20 Coins', () => {
   it('should have no duplicate contract addresses on the same chain', () => {
     // Mirrors the invariant enforced by `CoinMap.addCoin`: a token claims a
