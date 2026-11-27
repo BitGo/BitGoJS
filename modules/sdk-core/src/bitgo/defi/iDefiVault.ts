@@ -67,6 +67,8 @@ export interface ConcreteDepositResult {
 export interface Erc4626DepositResult {
   operationId: string;
   txRequestIds: { approve: string; deposit: string };
+  /** Set when a wallet policy gated the legs; ids of the legs' pending approvals. */
+  pendingApprovalIds?: { approve?: string; deposit?: string };
 }
 
 /**
@@ -94,6 +96,8 @@ export interface WithdrawFromVaultOptions {
 export interface WithdrawResult {
   operationId: string;
   txRequestId: string;
+  /** Set when a wallet policy gated the withdraw. */
+  pendingApprovalId?: string;
 }
 
 export interface WrapOptions {

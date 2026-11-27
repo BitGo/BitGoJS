@@ -21,6 +21,14 @@ describe('DefiVault', function () {
     };
   }
 
+  // The two-network-call prefix of every ERC-4626 deposit: the vault-config
+  // fetch (protocol dispatch) followed by the active-operation pre-flight
+  // listOperations call (no pending operations).
+  function mockVaultGetWithNoActiveOperations(vault: unknown) {
+    mockBitGo.get.onFirstCall().returns(mockRequest(vault));
+    mockBitGo.get.onSecondCall().returns(mockRequest({ operations: [], nextCursor: null }));
+  }
+
   function makeConcreteVault(id: string) {
     return {
       id,
@@ -324,7 +332,7 @@ describe('DefiVault', function () {
 
         (result as any).operationId.should.equal(operationId);
         (result as any).txRequestIds.approve.should.equal('txreq-approve-1');
-        (result as any).txRequestIds.deposit.should.equal('txreq-deposit-1');
+        (result as any).should.not.have.property('pendingApprovalIds');
 
         // Verify sendMany was called with correct params for approve
         sendManyStub.calledTwice.should.be.true();
@@ -337,6 +345,66 @@ describe('DefiVault', function () {
         const depositArgs: any = sendManyStub.secondCall.args[0];
         depositArgs.type.should.equal('defiDeposit');
         depositArgs.defiParams.operationId.should.equal(operationId);
+      });
+      it('should surface pendingApproval ids per leg when a policy gates both legs', async function () {
+        mockBitGo.get.returns(mockRequest(makeMorphoVault('vlt-galaxy-usdc')));
+
+        const operationId = 'op-uuid-gated';
+
+        const sendManyStub = sinon.stub(wallet, 'sendMany');
+        sendManyStub.onFirstCall().resolves({
+          pendingApproval: { id: 'pa-approve-1' },
+          txRequest: {
+            txRequestId: 'txreq-approve-gated',
+            intent: { intentType: 'defi-approve' },
+            transactions: [{ unsignedTx: { coinSpecific: { operationId } } }],
+          },
+        });
+        sendManyStub.onSecondCall().resolves({
+          pendingApproval: { id: 'pa-deposit-1' },
+          txRequest: {
+            txRequestId: 'txreq-deposit-gated',
+            intent: { intentType: 'defi-deposit' },
+            transactions: [{ unsignedTx: { coinSpecific: { operationId } } }],
+          },
+        });
+
+        const rawResult = await defiVault.depositToVault({ vaultId: 'vlt-galaxy-usdc', amount: '1000000' });
+        const result = rawResult as Erc4626DepositResult;
+        result.operationId.should.equal(operationId);
+        result.pendingApprovalIds!.approve!.should.equal('pa-approve-1');
+        result.pendingApprovalIds!.deposit!.should.equal('pa-deposit-1');
+      });
+
+      it('should surface only the gated leg id when a policy gates just one leg', async function () {
+        mockVaultGetWithNoActiveOperations(makeMorphoVault('vlt-galaxy-usdc'));
+
+        const operationId = 'op-uuid-deposit-gated';
+
+        const sendManyStub = sinon.stub(wallet, 'sendMany');
+        // Only the deposit leg trips a wallet policy; the approve leg (0-value
+        // token approval) sails through un-gated.
+        sendManyStub.onFirstCall().resolves({
+          txRequest: {
+            txRequestId: 'txreq-approve-ungated',
+            intent: { intentType: 'defi-approve' },
+            transactions: [{ unsignedTx: { coinSpecific: { operationId } } }],
+          },
+        });
+        sendManyStub.onSecondCall().resolves({
+          pendingApproval: { id: 'pa-deposit-only' },
+          txRequest: {
+            txRequestId: 'txreq-deposit-gated',
+            intent: { intentType: 'defi-deposit' },
+            transactions: [{ unsignedTx: { coinSpecific: { operationId } } }],
+          },
+        });
+
+        const rawResult = await defiVault.depositToVault({ vaultId: 'vlt-galaxy-usdc', amount: '1000000' });
+        const result = rawResult as Erc4626DepositResult;
+        // pendingApprovalIds is per-leg: only the gated deposit leg appears,
+        // and the deposit leg id must not be dropped for the un-gated approve.
+        result.pendingApprovalIds!.should.deepEqual({ deposit: 'pa-deposit-only' });
       });
 
       it('should extract operationId from the lite apiVersion coinSpecific', async function () {
@@ -598,6 +666,7 @@ describe('DefiVault', function () {
       // deposit sendMany
       const sendManyStub = sinon.stub(wallet, 'sendMany');
       sendManyStub.resolves({
+        pendingApproval: { id: 'pa-deposit-resume' },
         txRequest: {
           txRequestId: 'txreq-deposit-resume',
           intent: { intentType: 'defi-deposit', operationId: 'op-resume-1' },
@@ -611,6 +680,7 @@ describe('DefiVault', function () {
       result.operationId.should.equal('op-resume-1');
       result.txRequestIds.approve.should.equal('txreq-approve-existing');
       result.txRequestIds.deposit.should.equal('txreq-deposit-resume');
+      result.pendingApprovalIds!.deposit!.should.equal('pa-deposit-resume');
 
       // getOperation must hit the vault-scoped route with the enterprise-id header
       mockBitGo.get.firstCall.args[0].should.endWith(
@@ -783,13 +853,34 @@ describe('DefiVault', function () {
       });
 
       result.operationId.should.equal(operationId);
-      result.txRequestId.should.equal('txreq-withdraw-1');
+      result.should.not.have.property('pendingApprovalId');
 
       sendManyStub.calledOnce.should.be.true();
       const args: any = sendManyStub.firstCall.args[0];
       args.type.should.equal('defiWithdraw');
       args.defiParams.vaultId.should.equal('vlt-galaxy-usdc');
       args.defiParams.amount.should.equal('500000');
+    });
+    it('should surface the pendingApproval id when a policy gates the withdraw', async function () {
+      const operationId = 'op-withdraw-gated';
+
+      const sendManyStub = sinon.stub(wallet, 'sendMany');
+      sendManyStub.resolves({
+        pendingApproval: { id: 'pa-withdraw-1' },
+        txRequest: {
+          txRequestId: 'txreq-withdraw-gated',
+          transactions: [{ unsignedTx: { coinSpecific: { operationId } } }],
+        },
+      });
+
+      const result = await defiVault.withdrawFromVault({
+        vaultId: 'vlt-galaxy-usdc',
+        amount: '500000',
+      });
+
+      result.operationId.should.equal(operationId);
+      result.txRequestId.should.equal('txreq-withdraw-gated');
+      result.pendingApprovalId!.should.equal('pa-withdraw-1');
     });
 
     it('should extract operationId from lite apiVersion coinSpecific', async function () {
