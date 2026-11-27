@@ -146,6 +146,7 @@ export abstract class MpcUtils {
         'allocationAllocate',
         'cantonEndInvestorOnboardingAccept',
         'cantonEndInvestorOnboardingReject',
+        'cantonEndInvestorOnboardingCancel',
       ].includes(params.intentType) &&
       baseCoin.getFamily() === 'canton'
     ) {
@@ -153,6 +154,10 @@ export abstract class MpcUtils {
     }
 
     if (params.intentType === 'cantonEndInvestorOnboardingOffer') {
+      assert(params.endInvestorPartyId, `'endInvestorPartyId' is required parameter for ${params.intentType} intent`);
+    }
+
+    if (params.intentType === 'cantonEndInvestorOffboarding') {
       assert(params.endInvestorPartyId, `'endInvestorPartyId' is required parameter for ${params.intentType} intent`);
     }
 
@@ -232,6 +237,8 @@ export abstract class MpcUtils {
         'cantonBroadridgeStandingDelegation',
         'cantonEndInvestorOnboardingAccept',
         'cantonEndInvestorOnboardingReject',
+        'cantonEndInvestorOnboardingCancel',
+        'cantonEndInvestorOffboarding',
         'cantonParticipantOnboardingRequest',
         'defi-approve',
         'defi-deposit',

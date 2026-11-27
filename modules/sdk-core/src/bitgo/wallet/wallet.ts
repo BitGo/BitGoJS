@@ -4918,6 +4918,36 @@ export class Wallet implements IWallet {
         );
         break;
       }
+      case 'cantonEndInvestorOnboardingCancel': {
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'cantonEndInvestorOnboardingCancel',
+            txRequestId: params.txRequestId,
+            sequenceId: params.txRequestId,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      }
+      case 'cantonEndInvestorOffboarding': {
+        if (!params.endInvestorPartyId) {
+          throw new Error('endInvestorPartyId is required for cantonEndInvestorOffboarding intent');
+        }
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'cantonEndInvestorOffboarding',
+            endInvestorPartyId: params.endInvestorPartyId,
+            comment: params.comment,
+            sequenceId: params.sequenceId,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      }
       case 'cantonParticipantOnboardingRequest': {
         if (
           !params.operator ||
