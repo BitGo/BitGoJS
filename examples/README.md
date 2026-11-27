@@ -67,3 +67,11 @@ Go Accounts are trading wallets that don't require BitGo Express. See the [detai
 In this directory, you can find examples on how to use the BitGoJS SDK with JavaScript. These examples use coroutine syntax with `yield`.
 
 > Note the directory structure is the same for the JavaScript examples as the TypeScript examples listed above.
+
+### Deprecated v1 Bitcoin (BTC) wallets
+
+> **Deprecated.** These examples only apply to existing legacy v1 Bitcoin wallets. The legacy UI is scheduled to be removed on November 30, 2026. API access remains available for now, but future availability is not guaranteed.
+
+A step-by-step withdrawal guide and scripts for wallet inspection, withdrawals and pending approvals. These scripts use `async`/`await` and the `@bitgo/sdk-api` package:
+
+- [v1 BTC wallet withdrawal guide](./js/btc/v1/README.md)
