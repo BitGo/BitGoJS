@@ -3,7 +3,16 @@
  */
 
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import { AccountInfo, Connection, PublicKey as SolPublicKey, SystemInstruction, SystemProgram } from '@solana/web3.js';
+import {
+  AccountInfo,
+  Connection,
+  MessageV0,
+  PublicKey as SolPublicKey,
+  SystemInstruction,
+  SystemProgram,
+  SYSVAR_RECENT_BLOCKHASHES_PUBKEY,
+  VersionedTransaction,
+} from '@solana/web3.js';
 import BigNumber from 'bignumber.js';
 import * as base58 from 'bs58';
 import * as _ from 'lodash';
@@ -79,13 +88,16 @@ import {
   TransactionBuilder,
   TransactionBuilderFactory,
   explainSolTransaction,
+  injectVersionedNonceAdvanceInstruction,
 } from './lib';
 import {
   AtaClose,
   AtaRecoverNested,
+  DurableNonceParams,
   ExtraAccountMeta,
   StakingDeactivate,
   TransactionExplanation as SolLibTransactionExplanation,
+  VersionedTransactionData,
 } from './lib/iface';
 import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from './lib/constants';
 import {
@@ -637,67 +649,365 @@ export class Sol extends BaseCoin {
     }
   }
 
+  private validateVersionedTransactionData(versionedData: SolVersionedTransactionData): VersionedTransactionData {
+    if (!versionedData || typeof versionedData !== 'object') {
+      throw new Error('solVersionedTransactionData must be an object');
+    }
+
+    if ('version' in versionedData && versionedData.version !== undefined && versionedData.version !== 0) {
+      throw new Error(`unsupported versioned transaction version: ${String(versionedData.version)}`);
+    }
+
+    if (!Array.isArray(versionedData.versionedInstructions) || versionedData.versionedInstructions.length === 0) {
+      throw new Error('versioned transaction must have at least one instruction');
+    }
+
+    if (!Array.isArray(versionedData.staticAccountKeys) || versionedData.staticAccountKeys.length === 0) {
+      throw new Error('versioned transaction must have at least one static account key');
+    }
+
+    if (!versionedData.messageHeader || typeof versionedData.messageHeader !== 'object') {
+      throw new Error('versioned transaction must have a message header');
+    }
+
+    const { numRequiredSignatures, numReadonlySignedAccounts, numReadonlyUnsignedAccounts } =
+      versionedData.messageHeader;
+    const staticLen = versionedData.staticAccountKeys.length;
+    if (
+      !Number.isInteger(numRequiredSignatures) ||
+      numRequiredSignatures < 1 ||
+      !Number.isInteger(numReadonlySignedAccounts) ||
+      numReadonlySignedAccounts < 0 ||
+      !Number.isInteger(numReadonlyUnsignedAccounts) ||
+      numReadonlyUnsignedAccounts < 0 ||
+      numReadonlySignedAccounts > numRequiredSignatures ||
+      numRequiredSignatures + numReadonlyUnsignedAccounts > staticLen
+    ) {
+      throw new Error('versioned transaction has an invalid message header');
+    }
+
+    const seenStaticKeys = new Set<string>();
+    for (const key of versionedData.staticAccountKeys) {
+      let canonical: string;
+      try {
+        canonical = new SolPublicKey(key).toBase58();
+      } catch {
+        throw new Error(`versioned transaction contains invalid static account key: ${String(key)}`);
+      }
+      if (canonical !== key) {
+        throw new Error(`versioned transaction contains non-canonical static account key: ${key}`);
+      }
+      if (seenStaticKeys.has(key)) {
+        throw new Error(`versioned transaction contains duplicate static account key: ${key}`);
+      }
+      seenStaticKeys.add(key);
+    }
+
+    if (versionedData.addressLookupTables !== undefined && !Array.isArray(versionedData.addressLookupTables)) {
+      throw new Error('versioned transaction addressLookupTables must be an array');
+    }
+    const addressLookupTables = versionedData.addressLookupTables ?? [];
+    let lookupKeyCount = 0;
+    for (const alt of addressLookupTables) {
+      if (!alt || typeof alt !== 'object') {
+        throw new Error('versioned transaction contains invalid address lookup table entry');
+      }
+      let canonicalAlt: string;
+      try {
+        canonicalAlt = new SolPublicKey(alt.accountKey).toBase58();
+      } catch {
+        throw new Error(`versioned transaction contains invalid ALT accountKey: ${String(alt.accountKey)}`);
+      }
+      if (canonicalAlt !== alt.accountKey) {
+        throw new Error(`versioned transaction contains non-canonical ALT accountKey: ${alt.accountKey}`);
+      }
+      if (!Array.isArray(alt.writableIndexes) || !Array.isArray(alt.readonlyIndexes)) {
+        throw new Error('versioned transaction ALT writableIndexes and readonlyIndexes must be arrays');
+      }
+      for (const idx of [...alt.writableIndexes, ...alt.readonlyIndexes]) {
+        if (!Number.isInteger(idx) || idx < 0 || idx > 255) {
+          throw new Error(`versioned transaction ALT contains invalid index: ${String(idx)}`);
+        }
+      }
+      lookupKeyCount += alt.writableIndexes.length + alt.readonlyIndexes.length;
+    }
+
+    const totalAccountKeys = staticLen + lookupKeyCount;
+    for (const ix of versionedData.versionedInstructions) {
+      if (!ix || typeof ix !== 'object') {
+        throw new Error('versioned transaction contains invalid instruction');
+      }
+      if (!Number.isInteger(ix.programIdIndex) || ix.programIdIndex < 0 || ix.programIdIndex >= staticLen) {
+        throw new Error(`versioned transaction instruction has out-of-bounds programIdIndex: ${ix.programIdIndex}`);
+      }
+      if (!Array.isArray(ix.accountKeyIndexes)) {
+        throw new Error('versioned transaction instruction accountKeyIndexes must be an array');
+      }
+      for (const idx of ix.accountKeyIndexes) {
+        if (!Number.isInteger(idx) || idx < 0 || idx >= totalAccountKeys) {
+          throw new Error(`versioned transaction instruction has out-of-bounds accountKeyIndex: ${idx}`);
+        }
+      }
+      if (typeof ix.data !== 'string') {
+        throw new Error('versioned transaction instruction data must be a base58 string');
+      }
+      try {
+        base58.decode(ix.data);
+      } catch {
+        throw new Error('versioned transaction instruction data is not valid base58');
+      }
+    }
+
+    return {
+      versionedInstructions: versionedData.versionedInstructions,
+      addressLookupTables,
+      staticAccountKeys: versionedData.staticAccountKeys,
+      messageHeader: versionedData.messageHeader,
+      recentBlockhash: versionedData.recentBlockhash,
+    };
+  }
+
+  private decodeVersionedAdvanceNonceInstruction(message: MessageV0): DurableNonceParams | undefined {
+    if (message.compiledInstructions.length === 0) {
+      return undefined;
+    }
+    const ix0 = message.compiledInstructions[0];
+    const staticKeys = message.staticAccountKeys;
+    if (ix0.programIdIndex >= staticKeys.length) {
+      return undefined;
+    }
+    if (staticKeys[ix0.programIdIndex].toBase58() !== SystemProgram.programId.toBase58()) {
+      return undefined;
+    }
+    // SystemProgram.AdvanceNonceAccount discriminator is 4-byte little-endian uint32(4).
+    if (ix0.data.length !== 4 || ix0.data[0] !== 4 || ix0.data[1] !== 0 || ix0.data[2] !== 0 || ix0.data[3] !== 0) {
+      return undefined;
+    }
+    if (ix0.accountKeyIndexes.length !== 3) {
+      return undefined;
+    }
+    const [nonceIdx, sysvarIdx, authIdx] = ix0.accountKeyIndexes;
+    if (nonceIdx >= staticKeys.length || sysvarIdx >= staticKeys.length || authIdx >= staticKeys.length) {
+      return undefined;
+    }
+    if (staticKeys[sysvarIdx].toBase58() !== SYSVAR_RECENT_BLOCKHASHES_PUBKEY.toBase58()) {
+      return undefined;
+    }
+
+    const { numRequiredSignatures, numReadonlySignedAccounts, numReadonlyUnsignedAccounts } = message.header;
+    const nonceIsWritable =
+      nonceIdx < numRequiredSignatures - numReadonlySignedAccounts ||
+      (nonceIdx >= numRequiredSignatures && nonceIdx < staticKeys.length - numReadonlyUnsignedAccounts);
+    const authIsSigner = authIdx < numRequiredSignatures;
+    if (!nonceIsWritable || !authIsSigner) {
+      return undefined;
+    }
+
+    return {
+      walletNonceAddress: staticKeys[nonceIdx].toBase58(),
+      authWalletAddress: staticKeys[authIdx].toBase58(),
+    };
+  }
+
+  private assertVersionedMessageMatchesData(message: MessageV0, expected: VersionedTransactionData): void {
+    const { header } = message;
+    if (
+      header.numRequiredSignatures !== expected.messageHeader.numRequiredSignatures ||
+      header.numReadonlySignedAccounts !== expected.messageHeader.numReadonlySignedAccounts ||
+      header.numReadonlyUnsignedAccounts !== expected.messageHeader.numReadonlyUnsignedAccounts
+    ) {
+      throw new Error('Versioned transaction messageHeader does not match solVersionedTransactionData');
+    }
+
+    if (message.staticAccountKeys.length !== expected.staticAccountKeys.length) {
+      throw new Error('Versioned transaction staticAccountKeys length does not match solVersionedTransactionData');
+    }
+    for (let i = 0; i < expected.staticAccountKeys.length; i++) {
+      if (message.staticAccountKeys[i].toBase58() !== expected.staticAccountKeys[i]) {
+        throw new Error(`Versioned transaction staticAccountKeys[${i}] does not match solVersionedTransactionData`);
+      }
+    }
+
+    const expectedAlts = expected.addressLookupTables ?? [];
+    if (message.addressTableLookups.length !== expectedAlts.length) {
+      throw new Error('Versioned transaction addressTableLookups length does not match solVersionedTransactionData');
+    }
+    for (let i = 0; i < expectedAlts.length; i++) {
+      const actualAlt = message.addressTableLookups[i];
+      const expectedAlt = expectedAlts[i];
+      if (
+        actualAlt.accountKey.toBase58() !== expectedAlt.accountKey ||
+        !_.isEqual(actualAlt.writableIndexes, expectedAlt.writableIndexes) ||
+        !_.isEqual(actualAlt.readonlyIndexes, expectedAlt.readonlyIndexes)
+      ) {
+        throw new Error(`Versioned transaction addressTableLookups[${i}] does not match solVersionedTransactionData`);
+      }
+    }
+
+    if (message.compiledInstructions.length !== expected.versionedInstructions.length) {
+      throw new Error('Versioned transaction instruction count does not match solVersionedTransactionData');
+    }
+    for (let i = 0; i < expected.versionedInstructions.length; i++) {
+      const actualIx = message.compiledInstructions[i];
+      const expectedIx = expected.versionedInstructions[i];
+      const expectedData = Buffer.from(base58.decode(expectedIx.data));
+      if (
+        actualIx.programIdIndex !== expectedIx.programIdIndex ||
+        !_.isEqual(actualIx.accountKeyIndexes, expectedIx.accountKeyIndexes) ||
+        !Buffer.from(actualIx.data).equals(expectedData)
+      ) {
+        throw new Error(`Versioned transaction instruction[${i}] does not match solVersionedTransactionData`);
+      }
+    }
+  }
+
   /**
-   * Verify a versioned Solana transaction with basic structural validation
+   * Fully deserialize a Solana v0 versioned transaction and verify its message
+   * (header, staticAccountKeys, addressTableLookups, and compiledInstructions)
+   * matches txParams.solVersionedTransactionData (or the exact deterministic
+   * durable-nonce-injected form when Wallet Platform prepends AdvanceNonceAccount).
+   *
+   * Note: recentBlockhash is intentionally not pinned to versionedData.recentBlockhash
+   * because Wallet Platform refreshes stale blockhashes before signing (DEFI-820).
+   *
    * @param params - verification parameters
    * @returns true if verification passes
    */
   private async verifyVersionedTransaction(params: SolVerifyTransactionOptions): Promise<boolean> {
-    const { txParams, txPrebuild } = params;
+    const { txParams, txPrebuild, durableNonce, verification: verificationOptions } = params;
     const rawTx = txPrebuild.txBase64 || txPrebuild.txHex;
 
     if (!rawTx) {
       throw new Error('missing required tx prebuild property txBase64 or txHex');
     }
 
-    // Validate that the versioned transaction data is well-formed
     if (!this.hasSolVersionedTransactionData(txParams)) {
       throw new Error('solVersionedTransactionData is required for versioned transaction verification');
     }
 
-    const versionedData = txParams.solVersionedTransactionData;
-
-    if (!versionedData.versionedInstructions || versionedData.versionedInstructions.length === 0) {
-      throw new Error('versioned transaction must have at least one instruction');
+    if (txParams.type !== undefined && txParams.type !== 'customTx') {
+      throw new Error('solVersionedTransactionData is only supported for customTx transactions');
     }
 
-    if (!versionedData.staticAccountKeys || versionedData.staticAccountKeys.length === 0) {
-      throw new Error('versioned transaction must have at least one static account key');
+    if (txParams.recipients && txParams.recipients.length > 0) {
+      throw new Error('recipients are not supported with solVersionedTransactionData');
     }
 
-    if (!versionedData.messageHeader) {
-      throw new Error('versioned transaction must have a message header');
+    if (txPrebuild.consolidateId !== undefined || verificationOptions?.consolidationToBaseAddress) {
+      throw new Error('consolidations are not supported with solVersionedTransactionData');
     }
 
-    // Validate that we can deserialize the transaction
-    let rawTxBase64 = rawTx;
-    if (HEX_REGEX.test(rawTx)) {
-      rawTxBase64 = Buffer.from(rawTx, 'hex').toString('base64');
+    const versionedData = this.validateVersionedTransactionData(txParams.solVersionedTransactionData);
+
+    let txBytes: Buffer;
+    if (HEX_REGEX.test(rawTx) && rawTx.length % 2 === 0) {
+      txBytes = Buffer.from(rawTx, 'hex');
+    } else if (/^[A-Za-z0-9+/]+={0,2}$/.test(rawTx)) {
+      txBytes = Buffer.from(rawTx, 'base64');
+    } else {
+      throw new Error('failed to validate versioned transaction format: invalid raw transaction encoding');
     }
 
+    if (txBytes.length < 1) {
+      throw new Error('failed to validate versioned transaction format: transaction bytes are empty');
+    }
+
+    let deserializedTx: VersionedTransaction;
     try {
-      const txBytes = Buffer.from(rawTxBase64, 'base64');
-      if (txBytes.length < 1) {
-        throw new Error('transaction bytes are empty');
-      }
-
-      // Check version byte (after signatures)
-      const numSignatures = txBytes[0];
-      const signatureSize = 64;
-      const versionByteOffset = 1 + numSignatures * signatureSize;
-
-      if (txBytes.length <= versionByteOffset) {
-        throw new Error('transaction bytes are too short to contain version byte');
-      }
-
-      const versionByte = txBytes[versionByteOffset];
-      const isVersioned = (versionByte & 0x80) !== 0;
-
-      if (!isVersioned) {
-        throw new Error('transaction does not have versioned format');
-      }
+      deserializedTx = VersionedTransaction.deserialize(txBytes);
     } catch (error) {
-      throw new Error(`failed to validate versioned transaction format: ${error.message}`);
+      throw new Error(`failed to deserialize versioned transaction: ${error.message}`);
+    }
+
+    if (deserializedTx.version !== 0) {
+      throw new Error(`transaction is not a v0 versioned transaction: got ${String(deserializedTx.version)}`);
+    }
+
+    const reserializedBytes = Buffer.from(deserializedTx.serialize());
+    if (!reserializedBytes.equals(txBytes)) {
+      throw new Error('versioned transaction has non-canonical encoding or trailing bytes');
+    }
+
+    const message = deserializedTx.message as MessageV0;
+    const actualIxCount = message.compiledInstructions.length;
+    const expectedIxCount = versionedData.versionedInstructions.length;
+
+    if (actualIxCount === expectedIxCount) {
+      this.assertVersionedMessageMatchesData(message, versionedData);
+
+      if (durableNonce) {
+        const decodedNonce = this.decodeVersionedAdvanceNonceInstruction(message);
+        if (
+          !decodedNonce ||
+          decodedNonce.walletNonceAddress !== durableNonce.walletNonceAddress ||
+          decodedNonce.authWalletAddress !== String(durableNonce.authWalletAddress)
+        ) {
+          throw new Error('Tx durableNonce does not match with param durableNonce');
+        }
+      }
+    } else if (actualIxCount === expectedIxCount + 1) {
+      const decodedNonce = this.decodeVersionedAdvanceNonceInstruction(message);
+      if (!decodedNonce) {
+        throw new Error('Versioned transaction contains unexpected extra instruction');
+      }
+
+      if (durableNonce) {
+        if (
+          decodedNonce.walletNonceAddress !== durableNonce.walletNonceAddress ||
+          decodedNonce.authWalletAddress !== String(durableNonce.authWalletAddress)
+        ) {
+          throw new Error('Tx durableNonce does not match with param durableNonce');
+        }
+      } else {
+        // Without an explicit durableNonce param, do not allow nonce injection to escalate
+        // privileges of accounts already present in the user's staticAccountKeys.
+        const origHeader = versionedData.messageHeader;
+        const origStaticLen = versionedData.staticAccountKeys.length;
+        const existingAuthIdx = versionedData.staticAccountKeys.indexOf(decodedNonce.authWalletAddress);
+        if (existingAuthIdx >= origHeader.numRequiredSignatures) {
+          throw new Error('Injected nonce authority cannot escalate an existing non-signer account to a signer');
+        }
+        const existingNonceIdx = versionedData.staticAccountKeys.indexOf(decodedNonce.walletNonceAddress);
+        if (existingNonceIdx >= 0) {
+          const wasReadonlySigner =
+            existingNonceIdx >= origHeader.numRequiredSignatures - origHeader.numReadonlySignedAccounts &&
+            existingNonceIdx < origHeader.numRequiredSignatures;
+          const wasReadonlyNonSigner = existingNonceIdx >= origStaticLen - origHeader.numReadonlyUnsignedAccounts;
+          if (wasReadonlySigner || wasReadonlyNonSigner) {
+            throw new Error('Injected nonce account cannot escalate an existing read-only account to writable');
+          }
+        }
+      }
+
+      const expectedWithNonce = injectVersionedNonceAdvanceInstruction(versionedData, decodedNonce);
+      this.assertVersionedMessageMatchesData(message, expectedWithNonce);
+    } else {
+      throw new Error('Versioned transaction instruction count does not match solVersionedTransactionData');
+    }
+
+    const declaredFeePayer =
+      params.feePayer ??
+      (typeof txParams === 'object' &&
+      txParams !== null &&
+      'feePayer' in txParams &&
+      typeof txParams.feePayer === 'string'
+        ? txParams.feePayer
+        : undefined);
+    const actualFeePayer = message.staticAccountKeys[0].toBase58();
+    if (declaredFeePayer && actualFeePayer !== declaredFeePayer) {
+      throw new Error(
+        `Tx fee payer ${actualFeePayer} does not match the declared sponsored fee payer ${declaredFeePayer}`
+      );
+    }
+
+    const walletRootAddress = params.wallet?.coinSpecific()?.rootAddress;
+    if (walletRootAddress) {
+      const requiredSigners = message.staticAccountKeys
+        .slice(0, message.header.numRequiredSignatures)
+        .map((key) => key.toBase58());
+      if (!requiredSigners.includes(walletRootAddress)) {
+        throw new Error('Wallet root address is not a required signer of the versioned transaction');
+      }
     }
 
     return true;
