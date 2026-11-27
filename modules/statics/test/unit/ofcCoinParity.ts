@@ -57,6 +57,29 @@ describe('OFC Coin parity tests', function () {
     }
   });
 
+  it('should have asset parity between SOL OFC tokens and their on-chain tokens', function () {
+    const failures: string[] = [];
+
+    coins
+      .filter((coin) => coin.family === 'ofc' && coin.name.startsWith('ofcsol:'))
+      .forEach((ofcCoin) => {
+        const baseTokenName = ofcCoin.name.replace(/^ofc/, '');
+        const baseToken = getCoin(baseTokenName);
+        if (!baseToken) {
+          failures.push(`${ofcCoin.name}: underlying token '${baseTokenName}' does not exist`);
+          return;
+        }
+        if (baseToken.asset !== ofcCoin.asset) {
+          failures.push(
+            `${ofcCoin.name}: asset='${ofcCoin.asset}' does not match ${baseToken.name}.asset='${baseToken.asset}'`
+          );
+        }
+      });
+
+    const message = 'SOL OFC tokens whose asset does not match their on-chain token';
+    should(failures).deepEqual([], `${message}\n${failures.join('\n')}`);
+  });
+
   it('validate the decimalPlaces for ofc token', function () {
     const ofcCoins = coins.filter((coin) => coin.family === 'ofc');
     ofcCoins.forEach((ofcCoin) => {
