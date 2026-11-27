@@ -924,6 +924,11 @@ Wallet.prototype.createTransaction = function (params, callback) {
         return result;
       })
       .catch((psbtError: Error) => {
+        // A previous transaction that contradicts the unspent data means the unspent data cannot be trusted,
+        // so the transaction must not be built in the legacy format either.
+        if (psbtError instanceof TransactionBuilder.PrevTxMismatchError) {
+          throw psbtError;
+        }
         // PSBT failed - fall back to legacy and capture error for backend reporting
         console.warn('PSBT transaction failed, falling back to legacy');
         return TransactionBuilder.createTransaction({ ...params, usePsbt: false }).then((result: any) => {
